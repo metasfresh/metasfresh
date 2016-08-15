@@ -33,19 +33,25 @@ public interface IDocumentFieldChangedEventCollector
 
 	List<DocumentFieldChangedEvent> toEventsList();
 
-	void collectValueChanged(DocumentField documentField, ReasonSupplier reason);
+	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectReadonlyChanged(DocumentField documentField, ReasonSupplier reason);
+	void collectReadonlyChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectMandatoryChanged(DocumentField documentField, ReasonSupplier reason);
+	void collectMandatoryChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectDisplayedChanged(DocumentField documentField, ReasonSupplier reason);
+	void collectDisplayedChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectLookupValuesStaled(DocumentField documentField, ReasonSupplier reason);
+	void collectLookupValuesStaled(IDocumentFieldView documentField, ReasonSupplier reason);
 
 	void collectFrom(IDocumentFieldChangedEventCollector fromCollector);
 
-	void collectFrom(Document document, ReasonSupplier reason);
+	/**
+	 * Collect changes from given document (only those which were not yet collected).
+	 * 
+	 * @param fromCollector
+	 * @return true if something was collected
+	 */
+	boolean collectFrom(Document document, ReasonSupplier reason);
 
 	@FunctionalInterface
 	interface ReasonSupplier

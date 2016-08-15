@@ -42,8 +42,11 @@ public interface LookupDataSource
 
 	/**
 	 * Set this data source as staled.
+	 * 
+	 * @param triggeringFieldName field name which triggered this request (optional)
+	 * @return true if this lookup source was marked as staled 
 	 */
-	void setStaled();
+	boolean setStaled(final String triggeringFieldName);
 
 	boolean isStaled();
 }

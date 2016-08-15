@@ -24,9 +24,9 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
@@ -76,7 +76,7 @@ public final class JSONConverters
 	 */
 	private static List<Map<String, Object>> documentToJsonObject(final Document document)
 	{
-		final Collection<DocumentField> fields = document.getFields();
+		final Collection<IDocumentFieldView> fields = document.getFieldViews();
 		final List<Map<String, Object>> jsonFields = new ArrayList<>(fields.size() + 1);
 
 		// ID field (special)
@@ -94,7 +94,7 @@ public final class JSONConverters
 		return jsonFields;
 	}
 
-	private static Map<String, Object> documentFieldToJsonObject(final DocumentField field)
+	private static Map<String, Object> documentFieldToJsonObject(final IDocumentFieldView field)
 	{
 		final String name = field.getFieldName();
 		final Object valueJSON = field.getValueAsJsonObject();

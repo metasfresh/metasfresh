@@ -8,7 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.model.DocumentField;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.LookupDataSource;
 import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
 
@@ -46,13 +46,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
-	public static int getAD_Column_ID(final DocumentField documentField)
+	public static int getAD_Column_ID(final IDocumentFieldView documentField)
 	{
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
 		return dataBinding.getAD_Column_ID();
 	}
 
-	public static String getSqlColumnName(final DocumentField documentField)
+	public static String getSqlColumnName(final IDocumentFieldView documentField)
 	{
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
 		return dataBinding.getSqlColumnName();
@@ -206,6 +206,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return null;
 		}
+		
+		// TODO: implement more specialized SqlLookupDataSources.
+		// * a high volume, generic one (i.e. SqlLookupDataSource)
+		// * in case there is no validation rule or the validation rule is immutable we could have an implementation which would cache the results
+		
 		return SqlLookupDataSource.of(sqlLookupDescriptor);
 	}
 

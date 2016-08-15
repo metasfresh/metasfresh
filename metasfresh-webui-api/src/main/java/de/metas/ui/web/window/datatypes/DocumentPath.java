@@ -105,6 +105,11 @@ public final class DocumentPath
 	{
 		return documentId;
 	}
+	
+	public boolean isNewDocument()
+	{
+		return documentId != null && documentId.isNew();
+	}
 
 	public String getDetailId()
 	{

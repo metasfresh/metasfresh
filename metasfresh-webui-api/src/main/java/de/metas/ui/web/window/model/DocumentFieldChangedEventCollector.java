@@ -72,7 +72,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return fieldName2event.isEmpty();
 	}
 
-	private DocumentFieldChangedEvent getFieldChangedEvent(final DocumentField documentField)
+	private DocumentFieldChangedEvent getFieldChangedEvent(final IDocumentFieldView documentField)
 	{
 		return getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
 	}
@@ -139,31 +139,31 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	}
 
 	@Override
-	public void collectValueChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setValue(documentField.getValue(), extractReason(reason));
 	}
 
 	@Override
-	public void collectReadonlyChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setReadonly(documentField.isReadonly(), extractReason(reason));
 	}
 
 	@Override
-	public void collectMandatoryChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setMandatory(documentField.isMandatory(), extractReason(reason));
 	}
 
 	@Override
-	public void collectDisplayedChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setDisplayed(documentField.isDisplayed(), extractReason(reason));
 	}
 
 	@Override
-	public void collectLookupValuesStaled(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		getFieldChangedEvent(documentField).setLookupValuesStale(true, extractReason(reason));
 	}
@@ -179,17 +179,26 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	}
 
 	@Override
-	public void collectFrom(final Document document, final ReasonSupplier reason)
+	public boolean collectFrom(final Document document, final ReasonSupplier reason)
 	{
-		for (final DocumentField documentField : document.getFields())
+		boolean collected = false;
+		
+		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
-			collectFrom(documentField, reason);
+			if(collectFrom(documentField, reason))
+			{
+				collected = true;
+			}
 		}
+		
+		return collected;
 	}
 
-	private void collectFrom(final DocumentField documentField, final ReasonSupplier reason)
+	private boolean collectFrom(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
+		
+		boolean collected = false;
 
 		//
 		// Value
@@ -205,6 +214,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 			if (!Objects.equals(value, previousValue))
 			{
 				toEvent.setValue(value, mergeReasons(reason, toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue));
+				collected = true;
 			}
 		}
 
@@ -214,6 +224,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		if (!Objects.equals(readonly, toEvent.getReadonly()))
 		{
 			toEvent.setReadonly(readonly, mergeReasons(reason, toEvent.getReadonlyReason()));
+			collected = true;
 		}
 
 		//
@@ -222,6 +233,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		if (!Objects.equals(mandatory, toEvent.getMandatory()))
 		{
 			toEvent.setMandatory(mandatory, mergeReasons(reason, toEvent.getMandatoryReason()));
+			collected = true;
 		}
 
 		//
@@ -230,6 +242,9 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		if (!Objects.equals(displayed, toEvent.getDisplayed()))
 		{
 			toEvent.setDisplayed(displayed, mergeReasons(reason, toEvent.getDisplayedReason()));
+			collected = true;
 		}
+		
+		return collected;
 	}
 }

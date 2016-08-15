@@ -79,6 +79,22 @@ public class SqlLookupDataSource implements LookupDataSource
 	}
 
 	@Override
+	public boolean setStaled(final String triggeringFieldName)
+	{
+		logger.trace("Marking {} as staled (triggeringFieldName={})", this, triggeringFieldName);
+
+		// TODO implement staled logic
+		return true;
+	}
+
+	@Override
+	public boolean isStaled()
+	{
+		// TODO implement staled logic
+		return false;
+	}
+
+	@Override
 	public List<LookupValue> findEntities(final Document document, final String filter, final int firstRow, final int pageLength)
 	{
 		if (!isValidFilter(filter))
@@ -161,7 +177,7 @@ public class SqlLookupDataSource implements LookupDataSource
 
 		return IntegerLookupValue.of(id, displayName);
 	}
-	
+
 	private StringLookupValue findByStringId(final String id)
 	{
 		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
@@ -314,18 +330,5 @@ public class SqlLookupDataSource implements LookupDataSource
 		{
 			return validationRule.accept(this, item);
 		}
-	}
-
-	@Override
-	public void setStaled()
-	{
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public boolean isStaled()
-	{
-		// TODO Auto-generated method stub
-		return false;
 	}
 }

@@ -274,16 +274,16 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 				&& !methodName.startsWith("get_"))
 		{
 			final String propertyName = methodName.substring(3);
-			final DocumentField gridField = document.getFieldOrNull(propertyName);
-			if (gridField != null)
+			final IDocumentFieldView documentField = document.getFieldViewOrNull(propertyName);
+			if (documentField != null)
 			{
-				final Object value = getValue(gridField, method.getReturnType());
+				final Object value = getValue(documentField, method.getReturnType());
 				if (value != null)
 				{
 					return value;
 				}
 			}
-			else if (gridField == null && isModelInterface(method.getReturnType()))
+			else if (documentField == null && isModelInterface(method.getReturnType()))
 			{
 				return getReferencedObject(propertyName, method);
 			}
@@ -312,14 +312,14 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		else if (methodName.startsWith("is") && (args == null || args.length == 0))
 		{
 			final String propertyName = methodName.substring(2);
-			DocumentField field = document.getFieldOrNull(propertyName);
+			IDocumentFieldView field = document.getFieldViewOrNull(propertyName);
 			if (field != null)
 			{
 				final Object value = getValue(field, method.getReturnType());
 				return value instanceof Boolean ? value : "Y".equals(value);
 			}
 			//
-			field = document.getFieldOrNull("Is" + propertyName);
+			field = document.getFieldViewOrNull("Is" + propertyName);
 			if (field != null)
 			{
 				final Object value = getValue(field, method.getReturnType());
@@ -338,7 +338,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	@Override
 	public final Object getValue(final String columnName, final Class<?> returnType)
 	{
-		final DocumentField field = getDocument().getField(columnName);
+		final IDocumentFieldView field = getDocument().getFieldView(columnName);
 		return getValue(field, returnType);
 	}
 
@@ -348,7 +348,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		return getValue(columnName, returnType);
 	}
 
-	private Object getValue(final DocumentField field, final Class<?> returnType)
+	private Object getValue(final IDocumentFieldView field, final Class<?> returnType)
 	{
 		final Object value;
 		if (useOldValues)
@@ -363,7 +363,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		return convertValueToType(value, field, returnType);
 	}
 
-	private static final Object convertValueToType(final Object value, final DocumentField field, final Class<?> returnType)
+	private static final Object convertValueToType(final Object value, final IDocumentFieldView field, final Class<?> returnType)
 	{
 		if (Object.class.equals(returnType))
 		{
@@ -510,7 +510,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	public final Object getReferencedObject(final String propertyName, final Method method)
 	{
 		final String idPropertyName = propertyName + "_ID";
-		final DocumentField idField = document.getFieldOrNull(idPropertyName);
+		final IDocumentFieldView idField = document.getFieldViewOrNull(idPropertyName);
 		if (idField == null)
 		{
 			logger.warn("Field " + idPropertyName + " not found for " + document + ". Assuming null value.");
@@ -607,7 +607,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return true;
 		}
 
-		final DocumentField field = document.getFieldOrNull(columnName);
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
 		if (field == null)
 		{
 			return true;
@@ -625,8 +625,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return false;
 		}
 
-		final DocumentField gridField = document.getFieldOrNull(columnName);
-		return gridField != null;
+		final IDocumentFieldView documentField = document.getFieldViewOrNull(columnName);
+		return documentField != null;
 	}
 
 	@Override
@@ -681,21 +681,21 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	@Override
 	public boolean isVirtualColumn(final String columnName)
 	{
-		final DocumentField field = document.getFieldOrNull(columnName);
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
 		return field != null && field.isVirtualField();
 	}
 
 	@Override
 	public boolean isKeyColumnName(final String columnName)
 	{
-		final DocumentField field = document.getFieldOrNull(columnName);
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
 		return field != null && field.isKey();
 	}
 
 	@Override
 	public boolean isCalculated(final String columnName)
 	{
-		final DocumentField field = document.getFieldOrNull(columnName);
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
 		return field != null && field.isCalculated();
 	}
 

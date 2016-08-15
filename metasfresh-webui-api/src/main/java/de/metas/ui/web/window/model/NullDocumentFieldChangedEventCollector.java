@@ -56,31 +56,31 @@ public final class NullDocumentFieldChangedEventCollector implements IDocumentFi
 	}
 
 	@Override
-	public void collectValueChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectReadonlyChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectMandatoryChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectDisplayedChanged(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectLookupValuesStaled(final DocumentField documentField, final ReasonSupplier reason)
+	public void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
@@ -92,8 +92,8 @@ public final class NullDocumentFieldChangedEventCollector implements IDocumentFi
 	}
 
 	@Override
-	public void collectFrom(final Document document, final ReasonSupplier reason)
+	public boolean collectFrom(final Document document, final ReasonSupplier reason)
 	{
-		// do nothing
+		return false; // nothing collected
 	}
 }

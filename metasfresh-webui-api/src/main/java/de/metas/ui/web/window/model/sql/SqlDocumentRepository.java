@@ -42,9 +42,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentField;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 
 /*
@@ -467,7 +467,7 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// Set values to PO
-		for (final DocumentField documentField : document.getFields())
+		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
 			setPOValue(po, documentField);
 		}
@@ -475,6 +475,11 @@ public class SqlDocumentRepository implements DocumentRepository
 		//
 		// Actual save
 		InterfaceWrapperHelper.save(po);
+		
+		// TODO: save included documents if any
+		// * first, update their parent link if needed
+		// * save them
+		// * refresh them AFTER header document (this one) is refreshed
 
 		//
 		// Reload the document
@@ -482,7 +487,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		refresh(document, idNew);
 	}
 
-	private void setPOValue(final PO po, final DocumentField documentField)
+	private void setPOValue(final PO po, final IDocumentFieldView documentField)
 	{
 		final POInfo poInfo = po.getPOInfo();
 		final String columnName = SqlDocumentFieldDataBindingDescriptor.getSqlColumnName(documentField);

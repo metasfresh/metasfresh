@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -83,7 +84,7 @@ public final class Document
 	private final ICalloutExecutor calloutExecutor;
 
 	private final Map<String, DocumentField> fieldsByName;
-	private final DocumentField idField;
+	private final IDocumentFieldView idField;
 
 	private final Document _parentDocument;
 	private final Map<String, IncludedDocumentsCollection> includedDocuments;
@@ -114,7 +115,7 @@ public final class Document
 		// Create document fields
 		{
 			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
-			DocumentField idField = null;
+			IDocumentFieldView idField = null;
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String fieldName = fieldDescriptor.getFieldName();
@@ -181,18 +182,20 @@ public final class Document
 		if (FieldInitializationMode.NewDocument == mode)
 		{
 			executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
+
 			final boolean collectEventsEventIfNoChange = true;
 			updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
 		}
 		else if (FieldInitializationMode.Load == mode)
 		{
-			final boolean collectEventsEventIfNoChange = false; // not relevant
+			final boolean collectEventsEventIfNoChange = false; // not relevant because we are not collecting events at all
 			updateAllFieldsFlags(NullDocumentFieldChangedEventCollector.instance, collectEventsEventIfNoChange);
 		}
 		else if (FieldInitializationMode.Refresh == mode)
 		{
-			final boolean collectEventsEventIfNoChange = false;
-			updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+			// NOTE: we don't have to update all fields because we updated one by one when initialized
+			// final boolean collectEventsEventIfNoChange = false;
+			// updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
 		}
 	}
 
@@ -222,10 +225,15 @@ public final class Document
 			// Collect the change event, even if there was no change because we just set the initial value
 			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
 			eventsCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
+
+			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
+			// NOTE: don't call callouts because we will do it all together after all fields are initialized
 		}
 		else if (FieldInitializationMode.Load == mode)
 		{
-			// nothing to do on load
+			// NOTE: don't collect field changes because we are just initializing a new Document instance from an existing database record.
+			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
+			// NOTE: don't call callouts because this was not a user change.
 		}
 		else if (FieldInitializationMode.Refresh == mode)
 		{
@@ -237,10 +245,10 @@ public final class Document
 				final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
 				eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
 
-				// Update all dependencies
+				// Update all fields which depends on this field
 				updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
 
-				// Callouts - don't execute them!
+				// NOTE: don't call callouts because this was not a user change.
 				// calloutExecutor.execute(documentField.asCalloutField());
 			}
 		}
@@ -355,9 +363,15 @@ public final class Document
 		return _parentDocument;
 	}
 
-	public Collection<DocumentField> getFields()
+	private Collection<DocumentField> getFields()
 	{
 		return fieldsByName.values();
+	}
+	
+	public Collection<IDocumentFieldView> getFieldViews()
+	{
+		final Collection<DocumentField> documentFields = fieldsByName.values();
+		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -373,7 +387,7 @@ public final class Document
 	/**
 	 * @return field; never returns null
 	 */
-	public DocumentField getField(final String fieldName)
+	private DocumentField getField(final String fieldName)
 	{
 		final DocumentField documentField = getFieldOrNull(fieldName);
 		if (documentField == null)
@@ -383,10 +397,20 @@ public final class Document
 		return documentField;
 	}
 
-	DocumentField getFieldOrNull(final String fieldName)
+	public IDocumentFieldView getFieldView(final String fieldName)
+	{
+		return getField(fieldName);
+	}
+
+	private DocumentField getFieldOrNull(final String fieldName)
 	{
 		final DocumentField documentField = fieldsByName.get(fieldName);
 		return documentField;
+	}
+	
+	IDocumentFieldView getFieldViewOrNull(final String fieldName)
+	{
+		return getFieldOrNull(fieldName);
 	}
 
 	public int getDocumentId()
@@ -437,6 +461,11 @@ public final class Document
 
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
+	}
+	
+	public Object getValue(final String fieldName)
+	{
+		return getField(fieldName).getValue();
 	}
 
 	public void executeAllCallouts()
@@ -606,12 +635,12 @@ public final class Document
 		}
 		else if (DependencyType.LookupValues == triggeringDependencyType)
 		{
-			// FIXME: case: updating an existing document (e.g. set POReference).
-			// This method will be called when document is saved and then refresh (=> FieldInitializationMode=Refresh, triggeringFieldName=null).
-			// As a consequence we will collect an "LookupValuesStaled" event for each field !!!
 			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
-			documentField.setLookupValuesStaled();
-			eventsCollector.collectLookupValuesStaled(documentField, reason);
+			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
+			if (lookupValuesStaled)
+			{
+				eventsCollector.collectLookupValuesStaled(documentField, reason);
+			}
 		}
 		else
 		{
@@ -667,7 +696,7 @@ public final class Document
 
 	public boolean isProcessed()
 	{
-		final DocumentField processedField = getFieldOrNull("Processed");
+		final IDocumentFieldView processedField = getFieldOrNull("Processed");
 		if (processedField != null)
 		{
 			return processedField.getValueAsBoolean();

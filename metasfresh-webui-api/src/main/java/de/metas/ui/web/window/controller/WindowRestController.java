@@ -8,6 +8,7 @@ import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,8 @@ import de.metas.ui.web.window.util.JSONConverters;;
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
+
+	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
@@ -156,6 +159,9 @@ public class WindowRestController
 
 		try (final Execution execution = Execution.startExecution())
 		{
+			// TODO: create and manage database transaction, to ensure consistency
+			// TODO: implement a mechanism to restore documents to the state they were before running this commit, in case something fails
+			
 			//
 			// Fetch the document
 			final Document document = documentCollection.getDocument(documentPath);
@@ -177,6 +183,18 @@ public class WindowRestController
 			//
 			// Try saving it
 			documentCollection.saveIfPossible(document);
+			
+			//
+			// Make sure all events were collected for the case when we just created the new document
+			// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
+			if (documentPath.isNewDocument())
+			{
+				final boolean somethingCollected = execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
+				if(somethingCollected)
+				{
+					logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
+				}
+			}
 
 			//
 			// Return the changes

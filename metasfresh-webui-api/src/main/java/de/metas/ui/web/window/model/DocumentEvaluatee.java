@@ -75,9 +75,9 @@ public final class DocumentEvaluatee implements Evaluatee
 		return _document.getParentDocument() != null;
 	}
 
-	private final DocumentField getDocumentFieldOrNull(final String name)
+	private final IDocumentFieldView getDocumentFieldOrNull(final String name)
 	{
-		return _document.getFieldOrNull(name);
+		return _document.getFieldViewOrNull(name);
 	}
 
 	private final Set<String> getAvailableFieldNames()
@@ -111,7 +111,7 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		//
 		// Document field
-		final DocumentField documentField = getDocumentFieldOrNull(variableName);
+		final IDocumentFieldView documentField = getDocumentFieldOrNull(variableName);
 		if (documentField != null)
 		{
 			final String documentFieldValue = convertToString(documentField.getFieldName(), documentField.getValue());

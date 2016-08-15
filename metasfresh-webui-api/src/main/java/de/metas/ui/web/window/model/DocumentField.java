@@ -41,7 +41,7 @@ import de.metas.ui.web.window.util.JSONConverters;
  * #L%
  */
 
-public class DocumentField
+public class DocumentField implements IDocumentFieldView
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -82,6 +82,7 @@ public class DocumentField
 				.toString();
 	}
 
+	@Override
 	public DocumentFieldDescriptor getDescriptor()
 	{
 		return descriptor;
@@ -92,26 +93,31 @@ public class DocumentField
 		return _document;
 	}
 
+	@Override
 	public String getFieldName()
 	{
 		return descriptor.getFieldName();
 	}
 
+	@Override
 	public boolean isKey()
 	{
 		return descriptor.isKey();
 	}
 
+	@Override
 	public boolean isVirtualField()
 	{
 		return descriptor.isVirtualField();
 	}
 
+	@Override
 	public boolean isCalculated()
 	{
 		return descriptor.isCalculated();
 	}
 
+	@Override
 	public Object getInitialValue()
 	{
 		return _initialValue;
@@ -152,28 +158,33 @@ public class DocumentField
 		updateValid();
 	}
 
+	@Override
 	public Object getValue()
 	{
 		return _value;
 	}
 
+	@Override
 	public Object getValueAsJsonObject()
 	{
 		return JSONConverters.valueToJsonObject(_value);
 	}
 
+	@Override
 	public int getValueAsInt(final int defaultValue)
 	{
 		final Integer valueInt = convertToValueClass(_value, Integer.class);
 		return valueInt == null ? defaultValue : valueInt;
 	}
 
+	@Override
 	public boolean getValueAsBoolean()
 	{
 		final Boolean valueBoolean = convertToValueClass(_value, Boolean.class);
 		return valueBoolean != null && valueBoolean.booleanValue();
 	}
 
+	@Override
 	public Object getOldValue()
 	{
 		// TODO to implement. "getOldValue" is mainly needed for ICalloutField and DocumentInterfaceWrapper
@@ -206,9 +217,17 @@ public class DocumentField
 
 			if (String.class == targetType)
 			{
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)value.toString();
-				return valueConv;
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					// this is not allowed for consistency. let it fail.
+				}
+				// For any other case, blindly convert it to string
+				else
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)value.toString();
+					return valueConv;
+				}
 			}
 			else if (java.util.Date.class == targetType)
 			{
@@ -323,6 +342,7 @@ public class DocumentField
 		throw new AdempiereException("Cannot convert " + getFieldName() + "'s value '" + value + "' (" + fromType + ") to " + targetType);
 	}
 
+	@Override
 	public boolean isMandatory()
 	{
 		return _mandatory;
@@ -339,6 +359,7 @@ public class DocumentField
 		updateValid();
 	}
 
+	@Override
 	public boolean isReadonly()
 	{
 		return _readonly;
@@ -349,6 +370,7 @@ public class DocumentField
 		_readonly = readonly;
 	}
 
+	@Override
 	public boolean isDisplayed()
 	{
 		return _displayed;
@@ -359,18 +381,19 @@ public class DocumentField
 		_displayed = displayed;
 	}
 
+	@Override
 	public boolean isLookupValuesStale()
 	{
 		return lookupDataSource != null && lookupDataSource.isStaled();
 	}
 
-	/* package */ void setLookupValuesStaled()
+	/* package */ boolean setLookupValuesStaled(final String triggeringFieldName)
 	{
 		if (lookupDataSource == null)
 		{
-			return;
+			return false;
 		}
-		lookupDataSource.setStaled();
+		return lookupDataSource.setStaled(triggeringFieldName);
 	}
 
 	public boolean isLookupWithNumericKey()
