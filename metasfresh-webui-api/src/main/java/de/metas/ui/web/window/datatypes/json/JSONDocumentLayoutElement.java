@@ -10,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.LayoutType;
 
 /*
  * #%L
@@ -57,6 +59,9 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 	private final String widgetType;
 
+	/** Type: primary, secondary */
+	private final String type;
+
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
@@ -65,7 +70,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 		super();
 		caption = element.getCaption();
 		description = element.getDescription();
-		widgetType = element.getWidgetType().toString();
+		widgetType = DocumentFieldWidgetType.toJson(element.getWidgetType());
+		type = LayoutType.toJson(element.getLayoutType());
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
 	}
 
@@ -77,6 +83,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.add("caption", caption)
 				.add("description", description)
 				.add("widgetType", widgetType)
+				.add("type", type)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
@@ -94,6 +101,11 @@ public final class JSONDocumentLayoutElement implements Serializable
 	public String getWidgetType()
 	{
 		return widgetType;
+	}
+	
+	public String getType()
+	{
+		return type;
 	}
 
 	public Set<JSONDocumentLayoutElementField> getFields()

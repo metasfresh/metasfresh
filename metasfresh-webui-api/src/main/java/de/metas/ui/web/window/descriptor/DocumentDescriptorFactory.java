@@ -71,7 +71,7 @@ public class DocumentDescriptorFactory
 	private static final String COLUMNNAME_Processing = "Processing";
 	/** Column names where we shall use {@link DocumentFieldWidgetType#Switch} instead of {@link DocumentFieldWidgetType#YesNo} */
 	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(COLUMNNAME_IsActive); // FIXME: hardcoded
-	
+
 	public static final Set<String> COLUMNNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
@@ -253,7 +253,7 @@ public class DocumentDescriptorFactory
 					}
 
 					final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementGroupDescriptor.builder()
-							.setType(uiElementGroup.getUIStyle());
+							.setLayoutType(uiElementGroup.getUIStyle());
 
 					//
 					// UI Elements
@@ -268,7 +268,9 @@ public class DocumentDescriptorFactory
 						// UI main field
 						final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
 								.setCaption(uiElement.getName())
-								.setDescription(uiElement.getDescription());
+								.setDescription(uiElement.getDescription())
+								.setLayoutType(layoutElementGroupBuilder.getLayoutType()) // TODO: atm we are inheriting the LayoutType from "element group"
+								;
 
 						{
 							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
@@ -279,6 +281,7 @@ public class DocumentDescriptorFactory
 										.setWidgetType(extractWidgetType(gridFieldVO))
 										.addField(DocumentLayoutElementFieldDescriptor.builder()
 												.setField(columnName)
+												.setLookupSource(extractLookupSource(gridFieldVO))
 												.build());
 
 								specialFieldsCollector.updateFromColumnName(columnName);
@@ -340,8 +343,10 @@ public class DocumentDescriptorFactory
 					.setCaption(gridFieldVO.getHeader())
 					.setDescription(gridFieldVO.getDescription())
 					.setWidgetType(extractWidgetType(gridFieldVO))
+					.setLayoutTypeNone() // does not matter for detail
 					.addField(DocumentLayoutElementFieldDescriptor.builder()
 							.setField(columnName)
+							.setLookupSource(extractLookupSource(gridFieldVO))
 							.build())
 					.build();
 
@@ -648,6 +653,35 @@ public class DocumentDescriptorFactory
 		}
 	}
 
+	private static DocumentLayoutElementFieldDescriptor.LookupSource extractLookupSource(final GridFieldVO gridFieldVO)
+	{
+		final int displayType = gridFieldVO.getDisplayType();
+		if (DisplayType.Search == displayType)
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.lookup;
+		}
+		else if (DisplayType.List == displayType)
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.list;
+		}
+		else if (DisplayType.TableDir == displayType)
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.list;
+		}
+		else if (DisplayType.Table == displayType)
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.list;
+		}
+		else if (DisplayType.isAnyLookup(displayType))
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.lookup;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	private static ILogicExpression extractReadonlyLogic(final GridFieldVO gridFieldVO)
 	{
 		if (gridFieldVO.isReadOnly())
@@ -659,19 +693,18 @@ public class DocumentDescriptorFactory
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		if (gridFieldVO.isKey())
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		final String columnName = gridFieldVO.getColumnName();
 		if (COLUMNNAMES_CreatedUpdated.contains(columnName))
 		{
 			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
 			return ILogicExpression.TRUE;
 		}
-
 
 		ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
 
@@ -710,7 +743,7 @@ public class DocumentDescriptorFactory
 			// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
 			return ILogicExpression.FALSE;
 		}
-		
+
 		if (gridFieldVO.isVirtualColumn())
 		{
 			return ILogicExpression.FALSE;

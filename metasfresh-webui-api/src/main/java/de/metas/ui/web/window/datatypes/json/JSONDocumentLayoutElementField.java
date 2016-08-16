@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -47,11 +48,17 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	}
 
 	private final String field;
+	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String source;
 
 	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
 	{
 		super();
 		field = fieldDescriptor.getField();
+		
+		final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource = fieldDescriptor.getLookupSource();
+		source = lookupSource == null ? null : lookupSource.toString();
 	}
 
 	@Override
@@ -65,5 +72,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	public String getField()
 	{
 		return field;
+	}
+	
+	public String getSource()
+	{
+		return source;
 	}
 }

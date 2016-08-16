@@ -36,13 +36,21 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return new Builder();
 	}
+	
+	public static enum LookupSource
+	{
+		lookup
+		, list
+	}
 
 	private final String field;
+	private final LookupSource lookupSource;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
 		super();
 		field = Preconditions.checkNotNull(builder.field, "field not null");
+		this.lookupSource = builder.lookupSource;
 	}
 
 	@Override
@@ -78,10 +86,16 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return field;
 	}
+	
+	public LookupSource getLookupSource()
+	{
+		return lookupSource;
+	}
 
 	public static final class Builder
 	{
 		private String field;
+		private LookupSource lookupSource;
 
 		private Builder()
 		{
@@ -96,6 +110,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		public Builder setField(final String field)
 		{
 			this.field = Strings.emptyToNull(field);
+			return this;
+		}
+		
+		public Builder setLookupSource(LookupSource lookupSource)
+		{
+			this.lookupSource = lookupSource;
 			return this;
 		}
 

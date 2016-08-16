@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
+import de.metas.ui.web.window.descriptor.LayoutType;
 
 /*
  * #%L
@@ -58,7 +59,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
 	{
 		super();
-		type = elementGroup.getType();
+		type = LayoutType.toJson(elementGroup.getLayoutType());
 		elements = JSONDocumentLayoutElement.ofList(elementGroup.getElements());
 	}
 
@@ -71,7 +72,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
-
+	
 	public String getType()
 	{
 		return type;

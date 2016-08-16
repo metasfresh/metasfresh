@@ -22,27 +22,23 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
-public enum DocumentFieldWidgetType
+public enum LayoutType
 {
-	Text, LongText
-
-	, Date, Time, DateTime
-
-	, Integer, Number, Amount, Quantity, CostPrice
-
-	//
-	, List, Lookup, Address, ProductAttributes
-
-	, YesNo, Switch
-
-	, Image
-
-	, Button
-	//
+	primary,
+	secondary
 	;
-
-	public static String toJson(final DocumentFieldWidgetType widgetType)
+	
+	public static LayoutType fromNullable(final String layoutTypeStr)
 	{
-		return widgetType == null ? null : widgetType.toString();
+		if(layoutTypeStr == null || layoutTypeStr.isEmpty())
+		{
+			return null;
+		}
+		return valueOf(layoutTypeStr);
+	}
+	
+	public static String toJson(final LayoutType layoutType)
+	{
+		return layoutType == null ? null : layoutType.toString();
 	}
 }

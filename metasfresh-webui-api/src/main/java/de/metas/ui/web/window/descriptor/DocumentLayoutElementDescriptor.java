@@ -50,6 +50,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final String description;
 
 	private final DocumentFieldWidgetType widgetType;
+	private final LayoutType layoutType;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -60,6 +61,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		caption = builder.caption;
 		description = builder.description;
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
+		layoutType = builder.layoutType;
 		fields = ImmutableSet.copyOf(builder.fields);
 	}
 
@@ -89,6 +91,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return widgetType;
 	}
+	
+	public LayoutType getLayoutType()
+	{
+		return layoutType;
+	}
 
 	public Set<DocumentLayoutElementFieldDescriptor> getFields()
 	{
@@ -100,6 +107,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String caption;
 		private String description;
 		private DocumentFieldWidgetType widgetType;
+		private LayoutType layoutType;
 		private final LinkedHashSet<DocumentLayoutElementFieldDescriptor> fields = new LinkedHashSet<>();
 
 		private Builder()
@@ -130,12 +138,36 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setLayoutType(final String layoutTypeStr)
+		{
+			layoutType = LayoutType.fromNullable(layoutTypeStr);
+			return this;
+		}
+
+		public Builder setLayoutType(final LayoutType layoutType)
+		{
+			this.layoutType = layoutType;
+			return this;
+		}
+		
+		public Builder setLayoutTypeNone()
+		
+		{
+			this.layoutType = null;
+			return this;
+		}
+
+		public LayoutType getLayoutType()
+		{
+			return layoutType;
+		}
+
 		public Builder addField(final DocumentLayoutElementFieldDescriptor field)
 		{
 			final boolean added = fields.add(field);
 			if (!added)
 			{
-				new AdempiereException("Field " + field + " already exists: " + this.fields + " for " + this.caption)
+				new AdempiereException("Field " + field + " already exists: " + fields + " for " + caption)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 			}
 			return this;
