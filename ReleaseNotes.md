@@ -24,10 +24,10 @@ Here come the actual release notes:
 ## Features
  - #279 Set document type Bestellung as default value in purchase order
  - #275 In Picking HU Editor. New Flag ignore attributes for Filter
- - 
+ - #283 Make Gebindesaldo Report support Multi Org
+
 ## Fixes
  - #255 Invoice candidates action bar is not considering org-assignment
- - #283 Make Gebindesaldo Report support Multi Org
  - #274 Purchase Order without BPartner Contact, Billto Contact wrong email
  - #252 Fix the code for ADR Attribute Retrieval
  - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
