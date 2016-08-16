@@ -30,6 +30,8 @@ class LookupDropdown extends Component {
 
         //removing selection
         this.setState({selected: null});
+        let propertiesCopy = Object.assign([], properties);
+
         //
         // Handling selection when main is not set or set.
         //
@@ -40,18 +42,30 @@ class LookupDropdown extends Component {
             // - first will generate choice dropdown
             // - second should be chosen automatically
             select.properties = {};
+            let batchArray = [];
+            if(propertiesCopy.length > 1){
+                console.log(propertiesCopy);
 
-            if(properties.length > 1){
-                properties.shift();
-                properties.map((item) => {
-                    // TODO: here we need to make batch request for all properties at once
-                    dispatch(dropdownRequest(143, item.field)).then((response)=>{
-                        select.properties[item.field] = response.data;
+                propertiesCopy.shift();
+                let batch = new Promise((resolve, reject) => {
+                    propertiesCopy.map((item) => {
+                        dispatch(dropdownRequest(143, item.field)).then((response)=>{
+                            select.properties[item.field] = response.data;
+                            batchArray.push('0');
+
+                            if(batchArray.length === propertiesCopy.length){
+                                resolve();
+                            }
+                        });
                     });
                 });
-                this.setState({model: select}, () => {
-                    this.generatingPropsSelection();
+
+                batch.then(()=>{
+                    this.setState({model: select}, () => {
+                        this.generatingPropsSelection();
+                    });
                 });
+
             }else{
                 this.handleBlur();
             }
@@ -102,12 +116,15 @@ class LookupDropdown extends Component {
                 dispatch(autocompleteSuccess(modelProps[modelPropsKeys[i]]));
                 this.setState({property: modelPropsKeys[i]});
                 break;
+            }else{
+                this.handleBlur();
             }
         }
     }
 
     handleBlur = () => {
         this.dropdown.classList.remove("input-dropdown-focused");
+        this.state.property = "";
     }
 
     handleFocus = (e) => {
@@ -129,12 +146,13 @@ class LookupDropdown extends Component {
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
         this.setState({selected: null});
+        this.setState({property: ""});
+
         if(this.inputSearch.value != ""){
             dispatch(autocompleteRequest(windowType, properties[0].field, this.inputSearch.value));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});
-            this.setState({property: ""});
             dispatch(autocompleteSuccess(recent));
         }
     }
