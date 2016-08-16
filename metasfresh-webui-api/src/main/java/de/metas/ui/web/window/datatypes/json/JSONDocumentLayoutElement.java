@@ -61,6 +61,9 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 	/** Type: primary, secondary */
 	private final String type;
+	
+	/** Display included fields on one line */ 
+	private final boolean oneline;
 
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
@@ -72,6 +75,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = element.getDescription();
 		widgetType = DocumentFieldWidgetType.toJson(element.getWidgetType());
 		type = LayoutType.toJson(element.getLayoutType());
+		oneline = element.isDisplayFieldsOnOneLine();
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
 	}
 
@@ -84,6 +88,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.add("description", description)
 				.add("widgetType", widgetType)
 				.add("type", type)
+				.add("oneline", oneline)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
@@ -106,6 +111,11 @@ public final class JSONDocumentLayoutElement implements Serializable
 	public String getType()
 	{
 		return type;
+	}
+	
+	public boolean isOneline()
+	{
+		return oneline;
 	}
 
 	public Set<JSONDocumentLayoutElementField> getFields()

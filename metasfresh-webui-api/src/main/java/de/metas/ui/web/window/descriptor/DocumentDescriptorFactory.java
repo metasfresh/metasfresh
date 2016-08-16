@@ -309,17 +309,22 @@ public class DocumentDescriptorFactory
 							}
 						}
 
+						if (layoutElementBuilder.getFieldsCount() > 1)
+						{
+							layoutElementBuilder.setDisplayFieldsOnOneLine();
+						}
 						layoutElementGroupBuilder.addElement(layoutElementBuilder.build());
 					}
+					} // each uiElement
 
 					layoutColumnBuilder.addElementGroupIfNotEmpty(layoutElementGroupBuilder.build());
-				}
+				} // each uiElementGroup
 
 				layoutSectionBuilder.addColumnIfNotEmpty(layoutColumnBuilder.build());
-			}
+			} // each uiColumn
 
 			uiSections.add(layoutSectionBuilder.build());
-		}
+		} // each uiSection
 
 		return uiSections;
 	}
@@ -344,6 +349,7 @@ public class DocumentDescriptorFactory
 					.setDescription(gridFieldVO.getDescription())
 					.setWidgetType(extractWidgetType(gridFieldVO))
 					.setLayoutTypeNone() // does not matter for detail
+					.setDisplayFieldsOnOneLine()
 					.addField(DocumentLayoutElementFieldDescriptor.builder()
 							.setField(columnName)
 							.setLookupSource(extractLookupSource(gridFieldVO))
