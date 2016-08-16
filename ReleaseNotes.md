@@ -30,6 +30,7 @@ Here come the actual release notes:
  - #275 In Picking HU Editor. New Flag ignore attributes for Filter
  - #274 Purchase Order without BPartner Contact, Billto Contact wrong email
  - #252 Fix the code for ADR Attribute Retrieval
+ - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
 
 # metasfresh 4.29.28 (2016-31)
 
