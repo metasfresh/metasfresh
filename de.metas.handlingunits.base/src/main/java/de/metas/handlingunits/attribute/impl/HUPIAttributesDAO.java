@@ -184,6 +184,12 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		// If the PI attribute is from template then it's a template attribute
 		if (huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.NO_HU_PI_Version_ID)
 		{
+			if(!huPIAttribute.isActive())
+			{
+				logger.trace("Considering {} NOT a template attribute because even if it is direct template attribute it's INACTIVE", huPIAttribute);
+				return false;
+			}
+			
 			logger.trace("Considering {} a template attribute because it is direct template attribute", huPIAttribute);
 			return true;
 		}
