@@ -29,10 +29,12 @@ class Window extends Component {
        })
     }
     renderColumns = (columns) => {
+        const maxRows = 12;
+        const colWidth = Math.floor(maxRows / columns.length);
         return columns.map((elem, id)=> {
             const elementGroups = elem.elementGroups;
             return (
-                <div className="col-xs-6" key={'col' + id}>
+            <div className={"col-xs-" + colWidth} key={'col' + id}>
                     {this.renderElementGroups(elementGroups)}
                 </div>
             )
