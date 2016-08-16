@@ -95,7 +95,10 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 		}
 		else
 		{
-			Assert.assertEquals("Runnable was executed using expected trxName: " + this, ITrx.TRXNAME_ThreadInherited, getLastTrxName());
+			// NOTE: until we get rid of "TrxCallableWithTrxName" our Runnables will get the "effective" localTrxName instead of ThreadInherited.
+			// Assert.assertEquals("Runnable was executed using expected trxName: " + this, ITrx.TRXNAME_ThreadInherited, getLastTrxName());
+			Assert.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
+			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
 
 			final String lastTrxNameEffective = getLastTrxNameEffective();
 			Assert.assertEquals("Runnable was executed using expected EFFECTIVE trxName: " + this, expectedLastTrxName, lastTrxNameEffective);

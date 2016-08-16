@@ -199,7 +199,11 @@ public class TrxManagerTest
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
 		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertEquals("Invalid trxName used", ITrx.TRXNAME_ThreadInherited, localTrxName);
+		// NOTE: until we get rid of "TrxCallableWithTrxName" our Runnables will get the "effective" localTrxName instead of ThreadInherited.
+		//Assert.assertEquals("Invalid trxName used", ITrx.TRXNAME_ThreadInherited, localTrxName);
+		Assert.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
+		Assert.assertEquals("Invalid trxName used", trxName, localTrxName);
+
 
 		final MockedTrx trx = (MockedTrx)trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		Assert.assertNotNull("Transaction was created but not removed for trxName=" + localTrxName, trx);
