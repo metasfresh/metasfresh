@@ -137,7 +137,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 			// Only transfer value if the request allows it
 			if (!transferFromStrategy.isTransferable(request, attribute))
 			{
-				logger.trace("Skip transfering attribute {} because trasfer strategy says so: ", attribute, transferFromStrategy);
+				logger.trace("Skip transfering attribute {} because trasfer strategy says so: {}", attribute, transferFromStrategy);
 				continue;
 			}
 
