@@ -17,8 +17,8 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        const {properties, dispatch} = this.props;
-        dispatch(dropdownRequest(143, properties[0].field)).then((res) => {
+        const {properties, dispatch, dataId} = this.props;
+        dispatch(dropdownRequest(143, properties[0].field, dataId)).then((res) => {
             this.setState({list: res.data});
         });
         this.dropdown.classList.add("input-dropdown-focused");

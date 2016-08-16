@@ -9,7 +9,7 @@ class Widget extends Component {
     constructor(props) {
         super(props);
     }
-    renderWidget = (type, fields, windowType) => {
+    renderWidget = (type, fields, windowType, dataId) => {
         switch(type){
             case "Date":
                 return (
@@ -51,6 +51,7 @@ class Widget extends Component {
                 return (
                     <LookupDropdown
                         recent={[]}
+                        dataId={dataId}
                         properties={fields}
                         windowType={windowType}
                     />
@@ -59,6 +60,7 @@ class Widget extends Component {
                 return (
                     <Dropdown
                         options={['1','2','3']}
+                        dataId={dataId}
                         defaultValue="(none)"
                         properties={fields}
                     />
@@ -144,7 +146,7 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data} = this.props;
-        const dataId = this.findRowByPropName(data, fields[0].field);
+        const dataId = data[0].value;
         return (
             <div>
                 <div key="title" className="panel-title">{caption}</div>

@@ -18,6 +18,7 @@ class LookupDropdown extends Component {
             model: null,
             property: ""
         }
+
     }
     handleSelect = (select) => {
         const {
@@ -25,7 +26,8 @@ class LookupDropdown extends Component {
             properties,
             autocomplete,
             onObjectChange,
-            onPropertyChange
+            onPropertyChange,
+            dataId
         } = this.props;
 
         //removing selection
@@ -44,12 +46,11 @@ class LookupDropdown extends Component {
             select.properties = {};
             let batchArray = [];
             if(propertiesCopy.length > 1){
-                console.log(propertiesCopy);
 
                 propertiesCopy.shift();
                 let batch = new Promise((resolve, reject) => {
                     propertiesCopy.map((item) => {
-                        dispatch(dropdownRequest(143, item.field)).then((response)=>{
+                        dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
                             select.properties[item.field] = response.data;
                             batchArray.push('0');
 
@@ -141,7 +142,7 @@ class LookupDropdown extends Component {
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = () => {
-        const {dispatch, recent, windowType, properties} = this.props;
+        const {dispatch, recent, windowType, properties, dataId} = this.props;
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
@@ -149,7 +150,7 @@ class LookupDropdown extends Component {
         this.setState({property: ""});
 
         if(this.inputSearch.value != ""){
-            dispatch(autocompleteRequest(windowType, properties[0].field, this.inputSearch.value));
+            dispatch(autocompleteRequest(windowType, properties[0].field, this.inputSearch.value, dataId));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});
