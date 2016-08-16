@@ -29,12 +29,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeStrategyFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 
 public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
@@ -43,11 +43,15 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	// Services
 	private final IAttributeStrategyFactory attributeStrategyFactory = Services.get(IAttributeStrategyFactory.class);
 	private final I_M_HU_PI_Attribute huPIAttribute;
+	
+	private volatile Boolean _definedByTemplate; // lazy
 
-	public AbstractHUAttributeValue(final IAttributeStorage attributeStorage, final I_M_HU_PI_Attribute huPIAttribute)
+	public AbstractHUAttributeValue(final IAttributeStorage attributeStorage, final I_M_HU_PI_Attribute huPIAttribute, final Boolean isTemplateAttribute)
 	{
 		super(attributeStorage, huPIAttribute.getM_Attribute());
 		this.huPIAttribute = huPIAttribute;
+		
+		this._definedByTemplate = isTemplateAttribute; // null is OK
 	}
 
 	@Override
@@ -99,7 +103,17 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	@Override
 	public boolean isDefinedByTemplate()
 	{
-		return huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.NO_HU_PI_Version_ID;
+		if(_definedByTemplate == null)
+		{
+			synchronized (this)
+			{
+				if(_definedByTemplate == null)
+				{
+					_definedByTemplate = Services.get(IHUPIAttributesDAO.class).isTemplateAttribute(huPIAttribute);
+				}
+			}
+		}
+		return _definedByTemplate;
 	}
 
 	public I_M_HU_PI_Attribute getM_HU_PI_Attribute()

@@ -41,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -50,9 +51,12 @@ import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.logging.LogManager;
 
 public class HUPIAttributesDAO implements IHUPIAttributesDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(HUPIAttributesDAO.class);
+
 	@Override
 	public List<I_M_HU_PI_Attribute> retrieveDirectPIAttributes(final I_M_HU_PI huPI)
 	{
@@ -169,5 +173,39 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huPI);
 		return retrievePIAttributes(version);
+	}
+
+	@Override
+	public boolean isTemplateAttribute(final I_M_HU_PI_Attribute huPIAttribute)
+	{
+		logger.trace("Checking if {} is a template attribute", huPIAttribute);
+		
+		//
+		// If the PI attribute is from template then it's a template attribute
+		if (huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.NO_HU_PI_Version_ID)
+		{
+			logger.trace("Considering {} a template attribute because it is direct template attribute", huPIAttribute);
+			return true;
+		}
+
+		//
+		// Get the Template PI attributes and search if this attribute is defined there.
+		final int attributeId = huPIAttribute.getM_Attribute_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
+		final String trxName = InterfaceWrapperHelper.getTrxName(huPIAttribute);
+		final List<I_M_HU_PI_Attribute> noPIAttributes = retrieveDirectPIAttributes(ctx, HandlingUnitsDAO.NO_HU_PI_Version_ID, trxName);
+		for (final I_M_HU_PI_Attribute noPIAttribute : noPIAttributes)
+		{
+			if (noPIAttribute.getM_Attribute_ID() == attributeId && noPIAttribute.isActive())
+			{
+				logger.trace("Considering {} a template attribute because we found M_Attribute_ID={} in template attributes", huPIAttribute, attributeId);
+				return true;
+			}
+		}
+
+		//
+		// Not a template attribute
+		logger.trace("Considering {} NOT a template attribute", huPIAttribute);
+		return false;
 	}
 }
