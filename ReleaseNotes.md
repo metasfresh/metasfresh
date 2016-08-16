@@ -24,6 +24,7 @@ Here come the actual release notes:
 ## Features
 
 ## Fixes
+ - #255 Invoice candidates action bar is not considering org-assignment
  - #283 Make Gebindesaldo Report support Multi Org
  - #279 Set document type Bestellung as default value in purchase order
  - #275 In Picking HU Editor. New Flag ignore attributes for Filter
