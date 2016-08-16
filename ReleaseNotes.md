@@ -10,14 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.31.29 (2016-33)
+# metasfresh 4.31.30 (2016-33)
 
 ## Features
  - #288 Problem with individual client log settings
    * outputting the individual log settings on user login to ease support
 
 ## Fixes
-
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+   * fixing some corner cases
 
 # metasfresh 4.30.29 (2016-32)
 
