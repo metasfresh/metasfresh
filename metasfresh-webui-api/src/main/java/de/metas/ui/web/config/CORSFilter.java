@@ -8,9 +8,14 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
 
 /*
  * #%L
@@ -37,6 +42,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CORSFilter implements Filter
 {
+	private static final transient Logger logger = LogManager.getLogger(CORSFilter.class);
+
 	public CORSFilter()
 	{
 		super();
@@ -53,10 +60,16 @@ public class CORSFilter implements Filter
 		if (response instanceof HttpServletResponse)
 		{
 			// FIXME: allow CORS for the whole application !!!
-
-			HttpServletResponse httpResponse = (HttpServletResponse)response;
-			httpResponse.setHeader("Access-Control-Allow-Origin", "*");
-			httpResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+			
+			final HttpServletRequest httpRequest = (HttpServletRequest)request;
+			final HttpServletResponse httpResponse = (HttpServletResponse)response;
+			
+			final String origin = httpRequest.getHeader("Origin");
+			final String accessControlAllowOrigin = Check.isEmpty(origin, true) ? "*" : origin;
+			httpResponse.setHeader("Access-Control-Allow-Origin", accessControlAllowOrigin);
+			logger.trace("Set Access-Control-Allow-Origin={} (request's Origin={})", accessControlAllowOrigin, origin);
+			
+			httpResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PATCH");
 			httpResponse.setHeader("Access-Control-Max-Age", "3600");
 
 			// adding one more allowed header as requested by @damianprzygodzki to fix the error
