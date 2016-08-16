@@ -257,19 +257,23 @@ public class DocumentDescriptorFactory
 
 					//
 					// UI Elements
+					boolean isFirstElementInGroup = true;
 					for (final I_AD_UI_Element uiElement : windowDAO.retrieveUIElements(uiElementGroup))
 					{
 						if (!uiElement.isActive())
 						{
 							continue;
 						}
+						
+						// TODO: atm if we setting first element in group as primary, others as secondary.
+						final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
 
 						//
 						// UI main field
 						final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
 								.setCaption(uiElement.getName())
 								.setDescription(uiElement.getDescription())
-								.setLayoutType(layoutElementGroupBuilder.getLayoutType()) // TODO: atm we are inheriting the LayoutType from "element group"
+								.setLayoutType(layoutType) 
 								;
 
 						{
@@ -314,7 +318,9 @@ public class DocumentDescriptorFactory
 							layoutElementBuilder.setDisplayFieldsOnOneLine();
 						}
 						layoutElementGroupBuilder.addElement(layoutElementBuilder.build());
-					}
+						
+						//
+						isFirstElementInGroup = false;
 					} // each uiElement
 
 					layoutColumnBuilder.addElementGroupIfNotEmpty(layoutElementGroupBuilder.build());
