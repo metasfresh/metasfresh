@@ -125,16 +125,16 @@ export function autocompleteSuccess(results) {
         results: results
     }
 }
-export function autocompleteRequest(windowType, propertyName, query) {
+export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
     return (dispatch) => {
-        axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id=NEW&field='+ propertyName +'&query=' + query)
+        axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query)
             .then((response) => {
                 dispatch(autocompleteSuccess(response.data));
             });
     }
 }
-export function dropdownRequest(windowType, propertyName) {
-    return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id=NEW&field='+ propertyName);
+export function dropdownRequest(windowType, propertyName, id = "NEW") {
+    return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id='+id+'&field='+ propertyName);
 }
 
 export function newSalesOrderSuccess(response) {

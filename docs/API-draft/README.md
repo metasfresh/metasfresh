@@ -1,5 +1,9 @@
 # API draft for front-wen web UI client
 
+## Mock API
+
+http://docs.metasfresh.apiary.io
+
 ## TODO
 
 * pagination
