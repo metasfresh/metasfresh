@@ -2,7 +2,6 @@ package org.adempiere.ad.trx.api.impl;
 
 import java.util.concurrent.Callable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.api.TrxCallableAdapter;
 import org.compiere.util.TrxRunnable;
@@ -36,7 +35,7 @@ import org.compiere.util.TrxRunnable2;
 	{
 	}
 
-	public static TrxCallable<Void> wrapIfNeeded(final TrxRunnable trxRunnable)
+	public static TrxCallableWithTrxName<Void> wrapIfNeeded(final TrxRunnable trxRunnable)
 	{
 		if (trxRunnable == null)
 		{
@@ -48,19 +47,25 @@ import org.compiere.util.TrxRunnable2;
 			return wrapIfNeeded((TrxRunnable2)trxRunnable);
 		}
 
-		return new TrxCallable<Void>()
+		return new TrxCallableWithTrxName<Void>()
 		{
 			@Override
 			public String toString()
 			{
-				return "TrxCallableWrappers[" + trxRunnable + "]";
+				return "TrxCallableWithTrxName-wrapper[" + trxRunnable + "]";
+			}
+
+			@Override
+			public Void call(final String localTrxName) throws Exception
+			{
+				trxRunnable.run(localTrxName);
+				return null;
 			}
 
 			@Override
 			public Void call() throws Exception
 			{
-				trxRunnable.run(ITrx.TRXNAME_ThreadInherited);
-				return null;
+				throw new IllegalStateException("This method shall not be called");
 			}
 
 			@Override
@@ -77,26 +82,32 @@ import org.compiere.util.TrxRunnable2;
 		};
 	}
 
-	public static TrxCallable<Void> wrapIfNeeded(final TrxRunnable2 trxRunnable)
+	public static TrxCallableWithTrxName<Void> wrapIfNeeded(final TrxRunnable2 trxRunnable)
 	{
 		if (trxRunnable == null)
 		{
 			return null;
 		}
 
-		return new TrxCallable<Void>()
+		return new TrxCallableWithTrxName<Void>()
 		{
 			@Override
 			public String toString()
 			{
-				return "TrxCallableWrappers[" + trxRunnable + "]";
+				return "TrxCallableWithTrxName-wrapper[" + trxRunnable + "]";
+			}
+
+			@Override
+			public Void call(final String localTrxName) throws Exception
+			{
+				trxRunnable.run(localTrxName);
+				return null;
 			}
 
 			@Override
 			public Void call() throws Exception
 			{
-				trxRunnable.run(ITrx.TRXNAME_ThreadInherited);
-				return null;
+				throw new IllegalStateException("This method shall not be called");
 			}
 
 			@Override
@@ -138,6 +149,53 @@ import org.compiere.util.TrxRunnable2;
 			public T call() throws Exception
 			{
 				return callable.call();
+			}
+		};
+	}
+
+	public static <T> TrxCallableWithTrxName<T> wrapAsTrxCallableWithTrxNameIfNeeded(final TrxCallable<T> callable)
+	{
+		if (callable == null)
+		{
+			return null;
+		}
+
+		if (callable instanceof TrxCallableWithTrxName)
+		{
+			final TrxCallableWithTrxName<T> callableWithTrxName = (TrxCallableWithTrxName<T>)callable;
+			return callableWithTrxName;
+		}
+
+		return new TrxCallableWithTrxName<T>()
+		{
+			@Override
+			public String toString()
+			{
+				return "TrxCallableWithTrxName-wrapper[" + callable + "]";
+			}
+			
+			@Override
+			public T call(final String localTrxName) throws Exception
+			{
+				return callable.call();
+			}
+
+			@Override
+			public T call() throws Exception
+			{
+				throw new IllegalStateException("This method shall not be called");
+			}
+
+			@Override
+			public boolean doCatch(final Throwable e) throws Throwable
+			{
+				return callable.doCatch(e);
+			}
+
+			@Override
+			public void doFinally()
+			{
+				callable.doFinally();
 			}
 		};
 	}

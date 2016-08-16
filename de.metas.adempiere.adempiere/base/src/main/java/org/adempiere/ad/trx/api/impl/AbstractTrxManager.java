@@ -691,7 +691,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 			// Actually execute the runnable
 			//runnable.run(trxName);
-			callableResult = callable.call();
+			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
 			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
