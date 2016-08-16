@@ -1,13 +1,15 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 
 /*
  * #%L
@@ -32,38 +34,41 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
  */
 
 @SuppressWarnings("serial")
-public final class JSONDocumentLayoutElementField implements Serializable
+public final class JSONDocumentLayoutSection implements Serializable
 {
-	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors)
+
+	public static List<JSONDocumentLayoutSection> ofList(final List<DocumentLayoutSectionDescriptor> sections)
 	{
-		return fieldDescriptors.stream()
-				.map(field -> of(field))
-				.collect(GuavaCollectors.toImmutableSet());
+		return sections.stream()
+				.map(section -> of(section))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	public static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section)
 	{
-		return new JSONDocumentLayoutElementField(fieldDescriptor);
+		return new JSONDocumentLayoutSection(section);
 	}
 
-	private final String field;
+	@JsonInclude(Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutColumn> columns;
 
-	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section)
 	{
 		super();
-		field = fieldDescriptor.getField();
+		columns = JSONDocumentLayoutColumn.ofList(section.getColumns());
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("field", field)
+				.add("columns", columns)
 				.toString();
 	}
 
-	public String getField()
+	public List<JSONDocumentLayoutColumn> getColumns()
 	{
-		return field;
+		return columns;
 	}
+
 }

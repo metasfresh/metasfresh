@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.window.util.JSONConverters;
+import de.metas.ui.web.window.datatypes.json.JSONValues;
 
 /*
  * #%L
@@ -133,7 +133,7 @@ public final class DocumentFieldChangedEvent
 
 	public Object getValueAsJsonObject()
 	{
-		return JSONConverters.valueToJsonObject(value);
+		return JSONValues.valueToJsonObject(value);
 	}
 
 	public String getValueReason()

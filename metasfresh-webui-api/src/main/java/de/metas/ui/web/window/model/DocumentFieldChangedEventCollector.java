@@ -6,13 +6,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
 
 /*
  * #%L
@@ -42,8 +40,6 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	{
 		return new DocumentFieldChangedEventCollector();
 	}
-
-	private static final Logger logger = LogManager.getLogger(DocumentFieldChangedEventCollector.class);
 
 	private final Map<String, DocumentFieldChangedEvent> fieldName2event = new LinkedHashMap<>();
 
@@ -96,7 +92,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		}
 
 		// Extract the reason only if debugging is enabled
-		if (!logger.isDebugEnabled())
+		if(!WindowConstants.isProtocolDebugging())
 		{
 			return null;
 		}
@@ -113,7 +109,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	private static final String mergeReasons(final ReasonSupplier reasonSupplier, final String previousReason, final Object previousValue)
 	{
 		// Collect the reason only if debugging is enabled
-		if (!logger.isDebugEnabled())
+		if(!WindowConstants.isProtocolDebugging())
 		{
 			return null;
 		}

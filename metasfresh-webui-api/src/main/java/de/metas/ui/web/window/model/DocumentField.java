@@ -16,8 +16,10 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONValues;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.util.JSONConverters;
 
 /*
  * #%L
@@ -167,7 +169,7 @@ import de.metas.ui.web.window.util.JSONConverters;
 	@Override
 	public Object getValueAsJsonObject()
 	{
-		return JSONConverters.valueToJsonObject(_value);
+		return JSONValues.valueToJsonObject(_value);
 	}
 
 	@Override
@@ -234,7 +236,7 @@ import de.metas.ui.web.window.util.JSONConverters;
 				if (value instanceof String)
 				{
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONConverters.dateFromString((String)value);
+					final T valueConv = (T)JSONDate.fromJson((String)value);
 					return valueConv;
 				}
 			}
@@ -275,7 +277,7 @@ import de.metas.ui.web.window.util.JSONConverters;
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONConverters.integerLookupValueFromJsonMap(map);
+					final T valueConv = (T)JSONLookupValue.integerLookupValueFromJsonMap(map);
 					return valueConv;
 				}
 				else if (Integer.class.isAssignableFrom(fromType))
@@ -313,7 +315,7 @@ import de.metas.ui.web.window.util.JSONConverters;
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)JSONConverters.stringLookupValueFromJsonMap(map);
+					final T valueConv = (T)JSONLookupValue.stringLookupValueFromJsonMap(map);
 					return valueConv;
 				}
 				else if (String.class == fromType)

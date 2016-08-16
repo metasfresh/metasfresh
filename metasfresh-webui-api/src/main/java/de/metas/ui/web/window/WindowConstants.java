@@ -1,5 +1,7 @@
 package de.metas.ui.web.window;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -41,8 +43,20 @@ public final class WindowConstants
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
-	
+
 	private WindowConstants()
 	{
+	}
+
+	private static final AtomicBoolean protocolDebugging = new AtomicBoolean(false);
+
+	public static boolean isProtocolDebugging()
+	{
+		return protocolDebugging.get();
+	}
+
+	public static void setProtocolDebugging(final boolean protocolDebugging)
+	{
+		WindowConstants.protocolDebugging.set(protocolDebugging);
 	}
 }

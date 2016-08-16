@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
 import java.util.List;

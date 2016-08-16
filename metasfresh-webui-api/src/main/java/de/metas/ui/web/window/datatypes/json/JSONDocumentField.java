@@ -1,13 +1,23 @@
-package de.metas.ui.web.window.util;
+package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.adempiere.util.comparator.FixedOrderComparator;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
@@ -44,6 +54,99 @@ public final class JSONDocumentField implements Serializable
 		return new JSONDocumentField(FIELD_VALUE_ID)
 				.setValue(jsonId, reason);
 	}
+
+	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field)
+	{
+		final String name = field.getFieldName();
+		final Object valueJSON = field.getValueAsJsonObject();
+		final String reason = null; // N/A
+
+		final JSONDocumentField jsonField = JSONDocumentField.ofName(name)
+				.setValue(valueJSON, reason)
+				.setReadonly(field.isReadonly(), reason)
+				.setMandatory(field.isMandatory(), reason)
+				.setDisplayed(field.isDisplayed(), reason);
+		if (field.isLookupValuesStale())
+		{
+			jsonField.setLookupValuesStale(true, reason);
+		}
+
+		return jsonField;
+	}
+
+	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChangedEvent event)
+	{
+		final JSONDocumentField jsonField = JSONDocumentField.ofName(event.getFieldName());
+
+		if (event.isValueSet())
+		{
+			jsonField.setValue(event.getValueAsJsonObject(), event.getValueReason());
+		}
+
+		final Boolean readonly = event.getReadonly();
+		if (readonly != null)
+		{
+			jsonField.setReadonly(readonly, event.getValueReason());
+		}
+
+		final Boolean mandatory = event.getMandatory();
+		if (mandatory != null)
+		{
+			jsonField.setMandatory(mandatory, event.getMandatoryReason());
+		}
+
+		final Boolean displayed = event.getDisplayed();
+		if (displayed != null)
+		{
+			jsonField.setDisplayed(displayed, event.getDisplayedReason());
+		}
+
+		final Boolean lookupValuesStale = event.getLookupValuesStale();
+		if (lookupValuesStale != null)
+		{
+			jsonField.setLookupValuesStale(lookupValuesStale, event.getLookupValuesStaleReason());
+		}
+
+		return jsonField;
+	}
+
+	public static List<JSONDocumentField> ofDocumentFieldChangedEventCollector(final IDocumentFieldChangedEventCollector eventsCollector)
+	{
+		final List<DocumentFieldChangedEvent> events = eventsCollector.toEventsList();
+		if (events.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<JSONDocumentField> jsonFields = new ArrayList<>(events.size() + 1);
+		DocumentFieldChangedEvent eventForIdField = null;
+		for (final DocumentFieldChangedEvent event : events)
+		{
+			final JSONDocumentField jsonField = ofDocumentFieldChangedEvent(event);
+			jsonFields.add(jsonField);
+
+			if (event.isKey() && event.isValueSet())
+			{
+				if (eventForIdField == null)
+				{
+					eventForIdField = event;
+
+					final Object value = event.getValueAsJsonObject();
+					final String id = value == null ? null : DocumentId.fromObject(value).toJson();
+					final JSONDocumentField jsonIdField = JSONDocumentField.ofId(id, event.getValueReason());
+					jsonFields.add(0, jsonIdField);
+				}
+				else
+				{
+					logger.warn("More then one ID changed event found: {}, {}", eventForIdField, event);
+				}
+			}
+		}
+
+		return jsonFields;
+	}
+
+	private static final Logger logger = LogManager.getLogger(JSONDocumentField.class);
 
 	private static final String FIELD_field = "field";
 	private static final String FIELD_VALUE_ID = "ID";
@@ -145,5 +248,11 @@ public final class JSONDocumentField implements Serializable
 	public Map<String, Object> getMap()
 	{
 		return map;
+	}
+
+	public JSONDocumentField putDebugProperty(final String name, final Object jsonValue)
+	{
+		map.put("debug-" + name, jsonValue);
+		return this;
 	}
 }

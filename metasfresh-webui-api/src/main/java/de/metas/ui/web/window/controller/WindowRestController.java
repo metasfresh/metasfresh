@@ -19,16 +19,19 @@ import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
-import de.metas.ui.web.window.util.JSONConverters;
-import de.metas.ui.web.window.util.JSONDocumentField;
-import de.metas.ui.web.window.util.JSONLookupValue;;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;;
 
 /*
  * #%L
@@ -75,7 +78,7 @@ public class WindowRestController
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
 		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChangedEventCollector.class, Level.DEBUG); // to have the "reason" in JSON
+		WindowConstants.setProtocolDebugging(true);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
 		//
 		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
@@ -114,7 +117,7 @@ public class WindowRestController
 	}
 
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
-	public List<List<JSONDocumentField>> data(
+	public List<JSONDocument> data(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -135,7 +138,7 @@ public class WindowRestController
 
 		return Execution.callInNewExecution("window.data", () -> {
 			final List<Document> documents = documentCollection.getDocuments(documentPath);
-			return JSONConverters.documentsToJsonObject(documents);
+			return JSONDocument.ofDocumentsList(documents);
 		});
 	}
 
@@ -201,7 +204,7 @@ public class WindowRestController
 
 		//
 		// Return the changes
-		return JSONConverters.toJsonObject(execution.getFieldChangedEventsCollector());
+		return JSONDocumentField.ofDocumentFieldChangedEventCollector(execution.getFieldChangedEventsCollector());
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
@@ -225,8 +228,7 @@ public class WindowRestController
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
-
-		return JSONConverters.lookupValuesToJsonObject(lookupValues);
+		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
@@ -250,7 +252,7 @@ public class WindowRestController
 		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
 
-		return JSONConverters.lookupValuesToJsonObject(lookupValues);
+		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)

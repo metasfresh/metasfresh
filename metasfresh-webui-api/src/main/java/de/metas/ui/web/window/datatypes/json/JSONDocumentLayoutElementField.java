@@ -1,11 +1,13 @@
-package de.metas.ui.web.window.util;
+package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
+
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 
 /*
  * #%L
@@ -30,32 +32,38 @@ import com.google.common.collect.ImmutableMap;
  */
 
 @SuppressWarnings("serial")
-public final class JSONLookupValue implements Serializable
+public final class JSONDocumentLayoutElementField implements Serializable
 {
-	public static final JSONLookupValue of(final String key, final String value)
+	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors)
 	{
-		return new JSONLookupValue(ImmutableMap.of(key, value));
+		return fieldDescriptors.stream()
+				.map(field -> of(field))
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private final Map<String, String> map;
-
-	private JSONLookupValue(final ImmutableMap<String, String> map)
+	public static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
 	{
-		this.map = map;
+		return new JSONDocumentLayoutElementField(fieldDescriptor);
+	}
+
+	private final String field;
+
+	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	{
+		super();
+		field = fieldDescriptor.getField();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(map)
+				.add("field", field)
 				.toString();
 	}
 
-	@JsonAnyGetter
-	public Map<String, String> getMap()
+	public String getField()
 	{
-		return map;
+		return field;
 	}
-
 }
