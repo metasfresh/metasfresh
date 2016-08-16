@@ -1143,8 +1143,9 @@ public final class Env
 		if (timestamp == null)
 		{
 			// metas: tsa: added a dummy exception to be able to track it quickly
-			s_log.error("No value for '{}' or value '{}' could not be parsed", context, timestampStr, new Exception());
-			return SystemTime.asTimestamp();
+			final Timestamp sysDate = SystemTime.asTimestamp();
+			s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+			return sysDate;
 		}
 
 		return timestamp;
