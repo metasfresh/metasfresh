@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -32,6 +33,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
  * #L%
  */
 
+@ApiModel("tab")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutTab implements Serializable
 {

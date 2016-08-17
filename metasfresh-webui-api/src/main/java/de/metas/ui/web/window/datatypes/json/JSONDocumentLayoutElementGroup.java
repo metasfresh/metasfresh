@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
-import de.metas.ui.web.window.descriptor.LayoutType;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
  * #L%
  */
 
+@ApiModel("elementGroup")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementGroup implements Serializable
 {
@@ -51,7 +52,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	/** Element group type (primary aka bordered, transparent etc) */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String type;
+	private final JSONLayoutType type;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -59,7 +60,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
 	{
 		super();
-		type = LayoutType.toJson(elementGroup.getLayoutType());
+		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
 		elements = JSONDocumentLayoutElement.ofList(elementGroup.getElements());
 	}
 
@@ -73,7 +74,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 				.toString();
 	}
 	
-	public String getType()
+	public JSONLayoutType getType()
 	{
 		return type;
 	}

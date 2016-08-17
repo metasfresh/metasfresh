@@ -174,7 +174,7 @@ public class WindowRestController
 		// Apply changes
 		for (final JSONDocumentChangedEvent event : events)
 		{
-			if (JSONDocumentChangedEvent.OPERATION_Replace.equals(event.getOperation()))
+			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
 				document.setValue(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
 			}

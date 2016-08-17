@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import io.swagger.annotations.ApiModel;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -26,24 +28,29 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
+@ApiModel("document-change-event")
 public class JSONDocumentChangedEvent
 {
 	@JsonCreator
-	public static final JSONDocumentChangedEvent of(@JsonProperty("op") final String operation, @JsonProperty("path") final String path, @JsonProperty("value") final Object value)
+	public static final JSONDocumentChangedEvent of(@JsonProperty("op") final JSONOperation operation, @JsonProperty("path") final String path, @JsonProperty("value") final Object value)
 	{
 		return new JSONDocumentChangedEvent(operation, path, value);
 	}
-	
-	public static final String OPERATION_Replace = "replace";
+
+	@ApiModel("operation")
+	public static enum JSONOperation
+	{
+		replace;
+	}
 
 	@JsonProperty("op")
-	private final String operation;
+	private final JSONOperation operation;
 	@JsonProperty("path")
 	private final String path;
 	@JsonProperty("value")
 	private final Object value;
 
-	private JSONDocumentChangedEvent(final String operation, final String path, final Object value)
+	private JSONDocumentChangedEvent(final JSONOperation operation, final String path, final Object value)
 	{
 		super();
 		this.operation = operation;
@@ -61,7 +68,7 @@ public class JSONDocumentChangedEvent
 				.toString();
 	}
 
-	public String getOperation()
+	public JSONOperation getOperation()
 	{
 		return operation;
 	}

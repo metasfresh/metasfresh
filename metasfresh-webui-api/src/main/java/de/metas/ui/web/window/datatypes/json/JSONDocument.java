@@ -14,6 +14,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -46,6 +47,7 @@ import de.metas.ui.web.window.model.Document;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ApiModel("document")
 @SuppressWarnings("serial")
 public final class JSONDocument extends ArrayList<JSONDocumentField>
 {

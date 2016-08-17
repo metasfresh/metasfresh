@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -31,6 +32,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
  * #L%
  */
 
+@ApiModel("layout")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {

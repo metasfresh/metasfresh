@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -38,6 +39,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  * #L%
  */
 
+@ApiModel(value = "lookup-value", description = "pair of { field : value}")
 @SuppressWarnings("serial")
 public final class JSONLookupValue implements Serializable
 {

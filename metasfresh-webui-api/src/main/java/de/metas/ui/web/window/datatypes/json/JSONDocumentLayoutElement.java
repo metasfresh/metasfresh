@@ -10,9 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.LayoutType;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -36,6 +35,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
  * #L%
  */
 
+@ApiModel("element")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElement implements Serializable
 {
@@ -57,10 +57,10 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
-	private final String widgetType;
+	private final JSONLayoutWidgetType widgetType;
 
 	/** Type: primary, secondary */
-	private final String type;
+	private final JSONLayoutType type;
 	
 	/** Display included fields on one line */ 
 	private final boolean oneline;
@@ -73,8 +73,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 		super();
 		caption = element.getCaption();
 		description = element.getDescription();
-		widgetType = DocumentFieldWidgetType.toJson(element.getWidgetType());
-		type = LayoutType.toJson(element.getLayoutType());
+		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
+		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		oneline = element.isDisplayFieldsOnOneLine();
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
 	}
@@ -103,12 +103,12 @@ public final class JSONDocumentLayoutElement implements Serializable
 		return description;
 	}
 
-	public String getWidgetType()
+	public JSONLayoutWidgetType getWidgetType()
 	{
 		return widgetType;
 	}
 	
-	public String getType()
+	public JSONLayoutType getType()
 	{
 		return type;
 	}

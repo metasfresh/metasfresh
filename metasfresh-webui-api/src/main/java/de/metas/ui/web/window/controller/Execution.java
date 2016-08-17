@@ -70,7 +70,7 @@ public class Execution implements IAutoCloseable
 	 * <li>in transaction
 	 * </ul>
 	 * 
-	 * @param name
+	 * @param name execution name (for logging purposes only)
 	 * @param callable
 	 * @return callable's return value
 	 */

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -33,6 +34,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
  * #L%
  */
 
+@ApiModel("section")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutSection implements Serializable
 {

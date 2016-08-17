@@ -40,9 +40,4 @@ public enum DocumentFieldWidgetType
 	, Button
 	//
 	;
-
-	public static String toJson(final DocumentFieldWidgetType widgetType)
-	{
-		return widgetType == null ? null : widgetType.toString();
-	}
 }

@@ -1,14 +1,18 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -32,6 +36,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
  * #L%
  */
 
+@ApiModel("field")
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementField implements Serializable
 {
@@ -47,18 +52,41 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		return new JSONDocumentLayoutElementField(fieldDescriptor);
 	}
 
+	@ApiModel("lookup-source")
+	public static enum JSONLookupSource
+	{
+		lookup, list;
+
+		public static JSONLookupSource fromNullable(final LookupSource lookupSource)
+		{
+			if (lookupSource == null)
+			{
+				return null;
+			}
+			final JSONLookupSource jsonLookupSource = lookupSource2json.get(lookupSource);
+			if (jsonLookupSource == null)
+			{
+				throw new IllegalArgumentException("Cannot convert " + lookupSource + " to " + JSONLookupSource.class);
+			}
+			return jsonLookupSource;
+		}
+
+		private static final Map<LookupSource, JSONLookupSource> lookupSource2json = ImmutableMap.<LookupSource, JSONLookupSource> builder()
+				.put(LookupSource.list, list)
+				.put(LookupSource.lookup, lookup)
+				.build();
+	}
+
 	private final String field;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String source;
+	private final JSONLookupSource source;
 
 	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
 	{
 		super();
 		field = fieldDescriptor.getField();
-		
-		final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource = fieldDescriptor.getLookupSource();
-		source = lookupSource == null ? null : lookupSource.toString();
+		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 	}
 
 	@Override
@@ -73,8 +101,8 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	{
 		return field;
 	}
-	
-	public String getSource()
+
+	public JSONLookupSource getSource()
 	{
 		return source;
 	}

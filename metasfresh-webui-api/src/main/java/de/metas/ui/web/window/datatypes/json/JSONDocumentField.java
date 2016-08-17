@@ -18,6 +18,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import io.swagger.annotations.ApiModel;
 
 /*
  * #%L
@@ -41,6 +42,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * #L%
  */
 
+@ApiModel("document-field")
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
 {
@@ -146,7 +148,7 @@ public final class JSONDocumentField implements Serializable
 		return jsonFields;
 	}
 
-	private static final Logger logger = LogManager.getLogger(JSONDocumentField.class);
+	private static final transient Logger logger = LogManager.getLogger(JSONDocumentField.class);
 
 	private static final String FIELD_field = "field";
 	private static final String FIELD_VALUE_ID = "ID";
@@ -162,7 +164,7 @@ public final class JSONDocumentField implements Serializable
 	private static final String FIELD_lookupValuesStale = "lookupValuesStale";
 	private static final String FIELD_lookupValuesStaleReason = "lookupValuesStale-reason";
 
-	final TreeMap<String, Object> map = new TreeMap<>(new FixedOrderComparator<>("*" //
+	private static final TreeMap<String, Object> map = new TreeMap<>(new FixedOrderComparator<>("*" //
 			, FIELD_field //
 			, FIELD_value//
 			, FIELD_valueReason//
