@@ -41,12 +41,14 @@ class Window extends Component {
         })
     }
     renderElementGroups = (group) => {
+        console.log(group);
+
         return group.map((elem, id)=> {
             const {type, elements} = elem;
             return (
                 <div
                     key={'elemGroups' + id}
-                    className={"panel panel-spaced panel-bordered panel-distance panel-" + type}
+                    className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
                     {this.renderElements(elements)}
                 </div>
@@ -59,7 +61,7 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             return (
-                <div key={'element' + id} className="form-group m-t-1 row">
+                <div key={'element' + id} className={"form-group row " + (elem.oneline ? "oneline" : "")}>
                     <div className="col-xs-12">
                         <Widget windowType={type} {...elem} />
                     </div>

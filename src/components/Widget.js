@@ -9,8 +9,8 @@ class Widget extends Component {
     constructor(props) {
         super(props);
     }
-    renderWidget = (type, fields, windowType, dataId) => {
-        switch(type){
+    renderWidget = (widgetType, fields, windowType, dataId, type) => {
+        switch(widgetType){
             case "Date":
                 return (
                     <div className="input-icon-container input-secondary input-block">
@@ -54,6 +54,7 @@ class Widget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
+                        rank={type}
                     />
                 )
             case "List":
@@ -131,7 +132,7 @@ class Widget extends Component {
                 )
             default:
                 return (
-                    <div>{type}</div>
+                    <div>{widgetType}</div>
                 )
         }
     }
@@ -145,12 +146,14 @@ class Widget extends Component {
         return -1;
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, data} = this.props;
+        const {caption, widgetType, description, fields, windowType, data, type} = this.props;
         const dataId = data[0].value;
         return (
-            <div>
-                <div key="title" className="panel-title">{caption}</div>
-                {this.renderWidget(widgetType, fields, windowType, dataId)}
+            <div className={"form-group row " + (type === "primary" ? "" : "")}>
+                <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>
+                <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
+                    {this.renderWidget(widgetType, fields, windowType, dataId, type)}
+                </div>
             </div>
         )
     }

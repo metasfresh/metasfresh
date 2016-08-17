@@ -63,9 +63,11 @@ input {
     color: $brand-font-color;
 }
 
-label {
+.form-control-label {
     margin-top:.5rem;
     margin-bottom: .3rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
@@ -884,4 +886,14 @@ input:checked + .input-slider:before {
 
 .input-checkbox input:disabled ~ .input-checkbox-tick:after {
 	border-color: #fff;
+}
+
+.one-line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.oneline {
+    width: auto;
 }
