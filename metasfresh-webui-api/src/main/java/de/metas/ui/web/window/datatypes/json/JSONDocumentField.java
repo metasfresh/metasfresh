@@ -161,6 +161,7 @@ public final class JSONDocumentField implements Serializable
 	private static final transient Logger logger = LogManager.getLogger(JSONDocumentField.class);
 
 	@JsonProperty("field")
+	@JsonInclude(JsonInclude.Include.ALWAYS)
 	private final String field;
 	private static final String FIELD_VALUE_ID = "ID";
 
@@ -204,6 +205,7 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String lookupValuesStaleReason;
 
+	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	private JSONDocumentField(final String fieldName)
