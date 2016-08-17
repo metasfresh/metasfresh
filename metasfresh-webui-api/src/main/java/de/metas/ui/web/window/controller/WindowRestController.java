@@ -176,7 +176,7 @@ public class WindowRestController
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				document.setValue(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
+				document.processValueChange(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
 			}
 			else
 			{

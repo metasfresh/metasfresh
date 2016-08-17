@@ -36,6 +36,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
+import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
 /*
@@ -434,10 +435,32 @@ public final class Document
 		}
 		return _evaluatee;
 	}
+	
+	/**
+	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
+	 * @param fieldName
+	 * @param value
+	 * @param reason
+	 */
+	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	{
+		final DocumentField documentField = getField(fieldName);
+		if(documentField.isReadonly())
+		{
+			throw new DocumentFieldReadonlyException(fieldName, value);
+		}
+		
+		setValue(documentField, value, reason);
+	}
 
 	public void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final DocumentField documentField = getField(fieldName);
+		setValue(documentField, value, reason);
+	}
+
+	private final void setValue(final DocumentField documentField, final Object value, final ReasonSupplier reason)
+	{
 		final Object valueOld = documentField.getValue();
 		documentField.setValue(value);
 
@@ -453,7 +476,7 @@ public final class Document
 		eventsCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
 
 		// Update all dependencies
-		updateFieldsWhichDependsOn(fieldName, eventsCollector);
+		updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
 
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
