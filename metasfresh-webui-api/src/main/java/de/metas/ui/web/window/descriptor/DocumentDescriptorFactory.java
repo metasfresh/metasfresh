@@ -483,6 +483,14 @@ public class DocumentDescriptorFactory
 		{
 			return DocumentFieldWidgetType.List;
 		}
+		else if (displayType == DisplayType.TableDir)
+		{
+			return DocumentFieldWidgetType.List;
+		}
+		else if (displayType == DisplayType.Search)
+		{
+			return DocumentFieldWidgetType.Lookup;
+		}
 		else if (DisplayType.isAnyLookup(displayType))
 		{
 			return DocumentFieldWidgetType.Lookup;
