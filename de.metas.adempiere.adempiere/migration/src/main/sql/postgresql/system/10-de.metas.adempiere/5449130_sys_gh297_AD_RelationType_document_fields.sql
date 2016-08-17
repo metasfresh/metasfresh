@@ -1,4 +1,4 @@
--- Aug 17, 2016 8:06 AM
+﻿-- Aug 17, 2016 8:06 AM
 -- URL zum Konzept
 UPDATE AD_Reference SET Name='RelType C_Order -> C_OLCand',Updated=TO_TIMESTAMP('2016-08-17 08:06:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540618
 ;
