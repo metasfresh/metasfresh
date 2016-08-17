@@ -250,7 +250,7 @@ public final class Document
 
 		//
 		// Done
-		logger.trace("Created new document instance: {} as a copy of {}", this, from); // keep it last
+		logger.trace("Created COPY document instance: {} as a copy of {}", this, from); // keep it last
 	}
 
 	/* package */boolean isWritable()
