@@ -59,11 +59,7 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             return (
-                <div key={'element' + id} className={"form-group row " + (elem.oneline ? "oneline" : "")}>
-                    <div className="col-xs-12">
-                        <Widget windowType={type} {...elem} />
-                    </div>
-                </div>
+                <Widget key={'element' + id} windowType={type} {...elem} />
             )
         })
     }

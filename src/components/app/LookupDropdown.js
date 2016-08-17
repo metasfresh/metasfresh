@@ -229,7 +229,7 @@ class LookupDropdown extends Component {
         )
     }
     render() {
-        const {autocomplete, rank} = this.props;
+        const {autocomplete, rank, readonly} = this.props;
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -248,6 +248,7 @@ class LookupDropdown extends Component {
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             placeholder="(none)"
+                            disabled={readonly}
                         />
                     </div>
                     <div ref={c => this.inputSearchRest = c} className="input-rest" />

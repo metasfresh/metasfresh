@@ -12,6 +12,12 @@ class Dropdown extends Component {
             list: []
         }
     }
+    componentDidMount() {
+        const {selected} = this.props;
+        if(selected){
+            this.handleSelect(selected);
+        }
+    }
     handleBlur = (e) => {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
@@ -27,20 +33,20 @@ class Dropdown extends Component {
         e.preventDefault();
         this.handleBlur();
     }
-    handleSelect = (index) => {
-        this.inputSearch.value = this.props.options[index];
+    handleSelect = (option) => {
+        this.inputSearch.value = option[Object.keys(option)[0]];
         this.handleBlur();
     }
     renderOptions = () => {
         return this.state.list.map((option, index) => (
-                <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(index)}>
-                    <p className="input-dropdown-item-title">{option}</p>
+                <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
+                    <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
                 </div>
             )
         )
     }
     render() {
-        const {list, rank} = this.props;
+        const {list, rank,readonly} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -59,10 +65,11 @@ class Dropdown extends Component {
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
+                            disabled={readonly}
                         />
                     </div>
                     <div className="input-icon">
-                        <i className="meta-icon-down input-icon-sm"/>
+                        <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
                 <div className="input-dropdown-list">

@@ -9,17 +9,19 @@ class Widget extends Component {
     constructor(props) {
         super(props);
     }
-    renderWidget = (widgetType, fields, windowType, dataId, type, data) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
         switch(widgetType){
             case "Date":
                 return (
-                    <div className="input-icon-container input-secondary input-block">
+                    <div className={"input-icon-container input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <Datetime
                             timeFormat={false}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: "(none)", disabled: true}}
-
+                            inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -27,12 +29,15 @@ class Widget extends Component {
                 )
             case "DateTime":
                 return (
-                    <div className="input-icon-container input-secondary input-block">
+                    <div className={"input-icon-container input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <Datetime
                             timeFormat={true}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: "(none)", readonly: data.readonly}}
+                            inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -40,12 +45,15 @@ class Widget extends Component {
                 )
             case "Time":
                 return (
-                    <div className="input-icon-container input-secondary input-block">
+                    <div className={"input-icon-container input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <Datetime
                             timeFormat={true}
                             dateFormat={false}
                             locale="de"
-                            inputProps={{placeholder: "(none)", readonly: data.readonly}}
+                            inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -60,98 +68,128 @@ class Widget extends Component {
                         windowType={windowType}
                         defaultValue={data.value}
                         readonly={data.readonly}
+                        mandatory={data.mandatory}
                         rank={type}
                     />
                 )
             case "List":
                 return (
                     <Dropdown
-                        options={['1','2','3']}
                         dataId={dataId}
                         defaultValue="(none)"
+                        selected={data.value}
                         properties={fields}
                         readonly={data.readonly}
+                        mandatory={data.mandatory}
                     />
                 )
             case "Text":
                 return (
-                    <div className={"input-block input-"+ type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="text"
                             className="input-field"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "LongText":
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <textarea
                             className="input-field"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "Integer":
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "Number":
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="number"
                             className="input-field"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "Amount" :
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "Quantity":
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
             case "CostPrice":
                 return (
-                    <div className={"input-block input-" + type}>
+                    <div className={
+                        "input-block " +
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.mandatory ? "isMandatory " : "")
+                    }>
                         <input
                             type="number"
                             className="input-field"
                             defaultValue={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                     </div>
                 )
@@ -161,7 +199,7 @@ class Widget extends Component {
                         <input
                             type="checkbox"
                             checked={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
@@ -172,7 +210,7 @@ class Widget extends Component {
                         <input
                             type="checkbox"
                             checked={data.value}
-                            readonly={data.readonly}
+                            disabled={data.readonly}
                         />
                         <div className="input-slider" />
                     </label>
@@ -206,14 +244,22 @@ class Widget extends Component {
         const {caption, widgetType, description, fields, windowType, data, type} = this.props;
         const dataId = data[0].value;
         const widgetData = this.findRowByPropName(data, fields[0].field);
-        return (
-            <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>
-                <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
-                    {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData)}
+        if(widgetData.displayed){
+            return (
+                <div className="form-group row">
+                    <div className="col-xs-12">
+                        <div className={"form-group row " + (type === "primary" ? "" : "")}>
+                            <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>
+                            <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData)}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        )
+            )
+        }else{
+            return false;
+        }
     }
 }
 
