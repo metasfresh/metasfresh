@@ -259,10 +259,14 @@ input {
     margin-top: .3125rem;
     margin-bottom: .125rem;
 }
-.input-secondary * {
+.input-secondary input{
     color: $brand-font-color-secondary;
 }
-.input-primary * {
+.input-secondary .input-icon-right {
+    color: $brand-font-color-weak;
+}
+.input-primary input
+.input-primary .input-rest {
     color: $brand-font-color;
 }
 .input-secondary + .input-dropdown-list {
@@ -299,6 +303,7 @@ input {
 .input-icon {
     bottom: -3px;
     position: relative;
+    color: $brand-font-color-weak;
 }
 
 .input-editable {
@@ -326,9 +331,9 @@ input {
 
 .input-icon-right{
     position: absolute;
-    top: 7px;
+    top: 2px;
     right: 5px;
-    font-size:16px;
+    font-size:18px;
 }
 
 .input-icon-sm {
@@ -679,6 +684,8 @@ input {
 
 .meta-dropdown-toggle i {
     margin-left: .4rem;
+    margin-top: .2rem;
+    font-size: .6rem;
 }
 .dropdown-status-toggler {
     display: flex;

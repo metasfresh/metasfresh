@@ -248,7 +248,7 @@ class LookupDropdown extends Component {
 
                     {this.state.isInputEmpty ?
                         <div className="input-icon input-icon-lg">
-                            <i className="meta-icon-preview-1" />
+                            <i className="meta-icon-preview" />
                         </div> :
                         <div className="input-icon input-icon-lg" tabIndex="0">
                             <i onClick={this.handleClear} className="meta-icon-close-alt"/>
