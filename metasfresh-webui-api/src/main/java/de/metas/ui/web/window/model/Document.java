@@ -37,6 +37,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyTy
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
+import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
 /*
@@ -81,6 +82,8 @@ public final class Document
 	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
+	private final boolean _writable;
+
 	private final ICalloutExecutor calloutExecutor;
 
 	private final Map<String, DocumentField> fieldsByName;
@@ -110,6 +113,7 @@ public final class Document
 		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
 		windowNo = nextWindowNo.incrementAndGet();
 		_parentDocument = builder.parentDocument;
+		_writable = false;
 
 		//
 		// Create document fields
@@ -149,24 +153,109 @@ public final class Document
 		// Initialize callout executor
 		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
 
+		_evaluatee = null; // lazy
+
 		//
 		// Set default dynamic attributes
 		{
-			setDynAttribute("DirectShip", false); // FIXME: workaround for https://github.com/metasfresh/metasfresh/issues/287 to avoid WARNINGs
-			setDynAttribute("HasCharges", false); // FIXME hardcoded because: Failed evaluating display logic @HasCharges@='Y' for C_Order.C_Charge_ID,ChargeAmt
+			setDynAttributeNoCheck("DirectShip", false); // FIXME: workaround for https://github.com/metasfresh/metasfresh/issues/287 to avoid WARNINGs
+			setDynAttributeNoCheck("HasCharges", false); // FIXME hardcoded because: Failed evaluating display logic @HasCharges@='Y' for C_Order.C_Charge_ID,ChargeAmt
 
 			// Set document's header window default values
 			// NOTE: these dynamic attributes will be considered by Document.asEvaluatee.
 			if (_parentDocument == null)
 			{
-				setDynAttribute("IsSOTrx", entityDescriptor.isSOTrx()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
-				setDynAttribute("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
+				setDynAttributeNoCheck("IsSOTrx", entityDescriptor.isSOTrx()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
 		}
 
 		//
 		// Done
 		logger.trace("Created new document instance: {}", this); // keep it last
+	}
+
+	/** copy constructor */
+	private Document(final Document from, final Document parentDocumentCopy, final boolean writable)
+	{
+		super();
+		documentRepository = from.documentRepository;
+		entityDescriptor = from.entityDescriptor;
+		windowNo = from.windowNo;
+		_writable = writable;
+
+		if (from._parentDocument != null)
+		{
+			Preconditions.checkNotNull(parentDocumentCopy, "parentDocumentCopy");
+			_parentDocument = parentDocumentCopy;
+		}
+		else
+		{
+			Preconditions.checkArgument(parentDocumentCopy == null, "parentDocumentCopy shall be null");
+			_parentDocument = null;
+		}
+
+		//
+		// Copy document fields
+		{
+			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
+			IDocumentFieldView idField = null;
+			for (final DocumentField fieldOrig : from.fieldsByName.values())
+			{
+				final DocumentField fieldCopy = fieldOrig.copy(this);
+				final String fieldName = fieldCopy.getFieldName();
+				fieldsBuilder.put(fieldName, fieldCopy);
+
+				if (fieldOrig == from.idField)
+				{
+					idField = fieldCopy;
+				}
+			}
+			fieldsByName = fieldsBuilder.build();
+			this.idField = idField;
+		}
+
+		//
+		// Copy included documents containers
+		{
+			final ImmutableMap.Builder<String, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			for (final Map.Entry<String, IncludedDocumentsCollection> e : from.includedDocuments.entrySet())
+			{
+				final String detailId = e.getKey();
+				final IncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
+				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this);
+
+				includedDocuments.put(detailId, includedDocumentsForDetailIdCopy);
+			}
+			this.includedDocuments = includedDocuments.build();
+		}
+
+		//
+		// Initialize callout executor
+		// NOTE: we need a new instance of it because the "calloutExecutor" has state (i.e. active callouts list etc)
+		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+
+		_evaluatee = null; // lazy
+
+		//
+		// Copy dynamic attributes
+		if (from._dynAttributes != null && !from._dynAttributes.isEmpty())
+		{
+			_dynAttributes = new HashMap<>(from._dynAttributes);
+		}
+		else
+		{
+			_dynAttributes = null;
+		}
+
+		//
+		// Done
+		logger.trace("Created new document instance: {} as a copy of {}", this, from); // keep it last
+	}
+
+	/* package */boolean isWritable()
+	{
+		return _writable;
 	}
 
 	private final void initializeFields(final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
@@ -252,13 +341,12 @@ public final class Document
 				// calloutExecutor.execute(documentField.asCalloutField());
 			}
 		}
-
 	}
 
 	private final Object createFieldDefaultValue(final DocumentFieldDescriptor fieldDescriptor)
 	{
 		final Document document = this;
-		
+
 		//
 		// Primary Key field
 		if (fieldDescriptor.isKey())
@@ -320,6 +408,38 @@ public final class Document
 		return null;
 	}
 
+	public Document copyWritable()
+	{
+		final Document parentDocumentCopy = Document.NULL;
+		final boolean writable = true;
+		return new Document(this, parentDocumentCopy, writable);
+	}
+
+	public Document copyReadonly()
+	{
+		final Document parentDocumentCopy = Document.NULL;
+		final boolean writable = false;
+		return new Document(this, parentDocumentCopy, writable);
+	}
+
+	/* package */public Document copy(final Document parentDocumentCopy)
+	{
+		return new Document(this, parentDocumentCopy, parentDocumentCopy.isWritable());
+	}
+
+	private final void assertWritable()
+	{
+		if (!_writable)
+		{
+			throw new InvalidDocumentStateException(this, "not a writable copy");
+		}
+	}
+
+	/* package */final void destroy()
+	{
+		// TODO: mark it as destroyed, fail read/write operations etc
+	}
+
 	public void refresh(final FieldInitialValueSupplier fieldValuesSupplier)
 	{
 		initializeFields(FieldInitializationMode.Refresh, fieldValuesSupplier);
@@ -329,8 +449,10 @@ public final class Document
 	public final String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", getDocumentId())
 				.add("windowNo", windowNo)
+				.add("writable", _writable)
 				// .add("fields", fieldsByName.values()) // skip because it's too long
 				.toString();
 	}
@@ -358,6 +480,22 @@ public final class Document
 	public Document getParentDocument()
 	{
 		return _parentDocument;
+	}
+
+	public Document getRootDocument()
+	{
+		Document parent = _parentDocument;
+		if (parent == null)
+		{
+			return this;
+		}
+
+		while (parent.getParentDocument() != null)
+		{
+			parent = parent.getParentDocument();
+		}
+
+		return parent;
 	}
 
 	private Collection<DocumentField> getFields()
@@ -435,9 +573,10 @@ public final class Document
 		}
 		return _evaluatee;
 	}
-	
+
 	/**
 	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
+	 * 
 	 * @param fieldName
 	 * @param value
 	 * @param reason
@@ -445,11 +584,11 @@ public final class Document
 	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		final DocumentField documentField = getField(fieldName);
-		if(documentField.isReadonly())
+		if (documentField.isReadonly())
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
-		
+
 		setValue(documentField, value, reason);
 	}
 
@@ -461,6 +600,8 @@ public final class Document
 
 	private final void setValue(final DocumentField documentField, final Object value, final ReasonSupplier reason)
 	{
+		assertWritable();
+
 		final Object valueOld = documentField.getValue();
 		documentField.setValue(value);
 
@@ -480,11 +621,6 @@ public final class Document
 
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
-	}
-
-	public Object getValue(final String fieldName)
-	{
-		return getField(fieldName).getValue();
 	}
 
 	public void executeAllCallouts()
@@ -739,7 +875,14 @@ public final class Document
 	 */
 	public final Object setDynAttribute(final String name, final Object value)
 	{
+		assertWritable();
+		return setDynAttributeNoCheck(name, value);
+	}
+
+	private final Object setDynAttributeNoCheck(final String name, final Object value)
+	{
 		Check.assumeNotEmpty(name, "name not empty");
+
 		if (_dynAttributes == null)
 		{
 			_dynAttributes = new HashMap<>();
@@ -758,11 +901,30 @@ public final class Document
 	 */
 	public final <T> T getDynAttribute(final String name)
 	{
+		final T defaultValue = null;
+		return getDynAttribute(name, defaultValue);
+	}
+
+	/**
+	 * Get Dynamic Attribute
+	 *
+	 * @param name
+	 * @param defaultValue
+	 * @return attribute value or <code>defaultValue</code> if not found
+	 */
+	public final <T> T getDynAttribute(final String name, final T defaultValue)
+	{
 		if (_dynAttributes == null)
 		{
-			return null;
+			return defaultValue;
 		}
+
 		final Object valueObj = _dynAttributes.get(name);
+		if (valueObj == null)
+		{
+			return defaultValue;
+		}
+
 		@SuppressWarnings("unchecked")
 		final T value = (T)valueObj;
 		return value;
@@ -782,6 +944,16 @@ public final class Document
 			return ImmutableSet.of();
 		}
 		return ImmutableSet.copyOf(dynAttributes.keySet());
+	}
+
+	/* package */Object setInternalAttribute(final String name, final Object value)
+	{
+		return setDynAttributeNoCheck(name, value);
+	}
+
+	/* package */ <T> T getInternalAttribute(final String name)
+	{
+		return getDynAttribute(name);
 	}
 
 	private boolean isValid()
@@ -877,7 +1049,7 @@ public final class Document
 
 			//
 			// Initialize the fields
-			if(fieldInitializerMode == FieldInitializationMode.NewDocument)
+			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
 				fieldInitializer = document::createFieldDefaultValue;
 			}

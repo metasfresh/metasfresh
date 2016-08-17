@@ -51,7 +51,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 	private final Document _document;
 	private final LookupDataSource lookupDataSource;
 
-	private ICalloutField _calloutField; // lazy
+	private transient ICalloutField _calloutField; // lazy
 
 	//
 	// State
@@ -69,6 +69,22 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 		_document = document;
 		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
 		_valid = false;
+	}
+
+	/** copy constructor */
+	private DocumentField(DocumentField from, Document document)
+	{
+		super();
+		this.descriptor = from.descriptor;
+		_document = document;
+		lookupDataSource = from.lookupDataSource == null ? null : from.lookupDataSource.copy();
+		_calloutField = null; // don't copy it
+		_initialValue = from._initialValue;
+		_value = from._value;
+		_mandatory = from._mandatory;
+		_readonly = from._readonly;
+		_displayed = from._displayed;
+		_valid = from._valid;
 	}
 
 	@Override
@@ -454,5 +470,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 	public boolean hasChanges()
 	{
 		return Objects.equal(_value, _initialValue);
+	}
+
+	/*package */DocumentField copy(final Document document)
+	{
+		return new DocumentField(this, document);
 	}
 }

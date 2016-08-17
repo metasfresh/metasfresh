@@ -331,4 +331,11 @@ public class SqlLookupDataSource implements LookupDataSource
 			return validationRule.accept(this, item);
 		}
 	}
+
+	@Override
+	public LookupDataSource copy()
+	{
+		// TODO: atm this is immutable so we can return it right away. But pls change it when we will add caching here
+		return this;
+	}
 }

@@ -167,8 +167,8 @@ public class WindowRestController
 	private List<JSONDocumentField> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
 	{
 		//
-		// Fetch the document
-		final Document document = documentCollection.getDocument(documentPath);
+		// Fetch the document in writing mode
+		final Document document = documentCollection.getDocumentForWriting(documentPath);
 
 		//
 		// Apply changes
@@ -184,18 +184,15 @@ public class WindowRestController
 			}
 		}
 
-		//
-		// Try saving it
-		documentCollection.saveIfPossible(document);
-
-		final Execution execution = Execution.getCurrent();
+		// Push back the changed document
+		documentCollection.commit(document);
 
 		//
 		// Make sure all events were collected for the case when we just created the new document
 		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
 		if (documentPath.isNewDocument())
 		{
-			final boolean somethingCollected = execution.getFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
+			final boolean somethingCollected = Execution.getCurrentFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
 			if (somethingCollected)
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
@@ -204,7 +201,7 @@ public class WindowRestController
 
 		//
 		// Return the changes
-		return JSONDocumentField.ofDocumentFieldChangedEventCollector(execution.getFieldChangedEventsCollector());
+		return JSONDocumentField.ofDocumentFieldChangedEventCollector(Execution.getCurrentFieldChangedEventsCollector());
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)

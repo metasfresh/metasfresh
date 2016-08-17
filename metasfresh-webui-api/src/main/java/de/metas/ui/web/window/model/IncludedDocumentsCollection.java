@@ -39,7 +39,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public class IncludedDocumentsCollection
 {
-	private static final Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
+	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final Document parentDocument;
@@ -56,6 +56,26 @@ public class IncludedDocumentsCollection
 
 		stale = true;
 		fullyLoaded = false;
+	}
+
+	/** copy constructor */
+	private IncludedDocumentsCollection(final IncludedDocumentsCollection from, final Document parentDocumentCopy)
+	{
+		super();
+		parentDocument = Preconditions.checkNotNull(parentDocumentCopy);
+		entityDescriptor = from.entityDescriptor;
+
+		stale = from.stale;
+		fullyLoaded = from.fullyLoaded;
+
+		// Copy documents map
+		for (final Map.Entry<DocumentId, Document> e : from.documents.entrySet())
+		{
+			final DocumentId documentId = e.getKey();
+			final Document documentOrig = e.getValue();
+			final Document documentCopy = documentOrig.copy(parentDocumentCopy);
+			documents.put(documentId, documentCopy);
+		}
 	}
 
 	private DocumentRepository getDocumentsRepository()
@@ -153,7 +173,7 @@ public class IncludedDocumentsCollection
 		{
 			throw new IllegalArgumentException("Invalid id: " + id);
 		}
-		
+
 		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(entityDescriptor)
 				.setRecordId(id.toInt())
 				.setParentDocument(parentDocument)
@@ -192,5 +212,10 @@ public class IncludedDocumentsCollection
 
 		stale = false;
 		fullyLoaded = true;
+	}
+
+	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy)
+	{
+		return new IncludedDocumentsCollection(this, parentDocumentCopy);
 	}
 }
