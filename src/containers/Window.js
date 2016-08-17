@@ -41,8 +41,6 @@ class Window extends Component {
         })
     }
     renderElementGroups = (group) => {
-        console.log(group);
-
         return group.map((elem, id)=> {
             const {type, elements} = elem;
             return (

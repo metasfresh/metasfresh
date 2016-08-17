@@ -20,6 +20,12 @@ class LookupDropdown extends Component {
         }
 
     }
+    componentDidMount() {
+        const {defaultValue} = this.props;
+        if(defaultValue){
+            this.handleSelect(this.props.defaultValue);
+        }
+    }
     handleSelect = (select) => {
         const {
             dispatch,

@@ -11,64 +11,76 @@
                     "elementGroups": [
                         {
                             "type": "primary",
-                            "elements": [
+                            "elementsLine": [
                                 {
-                                    "caption": "Customer",
-                                    "description": "Company that places an order",
-                                    "widgetType": "Lookup",
-                                    "type": "primary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "C_BPartner_ID",
-                                            "source": "lookup"
-                                        },
-                                        {
-                                            "field": "C_BPartner_Location_ID",
-                                            "source": "lookup"
-                                        },
-                                        {
-                                            "field": "AD_User_ID",
-                                            "source": "lookup"
+                                            "caption": "Customer",
+                                            "description": "Company that places an order",
+                                            "widgetType": "Lookup",
+                                            "type": "primary",
+                                            "fields": [
+                                                {
+                                                    "field": "C_BPartner_ID",
+                                                    "source": "lookup"
+                                                },
+                                                {
+                                                    "field": "C_BPartner_Location_ID",
+                                                    "source": "lookup"
+                                                },
+                                                {
+                                                    "field": "AD_User_ID",
+                                                    "source": "lookup"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
                                 {
-                                    "caption": "Invoice partner",
-                                    "description": "Invoice partner description",
-                                    "widgetType": "Lookup",
-                                    "type": "secondary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "Bill_BPartner_ID",
-                                            "source": "list"
-                                        },
-                                        {
-                                            "field": "Bill_Location_ID",
-                                            "source": "list"
-                                        },
-                                        {
-                                            "field": "Bill_User_ID",
-                                            "source": "list"
+                                            "caption": "Invoice partner",
+                                            "description": "Invoice partner description",
+                                            "widgetType": "Lookup",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "Bill_BPartner_ID",
+                                                    "source": "list"
+                                                },
+                                                {
+                                                    "field": "Bill_Location_ID",
+                                                    "source": "list"
+                                                },
+                                                {
+                                                    "field": "Bill_User_ID",
+                                                    "source": "list"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
                                 {
-                                    "caption": "Shipping partner",
-                                    "description": "Shipping partner description",
-                                    "widgetType": "Lookup",
-                                    "type": "secondary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "DropShip_BPartner_ID",
-                                            "source": "lookup"
-                                        },
-                                        {
-                                            "field": "DropShip_Location_ID",
-                                            "source": "list"
-                                        },
-                                        {
-                                            "field": "DropShip_User_ID",
-                                            "source": "list"
+                                            "caption": "Shipping partner",
+                                            "description": "Shipping partner description",
+                                            "widgetType": "Lookup",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "DropShip_BPartner_ID",
+                                                    "source": "lookup"
+                                                },
+                                                {
+                                                    "field": "DropShip_Location_ID",
+                                                    "source": "list"
+                                                },
+                                                {
+                                                    "field": "DropShip_User_ID",
+                                                    "source": "list"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
@@ -76,52 +88,60 @@
                         },
                         {
                             "type": "primary",
-                            "elements": [
+                            "elementsLine": [
                                 {
-                                    "caption": "Add product",
-                                    "description": "Product to be added",
-                                    "widgetType": "Lookup",
-                                    "type": "primary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "M_Product_ID",
-                                            "source": "lookup"
+                                            "caption": "Add product",
+                                            "description": "Product to be added",
+                                            "widgetType": "Lookup",
+                                            "type": "primary",
+                                            "fields": [
+                                                {
+                                                    "field": "M_Product_ID",
+                                                    "source": "lookup"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
                                 {
-                                    "caption": "Packages amount",
-                                    "description": "Packages amount description",
-                                    "widgetType": "Amount",
-                                    "type": "primary",
-                                    "oneline": true,
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "Qty_FastInput_TU"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Product quantity",
-                                    "description": "Product quantity description",
-                                    "widgetType": "Amount",
-                                    "type": "secondary",
-                                    "oneline": true,
-                                    "fields": [
+                                            "caption": "Packages amount",
+                                            "description": "Packages amount description",
+                                            "widgetType": "Amount",
+                                            "type": "primary",
+                                            "oneline": true,
+                                            "fields": [
+                                                {
+                                                    "field": "Qty_FastInput_TU"
+                                                }
+                                            ]
+                                        },
                                         {
-                                            "field": "Qty_FastInput"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Add",
-                                    "description": "Probably a special type button",
-                                    "widgetType": "Button",
-                                    "type": "primary",
-                                    "oneline": true,
-                                    "fields": [
+                                            "caption": "Product quantity",
+                                            "description": "Product quantity description",
+                                            "widgetType": "Amount",
+                                            "type": "secondary",
+                                            "oneline": true,
+                                            "fields": [
+                                                {
+                                                    "field": "Qty_FastInput"
+                                                }
+                                            ]
+                                        },
                                         {
-                                            "field": "NotYetDefined"
+                                            "caption": "Add",
+                                            "description": "Probably a special type button",
+                                            "widgetType": "Button",
+                                            "type": "primary",
+                                            "oneline": true,
+                                            "fields": [
+                                                {
+                                                    "field": "NotYetDefined"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
@@ -133,66 +153,32 @@
                     "elementGroups": [
                         {
                             "type": "secondary",
-                            "elements": [
+                            "elementsLine": [
                                 {
-                                    "caption": "Shipment status",
-                                    "description": "Is the order delivered",
-                                    "widgetType": "Label",
-                                    "type": "primary",
-                                    "oneline": true,
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "DeliveryViaRule"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Billing status",
-                                    "description": "Is the order payed",
-                                    "widgetType": "Label",
-                                    "type": "primary",
-                                    "oneline": true,
-                                    "fields": [
+                                            "caption": "Shipment status",
+                                            "description": "Is the order delivered",
+                                            "widgetType": "Label",
+                                            "type": "primary",
+                                            "oneline": true,
+                                            "fields": [
+                                                {
+                                                    "field": "DeliveryViaRule"
+                                                }
+                                            ]
+                                        },
                                         {
-                                            "field": "DeliveryViaRule"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type": "secondary",
-                            "elements": [
-                                {
-                                    "caption": "Order date",
-                                    "description": "Date of making contract",
-                                    "widgetType": "Date",
-                                    "type": "secondary",
-                                    "fields": [
-                                        {
-                                            "field": "DateOrdered"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Promised date",
-                                    "description": "Date of promised shipment",
-                                    "widgetType": "Date",
-                                    "type": "secondary",
-                                    "fields": [
-                                        {
-                                            "field": "DatePromised"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "caption": "Provisioning date",
-                                    "description": "Date of preparation of order",
-                                    "widgetType": "Date",
-                                    "type": "secondary",
-                                    "fields": [
-                                        {
-                                            "field": "PreparationDate"
+                                            "caption": "Billing status",
+                                            "description": "Is the order payed",
+                                            "widgetType": "Label",
+                                            "type": "primary",
+                                            "oneline": true,
+                                            "fields": [
+                                                {
+                                                    "field": "DeliveryViaRule"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
@@ -200,26 +186,49 @@
                         },
                         {
                             "type": "secondary",
-                            "elements": [
+                            "elementsLine": [
                                 {
-                                    "caption": "Organization",
-                                    "description": "Organization description",
-                                    "widgetType": "List",
-                                    "type": "secondary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "AD_Org_ID"
+                                            "caption": "Order date",
+                                            "description": "Date of making contract",
+                                            "widgetType": "Date",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "DateOrdered"
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
                                 {
-                                    "caption": "Warehouse",
-                                    "description": "Warehouse or place of service",
-                                    "widgetType": "List",
-                                    "type": "secondary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "M_Warehouse_ID"
+                                            "caption": "Promised date",
+                                            "description": "Date of promised shipment",
+                                            "widgetType": "Date",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "DatePromised"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "elements": [
+                                        {
+                                            "caption": "Provisioning date",
+                                            "description": "Date of preparation of order",
+                                            "widgetType": "Date",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "PreparationDate"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
@@ -227,15 +236,54 @@
                         },
                         {
                             "type": "secondary",
-                            "elements": [
+                            "elementsLine": [
                                 {
-                                    "caption": "Advanced edit",
-                                    "description": "Probably a special type button",
-                                    "widgetType": "Button",
-                                    "type": "secondary",
-                                    "fields": [
+                                    "elements": [
                                         {
-                                            "field": "NotYetDefined"
+                                            "caption": "Organization",
+                                            "description": "Organization description",
+                                            "widgetType": "List",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "AD_Org_ID"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "elements": [
+                                        {
+                                            "caption": "Warehouse",
+                                            "description": "Warehouse or place of service",
+                                            "widgetType": "List",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "M_Warehouse_ID"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "secondary",
+                            "elementsLine": [
+                                {
+                                    "elements": [
+                                        {
+                                            "caption": "Advanced edit",
+                                            "description": "Probably a special type button",
+                                            "widgetType": "Button",
+                                            "type": "secondary",
+                                            "fields": [
+                                                {
+                                                    "field": "NotYetDefined"
+                                                }
+                                            ]
                                         }
                                     ]
                                 }
