@@ -31,7 +31,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;;
+import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import io.swagger.annotations.Api;
 
 /*
  * #%L
@@ -55,6 +56,7 @@ import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSu
  * #L%
  */
 
+@Api
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
 public class WindowRestController
