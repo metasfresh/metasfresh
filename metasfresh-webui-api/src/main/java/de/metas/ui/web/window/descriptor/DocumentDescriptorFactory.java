@@ -312,12 +312,12 @@ public class DocumentDescriptorFactory
 								specialFieldsCollector.updateFromColumnName(columnName);
 							}
 						}
+						
+						final DocumentLayoutElementLineDescriptor layoutElementLine = DocumentLayoutElementLineDescriptor.builder()
+								.addElement(layoutElementBuilder.build())
+								.build();
 
-						if (layoutElementBuilder.getFieldsCount() > 1)
-						{
-							layoutElementBuilder.setDisplayFieldsOnOneLine();
-						}
-						layoutElementGroupBuilder.addElement(layoutElementBuilder.build());
+						layoutElementGroupBuilder.addElementLine(layoutElementLine);
 						
 						//
 						isFirstElementInGroup = false;
@@ -355,7 +355,6 @@ public class DocumentDescriptorFactory
 					.setDescription(gridFieldVO.getDescription())
 					.setWidgetType(extractWidgetType(gridFieldVO))
 					.setLayoutTypeNone() // does not matter for detail
-					.setDisplayFieldsOnOneLine()
 					.addField(DocumentLayoutElementFieldDescriptor.builder()
 							.setField(columnName)
 							.setLookupSource(extractLookupSource(gridFieldVO))

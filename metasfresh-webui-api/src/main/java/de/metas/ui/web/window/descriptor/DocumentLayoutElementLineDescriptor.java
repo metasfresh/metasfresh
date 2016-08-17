@@ -16,69 +16,66 @@ import com.google.common.collect.ImmutableList;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class DocumentLayoutColumnDescriptor
+public final class DocumentLayoutElementLineDescriptor
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private DocumentLayoutColumnDescriptor(final Builder builder)
+	private DocumentLayoutElementLineDescriptor(final Builder builder)
 	{
 		super();
-		elementGroups = ImmutableList.copyOf(builder.elementGroups);
+		elements = ImmutableList.copyOf(builder.elements);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("elementGroups", elementGroups)
+				.omitNullValues()
+				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
 
-	public List<DocumentLayoutElementGroupDescriptor> getElementGroups()
+	public List<DocumentLayoutElementDescriptor> getElements()
 	{
-		return elementGroups;
+		return elements;
 	}
 
 	public static final class Builder
 	{
-		private final List<DocumentLayoutElementGroupDescriptor> elementGroups = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
 
 		private Builder()
 		{
 			super();
 		}
 
-		public DocumentLayoutColumnDescriptor build()
+		public DocumentLayoutElementLineDescriptor build()
 		{
-			return new DocumentLayoutColumnDescriptor(this);
+			return new DocumentLayoutElementLineDescriptor(this);
 		}
 
-		public Builder addElementGroupIfNotEmpty(final DocumentLayoutElementGroupDescriptor elementGroup)
+		public Builder addElement(final DocumentLayoutElementDescriptor element)
 		{
-			if (elementGroup.isEmpty())
-			{
-				return this;
-			}
-
-			elementGroups.add(elementGroup);
+			elements.add(element);
 			return this;
 		}
 	}
+
 }

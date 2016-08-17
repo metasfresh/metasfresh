@@ -40,13 +40,13 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	/** Element group type (primary aka bordered, transparent etc) */
 	private final LayoutType layoutType;
 
-	private final List<DocumentLayoutElementDescriptor> elements;
+	private final List<DocumentLayoutElementLineDescriptor> elementLines;
 
 	private DocumentLayoutElementGroupDescriptor(final Builder builder)
 	{
 		super();
 		layoutType = builder.layoutType;
-		elements = ImmutableList.copyOf(builder.elements);
+		elementLines = ImmutableList.copyOf(builder.elementLines);
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("type", layoutType)
-				.add("elements", elements.isEmpty() ? null : elements)
+				.add("elements", elementLines.isEmpty() ? null : elementLines)
 				.toString();
 	}
 
@@ -64,15 +64,20 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		return layoutType;
 	}
 
-	public List<DocumentLayoutElementDescriptor> getElements()
+	public List<DocumentLayoutElementLineDescriptor> getElementLines()
 	{
-		return elements;
+		return elementLines;
+	}
+	
+	public boolean isEmpty()
+	{
+		return elementLines.isEmpty();
 	}
 
 	public static final class Builder
 	{
 		private LayoutType layoutType;
-		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
+		private final List<DocumentLayoutElementLineDescriptor> elementLines = new ArrayList<>();
 
 		private Builder()
 		{
@@ -101,9 +106,9 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return layoutType;
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor element)
+		public Builder addElementLine(final DocumentLayoutElementLineDescriptor elementLine)
 		{
-			elements.add(element);
+			elementLines.add(elementLine);
 			return this;
 		}
 	}

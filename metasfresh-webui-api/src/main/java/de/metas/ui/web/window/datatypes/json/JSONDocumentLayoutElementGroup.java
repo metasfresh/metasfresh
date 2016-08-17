@@ -55,13 +55,13 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	private final JSONLayoutType type;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentLayoutElement> elements;
+	private final List<JSONDocumentLayoutElementLine> elements;
 
 	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
 	{
 		super();
 		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
-		elements = JSONDocumentLayoutElement.ofList(elementGroup.getElements());
+		elements = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines());
 	}
 
 	@Override
@@ -73,13 +73,13 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
-	
+
 	public JSONLayoutType getType()
 	{
 		return type;
 	}
 
-	public List<JSONDocumentLayoutElement> getElements()
+	public List<JSONDocumentLayoutElementLine> getElements()
 	{
 		return elements;
 	}

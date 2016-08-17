@@ -51,7 +51,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private final LayoutType layoutType;
-	private final boolean displayFieldsOnOneLine;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -63,7 +62,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		description = builder.description;
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 		layoutType = builder.layoutType;
-		displayFieldsOnOneLine = builder.displayFieldsOnOneLine;
 		fields = ImmutableSet.copyOf(builder.fields);
 	}
 
@@ -99,11 +97,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return layoutType;
 	}
 
-	public boolean isDisplayFieldsOnOneLine()
-	{
-		return displayFieldsOnOneLine;
-	}
-
 	public Set<DocumentLayoutElementFieldDescriptor> getFields()
 	{
 		return fields;
@@ -115,7 +108,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String description;
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
-		private boolean displayFieldsOnOneLine;
 		private final LinkedHashSet<DocumentLayoutElementFieldDescriptor> fields = new LinkedHashSet<>();
 
 		private Builder()
@@ -168,12 +160,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public LayoutType getLayoutType()
 		{
 			return layoutType;
-		}
-
-		public Builder setDisplayFieldsOnOneLine()
-		{
-			this.displayFieldsOnOneLine = true;
-			return this;
 		}
 
 		public Builder addField(final DocumentLayoutElementFieldDescriptor field)
