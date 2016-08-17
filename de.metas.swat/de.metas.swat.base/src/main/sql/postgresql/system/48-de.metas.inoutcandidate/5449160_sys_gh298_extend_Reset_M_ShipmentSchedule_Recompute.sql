@@ -1,4 +1,4 @@
-﻿
+﻿DROP FUNCTION de_metas_inoutcandidate.reset_m_shipmentschedule_recompute();
 CREATE OR REPLACE FUNCTION de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute(p_AD_PInstance_ID_max integer DEFAULT 0)
   RETURNS integer AS
 $BODY$
@@ -24,7 +24,7 @@ BEGIN
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE;
-COMMENT ON FUNCTION de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute() IS 
+COMMENT ON FUNCTION de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute(integer) IS 
 'FRESH-342: this function can be called by Reset_M_ShipmentSchedule_Recompute (housekeeping task).
 M_ShipmentSchedule_Recomputes which have an AD_Pinstance_ID at startup time are stale and won''t be processed.
 This function is implemented in plpgsql because i didn''t know how else to return the number of deleted M_ShipmentSchedule_Recompute records;
