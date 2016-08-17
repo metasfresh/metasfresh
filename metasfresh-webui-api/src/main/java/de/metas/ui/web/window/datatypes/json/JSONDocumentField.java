@@ -2,14 +2,16 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
-import org.adempiere.util.comparator.FixedOrderComparator;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -43,6 +45,14 @@ import io.swagger.annotations.ApiModel;
  */
 
 @ApiModel("document-field")
+@JsonPropertyOrder({
+		"field" //
+		, "value", "value-reason" //
+		, "readonly", "readonly-reason" //
+		, "mandatory", "mandatory-reason" //
+		, "displayed", "displayed-reason" //
+		, "lookupValuesStale", "lookupValuesStale-reason" //
+})
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
 {
@@ -150,111 +160,177 @@ public final class JSONDocumentField implements Serializable
 
 	private static final transient Logger logger = LogManager.getLogger(JSONDocumentField.class);
 
-	private static final String FIELD_field = "field";
+	@JsonProperty("field")
+	private final String field;
 	private static final String FIELD_VALUE_ID = "ID";
 
-	private static final String FIELD_value = "value";
-	private static final String FIELD_valueReason = "value-reason";
-	private static final String FIELD_readonly = "readonly";
-	private static final String FIELD_readonlyReason = "readonly-reason";
-	private static final String FIELD_mandantory = "mandatory";
-	private static final String FIELD_mandatoryReason = "mandatory-reason";
-	private static final String FIELD_displayed = "displayed";
-	private static final String FIELD_displayedReason = "displayed-reason";
-	private static final String FIELD_lookupValuesStale = "lookupValuesStale";
-	private static final String FIELD_lookupValuesStaleReason = "lookupValuesStale-reason";
+	@JsonProperty("value")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Object value;
 
-	private final TreeMap<String, Object> map = new TreeMap<>(new FixedOrderComparator<>("*" //
-			, FIELD_field //
-			, FIELD_value//
-			, FIELD_valueReason//
-			, FIELD_readonly //
-			, FIELD_readonlyReason //
-			, FIELD_mandantory //
-			, FIELD_mandatoryReason //
-			, FIELD_displayed //
-			, FIELD_displayedReason  //
-			, FIELD_lookupValuesStale  //
-			, FIELD_lookupValuesStaleReason  //
-			, "*" //
-	));
+	@JsonProperty("value-reason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String valueReason;
+
+	@JsonProperty("readonly")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean readonly;
+
+	@JsonProperty("readonly-reason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String readonlyReason;
+
+	@JsonProperty("mandatory")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean mandatory;
+
+	@JsonProperty("mandatory-reason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String mandatoryReason;
+
+	@JsonProperty("displayed")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean displayed;
+
+	@JsonProperty("displayed-reason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String displayedReason;
+
+	@JsonProperty("lookupValuesStale")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean lookupValuesStale;
+
+	@JsonProperty("lookupValuesStale-reason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String lookupValuesStaleReason;
+
+	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	private JSONDocumentField(final String fieldName)
 	{
 		super();
-		map.put(FIELD_field, fieldName);
+		field = fieldName;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(map)
+				.omitNullValues()
+				.add("field", field)
+				.add("value", value)
+				.add("value-reason", valueReason)
+				.add("mandatory", mandatory)
+				.add("mandatory-reason", mandatoryReason)
+				.add("readonly", readonly)
+				.add("readonly-reason", readonlyReason)
+				.add("displayed", displayed)
+				.add("displayed-reason", displayedReason)
+				.add("lookupValuesStale", lookupValuesStale)
+				.add("lookupValuesStale-reason", lookupValuesStaleReason)
+				.add("otherProperties", otherProperties)
 				.toString();
 	}
 
 	public JSONDocumentField setValue(final Object jsonValue, final String reason)
 	{
-		map.put(FIELD_value, jsonValue);
-		if (reason != null)
-		{
-			map.put(FIELD_valueReason, reason);
-		}
+		value = JSONNullValue.wrapIfNull(jsonValue);
+		valueReason = reason;
 		return this;
 	}
 
 	public JSONDocumentField setReadonly(final boolean readonly, final String reason)
 	{
-		map.put(FIELD_readonly, readonly);
-		if (reason != null)
-		{
-			map.put(FIELD_readonlyReason, reason);
-		}
+		this.readonly = readonly;
+		readonlyReason = reason;
 		return this;
 	}
 
 	public JSONDocumentField setMandatory(final boolean mandatory, final String reason)
 	{
-		map.put(FIELD_mandantory, mandatory);
-		if (reason != null)
-		{
-			map.put(FIELD_mandatoryReason, reason);
-		}
-
+		this.mandatory = mandatory;
+		mandatoryReason = reason;
 		return this;
 	}
 
 	public JSONDocumentField setDisplayed(final boolean displayed, final String reason)
 	{
-		map.put(FIELD_displayed, displayed);
-		if (reason != null)
-		{
-			map.put(FIELD_displayedReason, reason);
-		}
-
+		this.displayed = displayed;
+		displayedReason = reason;
 		return this;
 	}
 
 	public JSONDocumentField setLookupValuesStale(final boolean lookupValuesStale, final String reason)
 	{
-		map.put(FIELD_lookupValuesStale, lookupValuesStale);
-		if (reason != null)
-		{
-			map.put(FIELD_lookupValuesStaleReason, reason);
-		}
-
+		this.lookupValuesStale = lookupValuesStale;
+		lookupValuesStaleReason = reason;
 		return this;
 	}
 
-	@JsonAnyGetter
-	public Map<String, Object> getMap()
+	public String getField()
 	{
-		return map;
+		return field;
+	}
+
+	public Object getValue()
+	{
+		return value;
+	}
+
+	public String getValueReason()
+	{
+		return valueReason;
+	}
+
+	public Boolean getReadonly()
+	{
+		return readonly;
+	}
+
+	public String getReadonlyReason()
+	{
+		return readonlyReason;
+	}
+
+	public Boolean getMandatory()
+	{
+		return mandatory;
+	}
+
+	public String getMandatoryReason()
+	{
+		return mandatoryReason;
+	}
+
+	public Boolean getDisplayed()
+	{
+		return displayed;
+	}
+
+	public String getDisplayedReason()
+	{
+		return displayedReason;
+	}
+
+	public Boolean getLookupValuesStale()
+	{
+		return lookupValuesStale;
+	}
+
+	public String getLookupValuesStaleReason()
+	{
+		return lookupValuesStaleReason;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getOtherProperties()
+	{
+		return otherProperties;
 	}
 
 	public JSONDocumentField putDebugProperty(final String name, final Object jsonValue)
 	{
-		map.put("debug-" + name, jsonValue);
+		otherProperties.put("debug-" + name, jsonValue);
 		return this;
 	}
 }
