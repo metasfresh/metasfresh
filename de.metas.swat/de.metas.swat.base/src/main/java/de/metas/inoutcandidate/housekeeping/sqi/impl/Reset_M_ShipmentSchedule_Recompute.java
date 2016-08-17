@@ -29,7 +29,9 @@ import org.compiere.util.DB;
 /**
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  * @task https://metasfresh.atlassian.net/browse/FRESH-342
+ * @task https://github.com/metasfresh/metasfresh/issues/298
  */
 public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingTask
 {

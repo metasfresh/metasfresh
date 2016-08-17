@@ -12,10 +12,11 @@ BEGIN
 	RAISE NOTICE 'Deleted % M_ShipmentSchedule_Recompute records whose M_ShipmentSchedule_IDs don''t exist anymore.', v_CountDeleted_MissingSched;
 
 	INSERT INTO M_ShipmentSchedule_Recompute (M_ShipmentSchedule_ID)
-	SELECT M_ShipmentSchedule_ID FROM M_ShipmentSchedule_Recompute WHERE COALESCE(AD_PInstance_ID,0)<=0;
-
-	DELETE FROM M_ShipmentSchedule_Recompute WHERE COALESCE(AD_PInstance_ID,0)<=0;
+	/* Note: if a record has no AD_PInstance_ID, it won't be hit, because p_AD_PInstance_ID_max+1 is greater than p_AD_PInstance_ID_max */
+	SELECT M_ShipmentSchedule_ID FROM M_ShipmentSchedule_Recompute WHERE COALESCE(AD_PInstance_ID,p_AD_PInstance_ID_max+1)<=p_AD_PInstance_ID_max;
 	GET DIAGNOSTICS v_CountDeleted_Stale = ROW_COUNT;
+	
+	DELETE FROM M_ShipmentSchedule_Recompute WHERE COALESCE(AD_PInstance_ID,p_AD_PInstance_ID_max+1)<=p_AD_PInstance_ID_max;
 	RAISE NOTICE 'Re-inserted % M_ShipmentSchedule_IDs that had an AD_PInstance_ID (param p_AD_PInstance_ID_max=%).', v_CountDeleted_Stale, p_AD_PInstance_ID_max;
 	
 	RETURN v_CountDeleted_Stale + v_CountDeleted_MissingSched; 
