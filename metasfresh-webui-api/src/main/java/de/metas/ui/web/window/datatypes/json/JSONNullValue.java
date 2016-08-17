@@ -54,6 +54,6 @@ public final class JSONNullValue implements Serializable
 	@Override
 	public String toString()
 	{
-		return null;
+		return "null";
 	}
 }
