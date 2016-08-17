@@ -164,7 +164,7 @@ public final class JSONDocumentField implements Serializable
 	private static final String FIELD_lookupValuesStale = "lookupValuesStale";
 	private static final String FIELD_lookupValuesStaleReason = "lookupValuesStale-reason";
 
-	private static final TreeMap<String, Object> map = new TreeMap<>(new FixedOrderComparator<>("*" //
+	private final TreeMap<String, Object> map = new TreeMap<>(new FixedOrderComparator<>("*" //
 			, FIELD_field //
 			, FIELD_value//
 			, FIELD_valueReason//
