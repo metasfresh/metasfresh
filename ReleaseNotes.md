@@ -15,6 +15,8 @@ Here come the actual release notes:
 ## Features
  * #273 Report "Anbauplanung" addition & adjustment
  * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
+ * #295 sql in purchase inout takes too long
+   - performance improvement in the jasper file
 
 ## Fixes
 
