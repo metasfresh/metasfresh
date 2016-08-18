@@ -54,7 +54,7 @@ class FixedBatchTrxItemProcessor<IT, RT> implements ITrxItemChunkProcessor<IT, R
 		{
 			return processor;
 		}
-		// in case of itemsPerBatch == 1 we might return the given processor processor *if* is is not a chunky ITrxItemChunkProcessor.
+		// in case of itemsPerBatch == 1 we might return the given processor processor *if* that given processor is not a ITrxItem*Chunk*Processor.
 		return new FixedBatchTrxItemProcessor<>(processor, itemsPerBatch);
 	}
 
