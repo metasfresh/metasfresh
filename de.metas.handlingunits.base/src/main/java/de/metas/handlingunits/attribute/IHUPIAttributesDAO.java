@@ -79,4 +79,16 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * @return available PI attributes
 	 */
 	List<I_M_HU_PI_Attribute> retrievePIAttributes(I_M_HU_PI huPI);
+
+	/**
+	 *
+	 * @param huPIAttribute
+	 * @return
+	 * 		<ul>
+	 *         <li>true if this attribute was defined by the standard template
+	 *         <li>false if this attribute is a customization on a particular element (e.g.HU, ASI etc)
+	 *         </ul>
+	 * @task FRESH-578 #275
+	 */
+	boolean isTemplateAttribute(I_M_HU_PI_Attribute huPIAttribute);
 }

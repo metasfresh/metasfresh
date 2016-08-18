@@ -630,7 +630,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType);
+		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.NO_HU_PI_Version_ID);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.NO_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
@@ -646,7 +646,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefVirtual);
 
 		final String huUnitType = null; // any
-		createVersion(huDefVirtual, true, huUnitType);
+		createVersion(huDefVirtual, true, huUnitType, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
@@ -1031,7 +1031,8 @@ public class HUTestHelper
 		// createVersion(hu, false);
 
 		// Create the current version
-		createVersion(hu, true, huUnitType);
+		final Integer huPIVersionId = null;
+		createVersion(hu, true, huUnitType, huPIVersionId);
 
 		return hu;
 	}
@@ -1039,10 +1040,11 @@ public class HUTestHelper
 	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
 	{
 		final String huUnitType = null;
-		return createVersion(handlingUnit, current, huUnitType);
+		final Integer huPIVersionId = null;
+		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
-	public I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType)
+	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1051,6 +1053,10 @@ public class HUTestHelper
 		if (huUnitType != null)
 		{
 			version.setHU_UnitType(huUnitType);
+		}
+		if(huPIVersionId != null)
+		{
+			version.setM_HU_PI_Version_ID(huPIVersionId);
 		}
 		InterfaceWrapperHelper.save(version);
 		return version;
