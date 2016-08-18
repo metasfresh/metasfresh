@@ -295,7 +295,15 @@ public final class Document
 			//
 			if (FieldInitializationMode.NewDocument == mode)
 			{
-				executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
+				// FIXME: i think it would be better to trigger the callouts when setting the initial value
+				try
+				{
+					executeAllCallouts();
+				}
+				catch (Exception e)
+				{
+					logger.warn("Failed executing callouts while initializing {}. Ignored.", this, e);
+				}
 
 				final boolean collectEventsEventIfNoChange = true;
 				updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
