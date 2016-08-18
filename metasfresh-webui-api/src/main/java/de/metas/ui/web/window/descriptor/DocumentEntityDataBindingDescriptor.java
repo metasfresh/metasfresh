@@ -24,5 +24,7 @@ package de.metas.ui.web.window.descriptor;
 
 public interface DocumentEntityDataBindingDescriptor
 {
+	String getTableName();
 
+	int getAD_Table_ID();
 }

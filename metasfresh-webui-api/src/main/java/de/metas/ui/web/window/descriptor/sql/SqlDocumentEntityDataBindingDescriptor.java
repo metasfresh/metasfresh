@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.model.Document;
 
 /*
  * #%L
@@ -50,18 +49,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public static final SqlDocumentEntityDataBindingDescriptor cast(final DocumentEntityDataBindingDescriptor descriptor)
 	{
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
-	}
-
-	public static String getTableName(final Document document)
-	{
-		final SqlDocumentEntityDataBindingDescriptor dataBinding = cast(document.getEntityDescriptor().getDataBinding());
-		return dataBinding.getSqlTableName();
-	}
-
-	public static int getAD_Table_ID(final Document document)
-	{
-		final SqlDocumentEntityDataBindingDescriptor dataBinding = cast(document.getEntityDescriptor().getDataBinding());
-		return dataBinding.getAD_Table_ID();
 	}
 
 	private static final String TABLEALIAS_Master = "master";
@@ -122,13 +109,20 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlTableName;
 	}
+	
+	@Override
+	public String getTableName()
+	{
+		return sqlTableName;
+	}
 
 	public String getSqlTableAlias()
 	{
 		return sqlTableAlias;
 	}
 
-	private int getAD_Table_ID()
+	@Override
+	public int getAD_Table_ID()
 	{
 		return AD_Table_ID;
 	}

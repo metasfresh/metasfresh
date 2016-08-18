@@ -25,7 +25,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.LookupDataSource;
@@ -293,8 +292,7 @@ public class SqlLookupDataSource implements LookupDataSource
 		@Override
 		public String getContextTableName()
 		{
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(document.getEntityDescriptor().getDataBinding());
-			return dataBinding.getSqlTableName();
+			return document.getEntityDescriptor().getDataBinding().getTableName();
 		}
 
 		@Override

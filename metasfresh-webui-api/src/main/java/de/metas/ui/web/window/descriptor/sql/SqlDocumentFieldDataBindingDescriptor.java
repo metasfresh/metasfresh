@@ -8,7 +8,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.LookupDataSource;
 import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
 
@@ -44,18 +43,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public static final SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
 	{
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
-	}
-
-	public static int getAD_Column_ID(final IDocumentFieldView documentField)
-	{
-		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
-		return dataBinding.getAD_Column_ID();
-	}
-
-	public static String getSqlColumnName(final IDocumentFieldView documentField)
-	{
-		final SqlDocumentFieldDataBindingDescriptor dataBinding = cast(documentField.getDescriptor().getDataBinding());
-		return dataBinding.getSqlColumnName();
 	}
 
 	private final String sqlTableName;
@@ -154,12 +141,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return sqlColumnName;
 	}
 
+	@Override
+	public String getColumnName()
+	{
+		return sqlColumnName;
+	}
+
 	public String getSqlColumnSql()
 	{
 		return sqlColumnSql;
 	}
 
-	private int getAD_Column_ID()
+	@Override
+	public int getAD_Column_ID()
 	{
 		return AD_Column_ID;
 	}

@@ -11,8 +11,6 @@ import org.compiere.util.ValueNamePair;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 
 /*
  * #%L
@@ -84,19 +82,19 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	@Override
 	public String getTableName()
 	{
-		return SqlDocumentEntityDataBindingDescriptor.getTableName(getDocument());
+		return getDocument().getEntityDescriptor().getDataBinding().getTableName();
 	}
 
 	@Override
 	public int getAD_Table_ID()
 	{
-		return SqlDocumentEntityDataBindingDescriptor.getAD_Table_ID(getDocument());
+		return getDocument().getEntityDescriptor().getDataBinding().getAD_Table_ID();
 	}
 
 	@Override
 	public int getAD_Column_ID()
 	{
-		return SqlDocumentFieldDataBindingDescriptor.getAD_Column_ID(documentField);
+		return documentField.getDescriptor().getDataBinding().getAD_Column_ID();
 	}
 
 	@Override

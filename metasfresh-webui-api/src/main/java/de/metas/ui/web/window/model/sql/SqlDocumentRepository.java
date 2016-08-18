@@ -36,7 +36,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.DefaultDocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -493,7 +493,7 @@ public class SqlDocumentRepository implements DocumentRepository
 	private void setPOValue(final PO po, final IDocumentFieldView documentField)
 	{
 		final POInfo poInfo = po.getPOInfo();
-		final String columnName = SqlDocumentFieldDataBindingDescriptor.getSqlColumnName(documentField);
+		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
 
 		if (poInfo.isVirtualColumn(columnName))
 		{
@@ -505,7 +505,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
 			return;
 		}
-		else if (DocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
+		else if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
 			return;

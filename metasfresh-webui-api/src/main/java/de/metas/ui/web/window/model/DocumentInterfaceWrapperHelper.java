@@ -11,7 +11,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 
 /*
  * #%L
@@ -120,7 +119,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	public String getModelTableNameOrNull(final Object model)
 	{
 		final Document document = DocumentInterfaceWrapper.getDocument(model);
-		return SqlDocumentEntityDataBindingDescriptor.getTableName(document);
+		return document.getEntityDescriptor().getDataBinding().getTableName();
 	}
 
 	@Override

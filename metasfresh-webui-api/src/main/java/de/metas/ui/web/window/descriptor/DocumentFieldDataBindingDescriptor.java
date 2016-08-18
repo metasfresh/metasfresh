@@ -28,7 +28,12 @@ import de.metas.ui.web.window.model.LookupDataSource;
 
 public interface DocumentFieldDataBindingDescriptor
 {
-	LookupDataSource createLookupDataSource();
+	String getColumnName();
+
+	int getAD_Column_ID();
 
 	Collection<String> getLookupValuesDependsOnFieldNames();
+
+	LookupDataSource createLookupDataSource();
+
 }

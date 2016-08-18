@@ -23,7 +23,6 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
 
@@ -125,7 +124,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		final String interfaceTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (interfaceTableName != null)
 		{
-			final String documentTableName = SqlDocumentEntityDataBindingDescriptor.getTableName(document);
+			final String documentTableName = document.getEntityDescriptor().getDataBinding().getTableName();
 			if (!interfaceTableName.equals(documentTableName))
 			{
 				throw new AdempiereException("Interface " + modelClass + " (tableName=" + interfaceTableName + ") is not compatible with " + document + " (tableName=" + documentTableName + ")");
@@ -559,7 +558,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return null;
 		}
 
-		if (!modelTableName.equals(SqlDocumentEntityDataBindingDescriptor.getTableName(parentDocument)))
+		final String parentTableName = parentDocument.getEntityDescriptor().getDataBinding().getTableName();
+		if (!modelTableName.equals(parentTableName))
 		{
 			return null;
 		}

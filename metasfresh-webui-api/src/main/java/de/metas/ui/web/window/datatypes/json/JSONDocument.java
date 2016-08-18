@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import io.swagger.annotations.ApiModel;
 
@@ -60,7 +59,7 @@ public final class JSONDocument extends ArrayList<JSONDocumentField>
 		// Set debugging info
 		if (WindowConstants.isProtocolDebugging())
 		{
-			jsonIdField.putDebugProperty("tablename", SqlDocumentEntityDataBindingDescriptor.getTableName(document));
+			jsonIdField.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
 		}
 
 		// All other fields
