@@ -1,5 +1,5 @@
-﻿
---DROP FUNCTION IF EXISTS de_metas_inoutcandidate.reset_m_shipmentschedule_recompute(bigint);
+﻿DROP FUNCTION IF EXISTS de_metas_inoutcandidate.reset_m_shipmentschedule_recompute(integer);
+DROP FUNCTION IF EXISTS de_metas_inoutcandidate.reset_m_shipmentschedule_recompute(bigint);
 CREATE OR REPLACE FUNCTION de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute(p_AD_PInstance_ID_max bigint DEFAULT 9223372036854775807)
   RETURNS integer AS
 $BODY$
