@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.31.30a (2016-33a RC for weekly metasfresh release)
+
+## Features
+ - #297 Performance problems related to zoom-to
+   * improve the documentation, both in that code and in the client
+   
+## Fixes
+ - #298 ShipmentSchedule updating fails on missing UOM conversion
+   * prevent an NPE on missing master data
+
 # metasfresh 4.31.30 (2016-33)
 
 ## Features
