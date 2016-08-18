@@ -6,6 +6,7 @@
 
 metasfresh-webui-api/activemq-data/
 metasfresh-webui-api/log/
+metasfresh-webui-api/tmp/
 
 metasfresh-webui-vaadin/log/
 metasfresh-webui-vaadin/activemq-data/
