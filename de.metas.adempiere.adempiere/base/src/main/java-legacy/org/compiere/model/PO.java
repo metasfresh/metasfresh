@@ -3618,9 +3618,14 @@ public abstract class PO
 	 */
 	protected int saveNew_getID()
 	{
-		if (get_ID() < 999999) // 2Pack assigns official ID's when importing
-			return get_ID();
-		return 0;
+		// NOTE: we shall not enforce only IDs which are less than 999999, we shall take what we get.
+		// NOTE2: rest-webui is relying on this!
+//		if (get_ID() < 999999) // 2Pack assigns official ID's when importing
+//		return get_ID();
+//	return 0;
+
+		final int id = get_ID();
+		return id;
 	}	//	saveNew_getID
 
 
