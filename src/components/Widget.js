@@ -15,7 +15,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={false}
@@ -31,7 +31,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -47,7 +47,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -88,7 +88,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="text"
@@ -103,7 +103,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <textarea
                             className="input-field"
@@ -117,7 +117,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -134,7 +134,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -149,7 +149,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -166,7 +166,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -183,7 +183,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"

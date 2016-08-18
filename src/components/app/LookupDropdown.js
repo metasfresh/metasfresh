@@ -38,7 +38,7 @@ class LookupDropdown extends Component {
 
         //removing selection
         this.setState({selected: null});
-        let propertiesCopy = Object.assign([], properties);
+        let propertiesCopy = this.getItemsByProperty(properties, "source", "list")
 
         //
         // Handling selection when main is not set or set.
@@ -46,14 +46,11 @@ class LookupDropdown extends Component {
         if(this.state.property === ""){
             this.inputSearch.value = select[Object.keys(select)[0]];
             //call for more properties
-            //mocked properties for testing
             // - first will generate choice dropdown
             // - second should be chosen automatically
             select.properties = {};
             let batchArray = [];
             if(propertiesCopy.length > 1){
-
-                propertiesCopy.shift();
                 let batch = new Promise((resolve, reject) => {
                     propertiesCopy.map((item) => {
                         dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
@@ -155,8 +152,10 @@ class LookupDropdown extends Component {
         this.setState({selected: null});
         this.setState({property: ""});
 
+        const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
+
         if(this.inputSearch.value != ""){
-            dispatch(autocompleteRequest(windowType, properties[0].field, this.inputSearch.value, dataId));
+            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId));
             this.setState({isInputEmpty: false});
         }else{
             this.setState({isInputEmpty: true});
@@ -202,7 +201,7 @@ class LookupDropdown extends Component {
 
         if(this.state.selected != null){
             const selectTarget = this.state.selected + (reverse ? (-1) : (1));
-            if(typeof autocomplete.results[selectTarget] != "undefined"){
+            if (typeof autocomplete.results[selectTarget] != "undefined") {
                 this.setState({selected: selectTarget});
             }
         }else if(typeof autocomplete.results[0] != "undefined"){
@@ -213,6 +212,16 @@ class LookupDropdown extends Component {
     renderLookup = () => {
         const {autocomplete} = this.props;
         return autocomplete.results.map((item, index) => this.getDropdownComponent(index, item) );
+    }
+
+    getItemsByProperty = (arr, prop, value) => {
+        let ret = [];
+        arr.map((item, index) => {
+            if(item[prop] === value){
+                ret.push(item);
+            }
+        });
+        return ret;
     }
 
     getDropdownComponent = (index, item) => {

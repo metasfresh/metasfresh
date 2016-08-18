@@ -895,12 +895,6 @@ input:checked + .input-slider:before {
 	border-color: #fff;
 }
 
-.one-line {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.oneline {
-    width: auto;
+.input-mandatory {
+    border: 2px solid $brand-mandatory-color;
 }

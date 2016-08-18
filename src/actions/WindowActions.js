@@ -11,12 +11,15 @@ export function createWindow(windowType){
             // this chain is really important,
             // to do not re-render widgets on init
             //
-            dispatch(initData(windowType)).then((response) => {
-                dispatch(initDataSuccess(response.data[0]));
-                dispatch(initLayout(windowType)).then((response) => {
-                    dispatch(initLayoutSuccess(response.data))
+            dispatch(patchRequest(windowType)).then((response)=>{
+                const id = response.data;
+                dispatch(initData(windowType, id)).then((response) => {
+                    dispatch(initDataSuccess(response.data[0]));
+                    dispatch(initLayout(windowType)).then((response) => {
+                        dispatch(initLayoutSuccess(response.data))
+                    })
                 })
-            })
+            });
         }
     }
 }
@@ -34,7 +37,7 @@ export function initLayout(windowType){
     return dispatch => axios.get(config.API_URL + '/window/layout?type=' + windowType);
 }
 
-export function initData(windowType, id = 'NEW') {
+export function initData(windowType, id) {
     return dispatch => axios.get(config.API_URL + '/window/data?type=' + windowType + '&id=' + id);
 }
 
@@ -49,4 +52,12 @@ export function initDataSuccess(data) {
         type: types.INIT_DATA_SUCCESS,
         data: data
     }
+}
+
+export function patchRequest(windowType, id = "NEW") {
+    return (dispatch) => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, {
+        data: {
+            events: []
+        }
+    });
 }
