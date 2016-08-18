@@ -1,0 +1,36 @@
+image: jazzypro/ubuntu-frontend
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - ci-run-local ansible/build.yml -v
+  artifacts:
+    paths:
+      - dist/
+  only:
+    - rc
+    - dev
+
+deploy-dev:
+  stage: deploy
+  script:
+    - ci-run-remote ansible/deploy.yml -v
+  dependencies:
+    - build
+  only:
+    - dev
+  environment: dev
+
+deploy-rc:
+  stage: deploy
+  script:
+    - ci-run-remote ansible/deploy.yml -v
+  dependencies:
+    - build
+  only:
+    - rc
+  environment: rc

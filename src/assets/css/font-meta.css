@@ -47,20 +47,11 @@
 .meta-icon-calendar:before {
   content: "\63";
 }
-.meta-icon-chevron:before {
-  content: "\64";
-}
-.meta-icon-close:before {
-  content: "\65";
-}
 .meta-icon-close-alt:before {
   content: "\66";
 }
 .meta-icon-delete:before {
   content: "\67";
-}
-.meta-icon-down:before {
-  content: "\68";
 }
 .meta-icon-duplicate:before {
   content: "\69";
@@ -112,4 +103,13 @@
 }
 .meta-icon-trash:before {
   content: "\79";
+}
+.meta-icon-chevron-1:before {
+  content: "\7a";
+}
+.meta-icon-close-1:before {
+  content: "\41";
+}
+.meta-icon-down-1:before {
+  content: "\42";
 }

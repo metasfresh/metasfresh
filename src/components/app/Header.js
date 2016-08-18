@@ -116,7 +116,7 @@ class Header extends Component {
                         <div className="header-right-side">
                             <div className="meta-dropdown-toggle dropdown-status-toggler" tabIndex="0" ref={(c) => this.statusDropdown = c} onBlur={this.handleDropdownBlur} onFocus={this.handleDropdownFocus}>
                                 <div className={"tag tag-" + this.getStatusContext(orderStatus)}>{this.getOrderStatus(orderStatus)}</div>
-                                <i className={"meta-icon-chevron meta-icon-" + this.getStatusContext(orderStatus)}/>
+                                <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(orderStatus)}/>
                                 <ul className="dropdown-status-list">
                                     {this.renderStatusList()}
                                 </ul>
@@ -126,7 +126,7 @@ class Header extends Component {
                                 className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
                                 onClick={this.handleOrderListToggle}
                             >
-                                {isOrderListShow ? <i className="meta-icon-close" />: <i className="meta-icon-list" />}
+                                {isOrderListShow ? <i className="meta-icon-close-1" />: <i className="meta-icon-list" />}
                             </div>
                         </div>
                     </div>

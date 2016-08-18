@@ -29,10 +29,12 @@ class Window extends Component {
        })
     }
     renderColumns = (columns) => {
+        const maxRows = 12;
+        const colWidth = Math.floor(maxRows / columns.length);
         return columns.map((elem, id)=> {
             const elementGroups = elem.elementGroups;
             return (
-                <div className="col-xs-6" key={'col' + id}>
+            <div className={"col-xs-" + colWidth} key={'col' + id}>
                     {this.renderElementGroups(elementGroups)}
                 </div>
             )
@@ -44,7 +46,7 @@ class Window extends Component {
             return (
                 <div
                     key={'elemGroups' + id}
-                    className={"panel panel-spaced panel-bordered panel-distance panel-" + type}
+                    className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
                     {this.renderElements(elements)}
                 </div>
@@ -57,11 +59,7 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             return (
-                <div key={'element' + id} className="form-group m-t-1 row">
-                    <div className="col-xs-12">
-                        <Widget windowType={type} {...elem} />
-                    </div>
-                </div>
+                <Widget key={'element' + id} windowType={type} {...elem} />
             )
         })
     }
