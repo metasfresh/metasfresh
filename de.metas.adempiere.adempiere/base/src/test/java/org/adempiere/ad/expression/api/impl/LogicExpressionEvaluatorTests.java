@@ -22,9 +22,9 @@ package org.adempiere.ad.expression.api.impl;
  * #L%
  */
 
-
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +55,8 @@ import org.junit.Test;
  * @author ad
  * @author tsa
  * @see <a
- *      href="http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29">http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29</a>
+ *      href="http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29">http://dewiki908/mediawiki/index.php/03093:
+ *      _Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29</a>
  */
 public class LogicExpressionEvaluatorTests
 {
@@ -687,39 +688,39 @@ public class LogicExpressionEvaluatorTests
 			//
 			// Expressions without variables
 			test_evaluateLogic_OnVariableNotFound(
-					true, // expectedValue
-					"1=1", // expressionStr
-					onVariableNotFound,
-					params);
+					true // expectedValue
+					, "1=1" // expressionStr
+					, onVariableNotFound //
+					, params);
 			test_evaluateLogic_OnVariableNotFound(
-					false, // expectedValue
-					"1=0", // expressionStr
-					onVariableNotFound,
-					params);
+					false // expectedValue
+					, "1=0" // expressionStr
+					, onVariableNotFound //
+					, params);
 			//
 			// Expressions with variables but with default values
 			test_evaluateLogic_OnVariableNotFound(
-					true, // expectedValue
-					"@Variable/Y@=Y", // expressionStr
-					onVariableNotFound,
-					params);
+					true // expectedValue
+					, "@Variable/Y@=Y" // expressionStr
+					, onVariableNotFound //
+					, params);
 			test_evaluateLogic_OnVariableNotFound(
-					false, // expectedValue
-					"@Variable/N@=Y", // expressionStr
-					onVariableNotFound,
-					params);
+					false // expectedValue
+					, "@Variable/N@=Y" // expressionStr
+					, onVariableNotFound //
+					, params);
 			//
 			// Pure constant expressions
 			test_evaluateLogic_OnVariableNotFound(
-					true, // expectedValue
-					ILogicExpression.TRUE, // expression
-					onVariableNotFound,
-					params);
+					true // expectedValue
+					, ILogicExpression.TRUE // expression
+					, onVariableNotFound //
+					, params);
 			test_evaluateLogic_OnVariableNotFound(
-					false, // expectedValue
-					ILogicExpression.FALSE, // expression
-					onVariableNotFound,
-					params);
+					false // expectedValue
+					, ILogicExpression.FALSE // expression
+					, onVariableNotFound //
+					, params);
 		}
 	}
 
@@ -776,7 +777,48 @@ public class LogicExpressionEvaluatorTests
 				.addParam("Variable", "0");
 		final Boolean expectedValue = true;
 		test_evaluateLogic_OnVariableNotFound(expectedValue, expressionStr, OnVariableNotFound.Fail, params);
+	}
 
+	private void test_evaluateLogic_MissingVariablesWhichDoesNotMatter(final boolean expectedValue,
+			final String expressionStr,
+			final Params params)
+	{
+		for (OnVariableNotFound onVariableNotFound : Arrays.asList(OnVariableNotFound.ReturnNoResult, OnVariableNotFound.Fail))
+		{
+			test_evaluateLogic_OnVariableNotFound(expectedValue, expressionStr, onVariableNotFound, params);
+		}
+	}
+
+	@Test
+	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_AndExpression_LeftIsFalse()
+	{
+		final Params params = new Params()
+				.addParam("A", "not-one");
+		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(false, "@A@=1 & @MissingB@=2", params);
+	}
+
+	@Test
+	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_AndExpression_RightIsFalse()
+	{
+		final Params params = new Params()
+				.addParam("A", "not-one");
+		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(false, "@MissingB@=2 & @A@=1", params);
+	}
+
+	@Test
+	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_OrExpression_LeftIsTrue()
+	{
+		final Params params = new Params()
+				.addParam("A", "1");
+		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "@A@=1 | @MissingB@=2", params);
+	}
+
+	@Test
+	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_OrExpression_RightIsTrue()
+	{
+		final Params params = new Params()
+				.addParam("A", "1");
+		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "@MissingB@=2 | @A@=1", params);
 	}
 
 	private final void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,

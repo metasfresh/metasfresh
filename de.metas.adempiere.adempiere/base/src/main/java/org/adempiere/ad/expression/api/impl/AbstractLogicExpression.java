@@ -1,5 +1,7 @@
 package org.adempiere.ad.expression.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,16 +24,21 @@ package org.adempiere.ad.expression.api.impl;
  * #L%
  */
 
-
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.collect.ImmutableList;
+
 public abstract class AbstractLogicExpression implements ILogicExpression
 {
+	/* package */static final String LOGIC_OPERATOR_AND = "&";
+	/* package */static final String LOGIC_OPERATOR_OR = "|";
+	/* package */static final List<String> LOGIC_OPERATORS = ImmutableList.of(LOGIC_OPERATOR_AND, LOGIC_OPERATOR_OR);
+
 	@Override
-	public Boolean evaluate(Evaluatee ctx, boolean ignoreUnparsable)
+	public final Boolean evaluate(Evaluatee ctx, boolean ignoreUnparsable)
 	{
 		// backward compatibility
 		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.ReturnNoResult : OnVariableNotFound.Fail;
@@ -39,7 +46,7 @@ public abstract class AbstractLogicExpression implements ILogicExpression
 	}
 
 	@Override
-	public Boolean evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
+	public final Boolean evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
 	{
 		final LogicExpressionEvaluator evaluator = getEvaluator();
 		return evaluator.evaluate(ctx, this, onVariableNotFound);
@@ -58,7 +65,7 @@ public abstract class AbstractLogicExpression implements ILogicExpression
 		{
 			return expression.and(this);
 		}
-		return new LogicExpression(this, "&", expression);
+		return new LogicExpression(this, LOGIC_OPERATOR_AND, expression);
 	}
 
 	@Override
@@ -68,7 +75,7 @@ public abstract class AbstractLogicExpression implements ILogicExpression
 		{
 			return expression.or(this);
 		}
-		return new LogicExpression(this, "|", expression);
+		return new LogicExpression(this, LOGIC_OPERATOR_OR, expression);
 	}
 
 }

@@ -111,7 +111,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 			}
 			//
 			// Operator
-			else if (("&".equals(token)) || ("|".equals(token)))
+			else if (AbstractLogicExpression.LOGIC_OPERATORS.contains(token))
 			{
 				final String operator = token;
 				if (result.getRight() == null)
