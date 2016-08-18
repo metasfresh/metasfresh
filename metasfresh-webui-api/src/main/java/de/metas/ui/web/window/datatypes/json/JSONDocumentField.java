@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -162,8 +163,8 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("field")
 	@JsonInclude(JsonInclude.Include.ALWAYS)
-	private final String field;
-	private static final String FIELD_VALUE_ID = "ID";
+	private String field;
+	public static final String FIELD_VALUE_ID = "ID";
 
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -207,6 +208,12 @@ public final class JSONDocumentField implements Serializable
 
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
+
+	@JsonCreator
+	private JSONDocumentField()
+	{
+		super();
+	}
 
 	private JSONDocumentField(final String fieldName)
 	{
@@ -272,6 +279,11 @@ public final class JSONDocumentField implements Serializable
 	public String getField()
 	{
 		return field;
+	}
+
+	public void setField(final String field)
+	{
+		this.field = field;
 	}
 
 	public Object getValue()
