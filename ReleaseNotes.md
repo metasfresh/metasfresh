@@ -10,7 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.31.30a (2016-33a RC for weekly metasfresh release)
+# metasfresh 4.32.30 (2016-34 upcoming)
+
+## Features
+ * #273 Report "Anbauplanung" addition & adjustment
+
+## Fixes
+
+# metasfresh 4.31.30a (2016-33a RC for weekly release)
 
 ## Features
  - #297 Performance problems related to zoom-to
