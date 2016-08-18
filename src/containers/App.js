@@ -15,6 +15,9 @@ import { Dashboard } from './Dashboard';
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
+// We have to wait with this, until it will be fixed in API
+// axios.defaults.withCredentials = true;
+
 export default class App extends Component {
     render() {
         return (
