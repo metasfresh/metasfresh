@@ -35,6 +35,7 @@ class Dropdown extends Component {
     }
     handleSelect = (option) => {
         this.inputSearch.value = option[Object.keys(option)[0]];
+        this.props.onChange(option);
         this.handleBlur();
     }
     renderOptions = () => {

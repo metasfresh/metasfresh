@@ -1,13 +1,18 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import { patchRequest } from '../actions/WindowActions';
+
 import Datetime from 'react-datetime';
-import LookupDropdown from '../components/app/LookupDropdown';
-import Dropdown from '../components/app/Dropdown';
+import LookupDropdown from './app/LookupDropdown';
+import Dropdown from './app/Dropdown';
 
 class Widget extends Component {
     constructor(props) {
         super(props);
+    }
+    handlePatch = (property, value) => {
+
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
         switch(widgetType){
@@ -23,6 +28,7 @@ class Widget extends Component {
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -39,6 +45,7 @@ class Widget extends Component {
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -55,6 +62,7 @@ class Widget extends Component {
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
                             defaultValue={new Date(data.value)}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -81,6 +89,7 @@ class Widget extends Component {
                         properties={fields}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
+                        onChange={(option) => this.handlePatch(fields[0].field, option)}
                     />
                 )
             case "Text":
@@ -95,6 +104,7 @@ class Widget extends Component {
                             className="input-field"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -109,6 +119,7 @@ class Widget extends Component {
                             className="input-field"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -126,6 +137,7 @@ class Widget extends Component {
                             step="1"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -141,6 +153,7 @@ class Widget extends Component {
                             className="input-field"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -158,6 +171,7 @@ class Widget extends Component {
                             step="1"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -175,6 +189,7 @@ class Widget extends Component {
                             step="1"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -190,6 +205,7 @@ class Widget extends Component {
                             className="input-field"
                             defaultValue={data.value}
                             disabled={data.readonly}
+                            onBlur={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                     </div>
                 )
@@ -200,6 +216,7 @@ class Widget extends Component {
                             type="checkbox"
                             checked={data.value}
                             disabled={data.readonly}
+                            onChange={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
@@ -211,6 +228,7 @@ class Widget extends Component {
                             type="checkbox"
                             checked={data.value}
                             disabled={data.readonly}
+                            onChange={(event) => this.handlePatch(fields[0].field, event.relatedTarget.value)}
                         />
                         <div className="input-slider" />
                     </label>
@@ -221,7 +239,7 @@ class Widget extends Component {
                 )
             case "Button":
                 return (
-                    <button className="btn btn-sm btn-meta-primary">Add</button>
+                    <button className="btn btn-sm btn-meta-primary">{data.value}</button>
                 )
             default:
                 return (
