@@ -34,7 +34,7 @@ class Window extends Component {
         return columns.map((elem, id)=> {
             const elementGroups = elem.elementGroups;
             return (
-            <div className={"col-xs-" + colWidth} key={'col' + id}>
+                <div className={"col-xs-" + colWidth} key={'col' + id}>
                     {this.renderElementGroups(elementGroups)}
                 </div>
             )
@@ -42,21 +42,29 @@ class Window extends Component {
     }
     renderElementGroups = (group) => {
         return group.map((elem, id)=> {
-            const {type, elements} = elem;
+            const {type, elementsLine} = elem;
             return (
                 <div
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
+                    {this.renderElementsLine(elementsLine)}
+                </div>
+            )
+        })
+    }
+    renderElementsLine = (elementsLine) => {
+        return elementsLine.map((elems, id)=> {
+            const elements = elem.elements;
+            return (
+                <div className="elements-line">
                     {this.renderElements(elements)}
                 </div>
             )
         })
     }
     renderElements = (elements) => {
-
         const {type} = this.props.layout;
-
         return elements.map((elem, id)=> {
             return (
                 <Widget key={'element' + id} windowType={type} {...elem} />

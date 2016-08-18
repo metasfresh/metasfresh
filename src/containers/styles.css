@@ -898,3 +898,16 @@ input:checked + .input-slider:before {
 .input-mandatory {
     border: 2px solid $brand-mandatory-color;
 }
+
+.elements-line {
+    display: flex;
+    width:100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.elements-line > * {
+    flex: 1 1 auto;
+}
