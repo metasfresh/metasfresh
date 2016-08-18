@@ -85,6 +85,8 @@ public class WindowRestController
 		//
 		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
 		//
+		// LogManager.setLoggerLevel("org.adempiere.ad.expression.api", Level.TRACE); // logic expressions debugging
+		//
 		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
 		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
 
@@ -96,6 +98,7 @@ public class WindowRestController
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "en_US");
 		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
+		Env.setContext(ctx, "#C_UOM_ID", 100);
 
 		Services.get(IValuePreferenceBL.class)
 				.getAllWindowPreferences(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx), Env.getAD_User_ID(ctx))
