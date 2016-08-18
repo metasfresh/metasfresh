@@ -244,13 +244,20 @@ public class SqlDocumentRepository implements DocumentRepository
 		final String sqlParentLinkColumnName = entityBinding.getSqlParentLinkColumnName();
 		if (sqlParentLinkColumnName != null)
 		{
-			if (sqlWhereClause.length() > 0)
+			if (query.isParentLinkIdSet())
 			{
-				sqlWhereClause.append("\n AND ");
+				if (sqlWhereClause.length() > 0)
+				{
+					sqlWhereClause.append("\n AND ");
+				}
+				sqlWhereClause.append(" /* parent link */ ");
+				sqlWhereClause.append(sqlParentLinkColumnName).append("=?");
+				sqlParams.add(query.getParentLinkId());
 			}
-			sqlWhereClause.append(" /* parent link */ ");
-			sqlWhereClause.append(sqlParentLinkColumnName).append("=?");
-			sqlParams.add(query.getParentLinkId());
+			else if (!query.isRecordIdSet())
+			{
+				throw new AdempiereException("Query shall filter at least by recordId or parentLinkId: " + query);
+			}
 		}
 
 		return sqlWhereClause.toString();
@@ -442,7 +449,7 @@ public class SqlDocumentRepository implements DocumentRepository
 	public void save(final Document document)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		
+
 		//
 		// Load the PO / Create new PO instance
 		final PO po;
@@ -471,7 +478,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		//
 		// Actual save
 		InterfaceWrapperHelper.save(po);
-		
+
 		// TODO: save included documents if any
 		// * first, update their parent link if needed
 		// * save them

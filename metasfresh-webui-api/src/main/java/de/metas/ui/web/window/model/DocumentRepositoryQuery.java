@@ -56,7 +56,7 @@ public final class DocumentRepositoryQuery
 	private DocumentRepositoryQuery(final Builder builder)
 	{
 		super();
-		entityDescriptor = builder.entityDescriptor;
+		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
 	}
@@ -66,9 +66,9 @@ public final class DocumentRepositoryQuery
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("entityDescriptor", entityDescriptor)
 				.add("recordId", recordId)
 				.add("parentDocument", parentDocument)
+				.add("entityDescriptor", entityDescriptor)
 				.toString();
 	}
 
@@ -81,7 +81,7 @@ public final class DocumentRepositoryQuery
 	{
 		return recordId;
 	}
-	
+
 	public boolean isRecordIdSet()
 	{
 		return recordId >= 0;
@@ -95,6 +95,11 @@ public final class DocumentRepositoryQuery
 	public Object getParentLinkId()
 	{
 		return parentDocument == null ? null : parentDocument.getDocumentId();
+	}
+
+	public boolean isParentLinkIdSet()
+	{
+		return parentDocument != null;
 	}
 
 	public Evaluatee getEvaluationContext()
