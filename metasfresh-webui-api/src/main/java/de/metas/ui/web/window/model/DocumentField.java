@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONValues;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 /*
  * #%L
@@ -421,11 +422,19 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 	/* package */List<LookupValue> getLookupValues(final Document document)
 	{
+		if(lookupDataSource == null)
+		{
+			throw new DocumentFieldNotLookupException(getFieldName());
+		}
 		return lookupDataSource.findEntities(document, LookupDataSource.DEFAULT_PageLength);
 	}
 
 	/* package */List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
 	{
+		if(lookupDataSource == null)
+		{
+			throw new DocumentFieldNotLookupException(getFieldName());
+		}
 		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
 	}
 
