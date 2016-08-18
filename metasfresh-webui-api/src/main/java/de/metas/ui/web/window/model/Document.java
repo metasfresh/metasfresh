@@ -113,7 +113,7 @@ public final class Document
 		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
 		windowNo = nextWindowNo.incrementAndGet();
 		_parentDocument = builder.parentDocument;
-		_writable = false;
+		_writable = _parentDocument != null ? _parentDocument.isWritable() : false;
 
 		//
 		// Create document fields
