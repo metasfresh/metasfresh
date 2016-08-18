@@ -66,7 +66,7 @@ import de.metas.lock.api.ILock;
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 	private static final String SYSCONFIG_ItemsPerBatch = "de.metas.invoicecandidate.api.impl.InvoiceCandInvalidUpdater.ItemsPerBatch";
-	private static final int DEFAULT_ItemsPerBatch = 50;
+	private static final int DEFAULT_ItemsPerBatch = 1;
 
 	//
 	// Parameters
