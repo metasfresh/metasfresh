@@ -17,6 +17,7 @@ Here come the actual release notes:
  * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
  * #295 sql in purchase inout takes too long
    - performance improvement in the jasper file
+ * #292 Automatically add reference no from purchase order to invoice candidate
 
 ## Fixes
 
