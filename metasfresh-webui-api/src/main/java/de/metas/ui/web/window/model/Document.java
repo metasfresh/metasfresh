@@ -88,6 +88,7 @@ public final class Document
 
 	private final Map<String, DocumentField> fieldsByName;
 	private final IDocumentFieldView idField;
+	private final DocumentField parentLinkField;
 
 	private final Document _parentDocument;
 	private final Map<String, IncludedDocumentsCollection> includedDocuments;
@@ -120,6 +121,7 @@ public final class Document
 		{
 			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
 			IDocumentFieldView idField = null;
+			DocumentField parentLinkField = null;
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String fieldName = fieldDescriptor.getFieldName();
@@ -131,9 +133,16 @@ public final class Document
 					Check.assumeNull(idField, "Only one ID field shall exist but we found: {}, {}", idField, field); // shall no happen at this level
 					idField = field;
 				}
+
+				if (fieldDescriptor.isParentLink())
+				{
+					Check.assumeNull(parentLinkField, "Only one parent link field shall exist but we found: {}, {}", parentLinkField, field); // shall no happen at this level
+					parentLinkField = field;
+				}
 			}
 			fieldsByName = fieldsBuilder.build();
 			this.idField = idField;
+			this.parentLinkField = parentLinkField;
 		}
 
 		//
@@ -200,6 +209,7 @@ public final class Document
 		{
 			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
 			IDocumentFieldView idField = null;
+			DocumentField parentLinkField = null;
 			for (final DocumentField fieldOrig : from.fieldsByName.values())
 			{
 				final DocumentField fieldCopy = fieldOrig.copy(this);
@@ -210,9 +220,14 @@ public final class Document
 				{
 					idField = fieldCopy;
 				}
+				if (fieldOrig == from.parentLinkField)
+				{
+					parentLinkField = fieldCopy;
+				}
 			}
 			fieldsByName = fieldsBuilder.build();
 			this.idField = idField;
+			this.parentLinkField = parentLinkField;
 		}
 
 		//
