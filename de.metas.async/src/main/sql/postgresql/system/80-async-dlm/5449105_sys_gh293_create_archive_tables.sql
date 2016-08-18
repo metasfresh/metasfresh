@@ -30,10 +30,6 @@ COMMENT ON TABLE dlm.c_queue_block_archived IS 'Contains old records from the C_
 CREATE TABLE dlm.C_Queue_Workpackage_ToArchive_All AS SELECT C_Queue_Workpackage_ID, C_Queue_Block_ID FROM C_Queue_Workpackage LIMIT 0;
 COMMENT ON TABLE dlm.C_Queue_Workpackage_ToArchive_All IS 'Contains C_queue_Workpackage records that will be moved for archive tables by future invocation(s) of the dlm.Archive_C_Queue_Data() function; see https://github.com/metasfresh/metasfresh/issues/293';
 
-DROP INDEX IF EXISTS dlm.c_queue_workpackage_toarchive_all_c_async_batch_id_idx;
-CREATE INDEX c_queue_workpackage_toarchive_all_c_async_batch_id_idx
-  ON dlm.c_queue_workpackage_toarchive_all
-  (c_async_batch_id);
 DROP INDEX IF EXISTS dlm.c_queue_workpackage_toarchive_all_c_queue_block_id_idx;
 CREATE INDEX c_queue_workpackage_toarchive_all_c_queue_block_id_idx
   ON dlm.c_queue_workpackage_toarchive_all
