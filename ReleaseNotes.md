@@ -14,6 +14,7 @@ Here come the actual release notes:
 
 ## Features
  * #273 Report "Anbauplanung" addition & adjustment
+ * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
 
 ## Fixes
 
