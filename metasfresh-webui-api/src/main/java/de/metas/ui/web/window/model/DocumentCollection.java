@@ -211,7 +211,7 @@ public class DocumentCollection
 	{
 		//
 		// Try saving it if possible
-		document.saveIfPossible();
+		document.saveIfValidAndHasChanges();
 
 		//
 		// Get the root document and it's OLD and NEW ids

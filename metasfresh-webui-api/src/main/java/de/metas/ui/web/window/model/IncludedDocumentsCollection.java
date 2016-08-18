@@ -8,6 +8,7 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
-public class IncludedDocumentsCollection
+/*package*/class IncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -76,6 +77,14 @@ public class IncludedDocumentsCollection
 			final Document documentCopy = documentOrig.copy(parentDocumentCopy);
 			documents.put(documentId, documentCopy);
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("detailId", entityDescriptor.getDetailId())
+				.toString();
 	}
 
 	private DocumentRepository getDocumentsRepository()
@@ -217,5 +226,27 @@ public class IncludedDocumentsCollection
 	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy)
 	{
 		return new IncludedDocumentsCollection(this, parentDocumentCopy);
+	}
+
+	/* package */boolean isValidForSaving()
+	{
+		for (final Document document : documents.values())
+		{
+			if (!document.isValidForSaving())
+			{
+				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid", this, document);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/* package */void saveIfHasChanges()
+	{
+		for (final Document document : documents.values())
+		{
+			document.saveIfHasChanges();
+		}
 	}
 }

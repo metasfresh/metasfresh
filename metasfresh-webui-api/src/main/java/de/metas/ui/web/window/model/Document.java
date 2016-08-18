@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -76,6 +77,7 @@ public final class Document
 	private static final ReasonSupplier REASON_Value_DirectSetOnDocument = () -> "direct set on Document";
 	private static final ReasonSupplier REASON_Value_NewDocument = () -> "new document";
 	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
+	private static final ReasonSupplier REASON_Value_ParentLinkUpdateOnSave = () -> "parent link update on save";
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 
@@ -83,6 +85,7 @@ public final class Document
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final boolean _writable;
+	private boolean _initializing = false;
 
 	private final ICalloutExecutor calloutExecutor;
 
@@ -277,29 +280,42 @@ public final class Document
 	{
 		logger.trace("Initializing fields: mode={}", mode);
 
-		for (final DocumentField documentField : getFields())
+		if (_initializing)
 		{
-			initializeField(documentField, mode, initialValueSupplier);
+			throw new InvalidDocumentStateException(this, "already initializing");
 		}
+		_initializing = true;
+		try
+		{
+			for (final DocumentField documentField : getFields())
+			{
+				initializeField(documentField, mode, initialValueSupplier);
+			}
 
-		//
-		if (FieldInitializationMode.NewDocument == mode)
-		{
-			executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
+			//
+			if (FieldInitializationMode.NewDocument == mode)
+			{
+				executeAllCallouts(); // FIXME: i think it would be better to trigger the callouts when setting the initial value
 
-			final boolean collectEventsEventIfNoChange = true;
-			updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+				final boolean collectEventsEventIfNoChange = true;
+				updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+			}
+			else if (FieldInitializationMode.Load == mode)
+			{
+				final boolean collectEventsEventIfNoChange = false; // not relevant because we are not collecting events at all
+				updateAllFieldsFlags(NullDocumentFieldChangedEventCollector.instance, collectEventsEventIfNoChange);
+			}
+			else if (FieldInitializationMode.Refresh == mode)
+			{
+				// NOTE: we don't have to update all fields because we updated one by one when initialized
+				// final boolean collectEventsEventIfNoChange = false;
+				// updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+			}
+
 		}
-		else if (FieldInitializationMode.Load == mode)
+		finally
 		{
-			final boolean collectEventsEventIfNoChange = false; // not relevant because we are not collecting events at all
-			updateAllFieldsFlags(NullDocumentFieldChangedEventCollector.instance, collectEventsEventIfNoChange);
-		}
-		else if (FieldInitializationMode.Refresh == mode)
-		{
-			// NOTE: we don't have to update all fields because we updated one by one when initialized
-			// final boolean collectEventsEventIfNoChange = false;
-			// updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+			_initializing = false;
 		}
 	}
 
@@ -312,15 +328,34 @@ public final class Document
 	 */
 	private void initializeField(final DocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
 	{
-		//
-		// Get the initialization value
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-		final Object initialValue = initialValueSupplier.getInitialValue(fieldDescriptor);
+		boolean valueSet = false;
+		Object valueOld = null;
+		try
+		{
+			//
+			// Get the initialization value
+			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+			final Object initialValue = initialValueSupplier.getInitialValue(fieldDescriptor);
 
-		//
-		// Update field's initial value
-		final Object valueOld = documentField.getValue();
-		documentField.setInitialValue(initialValue);
+			//
+			// Update field's initial value
+			valueOld = documentField.getValue();
+			documentField.setInitialValue(initialValue);
+
+			valueSet = true;
+		}
+		catch (final Exception e)
+		{
+			valueSet = false;
+			if (FieldInitializationMode.NewDocument == mode)
+			{
+				logger.warn("Failed initializing {}, mode={} using {}", documentField, mode, initialValueSupplier, e);
+			}
+			else
+			{
+				throw Throwables.propagate(e);
+			}
+		}
 
 		//
 		// After field was initialized, based on "mode", trigger events, update other fields etc
@@ -341,19 +376,22 @@ public final class Document
 		}
 		else if (FieldInitializationMode.Refresh == mode)
 		{
-			// Collect change event and update dependencies only if the field's value changed
-			final Object valueNew = documentField.getValue();
-			if (!Objects.equals(valueOld, valueNew))
+			if (valueSet)
 			{
-				// collect changed value
-				final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-				eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
+				// Collect change event and update dependencies only if the field's value changed
+				final Object valueNew = documentField.getValue();
+				if (!Objects.equals(valueOld, valueNew))
+				{
+					// collect changed value
+					final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+					eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
 
-				// Update all fields which depends on this field
-				updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
+					// Update all fields which depends on this field
+					updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
 
-				// NOTE: don't call callouts because this was not a user change.
-				// calloutExecutor.execute(documentField.asCalloutField());
+					// NOTE: don't call callouts because this was not a user change.
+					// calloutExecutor.execute(documentField.asCalloutField());
+				}
 			}
 		}
 	}
@@ -444,10 +482,16 @@ public final class Document
 
 	private final void assertWritable()
 	{
-		if (!_writable)
+		if (_writable)
 		{
-			throw new InvalidDocumentStateException(this, "not a writable copy");
+			return;
 		}
+		if (_initializing)
+		{
+			return;
+		}
+
+		throw new InvalidDocumentStateException(this, "not a writable copy");
 	}
 
 	/* package */final void destroy()
@@ -463,8 +507,10 @@ public final class Document
 	@Override
 	public final String toString()
 	{
+		final Document parentDocument = getParentDocument();
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
 				.add("id", getDocumentId())
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
@@ -591,7 +637,7 @@ public final class Document
 
 	/**
 	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
-	 * 
+	 *
 	 * @param fieldName
 	 * @param value
 	 * @param reason
@@ -971,10 +1017,8 @@ public final class Document
 		return getDynAttribute(name);
 	}
 
-	private boolean isValid()
+	/* package */ boolean isValidForSaving()
 	{
-		boolean valid = true;
-
 		//
 		// Check document fields
 		for (final DocumentField documentField : getFields())
@@ -982,16 +1026,32 @@ public final class Document
 			if (!documentField.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid", documentField);
-				valid = false;
-				break;
+				return false;
 			}
 		}
 
-		return valid;
+		//
+		// Check included documents
+		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		{
+			if (!includedDocumentsPerDetailId.isValidForSaving())
+			{
+				logger.trace("Considering document invalid because {} is not valid", includedDocumentsPerDetailId);
+				return false;
+			}
+		}
+
+		return true; // valid
 	}
 
 	private boolean hasChanges()
 	{
+		// If this is a new document then always consider it as changed
+		if (isNew())
+		{
+			return true;
+		}
+
 		boolean changes = false;
 
 		//
@@ -1010,29 +1070,56 @@ public final class Document
 
 	}
 
-	public void saveIfPossible()
+	public void saveIfValidAndHasChanges()
 	{
-		if (!isValid())
+		//
+		// Update parent link field
+		final Document parentDocument = getParentDocument();
+		if (parentLinkField != null && parentDocument != null)
+		{
+			setValue(parentLinkField, parentDocument.getDocumentId(), REASON_Value_ParentLinkUpdateOnSave);
+		}
+
+		//
+		// Check if valid for saving
+		if (!isValidForSaving())
 		{
 			logger.debug("Skip saving because document is not valid: {}", this);
 			return;
 		}
 
-		if (!isNew() && !hasChanges())
-		{
-			logger.debug("Skip saving because document has NO change: {}", this);
-			return;
-		}
-
+		//
+		// Try saving it
 		try
 		{
-			getDocumentRepository().save(this);
-			logger.debug("Document saved: {}", this);
+			saveIfHasChanges();
 		}
 		catch (final Exception e)
 		{
 			// NOTE: usually if we do the right checkings we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, e);
+		}
+	}
+
+	/* package */void saveIfHasChanges() throws RuntimeException
+	{
+		//
+		// Save this document
+		if (hasChanges())
+		{
+			getDocumentRepository().save(this);
+			logger.debug("Document saved: {}", this);
+		}
+		else
+		{
+			logger.debug("Skip saving because document has NO change: {}", this);
+		}
+
+		//
+		// Try also saving the included documents
+		for (final IncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
+		{
+			includedDocumentsForDetailId.saveIfHasChanges();
 		}
 	}
 
