@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.model.POWrapper;
 import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -212,7 +213,7 @@ public final class DocumentEvaluatee implements Evaluatee
 			// FIXME: hardcoded default to avoid a lot of warnings
 			if (variableName.endsWith("_ID"))
 			{
-				return "-1";
+				return String.valueOf(POWrapper.getFirstValidIdByColumnName(variableName) - 1);
 			}
 
 			// TODO: find some defaults?
