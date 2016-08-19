@@ -18,6 +18,7 @@ Here come the actual release notes:
  * #295 sql in purchase inout takes too long
    - performance improvement in the jasper file
  * #292 Automatically add reference no from purchase order to invoice candidate
+ * #293 Create cron job for archiving the async-tables
 
 ## Fixes
  * #251 Invoice Candidates double invoiced
