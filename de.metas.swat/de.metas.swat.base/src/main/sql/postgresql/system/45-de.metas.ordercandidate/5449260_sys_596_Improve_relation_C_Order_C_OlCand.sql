@@ -86,3 +86,28 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 UPDATE AD_RelationType SET AD_Reference_Source_ID=540201, AD_Reference_Target_ID=540618,Updated=TO_TIMESTAMP('2016-08-19 18:13:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540154
 ;
 
+
+
+-- Aug 19, 2016 7:04 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='exists
+(
+	select 1 from C_OrderLine ol
+	join C_Order_Line_Alloc ola on ol.C_OrderLine_ID = ola.C_OrderLine_ID and ol.C_Order_ID = @C_Order_ID/-1@ 
+	join C_OLCand olc on ola.C_OLCand_ID = olc.C_Olcand_ID 
+	where
+	C_OLCand.C_OLCand_ID = olc.C_OLCand_ID
+)',Updated=TO_TIMESTAMP('2016-08-19 19:04:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540619
+;
+
+-- Aug 19, 2016 7:13 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='exists
+(
+	select 1 from C_OrderLine ol 
+	join C_Order_Line_Alloc ola on ol.C_OrderLine_ID = ola.C_OrderLine_ID and ola.C_OLCand_ID = @C_OLCand_ID/-1@
+	join C_OLCand olc on ola.C_OLCand_ID = olc.C_Olcand_ID 
+	where  C_Order.C_Order_ID = ol.C_Order_ID
+)',Updated=TO_TIMESTAMP('2016-08-19 19:13:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540618
+;
+
