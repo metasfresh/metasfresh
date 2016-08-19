@@ -20,6 +20,7 @@ Here come the actual release notes:
  * #292 Automatically add reference no from purchase order to invoice candidate
 
 ## Fixes
+ * #251 Invoice Candidates double invoiced
 
 # metasfresh 4.31.30a (2016-33a RC for weekly release)
 
