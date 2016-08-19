@@ -42,12 +42,12 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,6 +64,12 @@ public class POJODocumentRepository implements DocumentRepository
 	public POJODocumentRepository()
 	{
 		super();
+	}
+
+	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getDataBinding().getTableName();
+		return POJOLookupMap.get().nextId(tableName);
 	}
 
 	@Override
@@ -90,7 +96,7 @@ public class POJODocumentRepository implements DocumentRepository
 		final String tableName = entityDescriptor.getDataBinding().getTableName();
 
 		final List<Object> result = new ArrayList<>();
-		for (Object model : POJOLookupMap.get().getRawRecords(tableName))
+		for (final Object model : POJOLookupMap.get().getRawRecords(tableName))
 		{
 			final POJOWrapper modelWrapper = POJOWrapper.getWrapper(model);
 			if (query.isRecordIdSet() && modelWrapper.getId() != query.getRecordId())
@@ -137,10 +143,12 @@ public class POJODocumentRepository implements DocumentRepository
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
+		final int documentId = getNextId(entityDescriptor);
 		return Document.builder()
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setDocumentIdSupplier(() -> documentId)
 				.initializeAsNewDocument()
 				.build();
 	}
@@ -151,13 +159,17 @@ public class POJODocumentRepository implements DocumentRepository
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setDocumentIdSupplier(() -> retrieveDocumentId(entityDescriptor.getIdField(), fromModel))
 				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, fromModel))
 				.build();
 	}
 
-	/*
-	 * Based on org.compiere.model.GridTable.readData(ResultSet).
-	 */
+	private int retrieveDocumentId(final DocumentFieldDescriptor idFieldDescriptor, final Object fromModel)
+	{
+		final Integer valueInt = (Integer)retrieveDocumentFieldValue(idFieldDescriptor, fromModel);
+		return valueInt;
+	}
+
 	private Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final Object fromModel)
 	{
 		final DocumentFieldDataBindingDescriptor fieldDataBinding = fieldDescriptor.getDataBinding();

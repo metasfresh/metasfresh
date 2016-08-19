@@ -1,10 +1,12 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -28,17 +30,17 @@ import com.google.common.collect.ImmutableSet;
  * #L%
  */
 
-public final class NullDocumentFieldChangedEventCollector implements IDocumentFieldChangedEventCollector
+public final class NullDocumentChangesCollector implements IDocumentChangesCollector
 {
-	public static final transient NullDocumentFieldChangedEventCollector instance = new NullDocumentFieldChangedEventCollector();
+	public static final transient NullDocumentChangesCollector instance = new NullDocumentChangesCollector();
 
-	private NullDocumentFieldChangedEventCollector()
+	private NullDocumentChangesCollector()
 	{
 		super();
 	}
 
 	@Override
-	public Set<String> getFieldNames()
+	public Set<String> getFieldNames(final DocumentPath documentPath)
 	{
 		return ImmutableSet.of();
 	}
@@ -50,9 +52,9 @@ public final class NullDocumentFieldChangedEventCollector implements IDocumentFi
 	}
 
 	@Override
-	public List<DocumentFieldChangedEvent> toEventsList()
+	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
 	{
-		return ImmutableList.of();
+		return ImmutableMap.of();
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public final class NullDocumentFieldChangedEventCollector implements IDocumentFi
 	}
 
 	@Override
-	public void collectFrom(final IDocumentFieldChangedEventCollector fromCollector)
+	public void collectFrom(final IDocumentChangesCollector fromCollector)
 	{
 		// do nothing
 	}

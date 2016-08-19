@@ -158,7 +158,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			mainTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.map(gridFieldVO -> documentFieldDescriptorBuilder(mainTabVO, mainEntityBindingsBuilder.getSqlTableAlias(), gridFieldVO).build())
+					.map(gridFieldVO -> documentFieldDescriptorBuilder(mainEntityBindingsBuilder, gridFieldVO).build())
 					.forEach(fieldDescriptor -> {
 						mainEntityBuilder.addField(fieldDescriptor);
 						mainEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -180,7 +180,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(detailTabVO.getTableName())
-					.setSqlTableAliasFromDetailId(detail.getDetailId())
+					.setDetailIdAndUpdateTableAlias(detail.getDetailId())
 					.setAD_Table_ID(detailTabVO.getAD_Table_ID()) // legacy
 					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO))
 					.setSqlWhereClause(detailTabVO.getWhereClause())
@@ -199,9 +199,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentFieldDescriptorBuilder(detailTabVO, detailEntityBindingsBuilder.getSqlTableAlias(), gridFieldVO)
-							.setParentLink(gridFieldVO.getColumnName().equals(detailEntityBindingsBuilder.getSqlParentLinkColumnName()))
-							.build())
+					.map(gridFieldVO -> documentFieldDescriptorBuilder(detailEntityBindingsBuilder, gridFieldVO).build())
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -371,13 +369,57 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		return elementGroupBuilder.build();
 	}
 
-	private DocumentFieldDescriptor.Builder documentFieldDescriptorBuilder(final GridTabVO gridTabVO, final String sqlTableAlias, final GridFieldVO gridFieldVO)
+	private DocumentFieldDescriptor.Builder documentFieldDescriptorBuilder(final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder, final GridFieldVO gridFieldVO)
 	{
-		final String sqlTableName = gridTabVO.getTableName();
-		final String detailId = extractDetailId(gridTabVO);
+		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
+		final String sqlTableAlias = detailEntityBindingsBuilder.getSqlTableAlias();
+		final String detailId = detailEntityBindingsBuilder.getDetailId();
 		//
+		final String sqlColumnName = gridFieldVO.getColumnName();
 		final boolean keyColumn = gridFieldVO.isKey();
+		final boolean parentLinkColumn = sqlColumnName.equals(detailEntityBindingsBuilder.getSqlParentLinkColumnName());
+		
+		//
+		//
+		final int displayType;
+		final int AD_Reference_Value_ID;
+		final int AD_Val_Rule_ID;
+		final DocumentFieldWidgetType widgetType;
+		final Class<?> valueClass;
+		final IStringExpression defaultValueExpression;
+		final ILogicExpression readonlyLogic;
+		final boolean alwaysUpdateable;
+		final ILogicExpression mandatoryLogic;
+		final ILogicExpression displayLogic;
+		if(parentLinkColumn)
+		{
+			displayType = DisplayType.ID;
+			AD_Reference_Value_ID = 0; // none
+			AD_Val_Rule_ID = 0;
+			widgetType = DocumentFieldWidgetType.Integer;
+			valueClass = Integer.class;
+			defaultValueExpression = IStringExpression.NULL;
+			readonlyLogic = ILogicExpression.TRUE;
+			alwaysUpdateable = false;
+			mandatoryLogic = ILogicExpression.TRUE;
+			displayLogic = ILogicExpression.FALSE;
+		}
+		else
+		{
+			displayType = gridFieldVO.getDisplayType();
+			AD_Reference_Value_ID = gridFieldVO.getAD_Reference_Value_ID();
+			AD_Val_Rule_ID = gridFieldVO.getAD_Val_Rule_ID();
+			widgetType = extractWidgetType(gridFieldVO);
+			valueClass = extractValueClass(gridFieldVO);
+			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
+			readonlyLogic = extractReadonlyLogic(gridFieldVO);
+			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
+			mandatoryLogic = extractMandatoryLogic(gridFieldVO);
+			displayLogic = extractDisplayLogic(gridFieldVO);
+		}
 
+		//
+		// ORDER BY SortNo
 		int orderBySortNo = gridFieldVO.getSortNo();
 		if (orderBySortNo == 0 && keyColumn)
 		{
@@ -387,36 +429,39 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)
-				.setSqlColumnName(gridFieldVO.getColumnName())
+				.setSqlColumnName(sqlColumnName)
 				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
 				.setAD_Column_ID(gridFieldVO.getAD_Column_ID()) // legacy
-				.setDisplayType(gridFieldVO.getDisplayType())
-				.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-				.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
+				.setDisplayType(displayType)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setAD_Val_Rule_ID(AD_Val_Rule_ID)
 				.setKeyColumn(keyColumn)
+				.setParentLinkColumn(parentLinkColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
 				.setOrderBy(orderBySortNo)
 				.build();
 
 		return DocumentFieldDescriptor.builder()
-				.setFieldName(gridFieldVO.getColumnName())
+				.setFieldName(sqlColumnName)
 				.setDetailId(detailId)
 				//
 				.setCaption(gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescription())
 				//
 				.setKey(keyColumn)
-				.setWidgetType(extractWidgetType(gridFieldVO))
-				.setValueClass(extractValueClass(gridFieldVO))
+				.setParentLink(parentLinkColumn)
+				//
+				.setWidgetType(widgetType)
+				.setValueClass(valueClass)
 				.setVirtualField(gridFieldVO.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
 				//
-				.setDefaultValueExpression(extractDefaultValueExpression(gridFieldVO))
+				.setDefaultValueExpression(defaultValueExpression)
 				//
-				.setReadonlyLogic(extractReadonlyLogic(gridFieldVO))
-				.setAlwaysUpdateable(extractAlwaysUpdateable(gridFieldVO))
-				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
-				.setDisplayLogic(extractDisplayLogic(gridFieldVO))
+				.setReadonlyLogic(readonlyLogic)
+				.setAlwaysUpdateable(alwaysUpdateable)
+				.setMandatoryLogic(mandatoryLogic)
+				.setDisplayLogic(displayLogic)
 				//
 				.setDataBinding(dataBinding);
 	}

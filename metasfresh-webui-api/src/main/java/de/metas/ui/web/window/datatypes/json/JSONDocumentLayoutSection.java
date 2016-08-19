@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -51,6 +54,7 @@ public final class JSONDocumentLayoutSection implements Serializable
 		return new JSONDocumentLayoutSection(section);
 	}
 
+	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
 
@@ -58,6 +62,13 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		columns = JSONDocumentLayoutColumn.ofList(section.getColumns());
+	}
+
+	@JsonCreator
+	private JSONDocumentLayoutSection(@JsonProperty("columns") final List<JSONDocumentLayoutColumn> columns)
+	{
+		super();
+		this.columns = columns == null ? ImmutableList.of() : ImmutableList.copyOf(columns);
 	}
 
 	@Override

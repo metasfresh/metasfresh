@@ -41,7 +41,7 @@ public class JSONDocumentFieldTest
 	@Test
 	public void test_deserialize_PreliminaryTest() throws Exception
 	{
-		final JSONDocumentField field = JSONDocumentField.ofName("field1");
+		final JSONDocumentField field = new JSONDocumentField("field1");
 		
 		final String json = jsonObjectMapper.writeValueAsString(field);
 		

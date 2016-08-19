@@ -1,25 +1,19 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.model.DocumentFieldChangedEvent;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 
@@ -57,24 +51,13 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
 {
-	public static final JSONDocumentField ofName(final String fieldName)
-	{
-		return new JSONDocumentField(fieldName);
-	}
-
-	public static final JSONDocumentField ofId(final Object jsonId, final String reason)
-	{
-		return new JSONDocumentField(FIELD_VALUE_ID)
-				.setValue(jsonId, reason);
-	}
-
 	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field)
 	{
 		final String name = field.getFieldName();
 		final Object valueJSON = field.getValueAsJsonObject();
 		final String reason = null; // N/A
 
-		final JSONDocumentField jsonField = JSONDocumentField.ofName(name)
+		final JSONDocumentField jsonField = new JSONDocumentField(name)
 				.setValue(valueJSON, reason)
 				.setReadonly(field.isReadonly(), reason)
 				.setMandatory(field.isMandatory(), reason)
@@ -84,12 +67,24 @@ public final class JSONDocumentField implements Serializable
 			jsonField.setLookupValuesStale(true, reason);
 		}
 
+		if (WindowConstants.isProtocolDebugging())
+		{
+			jsonField.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, field.toString());
+		}
+
 		return jsonField;
 	}
-
-	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChangedEvent event)
+	
+	public static final JSONDocumentField idField(final Object jsonValue)
 	{
-		final JSONDocumentField jsonField = JSONDocumentField.ofName(event.getFieldName());
+		final String reason = null; // N/A
+		return new JSONDocumentField(FIELD_VALUE_ID)
+				.setValue(jsonValue, reason);
+	}
+
+	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
+	{
+		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName());
 
 		if (event.isValueSet())
 		{
@@ -120,50 +115,14 @@ public final class JSONDocumentField implements Serializable
 			jsonField.setLookupValuesStale(lookupValuesStale, event.getLookupValuesStaleReason());
 		}
 
+		jsonField.putDebugProperties(event.getDebugProperties());
+
 		return jsonField;
 	}
 
-	public static List<JSONDocumentField> ofDocumentFieldChangedEventCollector(final IDocumentFieldChangedEventCollector eventsCollector)
-	{
-		final List<DocumentFieldChangedEvent> events = eventsCollector.toEventsList();
-		if (events.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<JSONDocumentField> jsonFields = new ArrayList<>(events.size() + 1);
-		DocumentFieldChangedEvent eventForIdField = null;
-		for (final DocumentFieldChangedEvent event : events)
-		{
-			final JSONDocumentField jsonField = ofDocumentFieldChangedEvent(event);
-			jsonFields.add(jsonField);
-
-			if (event.isKey() && event.isValueSet())
-			{
-				if (eventForIdField == null)
-				{
-					eventForIdField = event;
-
-					final Object value = event.getValueAsJsonObject();
-					final String id = value == null ? null : DocumentId.fromObject(value).toJson();
-					final JSONDocumentField jsonIdField = JSONDocumentField.ofId(id, event.getValueReason());
-					jsonFields.add(0, jsonIdField);
-				}
-				else
-				{
-					logger.warn("More then one ID changed event found: {}, {}", eventForIdField, event);
-				}
-			}
-		}
-
-		return jsonFields;
-	}
-
-	private static final transient Logger logger = LogManager.getLogger(JSONDocumentField.class);
-
 	@JsonProperty("field")
 	@JsonInclude(JsonInclude.Include.ALWAYS)
-	private String field;
+	private final String field;
 	public static final String FIELD_VALUE_ID = "ID";
 
 	@JsonProperty("value")
@@ -210,12 +169,7 @@ public final class JSONDocumentField implements Serializable
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonCreator
-	private JSONDocumentField()
-	{
-		super();
-	}
-
-	private JSONDocumentField(final String fieldName)
+	/* package */ JSONDocumentField(@JsonProperty("field") final String fieldName)
 	{
 		super();
 		field = fieldName;
@@ -241,35 +195,35 @@ public final class JSONDocumentField implements Serializable
 				.toString();
 	}
 
-	public JSONDocumentField setValue(final Object jsonValue, final String reason)
+	/* package */ JSONDocumentField setValue(final Object jsonValue, final String reason)
 	{
 		value = JSONNullValue.wrapIfNull(jsonValue);
 		valueReason = reason;
 		return this;
 	}
 
-	public JSONDocumentField setReadonly(final boolean readonly, final String reason)
+	/* package */ JSONDocumentField setReadonly(final boolean readonly, final String reason)
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
 		return this;
 	}
 
-	public JSONDocumentField setMandatory(final boolean mandatory, final String reason)
+	/* package */ JSONDocumentField setMandatory(final boolean mandatory, final String reason)
 	{
 		this.mandatory = mandatory;
 		mandatoryReason = reason;
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(final boolean displayed, final String reason)
+	/* package */ JSONDocumentField setDisplayed(final boolean displayed, final String reason)
 	{
 		this.displayed = displayed;
 		displayedReason = reason;
 		return this;
 	}
 
-	public JSONDocumentField setLookupValuesStale(final boolean lookupValuesStale, final String reason)
+	/* package */ JSONDocumentField setLookupValuesStale(final boolean lookupValuesStale, final String reason)
 	{
 		this.lookupValuesStale = lookupValuesStale;
 		lookupValuesStaleReason = reason;
@@ -279,11 +233,6 @@ public final class JSONDocumentField implements Serializable
 	public String getField()
 	{
 		return field;
-	}
-
-	public void setField(final String field)
-	{
-		this.field = field;
 	}
 
 	public Object getValue()
@@ -342,9 +291,29 @@ public final class JSONDocumentField implements Serializable
 		return otherProperties;
 	}
 
+	@JsonAnySetter
+	public void putOtherProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put(name, jsonValue);
+	}
+
 	public JSONDocumentField putDebugProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put("debug-" + name, jsonValue);
 		return this;
 	}
+
+	public void putDebugProperties(final Map<String, Object> debugProperties)
+	{
+		if (debugProperties == null || debugProperties.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, Object> e : debugProperties.entrySet())
+		{
+			putDebugProperty(e.getKey(), e.getValue());
+		}
+	}
+
 }

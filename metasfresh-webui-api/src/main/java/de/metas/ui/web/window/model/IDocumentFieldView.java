@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 /*
@@ -37,10 +38,12 @@ public interface IDocumentFieldView
 {
 	//@formatter:off
 	DocumentFieldDescriptor getDescriptor();
+	DocumentPath getDocumentPath();
 	String getFieldName();
 	boolean isKey();
 	boolean isCalculated();
 	boolean isVirtualField();
+	boolean hasChanges();
 	//@formatter:on
 
 	//@formatter:off

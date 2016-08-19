@@ -6,7 +6,9 @@ import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
@@ -77,8 +79,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.build();
 	}
 
+	@JsonProperty("field")
 	private final String field;
 
+	@JsonProperty("source")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLookupSource source;
 
@@ -87,6 +91,17 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		super();
 		field = fieldDescriptor.getField();
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
+	}
+
+	@JsonCreator
+	private JSONDocumentLayoutElementField(
+			@JsonProperty("field") final String field //
+			, @JsonProperty("source") final JSONLookupSource source //
+	)
+	{
+		super();
+		this.field = field;
+		this.source = source;
 	}
 
 	@Override

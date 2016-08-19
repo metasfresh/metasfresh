@@ -24,7 +24,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -452,11 +452,11 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		{
 			throw new AdempiereException("Setting values in an old object is not allowed");
 		}
-		
+
 		return setValue(document, propertyName, value, failOnColumnNotFound);
 	}
-	
-	/*package*/static final boolean setValue(final Document document, final String propertyName, final Object value, final boolean failOnColumnNotFound)
+
+	/* package */static final boolean setValue(final Document document, final String propertyName, final Object value, final boolean failOnColumnNotFound)
 	{
 		final Object valueFixed = POWrapper.checkZeroIdValue(propertyName, value);
 		try
@@ -512,8 +512,18 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		final IDocumentFieldView idField = document.getFieldViewOrNull(idPropertyName);
 		if (idField == null)
 		{
-			logger.warn("Field " + idPropertyName + " not found for " + document + ". Assuming null value.");
+			logger.warn("Field {} not found for {}. Assuming null value.", idPropertyName, document);
 			return null;
+		}
+
+		//
+		// Parent link
+		if (idField.getDescriptor().isParentLink())
+		{
+			final Class<?> returnType = method.getReturnType();
+			final Integer record_id = (Integer)getValue(idField, Integer.class);
+			final Object parentModel = getReferencedObjectFromParentDocument(returnType, record_id);
+			return parentModel;
 		}
 
 		// Fetch Record_ID
@@ -525,42 +535,40 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 		// Load and return
 		final Class<?> returnType = method.getReturnType();
-
-		Object retValue = null;
-		if (idField.getDescriptor().isParentLink())
-		{
-			retValue = getReferencedObjectFromParentTab(returnType, record_id);
-		}
-
-		if (retValue == null)
-		{
-			retValue = InterfaceWrapperHelper.create(getCtx(), record_id, returnType, getTrxName());
-		}
-		return retValue;
+		final Object model = InterfaceWrapperHelper.create(getCtx(), record_id, returnType, getTrxName());
+		return model;
 	}
 
-	private Object getReferencedObjectFromParentTab(final Class<?> modelClass, final int parentRecordId)
+	private Object getReferencedObjectFromParentDocument(final Class<?> modelClass, final Integer parentRecordId)
 	{
 		final Document parentDocument = document.getParentDocument();
 		if (parentDocument == null)
 		{
+			logger.warn("Failed fetching the parent link document because there is none for {}", document);
 			return null;
 		}
 
-		if (parentDocument.getDocumentId() != parentRecordId)
+		//
+		// Make sure the parent has the expected ID.
+		// In case the parentRecordId is null, we assume the parent is NEW and that's why it was not set.
+		if (parentRecordId != null && parentDocument.getDocumentId() != parentRecordId)
 		{
+			logger.warn("Failed fetching the parent link document because parent document does not have the expected ID. \n Document: {} \n Parent document: {} \n Expected parent ID: {}", document,
+					parentDocument, parentRecordId);
 			return null;
 		}
 
 		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (modelTableName == null)
 		{
+			logger.warn("Failed fetching the parent link document because required model class {} has no TableName", modelClass);
 			return null;
 		}
 
 		final String parentTableName = parentDocument.getEntityDescriptor().getDataBinding().getTableName();
 		if (!modelTableName.equals(parentTableName))
 		{
+			logger.warn("Failed fetching the parent link document because parent document's table name ({}) is not matching the expected table name ({})", parentTableName, modelTableName);
 			return null;
 		}
 

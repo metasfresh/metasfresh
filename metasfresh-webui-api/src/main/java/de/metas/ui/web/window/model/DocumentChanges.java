@@ -7,10 +7,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -34,54 +37,69 @@ import de.metas.ui.web.window.WindowConstants;
  * #L%
  */
 
-public class DocumentFieldChangedEventCollector implements IDocumentFieldChangedEventCollector
+public final class DocumentChanges
 {
-	public static final DocumentFieldChangedEventCollector newInstance()
-	{
-		return new DocumentFieldChangedEventCollector();
-	}
+	private final DocumentPath documentPath;
+	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
 
-	private final Map<String, DocumentFieldChangedEvent> fieldName2event = new LinkedHashMap<>();
-
-	private DocumentFieldChangedEventCollector()
+	/* package */ DocumentChanges(final DocumentPath documentPath)
 	{
 		super();
+
+		Preconditions.checkNotNull(documentPath, "documentPath");
+		this.documentPath = documentPath;
+	}
+
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(fieldName2event)
+				.add("documentPath", documentPath)
+				.add("fields", fieldChangesByName)
 				.toString();
 	}
 
-	@Override
 	public Set<String> getFieldNames()
 	{
-		return ImmutableSet.copyOf(fieldName2event.keySet());
+		return ImmutableSet.copyOf(fieldChangesByName.keySet());
 	}
 
-	@Override
 	public boolean isEmpty()
 	{
-		return fieldName2event.isEmpty();
+		return fieldChangesByName.isEmpty();
 	}
 
-	private DocumentFieldChangedEvent getFieldChangedEvent(final IDocumentFieldView documentField)
+	private DocumentFieldChange fieldChangesOf(final IDocumentFieldView documentField)
 	{
-		return getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
+		// Make sure the field is about same document path
+		if (!documentPath.equals(documentField.getDocumentPath()))
+		{
+			throw new IllegalArgumentException("Field " + documentField + " does not have expected path: " + documentPath);
+		}
+
+		return fieldChangesByName.computeIfAbsent(documentField.getFieldName(), (fieldName) -> {
+			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey());
+			if (WindowConstants.isProtocolDebugging())
+			{
+				event.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, documentField.toString());
+			}
+			return event;
+		});
 	}
 
-	private DocumentFieldChangedEvent getFieldChangedEvent(final String fieldName, final boolean key)
+	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key)
 	{
-		return fieldName2event.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChangedEvent.of(newFieldName, key));
+		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key));
 	}
 
-	@Override
-	public List<DocumentFieldChangedEvent> toEventsList()
+	public List<DocumentFieldChange> getFieldChangesList()
 	{
-		return ImmutableList.copyOf(fieldName2event.values());
+		return ImmutableList.copyOf(fieldChangesByName.values());
 	}
 
 	private static final String extractReason(final ReasonSupplier reasonSupplier)
@@ -92,7 +110,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		}
 
 		// Extract the reason only if debugging is enabled
-		if(!WindowConstants.isProtocolDebugging())
+		if (!WindowConstants.isProtocolDebugging())
 		{
 			return null;
 		}
@@ -109,7 +127,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 	private static final String mergeReasons(final ReasonSupplier reasonSupplier, final String previousReason, final Object previousValue)
 	{
 		// Collect the reason only if debugging is enabled
-		if(!WindowConstants.isProtocolDebugging())
+		if (!WindowConstants.isProtocolDebugging())
 		{
 			return null;
 		}
@@ -134,66 +152,59 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 		return reasonNew.toString();
 	}
 
-	@Override
-	public void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	/* package */ void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		getFieldChangedEvent(documentField).setValue(documentField.getValue(), extractReason(reason));
+		fieldChangesOf(documentField).setValue(documentField.getValue(), extractReason(reason));
 	}
 
-	@Override
-	public void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	/* package */ void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		getFieldChangedEvent(documentField).setReadonly(documentField.isReadonly(), extractReason(reason));
+		fieldChangesOf(documentField).setReadonly(documentField.isReadonly(), extractReason(reason));
 	}
 
-	@Override
-	public void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	/* package */ void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		getFieldChangedEvent(documentField).setMandatory(documentField.isMandatory(), extractReason(reason));
+		fieldChangesOf(documentField).setMandatory(documentField.isMandatory(), extractReason(reason));
 	}
 
-	@Override
-	public void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	/* package */ void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		getFieldChangedEvent(documentField).setDisplayed(documentField.isDisplayed(), extractReason(reason));
+		fieldChangesOf(documentField).setDisplayed(documentField.isDisplayed(), extractReason(reason));
 	}
 
-	@Override
-	public void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	/* package */ void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		getFieldChangedEvent(documentField).setLookupValuesStale(true, extractReason(reason));
+		fieldChangesOf(documentField).setLookupValuesStale(true, extractReason(reason));
 	}
 
-	@Override
-	public void collectFrom(final IDocumentFieldChangedEventCollector fromCollector)
+	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
 	{
-		for (final DocumentFieldChangedEvent fromEvent : fromCollector.toEventsList())
+		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
-			final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(fromEvent.getFieldName(), fromEvent.isKey());
-			toEvent.mergeFrom(fromEvent);
+			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey());
+			toFieldChange.mergeFrom(fromFieldChange);
 		}
 	}
 
-	@Override
-	public boolean collectFrom(final Document document, final ReasonSupplier reason)
+	/* package */boolean collectFrom(final Document document, final ReasonSupplier reason)
 	{
 		boolean collected = false;
-		
+
 		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
-			if(collectFrom(documentField, reason))
+			if (collectFrom(documentField, reason))
 			{
 				collected = true;
 			}
 		}
-		
+
 		return collected;
 	}
 
 	private boolean collectFrom(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		final DocumentFieldChangedEvent toEvent = getFieldChangedEvent(documentField.getFieldName(), documentField.isKey());
-		
+		final DocumentFieldChange toEvent = fieldChangesOf(documentField);
+
 		boolean collected = false;
 
 		//
@@ -240,7 +251,7 @@ public class DocumentFieldChangedEventCollector implements IDocumentFieldChanged
 			toEvent.setDisplayed(displayed, mergeReasons(reason, toEvent.getDisplayedReason()));
 			collected = true;
 		}
-		
+
 		return collected;
 	}
 }

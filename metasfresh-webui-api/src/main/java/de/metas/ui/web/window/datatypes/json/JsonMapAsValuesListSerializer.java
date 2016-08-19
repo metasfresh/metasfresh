@@ -1,8 +1,12 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Map;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /*
  * #%L
@@ -26,28 +30,18 @@ import de.metas.ui.web.window.datatypes.LookupValue;
  * #L%
  */
 
-public interface LookupDataSource
+/**
+ * Serialize a {@link Map} as an list/array of it's values.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class JsonMapAsValuesListSerializer extends JsonSerializer<Map<?, ?>>
 {
-	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
-
-	List<LookupValue> findEntities(Document document, String filter, int firstRow, int pageLength);
-
-	List<LookupValue> findEntities(Document document, int pageLength);
-
-	LookupValue findById(Object id);
-
-	boolean isNumericKey();
-
-	/**
-	 * Set this data source as staled.
-	 *
-	 * @param triggeringFieldName field name which triggered this request (optional)
-	 * @return true if this lookup source was marked as staled
-	 */
-	boolean setStaled(final String triggeringFieldName);
-
-	boolean isStaled();
-
-	LookupDataSource copy();
+	@Override
+	public void serialize(final Map<?, ?> map, final JsonGenerator gen, final SerializerProvider serializers) throws IOException, JsonProcessingException
+	{
+		// NOTE: we assume we never get a null map
+		gen.writeObject(map.values());
+	}
 }

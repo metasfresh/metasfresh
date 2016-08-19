@@ -1,18 +1,28 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentChanges;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -48,26 +58,32 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("document")
 @SuppressWarnings("serial")
-public final class JSONDocument extends ArrayList<JSONDocumentField>
+public final class JSONDocument implements Serializable
 {
 	public static final JSONDocument ofDocument(final Document document)
 	{
-		final JSONDocument jsonDocument = new JSONDocument();
-		final JSONDocumentField jsonIdField = jsonDocument.setIdField(document.getDocumentId());
+		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
 		//
 		// Set debugging info
 		if (WindowConstants.isProtocolDebugging())
 		{
-			jsonIdField.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
+			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
 		}
 
-		// All other fields
-		document.getFieldViews()
-				.stream()
-				.map(JSONDocumentField::ofDocumentField)
-				.collect(jsonDocument.fieldsCollector());
+		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
+		// Add pseudo "ID" field first
+		final IDocumentFieldView idField = document.getIdFieldViewOrNull();
+		if (idField != null)
+		{
+			jsonFields.add(0, JSONDocumentField.idField(idField.getValueAsJsonObject()));
+		}
+
+		// Append the other fields
+		document.getFieldViews().stream().map(JSONDocumentField::ofDocumentField).forEach(jsonFields::add);
+
+		jsonDocument.setFields(jsonFields);
 		return jsonDocument;
 	}
 
@@ -82,15 +98,93 @@ public final class JSONDocument extends ArrayList<JSONDocumentField>
 				.collect(Collectors.toList());
 	}
 
-	public JSONDocument()
+	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector)
 	{
-		super();
+		final Collection<DocumentChanges> documentChangedEventList = documentChangesCollector.getDocumentChangesByPath().values();
+		if (documentChangedEventList.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
+		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
+		{
+			if (documentChangedEvents.isEmpty())
+			{
+				continue;
+			}
+
+			final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
+
+			final List<JSONDocumentField> jsonFields = new ArrayList<>();
+			documentChangedEvents.getFieldChangesList()
+					.stream()
+					.forEach((field) -> {
+						// Add the pseudo-field "ID" first
+						if (field.isKey())
+						{
+							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
+						}
+
+						// Append the other fields
+						jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
+					});
+			jsonDocument.setFields(jsonFields);
+
+			jsonDocuments.add(jsonDocument);
+		}
+
+		return jsonDocuments;
 	}
 
-	public JSONDocument(final List<JSONDocumentField> fields)
+	@JsonProperty("id")
+	private final String id;
+
+	@JsonProperty("tabid")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String tabid;
+
+	@JsonProperty("rowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String rowId;
+
+	private final Map<String, Object> otherProperties = new HashMap<>();
+
+	@JsonProperty("fields")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
+	private Map<String, JSONDocumentField> fieldsByName;
+
+	public JSONDocument(final DocumentPath documentPath)
 	{
 		super();
-		addAll(fields);
+
+		id = documentPath.getDocumentId().toJson();
+		if (documentPath.isIncludedDocument())
+		{
+			tabid = documentPath.getDetailId();
+			rowId = documentPath.getRowId().toJson();
+		}
+		else
+		{
+			tabid = null;
+			rowId = null;
+		}
+	}
+
+	@JsonCreator
+	private JSONDocument(
+			@JsonProperty("id") final String id //
+			, @JsonProperty("tabid") final String tabid //
+			, @JsonProperty("rowId") final String rowId //
+			, @JsonProperty("fields") final List<JSONDocumentField> fields //
+	)
+	{
+		super();
+		this.id = id;
+		this.tabid = tabid;
+		this.rowId = rowId;
+		setFields(fields);
 	}
 
 	@Override
@@ -99,27 +193,41 @@ public final class JSONDocument extends ArrayList<JSONDocumentField>
 		return super.toString();
 	}
 
-	public JSONDocumentField setIdField(final int id)
+	public String getId()
 	{
-		final String idStr = DocumentId.of(id).toJson();
-		final String reason = null; // N/A
-		final JSONDocumentField jsonField = JSONDocumentField.ofId(idStr, reason);
-		add(0, jsonField);
-		return jsonField;
+		return id;
 	}
 
-	public Collector<JSONDocumentField, ?, Void> fieldsCollector()
+	public String getTabid()
 	{
-		final Supplier<List<JSONDocumentField>> supplier = ArrayList::new;
-		final BiConsumer<List<JSONDocumentField>, JSONDocumentField> accumulator = List::add;
-		final BinaryOperator<List<JSONDocumentField>> combiner = (acc1, acc2) -> {
-			acc1.addAll(acc2);
-			return acc1;
-		};
-		final Function<List<JSONDocumentField>, Void> finisher = (acc) -> {
-			JSONDocument.this.addAll(acc);
-			return null;
-		};
-		return Collector.<JSONDocumentField, List<JSONDocumentField>, Void> of(supplier, accumulator, combiner, finisher);
+		return tabid;
+	}
+
+	public String getRowId()
+	{
+		return rowId;
+	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getOtherProperties()
+	{
+		return otherProperties;
+	}
+
+	@JsonAnySetter
+	public void putOtherProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put(name, jsonValue);
+	}
+
+	public JSONDocument putDebugProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put("debug-" + name, jsonValue);
+		return this;
+	}
+
+	private void setFields(final Collection<JSONDocumentField> fields)
+	{
+		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
 	}
 }

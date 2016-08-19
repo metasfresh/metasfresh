@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -53,6 +55,16 @@ public class JSONDocumentLayoutElementLine extends ArrayList<JSONDocumentLayoutE
 
 		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements());
 		addAll(elements);
+	}
+
+	@JsonCreator
+	private JSONDocumentLayoutElementLine(final List<JSONDocumentLayoutElement> elements)
+	{
+		super();
+		if (elements != null)
+		{
+			addAll(elements);
+		}
 	}
 
 }

@@ -165,6 +165,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String sqlOrderBy;
 		private String sqlWhereClause = null;
 
+		private String detailId;
+
 		// legacy
 		private Integer AD_Table_ID;
 
@@ -282,6 +284,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			this.sqlTableName = sqlTableName;
 			return this;
 		}
+		
+		public String getSqlTableName()
+		{
+			return sqlTableName;
+		}
 
 		public Builder setSqlTableAlias(final String sqlTableAlias)
 		{
@@ -295,11 +302,18 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		public Builder setSqlTableAliasFromDetailId(final String detailId)
+		public Builder setDetailIdAndUpdateTableAlias(final String detailId)
 		{
 			Check.assumeNotEmpty(detailId, "detailId is not empty");
-			setSqlTableAlias("d" + detailId.trim());
+			
+			this.detailId = detailId.trim();
+			setSqlTableAlias("d" + this.detailId);
 			return this;
+		}
+		
+		public String getDetailId()
+		{
+			return detailId;
 		}
 
 		public String getSqlTableAlias()

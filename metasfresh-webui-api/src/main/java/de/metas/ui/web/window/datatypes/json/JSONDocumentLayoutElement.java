@@ -6,9 +6,12 @@ import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -52,16 +55,22 @@ public final class JSONDocumentLayoutElement implements Serializable
 		return new JSONDocumentLayoutElement(element);
 	}
 
+	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
+
+	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
+	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
 
 	/** Type: primary, secondary */
+	@JsonProperty("type")
 	private final JSONLayoutType type;
-	
+
+	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
@@ -73,6 +82,23 @@ public final class JSONDocumentLayoutElement implements Serializable
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
+	}
+
+	@JsonCreator
+	public JSONDocumentLayoutElement(
+			@JsonProperty("caption") final String caption//
+			, @JsonProperty("description") final String description//
+			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType//
+			, @JsonProperty("type") final JSONLayoutType type//
+			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields//
+	)
+	{
+		super();
+		this.caption = caption;
+		this.description = description;
+		this.widgetType = widgetType;
+		this.type = type;
+		this.fields = fields == null ? ImmutableSet.of() : ImmutableSet.copyOf(fields);
 	}
 
 	@Override
@@ -102,12 +128,12 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public JSONLayoutType getType()
 	{
 		return type;
 	}
-	
+
 	public Set<JSONDocumentLayoutElementField> getFields()
 	{
 		return fields;

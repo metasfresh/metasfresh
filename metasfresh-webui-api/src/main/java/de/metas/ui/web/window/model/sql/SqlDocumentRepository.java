@@ -23,6 +23,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
@@ -84,6 +85,20 @@ public class SqlDocumentRepository implements DocumentRepository
 	/* package */ SqlDocumentRepository()
 	{
 		super();
+	}
+
+	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
+		final String tableName = entityDescriptor.getDataBinding().getTableName();
+		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
+		if (nextId <= 0)
+		{
+			throw new DBException("Cannot retrieve next ID from database for " + entityDescriptor);
+		}
+
+		logger.trace("Acquired next ID={} for {}", nextId, entityDescriptor);
+		return nextId;
 	}
 
 	@Override
@@ -160,10 +175,12 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
+		final int documentId = getNextId(entityDescriptor);
 		return Document.builder()
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setDocumentIdSupplier(() -> documentId)
 				.initializeAsNewDocument()
 				.build();
 	}
@@ -227,7 +244,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			final String sqlKeyColumnName = entityBinding.getSqlKeyColumnName();
 			if (sqlKeyColumnName == null)
 			{
-				throw new RuntimeException("Failed building where clause for " + query + " because there is no Key Column defined in " + entityBinding);
+				throw new AdempiereException("Failed building where clause for " + query + " because there is no Key Column defined in " + entityBinding);
 			}
 
 			if (sqlWhereClause.length() > 0)
@@ -269,8 +286,15 @@ public class SqlDocumentRepository implements DocumentRepository
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setDocumentIdSupplier(() -> retrieveDocumentId(entityDescriptor.getIdField(), rs))
 				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
 				.build();
+	}
+
+	private int retrieveDocumentId(final DocumentFieldDescriptor idFieldDescriptor, final ResultSet rs)
+	{
+		final Integer valueInt = (Integer)retrieveDocumentFieldValue(idFieldDescriptor, rs);
+		return valueInt;
 	}
 
 	/*
@@ -450,39 +474,48 @@ public class SqlDocumentRepository implements DocumentRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
+		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+
 		//
 		// Load the PO / Create new PO instance
 		final PO po;
 		if (document.isNew())
 		{
-			// new
-			final String sqlTableName = InterfaceWrapperHelper.getModelTableName(document);
 			po = TableModelLoader.instance.newPO(document.getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
 		}
 		else
 		{
-			final String sqlTableName = InterfaceWrapperHelper.getModelTableName(document);
 			final boolean checkCache = false;
 			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
 		}
 		Check.assumeNotNull(po, "po is not null");
 		po.set_ManualUserAction(document.getWindowNo());
 
+		// TODO: handle the case of composed primary key!
+		if (po.getPOInfo().getKeyColumnName() == null)
+		{
+			throw new UnsupportedOperationException("Composed primary key is not supported");
+		}
+
 		//
 		// Set values to PO
+		final boolean isNew = document.isNew();
 		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
+			if (!isNew && !documentField.hasChanges())
+			{
+				logger.trace("Skip setting PO value because document field has no changes: {}", documentField);
+				continue;
+			}
+
 			setPOValue(po, documentField);
 		}
 
 		//
 		// Actual save
+		// TODO: advice the PO to not reload after save.
 		InterfaceWrapperHelper.save(po);
-
-		// TODO: save included documents if any
-		// * first, update their parent link if needed
-		// * save them
-		// * refresh them AFTER header document (this one) is refreshed
+		document.markAsNotNew();
 
 		//
 		// Reload the document
@@ -495,38 +528,88 @@ public class SqlDocumentRepository implements DocumentRepository
 		final POInfo poInfo = po.getPOInfo();
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
 
+		//
+		// Virtual column => skip setting it
 		if (poInfo.isVirtualColumn(columnName))
 		{
 			logger.trace("Skip setting PO's virtual column: {} -- PO={}", columnName, po);
 			return;
 		}
-		else if (poInfo.isKey(columnName))
+
+		//
+		// ID
+		if (poInfo.isKey(columnName))
 		{
-			logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
+			final int id = documentField.getValueAsInt(-1);
+			if (id >= 0)
+			{
+				final boolean idSet = po.set_ValueNoCheck(columnName, id);
+				if (!idSet)
+				{
+					throw new AdempiereException("Failed setting ID=" + id + " to " + po);
+				}
+				logger.trace("Setting PO ID: {}={} -- PO={}", columnName, id, po);
+			}
+			else
+			{
+				logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
+			}
+			//
 			return;
 		}
-		else if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
+
+		//
+		// Created/Updated columns
+		if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
 			return;
 		}
 
-		final Object valueOld = po.get_Value(columnName);
-		final Object valueConv = convertValueToPO(documentField.getValue(), columnName, po);
-		if (Objects.equals(valueConv, valueOld))
+		//
+		// Regular column
 		{
-			logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
-			return;
-		}
+			//
+			// Check if value was changed, compared with PO's current value
+			final Object poValue = po.get_Value(columnName);
+			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, po);
+			if (Objects.equals(fieldValueConv, poValue))
+			{
+				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
+				return;
+			}
 
-		final boolean valueSet = po.set_ValueOfColumnReturningBoolean(columnName, valueConv);
-		if (!valueSet)
-		{
-			logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
-			return;
-		}
+			//
+			// Check if the field value was changed from when we last queried it
+			if (!po.is_new())
+			{
+				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, po);
+				if (!Objects.equals(fieldInitialValueConv, poValue))
+				{
+					throw new AdempiereException("Document's field was changed from when we last queried it. Please re-query."
+							+ "\n Document field initial value: " + fieldInitialValueConv
+							+ "\n PO value: " + poValue
+							+ "\n Document field: " + documentField
+							+ "\n PO: " + po);
+				}
+			}
 
-		logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, valueConv, valueOld, po);
+			// TODO: handle not updateable columns... i think we shall set them only if the PO is new
+
+			// NOTE: at this point we shall not do any other validations like "mandatory but null", value min/max range check,
+			// because we shall rely completely on Document level validations and not duplicate the logic here.
+
+			//
+			// Try setting the value
+			final boolean valueSet = po.set_ValueOfColumnReturningBoolean(columnName, fieldValueConv);
+			if (!valueSet)
+			{
+				logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
+				return;
+			}
+
+			logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
+		}
 	}
 
 	private static Object convertValueToPO(final Object value, final String columnName, final PO po)

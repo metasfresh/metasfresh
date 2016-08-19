@@ -1,7 +1,9 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -25,13 +27,14 @@ import java.util.Set;
  * #L%
  */
 
-public interface IDocumentFieldChangedEventCollector
+public interface IDocumentChangesCollector
 {
-	Set<String> getFieldNames();
+	Set<String> getFieldNames(DocumentPath documentPath);
 
 	boolean isEmpty();
 
-	List<DocumentFieldChangedEvent> toEventsList();
+//	List<DocumentFieldChangedEvent> toEventsList();
+	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
 
 	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
@@ -43,7 +46,7 @@ public interface IDocumentFieldChangedEventCollector
 
 	void collectLookupValuesStaled(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectFrom(IDocumentFieldChangedEventCollector fromCollector);
+	void collectFrom(IDocumentChangesCollector fromCollector);
 
 	/**
 	 * Collect changes from given document (only those which were not yet collected).

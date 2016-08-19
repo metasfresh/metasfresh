@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -31,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
@@ -39,7 +41,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -84,6 +86,8 @@ public final class Document
 	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
+	private final DocumentPath documentPath;
+	private boolean _new;
 	private final boolean _writable;
 	private boolean _initializing = false;
 
@@ -105,8 +109,15 @@ public final class Document
 		NewDocument, Refresh, Load,
 	}
 
+	@FunctionalInterface
 	public static interface FieldInitialValueSupplier
 	{
+		Object NO_VALUE = new Object();
+
+		/**
+		 * @param fieldDescriptor
+		 * @return initial value or {@link #NO_VALUE} if it cannot provide a value
+		 */
 		Object getInitialValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
@@ -115,9 +126,20 @@ public final class Document
 		super();
 		documentRepository = Preconditions.checkNotNull(builder.documentRepository, "documentRepository");
 		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
-		windowNo = nextWindowNo.incrementAndGet();
 		_parentDocument = builder.parentDocument;
-		_writable = _parentDocument != null ? _parentDocument.isWritable() : false;
+		documentPath = builder.getDocumentPath();
+		if (_parentDocument == null)
+		{
+			windowNo = nextWindowNo.incrementAndGet();
+			_writable = _parentDocument != null ? _parentDocument.isWritable() : false;
+		}
+		else
+		{
+			windowNo = _parentDocument.getWindowNo();
+			_writable = _parentDocument.isWritable();
+		}
+
+		_new = builder.isNewDocument();
 
 		//
 		// Create document fields
@@ -196,6 +218,8 @@ public final class Document
 		windowNo = from.windowNo;
 		_writable = writable;
 
+		_new = from._new;
+
 		if (from._parentDocument != null)
 		{
 			Preconditions.checkNotNull(parentDocumentCopy, "parentDocumentCopy");
@@ -206,6 +230,8 @@ public final class Document
 			Preconditions.checkArgument(parentDocumentCopy == null, "parentDocumentCopy shall be null");
 			_parentDocument = null;
 		}
+
+		documentPath = from.documentPath;
 
 		//
 		// Copy document fields
@@ -300,18 +326,18 @@ public final class Document
 				{
 					executeAllCallouts();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					logger.warn("Failed executing callouts while initializing {}. Ignored.", this, e);
 				}
 
 				final boolean collectEventsEventIfNoChange = true;
-				updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector(), collectEventsEventIfNoChange);
 			}
 			else if (FieldInitializationMode.Load == mode)
 			{
 				final boolean collectEventsEventIfNoChange = false; // not relevant because we are not collecting events at all
-				updateAllFieldsFlags(NullDocumentFieldChangedEventCollector.instance, collectEventsEventIfNoChange);
+				updateAllFieldsFlags(NullDocumentChangesCollector.instance, collectEventsEventIfNoChange);
 			}
 			else if (FieldInitializationMode.Refresh == mode)
 			{
@@ -347,8 +373,11 @@ public final class Document
 
 			//
 			// Update field's initial value
-			valueOld = documentField.getValue();
-			documentField.setInitialValue(initialValue);
+			if (initialValue != FieldInitialValueSupplier.NO_VALUE)
+			{
+				valueOld = documentField.getValue();
+				documentField.setInitialValue(initialValue);
+			}
 
 			valueSet = true;
 		}
@@ -357,7 +386,7 @@ public final class Document
 			valueSet = false;
 			if (FieldInitializationMode.NewDocument == mode)
 			{
-				logger.warn("Failed initializing {}, mode={} using {}", documentField, mode, initialValueSupplier, e);
+				logger.warn("Failed initializing {}, mode={} using {}. Keeping current initial value.", documentField, mode, initialValueSupplier, e);
 			}
 			else
 			{
@@ -370,8 +399,8 @@ public final class Document
 		if (FieldInitializationMode.NewDocument == mode)
 		{
 			// Collect the change event, even if there was no change because we just set the initial value
-			final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-			eventsCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
+			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+			documentChangesCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
 
 			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
 			// NOTE: don't call callouts because we will do it all together after all fields are initialized
@@ -391,7 +420,7 @@ public final class Document
 				if (!Objects.equals(valueOld, valueNew))
 				{
 					// collect changed value
-					final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
+					final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollector();
 					eventsCollector.collectValueChanged(documentField, REASON_Value_Refreshing);
 
 					// Update all fields which depends on this field
@@ -404,16 +433,14 @@ public final class Document
 		}
 	}
 
-	private final Object createFieldDefaultValue(final DocumentFieldDescriptor fieldDescriptor)
+	private static final Object provideFieldInitialValueForNewDocument(final DocumentFieldDescriptor fieldDescriptor, final Document document, final IntSupplier documentIdSupplier)
 	{
-		final Document document = this;
-
 		//
 		// Primary Key field
 		if (fieldDescriptor.isKey())
 		{
-			final int value = DocumentId.generateTemporaryId();
-			return value;
+			final int id = documentIdSupplier.getAsInt();
+			return id;
 		}
 
 		//
@@ -520,10 +547,16 @@ public final class Document
 				.omitNullValues()
 				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
 				.add("id", getDocumentId())
+				.add("NEW", _new ? Boolean.TRUE : null)
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
 				// .add("fields", fieldsByName.values()) // skip because it's too long
 				.toString();
+	}
+
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
 	}
 
 	public Properties getCtx()
@@ -616,22 +649,34 @@ public final class Document
 	{
 		return getFieldOrNull(fieldName);
 	}
+	
+	public IDocumentFieldView getIdFieldViewOrNull()
+	{
+		return idField;
+	}
 
 	public int getDocumentId()
 	{
 		if (idField == null)
 		{
 			// TODO handle NO ID field or composed PK
-			logger.warn("No ID field found for {}. Returning {}", this, DocumentId.NEW_ID);
-			return DocumentId.NEW_ID;
+
+			return -1;
+			// logger.warn("No ID field found for {}. Returning {}", this, DocumentId.NEW_ID);
+			// return DocumentId.NEW_ID;
 		}
-		return idField.getValueAsInt(DocumentId.NEW_ID);
+		return idField.getValueAsInt(-1);
 	}
 
 	public boolean isNew()
 	{
-		// TODO: handle this state in a more reliable way
-		return DocumentId.isNew(getDocumentId());
+		return _new;
+	}
+
+	// TODO: make this method private/package
+	public void markAsNotNew()
+	{
+		_new = false;
 	}
 
 	public DocumentEvaluatee asEvaluatee()
@@ -682,11 +727,11 @@ public final class Document
 		}
 
 		// collect changed value
-		final IDocumentFieldChangedEventCollector eventsCollector = Execution.getCurrentFieldChangedEventsCollector();
-		eventsCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
+		final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+		documentChangesCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
 
 		// Update all dependencies
-		updateFieldsWhichDependsOn(documentField.getFieldName(), eventsCollector);
+		updateFieldsWhichDependsOn(documentField.getFieldName(), documentChangesCollector);
 
 		// Callouts
 		calloutExecutor.execute(documentField.asCalloutField());
@@ -705,10 +750,10 @@ public final class Document
 	/**
 	 * Updates field status flags for all fields (i.e.Mandatory, ReadOnly, Displayed etc)
 	 *
-	 * @param eventsCollector events collector (where to collect the change events)
+	 * @param documentChangesCollector events collector (where to collect the change events)
 	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
-	private void updateAllFieldsFlags(final IDocumentFieldChangedEventCollector eventsCollector, final boolean collectEventsEventIfNoChange)
+	private void updateAllFieldsFlags(final IDocumentChangesCollector documentChangesCollector, final boolean collectEventsEventIfNoChange)
 	{
 		logger.trace("Updating all dependencies for {}", this);
 
@@ -717,7 +762,7 @@ public final class Document
 		{
 			for (final DependencyType triggeringDependencyType : DependencyType.values())
 			{
-				updateFieldFlag(documentField, triggeringFieldName, triggeringDependencyType, eventsCollector, collectEventsEventIfNoChange);
+				updateFieldFlag(documentField, triggeringFieldName, triggeringDependencyType, documentChangesCollector, collectEventsEventIfNoChange);
 			}
 		}
 	}
@@ -773,7 +818,7 @@ public final class Document
 		documentField.setDisplayed(displayed);
 	}
 
-	private final void updateFieldsWhichDependsOn(final String triggeringFieldName, final IDocumentFieldChangedEventCollector eventsCollector)
+	private final void updateFieldsWhichDependsOn(final String triggeringFieldName, final IDocumentChangesCollector documentChangesCollector)
 	{
 		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
 		dependencies.consumeForChangedFieldName(triggeringFieldName, (dependentFieldName, dependencyType) -> {
@@ -785,15 +830,15 @@ public final class Document
 				return;
 			}
 
-			final IDocumentFieldChangedEventCollector fieldEventsCollector = DocumentFieldChangedEventCollector.newInstance();
+			final IDocumentChangesCollector fieldEventsCollector = DocumentChangesCollector.newInstance();
 			final boolean collectEventsEventIfNoChange = false;
 			updateFieldFlag(dependentField, triggeringFieldName, dependencyType, fieldEventsCollector, collectEventsEventIfNoChange);
-			eventsCollector.collectFrom(fieldEventsCollector);
+			documentChangesCollector.collectFrom(fieldEventsCollector);
 
-			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames())
+			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames(getDocumentPath()))
 			{
 				// TODO: i think we shall trigger only in case of Value changed event
-				updateFieldsWhichDependsOn(dependentFieldNameLvl2, eventsCollector);
+				updateFieldsWhichDependsOn(dependentFieldNameLvl2, documentChangesCollector);
 			}
 
 		});
@@ -805,14 +850,14 @@ public final class Document
 	 * @param documentField
 	 * @param triggeringFieldName optional field name which triggered this update
 	 * @param triggeringDependencyType
-	 * @param eventsCollector events collector (where to collect the change events)
+	 * @param documentChangesCollector events collector (where to collect the change events)
 	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
 	private void updateFieldFlag(
 			final DocumentField documentField //
 			, final String triggeringFieldName //
 			, final DependencyType triggeringDependencyType //
-			, final IDocumentFieldChangedEventCollector eventsCollector //
+			, final IDocumentChangesCollector documentChangesCollector //
 			, final boolean collectEventsEventIfNoChange)
 	{
 		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
@@ -826,7 +871,7 @@ public final class Document
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
 						+ ", ReadOnlyLogic=" + documentField.getDescriptor().getReadonlyLogic();
-				eventsCollector.collectReadonlyChanged(documentField, reason);
+				documentChangesCollector.collectReadonlyChanged(documentField, reason);
 			}
 		}
 		else if (DependencyType.MandatoryLogic == triggeringDependencyType)
@@ -840,7 +885,7 @@ public final class Document
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
 						+ ", MandatoryLogic=" + documentField.getDescriptor().getMandatoryLogic();
-				eventsCollector.collectMandatoryChanged(documentField, reason);
+				documentChangesCollector.collectMandatoryChanged(documentField, reason);
 			}
 		}
 		else if (DependencyType.DisplayLogic == triggeringDependencyType)
@@ -854,7 +899,7 @@ public final class Document
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
 						+ ", DisplayLogic=" + documentField.getDescriptor().getDisplayLogic();
-				eventsCollector.collectDisplayedChanged(documentField, reason);
+				documentChangesCollector.collectDisplayedChanged(documentField, reason);
 			}
 		}
 		else if (DependencyType.LookupValues == triggeringDependencyType)
@@ -863,7 +908,7 @@ public final class Document
 			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
 			if (lookupValuesStaled)
 			{
-				eventsCollector.collectLookupValuesStaled(documentField, reason);
+				documentChangesCollector.collectLookupValuesStaled(documentField, reason);
 			}
 		}
 		else
@@ -1015,16 +1060,6 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
-	/* package */Object setInternalAttribute(final String name, final Object value)
-	{
-		return setDynAttributeNoCheck(name, value);
-	}
-
-	/* package */ <T> T getInternalAttribute(final String name)
-	{
-		return getDynAttribute(name);
-	}
-
 	/* package */ boolean isValidForSaving()
 	{
 		//
@@ -1147,6 +1182,9 @@ public final class Document
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
 		private FieldInitialValueSupplier fieldInitializer;
+		private IntSupplier documentIdSupplier;
+
+		private DocumentPath _documentPath;
 
 		private Builder()
 		{
@@ -1161,8 +1199,9 @@ public final class Document
 			// Initialize the fields
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
-				fieldInitializer = document::createFieldDefaultValue;
+				fieldInitializer = (fieldDescriptor) -> provideFieldInitialValueForNewDocument(fieldDescriptor, document, documentIdSupplier);
 			}
+
 			if (fieldInitializer != null)
 			{
 				document.initializeFields(fieldInitializerMode, fieldInitializer);
@@ -1196,12 +1235,40 @@ public final class Document
 			return this;
 		}
 
+		private boolean isNewDocument()
+		{
+			return fieldInitializerMode == FieldInitializationMode.NewDocument;
+		}
+
 		public Builder initializeAsExistingRecord(final FieldInitialValueSupplier fieldInitializer)
 		{
 			Preconditions.checkNotNull(fieldInitializer, "fieldInitializer");
 			fieldInitializerMode = FieldInitializationMode.Load;
 			this.fieldInitializer = fieldInitializer;
 			return this;
+		}
+
+		public Builder setDocumentIdSupplier(final IntSupplier documentIdSupplier)
+		{
+			this.documentIdSupplier = documentIdSupplier;
+			return this;
+		}
+
+		private DocumentPath getDocumentPath()
+		{
+			if (_documentPath == null)
+			{
+				final int documentId = documentIdSupplier.getAsInt();
+				if (parentDocument == null)
+				{
+					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getAD_Window_ID(), documentId);
+				}
+				else
+				{
+					_documentPath = parentDocument.getDocumentPath().createChildPath(entityDescriptor.getDetailId(), documentId);
+				}
+			}
+			return _documentPath;
 		}
 	}
 }

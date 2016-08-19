@@ -5,8 +5,11 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -49,12 +52,18 @@ public final class JSONDocumentLayoutTab implements Serializable
 		return new JSONDocumentLayoutTab(detail);
 	}
 
+	@JsonProperty("tabid")
 	private final String tabid;
+
+	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
+
+	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
+	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
@@ -65,6 +74,21 @@ public final class JSONDocumentLayoutTab implements Serializable
 		caption = detail.getCaption();
 		description = detail.getDescription();
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements());
+	}
+
+	@JsonCreator
+	private JSONDocumentLayoutTab(
+			@JsonProperty("tabid") final String tabid //
+			, @JsonProperty("caption") final String caption //
+			, @JsonProperty("description") final String description //
+			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
+	)
+	{
+		super();
+		this.tabid = tabid;
+		this.caption = caption;
+		this.description = description;
+		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
 	@Override

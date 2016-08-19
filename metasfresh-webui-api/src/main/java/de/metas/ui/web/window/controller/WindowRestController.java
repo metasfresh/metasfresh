@@ -25,13 +25,12 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
 
 /*
@@ -59,7 +58,7 @@ import io.swagger.annotations.Api;
 @Api
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
-public class WindowRestController
+public class WindowRestController implements IWindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
 
@@ -110,6 +109,10 @@ public class WindowRestController
 		userSession.setLoggedIn(true);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#layout(int)
+	 */
+	@Override
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	public JSONDocumentLayout layout(@RequestParam(name = "type", required = true) final int adWindowId)
 	{
@@ -121,6 +124,10 @@ public class WindowRestController
 		return JSONDocumentLayout.of(layout);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#data(int, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
 	public List<JSONDocument> data(
 			@RequestParam(name = "type", required = true) final int adWindowId //
@@ -134,11 +141,9 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
 				.setDocumentId(idStr)
-				.allowNewDocumentId()
 				.setDetailId(detailId)
 				.setRowId(rowIdStr)
 				.allowNullRowId()
-				.allowNewRowId()
 				.build();
 
 		return Execution.callInNewExecution("window.data", () -> {
@@ -147,8 +152,12 @@ public class WindowRestController
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#commit(int, java.lang.String, java.lang.String, java.lang.String, java.util.List)
+	 */
+	@Override
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
-	public List<JSONDocumentField> commit(
+	public List<JSONDocument> commit(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -169,7 +178,7 @@ public class WindowRestController
 		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events));
 	}
 
-	private List<JSONDocumentField> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
+	private List<JSONDocument> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
 	{
 		//
 		// Fetch the document in writing mode
@@ -197,7 +206,7 @@ public class WindowRestController
 		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
 		if (documentPath.isNewDocument())
 		{
-			final boolean somethingCollected = Execution.getCurrentFieldChangedEventsCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
+			final boolean somethingCollected = Execution.getCurrentDocumentChangesCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
 			if (somethingCollected)
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
@@ -206,9 +215,13 @@ public class WindowRestController
 
 		//
 		// Return the changes
-		return JSONDocumentField.ofDocumentFieldChangedEventCollector(Execution.getCurrentFieldChangedEventsCollector());
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#typeahead(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
 	public List<JSONLookupValue> typeahead(
 			@RequestParam(name = "type", required = true) final int adWindowId //
@@ -233,6 +246,10 @@ public class WindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#dropdown(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
 	public List<JSONLookupValue> dropdown(
 			@RequestParam(name = "type", required = true) final int adWindowId //
@@ -257,6 +274,10 @@ public class WindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.ui.web.window.controller.IWindowRestController#cacheReset()
+	 */
+	@Override
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
 	{

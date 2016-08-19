@@ -8,6 +8,8 @@ import java.util.Set;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -62,7 +64,7 @@ public final class JSONLookupValue implements Serializable
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
-		return JSONLookupValue.of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
+		return of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
 	}
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, String> map)
@@ -106,10 +108,18 @@ public final class JSONLookupValue implements Serializable
 		return StringLookupValue.of(id, name);
 	}
 
-	private final Map<String, String> map;
+	private Map<String, String> map;
+
+	@JsonCreator
+	private JSONLookupValue()
+	{
+		super();
+		map = ImmutableMap.of();
+	}
 
 	private JSONLookupValue(final ImmutableMap<String, String> map)
 	{
+		super();
 		this.map = map;
 	}
 
@@ -125,6 +135,12 @@ public final class JSONLookupValue implements Serializable
 	public Map<String, String> getMap()
 	{
 		return map;
+	}
+
+	@JsonAnySetter
+	public void set(final String key, final String value)
+	{
+		map = ImmutableMap.of(key, value);
 	}
 
 }

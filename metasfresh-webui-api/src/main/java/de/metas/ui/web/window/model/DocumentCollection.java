@@ -76,8 +76,6 @@ public class DocumentCollection
 
 			});
 
-	private static final String DYNATTRIBUTE_IndexedDocumentKey = DocumentCollection.class.getName() + ".IndexedDocumentKey";
-
 	/* package */ DocumentCollection()
 	{
 		super();
@@ -100,11 +98,8 @@ public class DocumentCollection
 		{
 			final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
 			final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
-
-			final DocumentId temporaryDocumentId = DocumentId.of(document.getDocumentId());
-			final DocumentKey temporaryDocumentKey = DocumentKey.of(adWindowId, temporaryDocumentId);
-			document.setInternalAttribute(DYNATTRIBUTE_IndexedDocumentKey, temporaryDocumentKey);
-			documents.put(temporaryDocumentKey, document);
+			final DocumentKey documentKey = DocumentKey.of(document);
+			documents.put(documentKey, document);
 
 			return document;
 		}
@@ -165,7 +160,7 @@ public class DocumentCollection
 	{
 		final Document rootDocument = getRootDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
 
-		if (!documentPath.isIncludedDocument())
+		if (!documentPath.isIncludedDocument() && !documentPath.isAnyIncludedDocument())
 		{
 			return ImmutableList.of(rootDocument);
 		}
@@ -197,7 +192,6 @@ public class DocumentCollection
 			throw new DocumentNotFoundException(documentKey);
 		}
 
-		document.setInternalAttribute(DYNATTRIBUTE_IndexedDocumentKey, documentKey);
 		return document;
 	}
 
@@ -217,29 +211,22 @@ public class DocumentCollection
 		// Get the root document and it's OLD and NEW ids
 		final Document rootDocument = document.getRootDocument();
 
-		final Integer rootDocumentIdNew = rootDocument.getDocumentId();
-		final DocumentKey rootDocumentKeyOld = rootDocument.getInternalAttribute(DYNATTRIBUTE_IndexedDocumentKey);
-
 		//
-		// Add the newly saved and changed document back to index
-		final int rootAD_Window_ID = document.getEntityDescriptor().getAD_Window_ID();
-		final DocumentKey rootDocumentKeyNew = DocumentKey.of(rootAD_Window_ID, DocumentId.of(rootDocumentIdNew));
+		// Add the saved and changed document back to index
+		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
 		final Document rootDocumentReadonly = rootDocument.copyReadonly();
-		rootDocumentReadonly.setInternalAttribute(DYNATTRIBUTE_IndexedDocumentKey, rootDocumentKeyNew);
-		documents.put(rootDocumentKeyNew, rootDocumentReadonly);
-
-		//
-		// Invalidate the old staled document
-		if (!Objects.equals(rootDocumentKeyNew, rootDocumentKeyOld))
-		{
-			documents.invalidate(rootDocumentKeyOld);
-		}
-
-		// TODO: in case this is an included document then reindex the IncludedDocumentsCollection!
+		documents.put(rootDocumentKey, rootDocumentReadonly);
 	}
 
 	private static final class DocumentKey
 	{
+		public static final DocumentKey of(final Document document)
+		{
+			final int adWindowId = document.getEntityDescriptor().getAD_Window_ID();
+			final DocumentId documentId = DocumentId.of(document.getDocumentId());
+			return new DocumentKey(adWindowId, documentId);
+		}
+
 		public static final DocumentKey of(final int adWindowId, final DocumentId documentId)
 		{
 			return new DocumentKey(adWindowId, documentId);

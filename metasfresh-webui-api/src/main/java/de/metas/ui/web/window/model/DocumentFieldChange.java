@@ -1,8 +1,12 @@
 package de.metas.ui.web.window.model;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.json.JSONValues;
 
@@ -29,20 +33,23 @@ import de.metas.ui.web.window.datatypes.json.JSONValues;
  */
 
 /**
- * Mutable field changed event.
+ * Mutable document field change.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class DocumentFieldChangedEvent
+public final class DocumentFieldChange
 {
-	/* package */static final DocumentFieldChangedEvent of(final String fieldName, final boolean key)
+	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key)
 	{
-		return new DocumentFieldChangedEvent(fieldName, key);
+		return new DocumentFieldChange(fieldName, key);
 	}
 
+	public static final String DEBUGPROPERTY_FieldInfo = "field-info";
+
 	private final String fieldName;
-	private boolean key;
+	/** Is key column? */
+	private final boolean key;
 	//
 	private boolean valueSet;
 	private Object value;
@@ -60,7 +67,9 @@ public final class DocumentFieldChangedEvent
 	private Boolean lookupValuesStale;
 	private String lookupValuesStaleReason;
 
-	private DocumentFieldChangedEvent(final String fieldName, final boolean key)
+	private Map<String, Object> debugProperties;
+
+	private DocumentFieldChange(final String fieldName, final boolean key)
 	{
 		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
@@ -74,7 +83,6 @@ public final class DocumentFieldChangedEvent
 				.omitNullValues()
 				.add("fieldName", fieldName)
 				.add("key", key ? Boolean.TRUE : null);
-
 		if (valueSet)
 		{
 			toStringBuilder.add("value", value == null ? "<NULL>" : value);
@@ -101,6 +109,11 @@ public final class DocumentFieldChangedEvent
 			toStringBuilder.add("lookupValuesStaleReason", lookupValuesStaleReason);
 		}
 
+		if (debugProperties != null && !debugProperties.isEmpty())
+		{
+			toStringBuilder.add("debugProperties", debugProperties);
+		}
+
 		return toStringBuilder.toString();
 	}
 
@@ -108,7 +121,7 @@ public final class DocumentFieldChangedEvent
 	{
 		return fieldName;
 	}
-	
+
 	public boolean isKey()
 	{
 		return key;
@@ -125,7 +138,7 @@ public final class DocumentFieldChangedEvent
 	{
 		return valueSet;
 	}
-	
+
 	public Object getValue()
 	{
 		return value;
@@ -205,7 +218,7 @@ public final class DocumentFieldChangedEvent
 		lookupValuesStaleReason = reason;
 	}
 
-	/* package */ void mergeFrom(final DocumentFieldChangedEvent fromEvent)
+	/* package */ void mergeFrom(final DocumentFieldChange fromEvent)
 	{
 		if (fromEvent.valueSet)
 		{
@@ -237,5 +250,35 @@ public final class DocumentFieldChangedEvent
 			lookupValuesStale = fromEvent.lookupValuesStale;
 			lookupValuesStaleReason = fromEvent.lookupValuesStaleReason;
 		}
+
+		putDebugProperties(fromEvent.debugProperties);
+	}
+
+	public void putDebugProperty(final String name, final Object value)
+	{
+		if (debugProperties == null)
+		{
+			debugProperties = new LinkedHashMap<>();
+		}
+		debugProperties.put(name, value);
+	}
+
+	public void putDebugProperties(final Map<String, Object> debugProperties)
+	{
+		if (debugProperties == null || debugProperties.isEmpty())
+		{
+			return;
+		}
+
+		if (this.debugProperties == null)
+		{
+			this.debugProperties = new LinkedHashMap<>();
+		}
+		this.debugProperties.putAll(debugProperties);
+	}
+
+	public Map<String, Object> getDebugProperties()
+	{
+		return debugProperties == null ? ImmutableMap.of() : debugProperties;
 	}
 }

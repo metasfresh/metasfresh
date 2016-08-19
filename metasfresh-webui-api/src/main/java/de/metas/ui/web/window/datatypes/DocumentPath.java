@@ -2,6 +2,8 @@ package de.metas.ui.web.window.datatypes;
 
 import java.util.Objects;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
@@ -27,12 +29,28 @@ import com.google.common.base.MoreObjects;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Immutable
 public final class DocumentPath
 {
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static final DocumentPath rootDocumentPath(final int adWindowId, final int id)
+	{
+		if (adWindowId <= 0)
+		{
+			throw new IllegalArgumentException("adWindowId < 0");
+		}
+
+		final DocumentId documentId = DocumentId.of(id);
+		if (documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(adWindowId, documentId);
 	}
 
 	private final int adWindowId;
@@ -42,13 +60,22 @@ public final class DocumentPath
 
 	private transient Integer _hashcode; // lazy
 
-	private DocumentPath(final Builder builder)
+	private DocumentPath(final int adWindowId, final DocumentId documentId)
 	{
 		super();
-		adWindowId = builder.adWindowId;
-		documentId = builder.documentId;
-		detailId = builder.detailId;
-		rowId = builder.rowId;
+		this.adWindowId = adWindowId;
+		this.documentId = documentId;
+		detailId = null;
+		rowId = null;
+	}
+
+	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId rowId)
+	{
+		super();
+		this.adWindowId = adWindowId;
+		this.documentId = documentId;
+		this.detailId = detailId;
+		this.rowId = rowId;
 	}
 
 	@Override
@@ -66,7 +93,7 @@ public final class DocumentPath
 	@Override
 	public int hashCode()
 	{
-		if (_hashcode != null)
+		if (_hashcode == null)
 		{
 			_hashcode = Objects.hash(adWindowId, documentId, detailId, rowId);
 		}
@@ -136,6 +163,21 @@ public final class DocumentPath
 		return detailId != null && rowId == null;
 	}
 
+	public DocumentPath createChildPath(final String detailId, final int rowIdInt)
+	{
+		if (detailId == null || detailId.isEmpty())
+		{
+			throw new IllegalArgumentException("detailId must be not empty");
+		}
+		final DocumentId rowId = DocumentId.of(rowIdInt);
+		if (rowId.isNew())
+		{
+			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
+		}
+
+		return new DocumentPath(adWindowId, documentId, detailId, rowId);
+	}
+
 	public static final class Builder
 	{
 		private int adWindowId;
@@ -193,7 +235,7 @@ public final class DocumentPath
 
 			//
 			// Create & return the document path
-			return new DocumentPath(this);
+			return new DocumentPath(adWindowId, documentId, detailId, rowId);
 		}
 
 		public Builder setAD_Window_ID(final int AD_Window_ID)

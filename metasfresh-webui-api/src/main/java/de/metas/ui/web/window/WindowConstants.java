@@ -58,5 +58,13 @@ public final class WindowConstants
 	public static void setProtocolDebugging(final boolean protocolDebugging)
 	{
 		WindowConstants.protocolDebugging.set(protocolDebugging);
+		if (protocolDebugging)
+		{
+			System.out.println("Protocol debugging was enabled");
+		}
+		else
+		{
+			System.out.println("Protocol debugging was disabled");
+		}
 	}
 }

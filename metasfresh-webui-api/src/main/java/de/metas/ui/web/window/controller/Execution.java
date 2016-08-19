@@ -13,8 +13,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.model.DocumentFieldChangedEventCollector;
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector;
+import de.metas.ui.web.window.model.DocumentChangesCollector;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 
 /*
  * #%L
@@ -99,9 +99,9 @@ public class Execution implements IAutoCloseable
 		}
 	}
 
-	public static IDocumentFieldChangedEventCollector getCurrentFieldChangedEventsCollector()
+	public static IDocumentChangesCollector getCurrentDocumentChangesCollector()
 	{
-		return getCurrent().getFieldChangedEventsCollector();
+		return getCurrent().getDocumentChangesCollector();
 	}
 
 	private static final Logger logger = LogManager.getLogger(Execution.class);
@@ -111,7 +111,7 @@ public class Execution implements IAutoCloseable
 	//
 	private final String threadName;
 	private volatile boolean closed = false;
-	private volatile IDocumentFieldChangedEventCollector fieldChangedEventsCollector;
+	private volatile IDocumentChangesCollector documentChangesCollector;
 
 	private Execution()
 	{
@@ -149,18 +149,18 @@ public class Execution implements IAutoCloseable
 		closed = true;
 	}
 
-	public IDocumentFieldChangedEventCollector getFieldChangedEventsCollector()
+	public IDocumentChangesCollector getDocumentChangesCollector()
 	{
-		if (fieldChangedEventsCollector == null)
+		if (documentChangesCollector == null)
 		{
 			synchronized (this)
 			{
-				if (fieldChangedEventsCollector == null)
+				if (documentChangesCollector == null)
 				{
-					fieldChangedEventsCollector = DocumentFieldChangedEventCollector.newInstance();
+					documentChangesCollector = DocumentChangesCollector.newInstance();
 				}
 			}
 		}
-		return fieldChangedEventsCollector;
+		return documentChangesCollector;
 	}
 }

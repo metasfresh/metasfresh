@@ -50,6 +50,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final String sqlColumnName;
 	private final String sqlColumnSql;
 	private final boolean keyColumn;
+	private final boolean parentLinkColumn;
 	private final boolean encrypted;
 
 	private final SqlLookupDescriptor sqlLookupDescriptor;
@@ -74,6 +75,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlColumnName = builder.sqlColumnName;
 		sqlColumnSql = builder.sqlColumnSql;
 		keyColumn = builder.keyColumn;
+		parentLinkColumn = builder.parentLinkColumn;
 		encrypted = builder.encrypted;
 
 		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
@@ -163,6 +165,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return keyColumn;
 	}
 
+	public boolean isParentLinkColumn()
+	{
+		return parentLinkColumn;
+	}
+
 	public boolean isEncrypted()
 	{
 		return encrypted;
@@ -200,11 +207,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return null;
 		}
-		
+
 		// TODO: implement more specialized SqlLookupDataSources.
 		// * a high volume, generic one (i.e. SqlLookupDataSource)
 		// * in case there is no validation rule or the validation rule is immutable we could have an implementation which would cache the results
-		
+
 		return SqlLookupDataSource.of(sqlLookupDescriptor);
 	}
 
@@ -256,6 +263,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
 		private boolean keyColumn = false;
+		private boolean parentLinkColumn = false;
 		private boolean encrypted = false;
 
 		private boolean orderByAscending;
@@ -339,6 +347,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		public Builder setKeyColumn(final boolean keyColumn)
 		{
 			this.keyColumn = keyColumn;
+			return this;
+		}
+
+		public Builder setParentLinkColumn(boolean parentLinkColumn)
+		{
+			this.parentLinkColumn = parentLinkColumn;
 			return this;
 		}
 

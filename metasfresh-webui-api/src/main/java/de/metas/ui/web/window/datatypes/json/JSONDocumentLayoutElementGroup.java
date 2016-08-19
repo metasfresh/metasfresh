@@ -5,8 +5,11 @@ import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -51,17 +54,27 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
+	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
+	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentLayoutElementLine> elements;
+	private final List<JSONDocumentLayoutElementLine> elementLines;
 
 	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
 	{
 		super();
 		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
-		elements = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines());
+		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines());
+	}
+
+	@JsonCreator
+	private JSONDocumentLayoutElementGroup(@JsonProperty("type") final JSONLayoutType type, @JsonProperty("elements") final List<JSONDocumentLayoutElementLine> elements)
+	{
+		super();
+		this.type = type;
+		this.elementLines = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
 	@Override
@@ -70,7 +83,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("type", type)
-				.add("elements", elements.isEmpty() ? null : elements)
+				.add("elements", elementLines.isEmpty() ? null : elementLines)
 				.toString();
 	}
 
@@ -79,9 +92,9 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return type;
 	}
 
-	public List<JSONDocumentLayoutElementLine> getElements()
+	public List<JSONDocumentLayoutElementLine> getElementLines()
 	{
-		return elements;
+		return elementLines;
 	}
 
 }

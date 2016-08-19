@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -93,6 +94,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("fieldName", getFieldName())
+				.add("documentPath", getDocumentPath())
 				.add("value", _value)
 				.add("initalValue", _initialValue)
 				.add("mandatory", _mandatory)
@@ -110,6 +112,12 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	/* package */Document getDocument()
 	{
 		return _document;
+	}
+
+	@Override
+	public DocumentPath getDocumentPath()
+	{
+		return _document.getDocumentPath();
 	}
 
 	@Override
@@ -476,6 +484,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _valid;
 	}
 
+	@Override
 	public boolean hasChanges()
 	{
 		return Objects.equal(_value, _initialValue);

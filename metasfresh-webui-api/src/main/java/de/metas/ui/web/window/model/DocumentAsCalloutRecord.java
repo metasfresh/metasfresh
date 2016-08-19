@@ -3,7 +3,7 @@ package de.metas.ui.web.window.model;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.ui.web.window.model.IDocumentFieldChangedEventCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L

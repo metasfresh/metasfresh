@@ -46,6 +46,7 @@ public class DocumentEntityDescriptor
 	private final String id;
 	private final String detailId;
 	private final List<DocumentFieldDescriptor> fields;
+	private final DocumentFieldDescriptor idField;
 	private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
@@ -63,6 +64,7 @@ public class DocumentEntityDescriptor
 		id = Preconditions.checkNotNull(builder.id, "id is null");
 		detailId = builder.detailId;
 		fields = ImmutableList.copyOf(builder.fields);
+		idField = builder.idField;
 		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
 		dependencies = builder.buildDependencies();
@@ -115,6 +117,11 @@ public class DocumentEntityDescriptor
 	public String getDetailId()
 	{
 		return detailId;
+	}
+	
+	public DocumentFieldDescriptor getIdField()
+	{
+		return idField;
 	}
 
 	public List<DocumentFieldDescriptor> getFields()
@@ -169,6 +176,7 @@ public class DocumentEntityDescriptor
 	{
 		private String id;
 		private final List<DocumentFieldDescriptor> fields = new ArrayList<>();
+		private DocumentFieldDescriptor idField;
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptor dataBinding;
 		private String detailId;
@@ -203,6 +211,15 @@ public class DocumentEntityDescriptor
 
 		public Builder addField(final DocumentFieldDescriptor field)
 		{
+			if(field.isKey())
+			{
+				if(idField != null)
+				{
+					throw new IllegalArgumentException("More than one ID fields are not allowed: "+idField+", "+field);
+				}
+				idField = field;
+			}
+			
 			fields.add(field);
 			return this;
 		}

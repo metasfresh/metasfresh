@@ -84,6 +84,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("detailId", entityDescriptor.getDetailId())
+				.add("documentsCount", documents.size())
 				.toString();
 	}
 
@@ -127,7 +128,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 		if (document == null)
 		{
-			throw new IllegalArgumentException("No document found for id=" + id + " in " + this);
+			throw new IllegalArgumentException("No document found for id=" + id + " in " + this + "."
+					+ "\n Parent document: " + parentDocument
+					+ "\n Available document ids are: " + documents.keySet());
 		}
 
 		return document;
@@ -165,11 +168,15 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 		for (final Iterator<Document> it = documents.values().iterator(); it.hasNext();)
 		{
 			final Document document = it.next();
+
+			// Skip new documents
 			if (document.isNew())
 			{
-				it.remove();
-				logger.trace("Removed document: {}", document);
+				continue;
 			}
+			
+			it.remove();
+			logger.trace("Removed document: {}", document);
 		}
 
 		fullyLoaded = false;

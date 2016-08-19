@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -33,10 +32,6 @@ public final class DocumentId
 	public static final String NEW_ID_STRING = "NEW";
 	public static final DocumentId NEW = new DocumentId(NEW_ID);
 
-	private static final char TEMPORARY_ID_PREFIX = 'T';
-	
-	private static final AtomicInteger nextTemporaryId = new AtomicInteger(-1000);
-
 	public static final DocumentId of(String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
@@ -51,11 +46,6 @@ public final class DocumentId
 		if (idStr.isEmpty())
 		{
 			throw new NullPointerException("idStr shall not be empty");
-		}
-
-		if (idStr.charAt(0) == TEMPORARY_ID_PREFIX)
-		{
-			idStr = "-" + idStr.substring(1);
 		}
 
 		final int idInt = Integer.parseInt(idStr);
@@ -97,18 +87,6 @@ public final class DocumentId
 		}
 	}
 
-	public static final boolean isNew(final int id)
-	{
-		return id == NEW_ID
-				|| id < 0 // temporary id
-				;
-	}
-	
-	public static final int generateTemporaryId()
-	{
-		return nextTemporaryId.decrementAndGet();
-	}
-
 	private final int idInt;
 
 	private DocumentId(final int idInt)
@@ -128,10 +106,6 @@ public final class DocumentId
 		if (idInt == NEW_ID)
 		{
 			return NEW_ID_STRING;
-		}
-		if (idInt < 0)
-		{
-			return TEMPORARY_ID_PREFIX + String.valueOf(-idInt);
 		}
 		return String.valueOf(idInt);
 	}
