@@ -148,3 +148,29 @@ UPDATE AD_RelationType SET IsDirected='Y',Updated=TO_TIMESTAMP('2016-08-19 19:38
 
 
 
+------------------ relation M_InOut -> Invoice (SO)-----------
+
+
+-- Aug 19, 2016 7:53 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Source_ID=540101,Updated=TO_TIMESTAMP('2016-08-19 19:53:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540130
+;
+
+-- Aug 19, 2016 7:58 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS
+(
+SELECT 1
+	FROM C_Invoice i
+	JOIN C_InvoiceLine il on i.C_Invoice_ID = il.C_Invoice_ID and i.C_Invoice_ID= @C_Invoice_ID/-1@
+	JOIN M_InOutLine iol on il.M_InOutline_ID = iol.M_InOutline_ID
+	JOIN M_InOut io on iol.M_InOut_ID = io.M_InOut_ID
+
+	WHERE 
+		
+		M_InOut.M_InOut_ID = iol.M_InOut_ID
+		AND i.IsSOTrx = M_InOut.IsSOTrx
+		AND i.IsSOTrx = ''Y''
+)',Updated=TO_TIMESTAMP('2016-08-19 19:58:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540584
+;
+
