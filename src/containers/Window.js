@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Widget from '../components/Widget';
+import Tabs from '../components/app/Tabs';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 
@@ -10,13 +11,22 @@ class Window extends Component {
         super(props);
     }
     renderTabs = (tabs) => {
-        return tabs.map((elem, id)=> {
-            return (
-                <li className="nav-item" key={"tab" + id}>
-                    <a className="nav-link active">{elem.caption}</a>
-                </li>
-            )
-        })
+        return(
+            <Tabs>
+                {
+                    tabs.map((elem, id)=> {
+                        return (
+                            <div
+                                caption="elem.caption"
+                                key="elem.tabid">
+
+                                Here should be lots of elements for pane {elem.caption}
+                            </div>
+                        )
+                    })
+                }
+            </Tabs>
+        )
     }
     renderSections = (sections) => {
         return sections.map((elem, id)=> {

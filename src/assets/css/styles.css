@@ -430,3 +430,35 @@ body {
 .elements-line > * {
     flex: 1 1 auto;
 }
+
+.nav-tabs .nav-link {
+    border: 1px solid $brand-border-color;
+    background-color: #fdfdfd;
+    cursor: pointer;
+    padding: .6rem 1.2rem;
+    font-weight: 400;
+}
+
+.nav-tabs .nav-item.nav-item {
+    margin-right: .5rem;
+    margin-left: 0;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 500;
+}
+
+.tab-content {
+    border: 1px solid $brand-border-color;
+    border-top: 0;
+    background-color: #fff;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 1rem 1.2rem;
+}
+.tab-pane {
+    display: none;
+}
+.tab-pane.active {
+    display: block;
+}
