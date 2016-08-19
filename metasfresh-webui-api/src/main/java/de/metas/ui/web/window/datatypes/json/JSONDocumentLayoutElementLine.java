@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -34,37 +38,49 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel("element-line")
 @SuppressWarnings("serial")
-public class JSONDocumentLayoutElementLine extends ArrayList<JSONDocumentLayoutElement>
+public class JSONDocumentLayoutElementLine implements Serializable
 {
-
 	public static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementLines)
 	{
 		return elementLines.stream()
-				.map(elementLine -> of(elementLine))
+				.map(JSONDocumentLayoutElementLine::ofDocumentLayoutElementLineDescriptor)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutElementLine of(final DocumentLayoutElementLineDescriptor elementLine)
+	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine);
 	}
+
+	@JsonProperty("elements")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutElement> elements;
 
 	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine)
 	{
 		super();
 
 		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements());
-		addAll(elements);
+		this.elements = ImmutableList.copyOf(elements);
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementLine(final List<JSONDocumentLayoutElement> elements)
+	private JSONDocumentLayoutElementLine(@JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
 	{
 		super();
-		if (elements != null)
-		{
-			addAll(elements);
-		}
+		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("elements", elements)
+				.toString();
+	}
+
+	public List<JSONDocumentLayoutElement> getElements()
+	{
+		return elements;
+	}
 }

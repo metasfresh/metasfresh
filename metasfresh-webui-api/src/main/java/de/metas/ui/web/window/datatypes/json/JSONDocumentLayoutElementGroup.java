@@ -58,7 +58,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
-	@JsonProperty("elements")
+	@JsonProperty("elementsLine")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementLine> elementLines;
 
@@ -70,11 +70,11 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementGroup(@JsonProperty("type") final JSONLayoutType type, @JsonProperty("elements") final List<JSONDocumentLayoutElementLine> elements)
+	private JSONDocumentLayoutElementGroup(@JsonProperty("type") final JSONLayoutType type, @JsonProperty("elementsLine") final List<JSONDocumentLayoutElementLine> elementLines)
 	{
 		super();
 		this.type = type;
-		this.elementLines = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
+		this.elementLines = elementLines == null ? ImmutableList.of() : ImmutableList.copyOf(elementLines);
 	}
 
 	@Override
