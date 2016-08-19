@@ -73,7 +73,32 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 
 		// default
-		return new AdempiereException(cause.getLocalizedMessage(), cause);
+		return new AdempiereException(extractMessage(cause), cause);
+	}
+
+	/**
+	 * Extracts throwable message.
+	 * 
+	 * @param throwable
+	 * @return message; never return null
+	 */
+	protected static final String extractMessage(final Throwable throwable)
+	{
+		// guard against NPE, shall not happen
+		if(throwable == null)
+		{
+			return "null";
+		}
+		
+		String message = throwable.getLocalizedMessage();
+		
+		// If throwable message is null or it's very short then it's better to use throwable.toString()
+		if(message == null || message.length() < 4)
+		{
+			message = throwable.toString();
+		}
+
+		return message;
 	}
 
 	/**
