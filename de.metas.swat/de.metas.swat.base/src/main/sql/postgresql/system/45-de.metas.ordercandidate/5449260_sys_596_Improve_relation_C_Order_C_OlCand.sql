@@ -1,3 +1,5 @@
+------------- Relation C_Order->C_OlCand--------------------
+
 -- Aug 19, 2016 4:57 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_Table SET WhereClause='exists
@@ -110,4 +112,39 @@ UPDATE AD_Ref_Table SET WhereClause='exists
 	where  C_Order.C_Order_ID = ol.C_Order_ID
 )',Updated=TO_TIMESTAMP('2016-08-19 19:13:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540618
 ;
+
+
+
+-----------------------------Relation C_Invoice -> M_InOut (PO) -------------------------
+
+
+
+-- Aug 19, 2016 7:36 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS
+(
+SELECT 1
+	FROM C_Invoice i
+	JOIN C_InvoiceLine il on i.C_Invoice_ID = il.C_Invoice_ID and i.C_Invoice_ID = @C_Invoice_ID/-1@ 
+	JOIN M_InOutLine iol on il.M_InOutline_ID = iol.M_InOutline_ID
+	JOIN M_InOut io on iol.M_InOut_ID = io.M_InOut_ID
+
+	WHERE 
+		M_InOut.M_InOut_ID = io.M_InOut_ID
+		AND i.IsSOTrx = M_InOut.IsSOTrx
+		AND i.IsSOTrx = ''N''
+)',Updated=TO_TIMESTAMP('2016-08-19 19:36:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540586
+;
+
+-- Aug 19, 2016 7:37 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Source_ID=540569,Updated=TO_TIMESTAMP('2016-08-19 19:37:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540131
+;
+
+-- Aug 19, 2016 7:38 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsDirected='Y',Updated=TO_TIMESTAMP('2016-08-19 19:38:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540131
+;
+
+
 
