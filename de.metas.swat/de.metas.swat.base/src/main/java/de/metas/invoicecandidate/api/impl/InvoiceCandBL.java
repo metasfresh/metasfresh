@@ -1800,30 +1800,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		if (candidate.isProcessed() == true)
 		{
-			// do nothing in case of processed ICs
-			return;
+			return; // do nothing in case of processed ICs
 		}
-
-		if (!candidate.isSOTrx())
+		if (candidate.getC_Order_ID() <= 0)
 		{
 			return;
 		}
 
-		if (candidate.getC_OrderLine_ID() <= 0)
-		{
-			return;
-		}
+		final I_C_Order order = InterfaceWrapperHelper.create(candidate.getC_Order(), I_C_Order.class);
 
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(candidate.getC_OrderLine(), I_C_OrderLine.class);
-		final org.compiere.model.I_C_Order order = ol.getC_Order();
-
-		if (order == null)
-		{
-			return;
-		}
-
-		// In case the order is not completed (i.e. it was reactivated) null the POReference
-		if (!DocAction.STATUS_Completed.equals(order.getDocStatus()))
+		// In case the order is not completed (i.e. it was reactivated) and if it also wasn't modified by anyone,
+		// then null the POReference
+		if (Check.equals(order.getPOReference(), candidate.getPOReference())
+				&& !DocAction.STATUS_Completed.equals(order.getDocStatus()))
 		{
 			candidate.setPOReference(null);
 			return;
@@ -1834,7 +1823,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// do not change an already set POReference in an invoice candidate
 			return;
 		}
-
 		candidate.setPOReference(order.getPOReference());
 	}
 

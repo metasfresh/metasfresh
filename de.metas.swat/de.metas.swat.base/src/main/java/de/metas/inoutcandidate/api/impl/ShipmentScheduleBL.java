@@ -615,7 +615,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// Comments & lines w/o product & services
 			if ((product == null || !productBL.isStocked(product))
 					&& (qtyOrdered.signum() == 0 // comments
-							|| qtyToDeliver.signum() != 0))        // lines w/o product
+							|| qtyToDeliver.signum() != 0))         // lines w/o product
 			{
 				if (!ruleCompleteOrder)
 				{
@@ -896,10 +896,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// Check: Not enough On Hand
 			final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
 			if (deliver.compareTo(qtyOnHandAvailable) > 0
-					&& qtyOnHandAvailable.signum() >= 0)        // positive storage
+					&& qtyOnHandAvailable.signum() >= 0)         // positive storage
 			{
 				if (!force // Adjust to OnHand Qty
-						|| force && i + 1 != storages.size())        // if force not on last location
+						|| force && i + 1 != storages.size())         // if force not on last location
 				{
 					deliver = qtyOnHandAvailable;
 				}
@@ -961,7 +961,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			toDeliver = toDeliver.subtract(deliver);
 
 			storage.subtractQtyOnHand(deliver);
-		}        // for each stoarge record
+		}         // for each stoarge record
 
 	} // createLine
 
