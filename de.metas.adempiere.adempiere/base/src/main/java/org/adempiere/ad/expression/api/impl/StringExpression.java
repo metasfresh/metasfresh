@@ -7,9 +7,11 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -18,6 +20,7 @@ import com.google.common.collect.ImmutableList;
  * @author tsa
  * 
  */
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
 /* package */final class StringExpression implements IStringExpression
 {
 	private final String expressionStr;

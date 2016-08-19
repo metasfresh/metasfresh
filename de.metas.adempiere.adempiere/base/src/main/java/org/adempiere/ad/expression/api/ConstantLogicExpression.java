@@ -28,8 +28,12 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
+import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using = JsonLogicExpressionSerializer.class)
 public final class ConstantLogicExpression implements ILogicExpression
 {
 	private final boolean value;

@@ -24,6 +24,10 @@ package org.adempiere.ad.expression.api;
 
 import java.util.List;
 
+import org.adempiere.ad.expression.json.JsonLogicExpressionDeserializer;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 /**
  * Logic expression
  * 
@@ -32,6 +36,7 @@ import java.util.List;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
+@JsonDeserialize(using = JsonLogicExpressionDeserializer.class)
 public interface ILogicExpression extends IExpression<Boolean>
 {
 	ILogicExpression TRUE = new ConstantLogicExpression(true);

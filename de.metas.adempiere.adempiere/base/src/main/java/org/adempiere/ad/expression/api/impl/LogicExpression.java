@@ -28,11 +28,14 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 
-/* package */class LogicExpression extends AbstractLogicExpression
+@JsonSerialize(using = JsonLogicExpressionSerializer.class)
+/* package */final class LogicExpression extends AbstractLogicExpression
 {
 	private final ILogicExpression left;
 	private final ILogicExpression right;

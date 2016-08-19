@@ -22,17 +22,19 @@ package org.adempiere.ad.expression.api.impl;
  * #L%
  */
 
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 
-/* package */class LogicTuple extends AbstractLogicExpression
+@JsonSerialize(using = JsonLogicExpressionSerializer.class)
+/* package */final class LogicTuple extends AbstractLogicExpression
 {
 	private final String expressionStr;
 
@@ -172,13 +174,17 @@ import com.google.common.collect.ImmutableList;
 		return _parameters;
 	}
 
-	/** @return {@link CtxName} or {@link String} */
+	/**
+	 * @return {@link CtxName} or {@link String}
+	 */
 	public Object getOperand1()
 	{
 		return operand1;
 	}
 
-	/** @return {@link CtxName} or {@link String} */
+	/**
+	 * @return {@link CtxName} or {@link String}
+	 */
 	public Object getOperand2()
 	{
 		return operand2;

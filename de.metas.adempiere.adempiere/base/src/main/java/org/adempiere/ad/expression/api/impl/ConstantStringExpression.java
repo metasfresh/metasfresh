@@ -5,9 +5,11 @@ import java.util.List;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -32,6 +34,7 @@ import com.google.common.collect.ImmutableList;
  * #L%
  */
 
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
 class ConstantStringExpression implements IStringExpression
 {
 	private final String expressionStr;

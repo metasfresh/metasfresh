@@ -22,8 +22,11 @@ package org.adempiere.ad.expression.api;
  * #L%
  */
 
-
 import java.util.List;
+
+import org.adempiere.ad.expression.json.JsonStringExpressionDeserializer;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * String Expression
@@ -31,6 +34,7 @@ import java.util.List;
  * @author tsa
  * 
  */
+@JsonDeserialize(using = JsonStringExpressionDeserializer.class)
 public interface IStringExpression extends IExpression<String>
 {
 	/**
