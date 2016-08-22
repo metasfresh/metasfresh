@@ -1,6 +1,7 @@
 package org.adempiere.ad.wrapper;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,8 +46,6 @@ public interface IInterfaceWrapperHelper
 	void refresh(Object model, String trxName);
 
 	boolean hasModelColumnName(Object model, String columnName);
-
-	boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound);
 
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
@@ -108,8 +107,20 @@ public interface IInterfaceWrapperHelper
 			final String columnName,
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable);
+
+	boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound);
+
+	boolean isValueChanged(Object model, String columnName);
 	
+	/**
+	 * @param model
+	 * @param columnNames
+	 * @return true if any of given column names where changed
+	 */
+	boolean isValueChanged(Object model, Set<String> columnNames);
+
 	<T> T getDynAttribute(final Object model, final String attributeName);
-	
+
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
+
 }

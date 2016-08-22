@@ -1,6 +1,7 @@
 package org.adempiere.ad.wrapper;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
@@ -183,6 +184,18 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	}
 
 	@Override
+	public boolean isValueChanged(final Object model, final String columnName)
+	{
+		return POWrapper.isValueChanged(model, columnName);
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final Set<String> columnNames)
+	{
+		return POWrapper.isValueChanged(model, columnNames);
+	}
+
+	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		final T value = POWrapper.getDynAttribute(model, attributeName);
@@ -190,7 +203,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	}
 
 	@Override
-	public Object setDynAttribute(Object model, String attributeName, Object value)
+	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return POWrapper.setDynAttribute(model, attributeName, value);
 	}

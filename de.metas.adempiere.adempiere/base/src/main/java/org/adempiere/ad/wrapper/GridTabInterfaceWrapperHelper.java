@@ -1,6 +1,7 @@
 package org.adempiere.ad.wrapper;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.trx.api.ITrx;
@@ -171,14 +172,63 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	}
 
 	@Override
-	public <T> T getDynAttribute(Object model, String attributeName)
+	public boolean isValueChanged(final Object model, final String columnName)
+	{
+		final GridTab gridTab = GridTabWrapper.getGridTab(model);
+		if(gridTab == null)
+		{
+			return false;
+		}
+		
+		final GridField field = gridTab.getField(columnName);
+		if(field == null)
+		{
+			return false;
+		}
+		
+		return field.isValueChanged();
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final Set<String> columnNames)
+	{
+		if(columnNames == null || columnNames.isEmpty())
+		{
+			return false;
+		}
+		
+		final GridTab gridTab = GridTabWrapper.getGridTab(model);
+		if(gridTab == null)
+		{
+			return false;
+		}
+		
+		for (final String columnName : columnNames)
+		{
+			final GridField field = gridTab.getField(columnName);
+			if(field == null)
+			{
+				continue;
+			}
+			
+			if(field.isValueChanged())
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		final T value = GridTabWrapper.getWrapper(model).getDynAttribute(attributeName);
 		return value;
 	}
 
 	@Override
-	public Object setDynAttribute(Object model, String attributeName, Object value)
+	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
 	}

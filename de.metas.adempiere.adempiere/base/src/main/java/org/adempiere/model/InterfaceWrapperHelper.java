@@ -1330,20 +1330,7 @@ public class InterfaceWrapperHelper
 
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isValueChanged(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isValueChanged(model, columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isValueChanged(model, columnName);
 	}
 
 	/**
@@ -1353,20 +1340,20 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
-		Check.assumeNotNull(model, "model not null");
+		return helpers.isValueChanged(model, columnNames);
+	}
 
-		if (POWrapper.isHandled(model))
+	@Deprecated
+	public static boolean isPOValueChanged(final Object model, final String columnName)
+	{
+		boolean checkOtherWrapper = false;
+		final PO po = POWrapper.getPO(model, checkOtherWrapper);
+		if(po == null)
 		{
-			return POWrapper.isValueChanged(model, columnNames);
+			return false;
 		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isValueChanged(model, columnNames);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		
+		return POWrapper.isValueChanged(po, columnName);
 	}
 
 	public static boolean hasChanges(final Object model)

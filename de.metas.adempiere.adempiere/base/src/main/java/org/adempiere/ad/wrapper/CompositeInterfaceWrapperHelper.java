@@ -1,12 +1,11 @@
 package org.adempiere.ad.wrapper;
 
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -219,6 +218,20 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
+	public boolean isValueChanged(final Object model, final String columnName)
+	{
+		return getHelperThatCanHandle(model)
+				.isValueChanged(model, columnName);
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final Set<String> columnNames)
+	{
+		return getHelperThatCanHandle(model)
+				.isValueChanged(model, columnNames);
+	}
+
+	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		return getHelperThatCanHandle(model)
@@ -226,25 +239,9 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public Object setDynAttribute(Object model, String attributeName, Object value)
+	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return getHelperThatCanHandle(model)
+				.setDynAttribute(model, attributeName, value);
 	}
 }

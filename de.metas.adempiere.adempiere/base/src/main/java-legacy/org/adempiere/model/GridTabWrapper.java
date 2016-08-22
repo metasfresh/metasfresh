@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.GridTabModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,12 +32,13 @@ import org.adempiere.util.Check;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import de.metas.logging.LogManager;
 
 /**
  * Wrap GridTab to ADempiere Bean Interface (i.e. generated interfaces). Usage example:
@@ -178,6 +181,20 @@ public class GridTabWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		return null;
+	}
+	
+	/*package*/ <T extends PO> T getPO()
+	{
+		// using the grid tab wrapper to load the PO
+		final GridTab gridTab = getGridTab();
+		final String tableName = gridTab.get_TableName();
+		final int recordID = gridTab.getKeyID(gridTab.getCurrentRow());
+		final Properties ctx = getCtx();
+		
+		@SuppressWarnings("unchecked")
+		final T po = (T)TableModelLoader.instance.getPO(ctx, tableName, recordID, ITrx.TRXNAME_None);
+		
+		return po;
 	}
 
 	public static final IModelInternalAccessor getModelInternalAccessor(final Object model)

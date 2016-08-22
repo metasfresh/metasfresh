@@ -1,6 +1,7 @@
 package org.adempiere.ad.wrapper;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
@@ -160,6 +161,18 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 		@SuppressWarnings("unchecked")
 		final T value = (T)wrapper.getValuesMap().get(columnName);
 		return value;
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final String columnName)
+	{
+		return POJOWrapper.isValueChanged(model, columnName);
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final Set<String> columnNames)
+	{
+		return POJOWrapper.isValueChanged(model, columnNames);
 	}
 
 	@Override

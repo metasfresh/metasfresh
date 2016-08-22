@@ -27,14 +27,12 @@ import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.persistence.exceptions.ModelClassNotSupportedException;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.ad.wrapper.POModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.ProxyMethodsCache;
-import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -252,8 +250,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	public static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
-		@SuppressWarnings("unchecked")
-		final T po = (T)getPO(model, checkOtherWrapper);
+		final T po = getPO(model, checkOtherWrapper);
 
 		return po;
 	}
@@ -289,12 +286,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			}
 			if (checkOtherWrapper && ih instanceof GridTabWrapper)
 			{
-				// using the grid tab wrapper to load the PO
-				final GridTab gridTab = GridTabWrapper.getGridTab(model);
-				final String tableName = gridTab.get_TableName();
-				final int recordID = gridTab.getKeyID(gridTab.getCurrentRow());
-				final Properties ctx = Env.getCtx();
-				return (T)tableModelLoader.getPO(ctx, tableName, recordID, ITrx.TRXNAME_None);
+				final GridTabWrapper wrapper = (GridTabWrapper)ih;
+				return wrapper.getPO();
 			}
 		}
 

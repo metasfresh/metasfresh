@@ -56,6 +56,7 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
@@ -1501,6 +1502,13 @@ public class GridField
 	{
 		return m_oldValue;
 	}   // getOldValue
+	
+	public boolean isValueChanged()
+	{
+		final Object valueOld = getOldValue();
+		final Object value = getValue();
+		return Objects.equal(value, valueOld);
+	}
 
 	/**
 	 * Set Error Value (the value, which cuased some Error)
