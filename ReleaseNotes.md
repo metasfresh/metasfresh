@@ -13,12 +13,16 @@ Here come the actual release notes:
 # metasfresh 4.32.30 (2016-34 upcoming)
 
 ## Features
+ * #276 Report Konten-Info new Parameter
  * #273 Report "Anbauplanung" addition & adjustment
  * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
  * #295 sql in purchase inout takes too long
    - performance improvement in the jasper file
+ * #292 Automatically add reference no from purchase order to invoice candidate
+ * #293 Create cron job for archiving the async-tables
 
 ## Fixes
+ * #251 Invoice Candidates double invoiced
 
 # metasfresh 4.31.30a (2016-33a RC for weekly release)
 

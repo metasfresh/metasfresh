@@ -357,7 +357,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 *
-	 * Only for Sales orders.
+	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
 	 *
 	 * Candidate will not be saved.
 	 *

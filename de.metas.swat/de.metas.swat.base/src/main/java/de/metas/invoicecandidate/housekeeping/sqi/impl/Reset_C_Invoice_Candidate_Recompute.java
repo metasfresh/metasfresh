@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.housekeeping.sqi.impl;
+package de.metas.invoicecandidate.housekeeping.sqi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,19 +27,18 @@ import org.compiere.util.DB;
  * #L%
  */
 /**
- * Cleans up stale <code>M_ShipmentSchedule_Recompute</code> records that might prevent ICs from getting updated.
+ * Cleans up stale <code>C_Invoice_Candidate_Recompute</code> records that might prevent ICs from getting updated.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @task https://metasfresh.atlassian.net/browse/FRESH-342
- * @task https://github.com/metasfresh/metasfresh/issues/298
+ * @task https://github.com/metasfresh/metasfresh/issues/251
  */
-public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingTask
+public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask
 {
 	@Override
 	public void executeTask(final ILoggable loggable)
 	{
-		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "SELECT de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute();");
-		loggable.addLog("Cleaned up " + no + " stale M_ShipmentSchedule_Recompute records");
+		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "de_metas_invoicecandidate.Reset_C_Invoice_Candidate_Recompute();");
+		loggable.addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
 	}
 }
