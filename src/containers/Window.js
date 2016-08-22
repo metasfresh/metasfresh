@@ -17,8 +17,8 @@ class Window extends Component {
                     tabs.map((elem, id)=> {
                         return (
                             <div
-                                caption="elem.caption"
-                                key="elem.tabid">
+                                caption={elem.caption}
+                                key={elem.tabid}>
 
                                 Here should be lots of elements for pane {elem.caption}
                             </div>
@@ -52,23 +52,22 @@ class Window extends Component {
     }
     renderElementGroups = (group) => {
         return group.map((elem, id)=> {
-            const {type, elementsLine} = elem;
+            const {type, elements} = elem;
             return (
                 <div
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElementsLine(elementsLine)}
+                    {this.renderElementsLine(elements)}
                 </div>
             )
         })
     }
     renderElementsLine = (elementsLine) => {
         return elementsLine.map((elems, id)=> {
-            const elements = elem.elements;
             return (
-                <div className="elements-line">
-                    {this.renderElements(elements)}
+                <div className="elements-line" key={"line" + id}>
+                    {this.renderElements(elems)}
                 </div>
             )
         })

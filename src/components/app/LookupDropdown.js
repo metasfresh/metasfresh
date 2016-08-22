@@ -31,20 +31,23 @@ class LookupDropdown extends Component {
             dispatch,
             properties,
             autocomplete,
-            onObjectChange,
+            onChange,
             onPropertyChange,
-            dataId
+            dataId,
+            fields
         } = this.props;
 
         //removing selection
         this.setState({selected: null});
         let propertiesCopy = this.getItemsByProperty(properties, "source", "list")
+        let mainProperty = this.getItemsByProperty(properties, "source", "lookup")
 
         //
         // Handling selection when main is not set or set.
         //
         if(this.state.property === ""){
             this.inputSearch.value = select[Object.keys(select)[0]];
+            onChange(mainProperty[0].field, select);
             //call for more properties
             // - first will generate choice dropdown
             // - second should be chosen automatically

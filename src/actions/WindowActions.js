@@ -51,18 +51,31 @@ export function initDataSuccess(data) {
     }
 }
 
+/*
+ *  Wrapper for patch request of widget elements
+ *  when responses should merge store
+ */
+export function patch(windowType, id = "NEW", property, value) {
+    return dispatch => {
+        dispatch(patchRequest(windowType, id, property, value)).then(response => {
+            //TODO: Merge data store
+            console.log(response.data);
+        })
+    }
+}
+
 export function patchRequest(windowType, id = "NEW", property, value) {
     let payload = {};
 
     if(id === "NEW"){
         payload = [];
     }else{
-        payload = {
-            'op': 'add',
-            'property': property,
+        payload = [{
+            'op': 'replace',
+            'path': property,
             'value': value
-        }
+        }];
     }
 
-    return (dispatch) => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, payload);
+    return dispatch => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, payload);
 }
