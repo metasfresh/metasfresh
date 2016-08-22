@@ -487,7 +487,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean hasChanges()
 	{
-		return Objects.equal(_value, _initialValue);
+		return !Objects.equal(_value, _initialValue);
 	}
 
 	/*package */DocumentField copy(final Document document)
