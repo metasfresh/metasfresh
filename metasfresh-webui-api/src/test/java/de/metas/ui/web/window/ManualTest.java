@@ -114,14 +114,13 @@ public class ManualTest
 		{
 			final List<JSONDocumentChangedEvent> events = Arrays.asList(
 					JSONDocumentChangedEvent.of(JSONOperation.replace, "M_Product_ID", JSONLookupValue.of("2005577", "Convenience Salat 250g")) //
-					// , JSONDocumentChangedEvent.of(JSONOperation.replace, "M_AttributeSetInstance_ID", JSONLookupValue.of("0", "NEW")) // not needed
+					, JSONDocumentChangedEvent.of(JSONOperation.replace, "M_AttributeSetInstance_ID", JSONLookupValue.of("0", "NEW")) // needed because some callouts are setting it to NULL
 			);
 
 			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, events);
 			rowId = getRowId(response, rowId);
 			System.out.println("=> rowId=" + rowId);
 		}
-
 
 		//
 		//
