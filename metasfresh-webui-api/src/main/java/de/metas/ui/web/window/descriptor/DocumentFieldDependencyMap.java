@@ -33,15 +33,21 @@ import com.google.common.collect.Multimap;
  * #L%
  */
 
-public class DocumentFieldDependencyMap
+/**
+ * Immutable document field's dependencies map.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public final class DocumentFieldDependencyMap
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
-	
+
 	private static final DocumentFieldDependencyMap EMPTY = new DocumentFieldDependencyMap();
-	
+
 	public enum DependencyType
 	{
 		ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues,
@@ -54,14 +60,14 @@ public class DocumentFieldDependencyMap
 		super();
 		type2name2dependencies = builder.getType2Name2DependenciesMap();
 	}
-	
+
 	/** Empty constructor */
 	private DocumentFieldDependencyMap()
 	{
 		super();
 		type2name2dependencies = ImmutableMap.of();
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -110,7 +116,6 @@ public class DocumentFieldDependencyMap
 		}
 	}
 
-
 	public static final class Builder
 	{
 		private final Map<DependencyType, ImmutableSetMultimap.Builder<String, String>> type2name2dependencies = new HashMap<>();
@@ -122,13 +127,13 @@ public class DocumentFieldDependencyMap
 
 		public DocumentFieldDependencyMap build()
 		{
-			if(type2name2dependencies.isEmpty())
+			if (type2name2dependencies.isEmpty())
 			{
 				return EMPTY;
 			}
 			return new DocumentFieldDependencyMap(this);
 		}
-		
+
 		private Map<DependencyType, Multimap<String, String>> getType2Name2DependenciesMap()
 		{
 			final ImmutableMap.Builder<DependencyType, Multimap<String, String>> builder = ImmutableMap.builder();
@@ -147,7 +152,6 @@ public class DocumentFieldDependencyMap
 			return builder.build();
 		}
 
-		
 		public Builder add(final String fieldName, final Collection<String> dependsOnFieldNames, final DependencyType dependencyType)
 		{
 			if (dependsOnFieldNames == null || dependsOnFieldNames.isEmpty())
@@ -169,7 +173,7 @@ public class DocumentFieldDependencyMap
 
 			return this;
 		}
-		
+
 		public Builder add(DocumentFieldDependencyMap dependencies)
 		{
 			if (dependencies == null || dependencies == EMPTY)
@@ -193,7 +197,6 @@ public class DocumentFieldDependencyMap
 
 			return this;
 		}
-
 
 	}
 }

@@ -10,6 +10,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
@@ -17,6 +18,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
@@ -43,6 +45,7 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression implements IStringExpression
 {
 	public static final SqlDefaultValueExpression of(final IStringExpression stringExpression)

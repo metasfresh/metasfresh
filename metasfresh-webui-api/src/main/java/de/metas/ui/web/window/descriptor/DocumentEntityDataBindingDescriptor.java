@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -22,6 +24,7 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentEntityDataBindingDescriptor
 {
 	String getTableName();

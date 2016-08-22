@@ -2,6 +2,8 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import de.metas.ui.web.window.model.LookupDataSource;
 
 /*
@@ -26,6 +28,7 @@ import de.metas.ui.web.window.model.LookupDataSource;
  * #L%
  */
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentFieldDataBindingDescriptor
 {
 	String getColumnName();

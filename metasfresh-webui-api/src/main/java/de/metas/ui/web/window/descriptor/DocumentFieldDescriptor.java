@@ -5,6 +5,10 @@ import java.io.Serializable;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -42,32 +46,52 @@ public final class DocumentFieldDescriptor implements Serializable
 	}
 
 	/** Internal field name (aka ColumnName) */
+	@JsonProperty("fieldName")
 	private final String fieldName;
 	/** Detail ID or null if this is a field in main sections */
+	@JsonProperty("detailId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
 
+	@JsonProperty("caption")
 	private final String caption;
+
+	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
 
 	/** Is this the key field ? */
+	@JsonProperty("key")
 	private final boolean key;
+	@JsonProperty("parentLink")
 	private final boolean parentLink;
+	@JsonProperty("virtualField")
 	private final boolean virtualField;
+	@JsonProperty("calculated")
 	private final boolean calculated;
 
+	@JsonProperty("widgetType")
 	private final DocumentFieldWidgetType widgetType;
 
+	@JsonProperty("valueClass")
 	private final Class<?> valueClass;
 
+	@JsonProperty("defaultValueExpression")
 	private final IStringExpression defaultValueExpression;
 
+	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
+	@JsonProperty("alwaysUpdateable")
 	private final boolean alwaysUpdateable;
+	@JsonProperty("displayLogic")
 	private final ILogicExpression displayLogic;
+	@JsonProperty("mandatoryLogic")
 	private final ILogicExpression mandatoryLogic;
 
+	@JsonProperty("data-binding")
 	private final DocumentFieldDataBindingDescriptor dataBinding;
 
+	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
 	private DocumentFieldDescriptor(final Builder builder)
@@ -98,6 +122,45 @@ public final class DocumentFieldDescriptor implements Serializable
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding is null");
 
 		dependencies = builder.buildDependencies();
+	}
+
+	@JsonCreator
+	private DocumentFieldDescriptor(
+			@JsonProperty("fieldName") final String fieldName //
+			, @JsonProperty("detailId") final String detailId //
+			, @JsonProperty("caption") final String caption //
+			, @JsonProperty("description") final String description //
+			, @JsonProperty("key") final boolean key //
+			, @JsonProperty("parentLink") final boolean parentLink //
+			, @JsonProperty("virtualField") final boolean virtualField //
+			, @JsonProperty("calculated") final boolean calculated //
+			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
+			, @JsonProperty("valueClass") final Class<?> valueClass //
+			, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
+			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
+			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
+			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
+			, @JsonProperty("mandatoryLogic") final ILogicExpression mandatoryLogic //
+			, @JsonProperty("data-binding") final DocumentFieldDataBindingDescriptor dataBinding //
+	)
+	{
+		this(new Builder()
+				.setFieldName(fieldName)
+				.setDetailId(detailId)
+				.setCaption(caption)
+				.setDescription(description)
+				.setKey(key)
+				.setParentLink(parentLink)
+				.setVirtualField(virtualField)
+				.setCalculated(calculated)
+				.setWidgetType(widgetType)
+				.setValueClass(valueClass)
+				.setDefaultValueExpression(defaultValueExpression)
+				.setReadonlyLogic(readonlyLogic)
+				.setAlwaysUpdateable(alwaysUpdateable)
+				.setDisplayLogic(displayLogic)
+				.setMandatoryLogic(mandatoryLogic)
+				.setDataBinding(dataBinding));
 	}
 
 	@Override
@@ -136,22 +199,21 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return key;
 	}
-	
+
 	public boolean isParentLink()
 	{
 		return parentLink;
 	}
-	
+
 	public boolean isVirtualField()
 	{
 		return virtualField;
 	}
-	
+
 	public boolean isCalculated()
 	{
 		return calculated;
 	}
-
 
 	public DocumentFieldWidgetType getWidgetType()
 	{
@@ -172,7 +234,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return readonlyLogic;
 	}
-	
+
 	public boolean isAlwaysUpdateable()
 	{
 		return alwaysUpdateable;
@@ -192,7 +254,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return dataBinding;
 	}
-	
+
 	public DocumentFieldDependencyMap getDependencies()
 	{
 		return dependencies;
@@ -257,25 +319,25 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setKey(boolean key)
+		public Builder setKey(final boolean key)
 		{
 			this.key = key;
 			return this;
 		}
-		
-		public Builder setParentLink(boolean parentLink)
+
+		public Builder setParentLink(final boolean parentLink)
 		{
 			this.parentLink = parentLink;
 			return this;
 		}
-		
-		public Builder setVirtualField(boolean virtualField)
+
+		public Builder setVirtualField(final boolean virtualField)
 		{
 			this.virtualField = virtualField;
 			return this;
 		}
-		
-		public Builder setCalculated(boolean calculated)
+
+		public Builder setCalculated(final boolean calculated)
 		{
 			this.calculated = calculated;
 			return this;
@@ -304,7 +366,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			this.readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
 			return this;
 		}
-		
+
 		public Builder setAlwaysUpdateable(final boolean alwaysUpdateable)
 		{
 			this.alwaysUpdateable = alwaysUpdateable;

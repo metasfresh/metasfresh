@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -43,19 +47,34 @@ public class DocumentEntityDescriptor
 		return new Builder();
 	}
 
+	@JsonProperty("id")
 	private final String id;
+
+	@JsonProperty("detailId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
+
+	@JsonProperty("fields")
 	private final List<DocumentFieldDescriptor> fields;
+	@JsonIgnore
 	private final DocumentFieldDescriptor idField;
+
+	@JsonProperty("included-entities")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId;
 
+	@JsonProperty("data-binding")
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
+	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
 	// Legacy
+	@JsonProperty("AD_Window_ID")
 	private final int AD_Window_ID;
+	@JsonProperty("tabNo")
 	private final int tabNo;
+	@JsonProperty("IsSOTrx")
 	private final boolean isSOTrx;
 
 	private DocumentEntityDescriptor(final Builder builder)
@@ -73,6 +92,29 @@ public class DocumentEntityDescriptor
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
+	}
+
+	@JsonCreator
+	private DocumentEntityDescriptor(
+			@JsonProperty("id") final String id //
+			, @JsonProperty("detaildId") final String detailId //
+			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
+			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
+			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
+			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
+			, @JsonProperty("tabNo") final int tabNo //
+			, @JsonProperty("isSOTrx") final boolean isSOTrx //
+	)
+	{
+		this(new Builder()
+				.setId(id)
+				.setDetailId(detailId)
+				.addFields(fields)
+				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
+				.setDataBinding(dataBinding)
+				.setAD_Window_ID(AD_Window_ID)
+				.setTabNo(tabNo)
+				.setIsSOTrx(isSOTrx));
 	}
 
 	@Override
@@ -118,7 +160,7 @@ public class DocumentEntityDescriptor
 	{
 		return detailId;
 	}
-	
+
 	public DocumentFieldDescriptor getIdField()
 	{
 		return idField;
@@ -129,6 +171,7 @@ public class DocumentEntityDescriptor
 		return fields;
 	}
 
+	@JsonIgnore
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
 	{
 		return includedEntitiesByDetailId.values();
@@ -155,6 +198,7 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
+	@JsonIgnore
 	public int getAD_Window_ID()
 	{
 		return AD_Window_ID;
@@ -167,6 +211,7 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
+	@JsonIgnore
 	public boolean isSOTrx()
 	{
 		return isSOTrx;
@@ -203,6 +248,13 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		private Builder setId(final String id)
+		{
+			Check.assumeNotEmpty(id, "id is not empty");
+			this.id = id;
+			return this;
+		}
+
 		public Builder setDetailId(final String detailId)
 		{
 			this.detailId = detailId;
@@ -211,16 +263,26 @@ public class DocumentEntityDescriptor
 
 		public Builder addField(final DocumentFieldDescriptor field)
 		{
-			if(field.isKey())
+			if (field.isKey())
 			{
-				if(idField != null)
+				if (idField != null)
 				{
-					throw new IllegalArgumentException("More than one ID fields are not allowed: "+idField+", "+field);
+					throw new IllegalArgumentException("More than one ID fields are not allowed: " + idField + ", " + field);
 				}
 				idField = field;
 			}
-			
+
 			fields.add(field);
+			return this;
+		}
+
+		public Builder addFields(final List<DocumentFieldDescriptor> fields)
+		{
+			if (fields == null)
+			{
+				return this;
+			}
+			fields.stream().forEach(this::addField);
 			return this;
 		}
 
@@ -232,13 +294,23 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		private Builder addIncludedEntities(final Collection<DocumentEntityDescriptor> includedEntities)
+		{
+			if (includedEntities == null)
+			{
+				return this;
+			}
+			includedEntities.stream().forEach(this::addIncludedEntity);
+			return this;
+		}
+
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptor dataBinding)
 		{
 			this.dataBinding = dataBinding;
 			return this;
 		}
 
-		public DocumentFieldDependencyMap buildDependencies()
+		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 			fields.stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
@@ -256,7 +328,7 @@ public class DocumentEntityDescriptor
 			this.tabNo = tabNo;
 			return this;
 		}
-		
+
 		public Builder setIsSOTrx(final boolean isSOTrx)
 		{
 			this.isSOTrx = isSOTrx;

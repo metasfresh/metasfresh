@@ -4,6 +4,9 @@ import java.util.Collection;
 
 import org.compiere.util.DisplayType;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -45,27 +48,51 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
+	@JsonProperty("sqlTableName")
 	private final String sqlTableName;
+	@JsonProperty("sqlTableAlias")
 	private final String sqlTableAlias;
+	@JsonProperty("sqlColumnName")
 	private final String sqlColumnName;
+	@JsonProperty("sqlColumnSql")
 	private final String sqlColumnSql;
+	@JsonProperty("keyColumn")
 	private final boolean keyColumn;
+	@JsonProperty("parentLinkColumn")
 	private final boolean parentLinkColumn;
+	@JsonProperty("encrypted")
 	private final boolean encrypted;
 
+	@JsonIgnore
 	private final SqlLookupDescriptor sqlLookupDescriptor;
 
+	@JsonIgnore
 	private final boolean usingDisplayColumn;
+	@JsonIgnore
 	private final String displayColumnName;
+	@JsonIgnore
 	private final String displayColumnSql;
+	@JsonIgnore
 	private final Boolean numericKey;
 
+	@JsonIgnore
 	private final int orderByPriority;
+	@JsonIgnore
 	private final boolean orderByAscending;
+	@JsonIgnore
 	private final String sqlOrderBy;
 
 	// legacy
-	private final int AD_Column_ID;
+	@JsonProperty("adColumnId")
+	private final int adColumnId;
+
+	// required for JSON serialization/deserialization
+	@JsonProperty("displayType")
+	private final int displayType;
+	@JsonProperty("AD_Reference_Value_ID")
+	private final int AD_Reference_Value_ID;
+	@JsonProperty("AD_Val_Rule_ID")
+	private final int AD_Val_Rule_ID;
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
@@ -115,7 +142,42 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		//
 		// Legacy
-		AD_Column_ID = builder.AD_Column_ID;
+		adColumnId = builder.AD_Column_ID;
+
+		//
+		// required for JSON serialization/deserialization
+		displayType = builder.displayType;
+		AD_Reference_Value_ID = builder.AD_Reference_Value_ID;
+		AD_Val_Rule_ID = builder.AD_Val_Rule_ID;
+	}
+
+	@JsonCreator
+	private SqlDocumentFieldDataBindingDescriptor(
+			@JsonProperty("sqlTableName") final String sqlTableName //
+			, @JsonProperty("sqlTableAlias") final String sqlTableAlias //
+			, @JsonProperty("sqlColumnName") final String sqlColumnName //
+			, @JsonProperty("sqlColumnSql") final String sqlColumnSql //
+			, @JsonProperty("keyColumn") final boolean keyColumn //
+			, @JsonProperty("parentLinkColumn") final boolean parentLinkColumn //
+			, @JsonProperty("encrypted") final boolean encrypted //
+			, @JsonProperty("adColumnId") final int AD_Column_ID //
+			, @JsonProperty("displayType") final int displayType //
+			, @JsonProperty("AD_Reference_Value_ID") final int AD_Reference_Value_ID //
+			, @JsonProperty("AD_Val_Rule_ID") final int AD_Val_Rule_ID //
+	)
+	{
+		this(new Builder()
+				.setSqlTableName(sqlTableName)
+				.setSqlTableAlias(sqlTableAlias)
+				.setSqlColumnName(sqlColumnName)
+				.setSqlColumnSql(sqlColumnSql)
+				.setKeyColumn(keyColumn)
+				.setParentLinkColumn(parentLinkColumn)
+				.setEncrypted(encrypted)
+				.setAD_Column_ID(AD_Column_ID)
+				.setDisplayType(displayType)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setAD_Val_Rule_ID(AD_Val_Rule_ID));
 	}
 
 	@Override
@@ -144,6 +206,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
+	@JsonIgnore
 	public String getColumnName()
 	{
 		return sqlColumnName;
@@ -155,9 +218,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
+	@JsonIgnore
 	public int getAD_Column_ID()
 	{
-		return AD_Column_ID;
+		return adColumnId;
 	}
 
 	public boolean isKeyColumn()
@@ -197,7 +261,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	public boolean isNumericKey()
 	{
-		return numericKey;
+		return numericKey != null && numericKey;
 	}
 
 	@Override
@@ -215,6 +279,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return SqlLookupDataSource.of(sqlLookupDescriptor);
 	}
 
+	@JsonIgnore
 	@Override
 	public Collection<String> getLookupValuesDependsOnFieldNames()
 	{
@@ -229,6 +294,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	 * @return true if this field has ORDER BY instructions
 	 * @see #getSqlOrderBy()
 	 */
+	@JsonIgnore
 	public boolean isOrderBy()
 	{
 		return sqlOrderBy != null;
