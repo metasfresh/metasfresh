@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import { patch } from '../actions/WindowActions';
+import { patch, updateDataProperty } from '../actions/WindowActions';
 
 import Datetime from 'react-datetime';
 import LookupDropdown from './app/LookupDropdown';
@@ -13,17 +13,20 @@ class Widget extends Component {
     }
     handlePatch = (property, value) => {
         const {data,windowType, dispatch} = this.props;
-
-        // Check if patch is really needed (and it is not an init)
-        if(this.findRowByPropName(data,property).value !== value ){
-            dispatch(patch(windowType, data[0].value, property, value));
-        }
+        // dispatch(updateDataProperty(property, value));
+        dispatch(patch(windowType, data[0].value, property, value));
+    }
+    handleChange = (e, property) => {
+        const {dispatch} = this.props;
+        e.preventDefault();
+        dispatch(updateDataProperty(property, e.target.value));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
         switch(widgetType){
             case "Date":
                 return (
                     <div className={"input-icon-container input-block " +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
@@ -32,7 +35,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -41,6 +44,7 @@ class Widget extends Component {
             case "DateTime":
                 return (
                     <div className={"input-icon-container input-block " +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
@@ -49,7 +53,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -59,6 +63,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <Datetime
@@ -66,7 +71,7 @@ class Widget extends Component {
                             dateFormat={false}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -79,11 +84,11 @@ class Widget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        defaultValue={data.value}
+                        value={data.value}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
                         rank={type}
-                        onChange={(field, option) => this.handlePatch(field, option)}
+                        onChange={this.handlePatch}
                     />
                 )
             case "List":
@@ -103,14 +108,16 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="text"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -119,13 +126,15 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <textarea
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -134,6 +143,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
@@ -141,9 +151,10 @@ class Widget extends Component {
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -152,14 +163,16 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -168,6 +181,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
@@ -175,9 +189,10 @@ class Widget extends Component {
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -186,6 +201,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
@@ -193,9 +209,10 @@ class Widget extends Component {
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -204,37 +221,47 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (data.readonly ? "input-disabled " : "") +
                         (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onBlur={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
             case "YesNo":
                 return (
-                    <label className="input-checkbox">
+                    <label
+                        className={
+                            "input-checkbox"
+                        }>
                         <input
                             type="checkbox"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
-                            onClick={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onClick={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
                 )
             case "Switch":
                 return (
-                    <label className="input-switch">
+                    <label
+                        className={
+                            "input-switch" +
+                            (data.readonly ? "input-disabled " : "") +
+                            (data.mandatory ? "input-mandatory " : "")
+                        }>
                         <input
                             type="checkbox"
                             checked={data.value}
                             disabled={data.readonly}
-                            onChange={(event) => this.handlePatch(fields[0].field, event.nativeEvent.target.value)}
+                            onChange={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                         <div className="input-slider" />
                     </label>
@@ -266,7 +293,7 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type} = this.props;
-        const dataId = data[0].value;
+        const dataId = this.findRowByPropName(data,"ID").value;
         const widgetData = this.findRowByPropName(data, fields[0].field);
         if(widgetData.displayed){
             return (

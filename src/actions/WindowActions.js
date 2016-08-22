@@ -50,6 +50,12 @@ export function initDataSuccess(data) {
         data: data
     }
 }
+export function updateDataSuccess(item) {
+    return {
+        type: types.UPDATE_DATA_SUCCESS,
+        item: item
+    }
+}
 
 /*
  *  Wrapper for patch request of widget elements
@@ -58,8 +64,9 @@ export function initDataSuccess(data) {
 export function patch(windowType, id = "NEW", property, value) {
     return dispatch => {
         dispatch(patchRequest(windowType, id, property, value)).then(response => {
-            //TODO: Merge data store
-            console.log(response.data);
+            response.data.map(item => {
+                dispatch(updateDataSuccess(item));
+            })
         })
     }
 }
@@ -78,4 +85,12 @@ export function patchRequest(windowType, id = "NEW", property, value) {
     }
 
     return dispatch => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, payload);
+}
+
+export function updateDataProperty(property, value){
+    return {
+        type: types.UPDATE_DATA_PROPERTY,
+        property: property,
+        value: value
+    }
 }

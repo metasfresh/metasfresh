@@ -89,9 +89,9 @@ class Window extends Component {
                 <OrderList />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
-                    <ul className="nav nav-tabs m-t-1 m-b-2">
+                    <div className="m-t-1 m-b-2">
                         {tabs && this.renderTabs(tabs)}
-                    </ul>
+                    </div>
                 </div>
             </div>
         );
