@@ -7,6 +7,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import de.metas.ui.web.window.datatypes.DataTypes;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -79,7 +81,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return false;
 		}
 		final DocumentLayoutElementFieldDescriptor other = (DocumentLayoutElementFieldDescriptor)obj;
-		return Objects.equals(field, other.field);
+		return DataTypes.equals(field, other.field);
 	}
 
 	public String getField()

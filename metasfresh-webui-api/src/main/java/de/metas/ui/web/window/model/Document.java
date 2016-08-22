@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -417,7 +417,7 @@ public final class Document
 			{
 				// Collect change event and update dependencies only if the field's value changed
 				final Object valueNew = documentField.getValue();
-				if (!Objects.equals(valueOld, valueNew))
+				if (!DataTypes.equals(valueOld, valueNew))
 				{
 					// collect changed value
 					final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollector();
@@ -721,7 +721,7 @@ public final class Document
 
 		// Check if changed. If not, stop here.
 		final Object valueNew = documentField.getValue();
-		if (Objects.equals(valueOld, valueNew))
+		if (DataTypes.equals(valueOld, valueNew))
 		{
 			return;
 		}

@@ -10,9 +10,9 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -171,7 +171,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		final Object valueNew = convertToValueClass(value);
 		final Object valueOld = _value;
 
-		if (Objects.equal(valueNew, valueOld))
+		if (DataTypes.equals(valueNew, valueOld))
 		{
 			return;
 		}
@@ -494,7 +494,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean hasChanges()
 	{
-		return !Objects.equal(_value, _initialValue);
+		return !DataTypes.equals(_value, _initialValue);
 	}
 
 	/*package */DocumentField copy(final Document document)

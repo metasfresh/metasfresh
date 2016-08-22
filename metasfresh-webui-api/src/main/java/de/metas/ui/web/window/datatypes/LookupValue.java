@@ -68,7 +68,7 @@ public abstract class LookupValue
 		}
 
 		final LookupValue other = (LookupValue)obj;
-		return Objects.equals(id, other.id);
+		return DataTypes.equals(id, other.id);
 	}
 
 	@Override

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DataTypes;
 
 /*
  * #%L
@@ -148,7 +149,7 @@ public class DocumentEntityDescriptor
 		}
 
 		final DocumentEntityDescriptor other = (DocumentEntityDescriptor)obj;
-		return Objects.equals(id, other.id);
+		return DataTypes.equals(id, other.id);
 	}
 
 	public String getId()

@@ -18,6 +18,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -277,7 +278,7 @@ public class DocumentCollection
 
 			final DocumentKey other = (DocumentKey)obj;
 			return AD_Window_ID == other.AD_Window_ID
-					&& Objects.equals(documentId, other.documentId);
+					&& DataTypes.equals(documentId, other.documentId);
 		}
 
 		public int getAD_Window_ID()

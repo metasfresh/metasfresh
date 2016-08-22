@@ -117,10 +117,10 @@ public final class DocumentPath
 		}
 
 		final DocumentPath other = (DocumentPath)obj;
-		return Objects.equals(adWindowId, other.adWindowId)
-				&& Objects.equals(documentId, other.documentId)
-				&& Objects.equals(detailId, other.detailId)
-				&& Objects.equals(rowId, other.rowId);
+		return DataTypes.equals(adWindowId, other.adWindowId)
+				&& DataTypes.equals(documentId, other.documentId)
+				&& DataTypes.equals(detailId, other.detailId)
+				&& DataTypes.equals(rowId, other.rowId);
 	}
 
 	public int getAD_Window_ID()

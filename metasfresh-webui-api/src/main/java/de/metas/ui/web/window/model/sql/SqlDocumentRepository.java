@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -34,6 +33,7 @@ import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -573,7 +573,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			// Check if value was changed, compared with PO's current value
 			final Object poValue = po.get_Value(columnName);
 			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, po);
-			if (Objects.equals(fieldValueConv, poValue))
+			if (DataTypes.equals(fieldValueConv, poValue))
 			{
 				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
 				return;
@@ -584,7 +584,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (!po.is_new())
 			{
 				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, po);
-				if (!Objects.equals(fieldInitialValueConv, poValue))
+				if (!DataTypes.equals(fieldInitialValueConv, poValue))
 				{
 					throw new AdempiereException("Document's field was changed from when we last queried it. Please re-query."
 							+ "\n Document field initial value: " + fieldInitialValueConv

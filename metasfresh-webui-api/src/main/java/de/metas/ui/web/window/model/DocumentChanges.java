@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
@@ -12,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
@@ -218,7 +218,7 @@ public final class DocumentChanges
 		{
 			final Object value = documentField.getValue();
 			final Object previousValue = toEvent.getValue();
-			if (!Objects.equals(value, previousValue))
+			if (!DataTypes.equals(value, previousValue))
 			{
 				toEvent.setValue(value, mergeReasons(reason, toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue));
 				collected = true;
@@ -228,7 +228,7 @@ public final class DocumentChanges
 		//
 		// Readonly
 		final boolean readonly = documentField.isReadonly();
-		if (!Objects.equals(readonly, toEvent.getReadonly()))
+		if (!DataTypes.equals(readonly, toEvent.getReadonly()))
 		{
 			toEvent.setReadonly(readonly, mergeReasons(reason, toEvent.getReadonlyReason()));
 			collected = true;
@@ -237,7 +237,7 @@ public final class DocumentChanges
 		//
 		// Mandatory
 		final boolean mandatory = documentField.isMandatory();
-		if (!Objects.equals(mandatory, toEvent.getMandatory()))
+		if (!DataTypes.equals(mandatory, toEvent.getMandatory()))
 		{
 			toEvent.setMandatory(mandatory, mergeReasons(reason, toEvent.getMandatoryReason()));
 			collected = true;
@@ -246,7 +246,7 @@ public final class DocumentChanges
 		//
 		// Displayed
 		final boolean displayed = documentField.isDisplayed();
-		if (!Objects.equals(displayed, toEvent.getDisplayed()))
+		if (!DataTypes.equals(displayed, toEvent.getDisplayed()))
 		{
 			toEvent.setDisplayed(displayed, mergeReasons(reason, toEvent.getDisplayedReason()));
 			collected = true;

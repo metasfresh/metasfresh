@@ -124,9 +124,10 @@ public class ManualTest
 
 		//
 		//
-		System.out.println("---------------------------------------------------------------------");
-		System.out.println("Update order line's quantity");
+		for (int i = 1; i <= 2; i++)
 		{
+			System.out.println("---------------------------------------------------------------------");
+			System.out.println("Update order line's quantity (" + i + ")");
 			final List<JSONDocumentChangedEvent> events = Arrays.asList(
 					JSONDocumentChangedEvent.of(JSONOperation.replace, "QtyEntered", BigDecimal.valueOf(100)) //
 			);

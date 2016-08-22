@@ -2,7 +2,6 @@ package de.metas.ui.web.window.model.pojo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -22,6 +21,7 @@ import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DefaultDocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -260,7 +260,7 @@ public class POJODocumentRepository implements DocumentRepository
 
 		final Object valueOld = InterfaceWrapperHelper.getValueOrNull(model, columnName);
 		final Object valueConv = convertValueToModel(documentField.getValue(), columnName, model);
-		if (Objects.equals(valueConv, valueOld))
+		if (DataTypes.equals(valueConv, valueOld))
 		{
 			logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- model={}", columnName, valueConv, valueOld, model);
 			return;
