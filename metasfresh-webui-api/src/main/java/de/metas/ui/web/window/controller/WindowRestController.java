@@ -109,9 +109,6 @@ public class WindowRestController implements IWindowRestController
 		userSession.setLoggedIn(true);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#layout(int)
-	 */
 	@Override
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	public JSONDocumentLayout layout(@RequestParam(name = "type", required = true) final int adWindowId)
@@ -124,9 +121,6 @@ public class WindowRestController implements IWindowRestController
 		return JSONDocumentLayout.of(layout);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#data(int, java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
 	public List<JSONDocument> data(
@@ -152,9 +146,6 @@ public class WindowRestController implements IWindowRestController
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#commit(int, java.lang.String, java.lang.String, java.lang.String, java.util.List)
-	 */
 	@Override
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
 	public List<JSONDocument> commit(
@@ -218,9 +209,6 @@ public class WindowRestController implements IWindowRestController
 		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#typeahead(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
 	public List<JSONLookupValue> typeahead(
@@ -246,9 +234,6 @@ public class WindowRestController implements IWindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#dropdown(int, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
 	public List<JSONLookupValue> dropdown(
@@ -274,9 +259,6 @@ public class WindowRestController implements IWindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.controller.IWindowRestController#cacheReset()
-	 */
 	@Override
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
