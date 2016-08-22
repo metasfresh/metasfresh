@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -160,6 +161,55 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 		@SuppressWarnings("unchecked")
 		final T value = (T)wrapper.getValue(columnName, Object.class);
 		return value;
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final String columnName)
+	{
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		if (document == null)
+		{
+			return false;
+		}
+
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
+		if (field == null)
+		{
+			return false;
+		}
+
+		return field.hasChanges();
+	}
+
+	@Override
+	public boolean isValueChanged(final Object model, final Set<String> columnNames)
+	{
+		if (columnNames == null || columnNames.isEmpty())
+		{
+			return false;
+		}
+
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		if (document == null)
+		{
+			return false;
+		}
+
+		for (final String columnName : columnNames)
+		{
+			final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
+			if (field == null)
+			{
+				continue;
+			}
+
+			if (field.hasChanges())
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
