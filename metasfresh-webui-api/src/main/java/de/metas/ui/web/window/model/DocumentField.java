@@ -288,6 +288,13 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 					final T valueConv = (T)new BigDecimal((String)value);
 					return valueConv;
 				}
+				else if(Integer.class == fromType || int.class == fromType)
+				{
+					final int valueInt = (int)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)BigDecimal.valueOf(valueInt);
+					return valueConv;
+				}
 			}
 			else if (Boolean.class == targetType)
 			{
