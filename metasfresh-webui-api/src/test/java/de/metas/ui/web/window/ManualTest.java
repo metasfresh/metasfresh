@@ -275,6 +275,10 @@ public class ManualTest
 
 	private static String getRowId(final List<JSONDocument> jsonDocuments, final String defaultValue)
 	{
+		if(jsonDocuments.isEmpty())
+		{
+			return defaultValue;
+		}
 		final JSONDocument jsonDocument = ListUtils.singleElement(jsonDocuments);
 		return jsonDocument.getRowId();
 	}

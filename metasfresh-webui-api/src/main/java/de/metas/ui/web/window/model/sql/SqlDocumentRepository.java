@@ -500,6 +500,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		//
 		// Set values to PO
 		final boolean isNew = document.isNew();
+		boolean changes = false;
 		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
 			if (!isNew && !documentField.hasChanges())
@@ -508,7 +509,16 @@ public class SqlDocumentRepository implements DocumentRepository
 				continue;
 			}
 
-			setPOValue(po, documentField);
+			if(setPOValue(po, documentField))
+			{
+				changes = true;
+			}
+		}
+		
+		if(!changes)
+		{
+			logger.trace("Skip saving {} because there was no actual change", po);
+			return;
 		}
 
 		//
@@ -523,7 +533,14 @@ public class SqlDocumentRepository implements DocumentRepository
 		refresh(document, idNew);
 	}
 
-	private void setPOValue(final PO po, final IDocumentFieldView documentField)
+	/**
+	 * Sets PO's value from given <code>documentField</code>.
+	 * 
+	 * @param po
+	 * @param documentField
+	 * @return true if value was set and really changed
+	 */
+	private boolean setPOValue(final PO po, final IDocumentFieldView documentField)
 	{
 		final POInfo poInfo = po.getPOInfo();
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
@@ -533,41 +550,47 @@ public class SqlDocumentRepository implements DocumentRepository
 		if (poInfo.isVirtualColumn(columnName))
 		{
 			logger.trace("Skip setting PO's virtual column: {} -- PO={}", columnName, po);
-			return;
+			return false; // no change
 		}
-
 		//
 		// ID
-		if (poInfo.isKey(columnName))
+		else if (poInfo.isKey(columnName))
 		{
 			final int id = documentField.getValueAsInt(-1);
 			if (id >= 0)
 			{
+				final int idOld = po.get_ValueAsInt(columnName);
+				if (id == idOld)
+				{
+					logger.trace("Skip setting PO's key column because it's the same as the old value: {} (old={}), PO={}", columnName, idOld, po);
+					return false; // no change
+				}
+
 				final boolean idSet = po.set_ValueNoCheck(columnName, id);
 				if (!idSet)
 				{
 					throw new AdempiereException("Failed setting ID=" + id + " to " + po);
 				}
+
 				logger.trace("Setting PO ID: {}={} -- PO={}", columnName, id, po);
+				return true;
 			}
 			else
 			{
 				logger.trace("Skip setting PO's key column: {} -- PO={}", columnName, po);
+				return false; // no change
 			}
-			//
-			return;
 		}
-
 		//
 		// Created/Updated columns
-		if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
+		else if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
-			return;
+			return false; // no change
 		}
-
 		//
 		// Regular column
+		else
 		{
 			//
 			// Check if value was changed, compared with PO's current value
@@ -576,7 +599,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (DataTypes.equals(fieldValueConv, poValue))
 			{
 				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
-				return;
+				return false; // no change
 			}
 
 			//
@@ -605,10 +628,11 @@ public class SqlDocumentRepository implements DocumentRepository
 			if (!valueSet)
 			{
 				logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
-				return;
+				return false; // no change
 			}
 
 			logger.trace("Setting PO value: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
+			return true;
 		}
 	}
 
