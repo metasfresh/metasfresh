@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-08-18T17:44:33 -->
+<!-- 2016-08-22T18:33:09 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -107,7 +107,7 @@
 					<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="524" y="30" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="518" y="30" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
@@ -149,7 +149,7 @@
 					<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="All">
-					<reportElement x="553" y="30" width="15" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609"/>
+					<reportElement x="547" y="30" width="21" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
@@ -205,7 +205,7 @@
 					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="500" y="30" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="494" y="30" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
@@ -302,7 +302,7 @@
 					<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="543" y="50" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="537" y="50" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
@@ -316,14 +316,16 @@
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="519" y="50" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="513" y="50" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Seite"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="All">
-					<reportElement x="572" y="50" width="15" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609"/>
+					<reportElement x="566" y="50" width="21" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
 					<textElement textAlignment="Right">
 						<font size="7"/>
 					</textElement>
