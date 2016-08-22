@@ -18,7 +18,7 @@ export const getRoutes = (store) => {
                 <IndexRoute component={Dashboard} />
                 <Route path="sales-order" component={NewSalesOrder} />
             </Route>
-            <Route path="/window/:windowType" component={Window} onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType))} />
+            <Route path="/window/:windowType(/:docId)" component={Window} onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType,nextState.params.docId))} />
             <Route path="login" component={NoMatch} />
             <Route path="ui" component={UiElements} />
             <Route path="*" component={NoMatch} />

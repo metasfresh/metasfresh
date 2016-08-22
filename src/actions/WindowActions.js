@@ -2,23 +2,29 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 
-export function createWindow(windowType){
+export function createWindow(windowType, docId = "NEW"){
     return (dispatch) => {
         if(windowType === "test"){
             dispatch(initTestLayout());
         }else{
-            //
             // this chain is really important,
             // to do not re-render widgets on init
-            //
-            dispatch(patchRequest(windowType)).then((response)=>{
-                dispatch(initDataSuccess(response.data));
+            dispatch(patchRequest(windowType, docId)).then((response)=>{
+                dispatch(initDataSuccess(nullToEmptyStrings(response.data)));
                 dispatch(initLayout(windowType)).then((response) => {
                     dispatch(initLayoutSuccess(response.data))
                 });
             });
         }
     }
+}
+
+function nullToEmptyStrings(arr){
+    return arr.map(item =>
+        item.value === null ?
+        Object.assign({}, item, { value: "" }) :
+        item
+    )
 }
 
 export function initTestLayout() {

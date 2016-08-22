@@ -13,7 +13,10 @@ class Widget extends Component {
     }
     handlePatch = (property, value) => {
         const {data,windowType, dispatch} = this.props;
-        // dispatch(updateDataProperty(property, value));
+        //check if we should update store
+        if(this.findRowByPropName(data,property).value !== value ){
+            dispatch(updateDataProperty(property, value));
+        }
         dispatch(patch(windowType, data[0].value, property, value));
     }
     handleChange = (e, property) => {
@@ -35,7 +38,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            value={new Date(data.value)}
+                            defaultValue={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -53,7 +56,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            value={new Date(data.value)}
+                            defaultValue={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -71,7 +74,7 @@ class Widget extends Component {
                             dateFormat={false}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            value={new Date(data.value)}
+                            defaultValue={new Date(data.value)}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
