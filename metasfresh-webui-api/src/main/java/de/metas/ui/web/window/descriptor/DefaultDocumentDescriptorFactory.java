@@ -12,6 +12,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridFieldVO;
@@ -81,6 +82,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Yes;
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_No;
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Zero;
+	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 
 	static
 	{
@@ -91,6 +93,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		DEFAULT_VALUE_EXPRESSION_Yes = expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_Zero = expressionFactory.compile("0", IStringExpression.class);
+		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class);
 	}
 
 	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
@@ -853,6 +856,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					// e.g. C_OrderLine.QtyReserved
 					return DEFAULT_VALUE_EXPRESSION_Zero;
 				}
+			}
+			else if(DisplayType.PAttribute == displayType)
+			{
+				return DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 			}
 
 			return IStringExpression.NULL;

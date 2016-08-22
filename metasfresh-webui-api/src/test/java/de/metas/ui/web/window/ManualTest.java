@@ -1,5 +1,6 @@
 package de.metas.ui.web.window;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -113,7 +114,22 @@ public class ManualTest
 		{
 			final List<JSONDocumentChangedEvent> events = Arrays.asList(
 					JSONDocumentChangedEvent.of(JSONOperation.replace, "M_Product_ID", JSONLookupValue.of("2005577", "Convenience Salat 250g")) //
-					, JSONDocumentChangedEvent.of(JSONOperation.replace, "M_AttributeSetInstance_ID", JSONLookupValue.of("0", "NEW")) //
+					// , JSONDocumentChangedEvent.of(JSONOperation.replace, "M_AttributeSetInstance_ID", JSONLookupValue.of("0", "NEW")) // not needed
+			);
+
+			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, events);
+			rowId = getRowId(response, rowId);
+			System.out.println("=> rowId=" + rowId);
+		}
+
+
+		//
+		//
+		System.out.println("---------------------------------------------------------------------");
+		System.out.println("Update order line's quantity");
+		{
+			final List<JSONDocumentChangedEvent> events = Arrays.asList(
+					JSONDocumentChangedEvent.of(JSONOperation.replace, "QtyEntered", BigDecimal.valueOf(100)) //
 			);
 
 			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, events);
