@@ -30,6 +30,7 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
@@ -43,6 +44,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import de.metas.logging.LogManager;
 
 /**
  * Standard {@link IHUTransactionAttributeBuilder} implementation.
@@ -56,6 +58,8 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
  */
 public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBuilder
 {
+	private static final transient Logger logger = LogManager.getLogger(HUTransactionAttributeBuilder.class);
+
 	private final IHUContext huContext;
 	private final HUTrxAttributesCollector trxAttributesCollector;
 	private final IAttributeStorageFactory attributeStorageFactory;
@@ -112,6 +116,8 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	@Override
 	public void transferAttributes(final IHUAttributeTransferRequest request)
 	{
+		logger.trace("Transfering attributes for {}", request);
+		
 		final IAttributeStorage attributesFrom = request.getAttributesFrom();
 		final IAttributeStorage attributesTo = request.getAttributesTo();
 
@@ -121,6 +127,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 			// If "toAttributes" does not support our attribute then skip it
 			if (!attributesTo.hasAttribute(attribute))
 			{
+				logger.trace("Skip transfering attribute {} because target storage does not have it", attribute);
 				continue;
 			}
 
@@ -130,10 +137,12 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 			// Only transfer value if the request allows it
 			if (!transferFromStrategy.isTransferable(request, attribute))
 			{
+				logger.trace("Skip transfering attribute {} because trasfer strategy says so: {}", attribute, transferFromStrategy);
 				continue;
 			}
 
 			transferFromStrategy.transferAttribute(request, attribute);
+			logger.trace("Attribute {} was transfered to target storage", attribute);
 		}
 	}
 

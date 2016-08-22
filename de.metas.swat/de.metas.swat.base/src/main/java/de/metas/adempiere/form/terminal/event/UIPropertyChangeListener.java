@@ -51,6 +51,8 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 	private final WeakReference<ITerminalFactory> terminalFactoryRef;
 	private final WeakReference<IComponent> parentRef;
 
+	private boolean showGlassPane = false;
+
 	public UIPropertyChangeListener(final ITerminalFactory terminalFactory, final IComponent parent)
 	{
 		super();
@@ -60,6 +62,8 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 
 		Check.assumeNotNull(parent, "parent not null");
 		parentRef = new WeakReference<IComponent>(parent);
+
+		init();
 	}
 
 	public UIPropertyChangeListener(final IComponent parent)
@@ -105,6 +109,7 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 					.invoke()
 					.setParentComponent(component)
 					.setLongOperation(true)
+					.setShowGlassPane(showGlassPane)
 					.setOnFail(OnFail.UseHandler)
 					.setExceptionHandler((ex) -> handleException(ex))
 					.invoke(() -> propertyChangeEx(evt));
@@ -126,6 +131,27 @@ public abstract class UIPropertyChangeListener implements PropertyChangeListener
 		{
 			terminalFactory.showWarning(parent, "Error", e);
 		}
+	}
+
+	/**
+	 * Sets if we shall display a window glass pane while running this listener.
+	 * 
+	 * @param showGlassPane
+	 */
+	protected final void setShowGlassPane(final boolean showGlassPane)
+	{
+		this.showGlassPane = showGlassPane;
+	}
+
+	/**
+	 * Method called when this listener is initialized.
+	 * 
+	 * Does nothing at this level.
+	 * Extending classes shall override it.
+	 */
+	protected void init()
+	{
+		// nothing on this level
 	}
 
 	protected abstract void propertyChangeEx(PropertyChangeEvent evt);

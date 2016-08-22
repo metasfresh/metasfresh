@@ -13,15 +13,14 @@ package de.metas.banking.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -29,9 +28,9 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
+import de.metas.acct.api.IDocumentBL;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.banking.service.IBankingBL;
-import de.metas.banking.service.impl.BankingBL;
+import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
 
 /**
  * Banking module activator
@@ -45,10 +44,19 @@ public class Banking extends AbstractModuleInterceptor
 	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
 	{
 		super.onInit(engine, client);
-		
+
 		//
 		// Register default bank statement listeners
 		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
+
+		// Register the Document Reposting Handler
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		documentBL.registerHandler(new BankStatementDocumentRepostingHandler());
 	}
 
 	@Override

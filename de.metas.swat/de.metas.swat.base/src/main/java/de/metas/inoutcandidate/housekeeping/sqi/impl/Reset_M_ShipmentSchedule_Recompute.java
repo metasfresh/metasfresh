@@ -27,9 +27,12 @@ import org.compiere.util.DB;
  * #L%
  */
 /**
+ * Cleans up stale <code>M_ShipmentSchedule_Recompute</code> records that might prevent ICs from getting updated.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  * @task https://metasfresh.atlassian.net/browse/FRESH-342
+ * @task https://github.com/metasfresh/metasfresh/issues/298
  */
 public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingTask
 {

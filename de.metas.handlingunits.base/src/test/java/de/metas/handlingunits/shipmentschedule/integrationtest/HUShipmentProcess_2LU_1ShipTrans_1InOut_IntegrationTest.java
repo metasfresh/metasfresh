@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -34,13 +33,16 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.IInOutDAO;
+import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
 
 /**
@@ -53,6 +55,16 @@ import de.metas.shipping.interfaces.I_M_Package;
 public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		extends AbstractAggregateShipment2SSchedHUShipmentProcessIntegrationTest
 {
+	private static final Logger logger = LogManager.getLogger(HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest.class);
+
+	@Override
+	protected void initialize()
+	{
+		super.initialize();
+
+		LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
+	}
+
 	@Override
 	protected void step30_aggregateHUs()
 	{
@@ -237,27 +249,27 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		// Validate Shipment Schedule assignments for splitHU's VHUs
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 0 - Tomato
 				.shipmentSchedule(shipmentSchedule1)
 				.lu(afterAggregation_LU1).tu(tu1).vhu(vhu1).qtyPicked("30")
 				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 1 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu2).vhu(vhu2).qtyPicked("10")
 				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 2 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu3).vhu(vhu3).qtyPicked("10")
 				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 3 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu4).vhu(vhu4).qtyPicked("10")
 				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 4 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu5).vhu(vhu5).qtyPicked("10")
 				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation()
+			.newShipmentScheduleQtyPickedExpectation() // 5 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu6).vhu(vhu6).qtyPicked("10")
 				.endExpectation()
@@ -287,15 +299,14 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 
 		//
 		// Retrieve generated shipment lines
-		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 6, shipmentLines.size());
+		Assert.assertEquals("Invalid generated shipment lines count", 3, shipmentLines.size());
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 		final I_M_InOutLine shipmentLine3 = shipmentLines.get(2);
-		final I_M_InOutLine shipmentLine4 = shipmentLines.get(3);
-		final I_M_InOutLine shipmentLine5 = shipmentLines.get(4);
-		final I_M_InOutLine shipmentLine6 = shipmentLines.get(5);
+		logger.info("shipmentLine1: {}", shipmentLine1);
+		logger.info("shipmentLine2: {}", shipmentLine2);
+		logger.info("shipmentLine3: {}", shipmentLine3);
 
 		//
 		// Revalidate the ShipmentSchedule_QtyPicked expectations,
@@ -303,22 +314,22 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine5)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(1)
 				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(2)
-				.inoutLine(shipmentLine2)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(3)
-				.inoutLine(shipmentLine3)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(4)
-				.inoutLine(shipmentLine4)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(5)
-				.inoutLine(shipmentLine6)
+				.inoutLine(shipmentLine3)
 				.endExpectation()
 			.assertExpected("after shipment generated");
 		//@formatter:on

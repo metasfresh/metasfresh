@@ -16,15 +16,14 @@ package de.metas.fresh.picking.terminal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -126,7 +125,7 @@ public class FreshProductKey extends ProductKey
 		super(terminalContext,
 				pck,
 				boxNo,
-				pck.getC_BPartner(), // BPartner
+				pck.getC_BPartner(),   // BPartner
 				pck.getC_BPartner_Location() // BPartner Location
 		);
 	}
@@ -251,11 +250,23 @@ public class FreshProductKey extends ProductKey
 	}
 
 	/**
-	 * Search for available HUs to be picked
+	 * Search for available HUs to be picked.
 	 * 
-	 * @return list of HUs; might return null
+	 * @return matching HUs
 	 */
 	public List<I_M_HU> findAvailableHUs()
+	{
+		final boolean considerAttributes = true;
+		return findAvailableHUs(considerAttributes);
+	}
+
+	/**
+	 * Search for available HUs to be picked.
+	 * 
+	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @return matching HUs
+	 */
+	public List<I_M_HU> findAvailableHUs(final boolean considerAttributes)
 	{
 		//
 		// Create storage queries from shipment schedules
@@ -263,7 +274,7 @@ public class FreshProductKey extends ProductKey
 		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
 		for (final I_M_ShipmentSchedule shipmentSchedule : unallocatedPackingItem.getShipmentSchedules())
 		{
-			final IStorageQuery storageQuery = createStorageQuery(shipmentSchedule);
+			final IStorageQuery storageQuery = createStorageQuery(shipmentSchedule, considerAttributes);
 			storageQueries.add(storageQuery);
 		}
 
@@ -317,12 +328,19 @@ public class FreshProductKey extends ProductKey
 		return new ArrayList<>();
 	}
 
-	private IStorageQuery createStorageQuery(final I_M_ShipmentSchedule sched)
+	/**
+	 * Creates "HUs available to be picked" storage query.
+	 * 
+	 * @param sched
+	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @return query
+	 */
+	private IStorageQuery createStorageQuery(final I_M_ShipmentSchedule sched, final boolean considerAttributes)
 	{
 		final IStorageEngine storageEngine = getStorageEngine();
 
 		//
-		// Create stoarge query
+		// Create storage query
 		final I_M_Product product = sched.getM_Product();
 		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
@@ -333,11 +351,14 @@ public class FreshProductKey extends ProductKey
 		storageQuery.addPartner(bpartner);
 
 		// Add query attributes
-		final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
-		if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+		if (considerAttributes)
 		{
-			final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
-			storageQuery.addAttributes(attributeSet);
+			final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
+			if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+			{
+				final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
+				storageQuery.addAttributes(attributeSet);
+			}
 		}
 
 		return storageQuery;

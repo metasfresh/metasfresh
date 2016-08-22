@@ -13,15 +13,14 @@ package de.metas.handlingunits.expectations;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -86,9 +85,11 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		assertExpected_ShipmentSchedule(message);
 
+		int index = 0;
 		for (final ShipmentScheduleQtyPickedExpectation<ShipmentScheduleQtyPickedExpectations> expectation : expectations)
 		{
-			expectation.assertExpected(message);
+			expectation.assertExpected("" + message + " (index=" + index + ")");
+			index++;
 		}
 
 		return this;
@@ -119,8 +120,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = 
-				Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}

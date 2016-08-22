@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
@@ -156,6 +157,12 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		return Joiner.on(',')
 				.skipNulls()
 				.join(adOrgIds);
+	}
+
+	//FRESH-560: Retrieve the org IDs as set
+	public Set<Integer> getAD_Org_IDs_AsSet()
+	{
+		return adOrgIds;
 	}
 
 	/**

@@ -2,7 +2,7 @@
   RETURNS void AS
 $BODY$
 DECLARE
-    _index_view_row indices;
+    _index_view_row dlm.indices;
 BEGIN
 	EXECUTE 'ALTER TABLE ' || p_table_name || ' RENAME TO ' || p_table_name || '_tbl;';
 	RAISE NOTICE 'Renamed table % to %', p_table_name, p_table_name||'_tbl';

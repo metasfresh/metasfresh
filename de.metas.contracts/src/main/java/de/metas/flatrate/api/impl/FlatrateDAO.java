@@ -51,6 +51,7 @@ import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -305,6 +306,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		}
 		if (date != null)
 		{
+			final Timestamp day = TimeUtil.truncToDay(date);
 			wc.append(
 					// 'date' must lie within entry's period
 					I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + " IN ( "
@@ -313,8 +315,8 @@ public class FlatrateDAO implements IFlatrateDAO
 							+ "     where p." + I_C_Period.COLUMNNAME_StartDate + "<=? AND "
 							+ "           p." + I_C_Period.COLUMNNAME_EndDate + ">=? "
 							+ ") AND ");
-			params.add(date);
-			params.add(date);
+			params.add(day);
+			params.add(day);
 		}
 		wc.append(
 				// entry must have the given 'dataEntryType'

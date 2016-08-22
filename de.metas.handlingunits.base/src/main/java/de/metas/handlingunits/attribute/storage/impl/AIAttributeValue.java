@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -49,7 +48,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		super(attributeStorage, piAttribute);
+		super(//
+				attributeStorage //
+				, piAttribute //
+				, Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
+		);
 
 		Check.assumeNotNull(attributeInstance, "attributeInstance not null");
 		this.attributeInstance = attributeInstance;

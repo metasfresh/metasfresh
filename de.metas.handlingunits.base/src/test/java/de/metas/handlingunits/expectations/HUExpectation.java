@@ -70,6 +70,9 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	/** Capture: HU */
 	private IMutable<I_M_HU> _huToSetRef;
 
+	/** HU attributes expectations */
+	private HUAttributeExpectations<HUExpectation<ParentExpectationType>> attributesExpectations = null;
+
 	public HUExpectation()
 	{
 		this(null);
@@ -127,6 +130,11 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		if (_huToSetRef != null)
 		{
 			_huToSetRef.setValue(hu);
+		}
+		
+		if(attributesExpectations != null)
+		{
+			attributesExpectations.assertExpected(prefix + " Attributes", hu);
 		}
 
 		return this;
@@ -220,6 +228,13 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		hu.setHUStatus(huStatus);
 		hu.setM_Locator(locator);
 		InterfaceWrapperHelper.save(hu);
+		
+		//
+		// Create HU Attributes
+		if (attributesExpectations != null)
+		{
+			attributesExpectations.createHUAttributes(hu);
+		}
 
 		//
 		// Create HU Items
@@ -389,5 +404,14 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	{
 		Check.assumeNotNull(_huToSetRef, "Expectation {} was not configured to capture HU", this);
 		return _huToSetRef.getValue();
+	}
+	
+	public HUAttributeExpectations<HUExpectation<ParentExpectationType>> attributesExpectations()
+	{
+		if(attributesExpectations == null)
+		{
+			attributesExpectations = new HUAttributeExpectations<>(this);
+		}
+		return attributesExpectations;
 	}
 }

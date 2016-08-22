@@ -46,6 +46,9 @@
 		<module>../de.metas.aggregation</module>
 
 		<module>../de.metas.dimension</module> <!-- task 08681 -->
+		
+		<module>../de.metas.dlm</module>
+		
 		<module>../de.metas.storage</module>
 
 		<module>../de.metas.swat</module>
