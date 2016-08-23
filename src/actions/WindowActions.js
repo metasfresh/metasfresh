@@ -6,12 +6,22 @@ export function createWindow(windowType, docId = "NEW"){
     return (dispatch) => {
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(patchRequest(windowType, docId)).then((response)=>{
+        dispatch(initWindow(windowType,docId)).then((response)=>{
             dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
             dispatch(initLayout(windowType)).then((response) => {
                 dispatch(initLayoutSuccess(response.data))
             });
         });
+    }
+}
+
+export function initWindow(windowType, docId) {
+    return (dispatch) => {
+        if(docId === "NEW"){
+            return dispatch(patchRequest(windowType, docId))
+        }else{
+            return dispatch(initData(windowType, docId))
+        }
     }
 }
 
@@ -70,11 +80,15 @@ export function patchRequest(windowType, id = "NEW", property, value) {
     if(id === "NEW"){
         payload = [];
     }else{
-        payload = [{
-            'op': 'replace',
-            'path': property,
-            'value': value
-        }];
+        if(property && value){
+            payload = [{
+                'op': 'replace',
+                'path': property,
+                'value': value
+            }];
+        }else {
+            payload = [];
+        }
     }
 
     return dispatch => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, payload);
