@@ -4,18 +4,14 @@ import config from '../config';
 
 export function createWindow(windowType, docId = "NEW"){
     return (dispatch) => {
-        if(windowType === "test"){
-            dispatch(initTestLayout());
-        }else{
-            // this chain is really important,
-            // to do not re-render widgets on init
-            dispatch(patchRequest(windowType, docId)).then((response)=>{
-                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
-                dispatch(initLayout(windowType)).then((response) => {
-                    dispatch(initLayoutSuccess(response.data))
-                });
+        // this chain is really important,
+        // to do not re-render widgets on init
+        dispatch(patchRequest(windowType, docId)).then((response)=>{
+            dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
+            dispatch(initLayout(windowType)).then((response) => {
+                dispatch(initLayoutSuccess(response.data))
             });
-        }
+        });
     }
 }
 
@@ -25,15 +21,6 @@ function nullToEmptyStrings(arr){
         Object.assign({}, item, { value: "" }) :
         item
     )
-}
-
-export function initTestLayout() {
-    return (dispatch) => {
-        axios.get('http://private-anon-68a0fd5cf8-metasfresh.apiary-mock.com/api/layout?type=143')
-            .then((response) => {
-                dispatch(initLayoutSuccess(response.data));
-            });
-    }
 }
 
 export function initLayout(windowType){
@@ -64,13 +51,13 @@ export function updateDataSuccess(item) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
- */
+*  Wrapper for patch request of widget elements
+*  when responses should merge store
+*/
 export function patch(windowType, id = "NEW", property, value) {
     return dispatch => {
         dispatch(patchRequest(windowType, id, property, value)).then(response => {
-            response.data.map(item => {
+            response.data[0].fields.map(item => {
                 dispatch(updateDataSuccess(item));
             })
         })
