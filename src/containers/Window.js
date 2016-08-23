@@ -52,22 +52,23 @@ class Window extends Component {
     }
     renderElementGroups = (group) => {
         return group.map((elem, id)=> {
-            const {type, elements} = elem;
+            const {type, elementsLine} = elem;
             return (
                 <div
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElementsLine(elements)}
+                    {this.renderElementsLine(elementsLine)}
                 </div>
             )
         })
     }
     renderElementsLine = (elementsLine) => {
-        return elementsLine.map((elems, id)=> {
+        return elementsLine.map((elem, id)=> {
+            const {elements} = elem;
             return (
                 <div className="elements-line" key={"line" + id}>
-                    {this.renderElements(elems)}
+                    {this.renderElements(elements)}
                 </div>
             )
         })

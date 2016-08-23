@@ -10,7 +10,7 @@ export function createWindow(windowType, docId = "NEW"){
             // this chain is really important,
             // to do not re-render widgets on init
             dispatch(patchRequest(windowType, docId)).then((response)=>{
-                dispatch(initDataSuccess(nullToEmptyStrings(response.data)));
+                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
                 dispatch(initLayout(windowType)).then((response) => {
                     dispatch(initLayoutSuccess(response.data))
                 });
