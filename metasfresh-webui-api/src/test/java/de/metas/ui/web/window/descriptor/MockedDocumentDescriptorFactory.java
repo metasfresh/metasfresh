@@ -40,6 +40,9 @@ import com.google.common.base.Suppliers;
 public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
 	public static int AD_WINDOW_ID_SalesOrder = 143;
+	private static int AD_Tab__SalesOrder_Header = 186;
+	@SuppressWarnings("unused")
+	private static int AD_Tab__SalesOrder_OrderLines = 187;
 	
 	// public static void main(String[] args)
 	// {
@@ -70,6 +73,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 	{
 		final DocumentEntityDescriptor entityDescriptor = DocumentEntityDescriptor.builder()
 				.setAD_Window_ID(AD_Window_ID)
+				.setAD_Tab_ID(AD_Tab__SalesOrder_Header)
 				.setId(1)
 				.setTabNo(0)
 				.setIsSOTrx(true)

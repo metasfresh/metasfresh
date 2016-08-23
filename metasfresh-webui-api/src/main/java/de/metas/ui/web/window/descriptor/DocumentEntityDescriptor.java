@@ -73,6 +73,8 @@ public class DocumentEntityDescriptor
 	// Legacy
 	@JsonProperty("AD_Window_ID")
 	private final int AD_Window_ID;
+	@JsonProperty("AD_Tab_ID")
+	private final int AD_Tab_ID;
 	@JsonProperty("tabNo")
 	private final int tabNo;
 	@JsonProperty("IsSOTrx")
@@ -91,6 +93,7 @@ public class DocumentEntityDescriptor
 
 		// legacy:
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
+		AD_Tab_ID  = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 	}
@@ -103,6 +106,7 @@ public class DocumentEntityDescriptor
 			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
 			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
 			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
+			, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
 			, @JsonProperty("tabNo") final int tabNo //
 			, @JsonProperty("isSOTrx") final boolean isSOTrx //
 	)
@@ -114,6 +118,7 @@ public class DocumentEntityDescriptor
 				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
 				.setDataBinding(dataBinding)
 				.setAD_Window_ID(AD_Window_ID)
+				.setAD_Tab_ID(AD_Tab_ID)
 				.setTabNo(tabNo)
 				.setIsSOTrx(isSOTrx));
 	}
@@ -204,6 +209,13 @@ public class DocumentEntityDescriptor
 	{
 		return AD_Window_ID;
 	}
+	
+	// legacy
+	@JsonIgnore
+	public int getAD_Tab_ID()
+	{
+		return AD_Tab_ID;
+	}
 
 	// legacy
 	public int getTabNo()
@@ -229,6 +241,7 @@ public class DocumentEntityDescriptor
 
 		// Legacy
 		private Integer AD_Window_ID;
+		private Integer AD_Tab_ID;
 		private Integer tabNo;
 		private Boolean isSOTrx;
 
@@ -321,6 +334,12 @@ public class DocumentEntityDescriptor
 		public Builder setAD_Window_ID(final int AD_Window_ID)
 		{
 			this.AD_Window_ID = AD_Window_ID;
+			return this;
+		}
+		
+		public Builder setAD_Tab_ID(final int AD_Tab_ID)
+		{
+			this.AD_Tab_ID = AD_Tab_ID;
 			return this;
 		}
 

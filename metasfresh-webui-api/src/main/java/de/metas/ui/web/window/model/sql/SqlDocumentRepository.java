@@ -645,7 +645,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		{
 			return value;
 		}
-		if (int.class.equals(targetClass) || Integer.class.equals(targetClass))
+		else if (int.class.equals(targetClass) || Integer.class.equals(targetClass))
 		{
 			if (value == null)
 			{

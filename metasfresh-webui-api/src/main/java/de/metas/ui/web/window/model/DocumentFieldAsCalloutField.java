@@ -150,7 +150,7 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	@Override
 	public ICalloutExecutor getCurrentCalloutExecutor()
 	{
-		return getDocument().getCalloutExecutor();
+		return getDocument().getFieldCalloutExecutor();
 	}
 
 	@Override

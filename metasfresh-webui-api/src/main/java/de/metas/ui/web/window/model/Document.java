@@ -16,8 +16,12 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
+import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -91,7 +95,8 @@ public final class Document
 	private final boolean _writable;
 	private boolean _initializing = false;
 
-	private final ICalloutExecutor calloutExecutor;
+	private ITabCallout documentCallout = ITabCallout.NULL; 
+	private final ICalloutExecutor fieldCalloutExecutor;
 
 	private final Map<String, DocumentField> fieldsByName;
 	private final IDocumentFieldView idField;
@@ -184,8 +189,8 @@ public final class Document
 		}
 
 		//
-		// Initialize callout executor
-		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+		// Initialize field callout executor
+		fieldCalloutExecutor = new CalloutExecutor(getCtx(), windowNo);
 
 		_evaluatee = null; // lazy
 
@@ -276,8 +281,9 @@ public final class Document
 
 		//
 		// Initialize callout executor
+		documentCallout = from.documentCallout;
 		// NOTE: we need a new instance of it because the "calloutExecutor" has state (i.e. active callouts list etc)
-		calloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+		fieldCalloutExecutor = new CalloutExecutor(getCtx(), windowNo);
 
 		_evaluatee = null; // lazy
 
@@ -324,12 +330,14 @@ public final class Document
 				// FIXME: i think it would be better to trigger the callouts when setting the initial value
 				try
 				{
-					executeAllCallouts();
+					executeAllFieldCallouts();
 				}
 				catch (final Exception e)
 				{
 					logger.warn("Failed executing callouts while initializing {}. Ignored.", this, e);
 				}
+				
+				documentCallout.onNew(asCalloutRecord());
 
 				final boolean collectEventsEventIfNoChange = true;
 				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector(), collectEventsEventIfNoChange);
@@ -344,6 +352,8 @@ public final class Document
 				// NOTE: we don't have to update all fields because we updated one by one when initialized
 				// final boolean collectEventsEventIfNoChange = false;
 				// updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
+				
+				documentCallout.onRefresh(asCalloutRecord());
 			}
 
 		}
@@ -734,16 +744,16 @@ public final class Document
 		updateFieldsWhichDependsOn(documentField.getFieldName(), documentChangesCollector);
 
 		// Callouts
-		calloutExecutor.execute(documentField.asCalloutField());
+		fieldCalloutExecutor.execute(documentField.asCalloutField());
 	}
 
-	public void executeAllCallouts()
+	private void executeAllFieldCallouts()
 	{
 		logger.trace("Executing all callouts for {}", this);
 
 		for (final DocumentField documentField : getFields())
 		{
-			calloutExecutor.execute(documentField.asCalloutField());
+			fieldCalloutExecutor.execute(documentField.asCalloutField());
 		}
 	}
 
@@ -958,9 +968,9 @@ public final class Document
 
 	}
 
-	/* package */ICalloutExecutor getCalloutExecutor()
+	/* package */ICalloutExecutor getFieldCalloutExecutor()
 	{
-		return calloutExecutor;
+		return fieldCalloutExecutor;
 	}
 
 	public boolean isProcessed()
@@ -1151,6 +1161,7 @@ public final class Document
 		if (hasChanges())
 		{
 			getDocumentRepository().save(this);
+			documentCallout.onSave(asCalloutRecord());
 			logger.debug("Document saved: {}", this);
 		}
 		else
@@ -1194,6 +1205,9 @@ public final class Document
 		public Document build()
 		{
 			final Document document = new Document(this);
+			
+			final ITabCallout documentCallout = Services.get(ITabCalloutFactory.class).createAndInitialize(document.asCalloutRecord());
+			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
 			//
 			// Initialize the fields

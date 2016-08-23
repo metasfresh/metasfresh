@@ -135,6 +135,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
 				.setId(mainTabVO.getAD_Tab_ID())
 				.setAD_Window_ID(AD_Window_ID) // legacy
+				.setAD_Tab_ID(mainTabVO.getAD_Tab_ID()) // legacy
 				.setTabNo(mainTabNo) // legacy
 				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 				;
@@ -193,6 +194,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					.setId(detailTabVO.getAD_Tab_ID())
 					.setDetailId(detail.getDetailId())
 					.setAD_Window_ID(AD_Window_ID) // legacy
+					.setAD_Tab_ID(detailTabVO.getAD_Tab_ID()) // legacy
 					.setTabNo(detailTabVO.getTabNo()) // legacy
 					.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 					;

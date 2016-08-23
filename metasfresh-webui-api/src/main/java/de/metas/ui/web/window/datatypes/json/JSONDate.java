@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,7 +64,8 @@ public final class JSONDate implements Serializable
 			logger.warn("Using Env.parseTimestamp to convert '{}' to Date", valueStr);
 			try
 			{
-				return Env.parseTimestamp(valueStr);
+				final Timestamp ts = Env.parseTimestamp(valueStr);
+				return fromTimestamp(ts);
 			}
 			catch (final Exception ex2)
 			{
@@ -72,6 +74,15 @@ public final class JSONDate implements Serializable
 				throw exFinal;
 			}
 		}
+	}
+
+	public static java.util.Date fromTimestamp(final Timestamp ts)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+		return new java.util.Date(ts.getTime());
 	}
 
 	private static final Logger logger = LogManager.getLogger(JSONDate.class);

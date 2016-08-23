@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -235,6 +236,14 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 		try
 		{
+			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail  
+			if(java.util.Date.class.equals(targetType) && Timestamp.class.equals(fromType))
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)JSONDate.fromTimestamp((Timestamp)value);
+				return valueConv;
+			}
+			
 			if (targetType.isAssignableFrom(fromType))
 			{
 				@SuppressWarnings("unchecked")

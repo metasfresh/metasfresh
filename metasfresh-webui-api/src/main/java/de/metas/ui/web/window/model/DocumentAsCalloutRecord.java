@@ -1,7 +1,13 @@
 package de.metas.ui.web.window.model;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
@@ -31,29 +37,65 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 {
 	private static final ReasonSupplier REASON_Value_DirectSetOnCalloutRecord = () -> "direct set on callout record";
 
-	private final Document document;
+	private final Reference<Document> _documentRef;
 
 	/* package */ DocumentAsCalloutRecord(final Document document)
 	{
 		super();
-		this.document = document;
+		Preconditions.checkNotNull(document, "document shall not be null");
+		this._documentRef = new WeakReference<>(document);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(_documentRef.get())
+				.toString();
+	}
+	
+	private final Document getDocument()
+	{
+		final Document document = _documentRef.get();
+		if(document == null)
+		{
+			throw new IllegalStateException("Document reference already expired");
+		}
+		return document;
+	}
+	
+	@Override
+	public String getTableName()
+	{
+		final Document document = getDocument();
+		return document.getEntityDescriptor().getDataBinding().getTableName();
+	}
+	
+	@Override
+	public int getAD_Tab_ID()
+	{
+		final Document document = getDocument();
+		return document.getEntityDescriptor().getAD_Tab_ID();
 	}
 
 	@Override
 	public <T> T getModel(final Class<T> modelClass)
 	{
+		final Document document = getDocument();
 		return DocumentInterfaceWrapper.wrap(document, modelClass);
 	}
 
 	@Override
 	public Object getValue(final String columnName)
 	{
+		final Document document = getDocument();
 		return InterfaceWrapperHelper.getValueOrNull(document, columnName);
 	}
 
 	@Override
 	public String setValue(final String columnName, final Object value)
 	{
+		final Document document = getDocument();
 		document.setValue(columnName, value, REASON_Value_DirectSetOnCalloutRecord);
 		return "";
 	}
@@ -61,6 +103,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 	@Override
 	public void dataRefresh()
 	{
+		final Document document = getDocument();
 		document.getDocumentRepository().refresh(document);
 	}
 
@@ -68,6 +111,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 	public void dataRefreshAll()
 	{
 		// NOTE: there is no "All" concept here, so we are just refreshing this document
+		final Document document = getDocument();
 		document.getDocumentRepository().refresh(document);
 	}
 
