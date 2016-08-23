@@ -105,7 +105,7 @@ class Header extends Component {
                             <div className="header-breadcrumb">
                                 <div>Home / Sales orders</div>
                                 <div className="input-icon-container header-input-id header-input-sm">
-                                    <input value={data[0] && data[0].value} readonly className="form-control form-control-meta" type="text"/>
+                                    <input defaultValue={data[0] && data[0].value} readonly className="form-control form-control-meta" type="text"/>
                                     <i className="meta-icon-edit input-icon-right"></i>
                                 </div>
                             </div>

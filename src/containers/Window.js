@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Widget from '../components/Widget';
+import Tabs from '../components/app/Tabs';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 
@@ -10,13 +11,22 @@ class Window extends Component {
         super(props);
     }
     renderTabs = (tabs) => {
-        return tabs.map((elem, id)=> {
-            return (
-                <li className="nav-item" key={"tab" + id}>
-                    <a className="nav-link active">{elem.caption}</a>
-                </li>
-            )
-        })
+        return(
+            <Tabs>
+                {
+                    tabs.map((elem, id)=> {
+                        return (
+                            <div
+                                caption={elem.caption}
+                                key={elem.tabid}>
+
+                                Here should be lots of elements for pane {elem.caption}
+                            </div>
+                        )
+                    })
+                }
+            </Tabs>
+        )
     }
     renderSections = (sections) => {
         return sections.map((elem, id)=> {
@@ -34,7 +44,7 @@ class Window extends Component {
         return columns.map((elem, id)=> {
             const elementGroups = elem.elementGroups;
             return (
-            <div className={"col-xs-" + colWidth} key={'col' + id}>
+                <div className={"col-xs-" + colWidth} key={'col' + id}>
                     {this.renderElementGroups(elementGroups)}
                 </div>
             )
@@ -48,15 +58,22 @@ class Window extends Component {
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElements(elements)}
+                    {this.renderElementsLine(elements)}
+                </div>
+            )
+        })
+    }
+    renderElementsLine = (elementsLine) => {
+        return elementsLine.map((elems, id)=> {
+            return (
+                <div className="elements-line" key={"line" + id}>
+                    {this.renderElements(elems)}
                 </div>
             )
         })
     }
     renderElements = (elements) => {
-
         const {type} = this.props.layout;
-
         return elements.map((elem, id)=> {
             return (
                 <Widget key={'element' + id} windowType={type} {...elem} />
@@ -72,9 +89,9 @@ class Window extends Component {
                 <OrderList />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
-                    <ul className="nav nav-tabs m-t-1 m-b-2">
+                    <div className="m-t-1 m-b-2">
                         {tabs && this.renderTabs(tabs)}
-                    </ul>
+                    </div>
                 </div>
             </div>
         );

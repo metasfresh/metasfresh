@@ -3,9 +3,16 @@ import { Link } from 'react-router';
 
 import Datetime from 'react-datetime';
 import Dropdown from '../components/app/Dropdown';
+import Tabs from '../components/app/Tabs';
 import LookupDropdown from '../components/app/LookupDropdown';
 
 export default class UiElements extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+
+        }
+    }
     render() {
         return (
             <div className="container">
@@ -253,7 +260,10 @@ export default class UiElements extends Component {
                     </div>
                 </div>
 
-
+                <Tabs>
+                    <div caption="Order Lines" key="1">ord lns 1</div>
+                    <div caption="Order Lines 2" key="2">ord lns 2</div>
+                </Tabs>
             </div>
         );
     }

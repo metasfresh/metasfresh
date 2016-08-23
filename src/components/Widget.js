@@ -1,28 +1,45 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import { patch, updateDataProperty } from '../actions/WindowActions';
+
 import Datetime from 'react-datetime';
-import LookupDropdown from '../components/app/LookupDropdown';
-import Dropdown from '../components/app/Dropdown';
+import LookupDropdown from './app/LookupDropdown';
+import Dropdown from './app/Dropdown';
 
 class Widget extends Component {
     constructor(props) {
         super(props);
+    }
+    handlePatch = (property, value) => {
+        const {data,windowType, dispatch} = this.props;
+        //check if we should update store
+        if(this.findRowByPropName(data,property).value !== value ){
+            dispatch(updateDataProperty(property, value));
+        }
+        dispatch(patch(windowType, data[0].value, property, value));
+    }
+    handleChange = (e, property) => {
+        const {dispatch} = this.props;
+        e.preventDefault();
+        dispatch(updateDataProperty(property, e.target.value));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
         switch(widgetType){
             case "Date":
                 return (
                     <div className={"input-icon-container input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "") +
+                        (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
                             timeFormat={false}
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -30,15 +47,17 @@ class Widget extends Component {
             case "DateTime":
                 return (
                     <div className={"input-icon-container input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "") +
+                        (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
                             timeFormat={true}
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -47,14 +66,16 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={true}
                             dateFormat={false}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
+                            onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -66,10 +87,11 @@ class Widget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        defaultValue={data.value}
+                        value={data.value}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
                         rank={type}
+                        onChange={this.handlePatch}
                     />
                 )
             case "List":
@@ -81,6 +103,7 @@ class Widget extends Component {
                         properties={fields}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
+                        onChange={(option) => this.handlePatch(fields[0].field, option)}
                     />
                 )
             case "Text":
@@ -88,13 +111,16 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="text"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -103,12 +129,15 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <textarea
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -117,15 +146,18 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -134,13 +166,16 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -149,15 +184,18 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -166,15 +204,18 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
                             min="0"
                             step="1"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
@@ -183,34 +224,47 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data.mandatory ? "isMandatory " : "")
+                        (data.readonly ? "input-disabled " : "") +
+                        (data.mandatory ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
                             className="input-field"
-                            defaultValue={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handleChange(e, fields[0].field)}
+                            onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                     </div>
                 )
             case "YesNo":
                 return (
-                    <label className="input-checkbox">
+                    <label
+                        className={
+                            "input-checkbox"
+                        }>
                         <input
                             type="checkbox"
-                            checked={data.value}
+                            value={data.value}
                             disabled={data.readonly}
+                            onClick={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
                 )
             case "Switch":
                 return (
-                    <label className="input-switch">
+                    <label
+                        className={
+                            "input-switch" +
+                            (data.readonly ? "input-disabled " : "") +
+                            (data.mandatory ? "input-mandatory " : "")
+                        }>
                         <input
                             type="checkbox"
                             checked={data.value}
                             disabled={data.readonly}
+                            onChange={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
                         <div className="input-slider" />
                     </label>
@@ -221,7 +275,7 @@ class Widget extends Component {
                 )
             case "Button":
                 return (
-                    <button className="btn btn-sm btn-meta-primary">Add</button>
+                    <button className="btn btn-sm btn-meta-primary">{data.value}</button>
                 )
             default:
                 return (
@@ -242,7 +296,7 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type} = this.props;
-        const dataId = data[0].value;
+        const dataId = this.findRowByPropName(data,"ID").value;
         const widgetData = this.findRowByPropName(data, fields[0].field);
         if(widgetData.displayed){
             return (

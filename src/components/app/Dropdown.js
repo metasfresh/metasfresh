@@ -15,7 +15,7 @@ class Dropdown extends Component {
     componentDidMount() {
         const {selected} = this.props;
         if(selected){
-            this.handleSelect(selected);
+            this.handleSelect(selected, true);
         }
     }
     handleBlur = (e) => {
@@ -33,8 +33,11 @@ class Dropdown extends Component {
         e.preventDefault();
         this.handleBlur();
     }
-    handleSelect = (option) => {
+    handleSelect = (option, init = false) => {
         this.inputSearch.value = option[Object.keys(option)[0]];
+        if(!init){
+            this.props.onChange(option);
+        }
         this.handleBlur();
     }
     renderOptions = () => {
@@ -46,7 +49,7 @@ class Dropdown extends Component {
         )
     }
     render() {
-        const {list, rank,readonly} = this.props;
+        const {list, rank,readonly, value} = this.props;
         return (
             <div
                 tabIndex="0"

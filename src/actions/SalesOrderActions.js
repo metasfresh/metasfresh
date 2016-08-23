@@ -137,6 +137,8 @@ export function dropdownRequest(windowType, propertyName, id = "NEW") {
     return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id='+id+'&field='+ propertyName);
 }
 
+
+
 export function newSalesOrderSuccess(response) {
     return {
         type: 'NEW_SALES_ORDER_CREATED',
