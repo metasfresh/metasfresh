@@ -1,27 +1,26 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
 
 class OrderList extends Component {
     constructor(props) {
         super(props);
     }
     renderTableBody = () => {
-        return this.props.orderList.map((order) => {
-            return (
-                <tr key={order.id}>
-                    <td>{order.id}</td>
-                    <td>{order.purchaser}</td>
-                    <td>{order.amount + " EUR"}</td>
-                    <td>{order.ordered}</td>
-                    <td>{order.status}</td>
-                </tr>
-            )
-        });
+        // return this.props.orderList.map((order) => {
+        //     return (
+        //         <tr key={order.id}>
+        //             <td>{order.id}</td>
+        //             <td>{order.purchaser}</td>
+        //             <td>{order.amount + " EUR"}</td>
+        //             <td>{order.ordered}</td>
+        //             <td>{order.status}</td>
+        //         </tr>
+        //     )
+        // });
     }
     render() {
-        const {isOrderListShow} = this.props;
+        const {open} = this.props;
         return (
-            <div ref={(c)=>this.panel=c} className={"order-list-panel " + (isOrderListShow ? "order-list-panel-open":"")}>
+            <div ref={(c)=>this.panel=c} className={"order-list-panel " + (open ? "order-list-panel-open":"")}>
                 <div className="order-list-panel-header">
 
                     <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
@@ -51,26 +50,5 @@ class OrderList extends Component {
         )
     }
 }
-
-OrderList.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-function mapStateToProps(state) {
-    const {salesOrderStateHandler} = state;
-    const {
-        isOrderListShow,
-        orderList
-    } = salesOrderStateHandler || {
-        isOrderListShow: false,
-        orderList: []
-    }
-    return {
-        isOrderListShow,
-        orderList
-    }
-}
-
-OrderList = connect(mapStateToProps)(OrderList)
 
 export default OrderList

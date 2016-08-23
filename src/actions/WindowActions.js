@@ -10,6 +10,7 @@ export function createWindow(windowType, docId = "NEW"){
             dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
             dispatch(initLayout(windowType)).then((response) => {
                 dispatch(initLayoutSuccess(response.data))
+                dispatch(getRows(windowType,docId))
             });
         });
     }
@@ -39,6 +40,10 @@ export function initLayout(windowType){
 
 export function initData(windowType, id) {
     return dispatch => axios.get(config.API_URL + '/window/data?type=' + windowType + '&id=' + id);
+}
+
+export function getRows(windowType, id) {
+    return dispatch => axios.get(config.API_URL + '/window/data?type=' + windowType + '&id=' + id + "&tabid=1");
 }
 
 export function initLayoutSuccess(layout) {

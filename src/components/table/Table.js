@@ -107,16 +107,7 @@ class ProductTable extends Component {
                                 <TableHeader cols={cols} />
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
+                                {this.renderTableBody()}
                             </tbody>
                             <tfoot>
                             </tfoot>

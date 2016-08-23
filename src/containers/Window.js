@@ -88,7 +88,6 @@ class Window extends Component {
         return (
             <div>
                 <Header />
-                <OrderList />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">
