@@ -10,13 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-35 upcoming)
+# metasfresh 4.x.x (2016-35)
+
+upcoming
 
 ## Features
 
 ## Fixes
 
-# metasfresh 4.32.31 (2016-34 RC for weekly release)
+# metasfresh 4.32.31 (2016-34)
+
+RC for weekly release
 
 ## Features
  * #276 Report Konten-Info new Parameter
