@@ -4,6 +4,7 @@ import './Header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
+import Widget from '../Widget';
 
 import {
     showSubHeader,
@@ -105,7 +106,7 @@ class Header extends Component {
                             <div className="header-breadcrumb">
                                 <div>Home / Sales orders</div>
                                 <div className="input-icon-container header-input-id header-input-sm">
-                                    <input defaultValue={data[0] && data[0].value} readonly className="form-control form-control-meta" type="text"/>
+                                    <input value="docNo" readonly className="form-control form-control-meta" type="text"/>
                                     <i className="meta-icon-edit input-icon-right"></i>
                                 </div>
                             </div>
