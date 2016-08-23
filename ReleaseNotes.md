@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.32.30 (2016-34 upcoming)
+# metasfresh 4.32.31 (2016-34 upcoming)
 
 ## Features
  * #276 Report Konten-Info new Parameter
