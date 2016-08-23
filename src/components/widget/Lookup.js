@@ -6,10 +6,9 @@ import {
     autocompleteRequest,
     autocompleteSuccess,
     dropdownRequest,
-    getPropertyValue,
-} from '../../actions/SalesOrderActions';
+} from '../../actions/AppActions';
 
-class LookupDropdown extends Component {
+class Lookup extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -18,7 +17,6 @@ class LookupDropdown extends Component {
             model: null,
             property: ""
         }
-
     }
     componentDidMount() {
         const {defaultValue} = this.props;
@@ -76,8 +74,6 @@ class LookupDropdown extends Component {
             }else{
                 this.handleBlur();
             }
-
-            // onObjectChange(select);
         } else {
             //
             // We cannot mutate state here, but we need to update
@@ -97,7 +93,6 @@ class LookupDropdown extends Component {
             }, () => {
                 this.generatingPropsSelection();
             });
-            // onPropertyChange(this.state.model);
             this.handleBlur();
         }
     }
@@ -292,16 +287,16 @@ class LookupDropdown extends Component {
 }
 
 
-LookupDropdown.propTypes = {
+Lookup.propTypes = {
     autocomplete: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const {salesOrderStateHandler} = state;
+    const { appHandler } = state;
     const {
         autocomplete,
-    } = salesOrderStateHandler || {
+    } = appHandler || {
         autocomplete: {
             query: "",
             results:[]
@@ -312,6 +307,6 @@ function mapStateToProps(state) {
     }
 }
 
-LookupDropdown = connect(mapStateToProps)(LookupDropdown)
+Lookup = connect(mapStateToProps)(Lookup)
 
-export default LookupDropdown
+export default Lookup

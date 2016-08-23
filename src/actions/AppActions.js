@@ -2,31 +2,6 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 
-export function unloadingChanged(value) {
-    return {
-        type: 'UNLOADING_CHANGED',
-        value: value
-    }
-}
-export function purchaserChanged(purchaser) {
-    return {
-        type: 'PURCHASER_CHANGED',
-        purchaser: purchaser
-    }
-}
-export function purchaserPropertyChanged(props) {
-    return {
-        type: 'PURCHASER_PROP_CHANGED',
-        props: props
-    }
-}
-export function invoiceChanged(value) {
-    return {
-        type: 'INVOICE_CHANGED',
-        value: value
-    }
-}
-
 
 export function saveProductProperty(id, property, value) {
     return {
@@ -87,32 +62,6 @@ export function deleteSelectedProducts(ids) {
     }
 }
 
-
-export function showSubHeader() {
-    return {
-        type: 'SHOW_SUBHEADER'
-    }
-}
-export function hideSubHeader() {
-    return {
-        type: 'HIDE_SUBHEADER'
-    }
-}
-
-export function toggleOrderList(value) {
-    return {
-        type: 'TOGGLE_ORDER_LIST',
-        value: !!value
-    }
-}
-
-export function toggleProductSummary(value) {
-    return {
-        type: 'TOGGLE_PRODUCT_ORDER_SUMMARY',
-        value: !!value
-    }
-}
-
 export function autocomplete(query) {
     return {
         type: 'AUTOCOMPLETE',
@@ -135,15 +84,6 @@ export function autocompleteRequest(windowType, propertyName, query, id = "NEW")
 }
 export function dropdownRequest(windowType, propertyName, id = "NEW") {
     return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id='+id+'&field='+ propertyName);
-}
-
-
-
-export function newSalesOrderSuccess(response) {
-    return {
-        type: 'NEW_SALES_ORDER_CREATED',
-        response: response
-    }
 }
 
 export function changeOrderStatus(id){

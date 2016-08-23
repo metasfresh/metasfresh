@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Widget from '../components/Widget';
-import Tabs from '../components/app/Tabs';
+import Tabs from '../components/widget/Tabs';
+import Table from '../components/table/Table';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 
@@ -15,12 +16,12 @@ class Window extends Component {
             <Tabs>
                 {
                     tabs.map((elem, id)=> {
+                        const {tabid, caption, elements} = elem;
                         return (
                             <div
-                                caption={elem.caption}
-                                key={elem.tabid}>
-
-                                Here should be lots of elements for pane {elem.caption}
+                                caption={caption}
+                                key={tabid}>
+                                <Table cols={elements} />
                             </div>
                         )
                     })

@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
-import salesOrderStateHandler from './salesOrderStateHandler';
+import appHandler from './appHandler';
 import windowHandler from './windowHandler';
 import { routerReducer as routing } from 'react-router-redux';
 
 const rootReducer = combineReducers({
-    salesOrderStateHandler,
+    appHandler,
     windowHandler,
     routing
 });

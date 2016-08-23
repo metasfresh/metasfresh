@@ -1,17 +1,15 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import './Header.css';
+
+import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
 import Widget from '../Widget';
 
 import {
-    showSubHeader,
-    hideSubHeader,
-    toggleOrderList,
     changeOrderStatus
-} from '../../actions/SalesOrderActions';
+} from '../../actions/AppActions';
 
 class Header extends Component {
     constructor(props){
@@ -23,19 +21,25 @@ class Header extends Component {
             "In progress",
             "Void"
         ];
+
+        this.state = {
+            isSubheaderShow: false,
+            isOrderListShow: false
+        }
     }
     handleSubheaderOpen = () => {
-        const {dispatch, isSubheaderShow} = this.props;
-
-        if(isSubheaderShow){
-            dispatch(hideSubHeader());
+        if(this.state.isSubheaderShow){
+            this.setState({isSubheaderShow: false});
         }else{
-            dispatch(showSubHeader());
+            this.setState({isSubheaderShow: true});
         }
     }
     handleOrderListToggle = () => {
-        const {dispatch, isOrderListShow} = this.props;
-        dispatch(toggleOrderList(!isOrderListShow));
+        if(this.state.isOrderListShow){
+            this.setState({isOrderListShow: false});
+        }else{
+            this.setState({isOrderListShow: true});
+        }
     }
     handleBackdropClick = () => {
         this.props.dispatch(hideSubHeader());
@@ -141,32 +145,22 @@ class Header extends Component {
 
 
 Header.propTypes = {
-    isSubheaderShow: PropTypes.bool.isRequired,
     orderStatus: PropTypes.number.isRequired,
-    isOrderListShow: PropTypes.bool.isRequired,
     data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler, windowHandler } = state;
+    const { windowHandler } = state;
     const {
-        isSubheaderShow,
-        isOrderListShow,
-        orderStatus
-    } = salesOrderStateHandler || {
-        isSubheaderShow: false,
-        isOrderListShow: false,
-        orderStatus: 0
-    }
-    const {
+        orderStatus,
         data
     } = windowHandler || {
+        orderStatus: 0,
         data: []
     }
+
     return {
-        isSubheaderShow,
-        isOrderListShow,
         orderStatus,
         data
     }

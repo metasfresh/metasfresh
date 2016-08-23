@@ -6,47 +6,47 @@ import {
     editProductProperty,
     changeProductProperty,
     selectOneProduct
-} from '../../actions/SalesOrderActions';
+} from '../../actions/AppActions';
 
-class ProductTableItem extends Component {
+class TableItem extends Component {
     constructor(props) {
         super(props);
     }
     handleEditProperty = (e) => {
-        e.preventDefault();
-        this.props.dispatch(selectOneProduct(this.props.product.id));
-
-        let property = e._targetInst._currentElement.key;
-        let inputContainer = document.createDocumentFragment();
-        let input = document.createElement("input");
-        let td = e.nativeEvent.target;
-        let span = td.getElementsByTagName("span")[0];
-
-        input.value = span.innerHTML;
-        this.props.dispatch(editProductProperty(property));
-
-        input.classList.add('table-input-inline');
-
-        input.addEventListener('blur', (e) => {
-            this.handleSaveProperty(e, property, input.value);
-        });
-
-        inputContainer.appendChild(input);
-        span ? span.classList.add('table-hide-property'): null;
-        td.appendChild(inputContainer);
-        input.focus();
+    //     e.preventDefault();
+    //     this.props.dispatch(selectOneProduct(this.props.product.id));
+    //
+    //     let property = e._targetInst._currentElement.key;
+    //     let inputContainer = document.createDocumentFragment();
+    //     let input = document.createElement("input");
+    //     let td = e.nativeEvent.target;
+    //     let span = td.getElementsByTagName("span")[0];
+    //
+    //     input.value = span.innerHTML;
+    //     this.props.dispatch(editProductProperty(property));
+    //
+    //     input.classList.add('table-input-inline');
+    //
+    //     input.addEventListener('blur', (e) => {
+    //         this.handleSaveProperty(e, property, input.value);
+    //     });
+    //
+    //     inputContainer.appendChild(input);
+    //     span ? span.classList.add('table-hide-property'): null;
+    //     td.appendChild(inputContainer);
+    //     input.focus();
     }
     handleSaveProperty = (e, property, value) => {
-        e.preventDefault();
-        let parent = e.target.parentElement;
-        let span = parent.getElementsByTagName("span")[0];
-        const {product} = this.props;
-
-        this.props.dispatch(
-            saveProductProperty(product.id, property, value)
-        )
-        parent.removeChild(e.target);
-        span ? span.classList.remove('table-hide-property') : null;
+        // e.preventDefault();
+        // let parent = e.target.parentElement;
+        // let span = parent.getElementsByTagName("span")[0];
+        // const {product} = this.props;
+        //
+        // this.props.dispatch(
+        //     saveProductProperty(product.id, property, value)
+        // )
+        // parent.removeChild(e.target);
+        // span ? span.classList.remove('table-hide-property') : null;
     }
     render() {
         const {product, selectedProducts, onClick} = this.props;
@@ -85,12 +85,12 @@ class ProductTableItem extends Component {
 }
 
 
-ProductTableItem.propTypes = {
+TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { salesOrderStateHandler } = state;
+    const { appHandler } = state;
     const {
         selectedProducts
     } = salesOrderStateHandler || {
@@ -102,6 +102,6 @@ function mapStateToProps(state) {
     }
 }
 
-ProductTableItem = connect(mapStateToProps)(ProductTableItem)
+TableItem = connect(mapStateToProps)(TableItem)
 
-export default ProductTableItem
+export default TableItem

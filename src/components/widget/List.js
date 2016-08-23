@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 
 import {
     dropdownRequest
-} from '../../actions/SalesOrderActions';
+} from '../../actions/AppActions';
 
-class Dropdown extends Component {
+class List extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -88,16 +88,15 @@ class Dropdown extends Component {
     }
 }
 
-Dropdown.propTypes = {
+List.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const {salesOrderStateHandler} = state;
     return {
     }
 }
 
-Dropdown = connect(mapStateToProps)(Dropdown)
+List = connect(mapStateToProps)(List)
 
-export default Dropdown
+export default List

@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { patch, updateDataProperty } from '../actions/WindowActions';
 
 import Datetime from 'react-datetime';
-import LookupDropdown from './app/LookupDropdown';
-import Dropdown from './app/Dropdown';
+import Lookup from './widget/Lookup';
+import List from './widget/List';
 
 class Widget extends Component {
     constructor(props) {
@@ -82,7 +82,7 @@ class Widget extends Component {
                 )
             case "Lookup":
                 return (
-                    <LookupDropdown
+                    <Lookup
                         recent={[]}
                         dataId={dataId}
                         properties={fields}
@@ -96,7 +96,7 @@ class Widget extends Component {
                 )
             case "List":
                 return (
-                    <Dropdown
+                    <List
                         dataId={dataId}
                         defaultValue="(none)"
                         selected={data.value}

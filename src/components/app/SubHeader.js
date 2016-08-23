@@ -1,11 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
-import './Header.css';
-
-import {
-    hideSubHeader
-} from '../../actions/SalesOrderActions'
+import '../../assets/css/header.css';
 
 class Subheader extends Component {
     constructor(props){
@@ -13,7 +9,6 @@ class Subheader extends Component {
     }
     redirect = (where) => {
         const {dispatch} = this.props;
-        dispatch(hideSubHeader(where));
         dispatch(push(where));
     }
     render() {
