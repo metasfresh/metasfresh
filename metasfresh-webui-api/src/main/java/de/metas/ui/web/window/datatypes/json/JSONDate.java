@@ -4,8 +4,9 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
+import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -36,17 +37,26 @@ import de.metas.logging.LogManager;
 @SuppressWarnings("serial")
 public final class JSONDate implements Serializable
 {
+	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
+	
+	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+	private static final SimpleDateFormatThreadLocal DATE_FORMAT = new SimpleDateFormatThreadLocal(DATE_PATTEN);
+	
 	private static final DateFormat getDateFormat()
 	{
-		// TODO: optimize dateToJsonObject; maybe use joda time or java8 API
-		// TODO: user current session Locale
-		return new SimpleDateFormat(DATE_PATTEN);
+		return DATE_FORMAT.getDateFormat();
 	}
 
-	public static Object toJson(final java.util.Date valueDate)
+	public static String toJson(final java.util.Date date)
 	{
-		final DateFormat dateFormat = getDateFormat();
-		final String valueStr = dateFormat.format(valueDate);
+		return DATE_FORMAT.format(date);
+	}
+
+	public static String toJson(final java.util.Date date, final TimeZone timeZone)
+	{
+		final DateFormat dateFormat = DATE_FORMAT.getDateFormat();
+		dateFormat.setTimeZone(timeZone);
+		final String valueStr = dateFormat.format(date);
 		return valueStr;
 	}
 
@@ -84,9 +94,6 @@ public final class JSONDate implements Serializable
 		}
 		return new java.util.Date(ts.getTime());
 	}
-
-	private static final Logger logger = LogManager.getLogger(JSONDate.class);
-	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm'Z'"; // Quoted "Z" to indicate UTC, no timezone offset // TODO fix the pattern
 
 	private JSONDate()
 	{
