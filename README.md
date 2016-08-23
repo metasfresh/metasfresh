@@ -14,7 +14,7 @@
 - First make sure you have installed all of dependencies by:
 > npm install
 
-- Then remember of creating config:
+- Then remember of creating config: 
 > cp src/config.js.dist src/config.js
 
 - Then you should run node server by:
