@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,7 +53,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.lock.api.ILock;
 
-/* package*/class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
+/* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
 	// services
 	// private final transient Logger logger = InvoiceCandidate_Constants.getLogger();
@@ -66,7 +66,7 @@ import de.metas.lock.api.ILock;
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 	private static final String SYSCONFIG_ItemsPerBatch = "de.metas.invoicecandidate.api.impl.InvoiceCandInvalidUpdater.ItemsPerBatch";
-	private static final int DEFAULT_ItemsPerBatch = 50;
+	private static final int DEFAULT_ItemsPerBatch = 1;
 
 	//
 	// Parameters
@@ -100,7 +100,7 @@ import de.metas.lock.api.ILock;
 		try
 		{
 			updateTagged();
-	
+
 			//
 			// Remove from "invoice candidates to recompute" all those which were tagged with our tag
 			// because now we consider them valid
@@ -153,7 +153,7 @@ import de.metas.lock.api.ILock;
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
-					.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and does not help us here
+					.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and do not help us here
 					.setExceptionHandler(new ICTrxItemExceptionHandler(result))
 					.setProcessor(new TrxItemChunkProcessorAdapter<I_C_Invoice_Candidate, ICUpdateResult>()
 					{
@@ -182,7 +182,11 @@ import de.metas.lock.api.ILock;
 							return result;
 						}
 
-						/** Always return true and let the caller to decide when to close the chunk (based on ItemsPerBatch setting) */
+						/**
+						 * Always return <code>true</code> and let the caller decide when to close the chunk (based on ItemsPerBatch setting).
+						 * We do this because in theory, each IC is independent from each other.
+						 * On the other hand, we don't want the overhead of dealing with each IC independently (trx-commit etc).
+						 */
 						@Override
 						public boolean isSameChunk(final I_C_Invoice_Candidate item)
 						{
@@ -523,6 +527,9 @@ import de.metas.lock.api.ILock;
 			this.result = result;
 		}
 
+		/**
+		 * Resets the given IC to its old values, and sets an error flag in it.
+		 */
 		@Override
 		public void onItemError(final Exception e, final Object item)
 		{

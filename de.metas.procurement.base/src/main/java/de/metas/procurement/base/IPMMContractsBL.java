@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.procurement.base.model.I_AD_User;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 
 /*
  * #%L
@@ -45,4 +46,11 @@ public interface IPMMContractsBL extends ISingletonService
 	 * @return user in charge or <code>null</code> if there is no default configured
 	 */
 	I_AD_User getDefaultContractUserInChargeOrNull(Properties ctx);
+
+	/**
+	 * @param dataEntry
+	 * @return true if given data entry has the price or qty planned set
+	 * @task FRESH-568
+	 */
+	boolean hasPriceOrQty(I_C_Flatrate_DataEntry dataEntry);
 }

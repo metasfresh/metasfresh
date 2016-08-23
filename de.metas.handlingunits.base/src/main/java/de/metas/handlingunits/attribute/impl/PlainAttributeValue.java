@@ -187,6 +187,12 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	{
 		return false;
 	}
+	
+	@Override
+	public boolean isDefinedByTemplate()
+	{
+		return false;
+	}
 
 	@Override
 	public int getDisplaySeqNo()

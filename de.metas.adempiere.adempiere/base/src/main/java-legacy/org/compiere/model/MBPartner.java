@@ -36,6 +36,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.logging.LogManager;
 
@@ -354,8 +355,6 @@ public class MBPartner extends X_C_BPartner
 		setC_BP_Group_ID(impBP.getC_BP_Group_ID());
 	} // MBPartner
 
-	/** Users */
-	private MUser[] m_contacts = null;
 	/** Addressed */
 	private MBPartnerLocation[] m_locations = null;
 	/** BP Bank Accounts */
@@ -439,38 +438,9 @@ public class MBPartner extends X_C_BPartner
 	 */
 	public MUser[] getContacts(boolean reload)
 	{
-		if (reload || m_contacts == null || m_contacts.length == 0)
-			;
-		else
-			return m_contacts;
-		//
-		ArrayList<MUser> list = new ArrayList<MUser>();
-		final String sql = "SELECT * FROM AD_User WHERE C_BPartner_ID=? ORDER BY AD_User_ID";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_BPartner_ID());
-			rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MUser(getCtx(), rs, get_TrxName()));
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		m_contacts = new MUser[list.size()];
-		list.toArray(m_contacts);
-		return m_contacts;
-	} // getContacts
+		final List<I_AD_User> contacts = Services.get(IBPartnerDAO.class).retrieveContacts(this);
+		return LegacyAdapters.convertToPOArray(contacts, MUser.class);
+	}
 
 	/**
 	 * Get specified or first Contact

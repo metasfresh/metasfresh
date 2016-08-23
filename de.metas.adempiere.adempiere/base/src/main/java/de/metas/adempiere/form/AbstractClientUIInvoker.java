@@ -40,6 +40,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 
 	private boolean invokeLater;
 	private boolean longOperation;
+	private boolean showGlassPane = false;
 	private OnFail onFail = OnFail.ShowErrorPopup;
 	private IExceptionHandler exceptionHandler;
 	private Object parentComponent;
@@ -74,17 +75,27 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		Check.assumeNotNull(runnableWrapped, "runnable shall be configured");
 
 		// Wrap to Long Operation
-		// NOTE: this needs to be wrapped BEFORE InvokeLater because invoke later will be executed asynchronously
+		// NOTE: this needs to be wrapped BEFORE "invoke later" or "glass pane" because those will execute the runnable asynchronously
 		if (isLongOperation())
 		{
 			runnableWrapped = asLongOperationRunnable(runnableWrapped);
 		}
 
+		// Wrap to Exception handled (if needed)
 		runnableWrapped = asExceptionHandledRunnable(runnableWrapped);
 
+		// Wrap to invoke later
+		// NOTE: this needs to be wrapped after "exception handled" because else the exception won't be catched.
 		if (isInvokeLater())
 		{
 			runnableWrapped = asInvokeLaterRunnable(runnableWrapped);
+		}
+		
+		// Wrap to showing glass pane runnable
+		// NOTE: this needs to be wrapped after "long operation", "exception handled" and "invoke later"
+		if (isShowGlassPane())
+		{
+			runnableWrapped = asShowGlassPaneRunnable(runnableWrapped);
 		}
 
 		//
@@ -95,6 +106,8 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	protected abstract Runnable asInvokeLaterRunnable(final Runnable runnable);
 
 	protected abstract Runnable asLongOperationRunnable(final Runnable runnable);
+
+	protected abstract Runnable asShowGlassPaneRunnable(Runnable runnable);
 
 	private final Runnable asExceptionHandledRunnable(final Runnable runnable)
 	{
@@ -187,6 +200,18 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	protected final boolean isLongOperation()
 	{
 		return longOperation;
+	}
+	
+	@Override
+	public IClientUIInvoker setShowGlassPane(final boolean showGlassPane)
+	{
+		this.showGlassPane = showGlassPane;
+		return this;
+	}
+	
+	protected final boolean isShowGlassPane()
+	{
+		return showGlassPane;
 	}
 
 	@Override
