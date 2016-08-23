@@ -124,7 +124,7 @@ public class CalloutExecutor implements ICalloutExecutor
 			}
 			catch (CalloutInitException e)
 			{
-				logger.error("Callout " + fieldCalloutInstance + " failed with init error on execution. Discarding it.");
+				logger.error("Callout {} failed with init error on execution. Discarding it from next calls.", fieldCalloutInstance, e);
 				it.remove();
 				throw e;
 			}

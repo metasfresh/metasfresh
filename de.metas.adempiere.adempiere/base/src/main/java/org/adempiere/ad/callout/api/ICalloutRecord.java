@@ -30,6 +30,10 @@ package org.adempiere.ad.callout.api;
  */
 public interface ICalloutRecord
 {
+	String getTableName();
+
+	int getAD_Tab_ID();
+
 	<T> T getModel(Class<T> modelClass);
 
 	Object getValue(String columnName);

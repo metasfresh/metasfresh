@@ -63,6 +63,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.StateChangeEvent.StateChangeEventType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -138,7 +139,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return (GridTab)calloutRecord;
 		}
 		
-		log.warn("Cannot extract GridTab from {}. Returning null", calloutRecord);
+		log.warn("Cannot extract {} from {}. Returning null", GridTab.class, calloutRecord);
 		return null;
 	}
 
@@ -379,6 +380,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// Metas start: R.Craciunescu@metas.ro: 02280
 		// Run tab callout in GridTab
 		tabCallouts = Services.get(ITabCalloutFactory.class).createAndInitialize(this);
+		// Bind StateChangeEvent to tab callouts
+		// It will cover almost all the tab callouts methods.
+		GridTabCalloutStateChangeListener.bind(this, tabCallouts);
 		// Metas end: R.Craciunescu@metas.ro: 02280
 
 		m_loadComplete = true;
@@ -1153,6 +1157,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/**************************************************************************
 	 * Refresh all data
 	 */
+	@Override
 	public void dataRefreshAll()
 	{
 		log.debug("#" + m_vo.TabNo);
@@ -1193,12 +1198,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			}
 		}
 		setCurrentRow(m_currentRow, true);
-		fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_REFRESH_ALL));
+		fireStateChangeEvent(StateChangeEventType.DATA_REFRESH_ALL);
 	}   // dataRefreshAll
 
 	/**
 	 * Refresh current row data
 	 */
+	@Override
 	public void dataRefresh()
 	{
 		dataRefresh(m_currentRow);
@@ -1207,6 +1213,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/**
 	 * Refresh current row data and refreshes data from included tabs too.
 	 */
+	@Override
 	public void dataRefreshRecursively()
 	{
 		for (final GridTab includedTab : getIncludedTabs())
@@ -1226,7 +1233,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		log.debug("#" + m_vo.TabNo + " - row=" + row);
 		m_mTable.dataRefresh(row);
 		setCurrentRow(row, true);
-		fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_REFRESH));
+		fireStateChangeEvent(StateChangeEventType.DATA_REFRESH);
 	}   // dataRefresh
 
 	/**************************************************************************
@@ -1235,6 +1242,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param manualCmd if true, no vetoable PropertyChange will be fired for save confirmation from MTable
 	 * @return true if save complete (or nor required)
 	 */
+	@Override
 	public boolean dataSave(final boolean manualCmd)
 	{
 		log.debug("#" + m_vo.TabNo + " - row=" + m_currentRow);
@@ -1269,7 +1277,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 					updateDataStatusEventProperties(m_lastDataStatusEvent);
 				}
 			}
-			fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_SAVE));
+			fireStateChangeEvent(StateChangeEventType.DATA_SAVE);
 
 			if (retValue)
 			{
@@ -1427,7 +1435,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			m_propertyChangeSupport.firePropertyChange(PROPERTY, currentRow, previousRow);
 		}
 
-		fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_IGNORE));
+		fireStateChangeEvent(StateChangeEventType.DATA_IGNORE);
 		log.debug("#" + m_vo.TabNo + "- fini");
 	}   // dataIgnore
 
@@ -1511,7 +1519,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			// Notify listeners that a new record is created.
 			// NOTE: we need to do this while we keep the copyMode set because Tab Callouts will react here,
 			// and they will try to do changes to current row and some of the callouts really depend on CopyMode value!
-			fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_NEW));
+			fireStateChangeEvent(StateChangeEventType.DATA_NEW);
 
 			return true; // success
 		}
@@ -1532,7 +1540,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		log.debug("#" + m_vo.TabNo + " - row=" + m_currentRow);
 		final boolean retValue = m_mTable.dataDelete(m_currentRow);
 		setCurrentRow(m_currentRow, true);
-		fireStateChangeEvent(new StateChangeEvent(this, StateChangeEvent.DATA_DELETE));
+		fireStateChangeEvent(StateChangeEventType.DATA_DELETE);
 
 		// metas-2009_0021_AP1_CR061: teo_sarca: begin
 		final Properties ctx = getCtx();
@@ -2134,6 +2142,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @return Tab ID
 	 */
+	@Override
 	public int getAD_Tab_ID()
 	{
 		return m_vo.AD_Tab_ID;
@@ -2174,6 +2183,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @return Table Name
 	 */
+	@Override
 	public String getTableName()
 	{
 		return m_vo.TableName;
@@ -3104,6 +3114,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param value value
 	 * @return error message or ""
 	 */
+	@Override
 	public String setValue(final String columnName, final Object value)
 	{
 		if (columnName == null)
@@ -3332,6 +3343,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param columnName column name
 	 * @return value
 	 */
+	@Override
 	public Object getValue(final String columnName)
 	{
 		if (columnName == null)
@@ -3587,7 +3599,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		navigate(to);
 	}
 
-	private void fireStateChangeEvent(final StateChangeEvent e)
+	private void fireStateChangeEvent(final StateChangeEventType eventType)
 	{
 		final StateChangeListener[] listeners = m_listenerList.getListeners(StateChangeListener.class);
 		if (Check.isEmpty(listeners))
@@ -3595,9 +3607,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return;
 		}
 
+		final StateChangeEvent event = new StateChangeEvent(this, eventType);
 		for (int i = 0; i < listeners.length; i++)
 		{
-			listeners[i].stateChange(e);
+			listeners[i].stateChange(event);
 		}
 	}
 

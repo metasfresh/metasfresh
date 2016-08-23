@@ -10,86 +10,64 @@ package org.adempiere.ad.ui.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
-public class CompositeTabCallout implements ITabCallout
+@Immutable
+public final class CompositeTabCallout implements ITabCallout
 {
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
 	// services
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(CompositeTabCallout.class);
 
-	private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
-	/** Initialized tab callouts */
-	private final List<ITabCallout> tabCallouts = new ArrayList<>();
-	private boolean _initialized = false;
+	private final List<ITabCallout> tabCallouts;
 
-	public void addTabCallout(final ITabCallout tabCallout)
+	private CompositeTabCallout(final List<ITabCallout> tabCallouts)
 	{
-		assertNotInitialized();
-		Check.assumeNotNull(tabCallout, "tabCallout not null");
-
-		if (tabCalloutsAll.contains(tabCallout))
-		{
-			return;
-		}
-		tabCalloutsAll.add(tabCallout);
-	}
-
-	private final void assertNotInitialized()
-	{
-		Check.assume(!_initialized, "not already initialized");
-	}
-
-	private final void markAsInitialized()
-	{
-		assertNotInitialized();
-		_initialized = true;
+		super();
+		this.tabCallouts = ImmutableList.copyOf(tabCallouts);
 	}
 
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.addValue(tabCallouts)
+				.toString();
 	}
 
 	@Override
 	public void onInit(final ICalloutRecord calloutRecord)
 	{
-		markAsInitialized();
-
-		for (final ITabCallout tabCallout : tabCalloutsAll)
-		{
-			try
-			{
-				tabCallout.onInit(calloutRecord);
-				tabCallouts.add(tabCallout);
-			}
-			catch (Exception e)
-			{
-				logger.error("Failed to initialize: " + tabCallout, e);
-			}
-		}
+		throw new IllegalStateException("Composite " + this + " was already initialized");
 	}
 
 	@Override
@@ -155,4 +133,91 @@ public class CompositeTabCallout implements ITabCallout
 		}
 	}
 
+	public static final class Builder
+	{
+		private boolean _built = false;
+		private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
+		private ICalloutRecord _calloutRecord = null;
+
+		private Builder()
+		{
+			super();
+		}
+
+		public ITabCallout buildAndInitialize()
+		{
+			markAsBuilt();
+
+			if (tabCalloutsAll.isEmpty())
+			{
+				return ITabCallout.NULL;
+			}
+
+			final ICalloutRecord calloutRecord = getCalloutRecord();
+			final List<ITabCallout> tabCalloutsInitialized = new ArrayList<>();
+			for (final ITabCallout tabCallout : tabCalloutsAll)
+			{
+				try
+				{
+					tabCallout.onInit(calloutRecord);
+					tabCalloutsInitialized.add(tabCallout);
+				}
+				catch (final Exception e)
+				{
+					logger.error("Failed to initialize {}. Ignored.", tabCallout, e);
+				}
+			}
+
+			if (tabCalloutsInitialized.isEmpty())
+			{
+				return ITabCallout.NULL;
+			}
+			else if (tabCalloutsInitialized.size() == 1)
+			{
+				return tabCalloutsInitialized.get(0);
+			}
+			else
+			{
+				return new CompositeTabCallout(tabCalloutsInitialized);
+			}
+
+		}
+
+		public Builder addTabCallout(final ITabCallout tabCallout)
+		{
+			assertNotBuilt();
+			Check.assumeNotNull(tabCallout, "tabCallout not null");
+
+			if (tabCalloutsAll.contains(tabCallout))
+			{
+				return this;
+			}
+			tabCalloutsAll.add(tabCallout);
+
+			return this;
+		}
+
+		public Builder setCalloutRecord(final ICalloutRecord calloutRecord)
+		{
+			_calloutRecord = calloutRecord;
+			return this;
+		}
+
+		private ICalloutRecord getCalloutRecord()
+		{
+			Check.assumeNotNull(_calloutRecord, "Parameter calloutRecord is not null");
+			return _calloutRecord;
+		}
+
+		private final void assertNotBuilt()
+		{
+			Check.assume(!_built, "not already initialized");
+		}
+
+		private final void markAsBuilt()
+		{
+			assertNotBuilt();
+			_built = true;
+		}
+	}
 }

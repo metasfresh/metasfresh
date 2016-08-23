@@ -35,16 +35,12 @@ import org.adempiere.facet.sideactions.impl.SideActionFacetsPool;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.logging.LogManager;
 
 public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 {
-	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_TabCallout.class);
-
 	private FacetExecutor<I_C_Invoice_Candidate> gridTabFacetExecutor;
 
 	/**
@@ -58,7 +54,6 @@ public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
 		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
 		if(gridTab == null)
 		{
-			logger.warn("Cannot extract GridTab from {}. Skip initializing {}", calloutRecord, this);
 			return;
 		}
 		

@@ -29,7 +29,6 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -44,18 +43,18 @@ public class DatePromised extends TabCalloutAdapter
 {
 	private static final Logger logger = LogManager.getLogger(DatePromised.class);
 
-	private static final String FIELDNAME_DATEPROMISED = I_C_Order.COLUMNNAME_DatePromised;
-
 	@Override
 	public void onNew(final ICalloutRecord calloutRecord)
 	{
 		Check.assumeNotNull(calloutRecord, "Param 'calloutRecord' is not null");
-		
-		final Timestamp datePromised = (Timestamp)calloutRecord.getValue(FIELDNAME_DATEPROMISED);
+
+		final DatePromisedAware datePromisedAware = calloutRecord.getModel(DatePromisedAware.class);
+
+		final Timestamp datePromised = datePromisedAware.getDatePromised();
 		if (datePromised == null)
 		{
 			// issuing a warning
-			final String msg = "Callout record " + calloutRecord + " has no value for column name " + FIELDNAME_DATEPROMISED + ". "
+			final String msg = "Callout record " + calloutRecord + " has no value for column name " + DatePromisedAware.COLUMNNAME_DatePromised + ". "
 					+ "Please make sure the field exists and the column has a default value, or remove the tab callout";
 			logger.warn(msg, new AdempiereException(msg));
 
@@ -78,6 +77,15 @@ public class DatePromised extends TabCalloutAdapter
 		datePromisedCal.set(Calendar.MILLISECOND, 999);
 
 		final Timestamp datePromisedNew = new Timestamp(datePromisedCal.getTimeInMillis());
-		calloutRecord.setValue(FIELDNAME_DATEPROMISED, datePromisedNew);
+		datePromisedAware.setDatePromised(datePromisedNew);
+	}
+
+	private static interface DatePromisedAware
+	{
+		//@formatter:off
+		String COLUMNNAME_DatePromised = "DatePromised";
+		void setDatePromised(java.sql.Timestamp DatePromised);
+		java.sql.Timestamp getDatePromised();
+		//@formatter:on
 	}
 }
