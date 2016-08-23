@@ -32,8 +32,10 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
@@ -243,8 +245,6 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			final MRelationType newType = new MRelationType(source.getCtx(), relTypeId, source.getTrxName());
 
 			// figure out which AD_reference is the destination relative to the given po and AD_Window_ID
-			newType.findAndSetDestinationRefId(po, AD_Window_ID);
-
 			newType.findDestinationRefId(source);
 
 			final int sourceRefId;
@@ -275,7 +275,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	@Deprecated
 	private int findDestinationRefId(final PO po, final int windowId)	{
 		final IZoomSource source = POZoomSource.of(po, windowId);
-		return findDestinationRefId(source); 
+		return findDestinationRefId(source);
 	}
 
 	private int findDestinationRefId(final IZoomSource source)
@@ -314,7 +314,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			}
 		}
 
-		Check.errorIf(destinationRefId == -1, "No destinationRefId was found for AD_Window_ID={} and po={}", AD_Window_ID, po);
+		Check.errorIf(destinationRefId == -1, "No destinationRefId was found for AD_Window_ID={} and IZoomSource={}", source.getAD_Window_ID(), source);
 		return destinationRefId;
 	}
 
@@ -340,7 +340,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		whereClause.append(keyColumn);
 		whereClause.append("=" + source.getRecord_ID() + " )");
 
-		final PO result = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
+		final int id = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
 			.setOrderBy(keyColumn)
 			.firstId(); // using firstId might be a bit cheaper, because the DBMS might not have to load the actual row.
 		final boolean match = id > 0;
@@ -352,7 +352,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	@Deprecated
 	public static String parseWhereClause(final PO po, final String where, final boolean throwEx)
 	{
-		final IZoomSource source = POZoomSource.of(po); 
+		final IZoomSource source = POZoomSource.of(po);
 		return parseWhereClause(source, where, throwEx);
 	}
 
@@ -379,12 +379,12 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 				{
 					val = po.get_Value(i);
 				}
-	
+
 				if (val == null)
 				{
 					continue;
 				}
-	
+
 				if (val instanceof Integer)
 				{
 					Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (Integer)val);
@@ -435,9 +435,9 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		String display = getDestinationRoleDisplay();
 		if (Check.isEmpty(display))
 		{
-			display = retrieveWindowName(adWindowId);
+			display = retrieveWindowName(source.getAD_Window_ID());
 		}
-		Check.errorIf(Check.isEmpty(display), "Found no display string for po={}, refTable={}, AD_Window_ID={}", po, refTable, adWindowId);
+		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
 
 		return Collections.singletonList(ZoomInfoFactory.ZoomInfo.of(windowId, query, display));
 	}
@@ -494,7 +494,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		return query;
 	}
 
-*
+	/**
 	 *
 	 * @param po
 	 * @param refTable
@@ -508,7 +508,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		final IZoomSource source = POZoomSource.of(po);
 		return retrieveWindowID(source, refTable);
 	}
-	
+
 	private int retrieveWindowID(final IZoomSource source, final I_AD_Ref_Table refTable)
 	{
 
@@ -633,7 +633,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		{
 			return MRelation.retrieveDestinations(sourcePO.getCtx(), this, sourcePO, sourcePO.get_TrxName());
 		}
-		final int destinationRefId = findAndSetDestinationRefId(sourcePO, -1);
+		final int destinationRefId = findDestinationRefId(sourcePO, -1);
 		final MRefTable destinationRefTable = MReference.retrieveRefTable(getCtx(), destinationRefId, get_TrxName());
 
 		final MQuery query = mkQuery(sourcePO, destinationRefTable);
