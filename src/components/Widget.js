@@ -38,7 +38,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -56,7 +56,7 @@ class Widget extends Component {
                             dateFormat={true}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -74,7 +74,7 @@ class Widget extends Component {
                             dateFormat={false}
                             locale="de"
                             inputProps={{placeholder: "(none)", disabled: data.readonly}}
-                            defaultValue={new Date(data.value)}
+                            value={data.value ? new Date(data.value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>

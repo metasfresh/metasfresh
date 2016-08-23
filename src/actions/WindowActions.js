@@ -21,7 +21,7 @@ export function createWindow(windowType, docId = "NEW"){
 
 function nullToEmptyStrings(arr){
     return arr.map(item =>
-        item.value === null ?
+        (item.value === null) ?
         Object.assign({}, item, { value: "" }) :
         item
     )
