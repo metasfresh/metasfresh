@@ -30,7 +30,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "") +
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -48,7 +48,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "") +
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -67,7 +67,7 @@ class Widget extends Component {
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -112,7 +112,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="text"
@@ -130,7 +130,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <textarea
                             className="input-field"
@@ -147,7 +147,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -167,7 +167,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -185,7 +185,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -205,7 +205,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -225,7 +225,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -258,7 +258,7 @@ class Widget extends Component {
                         className={
                             "input-switch" +
                             (data.readonly ? "input-disabled " : "") +
-                            (data.mandatory ? "input-mandatory " : "")
+                            (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                         }>
                         <input
                             type="checkbox"
