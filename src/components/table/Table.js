@@ -14,7 +14,7 @@ import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
 
-class ProductTable extends Component {
+class Table extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -80,10 +80,12 @@ class ProductTable extends Component {
         // });
     }
     renderTableBody = () => {
-        // const {products, selectedProducts} = this.props
-        // return products.products.map((product) => {
+        // const {rowData, tabid} = this.props
+        // console.log(rowData)
+        // return rowData[tabid].map((item) => {
+        //     console.log(item)
         //     return (
-        //         <ProductTableItem
+        //         <TableItem
         //             product={product}
         //             key={product.id}
         //             onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
@@ -117,21 +119,23 @@ class ProductTable extends Component {
 }
 
 
-ProductTable.propTypes = {
+Table.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { appHandler } = state;
+    const { windowHandler } = state;
     const {
-    } = appHandler || {
+        rowData
+    } = windowHandler || {
+        rowData: {}
     }
 
-
     return {
+        rowData
     }
 }
 
-ProductTable = connect(mapStateToProps)(ProductTable)
+Table = connect(mapStateToProps)(Table)
 
-export default ProductTable
+export default Table

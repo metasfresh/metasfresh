@@ -22,7 +22,7 @@ class Window extends Component {
                                 caption={caption}
                                 key={tabid}
                             >
-                                <Table cols={elements} />
+                                <Table cols={elements} tabid={id} />
                             </div>
                         )
                     })

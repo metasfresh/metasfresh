@@ -6,21 +6,22 @@ export function createWindow(windowType, docId = "NEW"){
     return (dispatch) => {
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(initWindow(windowType,docId)).then((response)=>{
-            dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
-            dispatch(initLayout(windowType)).then((response) => {
+        dispatch(initWindow(windowType,docId))
+            .then(response =>
+                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))
+            ).then(response =>
+                dispatch(initLayout(windowType))
+            ).then(response => {
                 dispatch(initLayoutSuccess(response.data));
-                response.data.tabs.map((item) => {
-                    dispatch(getData(windowType, docId, item.tabid)).then((res)=>{
-                        let tab = {};
-                        tab[item.tabid] = res.data;
-                        dispatch(addRowData(tab));
-                    })
-                })
             });
-        });
     }
 }
+
+// dispatch(getData(windowType, docId, response.data.tabs[0].tabid)).then((res)=> {
+//     let tab = {};
+//     tab[item.tabid] = res.data;
+//     dispatch(addRowData(tab));
+// })
 
 export function initWindow(windowType, docId) {
     return (dispatch) => {
