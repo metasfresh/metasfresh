@@ -7,21 +7,35 @@ export function createWindow(windowType, docId = "NEW"){
         // this chain is really important,
         // to do not re-render widgets on init
         dispatch(initWindow(windowType,docId))
-            .then(response =>
-                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))
+            .then(response => {
+                docId = response.data[0].id
+                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))}
             ).then(response =>
                 dispatch(initLayout(windowType))
+            ).then(response =>
+                dispatch(initLayoutSuccess(response.data))
             ).then(response => {
-                dispatch(initLayoutSuccess(response.data));
-            });
+                response.layout.tabs.map(item => {
+                    dispatch(getData(windowType, docId, item.tabid))
+                        .then((res)=> {
+                            let tab = {};
+                            tab[item.tabid] = res.data;
+                            dispatch(addRowData(tab));
+                        });
+                })
+            }).catch(()=>{
+                dispatch(noConnection());
+            })
     }
 }
 
-// dispatch(getData(windowType, docId, response.data.tabs[0].tabid)).then((res)=> {
-//     let tab = {};
-//     tab[item.tabid] = res.data;
-//     dispatch(addRowData(tab));
-// })
+export function noConnection(){
+    return {
+        type: types.NO_CONNECTION
+    }
+}
+
+
 
 export function initWindow(windowType, docId) {
     return (dispatch) => {
@@ -120,4 +134,16 @@ export function updateDataProperty(property, value){
         property: property,
         value: value
     }
+}
+
+export function findRowByPropName(arr, name) {
+    let ret = -1;
+    for(let i = 0; i < arr.length; i++){
+        if(arr[i].field === name){
+            ret = arr[i];
+            break;
+        }
+    }
+
+    return ret;
 }

@@ -2,6 +2,7 @@ import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
 const initialState = {
+    connectionError: false,
     layout: {},
     data: [{
         value: 0
@@ -12,13 +13,18 @@ const initialState = {
 
 export default function windowHandler(state = initialState, action) {
     switch(action.type){
+        case types.NO_CONNECTION:
+            return Object.assign({}, state, {
+                connectionError: true
+        })
         case types.INIT_LAYOUT_SUCCESS:
             return Object.assign({}, state, {
                 layout: action.layout
         })
         case types.INIT_DATA_SUCCESS:
             return Object.assign({}, state, {
-                data: action.data
+                data: action.data,
+                rowData: {}
         })
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {

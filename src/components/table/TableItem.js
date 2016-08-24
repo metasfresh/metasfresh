@@ -8,6 +8,10 @@ import {
     selectOneProduct
 } from '../../actions/AppActions';
 
+import {
+    findRowByPropName
+} from '../../actions/WindowActions';
+
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -48,41 +52,38 @@ class TableItem extends Component {
         // parent.removeChild(e.target);
         // span ? span.classList.remove('table-hide-property') : null;
     }
+    renderCells = (cols, cells) => {
+        return cols.map((item, index) =>{
+            const value = findRowByPropName(cells, item.fields[0].field).value;
+            return (
+                <td key={index}>
+                    {value && value.toString()}
+                </td>
+            )
+        })
+    }
     render() {
-        const {product, selectedProducts, onClick} = this.props;
-        const index = selectedProducts.indexOf(product.id);
+        const {fields, selectedProducts, onClick, rowId, cols} = this.props;
+        const index = selectedProducts.indexOf(rowId);
         const isSelected = index > -1;
         return (
             <tr
                 onClick={onClick}
                 className={isSelected ? "row-selected" : null}
             >
-                <td>{product.id}</td>
-                <td>{product.name}</td>
-                <td
-                    key="amount"
-                    tabIndex="0"
-                    onDoubleClick={this.handleEditProperty}
-                >
-                    <span>{product.amount}</span>
-                </td>
-                <td>{product.packing}</td>
-                <td
-                    key="quantity"
-                    tabIndex="0"
-                    onDoubleClick={this.handleEditProperty}
-                >
-                    <span>{product.quantity}</span>
-                </td>
-                <td>{product.price}</td>
-                <td>{product.priceFor}</td>
-                <td>{product.price * product.amount}</td>
-                <td>{product.discount}%</td>
-                <td>{product.price * product.amount}</td>
+                {this.renderCells(cols, fields)}
             </tr>
         )
     }
 }
+
+// <td
+//     key="amount"
+//     tabIndex="0"
+//     onDoubleClick={this.handleEditProperty}
+// >
+//     <span>{product.amount}</span>
+// </td>
 
 
 TableItem.propTypes = {
@@ -93,7 +94,7 @@ function mapStateToProps(state) {
     const { appHandler } = state;
     const {
         selectedProducts
-    } = salesOrderStateHandler || {
+    } = appHandler || {
         selectedProducts: []
     }
 

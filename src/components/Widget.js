@@ -1,7 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import { patch, updateDataProperty } from '../actions/WindowActions';
+import {
+    patch,
+    updateDataProperty,
+    findRowByPropName
+} from '../actions/WindowActions';
 
 import Datetime from 'react-datetime';
 import Lookup from './widget/Lookup';
@@ -14,7 +18,7 @@ class Widget extends Component {
     handlePatch = (property, value) => {
         const {data,windowType, dispatch} = this.props;
         //check if we should update store
-        if(this.findRowByPropName(data,property).value !== value ){
+        if(findRowByPropName(data,property).value !== value ){
             dispatch(updateDataProperty(property, value));
         }
         dispatch(patch(windowType, data[0].value, property, value));
@@ -283,21 +287,10 @@ class Widget extends Component {
                 )
         }
     }
-    findRowByPropName = (arr, name) => {
-        let ret = -1;
-        for(let i = 0; i < arr.length; i++){
-            if(arr[i].field === name){
-                ret = arr[i];
-                break;
-            }
-        }
-
-        return ret;
-    }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type} = this.props;
-        const dataId = this.findRowByPropName(data,"ID").value;
-        const widgetData = this.findRowByPropName(data, fields[0].field);
+        const dataId = findRowByPropName(data,"ID").value;
+        const widgetData = findRowByPropName(data, fields[0].field);
         if(widgetData.displayed){
             return (
                 <div className="form-group row">

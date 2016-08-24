@@ -80,18 +80,16 @@ class Table extends Component {
         // });
     }
     renderTableBody = () => {
-        // const {rowData, tabid} = this.props
-        // console.log(rowData)
-        // return rowData[tabid].map((item) => {
-        //     console.log(item)
-        //     return (
-        //         <TableItem
-        //             product={product}
-        //             key={product.id}
-        //             onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
-        //         />
-        //     )
-        // })
+        const {rowData, tabid, cols} = this.props
+        return rowData[tabid] && rowData[tabid].map((item) =>
+            <TableItem
+                fields={item.fields}
+                key={item.rowId}
+                rowId={item.rowId}
+                cols={cols}
+                // onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
+            />
+        )
     }
     render() {
         const {cols} = this.props;

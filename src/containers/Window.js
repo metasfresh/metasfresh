@@ -2,10 +2,13 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Widget from '../components/Widget';
+import ErrorScreen from '../components/app/ErrorScreen';
 import Tabs from '../components/widget/Tabs';
 import Table from '../components/table/Table';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
+
+import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 
 class Window extends Component {
     constructor(props){
@@ -15,14 +18,14 @@ class Window extends Component {
         return(
             <Tabs>
                 {
-                    tabs.map((elem, id)=> {
+                    tabs.map((elem)=> {
                         const {tabid, caption, elements} = elem;
                         return (
                             <div
                                 caption={caption}
                                 key={tabid}
                             >
-                                <Table cols={elements} tabid={id} />
+                                <Table cols={elements} tabid={tabid} />
                             </div>
                         )
                     })
@@ -86,8 +89,10 @@ class Window extends Component {
 
     render() {
         const {sections, tabs} = this.props.layout;
+        const {connectionError} = this.props;
         return (
             <div>
+                {connectionError && <ErrorScreen />}
                 <Header />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
@@ -101,6 +106,7 @@ class Window extends Component {
 }
 
 Window.propTypes = {
+    connectionError: PropTypes.bool.isRequired,
     layout: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
@@ -108,12 +114,15 @@ Window.propTypes = {
 function mapStateToProps(state) {
     const { windowHandler } = state;
     const {
-        layout
+        layout,
+        connectionError
     } = windowHandler || {
-        layout: {}
+        layout: {},
+        connectionError: false
     }
     return {
-        layout
+        layout,
+        connectionError
     }
 }
 
