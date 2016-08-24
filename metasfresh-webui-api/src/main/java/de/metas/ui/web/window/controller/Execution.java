@@ -99,6 +99,25 @@ public class Execution implements IAutoCloseable
 		}
 	}
 
+	/**
+	 * Runs the given runnable in:
+	 * <ul>
+	 * <li>in a new execution; assumes no other executions are currently running on this thread
+	 * <li>in transaction
+	 * </ul>
+	 * 
+	 * @param name execution name (for logging purposes only)
+	 * @param runnable
+	 */
+	public static void runInNewExecution(final String name, final Runnable runnable)
+	{
+		Preconditions.checkNotNull(runnable, "runnable");
+		callInNewExecution(name, () -> {
+			runnable.run();
+			return null;
+		});
+	}
+
 	public static IDocumentChangesCollector getCurrentDocumentChangesCollector()
 	{
 		return getCurrent().getDocumentChangesCollector();
