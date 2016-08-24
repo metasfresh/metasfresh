@@ -1346,7 +1346,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final String orgIDsAsString = userRolePermissions.getAD_Org_IDs_AsString();
 
-		if (!orgIDsAsString.isEmpty())
+		if (!Check.isEmpty(orgIDsAsString))
 		{
 
 			defaultFilter.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
