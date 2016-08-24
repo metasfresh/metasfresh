@@ -16,6 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
+import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
@@ -66,6 +67,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	private final transient IPMMBalanceChangeEventProcessor pmmBalanceEventProcessor = Services.get(IPMMBalanceChangeEventProcessor.class);
 	private final transient IPMMPricingBL pmmPricingBL = Services.get(IPMMPricingBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
+	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
 
 	private final AtomicInteger countProcessed = new AtomicInteger(0);
 	private final AtomicInteger countErrors = new AtomicInteger(0);
@@ -213,10 +215,15 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		final Timestamp datePromised = qtyReportEvent.getDatePromised();
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pmmContractsDAO.retrieveFlatrateDataEntry(flatrateTerm, datePromised);
-		if (dataEntryForProduct == null
-				|| dataEntryForProduct.getFlatrateAmtPerUOM() == null
-				|| dataEntryForProduct.getFlatrateAmtPerUOM().signum() <= 0)
+		if (dataEntryForProduct == null)
 		{
+			return;
+		}
+
+		// Skip setting the data entry if it does not have the price or the qty set (FRESH-568)
+		if (!pmmContractsBL.hasPriceOrQty(dataEntryForProduct))
+		{
+			logger.debug("Skip setting {} to {} because the data entry does not have a price or qty set", dataEntryForProduct, qtyReportEvent);
 			return;
 		}
 

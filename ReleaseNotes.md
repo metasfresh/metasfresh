@@ -10,14 +10,83 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.29.28 (2016-31, upcoming)
+# metasfresh 4.32.32 (2016-35)
+
+upcoming
+
+## Features
+
+
+## Fixes
+ * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+ * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
+
+# metasfresh 4.32.31 (2016-34)
+
+RC for weekly release
+
+## Features
+ * #276 Report Konten-Info new Parameter
+ * #273 Report "Anbauplanung" addition & adjustment
+ * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
+ * #295 sql in purchase inout takes too long
+   - performance improvement in the jasper file
+ * #292 Automatically add reference no from purchase order to invoice candidate
+ * #293 Create cron job for archiving the async-tables
+
+## Fixes
+ * #251 Invoice Candidates double invoiced
+
+# metasfresh 4.31.30a (2016-33a)
+
+## Features
+ - #297 Performance problems related to zoom-to
+   * improve the documentation, both in that code and in the client
+   
+## Fixes
+ - #298 ShipmentSchedule updating fails on missing UOM conversion
+   * prevent an NPE on missing master data
+
+# metasfresh 4.31.30 (2016-33)
+
+## Features
+ - #288 Problem with individual client log settings
+   * outputting the individual log settings on user login to ease support
+
+## Fixes
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+   * fixing some corner cases
+
+# metasfresh 4.30.29 (2016-32)
+
+## Features
+ - #279 Set document type Bestellung as default value in purchase order
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+ - #283 Make Gebindesaldo Report support Multi Org
+
+## Fixes
+ - #255 Invoice candidates action bar is not considering org-assignment
+ - #274 Purchase Order without BPartner Contact, Billto Contact wrong email
+ - #252 Fix the code for ADR Attribute Retrieval
+ - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
+
+# metasfresh 4.29.28 (2016-31)
 
 ## Features
  - #241 Excel Export for Open Items accounting currency
+   * Adjusted the Excel Export of Open Items report ro show the sums in accounting currency.
  - #240 Consitency check page for Saldobilanz
+   * Added a new Page in Salsobilanz report to allow quick consistency check of accountings.
+ - #225 Allocation - Accounting 0,00 when Posted
+   * Added a process which double checks the accountings of the day. If a document ist posted and the accounting results are 0,00 then a the document information is logged and the document is reposted.
 
 ## Fixes
+ - #176 Bestellkontrolle add Promised Date
+   * Added the Date promised onto report Bestellkontrolle.
+ - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
+   * Fixed a Bug that did not detect contracted lines in Procurement candidates if the contractline was not defined with given price.
  - #248 Admin Login when deleted properties
+   * Adressed a security issue that allowed to gain admin permissions after deleting the client properties.
 
 # metasfresh 4.28.27 (2016-30)
 

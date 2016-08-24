@@ -203,6 +203,12 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return false;
 	}
+	
+	@Override
+	public boolean isDefinedByTemplate()
+	{
+		return false;
+	}
 
 	@Override
 	public void addAttributeValueListener(final IAttributeValueListener listener)

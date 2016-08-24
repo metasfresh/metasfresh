@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -50,6 +51,7 @@ import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -111,10 +113,12 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
 		// Create candidates
-		final List<IShipmentScheduleWithHU> candidates = createCandidates(workpackage, localTrxName);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
+		final List<IShipmentScheduleWithHU> candidates = createCandidates(huContext, workpackage, ITrx.TRXNAME_ThreadInherited);
 		if (candidates.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
@@ -123,7 +127,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Generate shipments
-		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 		final GenerateInOutFromHU shipmentGenerator = new GenerateInOutFromHU();
 		shipmentGenerator.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
@@ -149,7 +152,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			manualPackingMaterial = false; // use the HUs!
 
 		}
-		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, localTrxName);
+		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
 
 		return Result.SUCCESS;
 	}
@@ -174,7 +177,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * @param trxName
 	 * @return
 	 */
-	private final List<IShipmentScheduleWithHU> createCandidates(final I_C_Queue_WorkPackage workpackage, final String trxName)
+	private final List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
 		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>();
 
@@ -196,7 +199,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule needs to be updated first: " + schedule, 10000);
 			}
 
-			final List<IShipmentScheduleWithHU> scheduleCandidates = createCandidates(schedule);
+			final List<IShipmentScheduleWithHU> scheduleCandidates = createCandidates(huContext, schedule);
 			candidates.addAll(scheduleCandidates);
 		}
 
@@ -250,7 +253,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * @param schedule
 	 * @return one single candidate if there are no {@link I_M_ShipmentSchedule_QtyPicked} for the given schedule. One candidate per {@link I_M_ShipmentSchedule_QtyPicked} otherwise.
 	 */
-	private List<IShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule schedule)
+	private List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext, final I_M_ShipmentSchedule schedule)
 	{
 		//
 		// Load all QtyPicked records that have no InOutLine yet
@@ -280,7 +283,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(schedule, qtyToDeliver);
+			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, schedule, qtyToDeliver);
 			return Collections.singletonList(candidate);
 		}
 
@@ -316,7 +319,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
-			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(qtyPickedRecordHU);
+			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, qtyPickedRecordHU);
 			candidates.add(candidate);
 		}
 

@@ -46,6 +46,7 @@ import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaLine;
@@ -128,6 +129,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
 		engine.addModelValidator(de.metas.order.model.validator.OrderModuleInterceptor.INSTANCE, client);
+
+		// gh-issue #288
+		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
 	}
 
 	@Override
@@ -214,6 +218,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM_Conversion.Table_Name);
 
 		// (#136 FRESH-472)
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocType.Table_Name);

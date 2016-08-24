@@ -69,13 +69,13 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 @Immutable
@@ -464,6 +464,12 @@ class UserRolePermissions implements IUserRolePermissions
 	public String getAD_Org_IDs_AsString()
 	{
 		return orgPermissions.getAD_Org_IDs_AsString();
+	}
+	
+	@Override
+	public Set<Integer> getAD_Org_IDs_AsSet()
+	{
+		return orgPermissions.getAD_Org_IDs_AsSet();
 	}
 
 	/**
@@ -1236,4 +1242,5 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return hasPermission(PERMISSION_InfoWindow_Asset);
 	}
+
 }

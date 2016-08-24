@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -46,6 +47,7 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -121,6 +123,19 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	protected IHUContext huContext;
 	protected IHUStorageFactory huStorageFactory;
 	protected IAttributeStorageFactory attributeStorageFactory;
+	
+	@Override
+	protected HUTestHelper createHUTestHelper()
+	{
+		return new HUTestHelper() {
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None;
+			}
+			
+		};
+	}
 
 	@Override
 	protected void initialize()
@@ -129,7 +144,14 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
 
-		huContext = helper.createMutableHUContextForProcessing(trxName);
+		if(Services.get(ITrxManager.class).isNull(trxName))
+		{
+			huContext = helper.createMutableHUContextOutOfTransaction();
+		}
+		else
+		{
+			huContext = helper.createMutableHUContextForProcessing(trxName);
+		}
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 
@@ -322,7 +344,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		// Make sure we are working with valid candidates
 		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
-		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(workpackage, ITrx.TRXNAME_None);
+		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_None);
 
 		//
 		// Important!

@@ -38,7 +38,7 @@ CREATE OR REPLACE FUNCTION dlm.add_table_to_dlm(p_table_name text)
   RETURNS void AS
 $BODY$
 DECLARE
-    _index_view_row indices;
+    _index_view_row dlm.indices;
 BEGIN
 	EXECUTE 'ALTER TABLE ' || p_table_name || ' RENAME TO ' || p_table_name || '_tbl;';
 	RAISE NOTICE 'Renamed table % to %', p_table_name, p_table_name||'_tbl';
@@ -100,7 +100,7 @@ COMMENT ON FUNCTION dlm.add_table_to_dlm(text) IS '#235: DLMs the given table:
 CREATE OR REPLACE FUNCTION dlm.remove_table_from_dlm(p_table_name text, p_retain_dlm_column boolean DEFAULT true)
   RETURNS void AS
 $BODY$
-DECLARE _index_view_row indices;
+DECLARE _index_view_row dlm.indices;
 BEGIN
 	EXECUTE 'DROP VIEW IF EXISTS dlm.' || p_table_name;
 	EXECUTE 'DROP INDEX IF EXISTS ' || p_table_name || '_DLM_Level;';
