@@ -26,7 +26,9 @@ package org.adempiere.ad.validationRule.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.util.Services;
 
 /**
  * Simple validation context. Can be used for testing.
@@ -66,6 +68,17 @@ public class PlainValidationContext implements IValidationContext
 	public String getContextTableName()
 	{
 		return contextTableName;
+	}
+	
+	@Override
+	public int getContextTable_ID()
+	{
+		final String contextTableName = getContextTableName();
+		if(contextTableName == null)
+		{
+			return -1;
+		}
+		return Services.get(IADTableDAO.class).retrieveTableId(contextTableName);
 	}
 
 	public void setContextTableName(String contextTableName)

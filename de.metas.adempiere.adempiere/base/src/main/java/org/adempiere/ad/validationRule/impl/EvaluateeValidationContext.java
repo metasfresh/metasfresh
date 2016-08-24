@@ -54,6 +54,15 @@ public class EvaluateeValidationContext implements IValidationContext
 	{
 		return null;
 	}
+	
+	/**
+	 * @return -1
+	 */
+	@Override
+	public int getContextTable_ID()
+	{
+		return -1;
+	}
 
 	/**
 	 * @return null
@@ -68,6 +77,18 @@ public class EvaluateeValidationContext implements IValidationContext
 	public String get_ValueAsString(String variableName)
 	{
 		return evaluatee.get_ValueAsString(variableName);
+	}
+	
+	@Override
+	public int get_ValueAsInt(String variableName, int defaultValue)
+	{
+		return evaluatee.get_ValueAsInt(variableName, defaultValue);
+	}
+	
+	@Override
+	public boolean get_ValueAsBoolean(String variableName, boolean defaultValue)
+	{
+		return evaluatee.get_ValueAsBoolean(variableName, defaultValue);
 	}
 
 }
