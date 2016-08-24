@@ -19,6 +19,7 @@ upcoming
 
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+ * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
 
 # metasfresh 4.32.31 (2016-34)
 
