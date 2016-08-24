@@ -29,7 +29,7 @@ import de.metas.document.spi.ICounterDocHandler;
 /**
  * Intended for package-internal use (but feel free to move it to a "public" package).
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class NullCounterDocumentHandler implements ICounterDocHandler

@@ -34,7 +34,7 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
  * 
  * It's main purpose is to be used in callouts.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPreliminaryDocumentNoBuilder

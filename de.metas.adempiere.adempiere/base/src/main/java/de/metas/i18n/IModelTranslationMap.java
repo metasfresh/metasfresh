@@ -29,7 +29,7 @@ import de.metas.i18n.impl.NullModelTranslation;
 /**
  * Contains all translated column values for a particular model (record) and for ALL languages.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IModelTranslationMap

@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Base implementation for {@link IQueryBuilderDAO}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO

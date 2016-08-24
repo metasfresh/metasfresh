@@ -52,7 +52,7 @@ import com.google.common.collect.ImmutableList;
  * 
  * It is used internally by {@link Fact}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 /* package */class FactGLDistributor

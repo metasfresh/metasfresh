@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Handles user queries.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindUserQueryRepository

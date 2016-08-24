@@ -760,7 +760,7 @@ public class Login
 
 	/**
 	 * Loads accounting info
-	 * 
+	 *
 	 * @throws AccountingException if no accounting schema was found.
 	 */
 	private void loadAccounting() throws AccountingException
@@ -955,11 +955,11 @@ public class Login
 	}	// loadDefault
 
 	/**
-	 * 
+	 *
 	 * Set System Status Message.
-	 * 
+	 *
 	 * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system.
-	 * 
+	 *
 	 * NOTE: we are retrieving from database and we are storing in context because this String is used in low level UI components and in some cases there is no database connection at all
 	 */
 	private void loadUIWindowHeaderNotice()

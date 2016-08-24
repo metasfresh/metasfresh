@@ -33,7 +33,7 @@ import org.compiere.process.DocAction;
 
 /**
  * Note the the implementation of this
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IDocActionBL extends ISingletonService

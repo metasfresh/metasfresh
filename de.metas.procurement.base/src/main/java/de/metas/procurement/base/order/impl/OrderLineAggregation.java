@@ -44,7 +44,7 @@ import de.metas.procurement.base.order.model.I_C_OrderLine;
  * Instances of this class are handled by {@link OrderLinesAggregator} and can generate a new {@link I_C_OrderLine}.<br>
  * It is assumed that all purchase candidates added to the same instance have an equal {@link PurchaseCandidate#getLineAggregationKey()} value.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class OrderLineAggregation

@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: ADempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2009 www.metas.de                                            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: ADempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2009 www.metas.de *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -32,8 +32,10 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
@@ -52,7 +54,7 @@ import de.metas.logging.LogManager;
 
 /**
  * Formal definition for a set of data record pairs
- * 
+ *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
 public class MRelationType extends X_AD_RelationType implements IZoomProvider
@@ -62,11 +64,11 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	/**
 	 * Selection for those relation types whose AD_Reference(s) might match a given PO. Only evaluates the table and key
-	 * column of the reference's AD_Ref_Table entries.
+	 * column of the reference's AD_Ref_Table entries. See {@link #retrieveTypes(PO, int)}.
 	 * <p>
 	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
 	 */
-	final static String SQL = //
+	final static String SQL =              //
 	"  SELECT " //
 			+ "    rt.AD_RelationType_ID AS " + COLUMNNAME_AD_RelationType_ID //
 			+ ",   rt.Name AS " + COLUMNNAME_Name //
@@ -98,7 +100,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	final static String SQL_WINDOW_NAME_TRL = "SELECT Name FROM AD_Window_Trl WHERE AD_WINDOW_ID=?";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5486148151201672913L;
 
@@ -117,8 +119,15 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	/**
 	 * Returns the types that define a relation which contains the given PO. Explicit types are returned even if they
 	 * don't actually contain the given PO.
-	 * 
-	 * @param po
+	 *
+	 * @param po used to retrieve all relation matching types. A matching relation type needs to fulfill the following:
+	 *            <ul>
+	 *            <li>if directed, then its {@link #getAD_Reference_Source()} needs to be an {@link I_AD_Reference} record
+	 *            whose {@link I_AD_Ref_Table}'s {@value I_AD_Ref_Table#COLUMNNAME_AD_Table_ID} has the given <code>po</code>'s table
+	 *            and whose {@link I_AD_Ref_Table#COLUMNNAME_AD_Key} has the given <code>po</code>'s (first) key column.</li>
+	 *            <li>if not directed, then also its {@link #getAD_Reference_Target()} is evaluated in a way similar to the source reference.</li>
+	 *            </ul>
+	 * @param AD_Window_ID sometimes needed with undirected relations types, in order to decide which is the "destination" (as opposed to "soruce" or target") reference.
 	 * @return
 	 */
 	public static List<IZoomProvider> retrieveZoomProviders(final IZoomSource source)
@@ -126,7 +135,6 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		final String keyColumn = source.getKeyColumnName();
 		if (keyColumn == null)
 		{
-
 			logger.error("{} does not have a single key column", source);
 			PORelationException.throwWrongKeyColumnCount(source);
 		}
@@ -212,8 +220,16 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 	}
 
-	private static List<IZoomProvider> evalResultSet(final IZoomSource source, final ResultSet rs) throws SQLException
-	{
+	/**
+	 * Loads actual {@link MRelationType}s from the given result set and verifies if there are any actual zoom targets for each of the given relation types. Those types which have a zoom target are returned.
+	 *
+	 * @param po needed to identify the destination (as opposed to "source" or "target") <code>AD_Window_ID</code> if a relation type is not directed.
+	 * @param AD_Window_ID same as <code>po</code>
+	 * @param rs result set containing the candidate relation types
+	 * @return a list of relation types whose
+	 * @throws SQLException
+	 */
+	private static List<IZoomProvider> evalResultSet(final IZoomSource source, final ResultSet rs) throws SQLException	{
 		final List<IZoomProvider> result = new ArrayList<>();
 
 		final Set<Integer> alreadySeen = new HashSet<>();
@@ -228,8 +244,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 			final MRelationType newType = new MRelationType(source.getCtx(), relTypeId, source.getTrxName());
 
-			// figure out which AD_reference is the destination relative to the given po and windowID
-
+			// figure out which AD_reference is the destination relative to the given po and AD_Window_ID
 			newType.findDestinationRefId(source);
 
 			final int sourceRefId;
@@ -251,11 +266,16 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		return result;
 	}
 
+	/**
+	 *
+	 * @param po for non-directed relation types both the <code>po</code> and <code>AD_Window_ID</code> are used to decide if we need to return the <code>AD_Reference_ID</code> or the relation type's source reference or of its target reference.
+	 * @param AD_Window_ID
+	 * @return
+	 */
 	@Deprecated
-	private int findDestinationRefId(final PO po, final int windowId)
-	{
+	private int findDestinationRefId(final PO po, final int windowId)	{
 		final IZoomSource source = POZoomSource.of(po, windowId);
-		return findDestinationRefId(source); 
+		return findDestinationRefId(source);
 	}
 
 	private int findDestinationRefId(final IZoomSource source)
@@ -284,7 +304,6 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 		else
 		{
-
 			if (source.getTableName().equals(retrieveSourceTableName()))
 			{
 				destinationRefId = getAD_Reference_Target_ID();
@@ -295,7 +314,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			}
 		}
 
-		assert destinationRefId != -1;
+		Check.errorIf(destinationRefId == -1, "No destinationRefId was found for AD_Window_ID={} and IZoomSource={}", source.getAD_Window_ID(), source);
 		return destinationRefId;
 	}
 
@@ -314,17 +333,17 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 		final String keyColumn = source.getKeyColumnName();
 		Check.assumeNotEmpty(keyColumn, "keyColumn is not empty for {}", source);
-		
+
 		final StringBuilder whereClause = new StringBuilder();
 		whereClause.append(parsedWhere);
 		whereClause.append(" AND ( ");
 		whereClause.append(keyColumn);
 		whereClause.append("=" + source.getRecord_ID() + " )");
 
-		final PO result = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
+		final int id = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
 			.setOrderBy(keyColumn)
-			.first();
-		final boolean match = result != null;
+			.firstId(); // using firstId might be a bit cheaper, because the DBMS might not have to load the actual row.
+		final boolean match = id > 0;
 
 		logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, source, match);
 		return match;
@@ -333,7 +352,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	@Deprecated
 	public static String parseWhereClause(final PO po, final String where, final boolean throwEx)
 	{
-		final IZoomSource source = POZoomSource.of(po); 
+		final IZoomSource source = POZoomSource.of(po);
 		return parseWhereClause(source, where, throwEx);
 	}
 
@@ -360,12 +379,12 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 				{
 					val = po.get_Value(i);
 				}
-	
+
 				if (val == null)
 				{
 					continue;
 				}
-	
+
 				if (val instanceof Integer)
 				{
 					Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (Integer)val);
@@ -397,9 +416,9 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	}
 
 	/**
-	 * 
+	 *
 	 * @param po
-	 * @return
+	 * @return a list with one {@link ZoomInfo} for this relation type.
 	 */
 	@Override
 	public List<ZoomInfoFactory.ZoomInfo> retrieveZoomInfos(final IZoomSource source)
@@ -416,9 +435,9 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		String display = getDestinationRoleDisplay();
 		if (Check.isEmpty(display))
 		{
-			display = retrieveWindowName(windowId);
+			display = retrieveWindowName(source.getAD_Window_ID());
 		}
-		assert !Check.isEmpty(display);
+		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
 
 		return Collections.singletonList(ZoomInfoFactory.ZoomInfo.of(windowId, query, display));
 	}
@@ -475,13 +494,21 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		return query;
 	}
 
+	/**
+	 *
+	 * @param po
+	 * @param refTable
+	 *
+	 * @return the <code>AD_Window_ID</code> for the given <code>refTable</code> or <code>PO</code>
+	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
+	 */
 	@Deprecated
-	private int retrieveWindowID(final PO po, final I_AD_Ref_Table refTable)
+	public int retrieveWindowID(final PO po, final MRefTable refTable)
 	{
 		final IZoomSource source = POZoomSource.of(po);
 		return retrieveWindowID(source, refTable);
 	}
-	
+
 	private int retrieveWindowID(final IZoomSource source, final I_AD_Ref_Table refTable)
 	{
 
@@ -526,8 +553,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	private static void evaluateQuery(final MQuery query)
 	{
-		final String sqlCommon =
-				" FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
+		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
 
 		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
 
@@ -594,7 +620,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	}
 
 	/**
-	 * 
+	 *
 	 * @param <T>
 	 *            The po type to return. Note: As the caller has 'type' and 'sourcePO' specified, the destination POs'
 	 *            table is clear. Therefore, the caller also knows the po type. If not, they can still use 'PO' iteself.
@@ -618,7 +644,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 				.setOrderBy(query.getZoomColumnName())
 				.list();
 	}
-	
+
 	public <T> List<T> retrieveDestinations(final PO sourcePO, final Class<T> clazz)
 	{
 		final List<PO> list = retrieveDestinations(sourcePO);
@@ -628,7 +654,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			T o = InterfaceWrapperHelper.create(po, clazz);
 			result.add(o);
 		}
-		
+
 		return result;
 	}
 }

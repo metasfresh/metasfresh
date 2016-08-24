@@ -86,9 +86,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public int getBpartnerId()
+	public int getC_BPartner_ID()
 	{
-		return getDelegate().getBpartnerId();
+		return getDelegate().getC_BPartner_ID();
 	}
 
 	@Override
@@ -122,9 +122,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public int getBpartnerLocationId()
+	public int getC_BPartner_Location_ID()
 	{
-		return getDelegate().getBpartnerLocationId();
+		return getDelegate().getC_BPartner_Location_ID();
 	}
 
 	@Override

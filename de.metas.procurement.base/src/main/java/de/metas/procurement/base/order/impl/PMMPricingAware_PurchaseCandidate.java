@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -13,6 +14,7 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.MoreObjects;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -42,7 +44,7 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 /**
  * Wraps a {@link I_PMM_PurchaseCandidate} and behaves like an {@link IPMMPricingAware}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
@@ -84,7 +86,14 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	@Override
 	public boolean isContractedProduct()
 	{
-		return candidate.getC_Flatrate_DataEntry_ID() > 0;
+		final I_C_Flatrate_DataEntry flatrateDataEntry = getC_Flatrate_DataEntry();
+		if (flatrateDataEntry == null)
+		{
+			return false;
+		}
+		
+		// Consider that we have a contracted product only if the data entry has the Price or the QtyPlanned set (FRESH-568)
+		return Services.get(IPMMContractsBL.class).hasPriceOrQty(flatrateDataEntry);
 	}
 
 	@Override

@@ -44,7 +44,7 @@ import de.metas.logging.LogManager;
  * jx:hide-column(condition='not m:monthBetween(0, p.StartDate, p.EndDate)' lastCell='N3')
  * </pre>
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class JexlCustomFunctions

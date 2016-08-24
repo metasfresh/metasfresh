@@ -41,13 +41,22 @@ public interface IFreshPackingItem extends IPackingItem
 
 	I_C_BPartner getC_BPartner();
 
-	int getBpartnerId();
+	int getC_BPartner_ID();
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 
+	/**
+	 * Similar to {@link #getC_BPartner_Location()}.
+	 *
+	 * @return
+	 */
 	I_C_BPartner_Location getC_BPartner_Location();
 
-	int getBpartnerLocationId();
+	/**
+	 *
+	 * @return the <i>effective</i> <code>C_BPartner_Location_ID</code> (can be the override value) where the item is supposed to be shipped.
+	 */
+	int getC_BPartner_Location_ID();
 
 	Set<I_M_Warehouse> getWarehouses();
 

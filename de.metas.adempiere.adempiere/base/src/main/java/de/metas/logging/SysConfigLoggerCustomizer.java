@@ -10,14 +10,14 @@ package de.metas.logging;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,7 +37,7 @@ import ch.qos.logback.classic.Level;
 
 /**
  * Sets log level which is configured in {@link ISysConfigBL}.
- * 
+ *
  * @author tsa
  *
  */
@@ -46,6 +46,10 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 	public static final transient SysConfigLoggerCustomizer instance = new SysConfigLoggerCustomizer();
 
 	private static final String CFG_C_LOGGER_LEVEL_PREFIX = "CLogger.Level.";
+
+	/**
+	 * Thread-local boolean to make sure that only one thread is within the {@link #customize(Logger)} method at a time
+	 */
 	private static final ThreadLocal<Boolean> withinCustomizeLogLevel = new ThreadLocal<Boolean>();
 
 	/**
@@ -70,7 +74,7 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 
 		if (withinCustomizeLogLevel.get() != null && withinCustomizeLogLevel.get())
 		{
-			return;
+			return; // was already handled
 		}
 		withinCustomizeLogLevel.set(true);
 		try
@@ -119,7 +123,6 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 			}
 
 			final Level level = LogManager.asLogbackLevel(logLevelStr);
-			// logger.setMaxLevel(level); // we want to make sure nobody is highering the log level (e.g. change from INFO to WARNING)
 			if (!LogManager.setLoggerLevel(logger, level))
 			{
 				logger.warn("SysConfig with name {} contained unparsable loglevel {} for logger {}", sysConfigName, logLevelStr, logger.getName());
@@ -143,7 +146,7 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 	private final String getSysConfigValue(final String sysConfigName)
 	{
 		final Map<String, String> properties = getPropertiesMap();
-		if (properties == null)  // shall not happen
+		if (properties == null)            // shall not happen
 		{
 			return null;
 		}
@@ -162,6 +165,24 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 		// Load the properties map from underlying database
 		// NOTE: we assume it's cached on that level
 		return Services.get(ISysConfigBL.class).getValuesForPrefix(CFG_C_LOGGER_LEVEL_PREFIX, removePrefix, adClientId, adOrgId);
+	}
+
+	@Override
+	public String dumpConfig()
+	{
+		final Map<String, String> propertiesMap = getPropertiesMap();
+
+		final StringBuilder out = new StringBuilder();
+		out.append("Customizer class: " + getClass().getName() + "\n");
+		out.append("Hostname (with dot): " + getHostNameWithDot() + "\n");
+		out.append("Logger settings from SysConfig (count=" + propertiesMap.size() + "):" + "\n");
+
+		for (final String key : propertiesMap.keySet())
+		{
+			out.append("\t" + key + " = " + propertiesMap.get(key) + "\n");
+		}
+
+		return out.toString();
 	}
 
 }

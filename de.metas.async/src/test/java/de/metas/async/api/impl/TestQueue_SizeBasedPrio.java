@@ -50,7 +50,7 @@ import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 /**
  * Enqueue a number of workpackages and verify their priorities.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TestQueue_SizeBasedPrio

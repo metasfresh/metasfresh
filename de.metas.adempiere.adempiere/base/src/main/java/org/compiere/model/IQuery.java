@@ -86,17 +86,6 @@ public interface IQuery<T>
 	<ET extends T> List<ET> list() throws DBException;
 
 	/**
-	 * Streams the result of this query.
-	 * 
-	 * @return stream
-	 * @throws DBException
-	 */
-	default Stream<T> stream() throws DBException
-	{
-		return list().stream();
-	}
-
-	/**
 	 * Return a list of all po that match the query criteria.
 	 * 
 	 * @param clazz all resulting POs will be converted to this interface
@@ -104,18 +93,6 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
-
-	/**
-	 * Streams the result of this query.
-	 * 
-	 * @param clazz
-	 * @return stream
-	 * @throws DBException
-	 */
-	default <ET extends T> Stream<ET> stream(final Class<ET> clazz) throws DBException
-	{
-		return list(clazz).stream();
-	}
 
 	/**
 	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's ID.
@@ -456,4 +433,27 @@ public interface IQuery<T>
 	 * @return executor which will assist you with the INSERT.
 	 */
 	<ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(Class<ToModelType> toModelClass);
+
+	/**
+	 * Return a stream of all records that match the query criteria.
+	 * 
+	 * @return Stream
+	 * @throws DBException
+	 */
+	default Stream<T> stream() throws DBException
+	{
+		return list().stream();
+	}
+
+	/**
+	 * Return a stream of all records that match the query criteria.
+	 * 
+	 * @param clazz all resulting models will be converted to this interface
+	 * @return Stream
+	 * @throws DBException
+	 */
+	default <ET extends T> Stream<ET> stream(final Class<ET> clazz) throws DBException
+	{
+		return list(clazz).stream();
+	}
 }

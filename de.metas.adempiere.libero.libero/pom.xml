@@ -49,7 +49,6 @@
 			<artifactId>de.metas.storage</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
-
 	</dependencies>
 	
 	<build>

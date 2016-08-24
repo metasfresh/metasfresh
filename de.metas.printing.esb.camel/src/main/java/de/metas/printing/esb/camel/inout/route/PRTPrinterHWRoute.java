@@ -33,7 +33,7 @@ import de.metas.printing.esb.camel.inout.bean.PRTADPrinterHWTypeBean;
 /**
  * This route is used then a printing client adds another hardware printer it found locally.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PRTPrinterHWRoute extends RouteBuilder

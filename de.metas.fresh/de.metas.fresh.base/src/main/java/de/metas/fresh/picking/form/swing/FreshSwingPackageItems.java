@@ -16,15 +16,14 @@ package de.metas.fresh.picking.form.swing;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,12 +66,8 @@ import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.handlingunits.IHUAware;
-import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
-import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
-import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -537,7 +532,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// fresh_06178: Allocate picking slot on the newly packed item
-		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBpartnerId(), itemToPack.getBpartnerLocationId());
+		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getC_BPartner_ID(), itemToPack.getC_BPartner_Location_ID());
 	}
 
 	private void removeProductQty(final IPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
@@ -866,42 +861,26 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 
 		//
-		// Retrieve available HUs
-		final List<I_M_HU> hus = productKey.findAvailableHUs();
-
-		if (hus.isEmpty())
-		{
-			throw new HUException("@NotFound@ @M_HU@: " + productKey.getM_Product());
-		}
-		// Check.assumeNotEmpty(hus, "hus not null");
-
-		//
 		// Get HUKeyFactory
 		final ITerminalContext terminalContext = getTerminalContext();
-		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 
 		//
 		// Clear (attribute) cache before opening editor
+		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 		huKeyFactory.clearCache();
 
 		//
-		// Create Root HUKey and add all our available HUs beneath
-		final IHUKey rootHUKey = huKeyFactory.createRootKey();
-		final List<IHUKey> huKeys = huKeyFactory.createKeys(hus, NullHUDocumentLineFinder.instance); // documentLine = null
-		rootHUKey.addChildren(huKeys);
-
-		//
 		// Create HU Editor Model
-		final HUEditorModel huEditorModel = new HUEditorModel(terminalContext);
-		huEditorModel.setRootHUKey(rootHUKey);
-		if (selectedHU != null)
-		{
-			huEditorModel.setSelected(selectedHU);
-		}
+		final PickingHUEditorModel huEditorModel = new PickingHUEditorModel(
+				terminalContext // context
+				, selectedHU // default HU to select after query
+				, productKey::findAvailableHUs // HUs provider
+		);
+		huEditorModel.setConsiderAttributes(true);
 
 		//
 		// Create HU Editor UI Panel
-		final HUEditorPanel huEditorPanel = new HUEditorPanel(huEditorModel);
+		final HUEditorPanel huEditorPanel = new PickingHUEditorPanel(huEditorModel);
 
 		//
 		// Wrap our HU Editor Panel with a model dialog
@@ -929,8 +908,8 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// Get the selected shipment sched's C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
 		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
-		final int bPartnerId = unallocatedPackingItem.getBpartnerId();
-		final int bPartnerLocationId = unallocatedPackingItem.getBpartnerLocationId();
+		final int bPartnerId = unallocatedPackingItem.getC_BPartner_ID();
+		final int bPartnerLocationId = unallocatedPackingItem.getC_BPartner_Location_ID();
 
 		//
 		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)

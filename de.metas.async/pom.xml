@@ -15,7 +15,7 @@
 	<artifactId>de.metas.async</artifactId>
 
 	<properties>
-		<migration-sql-basedir>42-de.metas.async</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>

@@ -23,7 +23,7 @@ package de.metas.product;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  *         Class of constants to have an organized way of keeping the names of the fields used in process parameters but that are not present in any interface of a table.
  *

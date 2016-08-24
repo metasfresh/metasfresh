@@ -17,7 +17,7 @@ import org.compiere.swing.ToStringListCellRenderer;
 /**
  * Advanced search table - cell renderer and editor for ColumnName
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindColumnNameCellEditor extends FindCellEditor implements TableCellRenderer

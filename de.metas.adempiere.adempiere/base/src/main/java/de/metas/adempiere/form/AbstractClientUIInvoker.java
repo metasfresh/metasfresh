@@ -13,15 +13,14 @@ package de.metas.adempiere.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +28,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 public abstract class AbstractClientUIInvoker implements IClientUIInvoker
@@ -40,9 +40,12 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 
 	private boolean invokeLater;
 	private boolean longOperation;
+	private boolean showGlassPane = false;
 	private OnFail onFail = OnFail.ShowErrorPopup;
+	private IExceptionHandler exceptionHandler;
 	private Object parentComponent;
 	private int parentWindowNo;
+	//
 	private Runnable runnable = null;
 
 	public AbstractClientUIInvoker(final IClientUIInstance clientUI)
@@ -51,7 +54,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		Check.assumeNotNull(clientUI, "clientUI not null");
 		this.clientUI = clientUI;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -72,17 +75,27 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		Check.assumeNotNull(runnableWrapped, "runnable shall be configured");
 
 		// Wrap to Long Operation
-		// NOTE: this needs to be wrapped BEFORE InvokeLater because invoke later will be executed asynchronously
+		// NOTE: this needs to be wrapped BEFORE "invoke later" or "glass pane" because those will execute the runnable asynchronously
 		if (isLongOperation())
 		{
 			runnableWrapped = asLongOperationRunnable(runnableWrapped);
 		}
 
+		// Wrap to Exception handled (if needed)
 		runnableWrapped = asExceptionHandledRunnable(runnableWrapped);
 
+		// Wrap to invoke later
+		// NOTE: this needs to be wrapped after "exception handled" because else the exception won't be catched.
 		if (isInvokeLater())
 		{
 			runnableWrapped = asInvokeLaterRunnable(runnableWrapped);
+		}
+		
+		// Wrap to showing glass pane runnable
+		// NOTE: this needs to be wrapped after "long operation", "exception handled" and "invoke later"
+		if (isShowGlassPane())
+		{
+			runnableWrapped = asShowGlassPaneRunnable(runnableWrapped);
 		}
 
 		//
@@ -93,6 +106,8 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	protected abstract Runnable asInvokeLaterRunnable(final Runnable runnable);
 
 	protected abstract Runnable asLongOperationRunnable(final Runnable runnable);
+
+	protected abstract Runnable asShowGlassPaneRunnable(Runnable runnable);
 
 	private final Runnable asExceptionHandledRunnable(final Runnable runnable)
 	{
@@ -142,6 +157,20 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 			// logger.warn("Got error while running: " + runnable + ". Ignored.", e);
 			return;
 		}
+		else if (OnFail.UseHandler == onFail)
+		{
+			final IExceptionHandler exceptionHandler = getExceptionHandler();
+			if (exceptionHandler == null)
+			{
+				logger.warn("No exception handler was configurated and OnFail=UseHandler. Throwing the exception");
+				// fallback
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+			else
+			{
+				exceptionHandler.handleException(e);
+			}
+		}
 		// Fallback: throw the exception
 		else
 		{
@@ -172,6 +201,18 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	{
 		return longOperation;
 	}
+	
+	@Override
+	public IClientUIInvoker setShowGlassPane(final boolean showGlassPane)
+	{
+		this.showGlassPane = showGlassPane;
+		return this;
+	}
+	
+	protected final boolean isShowGlassPane()
+	{
+		return showGlassPane;
+	}
 
 	@Override
 	public final IClientUIInvoker setOnFail(OnFail onFail)
@@ -184,6 +225,19 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 	private final OnFail getOnFail()
 	{
 		return onFail;
+	}
+
+	@Override
+	public final IClientUIInvoker setExceptionHandler(IExceptionHandler exceptionHandler)
+	{
+		Check.assumeNotNull(exceptionHandler, "exceptionHandler not null");
+		this.exceptionHandler = exceptionHandler;
+		return this;
+	}
+
+	private final IExceptionHandler getExceptionHandler()
+	{
+		return exceptionHandler;
 	}
 
 	@Override
@@ -214,7 +268,7 @@ public abstract class AbstractClientUIInvoker implements IClientUIInvoker
 		this.runnable = runnable;
 		return this;
 	}
-
+	
 	private final Runnable getRunnable()
 	{
 		return runnable;

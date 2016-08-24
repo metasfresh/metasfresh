@@ -47,6 +47,17 @@ public final class LogManager
 	private static final ILoggerCustomizer loggerCustomizer = SysConfigLoggerCustomizer.instance;
 
 	/**
+	 * See {@link ILoggerCustomizer#dumpConfig()}.
+	 *
+	 * @return
+	 * @task https://github.com/metasfresh/metasfresh/issues/288
+	 */
+	public static String dumpCustomizerConfig()
+	{
+		return loggerCustomizer.dumpConfig();
+	}
+
+	/**
 	 * Initialize Logging
 	 *
 	 * @param isClient client

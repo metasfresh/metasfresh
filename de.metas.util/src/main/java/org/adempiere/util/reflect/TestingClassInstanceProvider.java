@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * This implementation can be used for testing. It delegates to {@link ClassInstanceProvider} to do the actual work, but has additional methods to emulate exceptions.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TestingClassInstanceProvider implements IClassInstanceProvider

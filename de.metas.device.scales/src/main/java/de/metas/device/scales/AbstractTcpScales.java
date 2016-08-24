@@ -10,18 +10,17 @@ package de.metas.device.scales;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +66,7 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 
 	/**
 	 * See {@link #setRoundToPrecision(int)}.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getRoundToPrecision()
@@ -77,16 +76,15 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 
 	/**
 	 * This value is used to configure the {@link ScalesGetGrossWeightHandler}.
-	 * 
+	 *
 	 * @param roundToPrecision may be <code>null</code> in that case, not rounding will be done.
 	 * @see ScalesGetGrossWeightHandler#setroundWeightToPrecision(int)
 	 */
 	public void setRoundToPrecision(final Integer roundToPrecision)
 	{
-		this.roundToPrecision =
-				roundToPrecision == null
-						? -1
-						: roundToPrecision;
+		this.roundToPrecision = roundToPrecision == null
+				? -1
+				: roundToPrecision;
 	}
 
 	@Override
@@ -113,5 +111,11 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 	public IDeviceRequestHandler<DeviceRequestConfigureDevice, IDeviceResponse> getConfigureDeviceHandler()
 	{
 		return new ConfigureDeviceHandler(this);
+	}
+
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + " with Endpoint " + endPoint.toString();
 	}
 }

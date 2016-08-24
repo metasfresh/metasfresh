@@ -51,7 +51,7 @@ import de.metas.lock.api.ILock;
  *
  *
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter
@@ -107,7 +107,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 				.setTaggedWithNoTag()
 				.setLimit(maxInvoiceCandidatesToUpdate)
 				.update();
-		
+
 		//
 		// If we updated just a limited set of invoice candidates,
 		// then create a new workpackage to update the rest of them.
@@ -118,16 +118,15 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 					.setLockedBy(ILock.NULL)
 					.setTaggedWithNoTag()
 					.countToBeTagged();
-			
+
 			if (countRemaining > 0)
 			{
 				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
 				schedule(request);
-				
+
 				getLoggable().addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
 			}
 		}
-
 		return Result.SUCCESS;
 	}
 

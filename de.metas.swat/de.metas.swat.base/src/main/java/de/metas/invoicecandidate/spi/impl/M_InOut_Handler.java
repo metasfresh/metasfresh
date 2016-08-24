@@ -46,7 +46,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 /**
  * Handles {@link I_M_InOut}s. Mainly all invoice candidates creation logic is delegated to {@link M_InOutLine_Handler}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class M_InOut_Handler extends AbstractInvoiceCandidateHandler

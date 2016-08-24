@@ -42,7 +42,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 /**
  * Split Pane UI
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class AdempiereSplitPaneUI extends BasicSplitPaneUI

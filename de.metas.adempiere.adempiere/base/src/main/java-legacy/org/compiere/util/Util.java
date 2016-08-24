@@ -41,8 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -55,8 +54,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
+import org.slf4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.metas.logging.LogManager;
 
 /**
  * General Utilities
@@ -1339,6 +1341,17 @@ public class Util
 	{
 		return value1 == null ? value2 : value1;
 	}
+	
+	/**
+	 * @return first not null value from list
+	 * @see #coalesce(Object...)
+	 */
+	// NOTE: this method is optimized for common usage
+	public static final <T> T coalesce(final T value1, final T value2, final T value3)
+	{
+		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+	}
+
 
 	/**
 	 *

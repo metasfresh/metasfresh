@@ -27,6 +27,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
+import org.compiere.util.CacheMgt;
 
 /**
  * Update Role Access
@@ -82,6 +83,10 @@ public class RoleAccessUpdate extends SvrProcess
 		{
 			updateAllRoles(getCtx(), this, p_AD_Client_ID);
 		}
+
+		//
+		// Reset role related cache (i.e. UserRolePermissions)
+		CacheMgt.get().reset(I_AD_Role.Table_Name);
 
 		return MSG_OK;
 	}	// doIt

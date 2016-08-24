@@ -8,21 +8,178 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-Her come the actual release notes:
+Here come the actual release notes:
 
-# metasfresh 2016-28 (upcoming)
+# metasfresh 4.x.x (2016-35)
+
+upcoming
 
 ## Features
 
 ## Fixes
 
-# metasfresh 4.25.24a (2016-27a, weekly metasfresh RC)
+# metasfresh 4.32.31 (2016-34)
+
+RC for weekly release
+
+## Features
+ * #276 Report Konten-Info new Parameter
+ * #273 Report "Anbauplanung" addition & adjustment
+ * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
+ * #295 sql in purchase inout takes too long
+   - performance improvement in the jasper file
+ * #292 Automatically add reference no from purchase order to invoice candidate
+ * #293 Create cron job for archiving the async-tables
+
+## Fixes
+ * #251 Invoice Candidates double invoiced
+
+# metasfresh 4.31.30a (2016-33a)
+
+## Features
+ - #297 Performance problems related to zoom-to
+   * improve the documentation, both in that code and in the client
+   
+## Fixes
+ - #298 ShipmentSchedule updating fails on missing UOM conversion
+   * prevent an NPE on missing master data
+
+# metasfresh 4.31.30 (2016-33)
+
+## Features
+ - #288 Problem with individual client log settings
+   * outputting the individual log settings on user login to ease support
+
+## Fixes
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+   * fixing some corner cases
+
+# metasfresh 4.30.29 (2016-32)
+
+## Features
+ - #279 Set document type Bestellung as default value in purchase order
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+ - #283 Make Gebindesaldo Report support Multi Org
+
+## Fixes
+ - #255 Invoice candidates action bar is not considering org-assignment
+ - #274 Purchase Order without BPartner Contact, Billto Contact wrong email
+ - #252 Fix the code for ADR Attribute Retrieval
+ - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
+
+# metasfresh 4.29.28 (2016-31)
+
+## Features
+ - #241 Excel Export for Open Items accounting currency
+   * Adjusted the Excel Export of Open Items report ro show the sums in accounting currency.
+ - #240 Consitency check page for Saldobilanz
+   * Added a new Page in Salsobilanz report to allow quick consistency check of accountings.
+ - #225 Allocation - Accounting 0,00 when Posted
+   * Added a process which double checks the accountings of the day. If a document ist posted and the accounting results are 0,00 then a the document information is logged and the document is reposted.
+
+## Fixes
+ - #176 Bestellkontrolle add Promised Date
+   * Added the Date promised onto report Bestellkontrolle.
+ - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
+   * Fixed a Bug that did not detect contracted lines in Procurement candidates if the contractline was not defined with given price.
+ - #248 Admin Login when deleted properties
+   * Adressed a security issue that allowed to gain admin permissions after deleting the client properties.
+
+# metasfresh 4.28.27 (2016-30)
+
+## Features
+ - #201 KPI Accounted Documents
+   * Created the logic for our new KPI "Accounted Documents" which will be included into our new metasfresh webUI.
+ - #212 MRPProductInfo display Conference flag with sys config
+   * Added a configuration possibility to be able to switch the conference flitering functionality on-off in MRP Product Info.
+ - #226 show accounting currency in open items report
+   * Implemented a counter check Open Items Reports (customer, vendor) with Accounting Balance. Open Items in foreign currency now show also the sums in accounting currency.
+ 
+## Fixes
+ - #153 PaymentRule = S in Invoice
+   * Checked Code for direct setting of PaymentRule cheque got rid of it.
+ - #220 Do not load pricelist and pricelist version  on login
+   * Not loading Pricelist and Pricelist Version into context anymore during login.
+ - FRESH-402 Procurement bidding
+   * Minor jasper fix
+ - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
+   * Separated the sums of procurement contracts vs. sums of RfQ biddings.
+
+# metasfresh 4.27.26 (2016-29)
+
+## Features
+ - #152 Improvements in  counter documents view and window
+   * Added different fields. Renamed fields for better understanding. Added different validation rules.
+ - #173 Window Dunning Candidates - new Field DocumentNo
+   * Included the Invoice Document No. in Dunning Candidates window.
+ - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
+   * Skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
+ - FRESH-402 Procurement bidding
+   * Adding jasper file for the procurement documents
+ - #181 Customer specific Lieferschein without Price
+   * New Jasper Shipment Document that does not show the prices for each line.
+
+## Fixes
+ - #216 Accounting: Invoice grand total Fact_Acct line was not found
+   * Fixed a Bug in accounting of Allocation Header that appeared in certain circumstances when writing off paid amount completely.
+ - #100 EDI wrong handover location in Picking Terminal
+   * Sales Orders created via EDI Import could have the wrong handover Locations in a certain condition. This wrong Location appeared in Picking Terminal. Fixed this.
+ - #174 Report Konten-Information empty c_activity_id
+   * Added a new Flag in Report Parameters to show all entries which have a empty c_activity_id.
+ - #203 Payment writeoff not possible for Incoming Payment
+   * Fixed a Bug that prohibited the writeoff in incoming Payments.
+ - #175 C_Invoice_Update_PaymentRule
+   * Changed Lagacy Code that set the Payment Rule to cheque.
+ - #210 product appears twice in invoice print preview
+   * Minor Bug in Jasper Document that printed out the wrong quantity and total for an invoiceline when shipment quantity was 0 and the invoiceline was aggregated with more than 1 shipment.
+ - FRESH-529 drop qtyreserved from product info
+   * Dropped the column qtyreserved from product info window.
+
+# metasfresh 4.26.25a (2016-28a)
+
+## Fixes
+ - #204 FRESH-525 db_columns_fk view is not working correctly anymore
+ - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
+ - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
+ - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
+    * Fixed the newly introduced Feature about allocating 2 Payments (in-out) in cornercase with partial allocated Payments.
+
+# metasfresh 4.26.25 (2016-28)
+
+## Features
+ - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
+    * Small layout-change and additional field for quality inspection. Thanks to our new contributor @Spavetti
+ - #185 Fresh-512 Receipt POS - sometimes gets wrong numbers from weighting machines
+    * Additional glasspane implementation to avoid uncontrolled button activations during the wighing process in Material receipt. Extended logging of weighing information.
+ - FRESH-402 Procurement bidding
+    * Major new Feature allowing an efficient Procurement Request for bidding workflow, including the extended Procurement bidding web application and automated creation of procurement candidates for selected winners.
+ - #119 FRESH-455 different email per org in inout print preview
+    * Possibility to define and use different eMail adresses for InOuts, depending on document Organization.
+ - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Changed the Fieldreference in Subtab to Search-Field to improve opening Performance.
+ - #150 FRESH-492 Fix implementation for BPartner Statistics
+    * Refactoring, code improvement
+ - #128 FRESH-465 Extend Record_ID Column Implementation
+    * Extended the Record_ID column Feature to allow more than 1 generic table-record-button to jump to referenced Dataset.
+ - #145 FRESH-482 Don't log migration scripts if the transaction failed
+
+## Fixes
+ - #197 FRESH-519 Payment void or reverse correct
+    * Fixed a Bug that could occure when trying to void or reverse-correct a Payment Document.
+ - #151 FRESH-491 When creating a new organization, don't create org access for System role
+    * Now we don't automatically create an Org Access for System Role anymore.
+
+# metasfresh 4.25.24a (2016-27a)
 
 ## Features
  - #162 FRESH-499 modernize the server's index.html
+    * Adjusted the index.html to upgrade of metasfresh to Java 8 usage.
  - #139 FRESH-475 Check for java8 in the rollout-scripts
+    * Adjusted the rollout scripts of metasfresh to Java 8 usage.
 
 ## Fixes
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+   * also updated menu items
  - #147 FRESH-484 Error creating manual DD_Order
  - #148 FRESH-485 de.metas.async.api.<WP-Name>.AD_User_InCharge_ID can't be overriden on org level
 
@@ -32,15 +189,18 @@ Her come the actual release notes:
  - **FRESH-399 Upgrade to java-8**
     * Existing users, please see [this howto](http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html) for instructions on how to update your metasfresh server
  - FRESH-397 Upgrade to JasperStudio and latest jasper version
-    * updating to jasperreports-6.2.1
+    * Update of Reports and Documents in metasfresh to use the latest Jasper Studio and Jasper Reports Version. Updating to jasperreports-6.2.1
  - #136 FRESH-472 Sequence on Org for more than 1 Doctype
+    * Enhancement of Document Sequence seperation among different Organisations. Implemented so that Organisations may uses same Doctypes but seperated Doc Sequences.
  - #90 FRESH-417 Create view and window to identify missing counter documents
+    * Implemented View to allow check if counter Documents are missing.
  - #132 FRESH-468 Excel Export of report Konten-Information not working
  - #123 FRESH-460 Users find window name "window, tab, field" confusing
+    * Adjusted Name of Window "Windows, Tabs and Fields"
  - #124 FRESH-461 Role "System Administrator" is disabled
-    * note: imho not a "fix" because we deliberately deactivate it before and now find that the normal user is better off with the role being available
+    * Note: Not a "fix" because we deliberately deactivated it before and now find that the normal user is better off with the role being available.
  - #125 FRESH-462 enable all entity types
-    * not a fix, the reasoning is similar to #124
+    * Not a fix, the reasoning is similar to #124
  
 ## Fixes
  - #137 FRESH-473 Glitches running metasfresh out of eclipse

@@ -36,6 +36,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * In Array Query filter: Checks if given columnName is in a list of values.
  * 
@@ -198,6 +200,20 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			sqlWhereClause = defaultReturnWhenEmpty ? SQL_TRUE : SQL_FALSE;
 			sqlParams = Collections.emptyList();
+		}
+		else if(values.size() == 1)
+		{
+			final Object value = values.get(0);
+			if (value == null)
+			{
+				sqlWhereClause = columnName + " IS NULL";
+				sqlParams = Collections.emptyList();
+			}
+			else
+			{
+				sqlWhereClause = columnName + "=?";
+				sqlParams = ImmutableList.of(value);
+			}
 		}
 		else
 		{

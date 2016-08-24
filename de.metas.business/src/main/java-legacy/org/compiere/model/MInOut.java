@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1249,11 +1250,11 @@ public class MInOut extends X_M_InOut implements DocAction
 
 				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 
-				final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
-				final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+				final String soCreditStatus = stats.getSOCreditStatus();
 
-				final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
 			
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{

@@ -36,6 +36,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
 import org.adempiere.pricing.api.IPriceListBL;
@@ -60,14 +61,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.MHRProcess;
+import org.slf4j.Logger;
 
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.inout.model.validator.M_InOut;
@@ -112,6 +111,7 @@ import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -473,7 +473,9 @@ public class CommissionValidator implements ModelValidator
 			invoice.setBPartnerAddress(addressField);
 
 			// TODO: get the payment rule from commission contract
-			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_DirectDeposit);
+			// FRESH-488: Set the payment rule 
+			final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+			invoice.setPaymentRule(paymentRuleToUse);
 
 			InterfaceWrapperHelper.save(invoice);
 

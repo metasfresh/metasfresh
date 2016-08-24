@@ -44,7 +44,7 @@ import de.metas.process.RunOutOfTrx;
 /**
  * Process used to generate DD_Orders to move the HUs flagged as "scheduled from Quality Inspection" from a given warehouse to a given warehouse.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 08639
  */
 public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends SvrProcess

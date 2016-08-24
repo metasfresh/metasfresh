@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Specifies a new client or server endpoint to be generated. Use {@link #builder(Class)} to get your instance.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <T>
  */

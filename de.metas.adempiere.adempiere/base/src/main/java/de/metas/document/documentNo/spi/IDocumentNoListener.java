@@ -27,7 +27,7 @@ import de.metas.document.documentNo.IDocumentNoBL;
 /**
  * Implementors shall be registered using {@link IDocumentNoBL#registerDocumentNoListener(IDocumentNoListener)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IDocumentNoListener

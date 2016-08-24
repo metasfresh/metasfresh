@@ -27,7 +27,7 @@ import org.adempiere.util.ISingletonService;
 /**
  * BL used to calculate the pricing for various PMM models.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPMMPricingBL extends ISingletonService

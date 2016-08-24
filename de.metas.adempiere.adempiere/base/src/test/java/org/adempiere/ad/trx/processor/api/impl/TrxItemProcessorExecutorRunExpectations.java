@@ -41,7 +41,7 @@ import org.junit.Assert;
 /**
  * Executes a given {@link ITrxItemChunkProcessor} and asserts expectations.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT>
  * @param <RT>

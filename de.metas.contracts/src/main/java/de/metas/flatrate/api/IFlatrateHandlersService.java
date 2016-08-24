@@ -27,7 +27,7 @@ import org.adempiere.util.ISingletonService;
 /**
  * Service used to register and get {@link IFlatrateHandler}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFlatrateHandlersService extends ISingletonService

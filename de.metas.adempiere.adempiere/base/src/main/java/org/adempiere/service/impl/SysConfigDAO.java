@@ -91,7 +91,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 	@Cached(cacheName = I_AD_SysConfig.Table_Name + "#NamesForPrefix", expireMinutes = Cached.EXPIREMINUTES_Never)
 	public List<String> retrieveNamesForPrefix(final String prefix, final int adClientId, final int adOrgId)
 	{
-		Check.assume(!Check.isEmpty(prefix, true), "prefix is empty");
+		Check.errorUnless(!Check.isEmpty(prefix, true), "prefix is empty");
 
 		final String whereClause = I_AD_SysConfig.COLUMNNAME_Name + " LIKE ?"
 				+ " AND " + I_AD_SysConfig.COLUMNNAME_AD_Client_ID + " IN (0,?)"

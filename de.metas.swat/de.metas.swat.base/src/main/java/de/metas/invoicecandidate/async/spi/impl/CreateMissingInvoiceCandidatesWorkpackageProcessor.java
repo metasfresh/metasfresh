@@ -47,7 +47,7 @@ import de.metas.lock.exceptions.LockFailedException;
  *
  * To schedule an invoice candidates creation for a given model, please use {@link #schedule(Object)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter

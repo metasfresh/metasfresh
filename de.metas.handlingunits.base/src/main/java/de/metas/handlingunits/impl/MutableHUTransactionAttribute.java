@@ -28,6 +28,8 @@ import java.util.Date;
 
 import org.compiere.model.I_M_Attribute;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -54,24 +56,19 @@ public class MutableHUTransactionAttribute implements IMutableHUTransactionAttri
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("HUTransactionAttribute [");
-
-		sb.append("referencedObject=").append(referencedObject);
-		sb.append("attribute=").append(attribute == null ? "?" : attribute.getName());
-
-		sb.append(", valueString=" + valueString
-				+ ", valueNumber=" + valueNumber
-				+ ", valueDate=" + valueDate
-				+ ", valueStringInitial=" + valueStringInitial
-				+ ", valueNumberInitial=" + valueNumberInitial
-				+ ", valueDateInitial=" + valueDateInitial
-				+ ", operation=" + operation
-				+ ", piAttribute=" + piAttribute
-				+ ", huAttribute=" + huAttribute
-				);
-
-		sb.append("]");
-		return sb.toString();
+		return MoreObjects.toStringHelper(this)
+				.add("attribute", attribute == null ? "?" : attribute.getName())
+				.add("valueString", valueString)
+				.add("valueNumber", valueNumber)
+				.add("valueDate", valueDate)
+				.add("valueStringInitial", valueStringInitial)
+				.add("valueNumberInitial", valueNumberInitial)
+				.add("valueDateInitial", valueDateInitial)
+				.add("operation", operation)
+				.add("piAttribute", piAttribute)
+				.add("huAttribute", huAttribute)
+				.add("referencedObject", referencedObject)
+				.toString();
 	}
 
 	@Override
@@ -93,9 +90,9 @@ public class MutableHUTransactionAttribute implements IMutableHUTransactionAttri
 	}
 
 	@Override
-	public void setM_Attribute(final I_M_Attribute m_Attribute)
+	public void setM_Attribute(final I_M_Attribute attribute)
 	{
-		attribute = m_Attribute;
+		this.attribute = attribute;
 	}
 
 	@Override

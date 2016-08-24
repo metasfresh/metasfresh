@@ -40,7 +40,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 /**
  * Used by {@link CreatePOFromSOsAggregator} to create the keys that decide which sales order line belongs to which purchase order.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder

@@ -5,6 +5,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+
+import com.google.common.base.Optional;
 
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -36,52 +39,43 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
  * task 09833
  * Default ctx provider for printing info of C_PrintJobInstructions. (Fallback to the original print job instruction's error message, as it used to be before the ctx providers were added)
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DefaultPrintingNotificationCtxProvider implements INotificationCtxProvider
+public final class DefaultPrintingNotificationCtxProvider implements INotificationCtxProvider
 {
+	public static final transient DefaultPrintingNotificationCtxProvider instance = new DefaultPrintingNotificationCtxProvider();
+	
 	public static final String MSG_CLIENT_REPORTS_PRINT_ERROR = "de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError";
 
-	public DefaultPrintingNotificationCtxProvider()
+	private DefaultPrintingNotificationCtxProvider()
 	{
 		super();
 	}
-
+	
 	@Override
-	public boolean appliesFor(final ITableRecordReference referencedRecord)
+	public Optional<String> getTextMessageIfApplies(ITableRecordReference referencedRecord)
 	{
-		// the default printing ingo ctx provider only applies to I_C_Print_Job_Instructions entries
-		if (referencedRecord.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Print_Job_Instructions.class))
+		// the default printing ctx provider only applies to I_C_Print_Job_Instructions entries
+		if (referencedRecord.getAD_Table_ID() != InterfaceWrapperHelper.getTableId(I_C_Print_Job_Instructions.class))
 		{
-			return true;
+			return Optional.absent();
 		}
-
-		return false;
-	}
-
-	@Override
-	public String getTextMessageOrNull(final ITableRecordReference referencedRecord)
-	{
+		
 		final IContextAware context = new PlainContextAware(Env.getCtx());
-
 		final I_C_Print_Job_Instructions printJobInstructions = referencedRecord.getModel(context, I_C_Print_Job_Instructions.class);
-
+		return getTextMessage(printJobInstructions);
+	}
+	
+	public Optional<String> getTextMessage(final I_C_Print_Job_Instructions printJobInstructions)
+	{
 		if (printJobInstructions == null)
 		{
 			// shall never happen
-			return null;
+			return Optional.absent();
 		}
 
-		// fallback to the original error message of the print job instructions. This will be the message of the note in case no specific
-		// ctx providers for the referenced record were registered
-		return printJobInstructions.getErrorMsg();
-	}
-
-	@Override
-	public boolean isDefault()
-	{
-		// this will be used if no other specific ctx provider is registered for a certain reference record
-		return true;
+		final String errorMsg = printJobInstructions.getErrorMsg();
+		return Optional.of(Util.coalesce(errorMsg, ""));
 	}
 }

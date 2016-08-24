@@ -68,9 +68,10 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -3182,7 +3183,7 @@ public class GridTable extends AbstractTableModel
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
 							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
 					|| columnName.endsWith("atedBy")
-					|| ("Record_ID".equals(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
+					|| (Services.get(IColumnBL.class).isRecordColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
 					)
 				{
 					rowData[j] = new Integer(rs.getInt(j+1));	//	Integer

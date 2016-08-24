@@ -114,4 +114,13 @@ public class CacheGetException extends AdempiereException
 		this.annotationType = annotation;
 		return this;
 	}
+	
+	public CacheGetException addSuppressIfNotNull(final Throwable exception)
+	{
+		if(exception != null)
+		{
+			addSuppressed(exception);
+		}
+		return this;
+	}
 }

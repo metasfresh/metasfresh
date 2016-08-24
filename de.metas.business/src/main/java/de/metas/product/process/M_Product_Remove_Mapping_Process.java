@@ -28,7 +28,7 @@ import de.metas.product.model.I_M_Product;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  *         This process removes the M_Product_Mapping reference from the current product.
  *         The rest of the products from other organizations that have the same M_Product_Mapping_ID are not touched.

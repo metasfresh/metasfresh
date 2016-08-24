@@ -34,7 +34,7 @@ import org.compiere.model.I_C_Currency;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ICurrencyDAO extends ISingletonService

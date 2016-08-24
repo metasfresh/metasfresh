@@ -478,6 +478,12 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return orgPermissions.getAD_Org_IDs_AsString();
 	}
+	
+	@Override
+	public Set<Integer> getAD_Org_IDs_AsSet()
+	{
+		return orgPermissions.getAD_Org_IDs_AsSet();
+	}
 
 	/**
 	 * Can Report on table
@@ -1251,4 +1257,5 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return hasPermission(PERMISSION_InfoWindow_Asset);
 	}
+
 }
