@@ -1043,10 +1043,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateInvoiced(final Timestamp dateInvoiced, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,   // invoiceCandidateColumnName
-				dateInvoiced,   // value
-				false,   // updateOnlyIfNull
-				ADPinstance_ID,   // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
+				dateInvoiced,    // value
+				false,    // updateOnlyIfNull
+				ADPinstance_ID,    // selectionId
 				trxName // trxName
 		);
 	}
@@ -1055,10 +1055,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updateDateAcct(Timestamp dateAcct, int ADPinstance_ID, String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,   // invoiceCandidateColumnName
-				dateAcct,   // value
-				false,   // updateOnlyIfNull
-				ADPinstance_ID,   // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
+				dateAcct,    // value
+				false,    // updateOnlyIfNull
+				ADPinstance_ID,    // selectionId
 				trxName // trxName
 		);
 	}
@@ -1067,10 +1067,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void updatePOReference(final String poReference, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_POReference,   // invoiceCandidateColumnName
-				poReference,   // value
-				false,   // updateOnlyIfNull
-				ADPinstance_ID,   // selectionId
+				I_C_Invoice_Candidate.COLUMNNAME_POReference,    // invoiceCandidateColumnName
+				poReference,    // value
+				false,    // updateOnlyIfNull
+				ADPinstance_ID,    // selectionId
 				trxName // trxName
 		);
 	}
@@ -1201,9 +1201,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
 				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(ctx,
 						amt,
-						currencyId,   // CurFrom_ID,
-						targetCurrencyId,   // CurTo_ID,
-						dateConv,   // ConvDate,
+						currencyId,    // CurFrom_ID,
+						targetCurrencyId,    // CurTo_ID,
+						dateConv,    // ConvDate,
 						conversionTypeId,
 						adClientId, adOrgId);
 				result = result.add(amtConverted);
@@ -1330,11 +1330,33 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Only filter invoice candidates of the organizations this role has access to
-
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
-		
+
 		return queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
 
+	}
+
+	@Override
+	public String getSQLDefaultFilter(final Properties ctx)
+	{
+		// Only filter invoice candidates of the organizations this role has access to
+		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
+
+		final StringBuilder defaultFilter = new StringBuilder("");
+
+		final String orgIDsAsString = userRolePermissions.getAD_Org_IDs_AsString();
+
+		if (!orgIDsAsString.isEmpty())
+		{
+
+			defaultFilter.append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
+					.append(" IN (")
+					.append(orgIDsAsString)
+					.append(")");
+
+		}
+
+		return defaultFilter.toString();
 	}
 
 }
