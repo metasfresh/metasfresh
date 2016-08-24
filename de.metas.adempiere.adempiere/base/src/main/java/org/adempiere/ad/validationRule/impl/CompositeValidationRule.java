@@ -23,6 +23,7 @@ package org.adempiere.ad.validationRule.impl;
  */
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -56,12 +57,14 @@ public final class CompositeValidationRule implements IValidationRule
 
 	private final List<IValidationRule> rules;
 	private final boolean immutable;
+	private final List<String> parameters;
 
 	private CompositeValidationRule(final Builder builder)
 	{
 		super();
-		rules = ImmutableList.copyOf(builder.rules);
+		rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
 		immutable = builder.immutable;
+		parameters = ImmutableList.copyOf(builder.parameters);
 	}
 
 	public List<IValidationRule> getValidationRules()
@@ -111,23 +114,8 @@ public final class CompositeValidationRule implements IValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(final IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
-		final List<String> parameters = new ArrayList<String>();
-
-		//
-		// Add parameters
-		for (final IValidationRule rule : rules)
-		{
-			for (final String p : rule.getParameters(evalCtx))
-			{
-				if (!parameters.contains(p))
-				{
-					parameters.add(p);
-				}
-			}
-		}
-
 		return parameters;
 	}
 
@@ -177,6 +165,7 @@ public final class CompositeValidationRule implements IValidationRule
 	public static final class Builder
 	{
 		private final List<IValidationRule> rules = new ArrayList<>();
+		private final LinkedHashSet<String> parameters = new LinkedHashSet<>();
 		private boolean immutable = true;
 
 		private Builder()
@@ -237,10 +226,10 @@ public final class CompositeValidationRule implements IValidationRule
 			{
 				rules.add(rule);
 				immutable = immutable && rule.isImmutable();
+				parameters.addAll(rule.getParameters());
 			}
 
 			return this;
 		}
-
 	}
 }

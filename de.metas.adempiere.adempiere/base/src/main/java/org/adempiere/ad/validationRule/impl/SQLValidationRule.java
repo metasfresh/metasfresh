@@ -80,7 +80,7 @@ import de.metas.logging.LogManager;
 	}
 
 	@Override
-	public List<String> getParameters(final IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
 		return whereClause.getParameters();
 	}
