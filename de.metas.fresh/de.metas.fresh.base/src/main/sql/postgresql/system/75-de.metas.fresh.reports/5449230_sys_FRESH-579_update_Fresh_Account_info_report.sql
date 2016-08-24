@@ -205,24 +205,24 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
 	ad_org_id numeric) AS
 $$
 	SELECT 	DateAcct, Fact_Acct_ID, BP_Name, Description, Account2_ID, a_Value, AmtAcctDr, AmtAcctCr, Saldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
+		Param_Acct_Value,Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
 		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::boolean,
 		ad_org_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	WHERE	Fact_Acct_ID IS NOT NULL
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Anfangssaldo', null::text, null::text, null::numeric, null::numeric, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::boolean,
+		Param_Acct_Value,Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::boolean,
 		ad_org_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Summe', null::text, null::text, AmtAcctDrEnd, AmtAcctCrEnd, CarrySaldo, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::boolean,
+		Param_Acct_Value,Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::boolean,
 		ad_org_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
 	(SELECT DISTINCT null::date, null::numeric, null, 'Summe in EUR', null::text, null::text, null::numeric, null::numeric, null::numeric, 
-		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR,
+		Param_Acct_Value,Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR,
 		ad_org_id
 	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	WHERE containsEUR = 'Y' )

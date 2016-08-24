@@ -22,9 +22,6 @@ package de.metas.device.scales;
  * #L%
  */
 
-
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.impl.systec.ISystecCmd;
 import de.metas.device.scales.impl.systec.SystecCmdRN;
@@ -45,11 +42,5 @@ public class SystecScales extends AbstractTcpScales
 				.setroundWeightToPrecision(getRoundToPrecision()) // task 09207; note that in future we might not configure the parser like this, but send some according command to the scale itself
 		;
 		registerHandler(GetGrossWeighRequest.class, handler);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }
