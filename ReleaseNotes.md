@@ -10,13 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-35)
+# metasfresh 4.32.32 (2016-35)
 
 upcoming
 
 ## Features
 
+
 ## Fixes
+ * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+ * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
 
 # metasfresh 4.32.31 (2016-34)
 
