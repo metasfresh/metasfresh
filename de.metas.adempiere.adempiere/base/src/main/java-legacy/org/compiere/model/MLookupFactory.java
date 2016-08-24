@@ -190,7 +190,9 @@ public class MLookupFactory
 	{
 		final MLookupInfo info;
 		//	List
-		if (AD_Reference_ID == DisplayType.List)	//	17
+		if (AD_Reference_ID == DisplayType.List
+				|| (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID > 0) // Button with attached list
+		)
 		{
 			info = getLookup_List(language, AD_Reference_Value_ID);
 		}
