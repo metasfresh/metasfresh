@@ -10,11 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-35)
+# metasfresh 4.33.x (2016-35)
 
 upcoming
 
 ## Features
+ * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
 
 ## Fixes
 
