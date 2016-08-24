@@ -655,7 +655,7 @@ public final class Document
 		return documentField;
 	}
 
-	IDocumentFieldView getFieldViewOrNull(final String fieldName)
+	public IDocumentFieldView getFieldViewOrNull(final String fieldName)
 	{
 		return getFieldOrNull(fieldName);
 	}
