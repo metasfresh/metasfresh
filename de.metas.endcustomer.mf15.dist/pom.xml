@@ -186,6 +186,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.dlm</groupId>
+			<artifactId>metasfresh-dlm</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
@@ -328,6 +336,14 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.rfq</groupId>
+			<artifactId>de.metas.rfq</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
