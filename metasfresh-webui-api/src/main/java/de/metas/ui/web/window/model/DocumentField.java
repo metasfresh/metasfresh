@@ -11,6 +11,7 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -210,6 +211,14 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	{
 		final Boolean valueBoolean = convertToValueClass(_value, Boolean.class);
 		return valueBoolean != null && valueBoolean.booleanValue();
+	}
+
+	@Override
+	public <T> T getValueAs(final Class<T> returnType)
+	{
+		Preconditions.checkNotNull(returnType, "returnType shall not be null");
+		final T value = convertToValueClass(_value, returnType);
+		return value;
 	}
 
 	@Override

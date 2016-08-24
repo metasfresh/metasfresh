@@ -62,6 +62,7 @@ public interface IDocumentFieldView
 	Object getValueAsJsonObject();
 	boolean getValueAsBoolean();
 	int getValueAsInt(final int defaultValue);
+	<T> T getValueAs(final Class<T> returnType);
 	//@formatter:on
 
 	//@formatter:off
