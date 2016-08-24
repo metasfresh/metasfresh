@@ -68,14 +68,11 @@
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
 		</dependency>
-		<!-- NOT USED -->
-		<!-- <dependency> <groupId>com.fasterxml.jackson.datatype</groupId> <artifactId>jackson-datatype-guava</artifactId> 
-			<version>${jackson.version}</version> </dependency> -->
 
 		<!-- Adempiere dependencies -->
 		<dependency>
-			<groupId>de.metas.endcustomer.mf15</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		<dependency>
