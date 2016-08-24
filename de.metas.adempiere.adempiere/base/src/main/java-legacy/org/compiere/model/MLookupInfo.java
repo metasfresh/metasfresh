@@ -107,7 +107,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	// public String ValidationCode = "";
 	// /** Validation flag */
 	// public boolean IsValidated = true;
-	private IValidationRule validationRule = NullValidationRule.instance;
+	private IValidationRule _validationRule = NullValidationRule.instance;
 	private IValidationRule _validationRuleEffective = null; // lazy
 
 	/** Context */
@@ -211,17 +211,17 @@ public final class MLookupInfo implements Serializable, Cloneable
 				whereClauseDynamicValidationRule = NullValidationRule.instance;
 			}
 			
-			_validationRuleEffective = CompositeValidationRule.compose(validationRule, whereClauseDynamicValidationRule);
+			_validationRuleEffective = CompositeValidationRule.compose(_validationRule, whereClauseDynamicValidationRule);
 		}
 		return _validationRuleEffective;
 	}
 
-	/* package */void setValidationRule(IValidationRule validationRule)
+	/* package */void setValidationRule(final IValidationRule validationRule)
 	{
-		this.validationRule = validationRule;
+		this._validationRule = validationRule == null ? NullValidationRule.instance : validationRule;
 		this._validationRuleEffective = null; // reset
 	}
-
+	
 	public String getDisplayColumnSQL()
 	{
 		return displayColumnSQL;
