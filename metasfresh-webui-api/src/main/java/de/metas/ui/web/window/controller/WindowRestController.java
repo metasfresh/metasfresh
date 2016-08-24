@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -32,6 +35,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -65,6 +69,10 @@ public class WindowRestController implements IWindowRestController
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
+
+	private static final transient Splitter FIELDS_LIST_SPLITTER = Splitter.on(",")
+			.trimResults()
+			.omitEmptyStrings();
 
 	@Autowired
 	private UserSession userSession;
@@ -128,6 +136,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = "id", required = true) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
+			, @RequestParam(name = "fields", required = false) @ApiParam("comma separated field names") final String fieldsListStr //
 	)
 	{
 		autologin();
@@ -140,8 +149,18 @@ public class WindowRestController implements IWindowRestController
 				.allowNullRowId()
 				.build();
 
+		final List<String> fieldsList;
+		if (fieldsListStr != null && !fieldsListStr.isEmpty())
+		{
+			fieldsList = FIELDS_LIST_SPLITTER.splitToList(fieldsListStr);
+		}
+		else
+		{
+			fieldsList = ImmutableList.of();
+		}
+
 		final List<Document> documents = documentCollection.getDocuments(documentPath);
-		return JSONDocument.ofDocumentsList(documents);
+		return JSONDocument.ofDocumentsList(documents, fieldsList);
 	}
 
 	@Override
@@ -217,7 +236,6 @@ public class WindowRestController implements IWindowRestController
 	)
 	{
 		autologin();
-		
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)

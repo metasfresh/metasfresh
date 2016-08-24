@@ -63,7 +63,6 @@ public class WindowRestControllerClient implements IWindowRestController
 	@Override
 	public JSONDocumentLayout layout(final int adWindowId)
 	{
-		// NOTE: deserialization is not supported, but we can try it anyway...
 		final String json = httpGet("/layout?type=" + adWindowId);
 		final JSONDocumentLayout layout = fromJson(json, JSONDocumentLayout.class);
 		System.out.println("GOT layout:\n" + toJson(layout));
@@ -71,9 +70,15 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public List<JSONDocument> data(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	public List<JSONDocument> data(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldsListStr)
 	{
-		throw new UnsupportedOperationException();
+		final String httpPath = "/data?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
+				+ "&fields=" + Strings.nullToEmpty(fieldsListStr);
+		
+		final String jsonResult = httpGet(httpPath);
+		final JSONDocument[] jsonDocuments = fromJson(jsonResult, JSONDocument[].class);
+		System.out.println("GOT data:\n" + toJson(jsonDocuments));
+		return Arrays.asList(jsonDocuments);
 	}
 
 	public List<JSONDocument> commit(final int type, final String id, final List<JSONDocumentChangedEvent> events)

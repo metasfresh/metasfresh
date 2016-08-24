@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -60,7 +61,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocument implements Serializable
 {
-	public static final JSONDocument ofDocument(final Document document)
+	private static final JSONDocument ofDocument(final Document document, final List<String> includeFieldsList)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -80,8 +81,24 @@ public final class JSONDocument implements Serializable
 			jsonFields.add(0, JSONDocumentField.idField(idField.getValueAsJsonObject()));
 		}
 
+		//
+		// Include fields filter
+		final Predicate<IDocumentFieldView> fieldsFilter;
+		if(includeFieldsList != null && !includeFieldsList.isEmpty())
+		{
+			fieldsFilter = (field) -> includeFieldsList.contains(field.getFieldName());
+		}
+		else
+		{
+			fieldsFilter = (field) -> true; // include all fields
+		}
+
 		// Append the other fields
-		document.getFieldViews().stream().map(JSONDocumentField::ofDocumentField).forEach(jsonFields::add);
+		document.getFieldViews()
+				.stream()
+				.filter(fieldsFilter)
+				.map(JSONDocumentField::ofDocumentField)
+				.forEach(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
 		return jsonDocument;
@@ -89,12 +106,13 @@ public final class JSONDocument implements Serializable
 
 	/**
 	 * @param documents
+	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
-	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents)
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final List<String> includeFieldsList)
 	{
 		return documents.stream()
-				.map(JSONDocument::ofDocument)
+				.map(document -> ofDocument(document, includeFieldsList))
 				.collect(Collectors.toList());
 	}
 
