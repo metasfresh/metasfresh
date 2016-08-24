@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,11 +27,31 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 
 @SuppressWarnings("serial")
-@ResponseStatus(code = HttpStatus.NOT_FOUND)
-public class DocumentNotFoundException extends AdempiereException
+public class InvalidDocumentPathException extends AdempiereException
 {
-	public DocumentNotFoundException(final Object searchInfo)
+	public InvalidDocumentPathException(final DocumentPath documentPath)
 	{
-		super("@NotFound@ " + searchInfo);
+		super(buildMsg(documentPath, null));
+	}
+
+	public InvalidDocumentPathException(final DocumentPath documentPath, final String reason)
+	{
+		super(buildMsg(documentPath, reason));
+	}
+
+	public InvalidDocumentPathException(final String message)
+	{
+		super(message);
+	}
+
+	private static String buildMsg(final DocumentPath documentPath, final String reason)
+	{
+		final StringBuilder msg = new StringBuilder();
+		msg.append("Invalid document path ").append(documentPath).append(".");
+		if (reason != null)
+		{
+			msg.append(" Reason: ").append(reason);
+		}
+		return msg.toString();
 	}
 }

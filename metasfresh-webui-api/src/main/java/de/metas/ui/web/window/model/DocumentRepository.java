@@ -44,4 +44,6 @@ public interface DocumentRepository
 	void refresh(Document document);
 
 	void save(Document document);
+
+	void delete(Document document);
 }

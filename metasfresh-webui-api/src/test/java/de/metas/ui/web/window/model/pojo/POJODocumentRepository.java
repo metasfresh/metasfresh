@@ -209,22 +209,9 @@ public class POJODocumentRepository implements DocumentRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final Class<?> modelClass = POJODocumentEntityDataBindingDescriptor.getModelClass(document);
-
 		//
 		// Load the PO / Create new PO instance
-		final Object model;
-		if (document.isNew())
-		{
-			// new
-			model = InterfaceWrapperHelper.create(document.getCtx(), modelClass, ITrx.TRXNAME_ThreadInherited);
-		}
-		else
-		{
-			model = InterfaceWrapperHelper.create(document.getCtx(), document.getDocumentId(), modelClass, ITrx.TRXNAME_ThreadInherited);
-		}
-		Check.assumeNotNull(model, "model is not null");
-		// model.set_ManualUserAction(document.getWindowNo());
+		final Object model = retrieveOrCreateModel(document);
 
 		//
 		// Set values to PO
@@ -247,7 +234,31 @@ public class POJODocumentRepository implements DocumentRepository
 		final int idNew = InterfaceWrapperHelper.getId(model);
 		refresh(document, idNew);
 	}
+	
+	private Object retrieveOrCreateModel(final Document document)
+	{
+		final Class<?> modelClass = POJODocumentEntityDataBindingDescriptor.getModelClass(document);
+		
+		//
+		// Load the PO / Create new PO instance
+		final Object model;
+		if (document.isNew())
+		{
+			// new
+			model = InterfaceWrapperHelper.create(document.getCtx(), modelClass, ITrx.TRXNAME_ThreadInherited);
+		}
+		else
+		{
+			model = InterfaceWrapperHelper.create(document.getCtx(), document.getDocumentId(), modelClass, ITrx.TRXNAME_ThreadInherited);
+		}
+		Check.assumeNotNull(model, "model is not null");
 
+		//
+		// model.set_ManualUserAction(document.getWindowNo());
+
+		return model;
+	}
+	
 	private void setModelValue(final Object model, final IDocumentFieldView documentField)
 	{
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
@@ -279,6 +290,21 @@ public class POJODocumentRepository implements DocumentRepository
 	private static Object convertValueToModel(final Object value, final String columnName, final Object model)
 	{
 		return value;
+	}
+	
+	@Override
+	public void delete(Document document)
+	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+
+		if (document.isNew())
+		{
+			throw new IllegalArgumentException("Cannot delete new document: " + document);
+		}
+
+		final Object model = retrieveOrCreateModel(document);
+
+		InterfaceWrapperHelper.delete(model);
 	}
 
 }

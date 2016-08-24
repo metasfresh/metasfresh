@@ -474,22 +474,9 @@ public class SqlDocumentRepository implements DocumentRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
-
 		//
 		// Load the PO / Create new PO instance
-		final PO po;
-		if (document.isNew())
-		{
-			po = TableModelLoader.instance.newPO(document.getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
-		}
-		else
-		{
-			final boolean checkCache = false;
-			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
-		}
-		Check.assumeNotNull(po, "po is not null");
-		po.set_ManualUserAction(document.getWindowNo());
+		final PO po = retrieveOrCreatePO(document);
 
 		// TODO: handle the case of composed primary key!
 		if (po.getPOInfo().getKeyColumnName() == null)
@@ -509,13 +496,13 @@ public class SqlDocumentRepository implements DocumentRepository
 				continue;
 			}
 
-			if(setPOValue(po, documentField))
+			if (setPOValue(po, documentField))
 			{
 				changes = true;
 			}
 		}
-		
-		if(!changes)
+
+		if (!changes)
 		{
 			logger.trace("Skip saving {} because there was no actual change", po);
 			return;
@@ -533,9 +520,38 @@ public class SqlDocumentRepository implements DocumentRepository
 		refresh(document, idNew);
 	}
 
+	private PO retrieveOrCreatePO(final Document document)
+	{
+		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+
+		//
+		// Load the PO / Create new PO instance
+		final PO po;
+		if (document.isNew())
+		{
+			po = TableModelLoader.instance.newPO(document.getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
+		}
+		else
+		{
+			final boolean checkCache = false;
+			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
+
+			if (po == null)
+			{
+				throw new DBException("No PO found for " + document);
+			}
+		}
+
+		//
+		//
+		po.set_ManualUserAction(document.getWindowNo());
+
+		return po;
+	}
+
 	/**
 	 * Sets PO's value from given <code>documentField</code>.
-	 * 
+	 *
 	 * @param po
 	 * @param documentField
 	 * @return true if value was set and really changed
@@ -694,4 +710,18 @@ public class SqlDocumentRepository implements DocumentRepository
 		// + "\n PO: " + po);
 	}
 
+	@Override
+	public void delete(final Document document)
+	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+
+		if (document.isNew())
+		{
+			throw new IllegalArgumentException("Cannot delete new document: " + document);
+		}
+
+		final PO po = retrieveOrCreatePO(document);
+
+		InterfaceWrapperHelper.delete(po);
+	}
 }

@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -15,6 +14,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
+import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 /*
  * #%L
@@ -79,6 +81,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 		}
 	}
 
+	private final void assertWritable()
+	{
+		parentDocument.assertWritable();
+	}
+
 	@Override
 	public String toString()
 	{
@@ -97,7 +104,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 	{
 		if (id == null || id.isNew())
 		{
-			throw new IllegalArgumentException("Invalid id: " + id);
+			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
 		}
 
 		//
@@ -128,7 +135,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 		if (document == null)
 		{
-			throw new IllegalArgumentException("No document found for id=" + id + " in " + this + "."
+			throw new DocumentNotFoundException("No document found for id=" + id + " in " + this + "."
 					+ "\n Parent document: " + parentDocument
 					+ "\n Available document ids are: " + documents.keySet());
 		}
@@ -148,9 +155,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 	public synchronized Document createNewDocument()
 	{
+		assertWritable();
+
 		if (parentDocument.isProcessed())
 		{
-			throw new AdempiereException("Cannot create included document because parent is processed: " + parentDocument);
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because parent is processed");
 		}
 
 		final Document document = getDocumentsRepository().createNewDocument(entityDescriptor, parentDocument);
@@ -174,7 +183,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 			{
 				continue;
 			}
-			
+
 			it.remove();
 			logger.trace("Removed document: {}", document);
 		}
@@ -187,7 +196,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 	{
 		if (id == null || id.isNew())
 		{
-			throw new IllegalArgumentException("Invalid id: " + id);
+			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
 		}
 
 		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(entityDescriptor)
@@ -255,5 +264,18 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 		{
 			document.saveIfHasChanges();
 		}
+	}
+
+	public synchronized void deleteDocument(final DocumentId rowId)
+	{
+		assertWritable();
+
+		final Document document = getDocumentById(rowId);
+		if (!document.isNew())
+		{
+			getDocumentsRepository().delete(document);
+		}
+
+		documents.remove(DocumentId.of(document.getDocumentId()));
 	}
 }

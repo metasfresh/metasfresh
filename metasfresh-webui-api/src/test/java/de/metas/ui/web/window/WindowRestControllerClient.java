@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -97,6 +98,15 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
+	public void delete(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	{
+		final String httpPath = "/delete?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr);
+		System.out.println("DELETE " + httpPath);
+
+		httpDelete(httpPath);
+	}
+
+	@Override
 	public List<JSONLookupValue> typeahead(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName, final String query)
 	{
 		final String httpPath = "/dropdown?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
@@ -145,7 +155,7 @@ public class WindowRestControllerClient implements IWindowRestController
 		{
 			return jsonObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw Throwables.propagate(e);
 		}
@@ -185,6 +195,31 @@ public class WindowRestControllerClient implements IWindowRestController
 			request.setHeader("Content-Type", "application/json");
 			request.setHeader("Accept", "*/*");
 			request.setEntity(new StringEntity(requestJsonString));
+
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final CloseableHttpResponse response = httpClient.execute(request);
+			stopwatch.stop();
+
+			final String responseStr = readString(response.getEntity().getContent());
+			System.out.println("GOT ANSWER in " + stopwatch + ": " + responseStr);
+
+			return responseStr;
+		}
+		catch (final Exception e)
+		{
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private String httpDelete(final String path)
+	{
+		try (final CloseableHttpClient httpClient = HttpClients.createDefault())
+		{
+			System.out.println("DELETE " + path);
+
+			final HttpDelete request = new HttpDelete(urlBase + path);
+			request.setHeader("Content-Type", "application/json");
+			request.setHeader("Accept", "*/*");
 
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 			final CloseableHttpResponse response = httpClient.execute(request);

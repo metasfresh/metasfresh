@@ -25,6 +25,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
+import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
 /*
  * #%L
@@ -93,86 +94,132 @@ public class DocumentCollection
 		return descriptor.getEntityDescriptor();
 	}
 
-	private Document getRootDocument(final int adWindowId, final DocumentId documentId)
+	/**
+	 * Gets an existing root document
+	 * 
+	 * @param documentPath
+	 * @return root document (readonly)
+	 */
+	private Document getRootDocument(final DocumentPath documentPath)
 	{
-		if (documentId.isNew())
+		final int adWindowId = documentPath.getAD_Window_ID();
+		final DocumentId documentId = documentPath.getDocumentId();
+		final DocumentKey documentKey = DocumentKey.of(adWindowId, documentId);
+		try
 		{
-			final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
-			final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
-			final DocumentKey documentKey = DocumentKey.of(document);
-			documents.put(documentKey, document);
-
-			return document;
+			return documents.get(documentKey);
 		}
-		else
+		catch (final UncheckedExecutionException | ExecutionException e)
 		{
-			final DocumentKey documentKey = DocumentKey.of(adWindowId, documentId);
-			try
-			{
-				return documents.get(documentKey);
-			}
-			catch (final UncheckedExecutionException | ExecutionException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 
+	/**
+	 * Creates a new root document.
+	 * 
+	 * @param documentPath
+	 * @return new root document (writable)
+	 */
+	private Document createRootDocument(final DocumentPath documentPath)
+	{
+		if (!documentPath.isNewDocument())
+		{
+			throw new InvalidDocumentPathException(documentPath, "new document ID was expected");
+		}
+
+		final int adWindowId = documentPath.getAD_Window_ID();
+		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
+		// NOTE: we assume document is writable
+		// NOTE: we are not adding it to index. That shall be done on "commit".
+		return document;
+	}
+
+	/**
+	 * Gets (readonly) document identified by given <code>documentPath</code>.
+	 *
+	 * @param documentPath
+	 * @return readonly document
+	 */
 	public Document getDocument(final DocumentPath documentPath)
 	{
-		final Document rootDocument = getRootDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
+		final Document rootDocument = getRootDocument(documentPath);
 
 		if (!documentPath.isIncludedDocument())
 		{
 			return rootDocument;
 		}
 
-		if (documentPath.isNewIncludedDocument())
-		{
-			return rootDocument.createIncludedDocument(documentPath.getDetailId());
-		}
-		else
-		{
-			return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
-		}
+		return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
 	}
 
-	public Document getDocumentForWriting(final DocumentPath documentPath)
+	/**
+	 * Gets or creates a new document (writable mode)
+	 *
+	 * @param documentPath
+	 * @return document (writable copy)
+	 */
+	public Document getOrCreateDocumentForWriting(final DocumentPath documentPath)
 	{
-		final Document rootDocumentOrig = getRootDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
-		final Document rootDocumentCopy = rootDocumentOrig.copyWritable();
-
-		if (!documentPath.isIncludedDocument())
+		//
+		// Get/Create the root document (writable)
+		final Document rootDocumentWritable;
+		if (documentPath.isNewDocument())
 		{
-			return rootDocumentCopy;
-		}
-
-		if (documentPath.isNewIncludedDocument())
-		{
-			return rootDocumentCopy.createIncludedDocument(documentPath.getDetailId());
+			rootDocumentWritable = createRootDocument(documentPath);
 		}
 		else
 		{
-			return rootDocumentCopy.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+			final Document rootDocument = getRootDocument(documentPath);
+			rootDocumentWritable = rootDocument.copyWritable();
+		}
+
+		//
+		// Get/create the included document if any
+		if (documentPath.isRootDocument())
+		{
+			return rootDocumentWritable;
+		}
+		else if (documentPath.isNewIncludedDocument())
+		{
+			return rootDocumentWritable.createIncludedDocument(documentPath.getDetailId());
+		}
+		else if (documentPath.isIncludedDocument())
+		{
+			return rootDocumentWritable.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+		}
+		else
+		{
+			throw new InvalidDocumentPathException(documentPath);
 		}
 	}
 
+	/**
+	 * Gets (readonly) documents identified by given <code>documentPath</code>.
+	 *
+	 * @param documentPath
+	 * @return readonly documents
+	 */
 	public List<Document> getDocuments(final DocumentPath documentPath)
 	{
-		final Document rootDocument = getRootDocument(documentPath.getAD_Window_ID(), documentPath.getDocumentId());
+		final Document rootDocument = getRootDocument(documentPath);
 
-		if (!documentPath.isIncludedDocument() && !documentPath.isAnyIncludedDocument())
+		if (documentPath.isRootDocument())
 		{
 			return ImmutableList.of(rootDocument);
 		}
-
-		if (documentPath.isAnyIncludedDocument())
+		else if (documentPath.isAnyIncludedDocument())
 		{
 			return rootDocument.getIncludedDocuments(documentPath.getDetailId());
 		}
-		else
+		else if (documentPath.isIncludedDocument())
 		{
 			return ImmutableList.of(rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId()));
+		}
+		else
+		{
+			throw new InvalidDocumentPathException(documentPath);
 		}
 	}
 
@@ -183,7 +230,7 @@ public class DocumentCollection
 
 		if (documentKey.getDocumentId().isNew())
 		{
-			throw new IllegalArgumentException("documentId cannot be NEW");
+			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
 		final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
@@ -209,7 +256,7 @@ public class DocumentCollection
 		document.saveIfValidAndHasChanges();
 
 		//
-		// Get the root document and it's OLD and NEW ids
+		// Get the root document
 		final Document rootDocument = document.getRootDocument();
 
 		//
@@ -217,6 +264,32 @@ public class DocumentCollection
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
 		final Document rootDocumentReadonly = rootDocument.copyReadonly();
 		documents.put(rootDocumentKey, rootDocumentReadonly);
+	}
+
+	public void delete(final DocumentPath documentPath)
+	{
+		if (documentPath.isRootDocument())
+		{
+			final Document rootDocument = getRootDocument(documentPath);
+			if (!rootDocument.isNew())
+			{
+				documentsRepository.delete(rootDocument);
+			}
+
+			// Remove it from index
+			final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
+			documents.invalidate(rootDocumentKey);
+		}
+		else if (documentPath.isIncludedDocument())
+		{
+			final Document rootDocument = getRootDocument(documentPath).copyWritable();
+			rootDocument.deleteIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+			commit(rootDocument);
+		}
+		else
+		{
+			throw new InvalidDocumentPathException(documentPath);
+		}
 	}
 
 	private static final class DocumentKey
@@ -290,5 +363,5 @@ public class DocumentCollection
 		{
 			return documentId;
 		}
-	}
+	} // DocumentKey
 }

@@ -48,6 +48,13 @@ public interface IWindowRestController
 			, String rowIdStr//
 			, List<JSONDocumentChangedEvent> events);
 
+	void delete(
+			int adWindowId//
+			, String idStr//
+			, String detailId//
+			, String rowIdStr//
+	);
+
 	List<JSONLookupValue> typeahead(
 			int adWindowId//
 			, String idStr//
@@ -66,5 +73,4 @@ public interface IWindowRestController
 	);
 
 	void cacheReset();
-
 }

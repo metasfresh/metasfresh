@@ -125,7 +125,7 @@ public class WindowRestController implements IWindowRestController
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
 	public List<JSONDocument> data(
 			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "id", required = true) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
 			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 	)
@@ -140,10 +140,8 @@ public class WindowRestController implements IWindowRestController
 				.allowNullRowId()
 				.build();
 
-		return Execution.callInNewExecution("window.data", () -> {
-			final List<Document> documents = documentCollection.getDocuments(documentPath);
-			return JSONDocument.ofDocumentsList(documents);
-		});
+		final List<Document> documents = documentCollection.getDocuments(documentPath);
+		return JSONDocument.ofDocumentsList(documents);
 	}
 
 	@Override
@@ -173,7 +171,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		//
 		// Fetch the document in writing mode
-		final Document document = documentCollection.getDocumentForWriting(documentPath);
+		final Document document = documentCollection.getOrCreateDocumentForWriting(documentPath);
 
 		//
 		// Apply changes
@@ -207,6 +205,28 @@ public class WindowRestController implements IWindowRestController
 		//
 		// Return the changes
 		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
+	}
+
+	@Override
+	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+	public void delete(
+			@RequestParam(name = "type", required = true) final int adWindowId //
+			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = "tabid", required = false) final String detailId //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
+	)
+	{
+		autologin();
+		
+
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
+
+		Execution.runInNewExecution("window.delete", () -> documentCollection.delete(documentPath));
 	}
 
 	@Override

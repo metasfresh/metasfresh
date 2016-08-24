@@ -136,7 +136,7 @@ public final class Document
 		if (_parentDocument == null)
 		{
 			windowNo = nextWindowNo.incrementAndGet();
-			_writable = _parentDocument != null ? _parentDocument.isWritable() : false;
+			_writable = builder.isNewDocument();
 		}
 		else
 		{
@@ -525,7 +525,7 @@ public final class Document
 		return new Document(this, parentDocumentCopy, parentDocumentCopy.isWritable());
 	}
 
-	private final void assertWritable()
+	/*package*/final void assertWritable()
 	{
 		if (_writable)
 		{
@@ -965,7 +965,12 @@ public final class Document
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
-
+	}
+	
+	public void deleteIncludedDocument(final String detailId, final DocumentId rowId)
+	{
+		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		includedDocuments.deleteDocument(rowId);
 	}
 
 	/* package */ICalloutExecutor getFieldCalloutExecutor()

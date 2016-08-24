@@ -8,6 +8,8 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -147,15 +149,20 @@ public final class DocumentPath
 	{
 		return rowId;
 	}
+	
+	public boolean isRootDocument()
+	{
+		return detailId == null && rowId == null;
+	}
 
 	public boolean isIncludedDocument()
 	{
-		return rowId != null;
+		return detailId != null && rowId != null && !rowId.isNew();
 	}
 
 	public boolean isNewIncludedDocument()
 	{
-		return rowId != null && rowId.isNew();
+		return detailId != null && rowId != null && rowId.isNew();
 	}
 
 	public boolean isAnyIncludedDocument()
@@ -201,36 +208,36 @@ public final class DocumentPath
 			if (adWindowId <= 0)
 			{
 				// NOTE: in protocol description, the AD_Window_ID is called "type"
-				throw new IllegalArgumentException("Invalid type: " + adWindowId);
+				throw new InvalidDocumentPathException("Invalid type: " + adWindowId);
 			}
 
 			//
 			// Validate documentId
 			if (!documentId_allowNull && documentId == null)
 			{
-				throw new IllegalArgumentException("id cannot be null");
+				throw new InvalidDocumentPathException("id cannot be null");
 			}
 			if (!documentId_allowNew && documentId != null && documentId.isNew())
 			{
-				throw new IllegalArgumentException("id cannot be NEW");
+				throw new InvalidDocumentPathException("id cannot be NEW");
 			}
 
 			//
 			// Validate rowId
 			if (!rowId_allowNull && detailId != null && rowId == null)
 			{
-				throw new IllegalArgumentException("rowId cannot be null when detailId=" + detailId);
+				throw new InvalidDocumentPathException("rowId cannot be null when detailId=" + detailId);
 			}
 			if (!rowId_allowNew && rowId != null && rowId.isNew())
 			{
-				throw new IllegalArgumentException("rowId cannot be NEW");
+				throw new InvalidDocumentPathException("rowId cannot be NEW");
 			}
 
 			//
 			// Validate detailId
 			if (rowId != null && detailId == null)
 			{
-				throw new IllegalArgumentException("rowId cannot be null when detailId=" + detailId + " (not null)");
+				throw new InvalidDocumentPathException("rowId cannot be null when detailId=" + detailId + " (not null)");
 			}
 
 			//
