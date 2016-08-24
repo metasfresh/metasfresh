@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +43,13 @@ public class M_ReceiptSchedule
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
 			, ifColumnsChanged = {
-					I_M_ReceiptSchedule.COLUMNNAME_Processed // on line close we want to recalculate Qty Over/Under Delivery
+					I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
+
+					// the next 3 columns are courtesy of https://github.com/metasfresh/metasfresh/issues/315:
+					// update QtyToMove and QtyOrderedOverUnder if any of theses 3 changes
+					I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered,
+					I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_QtyMoved
 			})
 	public void updateQtys(final I_M_ReceiptSchedule sched)
 	{
@@ -68,9 +74,9 @@ public class M_ReceiptSchedule
 		//
 		// Values that will be propagated to order line
 		final BigDecimal qtyOverUnderDelivery;
-		
+
 		//
-		// Case: we are about to delete the receipt schedule => reset fields in order line 
+		// Case: we are about to delete the receipt schedule => reset fields in order line
 		if (ModelChangeType.valueOf(timing).isDelete())
 		{
 			qtyOverUnderDelivery = BigDecimal.ZERO;
