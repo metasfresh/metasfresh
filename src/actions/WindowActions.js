@@ -9,8 +9,14 @@ export function createWindow(windowType, docId = "NEW"){
         dispatch(initWindow(windowType,docId)).then((response)=>{
             dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)));
             dispatch(initLayout(windowType)).then((response) => {
-                dispatch(initLayoutSuccess(response.data))
-                dispatch(getRows(windowType,docId))
+                dispatch(initLayoutSuccess(response.data));
+                response.data.tabs.map((item) => {
+                    dispatch(getData(windowType, docId, item.tabid)).then((res)=>{
+                        let tab = {};
+                        tab[item.tabid] = res.data;
+                        dispatch(addRowData(tab));
+                    })
+                })
             });
         });
     }
@@ -21,7 +27,7 @@ export function initWindow(windowType, docId) {
         if(docId === "NEW"){
             return dispatch(patchRequest(windowType, docId))
         }else{
-            return dispatch(initData(windowType, docId))
+            return dispatch(getData(windowType, docId))
         }
     }
 }
@@ -38,12 +44,14 @@ export function initLayout(windowType){
     return dispatch => axios.get(config.API_URL + '/window/layout?type=' + windowType);
 }
 
-export function initData(windowType, id) {
-    return dispatch => axios.get(config.API_URL + '/window/data?type=' + windowType + '&id=' + id);
-}
-
-export function getRows(windowType, id) {
-    return dispatch => axios.get(config.API_URL + '/window/data?type=' + windowType + '&id=' + id + "&tabid=1");
+export function getData(windowType, id, tabId, rowId) {
+    return dispatch => axios.get(
+        config.API_URL +
+        '/window/data?type=' + windowType +
+        '&id=' + id +
+        (tabId ? "&tabid=" + tabId : "") +
+        (rowId ? "&rowid=" + rowId : "")
+    );
 }
 
 export function initLayoutSuccess(layout) {
@@ -55,6 +63,12 @@ export function initLayoutSuccess(layout) {
 export function initDataSuccess(data) {
     return {
         type: types.INIT_DATA_SUCCESS,
+        data: data
+    }
+}
+export function addRowData(data) {
+    return {
+        type: types.ADD_ROW_DATA,
         data: data
     }
 }

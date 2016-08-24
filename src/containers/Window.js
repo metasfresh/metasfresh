@@ -20,7 +20,8 @@ class Window extends Component {
                         return (
                             <div
                                 caption={caption}
-                                key={tabid}>
+                                key={tabid}
+                            >
                                 <Table cols={elements} />
                             </div>
                         )

@@ -6,6 +6,7 @@ const initialState = {
     data: [{
         value: 0
     }],
+    rowData: {},
     orderStatus: 0
 }
 
@@ -18,6 +19,10 @@ export default function windowHandler(state = initialState, action) {
         case types.INIT_DATA_SUCCESS:
             return Object.assign({}, state, {
                 data: action.data
+        })
+        case types.ADD_ROW_DATA:
+            return Object.assign({}, state, {
+                rowData: Object.assign({}, state.rowData, action.data)
         })
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {

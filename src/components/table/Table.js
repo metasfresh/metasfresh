@@ -25,9 +25,6 @@ class ProductTable extends Component {
             }
         }
     }
-    handleContextMenu = (e) => {
-        e.preventDefault();
-    }
     handleClick = (e, id, index) => {
         // e.preventDefault();
         //
@@ -101,7 +98,7 @@ class ProductTable extends Component {
                 <div className="col-xs-12">
                     <TableFilter />
                     <TableContextMenu />
-                    <div className="panel panel-primary panel-bordered panel-bordered-force" onContextMenu={this.handleContextMenu}>
+                    <div className="panel panel-primary panel-bordered panel-bordered-force">
                         <table className="table table-bordered-vertically table-striped">
                             <thead>
                                 <TableHeader cols={cols} />
