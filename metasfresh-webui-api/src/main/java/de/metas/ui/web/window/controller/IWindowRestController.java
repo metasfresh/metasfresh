@@ -49,7 +49,7 @@ public interface IWindowRestController
 			, String rowIdStr//
 			, List<JSONDocumentChangedEvent> events);
 
-	void delete(
+	List<JSONDocument> delete(
 			int adWindowId//
 			, String idStr//
 			, String detailId//

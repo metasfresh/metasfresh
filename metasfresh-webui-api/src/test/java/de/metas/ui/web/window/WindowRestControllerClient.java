@@ -103,12 +103,16 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public void delete(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	public List<JSONDocument> delete(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		final String httpPath = "/delete?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr);
 		System.out.println("DELETE " + httpPath);
 
-		httpDelete(httpPath);
+		final String jsonResult = httpDelete(httpPath);
+		
+		final JSONDocument[] jsonDocuments = fromJson(jsonResult, JSONDocument[].class);
+		System.out.println("GOT documents:\n" + toJson(jsonDocuments));
+		return Arrays.asList(jsonDocuments);
 	}
 
 	@Override

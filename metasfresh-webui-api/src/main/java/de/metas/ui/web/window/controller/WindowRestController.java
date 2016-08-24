@@ -228,7 +228,7 @@ public class WindowRestController implements IWindowRestController
 
 	@Override
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-	public void delete(
+	public List<JSONDocument> delete(
 			@RequestParam(name = "type", required = true) final int adWindowId //
 			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = "tabid", required = false) final String detailId //
@@ -244,7 +244,10 @@ public class WindowRestController implements IWindowRestController
 				.setRowId(rowIdStr)
 				.build();
 
-		Execution.runInNewExecution("window.delete", () -> documentCollection.delete(documentPath));
+		return Execution.callInNewExecution("window.delete", () -> {
+			documentCollection.delete(documentPath);
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
+		});
 	}
 
 	@Override
