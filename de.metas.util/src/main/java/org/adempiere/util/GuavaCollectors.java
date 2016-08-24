@@ -1,5 +1,10 @@
 package org.adempiere.util;
 
+import java.util.LinkedHashSet;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import com.google.common.collect.ImmutableList;
@@ -37,7 +42,7 @@ public final class GuavaCollectors
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 */
-	public static <T> Collector<T, ImmutableList.Builder<T>, ImmutableList<T>> toImmutableList()
+	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList()
 	{
 		return Collector.of(
 				ImmutableList.Builder::new // supplier
@@ -48,9 +53,28 @@ public final class GuavaCollectors
 	}
 
 	/**
+	 * Collect a stream of elements into an {@link ImmutableList}.
+	 * 
+	 * This method is excluding duplicates.
+	 */
+	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates()
+	{
+		// NOTE: internally we use a LinkedHashSet accumulator to preserve the order.
+		
+		final Supplier<LinkedHashSet<T>> supplier = LinkedHashSet::new;
+		final BiConsumer<LinkedHashSet<T>, T> accumulator = LinkedHashSet::add;
+		final BinaryOperator<LinkedHashSet<T>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<LinkedHashSet<T>, ImmutableList<T>> finisher = ImmutableList::copyOf;
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	/**
 	 * Collect a stream of elements into an {@link ImmutableSet}.
 	 */
-	public static <T> Collector<T, ImmutableSet.Builder<T>, ImmutableSet<T>> toImmutableSet()
+	public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet()
 	{
 		return Collector.of(
 				ImmutableSet.Builder::new // supplier
