@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-08-23T10:47:24 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -27,7 +31,8 @@ FROM
 			(SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $P{RECORD_ID}),
 			null::date,
 			now()::date,
-			now()::date
+			now()::date,
+			$P{ad_language}
 		) mbd
 GROUP BY
 	Name, --Product
@@ -53,56 +58,56 @@ ORDER BY
 	<pageHeader>
 		<band height="34" splitType="Stretch">
 			<textField>
-				<reportElement uuid="1961f61d-4343-40d4-b5f3-02cc754c144d" key="textField-20" x="309" y="22" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="309" y="22" width="80" height="12" forecolor="#000000" uuid="1961f61d-4343-40d4-b5f3-02cc754c144d"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orgname}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="7fb61e78-8e1d-48d1-bae8-5c8824835944" key="textField-20" x="309" y="11" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="309" y="11" width="80" height="12" forecolor="#000000" uuid="7fb61e78-8e1d-48d1-bae8-5c8824835944"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{InFavor}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="86aea795-2eab-4beb-8cc3-c438c3e1a430" key="textField-20" x="309" y="0" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="309" y="0" width="80" height="12" forecolor="#000000" uuid="86aea795-2eab-4beb-8cc3-c438c3e1a430"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3fc6ce65-a7f6-4e8b-8bcc-0e62028dc668" key="textField-20" x="211" y="22" width="95" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="211" y="22" width="95" height="12" forecolor="#000000" uuid="3fc6ce65-a7f6-4e8b-8bcc-0e62028dc668"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Partner}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c7339025-4f98-4fa2-8cf7-ba5bef4895f4" key="textField-20" x="211" y="0" width="95" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="211" y="0" width="95" height="12" forecolor="#000000" uuid="c7339025-4f98-4fa2-8cf7-ba5bef4895f4"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3b4f95d2-d18e-4a86-a5a8-ce95327e9c35" key="textField-20" x="211" y="11" width="95" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="211" y="11" width="95" height="12" forecolor="#000000" uuid="3b4f95d2-d18e-4a86-a5a8-ce95327e9c35"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{InFavor}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0088fba9-0c4c-42a2-b1bf-646c9498de3e" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000" uuid="0088fba9-0c4c-42a2-b1bf-646c9498de3e"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="969c2a3a-2b3a-4ca6-b959-066b26b77978" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="969c2a3a-2b3a-4ca6-b959-066b26b77978"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -117,7 +122,7 @@ ORDER BY
     .floatValue() != 0
 )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -130,7 +135,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -143,7 +148,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="211" y="0" width="95" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="211" y="0" width="95" height="12" forecolor="#000000" uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2">
 					<printWhenExpression><![CDATA[new Boolean( $F{incoming}.subtract( $F{outgoing} ).floatValue() >= 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -152,7 +157,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{incoming}.subtract( $F{outgoing} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="309" y="0" width="80" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="309" y="0" width="80" height="12" forecolor="#000000" uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2">
 					<printWhenExpression><![CDATA[new Boolean( $F{outgoing}.subtract( $F{incoming} ).floatValue() >= 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
