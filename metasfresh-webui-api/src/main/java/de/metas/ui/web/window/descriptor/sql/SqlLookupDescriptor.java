@@ -7,8 +7,8 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -23,6 +23,9 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 
 /*
  * #%L
@@ -179,7 +182,16 @@ public final class SqlLookupDescriptor
 				numericKey = lookupInfo.isNumericKey();
 				setSqlExpressions(lookupInfo);
 				validationRule = lookupInfo.getValidationRule();
-				dependsOnFieldNames = ImmutableSet.copyOf(validationRule.getParameters(IValidationContext.NULL));
+		
+				//
+				// Case: DocAction button => inject the DocActionValidationRule
+				// FIXME: hardcoded
+				if(displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
+				{
+					validationRule = CompositeValidationRule.compose(validationRule, DocActionValidationRule.instance);
+				}
+				
+				dependsOnFieldNames = ImmutableSet.copyOf(this.validationRule.getParameters());
 			}
 
 			return new SqlLookupDescriptor(this);
