@@ -3,6 +3,7 @@ package org.adempiere.util;
 import java.util.LinkedHashSet;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -60,7 +61,7 @@ public final class GuavaCollectors
 	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates()
 	{
 		// NOTE: internally we use a LinkedHashSet accumulator to preserve the order.
-		
+
 		final Supplier<LinkedHashSet<T>> supplier = LinkedHashSet::new;
 		final BiConsumer<LinkedHashSet<T>, T> accumulator = LinkedHashSet::add;
 		final BinaryOperator<LinkedHashSet<T>> combiner = (l, r) -> {
@@ -83,6 +84,38 @@ public final class GuavaCollectors
 				, ImmutableSet.Builder<T>::build // finisher
 				, Collector.Characteristics.UNORDERED // characteristics
 		);
+	}
+
+	/**
+	 * Collect a stream of elements into an {@link ImmutableSet}.
+	 * 
+	 * @param duplicateConsumer consumer to be called in case a duplicate was found
+	 */
+	public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSetHandlingDuplicates(Consumer<T> duplicateConsumer)
+	{
+		// NOTE: internally we use a LinkedHashSet accumulator to preserve the order.
+
+		final Supplier<LinkedHashSet<T>> supplier = LinkedHashSet::new;
+		final BiConsumer<LinkedHashSet<T>, T> accumulator = (accum, item) -> {
+			final boolean added = accum.add(item);
+			if (!added)
+			{
+				duplicateConsumer.accept(item);
+			}
+		};
+		final BinaryOperator<LinkedHashSet<T>> combiner = (leftAccum, rightAccum) -> {
+			for (final T item : rightAccum)
+			{
+				final boolean added = leftAccum.add(item);
+				if (!added)
+				{
+					duplicateConsumer.accept(item);
+				}
+			}
+			return leftAccum;
+		};
+		final Function<LinkedHashSet<T>, ImmutableSet<T>> finisher = ImmutableSet::copyOf;
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	private GuavaCollectors()

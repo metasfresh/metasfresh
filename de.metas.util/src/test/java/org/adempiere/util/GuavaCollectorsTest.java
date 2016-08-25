@@ -3,6 +3,7 @@ package org.adempiere.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,4 +66,61 @@ public class GuavaCollectorsTest
 
 		Assert.assertEquals(resultExpected, result);
 	}
+
+	@Test
+	public void test_toImmutableSetHandlingDuplicates()
+	{
+		final List<Integer> source = Arrays.asList(1, 2, 3, 1);
+
+		try
+		{
+			final Set<Integer> result = source.stream().collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer()));
+			Assert.fail("Exception was expected but we got: " + result);
+		}
+		catch (final DuplicateElementException ex)
+		{
+			final Integer expected = 1;
+			final Integer actual = ex.getElement();
+			Assert.assertEquals(expected, actual);
+		}
+	}
+
+	@Test
+	public void test_toImmutableSetHandlingDuplicates_NoDuplicates()
+	{
+		final List<Integer> source = Arrays.asList(1, 2, 3, 4);
+
+		final Set<Integer> resultExpected = ImmutableSet.of(1, 2, 3, 4);
+		final Set<Integer> result = source.stream().collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer()));
+
+		Assert.assertEquals(resultExpected, result);
+	}
+
+	@SuppressWarnings("serial")
+	private static final class DuplicateElementException extends RuntimeException
+	{
+		public static final <T> Consumer<T> throwExceptionConsumer()
+		{
+			final Consumer<T> duplicateConsumer = (element) -> {
+				throw new DuplicateElementException(element);
+			};
+			return duplicateConsumer;
+		}
+
+		private final Object element;
+
+		public DuplicateElementException(final Object element)
+		{
+			super("Duplicate element test exception: " + element);
+			this.element = element;
+		}
+
+		public <T> T getElement()
+		{
+			@SuppressWarnings("unchecked")
+			final T elementCasted = (T)element;
+			return elementCasted;
+		}
+	}
+
 }
