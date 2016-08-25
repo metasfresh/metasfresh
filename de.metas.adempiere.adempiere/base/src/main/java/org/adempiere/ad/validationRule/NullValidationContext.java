@@ -45,12 +45,6 @@ public final class NullValidationContext implements IValidationContext
 	{
 		return null;
 	}
-	
-	@Override
-	public int getContextTable_ID()
-	{
-		return -1;
-	}
 
 	@Override
 	public String getTableName()

@@ -91,12 +91,6 @@ public class GridTabValidationContext implements IValidationContext
 	{
 		return contextTableName;
 	}
-	
-	@Override
-	public int getContextTable_ID()
-	{
-		return contextTableId;
-	}
 
 	@Override
 	public String getTableName()

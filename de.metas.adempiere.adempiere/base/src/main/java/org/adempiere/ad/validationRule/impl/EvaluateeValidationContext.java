@@ -54,15 +54,6 @@ public class EvaluateeValidationContext implements IValidationContext
 	{
 		return null;
 	}
-	
-	/**
-	 * @return -1
-	 */
-	@Override
-	public int getContextTable_ID()
-	{
-		return -1;
-	}
 
 	/**
 	 * @return null

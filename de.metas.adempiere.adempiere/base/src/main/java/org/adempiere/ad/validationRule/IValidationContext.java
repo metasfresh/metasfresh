@@ -53,8 +53,6 @@ public interface IValidationContext extends Evaluatee
 	 * @return context table name
 	 */
 	String getContextTableName();
-	
-	int getContextTable_ID();
 
 	/**
 	 * Table Name from which validation records are
