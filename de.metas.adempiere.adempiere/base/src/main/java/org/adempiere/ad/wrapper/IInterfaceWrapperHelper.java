@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.PO;
 
 /*
  * #%L
@@ -122,4 +123,5 @@ public interface IInterfaceWrapperHelper
 
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
 
+	<T extends PO> T getPO(final Object model, final boolean strict);
 }

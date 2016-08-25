@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.PO;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -186,5 +187,11 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return POJOWrapper.setDynAttribute(model, attributeName, value);
+	}
+
+	@Override
+	public <T extends PO> T getPO(final Object model, final boolean strict)
+	{
+		throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
 	}
 }

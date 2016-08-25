@@ -207,4 +207,11 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	{
 		return POWrapper.setDynAttribute(model, attributeName, value);
 	}
+
+	@Override
+	public <T extends PO> T getPO(final Object model, final boolean strict)
+	{
+		// always strict, else other wrapper helpers will handle it!
+		return POWrapper.getStrictPO(model);
+	}
 }

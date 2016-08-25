@@ -7,6 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -243,5 +244,17 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model)
 				.setDynAttribute(model, attributeName, value);
+	}
+
+	@Override
+	public <T extends PO> T getPO(final Object model, final boolean strict)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+
+		return getHelperThatCanHandle(model)
+				.getPO(model, strict);
 	}
 }

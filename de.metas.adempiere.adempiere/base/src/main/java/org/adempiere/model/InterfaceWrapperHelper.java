@@ -645,20 +645,14 @@ public class InterfaceWrapperHelper
 	 */
 	public static <T extends PO> T getPO(final Object model)
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
-		}
-		return POWrapper.getPO(model);
+		final boolean strict = false;
+		return helpers.getPO(model, strict);
 	}
 	
 	public static <T extends PO> T getStrictPO(final Object model)
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
-		}
-		return POWrapper.getStrictPO(model);
+		final boolean strict = true;
+		return helpers.getPO(model, strict);
 	}
 
 	public static int getId(final Object model)

@@ -9,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -175,48 +176,48 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	public boolean isValueChanged(final Object model, final String columnName)
 	{
 		final GridTab gridTab = GridTabWrapper.getGridTab(model);
-		if(gridTab == null)
+		if (gridTab == null)
 		{
 			return false;
 		}
-		
+
 		final GridField field = gridTab.getField(columnName);
-		if(field == null)
+		if (field == null)
 		{
 			return false;
 		}
-		
+
 		return field.isValueChanged();
 	}
 
 	@Override
 	public boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
-		if(columnNames == null || columnNames.isEmpty())
+		if (columnNames == null || columnNames.isEmpty())
 		{
 			return false;
 		}
-		
+
 		final GridTab gridTab = GridTabWrapper.getGridTab(model);
-		if(gridTab == null)
+		if (gridTab == null)
 		{
 			return false;
 		}
-		
+
 		for (final String columnName : columnNames)
 		{
 			final GridField field = gridTab.getField(columnName);
-			if(field == null)
+			if (field == null)
 			{
 				continue;
 			}
-			
-			if(field.isValueChanged())
+
+			if (field.isValueChanged())
 			{
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -231,5 +232,22 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
+	}
+
+	@Override
+	public <T extends PO> T getPO(Object model, boolean strict)
+	{
+		if (strict)
+		{
+			return null;
+		}
+
+		final GridTabWrapper wrapper = GridTabWrapper.getWrapper(model);
+		if (wrapper == null)
+		{
+			throw new AdempiereException("Cannot extract " + GridTabWrapper.class + " from " + model);
+		}
+
+		return wrapper.getPO();
 	}
 }

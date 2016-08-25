@@ -183,7 +183,7 @@ public class GridTabWrapper implements InvocationHandler, IInterfaceWrapper
 		return null;
 	}
 	
-	/*package*/ <T extends PO> T getPO()
+	public <T extends PO> T getPO()
 	{
 		// using the grid tab wrapper to load the PO
 		final GridTab gridTab = getGridTab();
