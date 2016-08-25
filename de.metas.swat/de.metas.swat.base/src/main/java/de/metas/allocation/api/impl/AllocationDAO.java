@@ -236,7 +236,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                         // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                          // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -293,12 +293,23 @@ public class AllocationDAO implements IAllocationDAO
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_Amount, Env.ZERO)
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_DiscountAmt, Env.ZERO)
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_WriteOffAmt, Env.ZERO)
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, Env.ZERO);
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, Env.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMN_PaymentWriteOffAmt, Env.ZERO);
+
+		//exclude credit memos, adjustment charges and reversals
+		final IQuery<I_C_AllocationHdr> approvedAmtFilter = queryBL.createQueryBuilder(I_C_AllocationHdr.class, ctx, trxName)
+				.addNotEqualsFilter(I_C_AllocationHdr.COLUMN_ApprovalAmt, Env.ZERO)
+				.create();
+
+		// the allocation header must have lines with the payment set or have a non 0 approvalAmt to be eligible for posting
+		final ICompositeQueryFilter<I_C_AllocationLine> paymentFilter = queryBL.createCompositeQueryFilter(I_C_AllocationLine.class).setJoinOr()
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, null)
+				.addInSubQueryFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, approvedAmtFilter);
 
 		final IQueryBuilder<I_C_AllocationLine> queryBuilder = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Operator.GREATER, Env.ZERO)
-				.filter(nonZeroFilter);
+				.filter(nonZeroFilter)
+				.filter(paymentFilter);
 
 		// Only the documents created after the given start time
 		if (startTime != null)

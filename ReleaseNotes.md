@@ -20,6 +20,9 @@ upcoming
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
  * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
+ * #225 Allocation - Accounting 0,00 when Posted
+   - tweaked the selection part a bit
+ * #277 Invoice candidates sums at the bottom are not considering org-assignment
 
 # metasfresh 4.32.31 (2016-34)
 

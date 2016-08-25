@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-23T09:17:37 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-08-24T16:47:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -131,21 +131,21 @@ ORDER BY
 				<textFieldExpression><![CDATA[("MMS").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
 && $F{movementqty}.compareTo(BigDecimal.ZERO) > 0
 ?
-$R{dtSaldokorrekturBpartner} :
+$R{InFavor} + " "+ $R{Partner} :
 
 ("MMS").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
 && $F{movementqty}.compareTo(BigDecimal.ZERO) < 0
 ?
-$R{dtSaldokorrekturVonUns}:
+$R{InFavor} + " "+ $R{orgname}:
 
 ("MMR").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
 && $F{movementqty}.compareTo(BigDecimal.ZERO) < 0
 ?
-$R{dtSaldokorrekturBpartner} :
+$R{InFavor} + " "+ $R{Partner} :
 ("MMR").equals($F{docbasetype}) && ("EC").equals($F{docsubtype})
 && $F{movementqty}.compareTo(BigDecimal.ZERO) > 0
 ?
-$R{dtSaldokorrekturVonUns}
+$R{InFavor} + " "+ $R{orgname}
 :""]]></textFieldExpression>
 			</textField>
 		</band>
