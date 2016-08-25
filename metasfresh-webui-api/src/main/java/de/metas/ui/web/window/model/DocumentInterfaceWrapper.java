@@ -11,7 +11,6 @@ import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.util.DisplayType;
@@ -262,7 +261,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			else
 			{
 				propertyName = methodName.substring(3);
-				value = POWrapper.checkZeroIdValue(propertyName, args[0]);
+				value = InterfaceWrapperHelper.checkZeroIdValue(propertyName, args[0]);
 			}
 
 			setValue(propertyName, value);
@@ -458,7 +457,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	/* package */static final boolean setValue(final Document document, final String propertyName, final Object value, final boolean failOnColumnNotFound)
 	{
-		final Object valueFixed = POWrapper.checkZeroIdValue(propertyName, value);
+		final Object valueFixed = InterfaceWrapperHelper.checkZeroIdValue(propertyName, value);
 		try
 		{
 			document.setValue(propertyName, valueFixed, REASON_Value_DirectSetFromDocumentWrapper);
