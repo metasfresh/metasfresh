@@ -257,6 +257,21 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 		return true;
 	}
+	
+	/* package */boolean hasChangesRecursivelly()
+	{
+		for (final Document document : documents.values())
+		{
+			if (document.hasChangesRecursivelly())
+			{
+				logger.trace("Considering included documents collection {} having changes because {} has changes", this, document);
+				return true;
+			}
+		}
+
+		return false; // no changes
+		
+	}
 
 	/* package */void saveIfHasChanges()
 	{

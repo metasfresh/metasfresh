@@ -32,12 +32,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.IDocActionBL;
+import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
@@ -95,7 +99,7 @@ public final class Document
 	private final boolean _writable;
 	private boolean _initializing = false;
 
-	private ITabCallout documentCallout = ITabCallout.NULL; 
+	private ITabCallout documentCallout = ITabCallout.NULL;
 	private final ICalloutExecutor fieldCalloutExecutor;
 
 	private final Map<String, DocumentField> fieldsByName;
@@ -336,7 +340,7 @@ public final class Document
 				{
 					logger.warn("Failed executing callouts while initializing {}. Ignored.", this, e);
 				}
-				
+
 				documentCallout.onNew(asCalloutRecord());
 
 				final boolean collectEventsEventIfNoChange = true;
@@ -352,7 +356,7 @@ public final class Document
 				// NOTE: we don't have to update all fields because we updated one by one when initialized
 				// final boolean collectEventsEventIfNoChange = false;
 				// updateAllFieldsFlags(Execution.getCurrentFieldChangedEventsCollector(), collectEventsEventIfNoChange);
-				
+
 				documentCallout.onRefresh(asCalloutRecord());
 			}
 
@@ -525,7 +529,7 @@ public final class Document
 		return new Document(this, parentDocumentCopy, parentDocumentCopy.isWritable());
 	}
 
-	/*package*/final void assertWritable()
+	/* package */final void assertWritable()
 	{
 		if (_writable)
 		{
@@ -659,7 +663,7 @@ public final class Document
 	{
 		return getFieldOrNull(fieldName);
 	}
-	
+
 	public IDocumentFieldView getIdFieldViewOrNull()
 	{
 		return idField;
@@ -708,12 +712,61 @@ public final class Document
 	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		final DocumentField documentField = getField(fieldName);
+
 		if (documentField.isReadonly())
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
 
 		setValue(documentField, value, reason);
+		
+		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName))
+		{
+			processDocAction();
+		}
+
+	}
+
+	private void processDocAction()
+	{
+		assertWritable();
+
+		final DocumentField docActionField = getField(WindowConstants.FIELDNAME_DocAction);
+		
+		//
+		// Make sure it's saved
+		saveIfValidAndHasChanges();
+		if (hasChangesRecursivelly())
+		{
+			final String docAction = null; // not relevant
+			throw new DocumentProcessingException("Not all changes could be saved", this, docAction);
+		}
+
+		// TODO: Check Existence of Workflow Activities
+		// final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
+		// if (wfStatus != null)
+		// {
+		// ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);
+		// return;
+		// }
+
+		// TODO: make sure the DocStatus column is up2date
+		// if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
+		// {
+		// ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
+		// return;
+		// }
+
+		//
+		// Actually process the document
+		// TODO: trigger the document workflow instead!
+		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
+		final String expectedDocStatus = null; // N/A
+		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
+
+		//
+		// Refresh it
+		documentRepository.refresh(this);
 	}
 
 	public void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
@@ -966,7 +1019,7 @@ public final class Document
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
 	}
-	
+
 	public void deleteIncludedDocument(final String detailId, final DocumentId rowId)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
@@ -1116,7 +1169,7 @@ public final class Document
 		// Check document fields
 		for (final DocumentField documentField : getFields())
 		{
-			if (!documentField.hasChanges())
+			if (documentField.hasChanges())
 			{
 				logger.trace("Considering document has changes because {} is changed", documentField);
 				changes = true;
@@ -1125,8 +1178,31 @@ public final class Document
 		}
 
 		return changes;
+	}
+	
+	/*package*/boolean hasChangesRecursivelly()
+	{
+		//
+		// Check this document
+		if (hasChanges())
+		{
+			return true;
+		}
+		
+		//
+		// Check included documents
+		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		{
+			if (includedDocumentsPerDetailId.hasChangesRecursivelly())
+			{
+				return true;
+			}
+		}
+
+		return false; // no changes
 
 	}
+
 
 	public void saveIfValidAndHasChanges()
 	{
@@ -1210,7 +1286,7 @@ public final class Document
 		public Document build()
 		{
 			final Document document = new Document(this);
-			
+
 			final ITabCallout documentCallout = Services.get(ITabCalloutFactory.class).createAndInitialize(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
