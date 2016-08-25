@@ -1,10 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import {
-    autocomplete,
     autocompleteRequest,
-    autocompleteSuccess,
     dropdownRequest,
 } from '../../actions/AppActions';
 
@@ -12,10 +11,14 @@ class Lookup extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            query: "",
+            list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: ""
+            property: "",
+            properties: {},
+            loading: false
         }
     }
     componentDidMount() {
@@ -28,9 +31,7 @@ class Lookup extends Component {
         const {
             dispatch,
             properties,
-            autocomplete,
             onChange,
-            onPropertyChange,
             dataId,
             fields
         } = this.props;
@@ -49,13 +50,17 @@ class Lookup extends Component {
             //call for more properties
             // - first will generate choice dropdown
             // - second should be chosen automatically
-            select.properties = {};
+
             let batchArray = [];
             if(propertiesCopy.length > 1){
                 let batch = new Promise((resolve, reject) => {
                     propertiesCopy.map((item) => {
                         dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
-                            select.properties[item.field] = response.data;
+                            this.setState({
+                                properties: {
+                                    [item.field]: response.data
+                                }
+                            });
                             batchArray.push('0');
 
                             if(batchArray.length === propertiesCopy.length){
@@ -80,16 +85,14 @@ class Lookup extends Component {
             // the properties in model, to update whole model in store
             //
             this.setState({
-                model: Object.assign({}, this.state.model, {
-                    properties: Object.keys(this.state.model.properties).reduce((previous, current) => {
-                        if(current == this.state.property){
-                            previous[current] = [select];
-                        }else{
-                            previous[current] = this.state.model.properties[current];
-                        }
-                        return previous;
-                    }, {})
-                })
+                properties: Object.keys(this.state.properties).reduce((previous, current) => {
+                    if(current == this.state.property){
+                        previous[current] = [select];
+                    }else{
+                        previous[current] = this.state.properties[current];
+                    }
+                    return previous;
+                }, {})
             }, () => {
                 this.generatingPropsSelection();
             });
@@ -104,19 +107,21 @@ class Lookup extends Component {
         // unselected properties and handling further
         // selection
         //
-        const modelProps = this.state.model.properties;
+        const modelProps = this.state.properties;
         const modelPropsKeys = Object.keys(modelProps);
 
         //iteration over rest of unselected props
-        for(let i=0; i< modelPropsKeys.length; i++){
+        for(let i=0; i < modelPropsKeys.length; i++){
             if(modelProps[modelPropsKeys[i]].length === 1){
                 // Selecting props that have no choice
                 const noChoiceProp = modelProps[modelPropsKeys[i]][0];
                 this.inputSearchRest.innerHTML += " " + noChoiceProp[Object.keys(noChoiceProp)[0]];
             }else if(modelProps[modelPropsKeys[i]].length > 1){
                 // Generating list of props choice
-                dispatch(autocompleteSuccess(modelProps[modelPropsKeys[i]]));
-                this.setState({property: modelPropsKeys[i]});
+                this.setState({
+                    list: modelProps[modelPropsKeys[i]],
+                    property: modelPropsKeys[i]
+                });
                 break;
             }else{
                 this.handleBlur();
@@ -128,17 +133,15 @@ class Lookup extends Component {
         this.dropdown.classList.remove("input-dropdown-focused");
         this.state.property = "";
     }
-
     handleFocus = (e) => {
         const {dispatch,recent} = this.props;
         e.preventDefault();
         this.setState({selected: null});
-        if(this.inputSearch.value !== this.props.autocomplete.query){
+        if(this.inputSearch.value !== this.state.query){
             this.handleChange();
         }
         if(this.inputSearch.value === ""){
-            dispatch(autocompleteSuccess(recent));
-            this.setState({property: ""});
+            this.setState({property: "", list: recent});
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -146,19 +149,23 @@ class Lookup extends Component {
         const {dispatch, recent, windowType, properties, dataId} = this.props;
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
-        dispatch(autocomplete(this.inputSearch.value));
         this.setState({selected: null, property: ""});
 
         const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
 
         if(this.inputSearch.value != ""){
-            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId));
-            this.setState({isInputEmpty: false});
+            this.setState({isInputEmpty: false, loading: true});
+
+            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId)).then((response)=>{
+                this.setState({list: response.data, loading: false});
+            })
         }else{
-            this.setState({isInputEmpty: true});
-            dispatch(autocompleteSuccess(recent));
+            this.setState({
+                isInputEmpty: true,
+                list: recent});
         }
     }
+
     handleClear = (e) => {
         e.preventDefault();
         this.inputSearch.value = "";
@@ -166,7 +173,7 @@ class Lookup extends Component {
         this.handleChange();
     }
     handleKeyDown = (e) => {
-        const {dispatch, autocomplete} = this.props;
+        const {dispatch} = this.props;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -183,7 +190,7 @@ class Lookup extends Component {
             case "Enter":
                 e.preventDefault();
                 if(this.state.selected != null){
-                    this.handleSelect(autocomplete.results[this.state.selected]);
+                    this.handleSelect(this.state.list[this.state.selected]);
                 }
                 break;
             case "Escape":
@@ -192,25 +199,16 @@ class Lookup extends Component {
                 break;
         }
     }
-
     navigate = (reverse) => {
-        const {dispatch, autocomplete} = this.props;
-
         if(this.state.selected != null){
             const selectTarget = this.state.selected + (reverse ? (-1) : (1));
-            if (typeof autocomplete.results[selectTarget] != "undefined") {
+            if (typeof this.state.list[selectTarget] != "undefined") {
                 this.setState({selected: selectTarget});
             }
-        }else if(typeof autocomplete.results[0] != "undefined"){
+        }else if(typeof this.state.list[0] != "undefined"){
             this.setState({selected: 0})
         }
     }
-
-    renderLookup = () => {
-        const {autocomplete} = this.props;
-        return autocomplete.results.map((item, index) => this.getDropdownComponent(index, item) );
-    }
-
     getItemsByProperty = (arr, prop, value) => {
         let ret = [];
         arr.map((item, index) => {
@@ -220,7 +218,6 @@ class Lookup extends Component {
         });
         return ret;
     }
-
     getDropdownComponent = (index, item) => {
         const name = item[Object.keys(item)[0]];
         const key = Object.keys(item)[0];
@@ -234,8 +231,13 @@ class Lookup extends Component {
             </div>
         )
     }
+
+    renderLookup = () => {
+        return this.state.list.map((item, index) => this.getDropdownComponent(index, item) );
+    }
+
     render() {
-        const {autocomplete, rank, readonly} = this.props;
+        const {rank, readonly} = this.props;
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -271,10 +273,21 @@ class Lookup extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {autocomplete.results.length > 0 ?
-                            (autocomplete.query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
-                            "There's no matching items."
+                        {this.state.loading === false && (
+                            (this.state.list.length > 0 ) ?
+                                (this.state.query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
+                                "There's no matching items."
+                            )
                         }
+                        {(this.state.loading && this.state.list.length === 0) && (
+                            <div className="input-dropdown-list-header">
+                                <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                                    <div className="rotate icon-rotate">
+                                        <i className="meta-icon-settings"/>
+                                    </div>
+                                </ReactCSSTransitionGroup>
+                            </div>
+                        )}
                     </div>
                     <div ref={(c) => this.items = c}>
                         {this.renderLookup()}
@@ -287,22 +300,11 @@ class Lookup extends Component {
 
 
 Lookup.propTypes = {
-    autocomplete: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { appHandler } = state;
-    const {
-        autocomplete,
-    } = appHandler || {
-        autocomplete: {
-            query: "",
-            results:[]
-        }
-    }
     return {
-        autocomplete
     }
 }
 

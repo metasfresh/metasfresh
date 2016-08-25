@@ -62,25 +62,8 @@ export function deleteSelectedProducts(ids) {
     }
 }
 
-export function autocomplete(query) {
-    return {
-        type: 'AUTOCOMPLETE',
-        query: query
-    }
-}
-export function autocompleteSuccess(results) {
-    return {
-        type: 'AUTOCOMPLETE_SUCCESS',
-        results: results
-    }
-}
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
-    return (dispatch) => {
-        axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query)
-            .then((response) => {
-                dispatch(autocompleteSuccess(response.data));
-            });
-    }
+    return (dispatch) => axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query);
 }
 export function dropdownRequest(windowType, propertyName, id = "NEW") {
     return (dispatch) => axios.get(config.API_URL + '/window/dropdown?type=' + windowType + '&id='+id+'&field='+ propertyName);
