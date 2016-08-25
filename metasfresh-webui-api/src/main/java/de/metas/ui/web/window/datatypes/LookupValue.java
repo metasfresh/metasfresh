@@ -39,7 +39,7 @@ public abstract class LookupValue
 			throw new NullPointerException("id");
 		}
 		this.id = id;
-		this.displayName = displayName;
+		this.displayName = displayName == null ? "" : displayName;
 	}
 
 	@Override

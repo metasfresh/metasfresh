@@ -47,7 +47,7 @@ public final class JSONLookupValue implements Serializable
 {
 	public static final JSONLookupValue of(final String key, final String value)
 	{
-		return new JSONLookupValue(ImmutableMap.of(key, value));
+		return new JSONLookupValue(ImmutableMap.of(key, value == null ? "" : value));
 	}
 
 	public static final List<JSONLookupValue> ofLookupValuesList(final List<LookupValue> lookupValues)
