@@ -147,8 +147,7 @@ class Lookup extends Component {
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
         dispatch(autocomplete(this.inputSearch.value));
-        this.setState({selected: null});
-        this.setState({property: ""});
+        this.setState({selected: null, property: ""});
 
         const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
 

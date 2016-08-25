@@ -22,7 +22,7 @@ axios.interceptors.response.use(function (response) {
     return response;
 }, function (error) {
     if(!error.response){
-        store.dispatch(noConnection());
+        store.dispatch(noConnection(true));
     }
 
     return Promise.reject(error);

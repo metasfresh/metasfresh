@@ -29,9 +29,10 @@ export function createWindow(windowType, docId = "NEW"){
     }
 }
 
-export function noConnection(){
+export function noConnection(status){
     return {
-        type: types.NO_CONNECTION
+        type: types.NO_CONNECTION,
+        status: status
     }
 }
 

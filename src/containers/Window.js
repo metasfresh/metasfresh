@@ -1,9 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import Widget from '../components/Widget';
 import ErrorScreen from '../components/app/ErrorScreen';
 import Tabs from '../components/widget/Tabs';
+import TabPane from '../components/widget/TabPane';
 import Table from '../components/table/Table';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
@@ -21,12 +24,12 @@ class Window extends Component {
                     tabs.map((elem)=> {
                         const {tabid, caption, elements} = elem;
                         return (
-                            <div
+                            <TabPane
                                 caption={caption}
                                 key={tabid}
                             >
                                 <Table cols={elements} tabid={tabid} />
-                            </div>
+                            </TabPane>
                         )
                     })
                 }

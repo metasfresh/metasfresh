@@ -15,7 +15,7 @@ export default function windowHandler(state = initialState, action) {
     switch(action.type){
         case types.NO_CONNECTION:
             return Object.assign({}, state, {
-                connectionError: true
+                connectionError: action.status
         })
         case types.INIT_LAYOUT_SUCCESS:
             return Object.assign({}, state, {

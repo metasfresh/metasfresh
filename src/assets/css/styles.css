@@ -478,3 +478,22 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+.rotate {
+    display: inline-block;
+    animation: rotation 2s linear infinite;
+    text-align: center;
+}
+.icon-rotate {
+    width:1rem;
+    height:1rem;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,6 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import {
     dropdownRequest
 } from '../../actions/AppActions';
@@ -24,8 +26,9 @@ class List extends Component {
     handleFocus = (e) => {
         e.preventDefault();
         const {properties, dispatch, dataId} = this.props;
+        this.setState({loading: true});
         dispatch(dropdownRequest(143, properties[0].field, dataId)).then((res) => {
-            this.setState({list: res.data});
+            this.setState({list: res.data, loading: false});
         });
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -76,9 +79,18 @@ class List extends Component {
                     </div>
                 </div>
                 <div className="input-dropdown-list">
-                    {(this.state.list.length == 0) && (
+                    {(this.state.list.length === 0 && this.state.loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
+                        </div>
+                    )}
+                    {(this.state.loading && this.state.list.length === 0) && (
+                        <div className="input-dropdown-list-header">
+                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                                <div className="rotate icon-rotate">
+                                    <i className="meta-icon-settings"/>
+                                </div>
+                            </ReactCSSTransitionGroup>
                         </div>
                     )}
                     {this.renderOptions()}
