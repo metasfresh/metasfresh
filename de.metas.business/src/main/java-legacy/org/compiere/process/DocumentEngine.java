@@ -23,15 +23,12 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -1032,23 +1029,6 @@ public class DocumentEngine implements DocAction
 	public File createPDF()
 	{
 		return null;
-	}
-
-	/**
-	 * Checks the access rights of the given role/client for the given document actions.
-	 *
-	 * @param optionsCtx
-	 * @param adClientId
-	 * @param adRoleId
-	 * @return number of valid actions in the ctx options
-	 */
-	public static int checkActionAccess(final IDocActionOptionsContext optionsCtx,
-			final int adClientId,
-			final int adRoleId)
-	{
-		final Properties ctx = optionsCtx.getCtx();
-		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-		return role.getActionAccess(optionsCtx, adClientId);
 	}
 
 	@Override

@@ -43,10 +43,8 @@ package de.metas.shipping.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -57,11 +55,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.shipping.api.IShipperTransportationBL;
 
 /**
@@ -69,7 +65,7 @@ import de.metas.shipping.api.IShipperTransportationBL;
  *
  * @author Carlos Ruiz
  */
-public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction, DocOptions
+public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction
 {
 	/**
 	 * 
@@ -575,63 +571,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		list.toArray(m_lines);
 		return m_lines;
 	}	// getLines
-
-	/**
-	 * Customize Valid Actions
-	 * 
-	 * @param docStatus
-	 * @param processing
-	 * @param orderType
-	 * @param isSOTrx
-	 * @param AD_Table_ID
-	 * @param docAction
-	 * @param options
-	 * @return Number of valid options
-	 */
-	@Override
-	public int customizeValidActions(final IDocActionOptionsContext optionsCtx)
-	{
-		final Set<String> optionsSet = optionsCtx.getOptions();
-		final String[] options = optionsSet.toArray(new String[optionsSet.size()]);
-
-		int index = (options.length <= 0) ? 0 : options.length - 1;
-
-		final String docStatus = optionsCtx.getDocStatus();
-		if (docStatus.equals(DocumentEngine.STATUS_Drafted))
-		{
-			// remove the void option when Drafted
-			int idxVoid = -1;
-			for (int i = 0; i < options.length; i++)
-			{
-				if (options[i].equals(DocumentEngine.ACTION_Void))
-				{
-					idxVoid = i;
-					break;
-				}
-			}
-			if (idxVoid >= 0)
-			{
-				for (int i = idxVoid + 1; i < options.length; i++)
-				{
-					options[i - 1] = options[i];
-				}
-				options[options.length - 1] = null;
-				index--;
-			}
-
-		}
-		// Complete .. CO
-		else if (docStatus.equals(DocumentEngine.STATUS_Completed))
-		{
-			options[index++] = DocumentEngine.ACTION_ReActivate;
-		}
-
-		//
-		// Correct options
-		optionsCtx.setOptions(Arrays.asList(options));
-
-		return index;
-	}
 
 	/**
 	 * Before Delete

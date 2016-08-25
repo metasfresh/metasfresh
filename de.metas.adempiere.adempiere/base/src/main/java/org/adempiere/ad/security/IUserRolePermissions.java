@@ -136,7 +136,7 @@ public interface IUserRolePermissions
 	Boolean checkWindowAccess(int AD_Window_ID);
 	Boolean getWindowAccess(int AD_Window_ID);
 
-	int getActionAccess(IDocActionOptionsContext optionsCtx, int adClientId);
+	void applyActionAccess(IDocActionOptionsContext optionsCtx);
 
 	boolean canView(TableAccessLevel tableAcessLevel);
 

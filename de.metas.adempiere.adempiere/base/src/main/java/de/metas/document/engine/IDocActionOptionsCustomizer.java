@@ -4,7 +4,7 @@ package de.metas.document.engine;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,40 +22,19 @@ package de.metas.document.engine;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
-
 /**
- * Configuration for DocAction list retrieval
+ * Customize the available DocActions for given document.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
- * @author al
  */
-public interface IDocActionOptionsContext
+public interface IDocActionOptionsCustomizer
 {
-	Properties getCtx();
-	
-	int getAD_Client_ID();
-
-	String getTableName();
-
-	/** @return current document status; never null */
-	String getDocStatus();
-
-	String getDocActionToUse();
-
-	void setDocActionToUse(String DocAction);
-
-	int getC_DocType_ID();
-
-	boolean isProcessing();
-
-	String getOrderType();
-
-	boolean isSOTrx();
-
-	Set<String> getDocActions();
-
-	void setDocActions(Collection<String> options);
+	/**
+	 * Customize Valid Actions
+	 *
+	 * @param optionsCtx
+	 * @return Number of valid options
+	 */
+	void customizeValidActions(IDocActionOptionsContext optionsCtx);
 }
