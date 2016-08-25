@@ -25,9 +25,9 @@ class List extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        const {properties, dispatch, dataId} = this.props;
+        const {properties, dispatch, dataId, rowId, tabId, windowType} = this.props;
         this.setState({loading: true});
-        dispatch(dropdownRequest(143, properties[0].field, dataId)).then((res) => {
+        dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
             this.setState({list: res.data, loading: false});
         });
         this.dropdown.classList.add("input-dropdown-focused");
@@ -66,7 +66,7 @@ class List extends Component {
                         <input
                             type="text"
                             className="input-field font-weight-bold"
-                            readOnly="readonly"
+                            readOnly={readonly}
                             placeholder={this.props.defaultValue}
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}

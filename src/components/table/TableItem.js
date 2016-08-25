@@ -1,13 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    saveProductProperty,
-    editProductProperty,
-    changeProductProperty,
-    selectOneProduct
-} from '../../actions/AppActions';
-
 import Widget from '../Widget';
 
 import {
@@ -17,76 +10,57 @@ import {
 class TableItem extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            edited: ""
+        };
     }
-    handleEditProperty = (e, widgetType, property) => {
-        // e.preventDefault();
-
-
-
-
-        // this.props.dispatch(selectOneProduct(this.props.product.id));
-
-        // let inputContainer = document.createDocumentFragment();
-        // let td = e.nativeEvent.target;
-        //
-        // let input = document.createElement("input");
-        // let span = td.getElementsByTagName("span")[0];
-        //
-        // input.value = span.innerHTML;
-        // this.props.dispatch(editProductProperty(property));
-        //
-        // input.classList.add('table-input-inline');
-        //
-        // input.addEventListener('blur', (e) => {
-        //     this.handleSaveProperty(e, property, input.value);
-        // });
-        //
-        // inputContainer.appendChild(input);
-        // span ? span.classList.add('table-hide-property'): null;
-        // td.appendChild(inputContainer);
-        // input.focus();
+    handleEditProperty = (property) => {
+        this.setState({
+            edited: property
+        })
     }
-    handleSaveProperty = (e, property, value) => {
-        // e.preventDefault();
-        // let parent = e.target.parentElement;
-        // let span = parent.getElementsByTagName("span")[0];
-        // const {product} = this.props;
-        //
-        // this.props.dispatch(
-        //     saveProductProperty(product.id, property, value)
-        // )
-        // parent.removeChild(e.target);
-        // span ? span.classList.remove('table-hide-property') : null;
+    fieldToString = (field) => {
+        if(field === null){
+            return "";
+        }else{
+            switch(typeof field){
+                case "object":
+                    return field[Object.keys(field)[0]];
+                    break;
+                default:
+                    return field;
+            }
+        }
     }
     renderCells = (cols, cells) => {
         const { type, docId, rowId, tabId } = this.props;
-
         //iterate over layout settings
-        return cols.map((item, index) =>{
-            const field = item.fields[0].field.toString();
-            const property = item.fields[0].field;
-            // get data settings
-            const cell = findRowByPropName(cells, property);
-            const value = cell.value;
-            const widgetType = item.widgetType;
-
+        return cols.map((item, index) => {
             item['displayed'] = true;
+            const property = item.fields[0].field;
+            const widgetData = findRowByPropName(cells, property);
+
             return (
                 <td
                     key={index}
                     tabIndex="0"
-                    onDoubleClick={this.handleEditProperty(widgetType, property)}
+                    onDoubleClick={() => this.handleEditProperty(property)}
                 >
-
-                    <Widget
-                        {...item}
-                        dataId={docId}
-                        widgetData={cell}
-                        windowType={type}
-                        rowId={rowId}
-                        tabId={tabId}
-                        noLabel={true}
-                        />
+                    {
+                        this.state.edited === property ?
+                            <Widget
+                                {...item}
+                                dataId={docId}
+                                widgetData={widgetData}
+                                windowType={type}
+                                rowId={rowId}
+                                tabId={tabId}
+                                noLabel={true}
+                                onChange={()=>this.handleEditProperty("")}
+                                />
+                        :
+                            this.fieldToString(widgetData.value)
+                    }
                 </td>
             )
         })

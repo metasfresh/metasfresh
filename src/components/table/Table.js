@@ -86,7 +86,7 @@ class Table extends Component {
                 fields={item.fields}
                 key={item.rowId}
                 rowId={item.rowId}
-                tabId={item.tabid}
+                tabId={tabid}
                 cols={cols}
                 type={type}
                 docId={docId}

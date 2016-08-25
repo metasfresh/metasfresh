@@ -16,20 +16,25 @@ class Widget extends Component {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {widgetData,dataId, windowType, dispatch, rowId, tabId} = this.props;
+        const {widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
         //check if we should update store
 
         if(widgetData.value !== value ){
             dispatch(updateDataProperty(property, value));
         }
         dispatch(patch(windowType, dataId, tabId, rowId, property, value));
+
+        //callback
+        if(onChange){
+            onChange();
+        }
     }
     handleChange = (e, property) => {
         const {dispatch} = this.props;
         e.preventDefault();
         dispatch(updateDataProperty(property, e.target.value));
     }
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){
             case "Date":
                 return (
@@ -92,7 +97,7 @@ class Widget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        value={data.value}
+                        defaultValue={data.value}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
                         rank={type}
@@ -108,6 +113,9 @@ class Widget extends Component {
                         properties={fields}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
+                        windowType={windowType}
+                        rowId={rowId}
+                        tabId={tabId}
                         onChange={(option) => this.handlePatch(fields[0].field, option)}
                     />
                 )
@@ -280,7 +288,7 @@ class Widget extends Component {
                 )
             case "Button":
                 return (
-                    <button className="btn btn-sm btn-meta-primary">{data.value}</button>
+                    <button className="btn btn-sm btn-meta-primary"></button>
                 )
             default:
                 return (
@@ -289,7 +297,7 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId} = this.props;
+        const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
         if(widgetData.displayed){
             return (
                 <div className="form-group row">
@@ -297,7 +305,7 @@ class Widget extends Component {
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
                             <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData)}
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId)}
                             </div>
                         </div>
                     </div>

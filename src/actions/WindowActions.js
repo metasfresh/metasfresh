@@ -128,12 +128,12 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 
 
     return dispatch => axios.patch(
-            config.API_URL +
-            '/window/commit?type=' +
-            windowType +
-            '&id=' + id +
-            (tabId ? "&tabid=" + tabId : "") +
-            (rowId ? "&rowId=" + rowId : "")
+        config.API_URL +
+        '/window/commit?type=' +
+        windowType +
+        '&id=' + id +
+        (tabId ? "&tabid=" + tabId : "") +
+        (rowId ? "&rowId=" + rowId : "")
         , payload);
 }
 
