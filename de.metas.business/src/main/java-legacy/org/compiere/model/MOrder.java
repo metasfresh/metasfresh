@@ -1553,20 +1553,22 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	// metas: make reserveStock visible from MOrderLine to allow un-reservation
 	// of stocks before delete.
-	public boolean reserveStock(MDocType dt, MOrderLine[] lines)
+	public boolean reserveStock(MDocType docType, MOrderLine[] lines)
 	{
-		if (dt == null)
+		if (docType == null)
 		{
-			dt = MDocType.get(getCtx(), getC_DocType_ID());
+			docType = MDocType.get(getCtx(), getC_DocType_ID());
 		}
 
 		// Binding
-		boolean binding = !dt.isProposal();
+		boolean binding = docType != null && !docType.isProposal();
+		final String docSubType = docType == null ? null : docType.getDocSubType(); 
+		
 		
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
 				// Closing Binding Quotation
-				|| (MDocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType())
+				|| (MDocType.DOCSUBTYPE_Quotation.equals(docSubType)
 						&& DOCACTION_Close.equals(getDocAction())))  // || isDropShip() )
 		{
 				
@@ -1578,8 +1580,8 @@ public class MOrder extends X_C_Order implements DocAction
 		
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
-		if (MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())
-				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
+		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
+				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
 		{
 			header_M_Warehouse_ID = 0;		// don't enforce
 		}
