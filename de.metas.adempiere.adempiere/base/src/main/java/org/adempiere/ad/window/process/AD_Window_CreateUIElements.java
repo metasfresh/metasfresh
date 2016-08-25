@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADFieldDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -20,6 +22,7 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.X_AD_UI_Column;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
@@ -48,180 +51,259 @@ import com.google.common.collect.Ordering;
 
 public class AD_Window_CreateUIElements extends SvrProcess
 {
-	private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
-
-	private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
-			.onResultOf((adField) -> adField.getSeqNo());
-
-	private final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
-			//
-			.put("C_BPartner_ID", "C_BPartner_ID")
-			.put("C_BPartner_Location_ID", "C_BPartner_ID")
-			.put("AD_User_ID", "C_BPartner_ID")
-			//
-			.put("Bill_BPartner_ID", "Bill_BPartner_ID")
-			.put("Bill_Location_ID", "Bill_BPartner_ID")
-			.put("Bill_User_ID", "Bill_BPartner_ID")
-			//
-			.put("DropShip_BPartner_ID", "DropShip_BPartner_ID")
-			.put("DropShip_Location_ID", "DropShip_BPartner_ID")
-			.put("DropShip_User_ID", "DropShip_BPartner_ID")
-			//
-			.put("M_Product_ID", "M_Product_ID")
-			.put("M_HU_PI_Item_Product_ID", "M_Product_ID")
-			//
-			.put("HandOver_Partner_ID", "HandOver_Partner_ID")
-			.put("HandOver_Location_ID", "HandOver_Partner_ID")
-			//
-			.build();
-
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_AD_Window adWindow = getRecord(I_AD_Window.class);
-
-		final List<I_AD_Tab> adTabs = windowDAO.retrieveTabs(adWindow);
-		if (adTabs.isEmpty())
+		final WindowUIElementsGenerator generator = WindowUIElementsGenerator.forConsumer(new IWindowUIElementsGeneratorConsumer()
 		{
-			throw new AdempiereException("@NotFound@ @AD_Tab_ID@");
-		}
+			@Override
+			public void consume(final I_AD_UI_Section uiSection, final I_AD_Tab parent)
+			{
+				InterfaceWrapperHelper.save(uiSection);
+				addLog("Created {} for {}", uiSection, parent);
+			}
 
-		final I_AD_Tab adTab = adTabs.get(0);
-		migratePrimaryTab(adTab);
+			@Override
+			public void consume(final I_AD_UI_Column uiColumn, final I_AD_UI_Section parent)
+			{
+				InterfaceWrapperHelper.save(uiColumn);
+				addLog("Created {} (UIStyle={}) for {}", uiColumn, uiColumn.getUIStyle(), parent);
+			}
+
+			@Override
+			public void consume(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_UI_Column parent)
+			{
+				InterfaceWrapperHelper.save(uiElementGroup);
+				addLog("Created {} for {}", uiElementGroup, parent);
+			}
+
+			@Override
+			public void consume(final I_AD_UI_Element uiElement, final I_AD_UI_ElementGroup parent)
+			{
+				InterfaceWrapperHelper.save(uiElement);
+				addLog("Created {} (AD_Field={}, seqNo={}) for {}", uiElement, uiElement.getAD_Field(), uiElement.getSeqNo(), parent);
+			}
+
+			@Override
+			public void consume(final I_AD_UI_ElementField uiElementField, final I_AD_UI_Element parent)
+			{
+				InterfaceWrapperHelper.save(uiElementField);
+				addLog("Created {} (AD_Field={}) for {}", uiElementField, uiElementField.getAD_Field(), parent);
+			}
+		});
+
+		final I_AD_Window adWindow = getRecord(I_AD_Window.class);
+		generator.generate(adWindow);
 
 		return MSG_OK;
 	}
 
-	private void migratePrimaryTab(final I_AD_Tab adTab)
+	public static interface IWindowUIElementsGeneratorConsumer
 	{
-		if (!windowDAO.retrieveUISections(adTab).isEmpty())
+		void consume(I_AD_UI_Section uiSection, I_AD_Tab parent);
+
+		void consume(I_AD_UI_Column uiColumn, I_AD_UI_Section parent);
+
+		void consume(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column parent);
+
+		void consume(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup parent);
+
+		void consume(I_AD_UI_ElementField uiElementField, I_AD_UI_Element parent);
+	}
+
+	public static final class WindowUIElementsGenerator
+	{
+		public static final WindowUIElementsGenerator forConsumer(final IWindowUIElementsGeneratorConsumer consumer)
 		{
-			throw new AdempiereException("Tab already has UI sections: " + adTab);
+			return new WindowUIElementsGenerator(consumer);
+		}
+		
+		private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+
+		private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
+				.onResultOf((adField) -> adField.getSeqNo());
+
+		private final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
+				//
+				.put("C_BPartner_ID", "C_BPartner_ID")
+				.put("C_BPartner_Location_ID", "C_BPartner_ID")
+				.put("AD_User_ID", "C_BPartner_ID")
+				//
+				.put("Bill_BPartner_ID", "Bill_BPartner_ID")
+				.put("Bill_Location_ID", "Bill_BPartner_ID")
+				.put("Bill_User_ID", "Bill_BPartner_ID")
+				//
+				.put("DropShip_BPartner_ID", "DropShip_BPartner_ID")
+				.put("DropShip_Location_ID", "DropShip_BPartner_ID")
+				.put("DropShip_User_ID", "DropShip_BPartner_ID")
+				//
+				.put("M_Product_ID", "M_Product_ID")
+				.put("M_HU_PI_Item_Product_ID", "M_Product_ID")
+				//
+				.put("HandOver_Partner_ID", "HandOver_Partner_ID")
+				.put("HandOver_Location_ID", "HandOver_Partner_ID")
+				//
+				.build();
+
+		private final IWindowUIElementsGeneratorConsumer consumer;
+
+		private WindowUIElementsGenerator(final IWindowUIElementsGeneratorConsumer consumer)
+		{
+			super();
+			Check.assumeNotNull(consumer, "Parameter consumer is not null");
+			this.consumer = consumer;
 		}
 
-		final I_AD_UI_Section uiSection = createUISection(adTab);
-
-		final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Left);
-		@SuppressWarnings("unused")
-		final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Right);
-
-		final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft);
-
-		final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(adTab));
-		adFields.sort(ORDERING_AD_Field_BySeqNo);
-
-		final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
-
-		int uiElement_nextSeqNo = 10;
-		for (final I_AD_Field adField : adFields)
+		public void generate(final I_AD_Window adWindow)
 		{
-			if (!adField.isActive())
+			final List<I_AD_Tab> adTabs = windowDAO.retrieveTabs(adWindow);
+			if (adTabs.isEmpty())
 			{
-				continue;
-			}
-			if (!adField.isDisplayed())
-			{
-				continue;
-			}
-			if (adField.getIncluded_Tab_ID() > 0)
-			{
-				// skip included tabs
-				continue;
+				throw new AdempiereException("@NotFound@ @AD_Tab_ID@");
 			}
 
-			final String uiElementId = extractElementId(adField);
-			I_AD_UI_Element uiElement = uiElementsById.get(uiElementId);
+			final I_AD_Tab adTab = adTabs.get(0);
+			migratePrimaryTab(adTab);
+		}
+		
+		public void generateForMainTabId(final int AD_Tab_ID)
+		{
+			final I_AD_Tab adTab = InterfaceWrapperHelper.create(Env.getCtx(), AD_Tab_ID, I_AD_Tab.class, ITrx.TRXNAME_ThreadInherited);
+			migratePrimaryTab(adTab);
+		}
 
-			if (uiElement == null)
+		private void migratePrimaryTab(final I_AD_Tab adTab)
+		{
+			if (!windowDAO.retrieveUISections(adTab).isEmpty())
 			{
-				uiElement = createUIElement(uiElementGroup_Left_Default, adField, uiElement_nextSeqNo);
-				if (uiElement != null)
+				throw new AdempiereException("Tab already has UI sections: " + adTab);
+			}
+
+			final I_AD_UI_Section uiSection = createUISection(adTab);
+
+			final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Left);
+			@SuppressWarnings("unused")
+			final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Right);
+
+			final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft);
+
+			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(adTab));
+			adFields.sort(ORDERING_AD_Field_BySeqNo);
+
+			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
+
+			int uiElement_nextSeqNo = 10;
+			for (final I_AD_Field adField : adFields)
+			{
+				if (!adField.isActive())
 				{
-					uiElement_nextSeqNo += 10;
-					uiElementsById.put(uiElementId, uiElement);
+					continue;
+				}
+				if (!adField.isDisplayed())
+				{
+					continue;
+				}
+				if (adField.getIncluded_Tab_ID() > 0)
+				{
+					// skip included tabs
+					continue;
+				}
+
+				final String uiElementId = extractElementId(adField);
+				I_AD_UI_Element uiElement = uiElementsById.get(uiElementId);
+
+				if (uiElement == null)
+				{
+					uiElement = createUIElement(uiElementGroup_Left_Default, adField, uiElement_nextSeqNo);
+					if (uiElement != null)
+					{
+						uiElement_nextSeqNo += 10;
+						uiElementsById.put(uiElementId, uiElement);
+					}
+				}
+				else
+				{
+					createUIElementField(uiElement, adField);
 				}
 			}
-			else
-			{
-				createUIElementField(uiElement, adField);
-			}
 		}
-	}
 
-	private String extractElementId(final I_AD_Field adField)
-	{
-		final String columnName = adField.getAD_Column().getColumnName();
-
-		String elementId = HARDCODED_columnName2elementId.get(columnName);
-		if (elementId == null)
+		private String extractElementId(final I_AD_Field adField)
 		{
-			elementId = columnName;
+			final String columnName = adField.getAD_Column().getColumnName();
+
+			String elementId = HARDCODED_columnName2elementId.get(columnName);
+			if (elementId == null)
+			{
+				elementId = columnName;
+			}
+
+			return elementId;
 		}
 
-		return elementId;
+		private I_AD_UI_Section createUISection(final I_AD_Tab adTab)
+		{
+			final I_AD_UI_Section uiSection = InterfaceWrapperHelper.newInstance(I_AD_UI_Section.class, adTab);
+			uiSection.setAD_Tab(adTab);
+			uiSection.setName("main"); // FIXME hardcoded
+			uiSection.setSeqNo(10); // FIXME: hardcoded
+
+			consumer.consume(uiSection, adTab);
+
+			return uiSection;
+		}
+
+		private I_AD_UI_Column createUIColumn(final I_AD_UI_Section uiSection, final String uiStyle)
+		{
+			final I_AD_UI_Column uiColumn = InterfaceWrapperHelper.newInstance(I_AD_UI_Column.class, uiSection);
+			uiColumn.setAD_UI_Section(uiSection);
+			uiColumn.setUIStyle(uiStyle);
+
+			consumer.consume(uiColumn, uiSection);
+
+			return uiColumn;
+		}
+
+		private I_AD_UI_ElementGroup createUIElementGroup(final I_AD_UI_Column uiColumn)
+		{
+			final I_AD_UI_ElementGroup uiElementGroup = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementGroup.class, uiColumn);
+			uiElementGroup.setAD_UI_Column(uiColumn);
+			uiElementGroup.setName("default");
+			uiElementGroup.setSeqNo(10); // FIXME: hardcoded
+			uiElementGroup.setUIStyle("primary");
+
+			consumer.consume(uiElementGroup, uiColumn);
+
+			return uiElementGroup;
+		}
+
+		private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
+		{
+			final I_AD_UI_Element uiElement = InterfaceWrapperHelper.newInstance(I_AD_UI_Element.class, uiElementGroup);
+			uiElement.setAD_UI_ElementGroup(uiElementGroup);
+			uiElement.setAD_Field(adField);
+			uiElement.setName(adField.getName());
+			uiElement.setDescription(adField.getDescription());
+			uiElement.setHelp(adField.getHelp());
+			uiElement.setIsBasicField(true);
+			uiElement.setIsAdvancedField(false);
+			uiElement.setSeqNo(seqNo);
+
+			consumer.consume(uiElement, uiElementGroup);
+
+			return uiElement;
+		}
+
+		private I_AD_UI_ElementField createUIElementField(final I_AD_UI_Element uiElement, final I_AD_Field adField)
+		{
+			final I_AD_UI_ElementField uiElementField = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementField.class, uiElement);
+			uiElementField.setAD_UI_Element(uiElement);
+			uiElementField.setAD_Field(adField);
+
+			consumer.consume(uiElementField, uiElement);
+
+			return uiElementField;
+		}
 	}
 
-	private I_AD_UI_Section createUISection(final I_AD_Tab adTab)
-	{
-		final I_AD_UI_Section uiSection = InterfaceWrapperHelper.newInstance(I_AD_UI_Section.class, adTab);
-		uiSection.setAD_Tab(adTab);
-		uiSection.setName("main"); // FIXME hardcoded
-		uiSection.setSeqNo(10); // FIXME: hardcoded
-		InterfaceWrapperHelper.save(uiSection);
-
-		addLog("Created {} for {}", uiSection, adTab);
-		return uiSection;
-	}
-
-	private I_AD_UI_Column createUIColumn(final I_AD_UI_Section uiSection, final String uiStyle)
-	{
-		final I_AD_UI_Column uiColumn = InterfaceWrapperHelper.newInstance(I_AD_UI_Column.class, uiSection);
-		uiColumn.setAD_UI_Section(uiSection);
-		uiColumn.setUIStyle(uiStyle);
-		InterfaceWrapperHelper.save(uiColumn);
-
-		addLog("Created {} (UIStyle={}) for {}", uiColumn, uiStyle, uiSection);
-		return uiColumn;
-	}
-
-	private I_AD_UI_ElementGroup createUIElementGroup(final I_AD_UI_Column uiColumn)
-	{
-		final I_AD_UI_ElementGroup uiElementGroup = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementGroup.class, uiColumn);
-		uiElementGroup.setAD_UI_Column(uiColumn);
-		uiElementGroup.setName("default");
-		uiElementGroup.setSeqNo(10); // FIXME: hardcoded
-		uiElementGroup.setUIStyle("primary");
-		InterfaceWrapperHelper.save(uiElementGroup);
-
-		addLog("Created {} for {}", uiElementGroup, uiColumn);
-		return uiElementGroup;
-	}
-
-	private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
-	{
-		final I_AD_UI_Element uiElement = InterfaceWrapperHelper.newInstance(I_AD_UI_Element.class, uiElementGroup);
-		uiElement.setAD_UI_ElementGroup(uiElementGroup);
-		uiElement.setAD_Field(adField);
-		uiElement.setName(adField.getName());
-		uiElement.setDescription(adField.getDescription());
-		uiElement.setHelp(adField.getHelp());
-		uiElement.setIsBasicField(true);
-		uiElement.setIsAdvancedField(false);
-		uiElement.setSeqNo(seqNo);
-		InterfaceWrapperHelper.save(uiElement);
-
-		addLog("Created {} (AD_Field={}, seqNo={}) for {}", uiElement, adField, seqNo, uiElementGroup);
-		return uiElement;
-	}
-
-	private I_AD_UI_ElementField createUIElementField(final I_AD_UI_Element uiElement, final I_AD_Field adField)
-	{
-		final I_AD_UI_ElementField uiElementField = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementField.class, uiElement);
-		uiElementField.setAD_UI_Element(uiElement);
-		uiElementField.setAD_Field(adField);
-		InterfaceWrapperHelper.save(uiElementField);
-
-		addLog("Created {} (AD_Field={}) for {}", uiElementField, adField, uiElement);
-		return uiElementField;
-	}
 }
