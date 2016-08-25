@@ -103,9 +103,6 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		super();
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.ui.web.window.descriptor.DocumentDescriptorFactory#getDocumentDescriptor(int)
-	 */
 	@Override
 	public DocumentDescriptor getDocumentDescriptor(final int AD_Window_ID)
 	{
@@ -712,6 +709,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 		else if (displayType == DisplayType.Button)
 		{
+			if(gridFieldVO.getAD_Reference_Value_ID() > 0)
+			{
+				return StringLookupValue.class;
+			}
 			return String.class;
 		}
 		else if (displayType == DisplayType.Image)
@@ -748,6 +749,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		else if (DisplayType.isAnyLookup(displayType))
 		{
 			return DocumentLayoutElementFieldDescriptor.LookupSource.lookup;
+		}
+		else if (DisplayType.Button == displayType && gridFieldVO.getAD_Reference_Value_ID() > 0)
+		{
+			return DocumentLayoutElementFieldDescriptor.LookupSource.list;
 		}
 		else
 		{

@@ -380,7 +380,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private SqlLookupDescriptor getSqlLookupDescriptor()
 		{
-			if (DisplayType.isAnyLookup(displayType))
+			if (DisplayType.isAnyLookup(displayType)
+					|| (DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
+					)
 			{
 				return SqlLookupDescriptor.builder()
 						.setColumnName(sqlColumnName)

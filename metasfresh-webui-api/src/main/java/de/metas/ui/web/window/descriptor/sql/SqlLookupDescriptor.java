@@ -241,8 +241,8 @@ public final class SqlLookupDescriptor
 					.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
 					.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
 					.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
-					.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the
-					// AD_Ref_List.AD_Reference_ID=....
+					// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
+					.append((DisplayType.List == lookupInfo.getDisplayType() || DisplayType.Button == lookupInfo.getDisplayType()) ? " AND " + lookupInfo.getWhereClauseSqlPart() : "")
 					.toString();
 
 			//

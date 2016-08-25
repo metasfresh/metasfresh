@@ -76,7 +76,7 @@ public class SqlLookupDescriptor
 		final int Column_ID = 0;
 		final Language language = Env.getLanguage(ctx);
 		final boolean IsParent = false;
-		final String ValidationCode = null; // TODO
+		final int AD_Val_Rule_ID = -1; // TODO
 
 		if (valueType == PropertyDescriptorValueType.PAttribute && AD_Reference_Value_ID <= 0)
 		{
@@ -89,12 +89,12 @@ public class SqlLookupDescriptor
 			final MLookupInfo lookupInfo;
 			if (valueType == PropertyDescriptorValueType.List)
 			{
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			else
 			{
 				final int displayType = ModelPropertyDescriptorValueTypeHelper.getSqlDisplayType(valueType);
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			
 			numericKey = lookupInfo.isNumericKey();
