@@ -382,11 +382,29 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Add default filter for retrieving invoice candidates.
+	 *
 	 * Default filters until now:
 	 * <li>Only retrieve invoice candidates the user and role have access to
-	 * 
+	 *
+	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
+	 *
 	 * @param queryBuilder
 	 * @return
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
+
+	/**
+	 * Return the default filter to be applied for retrieving invoice candidates, in String format.<br>
+	 * This string is to be used in the hard-coded sql queries, in where clauses.<br>
+	 * Note that this string does not start with "AND", but directly with the condition.<br>
+	 *
+	 * Default filters until now:
+	 * <li>Only retrieve invoice candidates the user and role have access to.
+	 *
+	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
+	 *
+	 * @param ctx
+	 * @return
+	 */
+	String getSQLDefaultFilter(Properties ctx);
 }
