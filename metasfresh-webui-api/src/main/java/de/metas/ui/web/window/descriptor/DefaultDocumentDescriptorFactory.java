@@ -13,6 +13,8 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.ad.window.process.AD_Window_CreateUIElements.IWindowUIElementsGeneratorConsumer;
+import org.adempiere.ad.window.process.AD_Window_CreateUIElements.WindowUIElementsGenerator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
@@ -20,6 +22,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -30,10 +33,17 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -67,7 +77,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 @Service
 public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
-	private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+	// services
+	private static final Logger logger = LogManager.getLogger(DefaultDocumentDescriptorFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 
 	private static final int MAIN_TabNo = 0;
@@ -220,13 +231,25 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 	private List<DocumentLayoutSectionDescriptor.Builder> createSections(final GridTabVO gridTabVO, final SpecialFieldsCollector specialFieldsCollector)
 	{
-		final List<DocumentLayoutSectionDescriptor.Builder> uiSections = new ArrayList<>();
-
+		//
+		// Pick the right UI elements provider (DAO, fallback to InMemory),
+		// and fetch the UI sections
+		IWindowUIElementsProvider uiProvider = new DAOWindowUIElementsProvider();
+		final int AD_Tab_ID = gridTabVO.getAD_Tab_ID();
+		List<I_AD_UI_Section> uiSections = uiProvider.getUISections(AD_Tab_ID);
+		if(uiSections.isEmpty())
+		{
+			uiProvider = new InMemoryUIElements();
+			logger.warn("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
+			
+			uiSections = uiProvider.getUISections(AD_Tab_ID);
+		}
+		
+		
 		//
 		// UI Sections
-		final Properties ctx = Env.getCtx();
-		final int AD_Tab_ID = gridTabVO.getAD_Tab_ID();
-		for (final I_AD_UI_Section uiSection : windowDAO.retrieveUISections(ctx, AD_Tab_ID))
+		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
+		for (final I_AD_UI_Section uiSection : uiSections)
 		{
 			if (!uiSection.isActive())
 			{
@@ -237,7 +260,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 			//
 			// UI Columns
-			for (final I_AD_UI_Column uiColumn : windowDAO.retrieveUIColumns(uiSection))
+			for (final I_AD_UI_Column uiColumn : uiProvider.getUIColumns(uiSection))
 			{
 				if (!uiColumn.isActive())
 				{
@@ -248,7 +271,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 				//
 				// UI Element Groups
-				for (final I_AD_UI_ElementGroup uiElementGroup : windowDAO.retrieveUIElementGroups(uiColumn))
+				for (final I_AD_UI_ElementGroup uiElementGroup : uiProvider.getUIElementGroups(uiColumn))
 				{
 					if (!uiElementGroup.isActive())
 					{
@@ -261,7 +284,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					//
 					// UI Elements
 					boolean isFirstElementInGroup = true;
-					for (final I_AD_UI_Element uiElement : windowDAO.retrieveUIElements(uiElementGroup))
+					for (final I_AD_UI_Element uiElement : uiProvider.getUIElements(uiElementGroup))
 					{
 						if (!uiElement.isActive())
 						{
@@ -292,7 +315,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 						//
 						// UI Element Fields (if any)
-						for (final I_AD_UI_ElementField uiElementField : windowDAO.retrieveUIElementFields(uiElement))
+						for (final I_AD_UI_ElementField uiElementField : uiProvider.getUIElementFields(uiElement))
 						{
 							if (!uiElementField.isActive())
 							{
@@ -320,18 +343,18 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 						//
 						isFirstElementInGroup = false;
-					}      // each uiElement
+					}             // each uiElement
 
 					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
-				}      // each uiElementGroup
+				}             // each uiElementGroup
 
 				layoutSectionBuilder.addColumn(layoutColumnBuilder);
-			}      // each uiColumn
+			}             // each uiColumn
 
-			uiSections.add(layoutSectionBuilder);
-		}      // each uiSection
+			layoutSectionBuilders.add(layoutSectionBuilder);
+		}             // each uiSection
 
-		return uiSections;
+		return layoutSectionBuilders;
 	}
 
 	private static DocumentLayoutDetailDescriptor.Builder createDetail(final GridTabVO tab)
@@ -800,7 +823,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private static boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
 	{
 		if (gridFieldVO.isVirtualColumn() || !gridFieldVO.isUpdateable())
+		{
 			return false;
+		}
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 
@@ -817,7 +842,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		{
 			return ILogicExpression.FALSE;
 		}
-		
+
 		// FIXME: hardcoded M_AttributeSetInstance_ID mandatory logic = false
 		// Reason: even if we set it's default value to "0" some callouts are setting it to NULL,
 		// and then the document saving API is failing because it considers this column as NOT filled.
@@ -967,13 +992,144 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				return null;
 			}
 
-			DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = elementBuilder.getField(fieldName);
+			final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = elementBuilder.getField(fieldName);
 			if (fieldBuilder == null || fieldBuilder.isConsumed())
 			{
 				return null;
 			}
 
 			return fieldBuilder;
+		}
+	}
+
+	private static interface IWindowUIElementsProvider
+	{
+		List<I_AD_UI_Section> getUISections(int AD_Tab_ID);
+
+		List<I_AD_UI_Column> getUIColumns(I_AD_UI_Section uiSection);
+
+		List<I_AD_UI_ElementGroup> getUIElementGroups(I_AD_UI_Column uiColumn);
+
+		List<I_AD_UI_Element> getUIElements(I_AD_UI_ElementGroup uiElementGroup);
+
+		List<I_AD_UI_ElementField> getUIElementFields(I_AD_UI_Element uiElement);
+	}
+	
+	private static final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
+	{
+		private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+
+		@Override
+		public List<I_AD_UI_Section> getUISections(final int AD_Tab_ID)
+		{
+			final Properties ctx = Env.getCtx();
+			return windowDAO.retrieveUISections(ctx, AD_Tab_ID);
+		}
+
+		@Override
+		public List<I_AD_UI_Column> getUIColumns(final I_AD_UI_Section uiSection)
+		{
+			return windowDAO.retrieveUIColumns(uiSection);
+		}
+
+		@Override
+		public List<I_AD_UI_ElementGroup> getUIElementGroups(final I_AD_UI_Column uiColumn)
+		{
+			return windowDAO.retrieveUIElementGroups(uiColumn);
+		}
+
+		@Override
+		public List<I_AD_UI_Element> getUIElements(final I_AD_UI_ElementGroup uiElementGroup)
+		{
+			return windowDAO.retrieveUIElements(uiElementGroup);
+		}
+
+		@Override
+		public List<I_AD_UI_ElementField> getUIElementFields(final I_AD_UI_Element uiElement)
+		{
+			return windowDAO.retrieveUIElementFields(uiElement);
+		}
+	}
+
+	private static final class InMemoryUIElements implements IWindowUIElementsGeneratorConsumer, IWindowUIElementsProvider
+	{
+		private static final Logger logger = LogManager.getLogger(InMemoryUIElements.class);
+
+		private final ListMultimap<Integer, I_AD_UI_Section> adTabId2sections = LinkedListMultimap.create();
+		private final ListMultimap<I_AD_UI_Section, I_AD_UI_Column> section2columns = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
+		private final ListMultimap<I_AD_UI_Column, I_AD_UI_ElementGroup> column2elementGroups = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
+		private final ListMultimap<I_AD_UI_ElementGroup, I_AD_UI_Element> elementGroup2elements = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
+		private final ListMultimap<I_AD_UI_Element, I_AD_UI_ElementField> element2elementFields = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
+
+		@Override
+		public void consume(final I_AD_UI_Section uiSection, final I_AD_Tab parent)
+		{
+			logger.info("Generated in memory {} for {}", uiSection, parent);
+			adTabId2sections.put(parent.getAD_Tab_ID(), uiSection);
+		}
+
+		@Override
+		public List<I_AD_UI_Section> getUISections(final int AD_Tab_ID)
+		{
+			// Generate the UI elements if needed
+			if(!adTabId2sections.containsKey(AD_Tab_ID))
+			{
+				WindowUIElementsGenerator.forConsumer(this).generateForMainTabId(AD_Tab_ID);
+			}
+			
+			return adTabId2sections.get(AD_Tab_ID);
+		}
+
+		@Override
+		public void consume(final I_AD_UI_Column uiColumn, final I_AD_UI_Section parent)
+		{
+			logger.info("Generated in memory {} for {}", uiColumn, parent);
+			section2columns.put(parent, uiColumn);
+		}
+
+		@Override
+		public List<I_AD_UI_Column> getUIColumns(final I_AD_UI_Section uiSection)
+		{
+			return section2columns.get(uiSection);
+		}
+
+		@Override
+		public void consume(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_UI_Column parent)
+		{
+			logger.info("Generated in memory {} for {}", uiElementGroup, parent);
+			column2elementGroups.put(parent, uiElementGroup);
+		}
+
+		@Override
+		public List<I_AD_UI_ElementGroup> getUIElementGroups(final I_AD_UI_Column uiColumn)
+		{
+			return column2elementGroups.get(uiColumn);
+		}
+
+		@Override
+		public void consume(final I_AD_UI_Element uiElement, final I_AD_UI_ElementGroup parent)
+		{
+			logger.info("Generated in memory {} for {}", uiElement, parent);
+			elementGroup2elements.put(parent, uiElement);
+		}
+
+		@Override
+		public List<I_AD_UI_Element> getUIElements(final I_AD_UI_ElementGroup uiElementGroup)
+		{
+			return elementGroup2elements.get(uiElementGroup);
+		}
+
+		@Override
+		public void consume(final I_AD_UI_ElementField uiElementField, final I_AD_UI_Element parent)
+		{
+			logger.info("Generated in memory {} for {}", uiElementField, parent);
+			element2elementFields.put(parent, uiElementField);
+		}
+
+		@Override
+		public List<I_AD_UI_ElementField> getUIElementFields(final I_AD_UI_Element uiElement)
+		{
+			return element2elementFields.get(uiElement);
 		}
 	}
 }
