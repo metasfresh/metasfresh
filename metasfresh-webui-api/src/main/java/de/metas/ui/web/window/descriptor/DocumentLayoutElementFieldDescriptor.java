@@ -3,11 +3,10 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.adempiere.util.Check;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
-import de.metas.ui.web.window.datatypes.DataTypes;
 
 /*
  * #%L
@@ -34,25 +33,33 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 @SuppressWarnings("serial")
 public final class DocumentLayoutElementFieldDescriptor implements Serializable
 {
-	public static final Builder builder()
+	public static final Builder builder(final String fieldName)
 	{
-		return new Builder();
+		return new Builder(fieldName);
 	}
-	
+
 	public static enum LookupSource
 	{
-		lookup
-		, list
+		lookup //
+		, list //
+	};
+
+	public static enum FieldType
+	{
+		ActionButtonStatus, ActionButton //
 	}
 
 	private final String field;
 	private final LookupSource lookupSource;
+	private final FieldType fieldType;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
 		super();
-		field = Preconditions.checkNotNull(builder.field, "field not null");
-		this.lookupSource = builder.lookupSource;
+
+		field = Preconditions.checkNotNull(builder.getFieldName(), "field not null");
+		lookupSource = builder.lookupSource;
+		fieldType = builder.fieldType;
 	}
 
 	@Override
@@ -81,45 +88,70 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return false;
 		}
 		final DocumentLayoutElementFieldDescriptor other = (DocumentLayoutElementFieldDescriptor)obj;
-		return DataTypes.equals(field, other.field);
+		return Objects.equals(field, other.field); // only the field name shall be matched
 	}
 
 	public String getField()
 	{
 		return field;
 	}
-	
+
 	public LookupSource getLookupSource()
 	{
 		return lookupSource;
 	}
 
+	public FieldType getFieldType()
+	{
+		return fieldType;
+	}
+
 	public static final class Builder
 	{
-		private String field;
+		private final String fieldName;
 		private LookupSource lookupSource;
+		private FieldType fieldType;
+		private boolean consumed = false;
 
-		private Builder()
+		private Builder(final String fieldName)
 		{
 			super();
+			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
+			this.fieldName = fieldName;
 		}
 
 		public DocumentLayoutElementFieldDescriptor build()
 		{
+			setConsumed();
 			return new DocumentLayoutElementFieldDescriptor(this);
 		}
 
-		public Builder setField(final String field)
+		public String getFieldName()
 		{
-			this.field = Strings.emptyToNull(field);
-			return this;
+			return fieldName;
 		}
-		
-		public Builder setLookupSource(LookupSource lookupSource)
+
+		public Builder setLookupSource(final LookupSource lookupSource)
 		{
 			this.lookupSource = lookupSource;
 			return this;
 		}
 
+		public Builder setFieldType(final FieldType fieldType)
+		{
+			this.fieldType = fieldType;
+			return this;
+		}
+
+		public Builder setConsumed()
+		{
+			this.consumed = true;
+			return this;
+		}
+
+		public boolean isConsumed()
+		{
+			return consumed;
+		}
 	}
 }

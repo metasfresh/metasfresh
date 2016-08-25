@@ -31,13 +31,16 @@ public enum DocumentFieldWidgetType
 	, Integer, Number, Amount, Quantity, CostPrice
 
 	//
-	, List, Lookup, Address, ProductAttributes
+	, List, Lookup
+
+	, Address, ProductAttributes
 
 	, YesNo, Switch
 
 	, Image
 
 	, Button
+	, ActionButton
 	//
 	;
 }

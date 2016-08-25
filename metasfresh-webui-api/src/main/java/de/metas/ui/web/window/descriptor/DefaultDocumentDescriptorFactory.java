@@ -2,8 +2,10 @@ package de.metas.ui.web.window.descriptor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,6 +37,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -123,13 +126,12 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 		//
 		// Layout: Create UI sections from main tab
-		final int mainTabNo = MAIN_TabNo; // first tab
-		final GridTabVO mainTabVO = gridWindowVO.getTab(mainTabNo);
+		final GridTabVO mainTabVO = gridWindowVO.getTab(MAIN_TabNo);
 		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
 				.setId(mainTabVO.getAD_Tab_ID())
 				.setAD_Window_ID(AD_Window_ID) // legacy
 				.setAD_Tab_ID(mainTabVO.getAD_Tab_ID()) // legacy
-				.setTabNo(mainTabNo) // legacy
+				.setTabNo(MAIN_TabNo) // legacy
 				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 				;
 		{
@@ -138,9 +140,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 			// Set special field names
 			layoutBuilder
-					.setDocNoField(specialFieldsCollector.getDocNoField())
-					.setDocStatusField(specialFieldsCollector.getDocStatusField())
-					.setDocActionField(specialFieldsCollector.getDocActionField());
+					.setDocumentNoElement(specialFieldsCollector.buildDocumentNoElementAndConsume())
+					.setDocActionElement(specialFieldsCollector.buildDocActionElementAndConsume());
 
 			final SqlDocumentEntityDataBindingDescriptor.Builder mainEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(mainTabVO.getTableName())
@@ -166,7 +167,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 		//
 		// Layout: Create UI details from child tabs
-		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(mainTabNo))
+		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(MAIN_TabNo))
 		{
 			final DocumentLayoutDetailDescriptor detail = createDetail(detailTabVO);
 			if (detail.getElements().isEmpty())
@@ -215,9 +216,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.build();
 	}
 
-	private List<DocumentLayoutSectionDescriptor> createSections(final GridTabVO gridTabVO, final SpecialFieldsCollector specialFieldsCollector)
+	private List<DocumentLayoutSectionDescriptor.Builder> createSections(final GridTabVO gridTabVO, final SpecialFieldsCollector specialFieldsCollector)
 	{
-		final List<DocumentLayoutSectionDescriptor> uiSections = new ArrayList<>();
+		final List<DocumentLayoutSectionDescriptor.Builder> uiSections = new ArrayList<>();
 
 		//
 		// UI Sections
@@ -264,7 +265,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 						{
 							continue;
 						}
-						
+
 						// TODO: atm if we setting first element in group as primary, others as secondary.
 						final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
 
@@ -273,27 +274,22 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 						final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
 								.setCaption(uiElement.getName())
 								.setDescription(uiElement.getDescription())
-								.setLayoutType(layoutType) 
-								;
-
+								.setLayoutType(layoutType);
 						{
 							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
 							if (gridFieldVO != null)
 							{
-								final String columnName = gridFieldVO.getColumnName();
+								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridFieldVO);
 								layoutElementBuilder
 										.setWidgetType(extractWidgetType(gridFieldVO))
-										.addField(DocumentLayoutElementFieldDescriptor.builder()
-												.setField(columnName)
-												.setLookupSource(extractLookupSource(gridFieldVO))
-												.build());
+										.addField(layoutElementFieldBuilder);
 
-								specialFieldsCollector.updateFromColumnName(columnName);
+								specialFieldsCollector.collect(layoutElementBuilder);
 							}
 						}
 
 						//
-						// UI Element Fields
+						// UI Element Fields (if any)
 						for (final I_AD_UI_ElementField uiElementField : windowDAO.retrieveUIElementFields(uiElement))
 						{
 							if (!uiElementField.isActive())
@@ -304,33 +300,34 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
 							if (gridFieldVO != null)
 							{
-								final String columnName = gridFieldVO.getColumnName();
-								layoutElementBuilder.addField(DocumentLayoutElementFieldDescriptor.builder()
-										.setField(columnName)
-										.build());
+								if (layoutElementBuilder.getWidgetType() == null)
+								{
+									layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
+								}
+								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridFieldVO);
+								layoutElementBuilder.addField(layoutElementFieldBuilder);
 
-								specialFieldsCollector.updateFromColumnName(columnName);
+								specialFieldsCollector.collect(layoutElementBuilder);
 							}
 						}
-						
-						final DocumentLayoutElementLineDescriptor layoutElementLine = DocumentLayoutElementLineDescriptor.builder()
-								.addElement(layoutElementBuilder.build())
-								.build();
 
-						layoutElementGroupBuilder.addElementLine(layoutElementLine);
-						
+						final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+								.addElement(layoutElementBuilder);
+
+						layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
+
 						//
 						isFirstElementInGroup = false;
-					} // each uiElement
+					}    // each uiElement
 
-					layoutColumnBuilder.addElementGroupIfNotEmpty(layoutElementGroupBuilder.build());
-				} // each uiElementGroup
+					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
+				}    // each uiElementGroup
 
-				layoutSectionBuilder.addColumnIfNotEmpty(layoutColumnBuilder.build());
-			} // each uiColumn
+				layoutSectionBuilder.addColumn(layoutColumnBuilder);
+			}    // each uiColumn
 
-			uiSections.add(layoutSectionBuilder.build());
-		} // each uiSection
+			uiSections.add(layoutSectionBuilder);
+		}    // each uiSection
 
 		return uiSections;
 	}
@@ -342,29 +339,21 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setCaption(tab.getName())
 				.setDescription(tab.getDescription());
 
-		for (final GridFieldVO gridFieldVO : tab.getFields())
-		{
-			if (!gridFieldVO.isDisplayedGrid())
-			{
-				continue;
-			}
-
-			final String columnName = gridFieldVO.getColumnName();
-			final DocumentLayoutElementDescriptor element = DocumentLayoutElementDescriptor.builder()
-					.setCaption(gridFieldVO.getHeader())
-					.setDescription(gridFieldVO.getDescription())
-					.setWidgetType(extractWidgetType(gridFieldVO))
-					.setLayoutTypeNone() // does not matter for detail
-					.addField(DocumentLayoutElementFieldDescriptor.builder()
-							.setField(columnName)
-							.setLookupSource(extractLookupSource(gridFieldVO))
-							.build())
-					.build();
-
-			elementGroupBuilder.addElement(element);
-		}
+		tab.getFields()
+				.stream()
+				.filter(gridFieldVO -> gridFieldVO.isDisplayedGrid()) // only those which are displayed on grid
+				.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
+				.map(gridFieldVO -> DocumentLayoutElementDescriptor.builder()
+						.setCaption(gridFieldVO.getHeader())
+						.setDescription(gridFieldVO.getDescription())
+						.setWidgetType(extractWidgetType(gridFieldVO))
+						.setLayoutTypeNone() // does not matter for detail
+						.addField(documentLayoutElementFieldDescriptorBuilder(gridFieldVO))
+						.build())
+				.forEach(elementGroupBuilder::addElement);
 
 		return elementGroupBuilder.build();
+
 	}
 
 	private DocumentFieldDescriptor.Builder documentFieldDescriptorBuilder(final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder, final GridFieldVO gridFieldVO)
@@ -376,7 +365,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final String sqlColumnName = gridFieldVO.getColumnName();
 		final boolean keyColumn = gridFieldVO.isKey();
 		final boolean parentLinkColumn = sqlColumnName.equals(detailEntityBindingsBuilder.getSqlParentLinkColumnName());
-		
+
 		//
 		//
 		final int displayType;
@@ -389,7 +378,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final boolean alwaysUpdateable;
 		final ILogicExpression mandatoryLogic;
 		final ILogicExpression displayLogic;
-		if(parentLinkColumn)
+		if (parentLinkColumn)
 		{
 			displayType = DisplayType.ID;
 			AD_Reference_Value_ID = 0; // none
@@ -705,7 +694,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 		else if (displayType == DisplayType.Button)
 		{
-			if(gridFieldVO.getAD_Reference_Value_ID() > 0)
+			if (gridFieldVO.getAD_Reference_Value_ID() > 0)
 			{
 				return StringLookupValue.class;
 			}
@@ -860,7 +849,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					return DEFAULT_VALUE_EXPRESSION_Zero;
 				}
 			}
-			else if(DisplayType.PAttribute == displayType)
+			else if (DisplayType.PAttribute == displayType)
 			{
 				return DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 			}
@@ -880,51 +869,97 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 	}
 
+	private static final DocumentLayoutElementFieldDescriptor.Builder documentLayoutElementFieldDescriptorBuilder(final GridFieldVO gridFieldVO)
+	{
+		return DocumentLayoutElementFieldDescriptor.builder(gridFieldVO.getColumnName())
+				.setLookupSource(extractLookupSource(gridFieldVO));
+	}
+
 	private static final class SpecialFieldsCollector
 	{
-		private static final String COLUMNNAME_DocumentNo = "DocumentNo";
-		private static final String COLUMNNAME_Value = "Value";
-		private static final String COLUMNNAME_Name = "Name";
-		private static final String COLUMNNAME_DocStatus = "DocStatus";
-		private static final String COLUMNNAME_DocAction = "DocAction";
 		private static final Set<String> COLUMNNAMES = ImmutableSet.of(
-				COLUMNNAME_DocumentNo, COLUMNNAME_Value, COLUMNNAME_Name, COLUMNNAME_DocStatus, COLUMNNAME_DocAction);
+				WindowConstants.FIELDNAME_DocumentNo //
+				, WindowConstants.FIELDNAME_Value //
+				, WindowConstants.FIELDNAME_Name //
+				, WindowConstants.FIELDNAME_DocStatus //
+				, WindowConstants.FIELDNAME_DocAction //
+		);
 
-		private final Set<String> existingColumnNames = new HashSet<>();
+		private final Map<String, DocumentLayoutElementDescriptor.Builder> existingFields = new HashMap<>();
 
-		public void updateFromColumnName(final String columnName)
+		public void collect(final DocumentLayoutElementDescriptor.Builder layoutElementBuilder)
 		{
-			if (COLUMNNAMES.contains(columnName))
+			for (final String fieldName : layoutElementBuilder.getFieldNames())
 			{
-				existingColumnNames.add(columnName);
+				if (COLUMNNAMES.contains(fieldName))
+				{
+					existingFields.put(fieldName, layoutElementBuilder);
+				}
 			}
 		}
 
-		public String getDocNoField()
+		public DocumentLayoutElementDescriptor buildDocumentNoElementAndConsume()
 		{
-			if (existingColumnNames.contains(COLUMNNAME_DocumentNo))
+			for (final String fieldName : Arrays.asList(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name))
 			{
-				return COLUMNNAME_DocumentNo;
+				final DocumentLayoutElementDescriptor.Builder elementBuilder = existingFields.get(fieldName);
+				if (elementBuilder == null)
+				{
+					continue;
+				}
+				if (elementBuilder.isConsumed())
+				{
+					continue;
+				}
+
+				final DocumentLayoutElementDescriptor element = elementBuilder
+						.setLayoutTypeNone() // not relevant
+						.build();
+				return element;
 			}
-			else if (existingColumnNames.contains(COLUMNNAME_Value))
-			{
-				return COLUMNNAME_Value;
-			}
-			else if (existingColumnNames.contains(COLUMNNAME_Name))
-			{
-				return COLUMNNAME_Name;
-			}
+
 			return null;
 		}
 
-		public String getDocStatusField()
+		public DocumentLayoutElementDescriptor buildDocActionElementAndConsume()
 		{
-			return existingColumnNames.contains(COLUMNNAME_DocStatus) ? COLUMNNAME_DocStatus : null;
+			final DocumentLayoutElementFieldDescriptor.Builder docStatusFieldBuilder = getExistingField(WindowConstants.FIELDNAME_DocStatus);
+			if (docStatusFieldBuilder == null)
+			{
+				return null;
+			}
+
+			final DocumentLayoutElementFieldDescriptor.Builder docActionFieldBuilder = getExistingField(WindowConstants.FIELDNAME_DocAction);
+			if (docActionFieldBuilder == null)
+			{
+				return null;
+			}
+
+			return DocumentLayoutElementDescriptor.builder()
+					.setCaption(null) // not relevant
+					.setDescription(null) // not relevant
+					.setLayoutTypeNone() // not relevant
+					.setWidgetType(DocumentFieldWidgetType.ActionButton)
+					.addField(docStatusFieldBuilder.setFieldType(FieldType.ActionButtonStatus))
+					.addField(docActionFieldBuilder.setFieldType(FieldType.ActionButton))
+					.build();
 		}
 
-		public String getDocActionField()
+		private final DocumentLayoutElementFieldDescriptor.Builder getExistingField(final String fieldName)
 		{
-			return existingColumnNames.contains(COLUMNNAME_DocAction) ? COLUMNNAME_DocAction : null;
+			final DocumentLayoutElementDescriptor.Builder elementBuilder = existingFields.get(fieldName);
+			if (elementBuilder == null || elementBuilder.isConsumed())
+			{
+				return null;
+			}
+
+			DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = elementBuilder.getField(fieldName);
+			if (fieldBuilder == null || fieldBuilder.isConsumed())
+			{
+				return null;
+			}
+
+			return fieldBuilder;
 		}
 	}
 }

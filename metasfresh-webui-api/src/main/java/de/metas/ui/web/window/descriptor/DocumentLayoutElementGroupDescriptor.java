@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -46,7 +49,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	{
 		super();
 		layoutType = builder.layoutType;
-		elementLines = ImmutableList.copyOf(builder.elementLines);
+		elementLines = ImmutableList.copyOf(builder.buildElementLines());
 	}
 
 	@Override
@@ -68,16 +71,16 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	{
 		return elementLines;
 	}
-	
-	public boolean isEmpty()
+
+	public boolean hasElementLines()
 	{
-		return elementLines.isEmpty();
+		return !elementLines.isEmpty();
 	}
 
 	public static final class Builder
 	{
 		private LayoutType layoutType;
-		private final List<DocumentLayoutElementLineDescriptor> elementLines = new ArrayList<>();
+		private final List<DocumentLayoutElementLineDescriptor.Builder> elementLinesBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -87,6 +90,15 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		public DocumentLayoutElementGroupDescriptor build()
 		{
 			return new DocumentLayoutElementGroupDescriptor(this);
+		}
+
+		private List<DocumentLayoutElementLineDescriptor> buildElementLines()
+		{
+			return elementLinesBuilders
+					.stream()
+					.map(elementLinesBuilder -> elementLinesBuilder.build())
+					.filter(elementLine -> elementLine.hasElements())
+					.collect(GuavaCollectors.toImmutableList());
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)
@@ -100,15 +112,16 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			layoutType = LayoutType.fromNullable(layoutTypeStr);
 			return this;
 		}
-		
+
 		public LayoutType getLayoutType()
 		{
 			return layoutType;
 		}
 
-		public Builder addElementLine(final DocumentLayoutElementLineDescriptor elementLine)
+		public Builder addElementLine(final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)
 		{
-			elementLines.add(elementLine);
+			Check.assumeNotNull(elementLineBuilder, "Parameter elementLineBuilder is not null");
+			elementLinesBuilders.add(elementLineBuilder);
 			return this;
 		}
 	}

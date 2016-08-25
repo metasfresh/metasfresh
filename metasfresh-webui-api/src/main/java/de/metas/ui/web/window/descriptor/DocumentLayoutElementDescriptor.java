@@ -1,10 +1,12 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -62,7 +64,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		description = builder.description;
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 		layoutType = builder.layoutType;
-		fields = ImmutableSet.copyOf(builder.fields);
+		fields = ImmutableSet.copyOf(builder.buildFields());
 	}
 
 	@Override
@@ -101,6 +103,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return fields;
 	}
+	
+	public boolean hasFields()
+	{
+		return !fields.isEmpty();
+	}
 
 	public static final class Builder
 	{
@@ -108,7 +115,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String description;
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
-		private final LinkedHashSet<DocumentLayoutElementFieldDescriptor> fields = new LinkedHashSet<>();
+		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> fieldsBuilders = new LinkedHashMap<>();
+		private boolean consumed = false;
 
 		private Builder()
 		{
@@ -117,7 +125,18 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public DocumentLayoutElementDescriptor build()
 		{
+			setConsumed();
 			return new DocumentLayoutElementDescriptor(this);
+		}
+
+		private Set<DocumentLayoutElementFieldDescriptor> buildFields()
+		{
+			return fieldsBuilders
+					.values()
+					.stream()
+					.filter(fieldBuilder -> !fieldBuilder.isConsumed()) // skip those which were already consumed
+					.map(fieldBuilder -> fieldBuilder.build())
+					.collect(GuavaCollectors.toImmutableSet());
 		}
 
 		public Builder setCaption(final String caption)
@@ -136,6 +155,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			this.widgetType = widgetType;
 			return this;
+		}
+		
+		public DocumentFieldWidgetType getWidgetType()
+		{
+			return widgetType;
 		}
 
 		public Builder setLayoutType(final String layoutTypeStr)
@@ -162,20 +186,37 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return layoutType;
 		}
 
-		public Builder addField(final DocumentLayoutElementFieldDescriptor field)
+		public Builder addField(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
 		{
-			final boolean added = fields.add(field);
-			if (!added)
+			Check.assumeNotNull(fieldBuilder, "Parameter fieldBuilder is not null");
+			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+			if (previousFieldBuilder != null)
 			{
-				new AdempiereException("Field " + field + " already exists: " + fields + " for " + caption)
+				new AdempiereException("Field " + fieldBuilder.getFieldName() + " already exists in element: " + caption)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 			}
 			return this;
 		}
 		
-		public int getFieldsCount()
+		public Set<String> getFieldNames()
 		{
-			return fields.size();
+			return fieldsBuilders.keySet();
+		}
+		
+		public DocumentLayoutElementFieldDescriptor.Builder getField(final String fieldName)
+		{
+			return fieldsBuilders.get(fieldName);
+		}
+		
+		public Builder setConsumed()
+		{
+			this.consumed = true;
+			return this;
+		}
+		
+		public boolean isConsumed()
+		{
+			return consumed;
 		}
 	}
 }

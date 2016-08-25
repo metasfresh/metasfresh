@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -42,7 +45,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	private DocumentLayoutSectionDescriptor(final Builder builder)
 	{
 		super();
-		columns = ImmutableList.copyOf(builder.columns);
+		columns = ImmutableList.copyOf(builder.buildColumns());
 	}
 
 	@Override
@@ -57,10 +60,15 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	{
 		return columns;
 	}
+	
+	public boolean hasColumns()
+	{
+		return !columns.isEmpty();
+	}
 
 	public static final class Builder
 	{
-		private final List<DocumentLayoutColumnDescriptor> columns = new ArrayList<>();
+		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -72,14 +80,19 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return new DocumentLayoutSectionDescriptor(this);
 		}
 
-		public Builder addColumnIfNotEmpty(final DocumentLayoutColumnDescriptor column)
+		private List<DocumentLayoutColumnDescriptor> buildColumns()
 		{
-			if(column.getElementGroups().isEmpty())
-			{
-				return this;
-			}
-			
-			columns.add(column);
+			return columnsBuilders
+					.stream()
+					.map(columnBuilder -> columnBuilder.build())
+					.filter(column -> column.hasElementGroups())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		public Builder addColumn(final DocumentLayoutColumnDescriptor.Builder columnBuilder)
+		{
+			Check.assumeNotNull(columnBuilder, "Parameter columnBuilder is not null");
+			columnsBuilders.add(columnBuilder);
 			return this;
 		}
 	}

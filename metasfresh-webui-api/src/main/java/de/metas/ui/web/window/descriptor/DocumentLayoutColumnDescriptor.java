@@ -3,6 +3,9 @@ package de.metas.ui.web.window.descriptor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -40,7 +43,7 @@ public class DocumentLayoutColumnDescriptor
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
 		super();
-		elementGroups = ImmutableList.copyOf(builder.elementGroups);
+		elementGroups = ImmutableList.copyOf(builder.buildElementGroups());
 	}
 
 	@Override
@@ -56,9 +59,14 @@ public class DocumentLayoutColumnDescriptor
 		return elementGroups;
 	}
 
+	public boolean hasElementGroups()
+	{
+		return !elementGroups.isEmpty();
+	}
+
 	public static final class Builder
 	{
-		private final List<DocumentLayoutElementGroupDescriptor> elementGroups = new ArrayList<>();
+		private final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -70,14 +78,19 @@ public class DocumentLayoutColumnDescriptor
 			return new DocumentLayoutColumnDescriptor(this);
 		}
 
-		public Builder addElementGroupIfNotEmpty(final DocumentLayoutElementGroupDescriptor elementGroup)
+		private List<DocumentLayoutElementGroupDescriptor> buildElementGroups()
 		{
-			if (elementGroup.isEmpty())
-			{
-				return this;
-			}
+			return elementGroupsBuilders
+					.stream()
+					.map(elementGroupBuilder -> elementGroupBuilder.build())
+					.filter(elementGroup -> elementGroup.hasElementLines())
+					.collect(GuavaCollectors.toImmutableList());
+		}
 
-			elementGroups.add(elementGroup);
+		public Builder addElementGroup(final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)
+		{
+			Check.assumeNotNull(elementGroupBuilder, "Parameter elementGroupBuilder is not null");
+			elementGroupsBuilders.add(elementGroupBuilder);
 			return this;
 		}
 	}

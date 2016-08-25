@@ -48,17 +48,13 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonProperty("type")
 	private final String type;
 
-	@JsonProperty("docNoField")
+	@JsonProperty("documentNoElement")
 	@JsonInclude(Include.NON_NULL)
-	private final String docNoField;
+	private final JSONDocumentLayoutElement documentNoElement;
 
-	@JsonProperty("docStatusField")
+	@JsonProperty("docActionElement")
 	@JsonInclude(Include.NON_NULL)
-	private final String docStatusField;
-
-	@JsonProperty("docActionField")
-	@JsonInclude(Include.NON_NULL)
-	private final String docActionField;
+	private final JSONDocumentLayoutElement docActionElement;
 
 	@JsonProperty("sections")
 	@JsonInclude(Include.NON_EMPTY)
@@ -72,9 +68,8 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		super();
 		type = String.valueOf(layout.getAD_Window_ID());
-		docNoField = layout.getDocNoField();
-		docStatusField = layout.getDocStatusField();
-		docActionField = layout.getDocActionField();
+		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement());
+		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections());
 		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails());
 	}
@@ -82,18 +77,16 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonCreator
 	private JSONDocumentLayout(
 			@JsonProperty("type") final String type//
-			, @JsonProperty("docNoField") final String docNoField//
-			, @JsonProperty("docStatusField") final String docStatusField//
-			, @JsonProperty("docActionField") final String docActionField//
+			, @JsonProperty("documentNoElement") final JSONDocumentLayoutElement documentNoElement//
+			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
 	)
 	{
 		super();
 		this.type = type;
-		this.docNoField = docNoField;
-		this.docStatusField = docStatusField;
-		this.docActionField = docActionField;
+		this.documentNoElement = documentNoElement;
+		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
 		this.tabs = tabs == null ? ImmutableList.of() : ImmutableList.copyOf(tabs);
 	}
@@ -114,19 +107,14 @@ public final class JSONDocumentLayout implements Serializable
 		return type;
 	}
 
-	public String getDocNoField()
+	public JSONDocumentLayoutElement getDocumentNoElement()
 	{
-		return docNoField;
+		return documentNoElement;
 	}
 
-	public String getDocStatusField()
+	public JSONDocumentLayoutElement getDocActionElement()
 	{
-		return docStatusField;
-	}
-
-	public String getDocActionField()
-	{
-		return docActionField;
+		return docActionElement;
 	}
 
 	public List<JSONDocumentLayoutSection> getSections()

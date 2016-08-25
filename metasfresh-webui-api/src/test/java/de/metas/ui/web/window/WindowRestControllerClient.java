@@ -128,6 +128,13 @@ public class WindowRestControllerClient implements IWindowRestController
 		return Arrays.asList(jsonLookupValues);
 	}
 
+	public List<JSONLookupValue> dropdown(final int adWindowId, final String idStr, final String fieldName)
+	{
+		final String detailId = null;
+		final String rowIdStr = null;
+		return dropdown(adWindowId, idStr, detailId, rowIdStr, fieldName);
+	}
+
 	@Override
 	public List<JSONLookupValue> dropdown(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName)
 	{

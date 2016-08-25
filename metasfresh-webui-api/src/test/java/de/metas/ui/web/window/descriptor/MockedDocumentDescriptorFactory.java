@@ -43,7 +43,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 	private static int AD_Tab__SalesOrder_Header = 186;
 	@SuppressWarnings("unused")
 	private static int AD_Tab__SalesOrder_OrderLines = 187;
-	
+
 	// public static void main(String[] args)
 	// {
 	// System.out.println(new MockedDocumentDescriptorFactory().getDocumentDescriptor(AD_WINDOW_ID_SalesOrder));
@@ -97,27 +97,17 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 
 		final DocumentLayoutDescriptor layout = DocumentLayoutDescriptor.builder()
 				.addSection(DocumentLayoutSectionDescriptor.builder()
-						.addColumnIfNotEmpty(DocumentLayoutColumnDescriptor.builder()
-								.addElementGroupIfNotEmpty(DocumentLayoutElementGroupDescriptor.builder()
+						.addColumn(DocumentLayoutColumnDescriptor.builder()
+								.addElementGroup(DocumentLayoutElementGroupDescriptor.builder()
 										.addElementLine(DocumentLayoutElementLineDescriptor.builder()
 												.addElement(DocumentLayoutElementDescriptor.builder()
 														.setWidgetType(DocumentFieldWidgetType.Integer)
 														.setLayoutType(LayoutType.primary)
-														.addField(DocumentLayoutElementFieldDescriptor.builder()
-																.setField(I_C_Order.COLUMNNAME_C_Order_ID)
-																.build())
-														.build())
+														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_C_Order_ID)))
 												.addElement(DocumentLayoutElementDescriptor.builder()
 														.setWidgetType(DocumentFieldWidgetType.Text)
 														.setLayoutType(LayoutType.primary)
-														.addField(DocumentLayoutElementFieldDescriptor.builder()
-																.setField(I_C_Order.COLUMNNAME_DocumentNo)
-																.build())
-														.build())
-												.build())
-										.build())
-								.build())
-						.build())
+														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_DocumentNo)))))))
 				.build();
 
 		return DocumentDescriptor.builder()

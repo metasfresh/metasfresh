@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import io.swagger.annotations.ApiModel;
 
@@ -45,13 +46,39 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors)
 	{
 		return fieldDescriptors.stream()
-				.map(field -> of(field))
+				.map(JSONDocumentLayoutElementField::of)
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	public static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
 	{
 		return new JSONDocumentLayoutElementField(fieldDescriptor);
+	}
+
+	@ApiModel("field-type")
+	public static enum JSONFieldType
+	{
+		ActionButtonStatus, ActionButton;
+
+		public static JSONFieldType fromNullable(final FieldType fieldType)
+		{
+			if (fieldType == null)
+			{
+				return null;
+			}
+			final JSONFieldType jsonFieldType = fieldType2json.get(fieldType);
+			if (jsonFieldType == null)
+			{
+				throw new IllegalArgumentException("Cannot convert " + fieldType + " to " + JSONFieldType.class);
+			}
+			return jsonFieldType;
+		}
+
+		private static final Map<FieldType, JSONFieldType> fieldType2json = ImmutableMap.<FieldType, JSONFieldType> builder()
+				.put(FieldType.ActionButtonStatus, JSONFieldType.ActionButtonStatus)
+				.put(FieldType.ActionButton, JSONFieldType.ActionButton)
+				.build();
+
 	}
 
 	@ApiModel("lookup-source")
@@ -79,8 +106,12 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.build();
 	}
 
-	@JsonProperty("field")
+	@JsonProperty(value = "field", required = true)
 	private final String field;
+
+	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONFieldType type;
 
 	@JsonProperty("source")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -90,17 +121,20 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	{
 		super();
 		field = fieldDescriptor.getField();
+		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 	}
 
 	@JsonCreator
 	private JSONDocumentLayoutElementField(
 			@JsonProperty("field") final String field //
+			, @JsonProperty("type") final JSONFieldType type //
 			, @JsonProperty("source") final JSONLookupSource source //
 	)
 	{
 		super();
 		this.field = field;
+		this.type = type;
 		this.source = source;
 	}
 
@@ -108,13 +142,21 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("field", field)
+				.add("type", type)
+				.add("source", source)
 				.toString();
 	}
 
 	public String getField()
 	{
 		return field;
+	}
+
+	public JSONFieldType getType()
+	{
+		return type;
 	}
 
 	public JSONLookupSource getSource()

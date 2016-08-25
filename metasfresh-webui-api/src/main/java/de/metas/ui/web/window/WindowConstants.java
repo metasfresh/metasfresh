@@ -47,6 +47,9 @@ public final class WindowConstants
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
 	
+	public static final String FIELDNAME_DocumentNo = "DocumentNo";
+	public static final String FIELDNAME_Value = "Value";
+	public static final String FIELDNAME_Name = "Name";
 	public static final String FIELDNAME_IsActive = "IsActive";
 	public static final String FIELDNAME_DocStatus = "DocStatus";
 	public static final String FIELDNAME_DocAction = "DocAction";

@@ -142,7 +142,23 @@ public class ManualTest
 		System.out.println("---------------------------------------------------------------------");
 		System.out.println("Test C_Order.C_BPartner_ID lookup");
 		{
-			restClient.dropdown(143, orderId, null, null, "C_BPartner_ID");
+			restClient.dropdown(143, orderId, "C_BPartner_ID");
+		}
+
+		//
+		//
+		System.out.println("---------------------------------------------------------------------");
+		System.out.println("Test C_Order.DocStatus values");
+		{
+			restClient.dropdown(143, orderId, "DocStatus");
+		}
+
+		//
+		//
+		System.out.println("---------------------------------------------------------------------");
+		System.out.println("Test C_Order.DocAction values");
+		{
+			restClient.dropdown(143, orderId, "DocAction");
 		}
 	}
 
@@ -157,115 +173,6 @@ public class ManualTest
 		super();
 		restClient = new WindowRestControllerClient("localhost", 8080);
 	}
-
-	// public String layout(final int type)
-	// {
-	// final String json = httpGet("/layout?type=" + type);
-	//
-	// // NOTE: deserialization is not supported
-	// // final JSONDocumentLayout layout = jsonObjectMapper.readValue(httpcon.getInputStream(), JSONDocumentLayout.class);
-	// // return layout;
-	//
-	// return json;
-	// }
-
-	// public List<JSONDocument> commit(final int type, final String id, final List<JSONDocumentChangedEvent> events)
-	// {
-	// final String detailId = null;
-	// final String rowId = null;
-	// return commit(type, id, detailId, rowId, events);
-	// }
-
-	// public List<JSONDocument> commit(final int type, final String id, final String detailId, final String rowId, final List<JSONDocumentChangedEvent> events)
-	// {
-	// final String httpPath = "/commit?type=" + type + "&id=" + Strings.nullToEmpty(id) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowId);
-	// System.out.println("COMMIT " + httpPath);
-	// System.out.println("" + events);
-	//
-	// final String jsonResult = httpPatch(httpPath, events);
-	// System.out.println("GOT ANSWER: " + jsonResult);
-	// try
-	// {
-	// final JSONDocument[] jsonDocuments = jsonObjectMapper.readValue(jsonResult, JSONDocument[].class);
-	// return Arrays.asList(jsonDocuments);
-	// }
-	// catch (final IOException e)
-	// {
-	// throw Throwables.propagate(e);
-	// }
-	// }
-
-	// private String httpGet(final String path)
-	// {
-	// try
-	// {
-	// final CloseableHttpClient httpClient = HttpClients.createDefault();
-	// final HttpUriRequest request = new HttpGet(URL_BASE + path);
-	// final CloseableHttpResponse response = httpClient.execute(request);
-	// return readString(response.getEntity().getContent());
-	// }
-	// catch (final Exception e)
-	// {
-	// throw Throwables.propagate(e);
-	// }
-	// }
-	//
-	// private String httpPatch(final String path, final Object jsonData)
-	// {
-	// try
-	// {
-	// final String requestJsonString = jsonObjectMapper.writeValueAsString(jsonData);
-	// final CloseableHttpClient httpClient = HttpClients.createDefault();
-	// final HttpPatch request = new HttpPatch(URL_BASE + path);
-	// request.setHeader("Content-Type", "application/json");
-	// request.setHeader("Accept", "*/*");
-	// request.setEntity(new StringEntity(requestJsonString));
-	// final CloseableHttpResponse response = httpClient.execute(request);
-	// return readString(response.getEntity().getContent());
-	// }
-	// catch (final Exception e)
-	// {
-	// throw Throwables.propagate(e);
-	// }
-	// }
-
-	// private HttpURLConnection connect(final String method, final String path) throws IOException
-	// {
-	// final URL url = new URL(URL_BASE + path);
-	//
-	// final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-	// conn.setDoOutput(true);
-	// conn.setRequestProperty("Content-Type", "application/json");
-	// conn.setRequestProperty("Accept", "application/json");
-	//
-	// if ("PATCH".equals(method))
-	// {
-	// conn.setRequestProperty("X-HTTP-Method-Override", "PATCH");
-	// conn.setRequestMethod("POST");
-	// }
-	// else
-	// {
-	// conn.setRequestMethod(method);
-	// }
-	//
-	// conn.connect();
-	//
-	// return conn;
-	// }
-
-	// private static final String readString(final InputStream in) throws IOException
-	// {
-	// final StringBuilder result = new StringBuilder();
-	// final byte[] buf = new byte[4096];
-	// int len = 0;
-	// while ((len = in.read(buf)) > 0)
-	// {
-	// final String str = new String(buf, 0, len);
-	// result.append(str);
-	// }
-	//
-	// return result.toString();
-	// }
 
 	private static String getId(final List<JSONDocument> jsonDocuments, final String defaultValue)
 	{

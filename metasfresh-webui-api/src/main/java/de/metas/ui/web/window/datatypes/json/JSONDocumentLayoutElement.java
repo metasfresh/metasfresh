@@ -46,14 +46,24 @@ public final class JSONDocumentLayoutElement implements Serializable
 	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements)
 	{
 		return elements.stream()
-				.map(element -> of(element))
+				.map(JSONDocumentLayoutElement::of)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutElement of(final DocumentLayoutElementDescriptor element)
+	private static JSONDocumentLayoutElement of(final DocumentLayoutElementDescriptor element)
 	{
 		return new JSONDocumentLayoutElement(element);
 	}
+	
+	public static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element)
+	{
+		if(element == null)
+		{
+			return null;
+		}
+		return new JSONDocumentLayoutElement(element);
+	}
+
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -68,6 +78,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 	/** Type: primary, secondary */
 	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
 	@JsonProperty("fields")

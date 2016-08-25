@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -40,9 +42,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	/** i.e. AD_Window_ID */
 	private final int AD_Window_ID;
-	private final String docNoField;
-	private final String docStatusField;
-	private final String docActionField;
+	private DocumentLayoutElementDescriptor documentNoElement;
+	private DocumentLayoutElementDescriptor docActionElement;
 
 	private final List<DocumentLayoutSectionDescriptor> sections;
 
@@ -52,12 +53,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		super();
 		AD_Window_ID = builder.AD_Window_ID;
-		docNoField = builder.docNoField;
-		docStatusField = builder.docStatusField;
-		docActionField = builder.docActionField;
+		documentNoElement = builder.documentNoElement;
+		docActionElement = builder.docActionElement;
 
-		sections = ImmutableList.copyOf(builder.sections);
-		details = ImmutableList.copyOf(builder.details);
+		sections = ImmutableList.copyOf(builder.buildSections());
+		details = ImmutableList.copyOf(builder.buildDetails());
 	}
 
 	@Override
@@ -76,19 +76,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return AD_Window_ID;
 	}
 
-	public String getDocNoField()
+	public DocumentLayoutElementDescriptor getDocumentNoElement()
 	{
-		return docNoField;
+		return documentNoElement;
 	}
 
-	public String getDocStatusField()
+	public DocumentLayoutElementDescriptor getDocActionElement()
 	{
-		return docStatusField;
-	}
-
-	public String getDocActionField()
-	{
-		return docActionField;
+		return docActionElement;
 	}
 
 	public List<DocumentLayoutSectionDescriptor> getSections()
@@ -104,10 +99,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 	public static final class Builder
 	{
 		private int AD_Window_ID;
-		private String docNoField;
-		private String docStatusField;
-		private String docActionField;
-		private final List<DocumentLayoutSectionDescriptor> sections = new ArrayList<>();
+		private DocumentLayoutElementDescriptor documentNoElement;
+		private DocumentLayoutElementDescriptor docActionElement;
+		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 		private final List<DocumentLayoutDetailDescriptor> details = new ArrayList<>();
 
 		private Builder()
@@ -120,39 +114,47 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return new DocumentLayoutDescriptor(this);
 		}
 
+		private List<DocumentLayoutSectionDescriptor> buildSections()
+		{
+			return sectionBuilders
+					.stream()
+					.map(sectionBuilder -> sectionBuilder.build())
+					.filter(section -> section.hasColumns())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		private List<DocumentLayoutDetailDescriptor> buildDetails()
+		{
+			return details;
+		}
+
 		public Builder setAD_Window_ID(final int AD_Window_ID)
 		{
 			this.AD_Window_ID = AD_Window_ID;
 			return this;
 		}
 
-		public Builder setDocNoField(final String docNoField)
+		public Builder setDocumentNoElement(final DocumentLayoutElementDescriptor documentNoElement)
 		{
-			this.docNoField = docNoField;
+			this.documentNoElement = documentNoElement;
 			return this;
 		}
 
-		public Builder setDocStatusField(final String docStatusField)
+		public Builder setDocActionElement(final DocumentLayoutElementDescriptor docActionElement)
 		{
-			this.docStatusField = docStatusField;
+			this.docActionElement = docActionElement;
 			return this;
 		}
 
-		public Builder setDocActionField(final String docActionField)
+		public Builder addSection(final DocumentLayoutSectionDescriptor.Builder section)
 		{
-			this.docActionField = docActionField;
+			sectionBuilders.add(section);
 			return this;
 		}
 
-		public Builder addSection(final DocumentLayoutSectionDescriptor section)
+		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sections)
 		{
-			sections.add(section);
-			return this;
-		}
-
-		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor> sections)
-		{
-			this.sections.addAll(sections);
+			this.sectionBuilders.addAll(sections);
 			return this;
 		}
 

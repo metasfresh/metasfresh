@@ -3,6 +3,8 @@ package de.metas.ui.web.window.descriptor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -40,7 +42,7 @@ public final class DocumentLayoutElementLineDescriptor
 	private DocumentLayoutElementLineDescriptor(final Builder builder)
 	{
 		super();
-		elements = ImmutableList.copyOf(builder.elements);
+		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 
 	@Override
@@ -57,9 +59,14 @@ public final class DocumentLayoutElementLineDescriptor
 		return elements;
 	}
 
+	public boolean hasElements()
+	{
+		return !elements.isEmpty();
+	}
+
 	public static final class Builder
 	{
-		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor.Builder> elementsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -71,9 +78,19 @@ public final class DocumentLayoutElementLineDescriptor
 			return new DocumentLayoutElementLineDescriptor(this);
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor element)
+		private List<DocumentLayoutElementDescriptor> buildElements()
 		{
-			elements.add(element);
+			return elementsBuilders
+					.stream()
+					.filter(elementBuilder -> !elementBuilder.isConsumed())
+					.map(elementBuilder -> elementBuilder.build())
+					.filter(element -> element.hasFields())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
+		{
+			elementsBuilders.add(elementBuilder);
 			return this;
 		}
 	}
