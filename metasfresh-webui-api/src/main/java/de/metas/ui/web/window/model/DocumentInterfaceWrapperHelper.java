@@ -3,11 +3,13 @@ package de.metas.ui.web.window.model;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -222,5 +224,26 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	public Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		return DocumentInterfaceWrapper.getDocument(model).setDynAttribute(attributeName, value);
+	}
+
+	@Override
+	public <T extends PO> T getPO(final Object model, final boolean strict)
+	{
+		if (strict)
+		{
+			return null;
+		}
+
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		if (document == null)
+		{
+			throw new AdempiereException("Cannot extract " + Document.class + " from " + model);
+		}
+
+		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+		final boolean checkCache = false;
+		@SuppressWarnings("unchecked")
+		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
+		return po;
 	}
 }
