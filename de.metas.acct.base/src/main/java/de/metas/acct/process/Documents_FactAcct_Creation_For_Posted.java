@@ -56,8 +56,6 @@ public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
 		// this process is posting documents that were created one day before the process runs
 		final Timestamp startTime;
 		
-		p_Date = new Date(116,5,16);
-
 		if (p_Date != null)
 		{
 			startTime = TimeUtil.getDay(p_Date);
