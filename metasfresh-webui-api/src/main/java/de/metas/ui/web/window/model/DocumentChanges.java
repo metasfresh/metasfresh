@@ -41,6 +41,8 @@ public final class DocumentChanges
 {
 	private final DocumentPath documentPath;
 	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
+	private DocumentValidStatus documentValidStatus = null;
+	private DocumentSaveStatus documentSaveStatus = null;
 
 	/* package */ DocumentChanges(final DocumentPath documentPath)
 	{
@@ -71,7 +73,9 @@ public final class DocumentChanges
 
 	public boolean isEmpty()
 	{
-		return fieldChangesByName.isEmpty();
+		return fieldChangesByName.isEmpty()
+				&& documentValidStatus == null
+				&& documentSaveStatus == null;
 	}
 
 	private DocumentFieldChange fieldChangesOf(final IDocumentFieldView documentField)
@@ -184,6 +188,16 @@ public final class DocumentChanges
 			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey());
 			toFieldChange.mergeFrom(fromFieldChange);
 		}
+
+		if (fromDocumentChanges.documentValidStatus != null)
+		{
+			collectDocumentValidStatusChanged(fromDocumentChanges.documentValidStatus);
+		}
+
+		if (fromDocumentChanges.documentSaveStatus != null)
+		{
+			collectDocumentSaveStatusChanged(fromDocumentChanges.documentSaveStatus);
+		}
 	}
 
 	/* package */boolean collectFrom(final Document document, final ReasonSupplier reason)
@@ -254,4 +268,25 @@ public final class DocumentChanges
 
 		return collected;
 	}
+
+	/* package */void collectDocumentValidStatusChanged(final DocumentValidStatus documentValidStatus)
+	{
+		this.documentValidStatus = documentValidStatus;
+	}
+
+	public DocumentValidStatus getDocumentValidStatus()
+	{
+		return documentValidStatus;
+	}
+
+	/* package */void collectDocumentSaveStatusChanged(final DocumentSaveStatus documentSaveStatus)
+	{
+		this.documentSaveStatus = documentSaveStatus;
+	}
+
+	public DocumentSaveStatus getDocumentSaveStatus()
+	{
+		return documentSaveStatus;
+	}
+
 }

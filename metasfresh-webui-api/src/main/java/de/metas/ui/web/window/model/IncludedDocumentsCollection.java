@@ -244,18 +244,19 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		return new IncludedDocumentsCollection(this, parentDocumentCopy);
 	}
 
-	/* package */boolean isValidForSaving()
+	/* package */DocumentValidStatus checkAndGetValidStatus()
 	{
 		for (final Document document : documents.values())
 		{
-			if (!document.isValidForSaving())
+			final DocumentValidStatus validState = document.checkAndGetValidStatus();
+			if (!validState.isValid())
 			{
-				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid", this, document);
-				return false;
+				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid: ", this, document, validState);
+				return validState;
 			}
 		}
 
-		return true;
+		return DocumentValidStatus.valid();
 	}
 	
 	/* package */boolean hasChangesRecursivelly()

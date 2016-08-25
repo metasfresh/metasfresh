@@ -31,8 +31,6 @@ public interface IDocumentChangesCollector
 {
 	Set<String> getFieldNames(DocumentPath documentPath);
 
-	boolean isEmpty();
-
 //	List<DocumentFieldChangedEvent> toEventsList();
 	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
 
@@ -47,7 +45,7 @@ public interface IDocumentChangesCollector
 	void collectLookupValuesStaled(IDocumentFieldView documentField, ReasonSupplier reason);
 
 	void collectFrom(IDocumentChangesCollector fromCollector);
-
+	
 	/**
 	 * Collect changes from given document (only those which were not yet collected).
 	 * 
@@ -55,6 +53,10 @@ public interface IDocumentChangesCollector
 	 * @return true if something was collected
 	 */
 	boolean collectFrom(Document document, ReasonSupplier reason);
+	
+	void collectDocumentValidStatusChanged(DocumentPath documentPath, DocumentValidStatus documentValidStatus);
+
+	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
 
 	@FunctionalInterface
 	interface ReasonSupplier

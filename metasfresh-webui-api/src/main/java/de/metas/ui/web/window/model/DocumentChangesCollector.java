@@ -55,25 +55,6 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public boolean isEmpty()
-	{
-		if (documentChangesByPath.isEmpty())
-		{
-			return true;
-		}
-
-		for (final DocumentChanges documentChanges : documentChangesByPath.values())
-		{
-			if (!documentChanges.isEmpty())
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	@Override
 	public Set<String> getFieldNames(final DocumentPath documentPath)
 	{
 		final DocumentChanges documentChanges = documentChangesIfExists(documentPath);
@@ -160,5 +141,19 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		final DocumentPath documentPath = document.getDocumentPath();
 		return documentChanges(documentPath)
 				.collectFrom(document, reason);
+	}
+
+	@Override
+	public void collectDocumentValidStatusChanged(final DocumentPath documentPath, final DocumentValidStatus documentValidStatus)
+	{
+		documentChanges(documentPath)
+				.collectDocumentValidStatusChanged(documentValidStatus);
+	}
+
+	@Override
+	public void collectDocumentSaveStatusChanged(final DocumentPath documentPath, final DocumentSaveStatus documentSaveStatus)
+	{
+		documentChanges(documentPath)
+				.collectDocumentSaveStatusChanged(documentSaveStatus);
 	}
 }

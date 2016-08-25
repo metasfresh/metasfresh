@@ -46,12 +46,6 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
-	public boolean isEmpty()
-	{
-		return true;
-	}
-
-	@Override
 	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
 	{
 		return ImmutableMap.of();
@@ -97,5 +91,17 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	public boolean collectFrom(final Document document, final ReasonSupplier reason)
 	{
 		return false; // nothing collected
+	}
+
+	@Override
+	public void collectDocumentValidStatusChanged(final DocumentPath documentPath, final DocumentValidStatus documentValidStatus)
+	{
+		// do nothing
+	}
+
+	@Override
+	public void collectDocumentSaveStatusChanged(final DocumentPath documentPath, final DocumentSaveStatus documentSaveStatus)
+	{
+		// do nothing
 	}
 }

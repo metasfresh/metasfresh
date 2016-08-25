@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,7 +65,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	private boolean _mandatory = false;
 	private boolean _readonly = false;
 	private boolean _displayed = false;
-	private boolean _valid = false;
+	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -72,7 +73,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		this.descriptor = descriptor;
 		_document = document;
 		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
-		_valid = false;
+		_valid = DocumentValidStatus.inititalInvalid();
 	}
 
 	/** copy constructor */
@@ -482,9 +483,9 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 	public final void updateValid()
 	{
-		final boolean validOld = _valid;
-		final boolean validNew = checkValid();
-		if (validOld == validNew)
+		final DocumentValidStatus validOld = _valid;
+		final DocumentValidStatus validNew = checkValid();
+		if(Objects.equals(validOld, validNew))
 		{
 			return;
 		}
@@ -493,18 +494,21 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		logger.debug("Changed valid state {}->{} for {}", validOld, validNew, this);
 	}
 
-	private final boolean checkValid()
+	private final DocumentValidStatus checkValid()
 	{
 		if (isMandatory() && getValue() == null)
 		{
 			logger.debug("Not valid because mandatory field is not filled: {}", this);
-			return false;
+			return DocumentValidStatus.invalidMandatoryFieldNotFilled(getFieldName());
 		}
 
-		return true;
+		return DocumentValidStatus.valid();
 	}
 
-	/* package */boolean isValid()
+	/**
+	 * @return field's valid state; never return null
+	 */
+	/* package */DocumentValidStatus getValid()
 	{
 		return _valid;
 	}

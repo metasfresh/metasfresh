@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,27 +92,42 @@ public final class Document
 
 	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 
+	//
+	// Descriptors & paths
 	private final DocumentRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final DocumentPath documentPath;
+	
+	//
+	// Status
 	private boolean _new;
 	private final boolean _writable;
 	private boolean _initializing = false;
+	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
+	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
 
+	//
+	// Callouts
 	private ITabCallout documentCallout = ITabCallout.NULL;
 	private final ICalloutExecutor fieldCalloutExecutor;
+	private DocumentAsCalloutRecord _calloutRecord; // lazy
 
+	//
+	// Fields
 	private final Map<String, DocumentField> fieldsByName;
 	private final IDocumentFieldView idField;
 	private final DocumentField parentLinkField;
 
+	//
+	// Parent & children
 	private final Document _parentDocument;
 	private final Map<String, IncludedDocumentsCollection> includedDocuments;
 
+	//
+	// Misc
 	private DocumentEvaluatee _evaluatee; // lazy
 	private Map<String, Object> _dynAttributes = null; // lazy
-	private DocumentAsCalloutRecord _calloutRecord; // lazy
 
 	public static enum FieldInitializationMode
 	{
@@ -228,6 +244,8 @@ public final class Document
 		_writable = writable;
 
 		_new = from._new;
+		_valid = from._valid;
+		_saveStatus = from._saveStatus;
 
 		if (from._parentDocument != null)
 		{
@@ -564,6 +582,8 @@ public final class Document
 				.add("NEW", _new ? Boolean.TRUE : null)
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
+				.add("valid", _valid)
+				.add("saveStatus", _saveStatus)
 				// .add("fields", fieldsByName.values()) // skip because it's too long
 				.toString();
 	}
@@ -691,6 +711,34 @@ public final class Document
 	public void markAsNotNew()
 	{
 		_new = false;
+	}
+	
+	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
+	{
+		Preconditions.checkNotNull(valid, "valid"); // shall not happen
+		final DocumentValidStatus validOld = _valid;
+		if(Objects.equals(validOld, valid))
+		{
+			return validOld; // no change 
+		}
+		
+		_valid = valid;
+		Execution.getCurrentDocumentChangesCollector().collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		return valid;
+	}
+	
+	private final DocumentSaveStatus setSaveStatusAndReturn(final DocumentSaveStatus saveStatus)
+	{
+		Preconditions.checkNotNull(saveStatus, "saveStatus");
+		final DocumentSaveStatus saveStatusOld = _saveStatus;
+		if(Objects.equals(saveStatusOld, saveStatus))
+		{
+			return saveStatusOld; // no change
+		}
+		
+		_saveStatus = saveStatus;
+		Execution.getCurrentDocumentChangesCollector().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
+		return _saveStatus;
 	}
 
 	public DocumentEvaluatee asEvaluatee()
@@ -1128,16 +1176,17 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
-	/* package */ boolean isValidForSaving()
+	/* package */ DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
 		// Check document fields
 		for (final DocumentField documentField : getFields())
 		{
-			if (!documentField.isValid())
+			final DocumentValidStatus validState = documentField.getValid();
+			if (!validState.isValid())
 			{
-				logger.trace("Considering document invalid because {} is not valid", documentField);
-				return false;
+				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);
+				return setValidStatusAndReturn(validState);
 			}
 		}
 
@@ -1145,14 +1194,25 @@ public final class Document
 		// Check included documents
 		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
-			if (!includedDocumentsPerDetailId.isValidForSaving())
+			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus();
+			if (!validState.isValid())
 			{
-				logger.trace("Considering document invalid because {} is not valid", includedDocumentsPerDetailId);
-				return false;
+				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
+				return setValidStatusAndReturn(validState);
 			}
 		}
 
-		return true; // valid
+		return setValidStatusAndReturn(DocumentValidStatus.valid()); // valid
+	}
+	
+	public DocumentValidStatus getValidStatus()
+	{
+		return _valid;
+	}
+	
+	public DocumentSaveStatus getSaveStatus()
+	{
+		return _saveStatus;
 	}
 
 	private boolean hasChanges()
@@ -1204,7 +1264,7 @@ public final class Document
 	}
 
 
-	public void saveIfValidAndHasChanges()
+	public DocumentSaveStatus saveIfValidAndHasChanges()
 	{
 		//
 		// Update parent link field
@@ -1216,26 +1276,28 @@ public final class Document
 
 		//
 		// Check if valid for saving
-		if (!isValidForSaving())
+		final DocumentValidStatus validState = checkAndGetValidStatus();
+		if (!validState.isValid())
 		{
-			logger.debug("Skip saving because document is not valid: {}", this);
-			return;
+			logger.debug("Skip saving because document {} is not valid: {}", this, validState);
+			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(validState));
 		}
 
 		//
 		// Try saving it
 		try
 		{
-			saveIfHasChanges();
+			return saveIfHasChanges();
 		}
-		catch (final Exception e)
+		catch (final Exception saveEx)
 		{
 			// NOTE: usually if we do the right checkings we shall not get to this
-			logger.warn("Failed saving document, but IGNORED: {}", this, e);
+			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
+			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
 		}
 	}
 
-	/* package */void saveIfHasChanges() throws RuntimeException
+	/* package */DocumentSaveStatus saveIfHasChanges() throws RuntimeException
 	{
 		//
 		// Save this document
@@ -1256,6 +1318,8 @@ public final class Document
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
 		}
+		
+		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
 	}
 
 	public ICalloutRecord asCalloutRecord()

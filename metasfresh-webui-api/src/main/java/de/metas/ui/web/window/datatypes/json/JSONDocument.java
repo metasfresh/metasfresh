@@ -22,6 +22,8 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
@@ -84,6 +86,18 @@ public final class JSONDocument implements Serializable
 
 		jsonDocument.setFields(jsonFields);
 		
+		final DocumentValidStatus documentValidStatus = document.getValidStatus();
+		if(documentValidStatus != null)
+		{
+			jsonDocument.setValidStatus(documentValidStatus.toJson());
+		}
+		
+		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
+		if(documentSaveStatus != null)
+		{
+			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
+		}
+
 		//
 		// Set debugging info
 		if (WindowConstants.isProtocolDebugging())
@@ -93,7 +107,6 @@ public final class JSONDocument implements Serializable
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 
-		
 		return jsonDocument;
 	}
 
@@ -120,32 +133,60 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
 		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
 		{
-			if (documentChangedEvents.isEmpty())
+			final JSONDocument jsonDocument = ofEvent(documentChangedEvents);
+			if (jsonDocument == null)
 			{
 				continue;
 			}
-
-			final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
-
-			final List<JSONDocumentField> jsonFields = new ArrayList<>();
-			documentChangedEvents.getFieldChangesList()
-					.stream()
-					.forEach((field) -> {
-						// Add the pseudo-field "ID" first
-						if (field.isKey())
-						{
-							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
-						}
-
-						// Append the other fields
-						jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
-					});
-			jsonDocument.setFields(jsonFields);
-
 			jsonDocuments.add(jsonDocument);
 		}
 
 		return jsonDocuments;
+	}
+
+	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents)
+	{
+		if (documentChangedEvents.isEmpty())
+		{
+			return null;
+		}
+
+		final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
+
+		//
+		// Fields
+		final List<JSONDocumentField> jsonFields = new ArrayList<>();
+		documentChangedEvents.getFieldChangesList()
+				.stream()
+				.forEach((field) -> {
+					// Add the pseudo-field "ID" first
+					if (field.isKey())
+					{
+						jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
+					}
+
+					// Append the other fields
+					jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
+				});
+		jsonDocument.setFields(jsonFields);
+
+		//
+		// Valid status
+		final DocumentValidStatus documentValidStatus = documentChangedEvents.getDocumentValidStatus();
+		if (documentValidStatus != null)
+		{
+			jsonDocument.setValidStatus(documentValidStatus.toJson());
+		}
+
+		//
+		// Save status
+		final DocumentSaveStatus documentSaveStatus = documentChangedEvents.getDocumentSaveStatus();
+		if (documentSaveStatus != null)
+		{
+			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
+		}
+
+		return jsonDocument;
 	}
 
 	@JsonProperty("id")
@@ -158,6 +199,14 @@ public final class JSONDocument implements Serializable
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
+
+	@JsonProperty("valid-status")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String validStatus;
+
+	@JsonProperty("save-status")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String saveStatus;
 
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -188,6 +237,8 @@ public final class JSONDocument implements Serializable
 			@JsonProperty("id") final String id //
 			, @JsonProperty("tabid") final String tabid //
 			, @JsonProperty("rowId") final String rowId //
+			, @JsonProperty("valid-status") final String validStatus //
+			, @JsonProperty("save-status") final String saveStatus //
 			, @JsonProperty("fields") final List<JSONDocumentField> fields //
 	)
 	{
@@ -196,12 +247,6 @@ public final class JSONDocument implements Serializable
 		this.tabid = tabid;
 		this.rowId = rowId;
 		setFields(fields);
-	}
-
-	@Override
-	public String toString()
-	{
-		return super.toString();
 	}
 
 	public String getId()
@@ -217,6 +262,26 @@ public final class JSONDocument implements Serializable
 	public String getRowId()
 	{
 		return rowId;
+	}
+
+	private void setValidStatus(final String validStatus)
+	{
+		this.validStatus = validStatus;
+	}
+
+	public String getValidStatus()
+	{
+		return validStatus;
+	}
+
+	private void setSaveStatus(final String saveStatus)
+	{
+		this.saveStatus = saveStatus;
+	}
+
+	public String getSaveStatus()
+	{
+		return saveStatus;
 	}
 
 	@JsonAnyGetter
