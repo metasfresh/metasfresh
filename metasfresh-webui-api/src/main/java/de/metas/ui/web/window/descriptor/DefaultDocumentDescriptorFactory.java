@@ -817,6 +817,14 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		{
 			return ILogicExpression.FALSE;
 		}
+		
+		// FIXME: hardcoded M_AttributeSetInstance_ID mandatory logic = false
+		// Reason: even if we set it's default value to "0" some callouts are setting it to NULL,
+		// and then the document saving API is failing because it considers this column as NOT filled.
+		if (WindowConstants.FIELDNAME_M_AttributeSetInstance_ID.equals(columnName))
+		{
+			return ILogicExpression.FALSE;
+		}
 
 		if (gridFieldVO.isMandatory())
 		{

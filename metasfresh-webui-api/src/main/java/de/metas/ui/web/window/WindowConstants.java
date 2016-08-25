@@ -46,7 +46,7 @@ public final class WindowConstants
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
-	
+
 	public static final String FIELDNAME_DocumentNo = "DocumentNo";
 	public static final String FIELDNAME_Value = "Value";
 	public static final String FIELDNAME_Name = "Name";
@@ -59,6 +59,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_C_DocType_ID = "C_DocType_ID";
 	public static final String FIELDNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	public static final String FIELDNAME_OrderType = "OrderType";
+	public static final String FIELDNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 	public static final Set<String> FIELDNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
 	private WindowConstants()
