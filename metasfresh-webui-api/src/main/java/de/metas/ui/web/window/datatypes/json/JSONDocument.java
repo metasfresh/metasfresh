@@ -85,15 +85,15 @@ public final class JSONDocument implements Serializable
 				.forEach(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
-		
+
 		final DocumentValidStatus documentValidStatus = document.getValidStatus();
-		if(documentValidStatus != null)
+		if (documentValidStatus != null)
 		{
 			jsonDocument.setValidStatus(documentValidStatus.toJson());
 		}
-		
+
 		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
-		if(documentSaveStatus != null)
+		if (documentSaveStatus != null)
 		{
 			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
 		}
