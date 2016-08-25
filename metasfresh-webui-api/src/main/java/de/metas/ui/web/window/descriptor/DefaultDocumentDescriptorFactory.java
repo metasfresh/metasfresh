@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
@@ -67,13 +68,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 
 	private static final int MAIN_TabNo = 0;
-	private static final String COLUMNNAME_IsActive = "IsActive";
-	private static final String COLUMNNAME_Processed = "Processed";
-	private static final String COLUMNNAME_Processing = "Processing";
 	/** Column names where we shall use {@link DocumentFieldWidgetType#Switch} instead of {@link DocumentFieldWidgetType#YesNo} */
-	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(COLUMNNAME_IsActive); // FIXME: hardcoded
-
-	public static final Set<String> COLUMNNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
+	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(WindowConstants.FIELDNAME_IsActive); // FIXME: hardcoded
 
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
@@ -87,8 +83,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	static
 	{
 		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + COLUMNNAME_IsActive + "/Y@=N", ILogicExpression.class);
-		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + COLUMNNAME_Processed + "/N@=Y | @" + COLUMNNAME_Processing + "/N@=Y", ILogicExpression.class);
+		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
+		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
 
 		DEFAULT_VALUE_EXPRESSION_Yes = expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
@@ -778,7 +774,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 
 		final String columnName = gridFieldVO.getColumnName();
-		if (COLUMNNAMES_CreatedUpdated.contains(columnName))
+		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
 			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
 			return ILogicExpression.TRUE;
@@ -789,7 +785,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		//
 		// Consider field readonly if the row is not active
 		// .. and this property is not the IsActive flag.
-		if (!COLUMNNAME_IsActive.equals(columnName))
+		if (!WindowConstants.FIELDNAME_IsActive.equals(columnName))
 		{
 			logicExpression = LOGICEXPRESSION_NotActive.or(logicExpression);
 		}
@@ -816,7 +812,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private static ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO)
 	{
 		final String columnName = gridFieldVO.getColumnName();
-		if (COLUMNNAMES_CreatedUpdated.contains(columnName))
+		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
 			// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
 			return ILogicExpression.FALSE;
@@ -847,7 +843,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			final int displayType = gridFieldVO.getDisplayType();
 			if (displayType == DisplayType.YesNo)
 			{
-				if (COLUMNNAME_IsActive.equals(gridFieldVO.getColumnName()))
+				if (WindowConstants.FIELDNAME_IsActive.equals(gridFieldVO.getColumnName()))
 				{
 					return DEFAULT_VALUE_EXPRESSION_Yes;
 				}

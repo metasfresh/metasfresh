@@ -1,8 +1,11 @@
 package de.metas.ui.web.window;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 
@@ -44,13 +47,16 @@ public final class WindowConstants
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
 	
+	public static final String FIELDNAME_IsActive = "IsActive";
 	public static final String FIELDNAME_DocStatus = "DocStatus";
 	public static final String FIELDNAME_DocAction = "DocAction";
 	public static final String FIELDNAME_IsSOTrx = "IsSOTrx";
 	public static final String FIELDNAME_Processing = "Processing";
+	public static final String FIELDNAME_Processed = "Processed";
 	public static final String FIELDNAME_C_DocType_ID = "C_DocType_ID";
 	public static final String FIELDNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	public static final String FIELDNAME_OrderType = "OrderType";
+	public static final Set<String> FIELDNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
 	private WindowConstants()
 	{

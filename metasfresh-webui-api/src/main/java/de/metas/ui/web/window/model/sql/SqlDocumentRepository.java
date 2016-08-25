@@ -33,11 +33,11 @@ import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DefaultDocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -599,7 +599,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		}
 		//
 		// Created/Updated columns
-		else if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
+		else if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- PO={}", columnName, po);
 			return false; // no change

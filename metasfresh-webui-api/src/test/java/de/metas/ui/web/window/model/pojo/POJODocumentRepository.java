@@ -21,8 +21,8 @@ import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.descriptor.DefaultDocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -263,7 +263,7 @@ public class POJODocumentRepository implements DocumentRepository
 	{
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
 
-		if (DefaultDocumentDescriptorFactory.COLUMNNAMES_CreatedUpdated.contains(columnName))
+		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
 			logger.trace("Skip setting PO's created/updated column: {} -- model={}", columnName, model);
 			return;
