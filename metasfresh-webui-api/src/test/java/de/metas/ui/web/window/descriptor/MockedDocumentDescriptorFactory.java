@@ -73,7 +73,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 
 	private static DocumentDescriptor createDescriptor_Order(final int AD_Window_ID)
 	{
-		final DocumentEntityDescriptor entityDescriptor = DocumentEntityDescriptor.builder()
+		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab__SalesOrder_Header)
 				.setId(1)
@@ -95,9 +95,10 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setDisplayLogic(ILogicExpression.TRUE)
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo))
 						.build())
-				.build();
+						//
+						;
 
-		final DocumentLayoutDescriptor layout = DocumentLayoutDescriptor.builder()
+		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
 				.addSection(DocumentLayoutSectionDescriptor.builder()
 						.addColumn(DocumentLayoutColumnDescriptor.builder()
 								.addElementGroup(DocumentLayoutElementGroupDescriptor.builder()
@@ -110,11 +111,14 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														.setWidgetType(DocumentFieldWidgetType.Text)
 														.setLayoutType(LayoutType.primary)
 														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_DocumentNo)))))))
-				.build();
+														//
+														;
+		
+		entityDescriptorBuilder.setFieldNamesPresentInLayout(layoutBuilder.getAllFieldNamesFromSections());
 
 		return DocumentDescriptor.builder()
-				.setLayout(layout)
-				.setEntityDescriptor(entityDescriptor)
+				.setLayout(layoutBuilder.build())
+				.setEntityDescriptor(entityDescriptorBuilder.build())
 				.build();
 	}
 }
