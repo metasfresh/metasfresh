@@ -99,9 +99,9 @@ export function updateDataSuccess(item) {
 *  Wrapper for patch request of widget elements
 *  when responses should merge store
 */
-export function patch(windowType, id = "NEW", property, value) {
+export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
     return dispatch => {
-        dispatch(patchRequest(windowType, id, property, value)).then(response => {
+        dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
             response.data[0].fields.map(item => {
                 dispatch(updateDataSuccess(item));
             })
@@ -109,7 +109,7 @@ export function patch(windowType, id = "NEW", property, value) {
     }
 }
 
-export function patchRequest(windowType, id = "NEW", property, value) {
+export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value) {
     let payload = {};
 
     if(id === "NEW"){
@@ -126,7 +126,15 @@ export function patchRequest(windowType, id = "NEW", property, value) {
         }
     }
 
-    return dispatch => axios.patch(config.API_URL + '/window/commit?type=' + windowType + '&id=' + id, payload);
+
+    return dispatch => axios.patch(
+            config.API_URL +
+            '/window/commit?type=' +
+            windowType +
+            '&id=' + id +
+            (tabId ? "&tabid=" + tabId : "") +
+            (rowId ? "&rowId=" + rowId : "")
+        , payload);
 }
 
 export function updateDataProperty(property, value){

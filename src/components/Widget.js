@@ -16,12 +16,13 @@ class Widget extends Component {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {data,windowType, dispatch} = this.props;
+        const {widgetData,dataId, windowType, dispatch, rowId, tabId} = this.props;
         //check if we should update store
-        if(findRowByPropName(data,property).value !== value ){
+
+        if(widgetData.value !== value ){
             dispatch(updateDataProperty(property, value));
         }
-        dispatch(patch(windowType, data[0].value, property, value));
+        dispatch(patch(windowType, dataId, tabId, rowId, property, value));
     }
     handleChange = (e, property) => {
         const {dispatch} = this.props;
@@ -288,15 +289,13 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, data, type} = this.props;
-        const dataId = findRowByPropName(data,"ID").value;
-        const widgetData = findRowByPropName(data, fields[0].field);
+        const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId} = this.props;
         if(widgetData.displayed){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>
+                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
                             <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
                                 {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData)}
                             </div>
@@ -311,20 +310,11 @@ class Widget extends Component {
 }
 
 Widget.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    data: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler} = state;
-    const {
-        data
-    } = windowHandler || {
-        data: []
-    }
-
     return {
-        data
     }
 }
 

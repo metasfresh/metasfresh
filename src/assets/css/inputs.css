@@ -25,6 +25,7 @@ textarea {
 input {
     background-color: transparent;
     color: $brand-font-color;
+    min-width: 50px;
 }
 
 .form-control-label {
@@ -419,6 +420,7 @@ input:checked + .input-slider:before {
 .input-dropdown-container {
     position:relative;
     cursor: pointer;
+    min-width: 200px;
 }
 .input-dropdown-container .input-dropdown {
     display: flex;

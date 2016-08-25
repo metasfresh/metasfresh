@@ -80,13 +80,16 @@ class Table extends Component {
         // });
     }
     renderTableBody = () => {
-        const {rowData, tabid, cols} = this.props
+        const {rowData, tabid, cols, type, docId} = this.props;
         return rowData[tabid] && rowData[tabid].map((item) =>
             <TableItem
                 fields={item.fields}
                 key={item.rowId}
                 rowId={item.rowId}
+                tabId={item.tabid}
                 cols={cols}
+                type={type}
+                docId={docId}
                 // onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
             />
         )

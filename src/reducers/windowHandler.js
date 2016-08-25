@@ -52,6 +52,6 @@ export default function windowHandler(state = initialState, action) {
                 orderStatus: action.value
             })
         default:
-        return state
+            return state
     }
 }

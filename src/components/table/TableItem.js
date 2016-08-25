@@ -8,6 +8,8 @@ import {
     selectOneProduct
 } from '../../actions/AppActions';
 
+import Widget from '../Widget';
+
 import {
     findRowByPropName
 } from '../../actions/WindowActions';
@@ -16,29 +18,33 @@ class TableItem extends Component {
     constructor(props) {
         super(props);
     }
-    handleEditProperty = (e) => {
-    //     e.preventDefault();
-    //     this.props.dispatch(selectOneProduct(this.props.product.id));
-    //
-    //     let property = e._targetInst._currentElement.key;
-    //     let inputContainer = document.createDocumentFragment();
-    //     let input = document.createElement("input");
-    //     let td = e.nativeEvent.target;
-    //     let span = td.getElementsByTagName("span")[0];
-    //
-    //     input.value = span.innerHTML;
-    //     this.props.dispatch(editProductProperty(property));
-    //
-    //     input.classList.add('table-input-inline');
-    //
-    //     input.addEventListener('blur', (e) => {
-    //         this.handleSaveProperty(e, property, input.value);
-    //     });
-    //
-    //     inputContainer.appendChild(input);
-    //     span ? span.classList.add('table-hide-property'): null;
-    //     td.appendChild(inputContainer);
-    //     input.focus();
+    handleEditProperty = (e, widgetType, property) => {
+        // e.preventDefault();
+
+
+
+
+        // this.props.dispatch(selectOneProduct(this.props.product.id));
+
+        // let inputContainer = document.createDocumentFragment();
+        // let td = e.nativeEvent.target;
+        //
+        // let input = document.createElement("input");
+        // let span = td.getElementsByTagName("span")[0];
+        //
+        // input.value = span.innerHTML;
+        // this.props.dispatch(editProductProperty(property));
+        //
+        // input.classList.add('table-input-inline');
+        //
+        // input.addEventListener('blur', (e) => {
+        //     this.handleSaveProperty(e, property, input.value);
+        // });
+        //
+        // inputContainer.appendChild(input);
+        // span ? span.classList.add('table-hide-property'): null;
+        // td.appendChild(inputContainer);
+        // input.focus();
     }
     handleSaveProperty = (e, property, value) => {
         // e.preventDefault();
@@ -53,11 +59,34 @@ class TableItem extends Component {
         // span ? span.classList.remove('table-hide-property') : null;
     }
     renderCells = (cols, cells) => {
+        const { type, docId, rowId, tabId } = this.props;
+
+        //iterate over layout settings
         return cols.map((item, index) =>{
-            const value = findRowByPropName(cells, item.fields[0].field).value;
+            const field = item.fields[0].field.toString();
+            const property = item.fields[0].field;
+            // get data settings
+            const cell = findRowByPropName(cells, property);
+            const value = cell.value;
+            const widgetType = item.widgetType;
+
+            item['displayed'] = true;
             return (
-                <td key={index}>
-                    {value && value.toString()}
+                <td
+                    key={index}
+                    tabIndex="0"
+                    onDoubleClick={this.handleEditProperty(widgetType, property)}
+                >
+
+                    <Widget
+                        {...item}
+                        dataId={docId}
+                        widgetData={cell}
+                        windowType={type}
+                        rowId={rowId}
+                        tabId={tabId}
+                        noLabel={true}
+                        />
                 </td>
             )
         })
@@ -76,15 +105,6 @@ class TableItem extends Component {
         )
     }
 }
-
-// <td
-//     key="amount"
-//     tabIndex="0"
-//     onDoubleClick={this.handleEditProperty}
-// >
-//     <span>{product.amount}</span>
-// </td>
-
 
 TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
