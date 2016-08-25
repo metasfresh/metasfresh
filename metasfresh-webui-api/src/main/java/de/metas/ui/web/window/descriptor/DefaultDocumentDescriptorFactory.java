@@ -768,6 +768,12 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
 			return ILogicExpression.TRUE;
 		}
+		
+		if(WindowConstants.FIELDNAME_DocStatus.equals(columnName))
+		{
+			// NOTE: DocStatus field shall always be readonly
+			return ILogicExpression.TRUE;
+		}
 
 		ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
 
