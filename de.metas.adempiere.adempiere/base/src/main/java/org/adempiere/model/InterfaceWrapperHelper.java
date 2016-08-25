@@ -1400,7 +1400,7 @@ public class InterfaceWrapperHelper
 
 		if (POWrapper.isHandled(model))
 		{
-			return POWrapper.getPO(model).getLoadCount();
+			return POWrapper.getStrictPO(model).getLoadCount();
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
@@ -1425,7 +1425,7 @@ public class InterfaceWrapperHelper
 		}
 		else if (POWrapper.isHandled(model))
 		{
-			return POWrapper.getPO(model);
+			return POWrapper.getStrictPO(model);
 		}
 		else if (GridTabWrapper.isHandled(model))
 		{

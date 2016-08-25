@@ -215,7 +215,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static <T> T translate(final T model, final Class<T> cl, String trlAdLanguage)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 
 		if (trlAdLanguage == null)
 		{
@@ -234,7 +234,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static IModelTranslationMap getModelTranslationMap(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 
 		return po.get_ModelTranslationMap();
@@ -350,7 +350,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 */
 	public static Properties getCtx(final Object model, final boolean useClientOrgFromModel)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 
 		if (po != null)
 		{
@@ -781,7 +781,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			throw new IllegalArgumentException("model is null");
 		}
 
-		final PO po = getPO(o);
+		final PO po = getStrictPO(o);
 		if (po != null)
 		{
 			po.saveEx();
@@ -838,7 +838,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -861,7 +861,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -876,7 +876,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -979,7 +979,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		for (final String columnName : columnNames)
 		{
