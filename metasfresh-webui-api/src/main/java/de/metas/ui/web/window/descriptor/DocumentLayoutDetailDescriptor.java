@@ -3,6 +3,10 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
@@ -47,10 +51,10 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
 		super();
-		detailId = builder.detailId;
+		detailId = builder.getDetailId();
 		caption = builder.caption;
 		description = builder.description;
-		elements = ImmutableList.copyOf(builder.elements);
+		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 
 	@Override
@@ -84,12 +88,17 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return elements;
 	}
 
+	public boolean hasElements()
+	{
+		return !elements.isEmpty();
+	}
+
 	public static final class Builder
 	{
 		private String detailId;
 		private String caption;
 		private String description;
-		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -101,10 +110,23 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return new DocumentLayoutDetailDescriptor(this);
 		}
 
+		private List<DocumentLayoutElementDescriptor> buildElements()
+		{
+			return elementBuilders
+					.stream()
+					.map(elementBuilder -> elementBuilder.build())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
 		public Builder setDetailId(final String detailId)
 		{
 			this.detailId = detailId;
 			return this;
+		}
+		
+		public String getDetailId()
+		{
+			return detailId;
 		}
 
 		public Builder setCaption(final String caption)
@@ -119,10 +141,24 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor element)
+		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
 		{
-			elements.add(element);
+			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
+			elementBuilders.add(elementBuilder);
 			return this;
+		}
+		
+		public boolean hasElements()
+		{
+			return !elementBuilders.isEmpty();
+		}
+		
+		public Set<String> getAllFieldNames()
+		{
+			return elementBuilders
+					.stream()
+					.flatMap(elementsBuilder->elementsBuilder.streamAllFieldNames())
+					.collect(GuavaCollectors.toImmutableSet());
 		}
 	}
 

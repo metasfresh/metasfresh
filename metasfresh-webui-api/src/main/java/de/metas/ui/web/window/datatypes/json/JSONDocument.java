@@ -3,15 +3,15 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -24,6 +24,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -61,16 +62,9 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocument implements Serializable
 {
-	private static final JSONDocument ofDocument(final Document document, final List<String> includeFieldsList)
+	private static final JSONDocument ofDocument(final Document document, final IDocumentFieldViewFilter fieldsFilter)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
-
-		//
-		// Set debugging info
-		if (WindowConstants.isProtocolDebugging())
-		{
-			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
-		}
 
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
@@ -81,18 +75,6 @@ public final class JSONDocument implements Serializable
 			jsonFields.add(0, JSONDocumentField.idField(idField.getValueAsJsonObject()));
 		}
 
-		//
-		// Include fields filter
-		final Predicate<IDocumentFieldView> fieldsFilter;
-		if(includeFieldsList != null && !includeFieldsList.isEmpty())
-		{
-			fieldsFilter = (field) -> includeFieldsList.contains(field.getFieldName());
-		}
-		else
-		{
-			fieldsFilter = (field) -> true; // include all fields
-		}
-
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
@@ -101,6 +83,17 @@ public final class JSONDocument implements Serializable
 				.forEach(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
+		
+		//
+		// Set debugging info
+		if (WindowConstants.isProtocolDebugging())
+		{
+			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
+			jsonDocument.putDebugProperty("fields-filter", String.valueOf(fieldsFilter));
+			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
+		}
+
+		
 		return jsonDocument;
 	}
 
@@ -109,10 +102,10 @@ public final class JSONDocument implements Serializable
 	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
-	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final List<String> includeFieldsList)
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final IDocumentFieldViewFilter fieldsFilter)
 	{
 		return documents.stream()
-				.map(document -> ofDocument(document, includeFieldsList))
+				.map(document -> ofDocument(document, fieldsFilter))
 				.collect(Collectors.toList());
 	}
 
@@ -166,7 +159,7 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
 
-	private final Map<String, Object> otherProperties = new HashMap<>();
+	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonProperty("fields")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -247,5 +240,11 @@ public final class JSONDocument implements Serializable
 	private void setFields(final Collection<JSONDocumentField> fields)
 	{
 		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
+	}
+
+	@JsonIgnore
+	public int getFieldsCount()
+	{
+		return fieldsByName == null ? 0 : fieldsByName.size();
 	}
 }

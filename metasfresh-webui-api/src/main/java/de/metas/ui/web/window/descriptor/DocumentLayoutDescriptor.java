@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
@@ -102,7 +104,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private DocumentLayoutElementDescriptor documentNoElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
-		private final List<DocumentLayoutDetailDescriptor> details = new ArrayList<>();
+		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -125,7 +127,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		private List<DocumentLayoutDetailDescriptor> buildDetails()
 		{
-			return details;
+			return detailsBuilders
+					.stream()
+					.map(detailBuilder -> detailBuilder.build())
+					.filter(detail -> detail.hasElements())
+					.collect(GuavaCollectors.toImmutableList());
 		}
 
 		public Builder setAD_Window_ID(final int AD_Window_ID)
@@ -146,22 +152,32 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder addSection(final DocumentLayoutSectionDescriptor.Builder section)
+		public Builder addSection(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
 		{
-			sectionBuilders.add(section);
+			Check.assumeNotNull(sectionBuilder, "Parameter sectionBuilder is not null");
+			sectionBuilders.add(sectionBuilder);
 			return this;
 		}
 
-		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sections)
+		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionsBuilders)
 		{
-			this.sectionBuilders.addAll(sections);
+			this.sectionBuilders.addAll(sectionsBuilders);
 			return this;
 		}
 
-		public Builder addDetail(final DocumentLayoutDetailDescriptor detail)
+		public Builder addDetail(final DocumentLayoutDetailDescriptor.Builder detailBuilder)
 		{
-			details.add(detail);
+			Check.assumeNotNull(detailBuilder, "Parameter detailBuilder is not null");
+			detailsBuilders.add(detailBuilder);
 			return this;
+		}
+
+		public Set<String> getAllFieldNamesFromSections()
+		{
+			return sectionBuilders
+					.stream()
+					.flatMap(sectionBuilder -> sectionBuilder.streamAllFieldNames())
+					.collect(GuavaCollectors.toImmutableSet());
 		}
 	}
 }

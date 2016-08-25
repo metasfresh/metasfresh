@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,9 +16,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.model.DocumentFieldViewFilters;
+import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
 
 /*
  * #%L
@@ -70,6 +74,12 @@ public class DocumentEntityDescriptor
 	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
+	// Layout related
+	@JsonProperty("fieldnames-in-layout")
+	private final Set<String> fieldNamesPresentInLayout;
+	@JsonIgnore
+	private IDocumentFieldViewFilter _fieldsPresentInLayoutFilter;
+
 	// Legacy
 	@JsonProperty("AD_Window_ID")
 	private final int AD_Window_ID;
@@ -91,9 +101,12 @@ public class DocumentEntityDescriptor
 		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
 		dependencies = builder.buildDependencies();
 
+		// layout related
+		fieldNamesPresentInLayout = ImmutableSet.copyOf(builder.fieldNamesPresentInLayout);
+
 		// legacy:
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
-		AD_Tab_ID  = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
+		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 	}
@@ -105,6 +118,7 @@ public class DocumentEntityDescriptor
 			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
 			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
 			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
+			, @JsonProperty("fieldnames-in-layout") final Set<String> fieldNamesPresentInLayout //
 			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
 			, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
 			, @JsonProperty("tabNo") final int tabNo //
@@ -117,6 +131,7 @@ public class DocumentEntityDescriptor
 				.addFields(fields)
 				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
 				.setDataBinding(dataBinding)
+				.setFieldNamesPresentInLayout(fieldNamesPresentInLayout)
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTabNo(tabNo)
@@ -209,7 +224,7 @@ public class DocumentEntityDescriptor
 	{
 		return AD_Window_ID;
 	}
-	
+
 	// legacy
 	@JsonIgnore
 	public int getAD_Tab_ID()
@@ -230,6 +245,16 @@ public class DocumentEntityDescriptor
 		return isSOTrx;
 	}
 
+	@JsonIgnore
+	public IDocumentFieldViewFilter getFieldsPresentInLayoutFilter()
+	{
+		if (_fieldsPresentInLayoutFilter == null)
+		{
+			_fieldsPresentInLayoutFilter = DocumentFieldViewFilters.fromFieldsNameSet(fieldNamesPresentInLayout);
+		}
+		return _fieldsPresentInLayoutFilter;
+	}
+
 	public static final class Builder
 	{
 		private String id;
@@ -238,6 +263,9 @@ public class DocumentEntityDescriptor
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptor dataBinding;
 		private String detailId;
+
+		// layout related
+		private Set<String> fieldNamesPresentInLayout;
 
 		// Legacy
 		private Integer AD_Window_ID;
@@ -336,7 +364,7 @@ public class DocumentEntityDescriptor
 			this.AD_Window_ID = AD_Window_ID;
 			return this;
 		}
-		
+
 		public Builder setAD_Tab_ID(final int AD_Tab_ID)
 		{
 			this.AD_Tab_ID = AD_Tab_ID;
@@ -352,6 +380,12 @@ public class DocumentEntityDescriptor
 		public Builder setIsSOTrx(final boolean isSOTrx)
 		{
 			this.isSOTrx = isSOTrx;
+			return this;
+		}
+
+		public Builder setFieldNamesPresentInLayout(final Set<String> fieldNamesPresentInLayout)
+		{
+			this.fieldNamesPresentInLayout = fieldNamesPresentInLayout == null ? ImmutableSet.of() : ImmutableSet.copyOf(fieldNamesPresentInLayout);
 			return this;
 		}
 	}

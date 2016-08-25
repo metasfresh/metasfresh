@@ -61,6 +61,26 @@ public final class DocumentDescriptor
 		return entityDescriptor;
 	}
 
+	/**
+	 * @param detailId detailId or null
+	 * @return
+	 * 		<ul>
+	 *         <li>root descriptor if detailId is null
+	 *         <li>included descriptor if detailId is not null
+	 *         </ul>
+	 */
+	public DocumentEntityDescriptor getEntityDescriptor(final String detailId)
+	{
+		if (detailId == null || detailId.isEmpty())
+		{
+			return entityDescriptor;
+		}
+		else
+		{
+			return entityDescriptor.getIncludedEntityByDetailId(detailId);
+		}
+	}
+
 	public static final class Builder
 	{
 		private DocumentLayoutDescriptor layout;

@@ -163,22 +163,23 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					});
 
 			mainEntityBuilder.setDataBinding(mainEntityBindingsBuilder.build());
+			mainEntityBuilder.setFieldNamesPresentInLayout(layoutBuilder.getAllFieldNamesFromSections());
 		}
 
 		//
 		// Layout: Create UI details from child tabs
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(MAIN_TabNo))
 		{
-			final DocumentLayoutDetailDescriptor detail = createDetail(detailTabVO);
-			if (detail.getElements().isEmpty())
+			final DocumentLayoutDetailDescriptor.Builder detailBuilder = createDetail(detailTabVO);
+			if (!detailBuilder.hasElements())
 			{
 				continue;
 			}
-			layoutBuilder.addDetail(detail);
+			layoutBuilder.addDetail(detailBuilder);
 
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(detailTabVO.getTableName())
-					.setDetailIdAndUpdateTableAlias(detail.getDetailId())
+					.setDetailIdAndUpdateTableAlias(detailBuilder.getDetailId())
 					.setAD_Table_ID(detailTabVO.getAD_Table_ID()) // legacy
 					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO))
 					.setSqlWhereClause(detailTabVO.getWhereClause())
@@ -186,7 +187,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
 					.setId(detailTabVO.getAD_Tab_ID())
-					.setDetailId(detail.getDetailId())
+					.setDetailId(detailBuilder.getDetailId())
+					.setFieldNamesPresentInLayout(detailBuilder.getAllFieldNames())
 					.setAD_Window_ID(AD_Window_ID) // legacy
 					.setAD_Tab_ID(detailTabVO.getAD_Tab_ID()) // legacy
 					.setTabNo(detailTabVO.getTabNo()) // legacy
@@ -318,23 +320,23 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 						//
 						isFirstElementInGroup = false;
-					}    // each uiElement
+					}      // each uiElement
 
 					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
-				}    // each uiElementGroup
+				}      // each uiElementGroup
 
 				layoutSectionBuilder.addColumn(layoutColumnBuilder);
-			}    // each uiColumn
+			}      // each uiColumn
 
 			uiSections.add(layoutSectionBuilder);
-		}    // each uiSection
+		}      // each uiSection
 
 		return uiSections;
 	}
 
-	private static DocumentLayoutDetailDescriptor createDetail(final GridTabVO tab)
+	private static DocumentLayoutDetailDescriptor.Builder createDetail(final GridTabVO tab)
 	{
-		final DocumentLayoutDetailDescriptor.Builder elementGroupBuilder = DocumentLayoutDetailDescriptor.builder()
+		final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(extractDetailId(tab))
 				.setCaption(tab.getName())
 				.setDescription(tab.getDescription());
@@ -348,12 +350,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 						.setDescription(gridFieldVO.getDescription())
 						.setWidgetType(extractWidgetType(gridFieldVO))
 						.setLayoutTypeNone() // does not matter for detail
-						.addField(documentLayoutElementFieldDescriptorBuilder(gridFieldVO))
-						.build())
-				.forEach(elementGroupBuilder::addElement);
+						.addField(documentLayoutElementFieldDescriptorBuilder(gridFieldVO)))
+				.forEach(layoutDetailBuilder::addElement);
 
-		return elementGroupBuilder.build();
-
+		return layoutDetailBuilder;
 	}
 
 	private DocumentFieldDescriptor.Builder documentFieldDescriptorBuilder(final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder, final GridFieldVO gridFieldVO)
@@ -768,8 +768,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
 			return ILogicExpression.TRUE;
 		}
-		
-		if(WindowConstants.FIELDNAME_DocStatus.equals(columnName))
+
+		if (WindowConstants.FIELDNAME_DocStatus.equals(columnName))
 		{
 			// NOTE: DocStatus field shall always be readonly
 			return ILogicExpression.TRUE;

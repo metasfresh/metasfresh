@@ -15,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -33,7 +31,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldViewFilters;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 
@@ -69,10 +69,6 @@ public class WindowRestController implements IWindowRestController
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
-
-	private static final transient Splitter FIELDS_LIST_SPLITTER = Splitter.on(",")
-			.trimResults()
-			.omitEmptyStrings();
 
 	@Autowired
 	private UserSession userSession;
@@ -149,18 +145,26 @@ public class WindowRestController implements IWindowRestController
 				.allowNullRowId()
 				.build();
 
-		final List<String> fieldsList;
-		if (fieldsListStr != null && !fieldsListStr.isEmpty())
+		//
+		// Create the fields filter
+		final IDocumentFieldViewFilter fieldsFilter;
+		if (Check.isEmpty(fieldsListStr, true))
 		{
-			fieldsList = FIELDS_LIST_SPLITTER.splitToList(fieldsListStr);
+			// By default retrieve all layout fields
+			fieldsFilter = documentCollection.getDocumentDescriptorFactory()
+					.getDocumentDescriptor(adWindowId)
+					.getEntityDescriptor(detailId)
+					.getFieldsPresentInLayoutFilter();
 		}
 		else
 		{
-			fieldsList = ImmutableList.of();
+			fieldsFilter = DocumentFieldViewFilters.fromFieldsNameSetString(fieldsListStr);
 		}
 
+		//
+		// Retrieve and return the documents
 		final List<Document> documents = documentCollection.getDocuments(documentPath);
-		return JSONDocument.ofDocumentsList(documents, fieldsList);
+		return JSONDocument.ofDocumentsList(documents, fieldsFilter);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -218,5 +219,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return consumed;
 		}
+		
+		public Stream<String> streamAllFieldNames()
+		{
+			return fieldsBuilders.keySet().stream();
+		}
+
 	}
 }

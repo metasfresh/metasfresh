@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 
@@ -93,6 +94,14 @@ public final class DocumentLayoutElementLineDescriptor
 			elementsBuilders.add(elementBuilder);
 			return this;
 		}
+
+		public Stream<String> streamAllFieldNames()
+		{
+			return elementsBuilders
+					.stream()
+					.flatMap(elementBuilder -> elementBuilder.streamAllFieldNames());
+		}
+
 	}
 
 }
