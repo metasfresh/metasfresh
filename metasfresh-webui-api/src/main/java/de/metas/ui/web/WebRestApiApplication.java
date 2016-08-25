@@ -46,10 +46,13 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 @SpringBootApplication
 public class WebRestApiApplication
 {
+	public static final String PROFILE_Test = "test";
+	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
+
 	public static void main(String[] args)
 	{
 		System.setProperty("PropertyFile", "./metasfresh.properties");
-		
+
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
@@ -59,17 +62,17 @@ public class WebRestApiApplication
 				.run(args);
 
 	}
-	
+
 	@Autowired
 	private ApplicationContext applicationContext;
-	
+
 	@Bean
 	public Adempiere adempiere()
 	{
 		Env.setContextProvider(new WebRestApiContextProvider());
-		
+
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
-		
+
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.WEBUI);

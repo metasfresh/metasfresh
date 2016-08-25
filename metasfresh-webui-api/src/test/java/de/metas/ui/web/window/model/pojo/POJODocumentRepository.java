@@ -21,6 +21,7 @@ import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -55,7 +56,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 @Repository
-@Profile("test")
+@Profile(WebRestApiApplication.PROFILE_Test)
 @Primary
 public class POJODocumentRepository implements DocumentRepository
 {

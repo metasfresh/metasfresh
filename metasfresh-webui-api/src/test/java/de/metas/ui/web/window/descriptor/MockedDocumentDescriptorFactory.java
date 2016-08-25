@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.ui.web.WebRestApiApplication;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -35,7 +37,7 @@ import com.google.common.base.Suppliers;
  */
 
 @Service
-@Profile("test")
+@Profile(WebRestApiApplication.PROFILE_Test)
 @Primary
 public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactory
 {

@@ -66,7 +66,7 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 @WebAppConfiguration
 @IntegrationTest("server.port:0")
 // @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-@ActiveProfiles("test")
+@ActiveProfiles(WebRestApiApplication.PROFILE_Test)
 public class SpringIntegrationTest
 {
 	@Configuration
@@ -114,11 +114,11 @@ public class SpringIntegrationTest
 
 		final List<JSONDocument> result = restController.commit(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, orderId, null, null, events);
 		System.out.println("Got result:\n" + Joiner.on("\n").join(result));
-//		orderId = getId(result, orderId);
-//		System.out.println("=> orderId=" + orderId);
+		// orderId = getId(result, orderId);
+		// System.out.println("=> orderId=" + orderId);
 
-//		final Object documentNo = getField(result, "DocumentNo").getValue();
-//		Assert.assertEquals("DocumentNo", "1234", documentNo);
+		// final Object documentNo = getField(result, "DocumentNo").getValue();
+		// Assert.assertEquals("DocumentNo", "1234", documentNo);
 
 	}
 
