@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
@@ -64,7 +64,7 @@ public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
 		final String trxName = get_TrxName();
 
 		final I_C_Flatrate_Term flatrateTerm =
-				POWrapper.create(ctx, getRecord_ID(), I_C_Flatrate_Term.class, trxName);
+				InterfaceWrapperHelper.create(ctx, getRecord_ID(), I_C_Flatrate_Term.class, trxName);
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
@@ -123,7 +123,7 @@ public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
 				}
 				else
 				{
-					final I_C_Flatrate_DataEntry newCorrectionEntry = POWrapper.create(ctx, I_C_Flatrate_DataEntry.class, trxName);
+					final I_C_Flatrate_DataEntry newCorrectionEntry = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_DataEntry.class, trxName);
 					newCorrectionEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
 					Check.assume(newCorrectionEntry.getAD_Client_ID() == flatrateTerm.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 					
@@ -148,7 +148,7 @@ public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
 		{
 			for (final I_C_Flatrate_DataEntry newCorrectionEntry : uomId2NewCorrectionEntries.values())
 			{
-				POWrapper.save(newCorrectionEntry);
+				InterfaceWrapperHelper.save(newCorrectionEntry);
 
 				final String msg = Msg.getMsg(getCtx(), MSG_PREPARE_CLOSING_CORRECTION_ENTRY_CREATED_2P,
 						new Object[] {
@@ -223,7 +223,7 @@ public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
 			else if (name.equals(I_C_Period.COLUMNNAME_C_Period_ID))
 			{
 				final int periodId = para.getParameterAsInt();
-				p_periodTo = POWrapper.create(getCtx(), periodId, I_C_Period.class, get_TrxName());
+				p_periodTo = InterfaceWrapperHelper.create(getCtx(), periodId, I_C_Period.class, get_TrxName());
 			}
 		}
 	}

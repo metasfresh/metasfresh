@@ -84,7 +84,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	@Override
 	public boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
 	{
-		final PO po = POWrapper.getPO(model, false);
+		final PO po = POWrapper.getStrictPO(model);
 		final int idx = po.get_ColumnIndex(columnName);
 		if (idx < 0)
 		{
@@ -125,7 +125,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	@Override
 	public int getId(final Object model)
 	{
-		final PO po = POWrapper.getPO(model, false);
+		final PO po = POWrapper.getStrictPO(model);
 		if (po == null)
 		{
 			return -1;
@@ -143,7 +143,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	@Override
 	public String getModelTableNameOrNull(final Object model)
 	{
-		return POWrapper.getPO(model).get_TableName();
+		return POWrapper.getStrictPO(model).get_TableName();
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 			}
 		}
 		//
-		final PO po = POWrapper.getPO(model, false);
+		final PO po = POWrapper.getStrictPO(model);
 		final int idxColumnName = po.get_ColumnIndex(columnName);
 		if (idxColumnName < 0)
 		{

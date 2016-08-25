@@ -44,7 +44,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
@@ -162,7 +162,7 @@ public class PackingDetailsCtrl
 		model.setPiWeightEditable(productHasNoWeightInfo);
 		model.setPiWeight(pi.computeWeight());
 
-		final I_C_OrderLine ol = POWrapper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
 		if (ol.isIndividualDescription())
 		{
 			model.setPiOlProdDesc(ol.getProductDescription());

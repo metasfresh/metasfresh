@@ -651,6 +651,15 @@ public class InterfaceWrapperHelper
 		}
 		return POWrapper.getPO(model);
 	}
+	
+	public static <T extends PO> T getStrictPO(final Object model)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
+		}
+		return POWrapper.getStrictPO(model);
+	}
 
 	public static int getId(final Object model)
 	{
@@ -973,7 +982,7 @@ public class InterfaceWrapperHelper
 		}
 		else if (POWrapper.isHandled(model))
 		{
-			final PO po = POWrapper.getPO(model, false);
+			final PO po = POWrapper.getStrictPO(model);
 			@SuppressWarnings("unchecked")
 			final T value = (T)po.get_ValueOfColumn(adColumnId);
 			return value;
@@ -1120,7 +1129,7 @@ public class InterfaceWrapperHelper
 	{
 		if (POWrapper.isHandled(model))
 		{
-			final PO po = POWrapper.getPO(model, false);
+			final PO po = POWrapper.getStrictPO(model);
 			po.markColumnChanged(columnName);
 		}
 
@@ -1281,7 +1290,7 @@ public class InterfaceWrapperHelper
 	{
 		if (POWrapper.isHandled(model))
 		{
-			return POWrapper.getPO(model, false).is_JustCreated();
+			return POWrapper.getStrictPO(model).is_JustCreated();
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
@@ -1353,8 +1362,7 @@ public class InterfaceWrapperHelper
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)
 	{
-		boolean checkOtherWrapper = false;
-		final PO po = POWrapper.getPO(model, checkOtherWrapper);
+		final PO po = POWrapper.getStrictPO(model);
 		if(po == null)
 		{
 			return false;
@@ -1552,5 +1560,16 @@ public class InterfaceWrapperHelper
 	}
 
 	public static final ModelDynAttributeAccessor<Object, Boolean> ATTR_ReadOnlyColumnCheckDisabled = new ModelDynAttributeAccessor<>(InterfaceWrapperHelper.class.getName(), "ReadOnlyColumnCheckDisabled", Boolean.class);
+
+	public static int getFirstValidIdByColumnName(final String columnName)
+	{
+		return POWrapper.getFirstValidIdByColumnName(columnName);
+	}
+	
+	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
+	public static final Object checkZeroIdValue(final String columnName, final Object value)
+	{
+		return POWrapper.checkZeroIdValue(columnName, value);
+	}
 
 }

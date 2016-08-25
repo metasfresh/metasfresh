@@ -33,9 +33,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.MiscUtils.ArrayKey;
 import org.adempiere.util.Services;
@@ -57,11 +57,11 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductPA;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
@@ -259,7 +259,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 				purchaseOrderLinePO.setM_AttributeSetInstance_ID(purchaseSchedule.getM_AttributeSetInstance_ID());
 			}
 
-			final I_C_OrderLine purchaseOrderLine = POWrapper.create(purchaseOrderLinePO, I_C_OrderLine.class);
+			final I_C_OrderLine purchaseOrderLine = InterfaceWrapperHelper.create(purchaseOrderLinePO, I_C_OrderLine.class);
 
 			purchaseOrderLine.setIsIndividualPOSchedule(purchaseSchedule.isIndividualPOSchedule());
 
@@ -355,7 +355,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 
 		for (final MOrderLine salesOrderLinePO : purchaseSchedule.retrieveSOls())
 		{
-			final I_C_OrderLine saleOrderLine = POWrapper.create(salesOrderLinePO, I_C_OrderLine.class);
+			final I_C_OrderLine saleOrderLine = InterfaceWrapperHelper.create(salesOrderLinePO, I_C_OrderLine.class);
 
 			if (poLineQtyLeft.compareTo(salesOrderLinePO.getQtyOrdered()) >= 0)
 			{
@@ -520,7 +520,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 				// nothing more to do
 			}
 
-			final MMPurchaseSchedule newSched = MMPurchaseSchedule.createForPurchaseOL(ctx, POWrapper.create(ol, I_C_OrderLine.class), trxName);
+			final MMPurchaseSchedule newSched = MMPurchaseSchedule.createForPurchaseOL(ctx, InterfaceWrapperHelper.create(ol, I_C_OrderLine.class), trxName);
 			newSched.setC_BPartner_ID(order.getC_BPartner_ID());
 			newSched.setC_OrderPO_ID(order.get_ID());
 

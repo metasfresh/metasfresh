@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public interface IInterfaceWrapperHelper
 	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 *
-	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
+	 * @throws AdempiereException if the given model is not handled and ignoreIfNotHandled is <code>false</code>.
 	 */
 	default void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
 	{

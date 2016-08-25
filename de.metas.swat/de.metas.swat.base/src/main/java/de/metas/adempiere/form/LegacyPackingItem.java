@@ -29,7 +29,7 @@ package de.metas.adempiere.form;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -87,7 +87,7 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 			sb.append(" (");
 			if (product.isDiverse())
 			{
-				final I_C_OrderLine ol = POWrapper.create(getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
+				final I_C_OrderLine ol = InterfaceWrapperHelper.create(getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
 				sb.append(ol.getProductDescription());
 			}
 			else

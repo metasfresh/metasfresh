@@ -28,7 +28,7 @@ package de.metas.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -43,7 +43,7 @@ import de.metas.form.swing.OrderLineCreate;
 public class QuickOrderLineCreate extends CalloutEngine {
 	public String orderLineQuickInput(Properties ctx, int WindowNo,
 			GridTab mTab, GridField mField, Object value) {
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
 		if (order.isProcessed() || order.getC_Order_ID() <= 0)
 			return null;
 		//

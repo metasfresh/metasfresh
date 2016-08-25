@@ -49,7 +49,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.form.FormFrame;
@@ -59,14 +59,14 @@ import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MQuery;
 import org.compiere.process.DocAction;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.logging.LogManager;
 import de.schaeffer.compiere.constants.Constants;
 import de.schaeffer.compiere.tools.TableHelper;
 
@@ -293,7 +293,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
     	
     	final MBankStatement origStatement = new MBankStatement(Env.getCtx(), getSelectedBankStatementId(), null);
 		final MBankStatement voidStatementPO = new MBankStatement(Env.getCtx(), 0, trxName);
-		final I_C_BankStatement voidStatement = POWrapper.create(voidStatementPO, I_C_BankStatement.class);
+		final I_C_BankStatement voidStatement = InterfaceWrapperHelper.create(voidStatementPO, I_C_BankStatement.class);
 		
 		voidStatement.setStatementDate(origStatement.getStatementDate());
 		voidStatement.setC_BP_BankAccount_ID(origStatement.getC_BP_BankAccount_ID());
@@ -320,10 +320,10 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		
 		for(final MBankStatementLine linePO : lines) {
 			
-			final I_C_BankStatementLine line = POWrapper.create(linePO, I_C_BankStatementLine.class);
+			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 			
 			final MBankStatementLine voidLinePO = new MBankStatementLine(Env.getCtx(), 0, trxName);
-			final I_C_BankStatementLine voidLine = POWrapper.create(voidLinePO, I_C_BankStatementLine.class);
+			final I_C_BankStatementLine voidLine = InterfaceWrapperHelper.create(voidLinePO, I_C_BankStatementLine.class);
 			
 			voidLine.setC_BankStatement_ID(voidStatement.getC_BankStatement_ID());
 			
@@ -576,6 +576,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#getRowCount()
 		 */
+		@Override
 		public int getRowCount() {
 			return data.length;
 		}
@@ -603,6 +604,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#getColumnCount()
 		 */
+		@Override
 		public int getColumnCount() {
 			return columnNames.length;
 		}
@@ -612,6 +614,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#getColumnName(int)
 		 */
+		@Override
 		public String getColumnName(int col) {
 			return columnNames[col];
 		}
@@ -621,6 +624,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#getColumnClass(int)
 		 */
+		@Override
 		public Class<?> getColumnClass(int c) {
 			return columnType[c];
 		}
@@ -630,6 +634,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#isCellEditable(int, int)
 		 */
+		@Override
 		public boolean isCellEditable(int row, int col) {
 			if (col == 3) {
 				return true;
@@ -642,6 +647,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#getValueAt(int, int)
 		 */
+		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			if (rowIndex >= data.length || rowIndex < 0) {
 				return null;
@@ -654,6 +660,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		 * 
 		 * @see javax.swing.table.TableModel#setValueAt(java.lang.Object, int, int)
 		 */
+		@Override
 		public void setValueAt(Object value, int row, int col) {
 			if (value == null) {
 				return;

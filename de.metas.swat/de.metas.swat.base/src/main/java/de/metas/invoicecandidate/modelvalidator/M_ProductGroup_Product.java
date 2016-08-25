@@ -1,29 +1,6 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -63,7 +40,7 @@ public class M_ProductGroup_Product implements ModelValidator
 	{
 		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 		{
-			final I_M_ProductGroup_Product pgp = POWrapper.create(po, I_M_ProductGroup_Product.class);
+			final I_M_ProductGroup_Product pgp = InterfaceWrapperHelper.create(po, I_M_ProductGroup_Product.class);
 			Services.get(IInvoiceCandDAO.class).invalidateCandsForProductGroup(pgp.getM_ProductGroup());
 		}
 		return null;

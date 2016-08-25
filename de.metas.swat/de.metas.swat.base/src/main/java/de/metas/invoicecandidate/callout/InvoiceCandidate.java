@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
@@ -50,7 +49,7 @@ public class InvoiceCandidate extends CalloutEngine
 	{
 		final IInvoiceCandBL invoiceScheduleBL = Services.get(IInvoiceCandBL.class);
 
-		final I_C_Invoice_Candidate ic = GridTabWrapper.create(mTab, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(mTab, I_C_Invoice_Candidate.class);
 
 		if (ic.getC_ILCandHandler_ID() <= 0)
 		{
@@ -72,7 +71,7 @@ public class InvoiceCandidate extends CalloutEngine
 	{
 		final IInvoiceCandidateHandlerDAO handlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 
-		final I_C_Invoice_Candidate ic = GridTabWrapper.create(mTab, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(mTab, I_C_Invoice_Candidate.class);
 		if (ic.isManual())
 		{
 			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -119,7 +118,7 @@ public class InvoiceCandidate extends CalloutEngine
 	public String Bill_BPartner_ID(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 	{
 
-		final I_C_Invoice_Candidate ic = GridTabWrapper.create(mTab, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(mTab, I_C_Invoice_Candidate.class);
 
 		if (ic.isManual() && ic.getBill_BPartner_ID() > 0)
 		{

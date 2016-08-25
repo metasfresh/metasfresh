@@ -35,7 +35,6 @@ import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
@@ -44,11 +43,11 @@ import org.compiere.model.MOrg;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCandGenerator;
@@ -171,7 +170,7 @@ public class OLCandGenerator extends AbstractModelInterceptor
 		}
 		else
 		{
-			final I_C_OLCandGenerator olCandGeneratorOld = POWrapper.create(olCandGenerator, I_C_OLCandGenerator.class, true);
+			final I_C_OLCandGenerator olCandGeneratorOld = InterfaceWrapperHelper.create(olCandGenerator, I_C_OLCandGenerator.class, true);
 			unregisterClassName = olCandGeneratorOld.getOCGeneratorImpl();
 		}
 

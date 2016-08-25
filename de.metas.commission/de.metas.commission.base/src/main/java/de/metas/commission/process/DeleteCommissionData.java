@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
@@ -129,7 +129,7 @@ public class DeleteCommissionData extends SvrProcess
 					followUpInfo = followUpInfo.substring(0, followUpInfo.length() - 1);
 				}
 				factToEdit.setC_AdvComFact_IDs_FollowUp(followUpInfo);
-				POWrapper.save(factToEdit);
+				InterfaceWrapperHelper.save(factToEdit);
 
 			}
 		}

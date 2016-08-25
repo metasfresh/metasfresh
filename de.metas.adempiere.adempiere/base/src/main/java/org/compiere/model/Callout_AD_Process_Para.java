@@ -28,7 +28,7 @@ package org.compiere.model;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 
 /**
@@ -39,7 +39,7 @@ public class Callout_AD_Process_Para extends CalloutEngine
 {
 	public String onAD_Element_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		final I_AD_Process_Para pp = GridTabWrapper.create(mTab, I_AD_Process_Para.class);
+		final I_AD_Process_Para pp = InterfaceWrapperHelper.create(mTab, I_AD_Process_Para.class);
 		if (pp.getAD_Element_ID() <= 0)
 		{
 			return "";

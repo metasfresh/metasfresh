@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -137,7 +136,7 @@ public class CalloutInvoice extends CalloutEngine
 			return "";
 		}
 
-		final I_C_Invoice invoice = GridTabWrapper.create(mTab, I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"

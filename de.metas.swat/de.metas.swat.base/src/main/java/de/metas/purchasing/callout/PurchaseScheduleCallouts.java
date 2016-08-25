@@ -26,7 +26,7 @@ package de.metas.purchasing.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -68,7 +68,7 @@ public class PurchaseScheduleCallouts extends CalloutEngine
 			return "";
 		}
 
-		final I_M_PurchaseSchedule purchaseSchedule = GridTabWrapper.create(mTab, I_M_PurchaseSchedule.class);
+		final I_M_PurchaseSchedule purchaseSchedule = InterfaceWrapperHelper.create(mTab, I_M_PurchaseSchedule.class);
 
 		if (!purchaseSchedule.isIncludeInPurchase())
 		{
@@ -105,7 +105,7 @@ public class PurchaseScheduleCallouts extends CalloutEngine
 			final GridTab mTab, final GridField mField, final Object value,
 			final Object oldValue)
 	{
-		I_M_PurchaseSchedule ps = GridTabWrapper.create(mTab, I_M_PurchaseSchedule.class);
+		I_M_PurchaseSchedule ps = InterfaceWrapperHelper.create(mTab, I_M_PurchaseSchedule.class);
 		if (!ps.isDropShip())
 		{
 			ps.setDropShip_BPartner_ID(0);
@@ -136,7 +136,7 @@ public class PurchaseScheduleCallouts extends CalloutEngine
 			return "";
 		}
 
-		final I_M_PurchaseSchedule purchaseSchedule = GridTabWrapper.create(mTab, I_M_PurchaseSchedule.class);
+		final I_M_PurchaseSchedule purchaseSchedule = InterfaceWrapperHelper.create(mTab, I_M_PurchaseSchedule.class);
 
 		if (purchaseSchedule.getC_BPartner_ID() <= 0)
 		{

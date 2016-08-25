@@ -44,7 +44,6 @@ import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -58,11 +57,10 @@ import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.commission.custom.type.ICommissionType;
@@ -95,6 +93,7 @@ import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.Messages;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -502,7 +501,7 @@ public class SponsorBL implements ISponsorBL
 
 	private int getRankCollection_ID(final Properties ctx, final int salaryGroupId, final String TrxName)
 	{
-		final I_C_AdvCommissionSalaryGroup rank = POWrapper.create(ctx, salaryGroupId, I_C_AdvCommissionSalaryGroup.class, TrxName);
+		final I_C_AdvCommissionSalaryGroup rank = InterfaceWrapperHelper.create(ctx, salaryGroupId, I_C_AdvCommissionSalaryGroup.class, TrxName);
 		return rank.getC_AdvComRankCollection_ID();
 	}
 
@@ -586,7 +585,7 @@ public class SponsorBL implements ISponsorBL
 		setInstance.saveEx(trxName);
 
 		// Get Attributes
-		final MAttributeSet attributeSet = POWrapper.create(ctx, attributeSetId, MAttributeSet.class, trxName);
+		final MAttributeSet attributeSet = InterfaceWrapperHelper.create(ctx, attributeSetId, MAttributeSet.class, trxName);
 		final MAttribute[] attributes = attributeSet.getMAttributes(true);
 
 		// Check if AttributeSet is valid
@@ -973,8 +972,8 @@ public class SponsorBL implements ISponsorBL
 	 */
 	private String checkSponsorSalesReps(final I_C_Sponsor_SalesRep ssr, final String whereClause)
 	{
-		final Properties ctx = POWrapper.getCtx(ssr);
-		final String trxName = POWrapper.getTrxName(ssr);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ssr);
+		final String trxName = InterfaceWrapperHelper.getTrxName(ssr);
 
 		final List<I_C_Sponsor_SalesRep> ssrList = Services.get(ISponsorDAO.class).retrieveSSRs(ctx, whereClause, ssr.getC_Sponsor_ID(), trxName);
 
@@ -1011,8 +1010,8 @@ public class SponsorBL implements ISponsorBL
 	{
 		final StringBuilder result = new StringBuilder();
 
-		final Properties ctx = POWrapper.getCtx(ssr);
-		final String trxName = POWrapper.getTrxName(ssr);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ssr);
+		final String trxName = InterfaceWrapperHelper.getTrxName(ssr);
 
 		//
 		// make sure that there is no overlap in the valid dates
@@ -1144,8 +1143,8 @@ public class SponsorBL implements ISponsorBL
 	{
 		SponsorBL.logger.info("sponsorID=" + sponsorID);
 
-		final Properties ctx = POWrapper.getCtx(ssr);
-		final String trxName = POWrapper.getTrxName(ssr);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ssr);
+		final String trxName = InterfaceWrapperHelper.getTrxName(ssr);
 
 		final List<List<I_C_Sponsor_SalesRep>> paths = new ArrayList<List<I_C_Sponsor_SalesRep>>();
 
@@ -1179,8 +1178,8 @@ public class SponsorBL implements ISponsorBL
 			final Collection<List<I_C_Sponsor_SalesRep>> paths,
 			final List<I_C_Sponsor_SalesRep> currentPath)
 	{
-		final Properties ctx = POWrapper.getCtx(potentialChild);
-		final String trxName = POWrapper.getTrxName(potentialChild);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(potentialChild);
+		final String trxName = InterfaceWrapperHelper.getTrxName(potentialChild);
 
 		if (potentialChild.getC_Sponsor_ID() == sponsorID)
 		{

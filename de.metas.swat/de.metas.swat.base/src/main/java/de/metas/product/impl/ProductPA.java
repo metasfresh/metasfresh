@@ -39,7 +39,6 @@ import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MProductScalePrice;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -480,7 +479,7 @@ public class ProductPA implements IProductPA
 	@Override
 	public I_M_PriceList retrievePriceList(int priceListId, String trxName)
 	{
-		return POWrapper.create(new MPriceList(Env.getCtx(), priceListId, trxName), I_M_PriceList.class);
+		return InterfaceWrapperHelper.create(new MPriceList(Env.getCtx(), priceListId, trxName), I_M_PriceList.class);
 	}
 
 	@Override
@@ -511,7 +510,7 @@ public class ProductPA implements IProductPA
 			final int bPartnerLocationId,
 			@CacheTrx final String trxName)
 	{
-		final I_C_BPartner_Location bPartnerLocation = POWrapper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
+		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
 
 		final IDatabaseBL databaseBL = Services.get(IDatabaseBL.class);
 

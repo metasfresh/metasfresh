@@ -25,7 +25,7 @@ package de.metas.commission.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -60,7 +60,7 @@ public class Sponsor extends CalloutEngine
 			return "";
 		}
 		
-		final I_C_Sponsor sponsor = GridTabWrapper.create(mTab, I_C_Sponsor.class);
+		final I_C_Sponsor sponsor = InterfaceWrapperHelper.create(mTab, I_C_Sponsor.class);
 		Services.get(ISponsorBL.class).onIsManualRankChange(sponsor, false, 0);
 		
 		return "";

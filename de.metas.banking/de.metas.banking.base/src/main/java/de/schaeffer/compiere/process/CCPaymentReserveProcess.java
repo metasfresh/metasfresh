@@ -33,7 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.Properties;
 import java.util.SimpleTimeZone;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.db.CConnection;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MClient;
@@ -175,7 +175,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 				rs2.close();
 				
 				final MPayment paymentPO = new MPayment(ctx, paymentId, get_TrxName());
-				final I_C_Payment payment = POWrapper.create(paymentPO, I_C_Payment.class);
+				final I_C_Payment payment = InterfaceWrapperHelper.create(paymentPO, I_C_Payment.class);
 				
 				payment.setC_BP_BankAccount_ID(bankaccoutId);
 				paymentPO.setAmount(currencyId, grandTotal);

@@ -31,9 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Payment;
@@ -43,6 +41,7 @@ import de.metas.adempiere.ait.event.TestEvent;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_Payment;
+import junit.framework.Assert;
 
 public class PaymentTestListener
 {
@@ -53,7 +52,7 @@ public class PaymentTestListener
 			eventTypes = EventType.PAYMENT_CASH_COMPLETE_AFTER)
 	public void onCashPaymentCreated(final TestEvent evt)
 	{
-		final MPayment payment = (MPayment)POWrapper.getPO(evt.getObj());
+		final MPayment payment = (MPayment)InterfaceWrapperHelper.getPO(evt.getObj());
 		assertPaymentAndBSLConsistent(payment);
 	}
 
@@ -64,7 +63,7 @@ public class PaymentTestListener
 			desc = "a payment can't be voided anymore, when it is referenced in a bank statement line whose paren has already been completed")
 	public void onBankStatementCompleted(final TestEvent evt)
 	{
-		final MBankStatement bsPO = (MBankStatement)POWrapper.getPO(evt.getObj());
+		final MBankStatement bsPO = (MBankStatement)InterfaceWrapperHelper.getPO(evt.getObj());
 
 		final MPayment payment = (MPayment)bsPO.getLines(true)[0].getC_Payment();
 
@@ -83,14 +82,14 @@ public class PaymentTestListener
 			desc = "When a completed cash payment is voided, then a reversal cash payment is ceated, together with respective bank statement lines")
 	public void onPaymentVoided(final TestEvent evt)
 	{
-		final MPayment payment = (MPayment)POWrapper.getPO(evt.getObj());
+		final MPayment payment = (MPayment)InterfaceWrapperHelper.getPO(evt.getObj());
 
 		payment.load(evt.getSource().getTrxName());
 
 		Assert.assertEquals("Expected reversed " + payment + " not to reference an onvoice", 0, payment.getC_Invoice_ID());
 
-		final MPayment reversalPayment = POWrapper.getPO(payment.getReversal());
-		final List<I_C_BankStatementLine> revbsls = BankStatementHelper.fetchBankStatementLinesForPayment(POWrapper.create(reversalPayment, I_C_Payment.class), I_C_BankStatementLine.class);
+		final MPayment reversalPayment = InterfaceWrapperHelper.getPO(payment.getReversal());
+		final List<I_C_BankStatementLine> revbsls = BankStatementHelper.fetchBankStatementLinesForPayment(InterfaceWrapperHelper.create(reversalPayment, I_C_Payment.class), I_C_BankStatementLine.class);
 		Assert.assertEquals("We should have one BSL for " + reversalPayment, 1, revbsls.size());
 		final I_C_BankStatementLine revbsl = revbsls.get(0);
 
@@ -105,7 +104,7 @@ public class PaymentTestListener
 
 	private void assertPaymentAndBSLConsistent(final MPayment payment)
 	{
-		final List<I_C_BankStatementLine> bsls = BankStatementHelper.fetchBankStatementLinesForPayment(POWrapper.create(payment, I_C_Payment.class), I_C_BankStatementLine.class);
+		final List<I_C_BankStatementLine> bsls = BankStatementHelper.fetchBankStatementLinesForPayment(InterfaceWrapperHelper.create(payment, I_C_Payment.class), I_C_BankStatementLine.class);
 		assertEquals("We should have one BSL for " + payment, 1, bsls.size());
 
 		final I_C_BankStatementLine bsl = bsls.get(0);

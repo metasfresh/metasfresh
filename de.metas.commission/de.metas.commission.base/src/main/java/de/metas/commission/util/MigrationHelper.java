@@ -28,12 +28,9 @@ package de.metas.commission.util;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
@@ -45,12 +42,14 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_SysConfig;
 import org.compiere.process.SvrProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.document.IDocumentPA;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -144,7 +143,7 @@ public class MigrationHelper
 	{
 		final I_AD_SysConfig cfg = getSysConfigVersion();
 		cfg.setValue("" + version);
-		POWrapper.save(cfg);
+		InterfaceWrapperHelper.save(cfg);
 	}
 
 	private I_AD_SysConfig getSysConfigVersion()
@@ -163,7 +162,7 @@ public class MigrationHelper
 			cfg.setName(MigrationHelper.DE_METAS_COMMISSION_VERSION);
 			cfg.setValue("" + 0);
 			cfg.setIsActive(true);
-			POWrapper.save(cfg);
+			InterfaceWrapperHelper.save(cfg);
 		}
 		return cfg;
 	}

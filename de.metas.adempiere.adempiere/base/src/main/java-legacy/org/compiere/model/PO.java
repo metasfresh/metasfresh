@@ -67,7 +67,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -2234,7 +2233,7 @@ public abstract class PO
 
 	protected final void setClientOrgFromModel(final Object model)
 	{
-		final PO po = POWrapper.getPO(model, false); // checkOtherWrapper=false
+		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		setClientOrg(po);
 	}

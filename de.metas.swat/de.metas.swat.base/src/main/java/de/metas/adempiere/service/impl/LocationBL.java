@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -72,7 +71,7 @@ public class LocationBL implements ILocationBL
 	@Override
 	public void validatePostal(I_C_Location location) throws AdempiereException
 	{
-		final Properties ctx = POWrapper.getCtx(location);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(location);
 		validatePostal(ctx, new LocationAddressAdapter(location));
 		location.setIsPostalValidated(true);
 	}
@@ -265,7 +264,7 @@ public class LocationBL implements ILocationBL
 		if (address instanceof LocationAddressAdapter)
 		{
 			location = ((LocationAddressAdapter)address).getC_Location();
-			trxName = POWrapper.getTrxName(location);
+			trxName = InterfaceWrapperHelper.getTrxName(location);
 			countryId = location.getC_Country_ID();
 			regionId = location.getC_Region_ID();
 			cityId = location.getC_City_ID();
@@ -281,7 +280,7 @@ public class LocationBL implements ILocationBL
 			countryId = country.getC_Country_ID();
 		}
 
-		final I_C_Postal postal = POWrapper.create(ctx, I_C_Postal.class, trxName);
+		final I_C_Postal postal = InterfaceWrapperHelper.create(ctx, I_C_Postal.class, trxName);
 		postal.setC_Country_ID(countryId);
 		if (regionId > 0)
 			postal.setC_Region_ID(regionId);
@@ -295,7 +294,7 @@ public class LocationBL implements ILocationBL
 		// postal.setAddress4(address.getStreet4());
 		postal.setPostal(address.getPostcode());
 		// postal.setPostal_Add(location.getPostal_Add());
-		POWrapper.save(postal);
+		InterfaceWrapperHelper.save(postal);
 		log.debug("Created a new C_Postal record for " + address + ": " + postal);
 
 		if (location != null)
@@ -330,7 +329,7 @@ public class LocationBL implements ILocationBL
 		{
 			assert location != null;
 
-			this.ctx = POWrapper.getCtx(location);
+			this.ctx = InterfaceWrapperHelper.getCtx(location);
 			this.location = location;
 		}
 
@@ -472,7 +471,7 @@ public class LocationBL implements ILocationBL
 		public CPostalAddressAdapter(I_C_Postal cpostal)
 		{
 			assert cpostal != null;
-			this.ctx = POWrapper.getCtx(cpostal);
+			this.ctx = InterfaceWrapperHelper.getCtx(cpostal);
 			this.cpostal = cpostal;
 		}
 
@@ -618,12 +617,12 @@ public class LocationBL implements ILocationBL
 		}
 		final int countryId = country.getC_Country_ID();
 
-		final I_C_Postal postal = POWrapper.create(ctx, I_C_Postal.class, trxName);
+		final I_C_Postal postal = InterfaceWrapperHelper.create(ctx, I_C_Postal.class, trxName);
 		postal.setC_Country_ID(countryId);
 		postal.setCity(city);
 		postal.setPostal(postcode);
 		postal.setIsManual(true);
-		POWrapper.save(postal);
+		InterfaceWrapperHelper.save(postal);
 		log.debug("Registered manual C_Postal: " + postal);
 	}
 

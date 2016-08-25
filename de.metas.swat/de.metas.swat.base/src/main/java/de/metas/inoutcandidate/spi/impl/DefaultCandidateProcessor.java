@@ -31,17 +31,17 @@ import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 public class DefaultCandidateProcessor implements ICandidateProcessor
@@ -92,7 +92,7 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 				final IProductBL productBL = Services.get(IProductBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-				final I_M_Product product = POWrapper.create(inOutLine.getM_Product(), I_M_Product.class);
+				final I_M_Product product = InterfaceWrapperHelper.create(inOutLine.getM_Product(), I_M_Product.class);
 
 				// task 08745: by default we don't allow this, to stay back wards compatible 
 				final boolean allowShipSingleNonItems = sysConfigBL.getBooleanValue(AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS, false);

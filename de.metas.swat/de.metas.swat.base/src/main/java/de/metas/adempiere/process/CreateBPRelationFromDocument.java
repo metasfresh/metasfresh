@@ -28,7 +28,6 @@ package de.metas.adempiere.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
@@ -120,7 +119,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		relation.setIsPayFrom(p_IsPayFrom);
 		relation.setIsRemitTo(p_IsRemitTo);
 		relation.setIsShipTo(p_IsShipTo);
-		POWrapper.save(relation);
+		InterfaceWrapperHelper.save(relation);
 
 		final String tableName = getTableName();
 		if (I_C_Order.Table_Name.equals(tableName))
@@ -135,7 +134,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		I_C_Order order = null;
 		if (orderId > 0)
 		{
-			order = POWrapper.create(getCtx(), orderId, I_C_Order.class, get_TrxName());
+			order = InterfaceWrapperHelper.create(getCtx(), orderId, I_C_Order.class, get_TrxName());
 		}
 		if (order == null)
 		{
@@ -159,7 +158,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 			order.setBill_Location_ID(rel.getC_BPartnerRelation_Location_ID());
 		}
 
-		POWrapper.save(order);
+		InterfaceWrapperHelper.save(order);
 	}
 
 	private I_C_BP_Relation findRelation(final int bpartnerId, final int bpLocationId, final int bpRelationId, final int locRelationId, final boolean create)

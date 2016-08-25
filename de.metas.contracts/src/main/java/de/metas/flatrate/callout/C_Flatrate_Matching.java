@@ -25,7 +25,7 @@ package de.metas.flatrate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -46,7 +46,7 @@ public class C_Flatrate_Matching extends CalloutEngine
 			final Object oldValue)
 	{
 
-		final I_C_Flatrate_Matching matching = GridTabWrapper.create(mTab, I_C_Flatrate_Matching.class);
+		final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.create(mTab, I_C_Flatrate_Matching.class);
 
 		if (matching.getM_PricingSystem_ID() <= 0 && matching.getC_Flatrate_Conditions_ID() > 0)
 		{
@@ -61,7 +61,7 @@ public class C_Flatrate_Matching extends CalloutEngine
 			final Object oldValue)
 	{
 
-		final I_C_Flatrate_Matching matching = GridTabWrapper.create(mTab, I_C_Flatrate_Matching.class);
+		final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.create(mTab, I_C_Flatrate_Matching.class);
 
 		if (matching.getC_Flatrate_Transition_ID() <= 0 && matching.getC_Flatrate_Conditions_ID() > 0)
 		{

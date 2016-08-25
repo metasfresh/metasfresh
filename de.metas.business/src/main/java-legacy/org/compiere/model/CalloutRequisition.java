@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
 /**
@@ -46,7 +46,7 @@ public class CalloutRequisition extends CalloutEngine
 		Integer M_Product_ID = (Integer)value;
 		if (M_Product_ID == null || M_Product_ID.intValue() == 0)
 			return "";
-		final I_M_RequisitionLine line = GridTabWrapper.create(mTab, I_M_RequisitionLine.class);
+		final I_M_RequisitionLine line = InterfaceWrapperHelper.create(mTab, I_M_RequisitionLine.class);
 		final I_M_Requisition req = line.getM_Requisition();
 		setPrice(ctx, WindowNo, req, line);
 		MProduct product = MProduct.get(ctx, M_Product_ID);
@@ -70,7 +70,7 @@ public class CalloutRequisition extends CalloutEngine
 		if (isCalloutActive() || value == null)
 			return "";
 		
-		final I_M_RequisitionLine line = GridTabWrapper.create(mTab, I_M_RequisitionLine.class);
+		final I_M_RequisitionLine line = InterfaceWrapperHelper.create(mTab, I_M_RequisitionLine.class);
 		final I_M_Requisition req = line.getM_Requisition();
 		
 		//	Qty changed - recalc price

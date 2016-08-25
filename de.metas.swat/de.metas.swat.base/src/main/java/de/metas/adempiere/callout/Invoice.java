@@ -25,7 +25,7 @@ package de.metas.adempiere.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -45,8 +45,7 @@ public class Invoice extends CalloutEngine {
 			return "";
 		}
 
-		final I_C_Invoice invoice = GridTabWrapper.create(mTab,
-				I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
 
 		if (invoice.getRef_CreditMemo_ID() > 0) {
 

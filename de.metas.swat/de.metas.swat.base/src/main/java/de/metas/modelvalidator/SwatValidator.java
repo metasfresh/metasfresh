@@ -43,7 +43,7 @@ import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.AbstractInvoiceBL;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.impl.BPartnerTreeSupport;
 import org.adempiere.model.tree.spi.impl.CampainTreeSupport;
@@ -391,19 +391,19 @@ public class SwatValidator implements ModelValidator
 	{
 		if (I_C_InvoiceLine.Table_Name.equals(po.get_TableName()) && TYPE_BEFORE_NEW == type)
 		{
-			I_C_InvoiceLine invoiceLine = POWrapper.create(po, I_C_InvoiceLine.class);
+			I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 			if (invoiceLine.getC_OrderLine_ID() > 0)
 			{
-				I_C_OrderLine orderLine = POWrapper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
+				I_C_OrderLine orderLine = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
 				invoiceLine.setProductDescription(orderLine.getProductDescription());
 			}
 		}
 		if (I_M_InOutLine.Table_Name.equals(po.get_TableName()) && TYPE_BEFORE_NEW == type)
 		{
-			I_M_InOutLine ioLine = POWrapper.create(po, I_M_InOutLine.class);
+			I_M_InOutLine ioLine = InterfaceWrapperHelper.create(po, I_M_InOutLine.class);
 			if (ioLine.getC_OrderLine_ID() > 0)
 			{
-				I_C_OrderLine orderLine = POWrapper.create(ioLine.getC_OrderLine(), I_C_OrderLine.class);
+				I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ioLine.getC_OrderLine(), I_C_OrderLine.class);
 				ioLine.setProductDescription(orderLine.getProductDescription());
 			}
 		}

@@ -32,7 +32,7 @@ import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Msg;
 
@@ -79,7 +79,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 			final IShipmentCandidates candidates,
 			final I_M_InOutLine inOutLine, final String trxName, int removeCount)
 	{
-		final I_C_BPartner billPartner = POWrapper.create(inOutLine.getC_OrderLine().getC_Order().getBill_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine().getC_Order().getBill_BPartner(), I_C_BPartner.class);
 		
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
 

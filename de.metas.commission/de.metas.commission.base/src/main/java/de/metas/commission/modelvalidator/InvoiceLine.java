@@ -25,7 +25,7 @@ package de.metas.commission.modelvalidator;
 
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
@@ -36,15 +36,15 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
 
 import de.metas.commission.interfaces.I_C_InvoiceLine;
 import de.metas.commission.interfaces.I_C_OrderLine;
 import de.metas.commission.model.IInstanceTrigger;
 import de.metas.commission.service.IInstanceTriggerBL;
+import de.metas.logging.LogManager;
 
 public class InvoiceLine implements ModelValidator
 {
@@ -94,7 +94,7 @@ public class InvoiceLine implements ModelValidator
 			// Usually these two are set from the il's order line (see MInvoiceLineAsp).
 			// Only act if they are still NULL.
 			//
-			final I_C_InvoiceLine il = POWrapper.create(po, I_C_InvoiceLine.class);
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 			final I_C_Invoice invoice = il.getC_Invoice();
 
 			if (invoice.isSOTrx())
@@ -206,7 +206,7 @@ public class InvoiceLine implements ModelValidator
 		// introduced by US654, fixed in 02843
 		if (il.getC_OrderLine_ID() > 0 && !il.isManualCommissionPoints())
 		{
-			final I_C_OrderLine ol = POWrapper.create(il.getC_OrderLine(), I_C_OrderLine.class);
+			final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 			final String message = Msg.getMsg(Env.getCtx(), "OrderInvoiceCommissionPointsNotMatch", new Object[] { il.toString() });
 			Check.assume(ol.getCommissionPoints().compareTo(il.getCommissionPoints()) == 0, message);
 		}

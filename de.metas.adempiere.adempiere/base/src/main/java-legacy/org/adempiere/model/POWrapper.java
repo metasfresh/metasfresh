@@ -124,7 +124,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		// Try getting the PO using other wrappers too
 		if (po == null)
 		{
-			po = getPO(obj, true);
+			po = getPO(obj);
 		}
 
 		if (!(po instanceof PO))
@@ -247,11 +247,25 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
-	public static <T extends PO> T getPO(final Object model)
+	/*package*/ static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
 		final T po = getPO(model, checkOtherWrapper);
+		return po;
+	}
 
+	/**
+	 * Method strictly gets the underlying PO if the wrapper supports it.
+	 * 
+	 * Compared with {@link #getPO()}, this method will NOT try to load the PO from other wrappers.
+	 * 
+	 * @param model
+	 * @return
+	 */
+	public static <T extends PO> T getStrictPO(final Object model)
+	{
+		final boolean checkOtherWrapper = false;
+		final T po = getPO(model, checkOtherWrapper);
 		return po;
 	}
 
@@ -261,10 +275,14 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
 	 *            the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
 	 *            <code>null</code>.
-	 * @return
+	 * @return <ul>
+	 * <li>PO
+	 * <li>null if model is null
+	 * <li>null if {@link POWrapper} does not support it and <code>checkOtherWrapper</code> is <code>false</code>.
+	 * </ul>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
+	private static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
 	{
 		if (model == null)
 		{
@@ -376,7 +394,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static String getTrxName(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po != null)
 		{
 			return po.get_TrxName();
@@ -716,7 +734,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null");
 
 		final Method poMethod = null; // N/A
@@ -803,7 +821,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static boolean isHandled(final Object model)
 	{
-		return getPO(model, false) != null; // checkOtherWrapper=false
+		return getStrictPO(model) != null;
 	}
 
 	/**
@@ -877,7 +895,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 */
 	public static boolean isNull(final Object model, final String columnName)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			return true;
@@ -889,20 +907,20 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
-		final Object valueOld = getPO(model, false).setDynAttribute(attributeName, value);
+		final Object valueOld = getStrictPO(model).setDynAttribute(attributeName, value);
 		return valueOld;
 	}
 
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		@SuppressWarnings("unchecked")
-		final T value = (T)getPO(model, false).getDynAttribute(attributeName);
+		final T value = (T)getStrictPO(model).getDynAttribute(attributeName);
 		return value;
 	}
 
 	public static boolean hasModelColumnName(final Object model, final String columnName)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			return false;
@@ -931,17 +949,17 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static boolean isNew(final Object model)
 	{
-		return getPO(model, false).is_new();
+		return getStrictPO(model).is_new();
 	}
 
 	public static boolean isUIAction(final Object model)
 	{
-		return getPO(model, false).is_ManualUserAction();
+		return getStrictPO(model).is_ManualUserAction();
 	}
 
 	public static boolean isRecordChanged(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 
 		return po.is_Changed();
@@ -949,7 +967,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		return isPOValueChanged(po, columnName);
 	}
@@ -990,7 +1008,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	public static boolean hasChanges(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
-		final PO po = getPO(model, false); // checkOtherWrapper=false
+		final PO po = getStrictPO(model);
 		return po.is_Changed();
 	}
 
