@@ -22,6 +22,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
@@ -700,6 +701,27 @@ public class SqlDocumentRepository implements DocumentRepository
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
 				return new Timestamp(((java.util.Date)value).getTime());
+			}
+		}
+		else if(Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
+		{
+			if (value == null)
+			{
+				return false;
+			}
+			else if (String.class.equals(valueClass))
+			{
+				return DisplayType.toBoolean(value);
+			}
+			else if (StringLookupValue.class.isAssignableFrom(valueClass))
+			{
+				// Corner case: e.g. Posted column which is a List but the PO is handling it as boolean
+				final StringLookupValue stringLookupValue = (StringLookupValue)value; 
+				final Boolean valueBoolean = DisplayType.toBoolean(stringLookupValue.getIdAsString(), null);
+				if(valueBoolean != null)
+				{
+					return valueBoolean;
+				}
 			}
 		}
 
