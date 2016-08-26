@@ -27,11 +27,7 @@ import java.util.List;
 
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
@@ -73,5 +69,9 @@ public interface IADWindowDAO extends ISingletonService
 	List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab);
 
 	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
+
+	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
+
+	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
 
 }
