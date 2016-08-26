@@ -791,7 +791,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		// so we are publishing it
 		if (!displayLogic.isConstant())
 		{
-			return false;
+			return true;
 		}
 
 		// Publish this field only if it's displayed
