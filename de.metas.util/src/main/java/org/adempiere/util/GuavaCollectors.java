@@ -1,6 +1,8 @@
 package org.adempiere.util;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -8,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -55,7 +58,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
-	 * 
+	 *
 	 * This method is excluding duplicates.
 	 */
 	public static <T> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates()
@@ -88,10 +91,10 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect a stream of elements into an {@link ImmutableSet}.
-	 * 
+	 *
 	 * @param duplicateConsumer consumer to be called in case a duplicate was found
 	 */
-	public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSetHandlingDuplicates(Consumer<T> duplicateConsumer)
+	public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSetHandlingDuplicates(final Consumer<T> duplicateConsumer)
 	{
 		// NOTE: internally we use a LinkedHashSet accumulator to preserve the order.
 
@@ -115,6 +118,24 @@ public final class GuavaCollectors
 			return leftAccum;
 		};
 		final Function<LinkedHashSet<T>, ImmutableSet<T>> finisher = ImmutableSet::copyOf;
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	/**
+	 * Collect items and join them to String using given <code>joiner</code>.
+	 * 
+	 * @param joiner
+	 * @return collector
+	 */
+	public static <T> Collector<T, ?, String> toString(final Joiner joiner)
+	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = List::add;
+		final BinaryOperator<List<T>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<List<T>, String> finisher = joiner::join;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
