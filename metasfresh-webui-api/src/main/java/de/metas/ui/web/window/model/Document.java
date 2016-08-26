@@ -16,6 +16,7 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
@@ -98,7 +99,7 @@ public final class Document
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final DocumentPath documentPath;
-	
+
 	//
 	// Status
 	private boolean _new;
@@ -712,30 +713,30 @@ public final class Document
 	{
 		_new = false;
 	}
-	
+
 	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
 		final DocumentValidStatus validOld = _valid;
-		if(Objects.equals(validOld, valid))
+		if (Objects.equals(validOld, valid))
 		{
-			return validOld; // no change 
+			return validOld; // no change
 		}
-		
+
 		_valid = valid;
 		Execution.getCurrentDocumentChangesCollector().collectDocumentValidStatusChanged(getDocumentPath(), valid);
 		return valid;
 	}
-	
+
 	private final DocumentSaveStatus setSaveStatusAndReturn(final DocumentSaveStatus saveStatus)
 	{
 		Preconditions.checkNotNull(saveStatus, "saveStatus");
 		final DocumentSaveStatus saveStatusOld = _saveStatus;
-		if(Objects.equals(saveStatusOld, saveStatus))
+		if (Objects.equals(saveStatusOld, saveStatus))
 		{
 			return saveStatusOld; // no change
 		}
-		
+
 		_saveStatus = saveStatus;
 		Execution.getCurrentDocumentChangesCollector().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
 		return _saveStatus;
@@ -767,7 +768,7 @@ public final class Document
 		}
 
 		setValue(documentField, value, reason);
-		
+
 		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName))
 		{
 			processDocAction();
@@ -780,7 +781,7 @@ public final class Document
 		assertWritable();
 
 		final DocumentField docActionField = getField(WindowConstants.FIELDNAME_DocAction);
-		
+
 		//
 		// Make sure it's saved
 		saveIfValidAndHasChanges();
@@ -885,7 +886,7 @@ public final class Document
 		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
 		try
 		{
-			final boolean readonly = readonlyLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			final LogicExpressionResult readonly = readonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 			documentField.setReadonly(readonly);
 		}
 		catch (final Exception e)
@@ -901,7 +902,7 @@ public final class Document
 		final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
 		try
 		{
-			final boolean mandatory = mandatoryLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			final LogicExpressionResult mandatory = mandatoryLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 			documentField.setMandatory(mandatory);
 		}
 		catch (final Exception e)
@@ -914,16 +915,16 @@ public final class Document
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
-		boolean displayed = false; // default false, i.e. not displayed
+		LogicExpressionResult displayed = LogicExpressionResult.FALSE; // default false, i.e. not displayed
 		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
 		try
 		{
-			displayed = displayLogic.evaluate(asEvaluatee(), OnVariableNotFound.Fail);
+			displayed = displayLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
 			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField, e);
-			displayed = false;
+			displayed = LogicExpressionResult.FALSE;
 		}
 
 		documentField.setDisplayed(displayed);
@@ -975,13 +976,13 @@ public final class Document
 		{
 			final boolean valueOld = documentField.isReadonly();
 			updateFieldReadOnly(documentField);
-			final boolean value = documentField.isReadonly();
+			final LogicExpressionResult value = documentField.getReadonly();
 
-			if (collectEventsEventIfNoChange || value != valueOld)
+			if (collectEventsEventIfNoChange || value.booleanValue() != valueOld)
 			{
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
-						+ ", ReadOnlyLogic=" + documentField.getDescriptor().getReadonlyLogic();
+						+ ", EvaluationResult=" + value;
 				documentChangesCollector.collectReadonlyChanged(documentField, reason);
 			}
 		}
@@ -989,13 +990,13 @@ public final class Document
 		{
 			final boolean valueOld = documentField.isMandatory();
 			updateFieldMandatory(documentField);
-			final boolean value = documentField.isMandatory();
+			final LogicExpressionResult value = documentField.getMandatory();
 
-			if (collectEventsEventIfNoChange || value != valueOld)
+			if (collectEventsEventIfNoChange || value.booleanValue() != valueOld)
 			{
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
-						+ ", MandatoryLogic=" + documentField.getDescriptor().getMandatoryLogic();
+						+ ", EvaluationResult=" + value;
 				documentChangesCollector.collectMandatoryChanged(documentField, reason);
 			}
 		}
@@ -1003,13 +1004,13 @@ public final class Document
 		{
 			final boolean valueOld = documentField.isDisplayed();
 			updateFieldDisplayed(documentField);
-			final boolean value = documentField.isDisplayed();
+			final LogicExpressionResult value = documentField.getDisplayed();
 
-			if (collectEventsEventIfNoChange || value != valueOld)
+			if (collectEventsEventIfNoChange || value.booleanValue() != valueOld)
 			{
 				final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName
 						+ ", DependencyType=" + triggeringDependencyType
-						+ ", DisplayLogic=" + documentField.getDescriptor().getDisplayLogic();
+						+ ", EvaluationResult=" + value;
 				documentChangesCollector.collectDisplayedChanged(documentField, reason);
 			}
 		}
@@ -1204,12 +1205,12 @@ public final class Document
 
 		return setValidStatusAndReturn(DocumentValidStatus.valid()); // valid
 	}
-	
+
 	public DocumentValidStatus getValidStatus()
 	{
 		return _valid;
 	}
-	
+
 	public DocumentSaveStatus getSaveStatus()
 	{
 		return _saveStatus;
@@ -1239,8 +1240,8 @@ public final class Document
 
 		return changes;
 	}
-	
-	/*package*/boolean hasChangesRecursivelly()
+
+	/* package */boolean hasChangesRecursivelly()
 	{
 		//
 		// Check this document
@@ -1248,7 +1249,7 @@ public final class Document
 		{
 			return true;
 		}
-		
+
 		//
 		// Check included documents
 		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
@@ -1262,7 +1263,6 @@ public final class Document
 		return false; // no changes
 
 	}
-
 
 	public DocumentSaveStatus saveIfValidAndHasChanges()
 	{
@@ -1318,7 +1318,7 @@ public final class Document
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
 		}
-		
+
 		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
 	}
 

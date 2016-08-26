@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -62,9 +63,9 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	// State
 	private Object _initialValue;
 	private Object _value;
-	private boolean _mandatory = false;
-	private boolean _readonly = false;
-	private boolean _displayed = false;
+	private LogicExpressionResult _mandatory = LogicExpressionResult.FALSE;
+	private LogicExpressionResult _readonly = LogicExpressionResult.FALSE;
+	private LogicExpressionResult _displayed = LogicExpressionResult.FALSE;
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
@@ -77,10 +78,10 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	/** copy constructor */
-	private DocumentField(DocumentField from, Document document)
+	private DocumentField(final DocumentField from, final Document document)
 	{
 		super();
-		this.descriptor = from.descriptor;
+		descriptor = from.descriptor;
 		_document = document;
 		lookupDataSource = from.lookupDataSource == null ? null : from.lookupDataSource.copy();
 		_calloutField = null; // don't copy it
@@ -246,14 +247,14 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 		try
 		{
-			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail  
-			if(java.util.Date.class.equals(targetType) && Timestamp.class.equals(fromType))
+			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail
+			if (java.util.Date.class.equals(targetType) && Timestamp.class.equals(fromType))
 			{
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)JSONDate.fromTimestamp((Timestamp)value);
 				return valueConv;
 			}
-			
+
 			if (targetType.isAssignableFrom(fromType))
 			{
 				@SuppressWarnings("unchecked")
@@ -307,7 +308,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 					final T valueConv = (T)new BigDecimal((String)value);
 					return valueConv;
 				}
-				else if(Integer.class == fromType || int.class == fromType)
+				else if (Integer.class == fromType || int.class == fromType)
 				{
 					final int valueInt = (int)value;
 					@SuppressWarnings("unchecked")
@@ -398,12 +399,17 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean isMandatory()
 	{
+		return _mandatory.booleanValue();
+	}
+
+	/* package */ LogicExpressionResult getMandatory()
+	{
 		return _mandatory;
 	}
 
-	/* package */ void setMandatory(final boolean mandatory)
+	/* package */ void setMandatory(final LogicExpressionResult mandatory)
 	{
-		if (_mandatory == mandatory)
+		if (_mandatory.valueEquals(mandatory))
 		{
 			return;
 		}
@@ -415,10 +421,15 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean isReadonly()
 	{
+		return _readonly.booleanValue();
+	}
+
+	/* package */ LogicExpressionResult getReadonly()
+	{
 		return _readonly;
 	}
 
-	/* package */void setReadonly(final boolean readonly)
+	/* package */void setReadonly(final LogicExpressionResult readonly)
 	{
 		_readonly = readonly;
 	}
@@ -426,10 +437,15 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean isDisplayed()
 	{
+		return _displayed.booleanValue();
+	}
+
+	/* package */LogicExpressionResult getDisplayed()
+	{
 		return _displayed;
 	}
 
-	/* package */void setDisplayed(final boolean displayed)
+	/* package */void setDisplayed(final LogicExpressionResult displayed)
 	{
 		_displayed = displayed;
 	}
@@ -456,7 +472,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 	/* package */List<LookupValue> getLookupValues(final Document document)
 	{
-		if(lookupDataSource == null)
+		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
@@ -465,7 +481,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 	/* package */List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
 	{
-		if(lookupDataSource == null)
+		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
@@ -485,7 +501,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	{
 		final DocumentValidStatus validOld = _valid;
 		final DocumentValidStatus validNew = checkValid();
-		if(Objects.equals(validOld, validNew))
+		if (Objects.equals(validOld, validNew))
 		{
 			return;
 		}
@@ -519,7 +535,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return !DataTypes.equals(_value, _initialValue);
 	}
 
-	/*package */DocumentField copy(final Document document)
+	/* package */DocumentField copy(final Document document)
 	{
 		return new DocumentField(this, document);
 	}
