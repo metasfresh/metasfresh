@@ -52,4 +52,24 @@ DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540142
 
 
 
+-- 26.08.2016 17:27
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540128
+;
+
+-- 26.08.2016 17:27
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540129
+;
+
+-- 26.08.2016 17:27
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540130
+;
+
+-- 26.08.2016 17:27
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540131
+;
+
 
