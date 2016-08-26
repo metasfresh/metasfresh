@@ -1,8 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import {
     findRowByPropName
 } from '../actions/WindowActions';
@@ -49,7 +47,7 @@ class Window extends Component {
             const columns = elem.columns;
             return (
                 <div className="row" key={"section" + id}>
-                    {this.renderColumns(columns)}
+                    {columns && this.renderColumns(columns)}
                 </div>
             )
        })
@@ -61,7 +59,7 @@ class Window extends Component {
             const elementGroups = elem.elementGroups;
             return (
                 <div className={"col-xs-" + colWidth} key={'col' + id}>
-                    {this.renderElementGroups(elementGroups)}
+                    {elementGroups && this.renderElementGroups(elementGroups)}
                 </div>
             )
         })
@@ -74,7 +72,7 @@ class Window extends Component {
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElementsLine(elementsLine)}
+                    {elementsLine && this.renderElementsLine(elementsLine)}
                 </div>
             )
         })
@@ -84,7 +82,7 @@ class Window extends Component {
             const {elements} = elem;
             return (
                 <div className="elements-line" key={"line" + id}>
-                    {this.renderElements(elements)}
+                    {elements && this.renderElements(elements)}
                 </div>
             )
         })
@@ -95,6 +93,7 @@ class Window extends Component {
         return elements.map((elem, id)=> {
             const dataId = findRowByPropName(data,"ID").value;
             const widgetData = findRowByPropName(data, elem.fields[0].field);
+
             return (
                 <Widget
                     key={'element' + id}
@@ -107,12 +106,18 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, tabs} = this.props.layout;
-        const {connectionError} = this.props;
+        const {sections, type, tabs, documentNoElement, docActionElement} = this.props.layout;
+        const {connectionError, data} = this.props;
+        const dataId = findRowByPropName(data,"ID").value;
         return (
             <div>
                 {connectionError && <ErrorScreen />}
-                <Header />
+                <Header
+                    docStatus = {docActionElement}
+                    docNo = {documentNoElement}
+                    dataId={dataId}
+                    windowType={type}
+                />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">

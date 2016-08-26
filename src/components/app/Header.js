@@ -9,6 +9,10 @@ import Widget from '../Widget';
 import OrderList from '../app/OrderList';
 
 import {
+    findRowByPropName
+} from '../../actions/WindowActions';
+
+import {
     changeOrderStatus
 } from '../../actions/AppActions';
 
@@ -92,9 +96,11 @@ class Header extends Component {
             }
         })
     }
+
     render() {
-        const {orderStatus, data} = this.props;
+        const {orderStatus, data, docNo, windowType, dataId} = this.props;
         const {isSubheaderShow, isOrderListShow} = this.state;
+        const docNoData = findRowByPropName(data, "DocumentNo");
         return (
             <div>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
@@ -112,7 +118,13 @@ class Header extends Component {
                                 <div className="header-breadcrumb">
                                     <div>Home / Sales orders</div>
                                     <div className="input-icon-container header-input-id header-input-sm">
-                                        <input defaultValue="docNo" readOnly className="form-control form-control-meta" type="text"/>
+                                        <Widget
+                                            windowType={windowType}
+                                            dataId={dataId}
+                                            widgetData={docNoData}
+                                            noLabel={true}
+                                            {...docNo}
+                                        />
                                         <i className="meta-icon-edit input-icon-right"></i>
                                     </div>
                                 </div>
