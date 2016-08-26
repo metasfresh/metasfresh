@@ -6,7 +6,7 @@ export function createWindow(windowType, docId = "NEW"){
     return (dispatch) => {
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(initWindow(windowType,docId))
+        dispatch(initWindow(windowType, docId))
             .then(response => {
                 docId = response.data[0].id
                 dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))}
@@ -15,12 +15,18 @@ export function createWindow(windowType, docId = "NEW"){
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data))
             ).then(response => {
-                response.layout.tabs.map(item => {
-                    dispatch(getData(windowType, docId, item.tabid))
+                let tabTmp = {};
+
+                response.layout.tabs.map(tab => {
+                    tabTmp[tab.tabid] = {};
+                    dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
-                            let tab = {};
-                            tab[item.tabid] = res.data;
-                            dispatch(addRowData(tab));
+
+                            res.data.map(row => {
+                                tabTmp[tab.tabid][row.rowId] = row;
+                            });
+
+                            dispatch(addRowData(tabTmp));
                         });
                 })
             }).catch(()=>{
@@ -94,6 +100,14 @@ export function updateDataSuccess(item) {
         item: item
     }
 }
+export function updateRowSuccess(item,tabid,rowid) {
+    return {
+        type: types.UPDATE_DATA_SUCCESS,
+        item: item,
+        tabid: tabid,
+        rowid: rowid
+    }
+}
 
 /*
 *  Wrapper for patch request of widget elements
@@ -102,8 +116,14 @@ export function updateDataSuccess(item) {
 export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
     return dispatch => {
         dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
-            response.data[0].fields.map(item => {
-                dispatch(updateDataSuccess(item));
+            response.data.map(item1 => {
+                item1.fields.map(item2 => {
+                    if(item1.tabid){
+                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId));
+                    }else{
+                        dispatch(updateDataSuccess(item2));
+                    }
+                });
             })
         })
     }
@@ -137,11 +157,32 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
         , payload);
 }
 
+export function updateProperty(property, value, tabid, rowid){
+    return dispatch => {
+        if( tabid && rowid ){
+            dispatch(updateRowProperty(property, value, tabid, rowid))
+        }else{
+            dispatch(updateDataProperty(property, value))
+        }
+    }
+
+}
+
 export function updateDataProperty(property, value){
     return {
         type: types.UPDATE_DATA_PROPERTY,
         property: property,
         value: value
+    }
+}
+
+export function updateRowProperty(property, value, tabid, rowid){
+    return {
+        type: types.UPDATE_ROW_PROPERTY,
+        property: property,
+        value: value,
+        tabid: tabid,
+        rowid: rowid
     }
 }
 

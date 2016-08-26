@@ -34,10 +34,18 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 data: state.data.map(item =>
                     item.field === action.item.field ?
-                    Object.assign({}, item, action.item) :
-                    item
+                        Object.assign({}, item, action.item) :
+                        item
                 )
         })
+        case types.UPDATE_ROW_SUCCESS:
+            return update(state, {
+                rowData: {
+                    [action.tabid]: {
+                        [action.rowid]: {$push: action.item}
+                    }
+                }
+            })
         case types.UPDATE_DATA_PROPERTY:
             return Object.assign({}, state, {
                 data: state.data.map(item =>
@@ -45,7 +53,21 @@ export default function windowHandler(state = initialState, action) {
                     Object.assign({}, item, { value: action.value }) :
                     item
                 )
-        })
+            })
+        case types.UPDATE_ROW_PROPERTY:
+            return update(state, {
+                rowData: {
+                    [action.tabid]: {
+                        [action.rowid]: {
+                            fields: {$set: state.rowData[action.tabid][action.rowid].fields.map( item =>
+                                item.field === action.property ?
+                                    Object.assign({}, item, {value: action.value}):
+                                    item
+                            )}
+                        }
+                    }
+                }
+            })
         default:
             return state
     }

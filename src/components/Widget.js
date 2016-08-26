@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import {
     patch,
-    updateDataProperty,
+    updateProperty,
     findRowByPropName
 } from '../actions/WindowActions';
 
@@ -21,7 +21,7 @@ class Widget extends Component {
         //check if we should update store
 
         if(widgetData.value !== value ){
-            dispatch(updateDataProperty(property, value));
+            dispatch(updateProperty(property, value, tabId, rowId));
         }
         dispatch(patch(windowType, dataId, tabId, rowId, property, value));
 
@@ -31,9 +31,9 @@ class Widget extends Component {
         }
     }
     handleChange = (e, property) => {
-        const {dispatch} = this.props;
+        const {dispatch, tabId, rowId} = this.props;
         e.preventDefault();
-        dispatch(updateDataProperty(property, e.target.value));
+        dispatch(updateProperty(property, e.target.value, tabId, rowId));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){
