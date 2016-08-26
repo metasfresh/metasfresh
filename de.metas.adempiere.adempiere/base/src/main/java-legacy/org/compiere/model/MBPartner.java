@@ -567,14 +567,13 @@ public class MBPartner extends X_C_BPartner
 	@Override
 	public String toString()
 	{
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		// NOTE: don't print the stats, because that will involve database access which is quite expensive for a stupid toString method!
+		// final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+		// final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-		StringBuffer sb = new StringBuffer("MBPartner[ID=").append(get_ID())
-				.append(",Value=").append(getValue()).append(",Name=").append(
-						getName())
-				.append(",Open=").append(
-						stats.getTotalOpenBalance())
+		final StringBuilder sb = new StringBuilder("MBPartner[ID=").append(get_ID())
+				.append(",Value=").append(getValue()).append(",Name=").append(getName())
+				// .append(",Open=").append(stats.getTotalOpenBalance())
 				.append("]");
 		return sb.toString();
 	} // toString

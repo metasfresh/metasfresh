@@ -676,7 +676,7 @@ public class OrderBL implements IOrderBL
 
 		if (!foundLoc)
 		{
-			logger.error("MOrder.setBPartner - Has no Ship To Address: " + bp);
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
 		}
 	}
 
