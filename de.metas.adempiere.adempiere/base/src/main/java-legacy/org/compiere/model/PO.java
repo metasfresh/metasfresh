@@ -1041,14 +1041,14 @@ public abstract class PO
 				{
 					log.error(ColumnName
 						+ " - Class invalid(1): " + value.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 					return false;
 				}
 			else
 			{
 				log.error(ColumnName
 					+ " - Class invalid(2): " + value.getClass().toString()
-					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 				return false;
 			}
 			//	Validate (Min/Max)
@@ -1148,7 +1148,7 @@ public abstract class PO
 				{
 					log.warn(get_ColumnName(index)
 							+ " - Class invalid(3): " + value.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 					m_newValues[index] = null;
 				}
 			}
@@ -1156,7 +1156,7 @@ public abstract class PO
 			{
 				log.warn(get_ColumnName(index)
 					+ " - Class invalid(4): " + value.getClass().toString()
-					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 				m_newValues[index] = value;     //  correct
 			}
 
