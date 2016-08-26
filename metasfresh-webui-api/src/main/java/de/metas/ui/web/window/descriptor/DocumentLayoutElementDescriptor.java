@@ -136,6 +136,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 					.values()
 					.stream()
 					.filter(fieldBuilder -> !fieldBuilder.isConsumed()) // skip those which were already consumed
+					.filter(fieldBuilder -> fieldBuilder.isDisplayable()) // skip those which are never displayed
 					.map(fieldBuilder -> fieldBuilder.build())
 					.collect(GuavaCollectors.toImmutableSet());
 		}

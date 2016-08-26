@@ -111,6 +111,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private final String fieldName;
 		private LookupSource lookupSource;
 		private FieldType fieldType;
+		private boolean displayable = true;
 		private boolean consumed = false;
 
 		private Builder(final String fieldName)
@@ -141,6 +142,17 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		{
 			this.fieldType = fieldType;
 			return this;
+		}
+		
+		public Builder setDisplayable(final boolean displayable)
+		{
+			this.displayable = displayable;
+			return this;
+		}
+		
+		public boolean isDisplayable()
+		{
+			return displayable;
 		}
 
 		public Builder setConsumed()

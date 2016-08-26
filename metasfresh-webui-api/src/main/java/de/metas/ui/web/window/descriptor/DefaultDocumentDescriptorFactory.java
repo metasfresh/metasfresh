@@ -167,7 +167,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			mainTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.map(gridFieldVO -> documentFieldDescriptorBuilder(mainEntityBindingsBuilder, gridFieldVO).build())
+					.map(gridFieldVO -> documentFieldDescriptor(mainEntityBindingsBuilder, mainTabVO, gridFieldVO))
 					.forEach(fieldDescriptor -> {
 						mainEntityBuilder.addField(fieldDescriptor);
 						mainEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -211,7 +211,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentFieldDescriptorBuilder(detailEntityBindingsBuilder, gridFieldVO).build())
+					.map(gridFieldVO -> documentFieldDescriptor(detailEntityBindingsBuilder, detailTabVO, gridFieldVO))
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -237,15 +237,14 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		IWindowUIElementsProvider uiProvider = new DAOWindowUIElementsProvider();
 		final int AD_Tab_ID = gridTabVO.getAD_Tab_ID();
 		List<I_AD_UI_Section> uiSections = uiProvider.getUISections(AD_Tab_ID);
-		if(uiSections.isEmpty())
+		if (uiSections.isEmpty())
 		{
 			uiProvider = new InMemoryUIElements();
 			logger.warn("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
-			
+
 			uiSections = uiProvider.getUISections(AD_Tab_ID);
 		}
-		
-		
+
 		//
 		// UI Sections
 		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
@@ -304,10 +303,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
 							if (gridFieldVO != null)
 							{
-								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridFieldVO);
 								layoutElementBuilder
 										.setWidgetType(extractWidgetType(gridFieldVO))
-										.addField(layoutElementFieldBuilder);
+										.addField(documentLayoutElementFieldDescriptorBuilder(gridTabVO, gridFieldVO));
 
 								specialFieldsCollector.collect(layoutElementBuilder);
 							}
@@ -329,7 +327,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 								{
 									layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
 								}
-								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridFieldVO);
+								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridTabVO, gridFieldVO);
 								layoutElementBuilder.addField(layoutElementFieldBuilder);
 
 								specialFieldsCollector.collect(layoutElementBuilder);
@@ -343,16 +341,16 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 						//
 						isFirstElementInGroup = false;
-					}             // each uiElement
+					}                // each uiElement
 
 					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
-				}             // each uiElementGroup
+				}                // each uiElementGroup
 
 				layoutSectionBuilder.addColumn(layoutColumnBuilder);
-			}             // each uiColumn
+			}                // each uiColumn
 
 			layoutSectionBuilders.add(layoutSectionBuilder);
-		}             // each uiSection
+		}                // each uiSection
 
 		return layoutSectionBuilders;
 	}
@@ -373,13 +371,17 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 						.setDescription(gridFieldVO.getDescription())
 						.setWidgetType(extractWidgetType(gridFieldVO))
 						.setLayoutTypeNone() // does not matter for detail
-						.addField(documentLayoutElementFieldDescriptorBuilder(gridFieldVO)))
+						.addField(documentLayoutElementFieldDescriptorBuilder(tab, gridFieldVO)))
 				.forEach(layoutDetailBuilder::addElement);
 
 		return layoutDetailBuilder;
 	}
 
-	private DocumentFieldDescriptor.Builder documentFieldDescriptorBuilder(final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder, final GridFieldVO gridFieldVO)
+	private DocumentFieldDescriptor documentFieldDescriptor(
+			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder //
+			, final GridTabVO gridTabVO //
+			, final GridFieldVO gridFieldVO //
+	)
 	{
 		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
 		final String sqlTableAlias = detailEntityBindingsBuilder.getSqlTableAlias();
@@ -422,10 +424,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			widgetType = extractWidgetType(gridFieldVO);
 			valueClass = extractValueClass(gridFieldVO);
 			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
-			readonlyLogic = extractReadonlyLogic(gridFieldVO);
+			readonlyLogic = extractReadonlyLogic(gridTabVO, gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 			mandatoryLogic = extractMandatoryLogic(gridFieldVO);
-			displayLogic = extractDisplayLogic(gridFieldVO);
+			displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
 		}
 
 		//
@@ -473,7 +475,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setMandatoryLogic(mandatoryLogic)
 				.setDisplayLogic(displayLogic)
 				//
-				.setDataBinding(dataBinding);
+				.setDataBinding(dataBinding)
+				//
+				.build();
 	}
 
 	private static String extractDetailId(final GridTabVO gridTabVO)
@@ -768,8 +772,23 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 	}
 
-	private static ILogicExpression extractReadonlyLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractReadonlyLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
+		//
+		// Check if tab is always readonly
+		if (gridTabVO.isReadOnly())
+		{
+			return ILogicExpression.TRUE;
+		}
+
+		//
+		// Check if tab's readonly expression
+		final ILogicExpression tabReadonlyLogic = gridTabVO.getReadOnlyLogic();
+		if (tabReadonlyLogic.isConstant() && tabReadonlyLogic.constantValue() == true)
+		{
+			return ILogicExpression.TRUE;
+		}
+
 		if (gridFieldVO.isReadOnly())
 		{
 			return ILogicExpression.TRUE;
@@ -798,14 +817,16 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			return ILogicExpression.TRUE;
 		}
 
-		ILogicExpression logicExpression = gridFieldVO.getReadOnlyLogic();
+		final ILogicExpression fieldReadonlyLogic = gridFieldVO.getReadOnlyLogic();
+
+		ILogicExpression readonlyLogic = tabReadonlyLogic.or(fieldReadonlyLogic);
 
 		//
 		// Consider field readonly if the row is not active
 		// .. and this property is not the IsActive flag.
 		if (!WindowConstants.FIELDNAME_IsActive.equals(columnName))
 		{
-			logicExpression = LOGICEXPRESSION_NotActive.or(logicExpression);
+			readonlyLogic = LOGICEXPRESSION_NotActive.or(readonlyLogic);
 		}
 
 		//
@@ -814,10 +835,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final boolean alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 		if (!alwaysUpdateable)
 		{
-			logicExpression = LOGICEXPRESSION_Processed.or(logicExpression);
+			readonlyLogic = LOGICEXPRESSION_Processed.or(readonlyLogic);
 		}
 
-		return logicExpression;
+		return readonlyLogic;
 	}
 
 	private static boolean extractAlwaysUpdateable(final GridFieldVO gridFieldVO)
@@ -858,8 +879,23 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		return gridFieldVO.getMandatoryLogic();
 	}
 
-	private static ILogicExpression extractDisplayLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractDisplayLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
+		if (gridTabVO.getTabNo() == MAIN_TabNo)
+		{
+			if (!gridFieldVO.isDisplayed())
+			{
+				return ILogicExpression.FALSE;
+			}
+		}
+		else
+		{
+			if (!gridFieldVO.isDisplayedGrid())
+			{
+				return ILogicExpression.FALSE;
+			}
+		}
+
 		return gridFieldVO.getDisplayLogic();
 	}
 
@@ -908,10 +944,14 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 	}
 
-	private static final DocumentLayoutElementFieldDescriptor.Builder documentLayoutElementFieldDescriptorBuilder(final GridFieldVO gridFieldVO)
+	private static final DocumentLayoutElementFieldDescriptor.Builder documentLayoutElementFieldDescriptorBuilder(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
+		final ILogicExpression displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
+		final boolean displayable = !displayLogic.isConstant() || displayLogic.constantValue() == true;
+
 		return DocumentLayoutElementFieldDescriptor.builder(gridFieldVO.getColumnName())
-				.setLookupSource(extractLookupSource(gridFieldVO));
+				.setLookupSource(extractLookupSource(gridFieldVO))
+				.setDisplayable(displayable);
 	}
 
 	private static final class SpecialFieldsCollector
@@ -1014,7 +1054,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 		List<I_AD_UI_ElementField> getUIElementFields(I_AD_UI_Element uiElement);
 	}
-	
+
 	private static final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 	{
 		private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
@@ -1072,11 +1112,11 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		public List<I_AD_UI_Section> getUISections(final int AD_Tab_ID)
 		{
 			// Generate the UI elements if needed
-			if(!adTabId2sections.containsKey(AD_Tab_ID))
+			if (!adTabId2sections.containsKey(AD_Tab_ID))
 			{
 				WindowUIElementsGenerator.forConsumer(this).generateForMainTabId(AD_Tab_ID);
 			}
-			
+
 			return adTabId2sections.get(AD_Tab_ID);
 		}
 
