@@ -10,18 +10,17 @@ package org.adempiere.ad.expression.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,14 +58,14 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 	}
 
 	@Override
-	public void setUseOperatorPrecedence(boolean enabled)
+	public void setUseOperatorPrecedence(final boolean enabled)
 	{
 		final int adOrgId = 0;
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_UseOperatorPrecedence, enabled, adOrgId);
 	}
 
 	@Override
-	public ILogicExpression compile(String expressionStr)
+	public ILogicExpression compile(final String expressionStr)
 	{
 		Check.assume(!Check.isEmpty(expressionStr, true), "expressionStr is not empty");
 
@@ -107,7 +106,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 			if ("(".equals(token))
 			{
 				final ILogicExpression child = compile(tokens, false);
-				addChild(result, child);
+				result.addChild(child);
 			}
 			//
 			// Operator
@@ -120,18 +119,15 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 				}
 				else
 				{
-					if (isUseOperatorPrecedence() && "&".equals(operator))
+					if (isUseOperatorPrecedence() && AbstractLogicExpression.LOGIC_OPERATOR_AND.equals(operator))
 					{
 						// If precedence is enabled, & nodes are sent down the tree, | nodes up.
-						final ILogicExpression right = new LogicExpression(result.getRight(), operator, compile(tokens, false));
+						final ILogicExpression right = LogicExpressionBuilder.build(result.getRight(), operator, compile(tokens, false));
 						result.setRight(right);
 					}
 					else
 					{
-						result = new LogicExpressionBuilder(
-								result.build(),
-								operator,
-								compile(tokens, true));
+						result = result.buildAndCompose(operator, compile(tokens, true));
 					}
 				}
 			}
@@ -145,8 +141,8 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 			// Tuple
 			else if (isTuple(token))
 			{
-				final LogicTuple tuple = compileTuple(token);
-				addChild(result, tuple);
+				final ILogicExpression tuple = compileTuple(token);
+				result.addChild(tuple);
 				if (goingDown)
 				{
 					return result.build();
@@ -163,24 +159,25 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 		return result.build();
 	}
 
-	private LogicTuple compileTuple(final String tokenParam)
+	private ILogicExpression compileTuple(final String tokenParam)
 	{
 		// Fix common mistakes
 		String token = tokenParam.replace("!=", "!");
 		token = token.trim();
 
-		StringTokenizer s1 = new StringTokenizer(token, "!=~^><", true);
+		final StringTokenizer s1 = new StringTokenizer(token, "!=~^><", true);
 		if (s1.countTokens() != 3)
 		{
 			throw new ExpressionCompileException("Logic tuple does not comply with format "
 					+ "'@context@=value' where operand could be one of '=!^~><' => " + tokenParam);
 		}
 
-		final LogicTuple tuple = new LogicTuple(s1.nextToken(), s1.nextToken(), s1.nextToken());
+		final Boolean constantValue = null; // consider it not constant atm
+		final LogicTuple tuple = new LogicTuple(constantValue, s1.nextToken(), s1.nextToken(), s1.nextToken());
 		return tuple;
 	}
 
-	private boolean isTuple(String token)
+	private boolean isTuple(final String token)
 	{
 		return token.indexOf("!") > 0
 				|| token.indexOf("=") > 0
@@ -188,22 +185,5 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 				|| token.indexOf("~") > 0 // metas: cg: support legacy NOT operator
 				|| token.indexOf(">") > 0
 				|| token.indexOf("<") > 0;
-	}
-
-	private void addChild(final LogicExpressionBuilder expr, final ILogicExpression child)
-	{
-		if (expr.getLeft() == null)
-		{
-			expr.setLeft(child);
-		}
-		else if (expr.getRight() == null)
-		{
-			expr.setRight(child);
-		}
-		else
-		{
-			throw new ExpressionCompileException("Unexpected expression: " + child);
-		}
-
 	}
 }

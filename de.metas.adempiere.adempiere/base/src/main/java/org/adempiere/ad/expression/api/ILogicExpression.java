@@ -10,12 +10,12 @@ package org.adempiere.ad.expression.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,23 +24,32 @@ package org.adempiere.ad.expression.api;
 
 import java.util.List;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.LogicExpressionBuilder;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionDeserializer;
+import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Logic expression
- * 
+ *
  * NOTE: business logic expects that implementation of this interface to be immutable.
- * 
+ *
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
 @JsonDeserialize(using = JsonLogicExpressionDeserializer.class)
 public interface ILogicExpression extends IExpression<Boolean>
 {
-	ILogicExpression TRUE = new ConstantLogicExpression(true);
-	ILogicExpression FALSE = new ConstantLogicExpression(false);
+	ILogicExpression TRUE = ConstantLogicExpression.TRUE;
+	ILogicExpression FALSE = ConstantLogicExpression.FALSE;
+
+	String LOGIC_OPERATOR_AND = "&";
+	String LOGIC_OPERATOR_OR = "|";
+	List<String> LOGIC_OPERATORS = ImmutableList.of(LOGIC_OPERATOR_AND, LOGIC_OPERATOR_OR);
 
 	@Override
 	String getExpressionString();
@@ -52,11 +61,54 @@ public interface ILogicExpression extends IExpression<Boolean>
 	List<String> getParameters();
 
 	@Override
-	IExpressionEvaluator<ILogicExpression, Boolean> getEvaluator();
+	ILogicExpressionEvaluator getEvaluator();
+
+	@Override
+	Boolean evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
+
+	/**
+	 * Evaluates given expression and returns {@link LogicExpressionResult}.
+	 * 
+	 * Use this method if you need more informations about the evaluation (e.g. which were the parameters used etc).
+	 * 
+	 * If you are just interested about the boolean result, please use {@link #evaluate(Evaluatee, OnVariableNotFound)}.
+	 * 
+	 * @param ctx
+	 * @param onVariableNotFound
+	 * @return
+	 * @throws ExpressionEvaluationException
+	 * @see {@link ILogicExpressionEvaluator#evaluateToResult(Evaluatee, ILogicExpression, OnVariableNotFound)}
+	 */
+	LogicExpressionResult evaluateToResult(Evaluatee ctx, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
+
+	/**
+	 * @return true if this expression is constant. In this case you can call {@link #constantValue()} to get it's value
+	 */
+	boolean isConstant();
+
+	/**
+	 * @return expression's constant value
+	 * @throws ExpressionEvaluationException in case this is not a constant expression (see {@link #isConstant()})
+	 */
+	boolean constantValue();
+
+	/**
+	 * Converts this expression to a constant expression
+	 *
+	 * @param constantValue
+	 * @return constant expression
+	 */
+	ILogicExpression toConstantExpression(final boolean constantValue);
 
 	/** Compose this logic expression with the given one, using logic AND and return it */
-	ILogicExpression and(ILogicExpression expression);
+	default ILogicExpression and(final ILogicExpression expression)
+	{
+		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_AND, expression);
+	}
 
 	/** Compose this logic expression with the given one, using logic OR and return it */
-	ILogicExpression or(ILogicExpression expression);
+	default ILogicExpression or(final ILogicExpression expression)
+	{
+		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_OR, expression);
+	}
 }

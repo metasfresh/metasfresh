@@ -630,36 +630,34 @@ public class LogicExpressionEvaluatorTests
 	@Test
 	public void test_stripQuotes()
 	{
-		final LogicExpressionEvaluator evaluator = new LogicExpressionEvaluator();
-
-		Assert.assertEquals(null, evaluator.stripQuotes(null));
-		Assert.assertEquals("", evaluator.stripQuotes(""));
+		Assert.assertEquals(null, LogicExpressionEvaluator.stripQuotes(null));
+		Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes(""));
 
 		// Quote: '
-		Assert.assertEquals("'", evaluator.stripQuotes("'"));
-		Assert.assertEquals("", evaluator.stripQuotes("''"));
-		Assert.assertEquals("test", evaluator.stripQuotes("test"));
-		Assert.assertEquals("'test", evaluator.stripQuotes("'test"));
-		Assert.assertEquals("test'", evaluator.stripQuotes("test'"));
-		Assert.assertEquals("test", evaluator.stripQuotes("test"));
+		Assert.assertEquals("'", LogicExpressionEvaluator.stripQuotes("'"));
+		Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes("''"));
+		Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
+		Assert.assertEquals("'test", LogicExpressionEvaluator.stripQuotes("'test"));
+		Assert.assertEquals("test'", LogicExpressionEvaluator.stripQuotes("test'"));
+		Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
 
 		// Quote: "
-		Assert.assertEquals("\"", evaluator.stripQuotes("\""));
-		Assert.assertEquals("", evaluator.stripQuotes("\"\""));
-		Assert.assertEquals("test", evaluator.stripQuotes("test"));
-		Assert.assertEquals("\"test", evaluator.stripQuotes("\"test"));
-		Assert.assertEquals("test\"", evaluator.stripQuotes("test\""));
-		Assert.assertEquals("test", evaluator.stripQuotes("test"));
+		Assert.assertEquals("\"", LogicExpressionEvaluator.stripQuotes("\""));
+		Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes("\"\""));
+		Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
+		Assert.assertEquals("\"test", LogicExpressionEvaluator.stripQuotes("\"test"));
+		Assert.assertEquals("test\"", LogicExpressionEvaluator.stripQuotes("test\""));
+		Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
 
 		// Combined quotes: only first quote shall be stripped
-		Assert.assertEquals("''", evaluator.stripQuotes("\"''\""));
-		Assert.assertEquals("\"\"", evaluator.stripQuotes("'\"\"'"));
-		Assert.assertEquals("'test'", evaluator.stripQuotes("\"'test'\""));
-		Assert.assertEquals("\"test\"", evaluator.stripQuotes("'\"test\"'"));
+		Assert.assertEquals("''", LogicExpressionEvaluator.stripQuotes("\"''\""));
+		Assert.assertEquals("\"\"", LogicExpressionEvaluator.stripQuotes("'\"\"'"));
+		Assert.assertEquals("'test'", LogicExpressionEvaluator.stripQuotes("\"'test'\""));
+		Assert.assertEquals("\"test\"", LogicExpressionEvaluator.stripQuotes("'\"test\"'"));
 
 		// Don't strip quotes from middle
-		Assert.assertEquals("this is a 'test' string", evaluator.stripQuotes("this is a 'test' string"));
-		Assert.assertEquals("this is a \"test\" string", evaluator.stripQuotes("this is a \"test\" string"));
+		Assert.assertEquals("this is a 'test' string", LogicExpressionEvaluator.stripQuotes("this is a 'test' string"));
+		Assert.assertEquals("this is a \"test\" string", LogicExpressionEvaluator.stripQuotes("this is a \"test\" string"));
 	}
 
 	@Test(expected = ExpressionEvaluationException.class)
@@ -820,6 +818,15 @@ public class LogicExpressionEvaluatorTests
 				.addParam("A", "1");
 		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "@MissingB@=2 | @A@=1", params);
 	}
+	
+	@Test
+	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_OrExpression_LastOneIsTrue()
+	{
+		final Params params = new Params()
+				.addParam("Z", "1");
+		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "(@A@=1 & @B@=1) & @C@=1 | @Z@=1", params);
+	}
+
 
 	private final void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
 			final String expressionStr,
