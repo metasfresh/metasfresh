@@ -22,9 +22,6 @@ package de.metas.device.scales;
  * #L%
  */
 
-
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.impl.sics.ISiscCmd;
 import de.metas.device.scales.impl.sics.SicsCmdS;
@@ -47,11 +44,5 @@ public class SicsScales extends AbstractTcpScales
 		;
 
 		registerHandler(GetGrossWeighRequest.class, handler);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

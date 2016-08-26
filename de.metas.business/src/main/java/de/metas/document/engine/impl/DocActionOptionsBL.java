@@ -247,7 +247,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 		/********************
 		 * Allocation
 		 */
-		else if (AD_Table_ID == I_C_AllocationHdr.Table_ID)
+		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 		{
 			// Complete .. CO
 			if (docStatus.equals(DocAction.STATUS_Completed))

@@ -13,34 +13,36 @@ package de.metas.handlingunits.invoicecandidate.ui.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
+import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUInvoiceCandidatesSelectionSummaryInfo.Builder;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.logging.LogManager;
 
 /**
  * Provides the summary message which is displayed at the window's bottom, when we deal with invoice candidates tab.
@@ -136,6 +138,17 @@ public class HUC_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTa
 		{
 			sql.append(" AND (").append(icWhereClause).append(")");
 		}
+
+		// FRESH-580
+		// Apply the default filter to the SQL
+
+		final String sqlDefaultFilter = Services.get(IInvoiceCandDAO.class).getSQLDefaultFilter(Env.getCtx());
+
+		if (!sqlDefaultFilter.isEmpty())
+		{
+			sql.append(" AND (").append(sqlDefaultFilter).append(")");
+		}
+
 		sql.append(" GROUP BY "
 				+ I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
 				+ ", "
@@ -145,8 +158,7 @@ public class HUC_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTa
 				+ ", "
 				+ I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID
 				+ ", "
-				+ COLUMNNAME_IsPackingMaterial
-				);
+				+ COLUMNNAME_IsPackingMaterial);
 
 		final Builder summaryBuilder = HUInvoiceCandidatesSelectionSummaryInfo.builder();
 

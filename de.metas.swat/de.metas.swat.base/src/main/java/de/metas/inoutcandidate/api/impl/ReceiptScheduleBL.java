@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -158,7 +158,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 	/**
 	 * Same as {@link #getQtyToMove(I_M_ReceiptSchedule)} but return the quantity in required UOM.
-	 * 
+	 *
 	 * @param rs
 	 * @param uom
 	 * @return qty to move (in <code>uom</code>).
@@ -414,7 +414,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param receiptSchedule
 	 * @param receiptLine
 	 * @param qtyToAllocate quantity to allocate (in {@link I_M_ReceiptSchedule}'s UOM)
@@ -637,20 +637,21 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		{
 			throw new AdempiereException("@Closed@=@N@ (" + receiptSchedule + ")");
 		}
-		
+
 		//
 		// Fire listeners: before re-open
 		listeners.onBeforeReopen(receiptSchedule);
-		
+
 		//
 		// Mark the receipt schedule as not closed (i.e. not processed)
 		receiptSchedule.setProcessed(false);
-		
+
 		//
-		// Make sure Qtys are correctly set
-		// NOTE: we do this AFTER we marked the receipt schedule as NOT processed
-		// because the Qty Over/Under Delivery depends on that flag too
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleChanged(receiptSchedule);
+		// https://github.com/metasfresh/metasfresh/issues/315
+		// We don't call this BL anymore, because here it is too early.
+		// It needs to be called after the receipt schedule's QtyOrdered was updated. that updating takes place via an async processor.
+		// So instead of calling the logic here, we do it in the model interceptor de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule
+		// Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleChanged(receiptSchedule);
 
 		//
 		// Fire listeners: after re-open

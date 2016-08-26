@@ -13,11 +13,11 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -74,6 +74,7 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.builder.IHUSplitBuilder;
@@ -86,6 +87,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.allocation.join.IHUJoinBL;
 import de.metas.handlingunits.attribute.Constants;
@@ -535,14 +537,10 @@ public class HUTestHelper
 		attr_Volume = createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross =
-				createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet =
-				createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare =
-				createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust =
-				createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
 		attr_CostPrice = createM_Attribute(Constants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
@@ -566,17 +564,17 @@ public class HUTestHelper
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
-				null, // product,
-				uomEach, // uomFrom,
-				uomKg,// uomTo,
+				null,  // product,
+				uomEach,  // uomFrom,
+				uomKg, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
 		createUOMConversion(
-				null, // product,
-				uomEach, // uomFrom,
-				uomPCE,// uomTo,
+				null,  // product,
+				uomEach,  // uomFrom,
+				uomPCE, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
@@ -632,7 +630,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType);
+		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.NO_HU_PI_Version_ID);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.NO_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
@@ -648,7 +646,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefVirtual);
 
 		final String huUnitType = null; // any
-		createVersion(huDefVirtual, true, huUnitType);
+		createVersion(huDefVirtual, true, huUnitType, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
@@ -1033,7 +1031,8 @@ public class HUTestHelper
 		// createVersion(hu, false);
 
 		// Create the current version
-		createVersion(hu, true, huUnitType);
+		final Integer huPIVersionId = null;
+		createVersion(hu, true, huUnitType, huPIVersionId);
 
 		return hu;
 	}
@@ -1041,10 +1040,11 @@ public class HUTestHelper
 	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
 	{
 		final String huUnitType = null;
-		return createVersion(handlingUnit, current, huUnitType);
+		final Integer huPIVersionId = null;
+		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
-	public I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType)
+	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1053,6 +1053,10 @@ public class HUTestHelper
 		if (huUnitType != null)
 		{
 			version.setHU_UnitType(huUnitType);
+		}
+		if(huPIVersionId != null)
+		{
+			version.setM_HU_PI_Version_ID(huPIVersionId);
 		}
 		InterfaceWrapperHelper.save(version);
 		return version;
@@ -1375,7 +1379,7 @@ public class HUTestHelper
 				product,
 				uom,
 				false // allowNegativeCapacity
-				);
+		);
 		final BigDecimal qtyInitial = fullyLoaded ? qtyCapacity : BigDecimal.ZERO;
 		final PlainProductStorage storage = new PlainProductStorage(capacity, qtyInitial);
 
@@ -1400,8 +1404,8 @@ public class HUTestHelper
 			final I_C_UOM qtyToLoadUOM)
 	{
 		final IAllocationSource source = createDummySourceDestination(productToLoad,
-				new BigDecimal("100000000"), // qtyCapacity
-				qtyToLoadUOM, // UOM
+				new BigDecimal("100000000"),  // qtyCapacity
+				qtyToLoadUOM,  // UOM
 				true // fullyLoaded => empty
 		);
 
@@ -1415,9 +1419,8 @@ public class HUTestHelper
 				productToLoad,
 				qtyToLoad,
 				qtyToLoadUOM,
-				getTodayDate(), // date
-				referenceModel
-				);
+				getTodayDate(),  // date
+				referenceModel);
 
 		loader.load(request);
 
@@ -1844,7 +1847,17 @@ public class HUTestHelper
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
-		joinHUs(huContext, loadingUnit, Arrays.asList(tradingUnits));
+		trxBL.createHUContextProcessorExecutor(huContext)
+				.run(new IHUContextProcessor()
+				{
+
+					@Override
+					public IMutableAllocationResult process(IHUContext huContextLocal)
+					{
+						joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
+						return NULL_RESULT;
+					}
+				});
 	}
 
 	/**

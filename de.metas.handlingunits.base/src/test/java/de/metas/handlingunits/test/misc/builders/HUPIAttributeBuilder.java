@@ -64,6 +64,7 @@ public class HUPIAttributeBuilder
 
 	private boolean isInstanceAttribute;
 	private boolean isMandatory;
+	private Boolean useInASI;
 
 	public HUPIAttributeBuilder(final I_M_Attribute attribute)
 	{
@@ -129,6 +130,12 @@ public class HUPIAttributeBuilder
 		this.isMandatory = isMandatory;
 		return this;
 	}
+	
+	public HUPIAttributeBuilder setUseInASI(final boolean useInASI)
+	{
+		this.useInASI = useInASI;
+		return this;
+	}
 
 	public I_M_HU_PI_Attribute create(final Properties ctx)
 	{
@@ -141,6 +148,10 @@ public class HUPIAttributeBuilder
 
 		huPIAttr.setIsInstanceAttribute(isInstanceAttribute);
 		huPIAttr.setIsMandatory(isMandatory);
+		if(useInASI != null)
+		{
+			huPIAttr.setUseInASI(useInASI);
+		}
 
 		huPIAttr.setPropagationType(propagationType);
 

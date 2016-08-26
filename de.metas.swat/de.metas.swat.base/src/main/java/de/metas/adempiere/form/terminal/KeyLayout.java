@@ -36,8 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -46,8 +44,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * Abstract {@link IKeyLayout} implementation of general methods.
@@ -360,7 +360,9 @@ public abstract class KeyLayout implements IKeyLayout
 				if (!keyIds.add(keyId))
 				{
 					final TerminalException ex = new TerminalException("More then one key has the same ID: " + keyId
-							+ "\n Current key: " + key);
+							+ "\n Current key: " + key
+							+ "\n Seen IDs: " + keyIds
+							+ "\n Keys: " + keys);
 					if (developerModeBL.isEnabled())
 					{
 						throw ex;
