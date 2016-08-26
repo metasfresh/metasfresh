@@ -19,10 +19,13 @@ upcoming
 
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+   - Localized the empties Report so that one can now include alternative languages.
  * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
+   - The QtyToMove is now updated after reactivating/ reopening the Material Receipt Schedule.
  * #225 Allocation - Accounting 0,00 when Posted
-   - tweaked the selection part a bit
+   - Fixed further minor issues in reposting manchanism for Payment Allocations.
  * #277 Invoice candidates sums at the bottom are not considering org-assignment
+   - Fixed an issue with Org Role Access in Window Invoice Candidates. Now the Status Row considers the Org Access Permission.
 
 # metasfresh 4.32.31 (2016-34)
 
@@ -30,15 +33,21 @@ RC for weekly release
 
 ## Features
  * #276 Report Konten-Info new Parameter
+   - Added new Parameters (VAT-Period from-to, Account No. from-to) to Account Information Report.
  * #273 Report "Anbauplanung" addition & adjustment
+   - Adjusted  the Report for "Anbauplanung" to print out additional information.
  * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
+   - Implemented the localization for the fresh produce invoice document.
  * #295 sql in purchase inout takes too long
-   - performance improvement in the jasper file
+   - Performance improvement in the jasper file.
  * #292 Automatically add reference no from purchase order to invoice candidate
+   - The purchase order reference No is now automatically included in the corresponding invoice canidates.
  * #293 Create cron job for archiving the async-tables
+   - Created a cron Job to automatically archive the async data. This speeds up the overall async Performance for large environments.
 
 ## Fixes
  * #251 Invoice Candidates double invoiced
+   - Fixed a bug that seldomly appeared after invoiceing and caused that an invoice candidate could be invoiced twice.
 
 # metasfresh 4.31.30a (2016-33a)
 
