@@ -131,6 +131,10 @@
     align-items: stretch;
     justify-content: flex-end;
 }
+.header-right-side .form-group {
+    height: 100%;
+    margin:0;
+}
 .header-left-side {
     align-items: center;
 }
