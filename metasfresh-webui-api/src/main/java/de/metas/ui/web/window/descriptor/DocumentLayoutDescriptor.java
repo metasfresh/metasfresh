@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -170,14 +169,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 			Check.assumeNotNull(detailBuilder, "Parameter detailBuilder is not null");
 			detailsBuilders.add(detailBuilder);
 			return this;
-		}
-
-		public Set<String> getAllFieldNamesFromSections()
-		{
-			return sectionBuilders
-					.stream()
-					.flatMap(sectionBuilder -> sectionBuilder.streamAllFieldNames())
-					.collect(GuavaCollectors.toImmutableSet());
 		}
 	}
 }

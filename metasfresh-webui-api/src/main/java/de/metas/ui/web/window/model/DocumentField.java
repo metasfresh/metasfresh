@@ -451,6 +451,12 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
+	public boolean isPublicField()
+	{
+		return descriptor.isPublicField();
+	}
+
+	@Override
 	public boolean isLookupValuesStale()
 	{
 		return lookupDataSource != null && lookupDataSource.isStaled();

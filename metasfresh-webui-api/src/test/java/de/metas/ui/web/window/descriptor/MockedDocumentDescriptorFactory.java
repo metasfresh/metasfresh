@@ -76,7 +76,6 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab__SalesOrder_Header)
-				.setId(1)
 				.setTabNo(0)
 				.setIsSOTrx(true)
 				.setDataBinding(POJODocumentEntityDataBindingDescriptor.ofClass(I_C_Order.class))
@@ -86,6 +85,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setValueClass(Integer.class)
 						.setWidgetType(DocumentFieldWidgetType.Integer)
 						.setDisplayLogic(ILogicExpression.FALSE)
+						.setPublicField(true) // key is always public
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_C_Order_ID))
 						.build())
 				.addField(DocumentFieldDescriptor.builder()
@@ -93,6 +93,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setValueClass(String.class)
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setDisplayLogic(ILogicExpression.TRUE)
+						.setPublicField(true)
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo))
 						.build())
 						//
@@ -114,8 +115,6 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														//
 														;
 		
-		entityDescriptorBuilder.setFieldNamesPresentInLayout(layoutBuilder.getAllFieldNamesFromSections());
-
 		return DocumentDescriptor.builder()
 				.setLayout(layoutBuilder.build())
 				.setEntityDescriptor(entityDescriptorBuilder.build())

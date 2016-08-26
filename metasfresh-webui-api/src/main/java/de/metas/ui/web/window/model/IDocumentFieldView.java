@@ -51,6 +51,8 @@ public interface IDocumentFieldView
 	boolean isMandatory();
 	boolean isDisplayed();
 	boolean isLookupValuesStale();
+	/** @return true if this field is public and will be published to API clients */
+	boolean isPublicField();
 	//@formatter:on
 
 	//@formatter:off

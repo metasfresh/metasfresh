@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -137,7 +136,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 					.values()
 					.stream()
 					.filter(fieldBuilder -> !fieldBuilder.isConsumed()) // skip those which were already consumed
-					.filter(fieldBuilder -> fieldBuilder.isDisplayable()) // skip those which are never displayed
+					.filter(fieldBuilder -> fieldBuilder.isPublicField()) // only those which are public
 					.map(fieldBuilder -> fieldBuilder.build())
 					.collect(GuavaCollectors.toImmutableSet());
 		}
@@ -222,11 +221,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return consumed;
 		}
 
-		public Stream<String> streamAllFieldNames()
-		{
-			return fieldsBuilders.keySet().stream();
-		}
-
 		/**
 		 * (DEBUG option) Use field names instead of caption
 		 * 
@@ -234,7 +228,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		 */
 		public Builder setCaptionAsFieldNames()
 		{
-			final String caption = streamAllFieldNames().collect(GuavaCollectors.toString(Joiner.on(" | ").skipNulls()));
+			final String caption = fieldsBuilders.values()
+					.stream()
+					.filter(fieldBuilder -> fieldBuilder.isPublicField()) // only those which are public
+					.map(fieldBuilder -> fieldBuilder.getFieldName())
+					.collect(GuavaCollectors.toString(Joiner.on(" | ").skipNulls()));
 			setCaption(caption);
 			return this;
 		}

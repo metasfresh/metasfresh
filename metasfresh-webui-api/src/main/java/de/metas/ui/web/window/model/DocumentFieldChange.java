@@ -40,9 +40,9 @@ import de.metas.ui.web.window.datatypes.json.JSONValues;
  */
 public final class DocumentFieldChange
 {
-	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key)
+	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key, final boolean publicField)
 	{
-		return new DocumentFieldChange(fieldName, key);
+		return new DocumentFieldChange(fieldName, key, publicField);
 	}
 
 	public static final String DEBUGPROPERTY_FieldInfo = "field-info";
@@ -50,6 +50,9 @@ public final class DocumentFieldChange
 	private final String fieldName;
 	/** Is key column? */
 	private final boolean key;
+	/** <code>true</code> if this field is public and will be published to API clients */
+	private final boolean publicField;
+
 	//
 	private boolean valueSet;
 	private Object value;
@@ -69,11 +72,12 @@ public final class DocumentFieldChange
 
 	private Map<String, Object> debugProperties;
 
-	private DocumentFieldChange(final String fieldName, final boolean key)
+	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField)
 	{
 		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
 		this.key = key;
+		this.publicField = publicField;
 	}
 
 	@Override
@@ -82,7 +86,8 @@ public final class DocumentFieldChange
 		final ToStringHelper toStringBuilder = MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("fieldName", fieldName)
-				.add("key", key ? Boolean.TRUE : null);
+				.add("key", key ? Boolean.TRUE : null)
+				.add("publicField", publicField);
 		if (valueSet)
 		{
 			toStringBuilder.add("value", value == null ? "<NULL>" : value);
@@ -125,6 +130,12 @@ public final class DocumentFieldChange
 	public boolean isKey()
 	{
 		return key;
+	}
+
+	/** @return true if this field is public and will be published to API clients */
+	public boolean isPublicField()
+	{
+		return publicField;
 	}
 
 	/* package */void setValue(final Object value, final String reason)

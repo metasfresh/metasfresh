@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -95,13 +94,6 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			Check.assumeNotNull(columnBuilder, "Parameter columnBuilder is not null");
 			columnsBuilders.add(columnBuilder);
 			return this;
-		}
-
-		public Stream<String> streamAllFieldNames()
-		{
-			return columnsBuilders
-					.stream()
-					.flatMap(columnBuilder -> columnBuilder.streamAllFieldNames());
 		}
 	}
 }

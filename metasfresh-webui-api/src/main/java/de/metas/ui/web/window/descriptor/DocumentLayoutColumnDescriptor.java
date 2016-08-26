@@ -2,7 +2,6 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -93,13 +92,6 @@ public class DocumentLayoutColumnDescriptor
 			Check.assumeNotNull(elementGroupBuilder, "Parameter elementGroupBuilder is not null");
 			elementGroupsBuilders.add(elementGroupBuilder);
 			return this;
-		}
-
-		public Stream<String> streamAllFieldNames()
-		{
-			return elementGroupsBuilders
-					.stream()
-					.flatMap(elementGroupBuilder -> elementGroupBuilder.streamAllFieldNames());
 		}
 	}
 }

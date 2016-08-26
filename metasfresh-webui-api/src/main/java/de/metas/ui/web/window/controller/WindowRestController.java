@@ -150,11 +150,7 @@ public class WindowRestController implements IWindowRestController
 		final IDocumentFieldViewFilter fieldsFilter;
 		if (Check.isEmpty(fieldsListStr, true))
 		{
-			// By default retrieve all layout fields
-			fieldsFilter = documentCollection.getDocumentDescriptorFactory()
-					.getDocumentDescriptor(adWindowId)
-					.getEntityDescriptor(detailId)
-					.getFieldsPresentInLayoutFilter();
+			fieldsFilter = DocumentFieldViewFilters.any();
 		}
 		else
 		{

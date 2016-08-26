@@ -79,6 +79,8 @@ public final class DocumentFieldDescriptor implements Serializable
 	@JsonProperty("defaultValueExpression")
 	private final IStringExpression defaultValueExpression;
 
+	@JsonProperty("public")
+	private final boolean publicField;
 	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
 	@JsonProperty("alwaysUpdateable")
@@ -114,6 +116,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		defaultValueExpression = builder.defaultValueExpression;
 
+		publicField = builder.publicField;
 		readonlyLogic = builder.readonlyLogic;
 		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
@@ -137,6 +140,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
 			, @JsonProperty("valueClass") final Class<?> valueClass //
 			, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
+			, @JsonProperty("public") final boolean publicField //
 			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
 			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
 			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
@@ -156,6 +160,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
 				.setDefaultValueExpression(defaultValueExpression)
+				.setPublicField(publicField)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setDisplayLogic(displayLogic)
@@ -171,6 +176,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.add("name", fieldName)
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
+				.add("publicField", publicField)
 				.add("fieldDataBinding", dataBinding)
 				.toString();
 	}
@@ -230,6 +236,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		return defaultValueExpression;
 	}
 
+	/**
+	 * @return true if this field is public and will be published to API clients
+	 */
+	public boolean isPublicField()
+	{
+		return publicField;
+	}
+
 	public ILogicExpression getReadonlyLogic()
 	{
 		return readonlyLogic;
@@ -278,6 +292,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
+		private Boolean publicField;
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
@@ -358,6 +373,15 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDefaultValueExpression(final IStringExpression defaultValueExpression)
 		{
 			this.defaultValueExpression = Preconditions.checkNotNull(defaultValueExpression);
+			return this;
+		}
+
+		/**
+		 * @param publicField true if this field is public and will be published to API clients
+		 */
+		public Builder setPublicField(final boolean publicField)
+		{
+			this.publicField = publicField;
 			return this;
 		}
 

@@ -80,6 +80,7 @@ public final class JSONDocument implements Serializable
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
+				.filter(field -> field.isPublicField()) // only those which are public fields
 				.filter(fieldsFilter)
 				.map(JSONDocumentField::ofDocumentField)
 				.forEach(jsonFields::add);
@@ -158,6 +159,7 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 		documentChangedEvents.getFieldChangesList()
 				.stream()
+				.filter(field -> field.isPublicField()) // only those which are public fields
 				.forEach((field) -> {
 					// Add the pseudo-field "ID" first
 					if (field.isKey())

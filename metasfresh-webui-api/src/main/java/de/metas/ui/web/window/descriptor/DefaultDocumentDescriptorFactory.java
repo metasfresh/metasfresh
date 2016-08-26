@@ -107,8 +107,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	}
 
 	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
-	
-	private boolean debugShowColumnNamesForCaption = true;
+
+	private final boolean debugShowColumnNamesForCaption = true;
 
 	/* package */ DefaultDocumentDescriptorFactory()
 	{
@@ -141,7 +141,6 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		// Layout: Create UI sections from main tab
 		final GridTabVO mainTabVO = gridWindowVO.getTab(MAIN_TabNo);
 		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
-				.setId(mainTabVO.getAD_Tab_ID())
 				.setAD_Window_ID(AD_Window_ID) // legacy
 				.setAD_Tab_ID(mainTabVO.getAD_Tab_ID()) // legacy
 				.setTabNo(MAIN_TabNo) // legacy
@@ -176,7 +175,6 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					});
 
 			mainEntityBuilder.setDataBinding(mainEntityBindingsBuilder.build());
-			mainEntityBuilder.setFieldNamesPresentInLayout(layoutBuilder.getAllFieldNamesFromSections());
 		}
 
 		//
@@ -199,9 +197,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 					.setSqlOrderBy(detailTabVO.getOrderByClause());
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
-					.setId(detailTabVO.getAD_Tab_ID())
 					.setDetailId(detailBuilder.getDetailId())
-					.setFieldNamesPresentInLayout(detailBuilder.getAllFieldNames())
 					.setAD_Window_ID(AD_Window_ID) // legacy
 					.setAD_Tab_ID(detailTabVO.getAD_Tab_ID()) // legacy
 					.setTabNo(detailTabVO.getTabNo()) // legacy
@@ -335,8 +331,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 								specialFieldsCollector.collect(layoutElementBuilder);
 							}
 						}
-						
-						if(debugShowColumnNamesForCaption)
+
+						if (debugShowColumnNamesForCaption)
 						{
 							layoutElementBuilder.setCaptionAsFieldNames();
 						}
@@ -348,16 +344,16 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 						//
 						isFirstElementInGroup = false;
-					}                // each uiElement
+					}                  // each uiElement
 
 					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
-				}                // each uiElementGroup
+				}                  // each uiElementGroup
 
 				layoutSectionBuilder.addColumn(layoutColumnBuilder);
-			}                // each uiColumn
+			}                  // each uiColumn
 
 			layoutSectionBuilders.add(layoutSectionBuilder);
-		}                // each uiSection
+		}                  // each uiSection
 
 		return layoutSectionBuilders;
 	}
@@ -406,6 +402,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final DocumentFieldWidgetType widgetType;
 		final Class<?> valueClass;
 		final IStringExpression defaultValueExpression;
+		final boolean publicField;
 		final ILogicExpression readonlyLogic;
 		final boolean alwaysUpdateable;
 		final ILogicExpression mandatoryLogic;
@@ -418,6 +415,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = Integer.class;
 			defaultValueExpression = IStringExpression.NULL;
+			publicField = false;
 			readonlyLogic = ILogicExpression.TRUE;
 			alwaysUpdateable = false;
 			mandatoryLogic = ILogicExpression.TRUE;
@@ -435,6 +433,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 			mandatoryLogic = extractMandatoryLogic(gridFieldVO);
 			displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
+			publicField = isPublicField(keyColumn, displayLogic);
 		}
 
 		//
@@ -477,6 +476,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				//
 				.setDefaultValueExpression(defaultValueExpression)
 				//
+				.setPublicField(publicField)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(mandatoryLogic)
@@ -779,6 +779,25 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 	}
 
+	private static boolean isPublicField(final boolean isKey, final ILogicExpression displayLogic)
+	{
+		// Always publish the key columns, else the client won't know what to talk about ;)
+		if (isKey)
+		{
+			return true;
+		}
+
+		// If display logic is not constant then we don't know if this field will be ever visible
+		// so we are publishing it
+		if (!displayLogic.isConstant())
+		{
+			return false;
+		}
+
+		// Publish this field only if it's displayed
+		return displayLogic.constantValue() == true;
+	}
+
 	private static ILogicExpression extractReadonlyLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
 		//
@@ -954,11 +973,11 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private static final DocumentLayoutElementFieldDescriptor.Builder documentLayoutElementFieldDescriptorBuilder(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
 		final ILogicExpression displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
-		final boolean displayable = !displayLogic.isConstant() || displayLogic.constantValue() == true;
+		final boolean publicField = isPublicField(gridFieldVO.isKey(), displayLogic);
 
 		return DocumentLayoutElementFieldDescriptor.builder(gridFieldVO.getColumnName())
 				.setLookupSource(extractLookupSource(gridFieldVO))
-				.setDisplayable(displayable);
+				.setPublicField(publicField);
 	}
 
 	private static final class SpecialFieldsCollector
