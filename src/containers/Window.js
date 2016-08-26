@@ -49,7 +49,7 @@ class Window extends Component {
             const columns = elem.columns;
             return (
                 <div className="row" key={"section" + id}>
-                    {this.renderColumns(columns)}
+                    {columns && this.renderColumns(columns)}
                 </div>
             )
        })
@@ -61,7 +61,7 @@ class Window extends Component {
             const elementGroups = elem.elementGroups;
             return (
                 <div className={"col-xs-" + colWidth} key={'col' + id}>
-                    {this.renderElementGroups(elementGroups)}
+                    {elementGroups && this.renderElementGroups(elementGroups)}
                 </div>
             )
         })
@@ -74,7 +74,7 @@ class Window extends Component {
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElementsLine(elementsLine)}
+                    {elementsLine && this.renderElementsLine(elementsLine)}
                 </div>
             )
         })
@@ -84,7 +84,7 @@ class Window extends Component {
             const {elements} = elem;
             return (
                 <div className="elements-line" key={"line" + id}>
-                    {this.renderElements(elements)}
+                    {elements && this.renderElements(elements)}
                 </div>
             )
         })
@@ -95,6 +95,7 @@ class Window extends Component {
         return elements.map((elem, id)=> {
             const dataId = findRowByPropName(data,"ID").value;
             const widgetData = findRowByPropName(data, elem.fields[0].field);
+
             return (
                 <Widget
                     key={'element' + id}
