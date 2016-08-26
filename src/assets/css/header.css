@@ -51,10 +51,17 @@
 .header-input-sm .input-icon-right {
     font-size: 14px;
 }
-.header-input-sm .form-control {
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 0;
+
+.header-input-sm .form-group {
+    margin-bottom:0;
+}
+
+.header-input-sm .input-secondary,
+.header-input-sm .input-secondary input {
+    margin:0;
+    font-size:0.9375rem;
+    line-height:1;
+    padding:0;
 }
 
 .subheader-container {

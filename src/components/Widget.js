@@ -298,22 +298,23 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
-        if(widgetData.displayed){
-            return (
-                <div className="form-group row">
-                    <div className="col-xs-12">
-                        <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
-                            <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId)}
-                            </div>
+
+        if(widgetData.displayed && widgetData.displayed === false){
+            return false;
+        }
+        
+        return (
+            <div className="form-group row">
+                <div className="col-xs-12">
+                    <div className={"form-group row " + (type === "primary" ? "" : "")}>
+                        {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
+                        <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
+                            {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId)}
                         </div>
                     </div>
                 </div>
-            )
-        }else{
-            return false;
-        }
+            </div>
+        )
     }
 }
 

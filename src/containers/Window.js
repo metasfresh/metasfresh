@@ -1,8 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import {
     findRowByPropName
 } from '../actions/WindowActions';
@@ -108,12 +106,18 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, tabs} = this.props.layout;
-        const {connectionError} = this.props;
+        const {sections, type, tabs, documentNoElement, docActionElement} = this.props.layout;
+        const {connectionError, data} = this.props;
+        const dataId = findRowByPropName(data,"ID").value;
         return (
             <div>
                 {connectionError && <ErrorScreen />}
-                <Header />
+                <Header
+                    docStatus = {docActionElement}
+                    docNo = {documentNoElement}
+                    dataId={dataId}
+                    windowType={type}
+                />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">
