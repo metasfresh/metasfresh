@@ -103,8 +103,4 @@ UPDATE AD_Ref_Table SET WhereClause='exists
 )',Updated=TO_TIMESTAMP('2016-08-25 11:44:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540667
 ;
 
--- 25.08.2016 11:46
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540145
-;
 
