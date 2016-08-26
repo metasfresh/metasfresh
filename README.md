@@ -10,5 +10,15 @@
 - Create config. In that case run:
 > cp src/config.js.dist src/config.js
 
+## How to run dev env
+- First make sure you have installed all of dependencies by:
+> npm install
+
+- Then remember of creating config: 
+> cp src/config.js.dist src/config.js
+
+- Then you should run node server by:
+> npm start
+
 ## In case of build static version execute (you're gonna need webpack installed globally):
 > webpack --config webpack.prod.js

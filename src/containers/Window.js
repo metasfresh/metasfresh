@@ -1,27 +1,43 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+import {
+    findRowByPropName
+} from '../actions/WindowActions';
+
 import Widget from '../components/Widget';
-import Tabs from '../components/app/Tabs';
+import ErrorScreen from '../components/app/ErrorScreen';
+import Tabs from '../components/widget/Tabs';
+import TabPane from '../components/widget/TabPane';
+import Table from '../components/table/Table';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
+
+import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 
 class Window extends Component {
     constructor(props){
         super(props);
     }
     renderTabs = (tabs) => {
+        const {type} = this.props.layout;
+        const {data} = this.props;
+        const dataId = findRowByPropName(data,"ID").value;
+
         return(
             <Tabs>
                 {
-                    tabs.map((elem, id)=> {
+                    tabs.map((elem)=> {
+                        const {tabid, caption, elements} = elem;
                         return (
-                            <div
-                                caption={elem.caption}
-                                key={elem.tabid}>
-
-                                Here should be lots of elements for pane {elem.caption}
-                            </div>
+                            <TabPane
+                                caption={caption}
+                                key={tabid}
+                            >
+                                <Table cols={elements} tabid={tabid} type={type} docId={dataId} />
+                            </TabPane>
                         )
                     })
                 }
@@ -52,41 +68,51 @@ class Window extends Component {
     }
     renderElementGroups = (group) => {
         return group.map((elem, id)=> {
-            const {type, elements} = elem;
+            const {type, elementsLine} = elem;
             return (
                 <div
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {this.renderElementsLine(elements)}
+                    {this.renderElementsLine(elementsLine)}
                 </div>
             )
         })
     }
     renderElementsLine = (elementsLine) => {
-        return elementsLine.map((elems, id)=> {
+        return elementsLine.map((elem, id)=> {
+            const {elements} = elem;
             return (
                 <div className="elements-line" key={"line" + id}>
-                    {this.renderElements(elems)}
+                    {this.renderElements(elements)}
                 </div>
             )
         })
     }
     renderElements = (elements) => {
         const {type} = this.props.layout;
+        const {data} = this.props;
         return elements.map((elem, id)=> {
+            const dataId = findRowByPropName(data,"ID").value;
+            const widgetData = findRowByPropName(data, elem.fields[0].field);
             return (
-                <Widget key={'element' + id} windowType={type} {...elem} />
+                <Widget
+                    key={'element' + id}
+                    windowType={type}
+                    dataId={dataId}
+                    widgetData={widgetData}
+                    {...elem} />
             )
         })
     }
 
     render() {
         const {sections, tabs} = this.props.layout;
+        const {connectionError} = this.props;
         return (
             <div>
+                {connectionError && <ErrorScreen />}
                 <Header />
-                <OrderList />
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">
@@ -99,19 +125,27 @@ class Window extends Component {
 }
 
 Window.propTypes = {
+    connectionError: PropTypes.bool.isRequired,
     layout: PropTypes.object.isRequired,
+    data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
     const { windowHandler } = state;
     const {
-        layout
+        layout,
+        data,
+        connectionError
     } = windowHandler || {
-        layout: {}
+        layout: {},
+        data:[],
+        connectionError: false
     }
     return {
-        layout
+        data,
+        layout,
+        connectionError
     }
 }
 

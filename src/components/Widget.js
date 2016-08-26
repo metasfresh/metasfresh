@@ -1,36 +1,46 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import { patch, updateDataProperty } from '../actions/WindowActions';
+import {
+    patch,
+    updateDataProperty,
+    findRowByPropName
+} from '../actions/WindowActions';
 
 import Datetime from 'react-datetime';
-import LookupDropdown from './app/LookupDropdown';
-import Dropdown from './app/Dropdown';
+import Lookup from './widget/Lookup';
+import List from './widget/List';
 
 class Widget extends Component {
     constructor(props) {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {data,windowType, dispatch} = this.props;
+        const {widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
         //check if we should update store
-        if(this.findRowByPropName(data,property).value !== value ){
+
+        if(widgetData.value !== value ){
             dispatch(updateDataProperty(property, value));
         }
-        dispatch(patch(windowType, data[0].value, property, value));
+        dispatch(patch(windowType, dataId, tabId, rowId, property, value));
+
+        //callback
+        if(onChange){
+            onChange();
+        }
     }
     handleChange = (e, property) => {
         const {dispatch} = this.props;
         e.preventDefault();
         dispatch(updateDataProperty(property, e.target.value));
     }
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, mandatory) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){
             case "Date":
                 return (
                     <div className={"input-icon-container input-block " +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "") +
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -48,7 +58,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "") +
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -67,7 +77,7 @@ class Widget extends Component {
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -82,12 +92,12 @@ class Widget extends Component {
                 )
             case "Lookup":
                 return (
-                    <LookupDropdown
+                    <Lookup
                         recent={[]}
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        value={data.value}
+                        defaultValue={data.value}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
                         rank={type}
@@ -96,13 +106,16 @@ class Widget extends Component {
                 )
             case "List":
                 return (
-                    <Dropdown
+                    <List
                         dataId={dataId}
                         defaultValue="(none)"
                         selected={data.value}
                         properties={fields}
                         readonly={data.readonly}
                         mandatory={data.mandatory}
+                        windowType={windowType}
+                        rowId={rowId}
+                        tabId={tabId}
                         onChange={(option) => this.handlePatch(fields[0].field, option)}
                     />
                 )
@@ -112,7 +125,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="text"
@@ -130,7 +143,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <textarea
                             className="input-field"
@@ -147,7 +160,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -167,7 +180,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -185,7 +198,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -205,7 +218,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -225,7 +238,7 @@ class Widget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data.readonly ? "input-disabled " : "") +
-                        (data.mandatory ? "input-mandatory " : "")
+                        (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
                             type="number"
@@ -258,7 +271,7 @@ class Widget extends Component {
                         className={
                             "input-switch" +
                             (data.readonly ? "input-disabled " : "") +
-                            (data.mandatory ? "input-mandatory " : "")
+                            (data.mandatory && data.value.length === 0 ? "input-mandatory " : "")
                         }>
                         <input
                             type="checkbox"
@@ -275,7 +288,7 @@ class Widget extends Component {
                 )
             case "Button":
                 return (
-                    <button className="btn btn-sm btn-meta-primary">{data.value}</button>
+                    <button className="btn btn-sm btn-meta-primary"></button>
                 )
             default:
                 return (
@@ -283,29 +296,16 @@ class Widget extends Component {
                 )
         }
     }
-    findRowByPropName = (arr, name) => {
-        let ret = -1;
-        for(let i = 0; i < arr.length; i++){
-            if(arr[i].field === name){
-                ret = arr[i];
-                break;
-            }
-        }
-
-        return ret;
-    }
     render() {
-        const {caption, widgetType, description, fields, windowType, data, type} = this.props;
-        const dataId = this.findRowByPropName(data,"ID").value;
-        const widgetData = this.findRowByPropName(data, fields[0].field);
+        const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
         if(widgetData.displayed){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>
+                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
                             <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData)}
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId)}
                             </div>
                         </div>
                     </div>
@@ -318,20 +318,11 @@ class Widget extends Component {
 }
 
 Widget.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    data: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler} = state;
-    const {
-        data
-    } = windowHandler || {
-        data: []
-    }
-
     return {
-        data
     }
 }
 

@@ -1,11 +1,13 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import {
     dropdownRequest
-} from '../../actions/SalesOrderActions';
+} from '../../actions/AppActions';
 
-class Dropdown extends Component {
+class List extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -23,9 +25,10 @@ class Dropdown extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        const {properties, dispatch, dataId} = this.props;
-        dispatch(dropdownRequest(143, properties[0].field, dataId)).then((res) => {
-            this.setState({list: res.data});
+        const {properties, dispatch, dataId, rowId, tabId, windowType} = this.props;
+        this.setState({loading: true});
+        dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
+            this.setState({list: res.data, loading: false});
         });
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -63,7 +66,7 @@ class Dropdown extends Component {
                         <input
                             type="text"
                             className="input-field font-weight-bold"
-                            readOnly="readonly"
+                            readOnly={readonly}
                             placeholder={this.props.defaultValue}
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
@@ -76,9 +79,18 @@ class Dropdown extends Component {
                     </div>
                 </div>
                 <div className="input-dropdown-list">
-                    {(this.state.list.length == 0) && (
+                    {(this.state.list.length === 0 && this.state.loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
+                        </div>
+                    )}
+                    {(this.state.loading && this.state.list.length === 0) && (
+                        <div className="input-dropdown-list-header">
+                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                                <div className="rotate icon-rotate">
+                                    <i className="meta-icon-settings"/>
+                                </div>
+                            </ReactCSSTransitionGroup>
                         </div>
                     )}
                     {this.renderOptions()}
@@ -88,16 +100,15 @@ class Dropdown extends Component {
     }
 }
 
-Dropdown.propTypes = {
+List.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const {salesOrderStateHandler} = state;
     return {
     }
 }
 
-Dropdown = connect(mapStateToProps)(Dropdown)
+List = connect(mapStateToProps)(List)
 
-export default Dropdown
+export default List
