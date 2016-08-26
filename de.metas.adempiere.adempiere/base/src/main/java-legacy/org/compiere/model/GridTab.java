@@ -1160,11 +1160,18 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public void dataRefreshAll()
 	{
+		final boolean retainCurrentRowIfAny = true; // default, backward compatibility
+		dataRefreshAll(retainCurrentRowIfAny);
+	}
+	
+	public void dataRefreshAll(final boolean retainCurrentRowIfAny)
+	{
 		log.debug("#" + m_vo.TabNo);
 		/** @todo does not work with alpha key */
 		final int keyNo = m_mTable.getKeyID(m_currentRow);
+		
 		// metas: c.ghita@metas.ro : US1207 : start
-		if (m_currentRow >= 0)
+		if (retainCurrentRowIfAny && m_currentRow >= 0)
 		{
 			final Object[] rowData = m_mTable.getDataAtRow(m_currentRow);
 			if (rowData != null)
@@ -1177,6 +1184,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			}
 		}
 		// metas: c.ghita@metas.ro : US1207 : end
+		
 		if (!getTableModel().isCopyWithDetails())
 		{
 			m_mTable.dataRefreshAll();
