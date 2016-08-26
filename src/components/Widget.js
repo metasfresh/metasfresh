@@ -10,6 +10,7 @@ import {
 import Datetime from 'react-datetime';
 import Lookup from './widget/Lookup';
 import List from './widget/List';
+import ActionButton from './widget/ActionButton';
 
 class Widget extends Component {
     constructor(props) {
@@ -290,6 +291,12 @@ class Widget extends Component {
                 return (
                     <button className="btn btn-sm btn-meta-primary"></button>
                 )
+            case "ActionButton":
+                return (
+                    <ActionButton
+                        data = {data}
+                    />
+                )
             default:
                 return (
                     <div>{widgetType}</div>
@@ -302,7 +309,7 @@ class Widget extends Component {
         if(widgetData.displayed && widgetData.displayed === false){
             return false;
         }
-        
+
         return (
             <div className="form-group row">
                 <div className="col-xs-12">

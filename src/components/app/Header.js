@@ -20,13 +20,6 @@ class Header extends Component {
     constructor(props){
         super(props);
 
-        this.status = [
-            "Draft",
-            "Completed",
-            "In progress",
-            "Void"
-        ];
-
         this.state = {
             isSubheaderShow: false,
             isOrderListShow: false
@@ -49,58 +42,13 @@ class Header extends Component {
     handleBackdropClick = () => {
         this.setState({isSubheaderShow: false});
     }
-    handleChangeStatus = (status) => {
-        this.props.dispatch(changeOrderStatus(status));
-        this.statusDropdown.blur();
-    }
-    handleDropdownBlur = () => {
-        this.statusDropdown.classList.remove('dropdown-status-open');
-    }
-    handleDropdownFocus = () => {
-        this.statusDropdown.classList.add('dropdown-status-open');
-    }
-    getOrderStatus = (id) => {
-        return this.status[id];
-    }
-    getStatusClassName = (id) => {
-        if(id == 0){
-            return "dropdown-status-item-def";
-        }else if (id == 1){
-            return "dropdown-status-item-def-1";
-        }else{
-            return "";
-        }
-    }
-    getStatusContext = (id) => {
-        if(id == 0){
-            return "primary"
-        }else if (id == 1){
-            return "success"
-        }else {
-            return "default"
-        }
-    }
-    renderStatusList = () => {
-        return this.status.map((item, index) => {
-            if(index != this.props.orderStatus){
-                return <li
-                    key={index}
-                    className={
-                        "dropdown-status-item " +
-                        this.getStatusClassName(index)
-                    }
-                    onClick={() => this.handleChangeStatus(index)}
-                >
-                    {item}
-                </li>
-            }
-        })
-    }
 
     render() {
-        const {orderStatus, data, docNo, windowType, dataId} = this.props;
+        const {orderStatus, data, docNo, docStatus, windowType, dataId} = this.props;
         const {isSubheaderShow, isOrderListShow} = this.state;
         const docNoData = findRowByPropName(data, "DocumentNo");
+        const docStatusData = findRowByPropName(data, "DocStatus");
+
         return (
             <div>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
@@ -117,7 +65,7 @@ class Header extends Component {
 
                                 <div className="header-breadcrumb">
                                     <div>Home / Sales orders</div>
-                                    <div className="input-icon-container header-input-id header-input-sm">
+                                    {docNo && <div className="input-icon-container header-input-id header-input-sm">
                                         <Widget
                                             windowType={windowType}
                                             dataId={dataId}
@@ -126,20 +74,22 @@ class Header extends Component {
                                             {...docNo}
                                         />
                                         <i className="meta-icon-edit input-icon-right"></i>
-                                    </div>
+                                    </div>}
                                 </div>
                             </div>
                             <div className="header-center">
                                 <img src={logo} className="header-logo"/>
                             </div>
                             <div className="header-right-side">
-                                <div className="meta-dropdown-toggle dropdown-status-toggler" tabIndex="0" ref={(c) => this.statusDropdown = c} onBlur={this.handleDropdownBlur} onFocus={this.handleDropdownFocus}>
-                                    <div className={"tag tag-" + this.getStatusContext(orderStatus)}>{this.getOrderStatus(orderStatus)}</div>
-                                    <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(orderStatus)}/>
-                                    <ul className="dropdown-status-list">
-                                        {this.renderStatusList()}
-                                    </ul>
-                                </div>
+                                {docStatus &&
+                                    <Widget
+                                        windowType={windowType}
+                                        dataId={dataId}
+                                        widgetData={docStatusData}
+                                        noLabel={true}
+                                        {...docStatus}
+                                    />
+                                }
 
                                 <div
                                     className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
@@ -151,9 +101,9 @@ class Header extends Component {
                         </div>
                     </div>
                 </nav>
+
                 <Subheader open={isSubheaderShow} />
                 <OrderList open={isOrderListShow} />
-
             </div>
         )
     }
