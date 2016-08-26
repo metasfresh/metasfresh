@@ -431,9 +431,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
 			readonlyLogic = extractReadonlyLogic(gridTabVO, gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
-			mandatoryLogic = extractMandatoryLogic(gridFieldVO);
 			displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
 			publicField = isPublicField(keyColumn, displayLogic);
+			mandatoryLogic = extractMandatoryLogic(gridFieldVO, publicField);
 		}
 
 		//
@@ -876,7 +876,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 
-	private static ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO, final boolean publicField)
 	{
 		final String columnName = gridFieldVO.getColumnName();
 		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
@@ -898,10 +898,20 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			return ILogicExpression.FALSE;
 		}
 
+		// Corner case:
+		// e.g. C_Order.M_Shipper_ID has AD_Field.IsMandatory=Y, AD_Field.IsDisplayed=N, AD_Column.IsMandatory=N
+		// => we need to NOT enforce setting it because it's not needed, user cannot change it and it might be no callouts to set it.
+		// Else, we won't be able to save our document.
+		if(!publicField && gridFieldVO.isMandatory() && !gridFieldVO.isMandatoryDB())
+		{
+			return ILogicExpression.FALSE;
+		}
+		
 		if (gridFieldVO.isMandatory())
 		{
 			return ILogicExpression.TRUE;
 		}
+		
 		return gridFieldVO.getMandatoryLogic();
 	}
 
