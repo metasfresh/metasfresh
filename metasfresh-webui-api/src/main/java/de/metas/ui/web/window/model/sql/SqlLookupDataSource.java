@@ -232,8 +232,10 @@ public class SqlLookupDataSource implements LookupDataSource
 		final DataSourceValidationContext validationCtx = new DataSourceValidationContext(document);
 
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive.getName(), SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
+		
 
 		// SQL validation rule
 		{

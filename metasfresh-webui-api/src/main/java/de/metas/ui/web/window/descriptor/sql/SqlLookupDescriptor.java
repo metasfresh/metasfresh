@@ -22,6 +22,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.WindowConstants;
@@ -61,6 +62,10 @@ public final class SqlLookupDescriptor
 	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset");
 	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
+
+	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y";
+	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N"; // i.e. all
+	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive");
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -115,7 +120,11 @@ public final class SqlLookupDescriptor
 
 	public String getSqlForFetchingDisplayNameById(final String sqlKeyColumn)
 	{
-		final Evaluatee ctx = Evaluatees.ofSingleton(SQL_PARAM_KeyId.toStringWithoutMarkers(), sqlKeyColumn);
+		final Evaluatee ctx = Evaluatees.ofMap(ImmutableMap.<String, Object> builder()
+				.put(SQL_PARAM_KeyId.toStringWithoutMarkers(), sqlKeyColumn)
+				.put(SQL_PARAM_ShowInactive.toStringWithoutMarkers(), SQL_PARAM_VALUE_ShowInactive_Yes)
+				.build());
+
 		return sqlForFetchingDisplayNameByIdExpression.evaluate(ctx, OnVariableNotFound.Fail);
 	}
 
@@ -182,15 +191,15 @@ public final class SqlLookupDescriptor
 				numericKey = lookupInfo.isNumericKey();
 				setSqlExpressions(lookupInfo);
 				validationRule = lookupInfo.getValidationRule();
-		
+
 				//
 				// Case: DocAction button => inject the DocActionValidationRule
 				// FIXME: hardcoded
-				if(displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
+				if (displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
 				{
 					validationRule = CompositeValidationRule.compose(validationRule, DocActionValidationRule.instance);
 				}
-				
+
 				dependsOnFieldNames = ImmutableSet.copyOf(this.validationRule.getParameters());
 			}
 
@@ -225,6 +234,14 @@ public final class SqlLookupDescriptor
 				}
 				final String displayColumnSql = lookupInfo.getDisplayColumnSQL();
 				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
+
+				// IsActive WHERE
+				if (sqlWhereFinal.length() > 0)
+				{
+					sqlWhereFinal.append("\n AND ");
+				}
+				sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive.toStringWithMarkers()).append("'='Y' OR ").append(lookupInfo.getTableName()).append(".IsActive='Y')");
+
 			}
 
 			//
@@ -253,6 +270,7 @@ public final class SqlLookupDescriptor
 					.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
 					.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
 					.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
+					.append(" ")
 					// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
 					.append((DisplayType.List == lookupInfo.getDisplayType() || DisplayType.Button == lookupInfo.getDisplayType()) ? " AND " + lookupInfo.getWhereClauseSqlPart() : "")
 					.toString();
