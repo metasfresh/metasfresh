@@ -212,6 +212,8 @@ public class GridFieldVO implements Serializable
 					vo.DefaultValue = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("IsMandatory"))
 					vo.IsMandatory = "Y".equals(rs.getString (i));
+				else if (columnName.equalsIgnoreCase("IsMandatoryDB"))
+					vo.IsMandatoryDB = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsReadOnly"))
 					vo.IsReadOnly = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsUpdateable"))
@@ -366,7 +368,8 @@ public class GridFieldVO implements Serializable
 			vo.Description = rs.getString("Description");
 			vo.Help = rs.getString("Help");
 			vo.displayType = rs.getInt("AD_Reference_ID");
-			vo.IsMandatory = rs.getString("IsMandatory").equals("Y");
+			vo.IsMandatory = "Y".equals(rs.getString("IsMandatory"));
+			vo.IsMandatoryDB = vo.IsMandatory;
 			vo.FieldLength = rs.getInt("FieldLength");
 			vo.layoutConstraints = GridFieldLayoutConstraints.builder()
 					.setDisplayLength(vo.FieldLength)
@@ -422,6 +425,7 @@ public class GridFieldVO implements Serializable
 		voTo.Help = vo.Help;
 		voTo.displayType = vo.displayType;
 		voTo.IsMandatory = vo.IsMandatory;
+		voTo.IsMandatoryDB = vo.IsMandatoryDB;
 		voTo.FieldLength = vo.FieldLength;
 		voTo.layoutConstraints = vo.layoutConstraints.copy();
 		voTo.DefaultValue = vo.DefaultValue2;
@@ -470,6 +474,7 @@ public class GridFieldVO implements Serializable
 		vo.IsDisplayed = false;
 		vo.isDisplayedGrid = false;
 		vo.IsMandatory = false;
+		vo.IsMandatoryDB = false;
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 		vo.initFinish();
@@ -562,8 +567,10 @@ public class GridFieldVO implements Serializable
 	private IStringExpression ColorLogicExpr = IStringExpression.NULL; // metas-2009_0021_AP1_CR045
 	/**	Default Value	*/
 	public String       DefaultValue = "";
-	/**	Mandatory		*/
-	public boolean      IsMandatory = false;
+	/**	Mandatory (in UI) */
+	private boolean IsMandatory = false;
+	/**	Mandatory (in database/model) */
+	private boolean IsMandatoryDB = false;
 	/**	Read Only		*/
 	public boolean      IsReadOnly = false;
 	/**	Updateable		*/
@@ -785,6 +792,7 @@ public class GridFieldVO implements Serializable
 		clone.ColorLogicExpr = ColorLogicExpr;
 		clone.DefaultValue = DefaultValue;
 		clone.IsMandatory = IsMandatory;
+		clone.IsMandatoryDB = IsMandatoryDB;
 		clone.IsReadOnly = IsReadOnly;
 		clone.IsUpdateable = IsUpdateable;
 		clone.IsAlwaysUpdateable = IsAlwaysUpdateable;
@@ -1087,6 +1095,7 @@ public class GridFieldVO implements Serializable
 		return formatPattern;
 	}
 
+	/** @return true if it's mandatory in UI */
 	public boolean isMandatory()
 	{
 		return IsMandatory;
@@ -1095,6 +1104,12 @@ public class GridFieldVO implements Serializable
 	public void setMandatory(final boolean mandatory)
 	{
 		this.IsMandatory = mandatory;
+	}
+
+	/** @return true if it's mandatory in database */
+	public boolean isMandatoryDB()
+	{
+		return IsMandatoryDB;
 	}
 
 	public String getHeader()
