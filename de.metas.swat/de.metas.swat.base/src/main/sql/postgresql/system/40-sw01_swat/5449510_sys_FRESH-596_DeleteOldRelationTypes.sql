@@ -73,3 +73,12 @@ DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540131
 ;
 
 
+-- 26.08.2016 17:31
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=50001
+;
+
+-- 26.08.2016 17:31
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=1000003
+;
