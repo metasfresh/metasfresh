@@ -93,10 +93,10 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (result == null)
 		{
-			BPartnerDAO.logger.debug("Didn't find bPartner with value '" + value + "'. Returning null.");
+			logger.debug("Didn't find bPartner with value '{}'. Returning null.", value);
 			return null;
 		}
-		BPartnerDAO.logger.debug("Returning bPartner with value '" + value + "'");
+		logger.debug("Returning bPartner with value '{}'", value);
 		return result;
 	}
 
@@ -393,11 +393,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (bpPriceListId != null && bpPriceListId > 0)
 		{
-
-			if (BPartnerDAO.logger.isDebugEnabled())
-			{
-				BPartnerDAO.logger.debug("Got M_PriceList_ID=" + bpPriceListId + " from bPartner=" + bPartner);
-			}
+			logger.debug("Got M_PriceList_ID={} from bPartner={}", bpPriceListId, bPartner);
 			return bpPriceListId;
 		}
 		// If there is no Pricelist in BPartner, Try to set PriceList from BPGroup
@@ -420,17 +416,12 @@ public class BPartnerDAO implements IBPartnerDAO
 
 			if (bpGroupPriceListId != null && bpGroupPriceListId > 0)
 			{
-
-				if (BPartnerDAO.logger.isDebugEnabled())
-				{
-					BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPriceListId
-							+ " from bpGroup=" + bpGroup);
-				}
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPriceListId, bpGroup);
 				return bpGroupPriceListId;
 			}
 		}
 
-		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricelist id");
+		logger.warn("bPartner={} has no pricelist id", bPartner);
 		return 0;
 	}
 
@@ -460,7 +451,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// metas: end
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
-			BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpPricingSysId + " from bPartner=" + bPartner);
+			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
 			return bpPricingSysId;
 		}
 
@@ -483,7 +474,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			// metas: end
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
-				BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPricingSysId + " from bpGroup=" + bpGroup);
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
 				return bpGroupPricingSysId;
 			}
 		}
@@ -498,7 +489,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricing system id (soTrx=" + soTrx + "); returning 0");
+		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning 0", bPartner, soTrx);
 		return 0;
 	}
 
