@@ -19,10 +19,13 @@ upcoming
 
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+   - Localized the empties Report so that one can now include alternative languages.
  * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
+   - The QtyToMove is now updated after reactivating/ reopening the Material Receipt Schedule.
  * #225 Allocation - Accounting 0,00 when Posted
-   - tweaked the selection part a bit
+   - Fixed further minor issues in reposting manchanism for Payment Allocations.
  * #277 Invoice candidates sums at the bottom are not considering org-assignment
+   - Fixed an issue with Org Role Access in Window Invoice Candidates. Now the Status Row considers the Org Access Permission.
 
 # metasfresh 4.32.31 (2016-34)
 
