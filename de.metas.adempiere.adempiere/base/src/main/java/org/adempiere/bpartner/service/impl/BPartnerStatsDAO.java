@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,8 +47,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	@Override
 	public IBPartnerStats retrieveBPartnerStats(final I_C_BPartner partner)
 	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
 		I_C_BPartner_Stats stat = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Stats.class, partner)
+				.createQueryBuilder(I_C_BPartner_Stats.class, ctx, ITrx.TRXNAME_ThreadInherited) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
 				.create()
