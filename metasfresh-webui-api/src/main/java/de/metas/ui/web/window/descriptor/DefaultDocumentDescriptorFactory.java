@@ -107,6 +107,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	}
 
 	private final CCache<Integer, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
+	
+	private boolean debugShowColumnNamesForCaption = true;
 
 	/* package */ DefaultDocumentDescriptorFactory()
 	{
@@ -332,6 +334,11 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 								specialFieldsCollector.collect(layoutElementBuilder);
 							}
+						}
+						
+						if(debugShowColumnNamesForCaption)
+						{
+							layoutElementBuilder.setCaptionAsFieldNames();
 						}
 
 						final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()

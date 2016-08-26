@@ -10,6 +10,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -104,7 +105,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return fields;
 	}
-	
+
 	public boolean hasFields()
 	{
 		return !fields.isEmpty();
@@ -158,7 +159,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			this.widgetType = widgetType;
 			return this;
 		}
-		
+
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
@@ -199,31 +200,43 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			}
 			return this;
 		}
-		
+
 		public Set<String> getFieldNames()
 		{
 			return fieldsBuilders.keySet();
 		}
-		
+
 		public DocumentLayoutElementFieldDescriptor.Builder getField(final String fieldName)
 		{
 			return fieldsBuilders.get(fieldName);
 		}
-		
+
 		public Builder setConsumed()
 		{
 			this.consumed = true;
 			return this;
 		}
-		
+
 		public boolean isConsumed()
 		{
 			return consumed;
 		}
-		
+
 		public Stream<String> streamAllFieldNames()
 		{
 			return fieldsBuilders.keySet().stream();
+		}
+
+		/**
+		 * (DEBUG option) Use field names instead of caption
+		 * 
+		 * @return
+		 */
+		public Builder setCaptionAsFieldNames()
+		{
+			final String caption = streamAllFieldNames().collect(GuavaCollectors.toString(Joiner.on(" | ").skipNulls()));
+			setCaption(caption);
+			return this;
 		}
 
 	}
