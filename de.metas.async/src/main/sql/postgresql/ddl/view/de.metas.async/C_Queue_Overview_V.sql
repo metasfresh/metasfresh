@@ -30,4 +30,21 @@ FROM c_queue_workpackage qwp
    LEFT JOIN ad_table t ON t.ad_table_id = qe.ad_table_id
    LEFT JOIN ad_issue i ON i.ad_issue_id = qwp.ad_issue_id
 ORDER BY qwp.c_queue_workpackage_id DESC, qe.c_queue_element_id;
+COMMENT ON VIEW "de.metas.async".c_queue_overview_v
+  IS 'View to more easily select infos about workpackages.
+Note that in the "dlm" schema there is a pendant for those workpackages that were already archived.
+
+Usage example(s):
+Select all invoices that were enqueue for EDI-Sending, with their documentNo and current EDI-Status:
+
+select v.*, i.DocumentNo, i.EDI_EXportStatus
+from "de.metas.async".c_queue_overview_v v
+	join C_Invoice i ON i.C_Invoice_ID=v.qe_record_ID
+where true 
+	AND v.classname ilike ''%EDIWorkpackageProcessor%''
+	AND v.qe_table_name=''C_Invoice''
+	AND v.qwp_Created>=''2016-08-25 18:00''
+	AND v.qwp_Created<=''2016-08-26''
+order by qwp_created;
+';
 
