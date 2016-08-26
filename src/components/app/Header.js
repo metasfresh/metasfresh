@@ -47,7 +47,11 @@ class Header extends Component {
         const {orderStatus, data, docNo, docStatus, windowType, dataId} = this.props;
         const {isSubheaderShow, isOrderListShow} = this.state;
         const docNoData = findRowByPropName(data, "DocumentNo");
-        const docStatusData = findRowByPropName(data, "DocStatus");
+        const docStatusData = {
+            "status": findRowByPropName(data, "DocStatus"),
+            "action": findRowByPropName(data, "DocAction")
+        };
+
 
         return (
             <div>
@@ -87,6 +91,7 @@ class Header extends Component {
                                         dataId={dataId}
                                         widgetData={docStatusData}
                                         noLabel={true}
+                                        type="primary"
                                         {...docStatus}
                                     />
                                 }

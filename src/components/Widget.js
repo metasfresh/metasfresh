@@ -294,7 +294,11 @@ class Widget extends Component {
             case "ActionButton":
                 return (
                     <ActionButton
-                        data = {data}
+                        data={data}
+                        windowType={windowType}
+                        fields={fields}
+                        dataId={dataId}
+                        onChange={(option) => this.handlePatch(fields[1].field, option)}
                     />
                 )
             default:

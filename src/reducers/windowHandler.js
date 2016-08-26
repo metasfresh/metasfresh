@@ -46,11 +46,6 @@ export default function windowHandler(state = initialState, action) {
                     item
                 )
         })
-
-        case types.CHANGE_ORDER_STATUS:
-            return Object.assign({}, state, {
-                orderStatus: action.value
-            })
         default:
             return state
     }

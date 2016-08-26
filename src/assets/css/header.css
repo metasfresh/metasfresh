@@ -132,8 +132,9 @@
     justify-content: flex-end;
 }
 .header-right-side .form-group {
-    height: 100%;
-    margin:0;
+    height: auto;
+    min-height: 100%;
+    margin: 0;
 }
 .header-left-side {
     align-items: center;
@@ -142,7 +143,6 @@
 .header-right-side .side-panel-toggle {
     margin-left: 15px;
 }
-
 .btn-header-open {
     border-width: 1px 1px 0 1px;
     border-style: solid;
