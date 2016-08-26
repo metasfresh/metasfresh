@@ -500,17 +500,17 @@ public class GridFieldVO implements Serializable
 	static final long serialVersionUID = 4385061125114436797L;
 
 	/** Context                     */
-	private Properties   ctx = null;
+	private Properties ctx;
 	/** Window No                   */
-	public int          WindowNo;
+	public final int WindowNo;
 	/** Tab No                      */
-	public int          TabNo;
+	public final int TabNo;
 	/** AD_Winmdow_ID               */
-	public int          AD_Window_ID;
+	public final int AD_Window_ID;
 	/** AD_Tab_ID					*/
-	public int			AD_Tab_ID;
+	public final int AD_Tab_ID;
 	/** Is the Tab Read Only        */
-	public boolean      tabReadOnly = false;
+	public final boolean tabReadOnly;
 
 	/** Is Process Parameter        */
 	private boolean      isProcess = false;
@@ -841,6 +841,11 @@ public class GridFieldVO implements Serializable
 				.add("ColumnName", ColumnName)
 				.add("AD_Column_ID", AD_Column_ID)
 				.toString();
+	}
+	
+	public int getTabNo()
+	{
+		return TabNo;
 	}
 
 	public int getDisplayType()
