@@ -236,7 +236,7 @@ public class AllocationDAO implements IAllocationDAO
 				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
 				+ "WHERE al.C_Invoice_ID=?"
 				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                          // make sure that the set is not empty
+		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
 		{
 			sql += " AND (al.C_Payment_ID NOT IN (-1";
 
@@ -296,7 +296,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, Env.ZERO)
 				.addNotEqualsFilter(I_C_AllocationLine.COLUMN_PaymentWriteOffAmt, Env.ZERO);
 
-		//exclude credit memos, adjustment charges and reversals
+		// exclude credit memos, adjustment charges and reversals
 		final IQuery<I_C_AllocationHdr> approvedAmtFilter = queryBL.createQueryBuilder(I_C_AllocationHdr.class, ctx, trxName)
 				.addNotEqualsFilter(I_C_AllocationHdr.COLUMN_ApprovalAmt, Env.ZERO)
 				.create();
@@ -311,19 +311,22 @@ public class AllocationDAO implements IAllocationDAO
 				.filter(nonZeroFilter)
 				.filter(paymentFilter);
 
-		// Only the documents created after the given start time
-		if (startTime != null)
-		{
-			queryBuilder.addCompareFilter(I_C_AllocationLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
-		}
-
 		// Check if there are fact accounts created for each document
 		final IQuery<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.create();
 
-		return queryBuilder
-				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class)
+		// Query builder for the allocation header
+		final IQueryBuilder<I_C_AllocationHdr> allocationHdrQuery = queryBuilder
+				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class);
+		
+		// Only the documents created after the given start time
+		if (startTime != null)
+		{
+			allocationHdrQuery.addCompareFilter(I_C_AllocationHdr.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+
+		return allocationHdrQuery
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
 				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
