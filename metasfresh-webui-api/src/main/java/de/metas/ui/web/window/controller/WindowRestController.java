@@ -150,7 +150,7 @@ public class WindowRestController implements IWindowRestController
 		final IDocumentFieldViewFilter fieldsFilter;
 		if (Check.isEmpty(fieldsListStr, true))
 		{
-			fieldsFilter = DocumentFieldViewFilters.any();
+			fieldsFilter = DocumentFieldViewFilters.publicFields();
 		}
 		else
 		{

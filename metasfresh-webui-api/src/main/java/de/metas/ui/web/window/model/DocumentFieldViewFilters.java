@@ -42,6 +42,11 @@ public class DocumentFieldViewFilters
 	{
 		return ANY;
 	}
+	
+	public static final IDocumentFieldViewFilter publicFields()
+	{
+		return PUBLIC_FIELDS; 
+	}
 
 	/**
 	 *
@@ -60,7 +65,7 @@ public class DocumentFieldViewFilters
 		Check.assumeNotNull(fieldNamesSet, "Parameter fieldNamesSet is not null");
 		if (fieldNamesSet.contains("*"))
 		{
-			return ANY;
+			return PUBLIC_FIELDS;
 		}
 
 		if (fieldNamesSet.size() == 1)
@@ -80,13 +85,28 @@ public class DocumentFieldViewFilters
 		@Override
 		public String toString()
 		{
-			return "include all fields";
+			return "all fields";
 		};
 
 		@Override
 		public boolean test(final IDocumentFieldView field)
 		{
 			return true;
+		}
+	};
+	
+	private static final IDocumentFieldViewFilter PUBLIC_FIELDS = new IDocumentFieldViewFilter()
+	{
+		@Override
+		public String toString()
+		{
+			return "public fields";
+		};
+		
+		@Override
+		public boolean test(IDocumentFieldView field)
+		{
+			return field.isPublicField();
 		}
 	};
 

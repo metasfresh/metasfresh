@@ -80,7 +80,7 @@ public final class JSONDocument implements Serializable
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
-				.filter(field -> field.isPublicField()) // only those which are public fields
+				// .filter(field -> field.isPublicField()) // only those which are public fields // NOP, we allow the filter to decide!
 				.filter(fieldsFilter)
 				.map(JSONDocumentField::ofDocumentField)
 				.forEach(jsonFields::add);
