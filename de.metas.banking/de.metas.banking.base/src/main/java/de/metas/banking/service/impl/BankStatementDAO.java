@@ -132,19 +132,22 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
 
-		// Only the documents created after the given start time
-		if (startTime != null)
-		{
-			queryBuilder.addCompareFilter(I_C_BankStatementLine.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
-		}
-
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
 
-		return queryBuilder
-				.andCollect(I_C_BankStatement.COLUMN_C_BankStatement_ID, I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
+		// query Builder for the bank statement
+
+		final IQueryBuilder<I_C_BankStatement> bankStatementQuery = queryBuilder
+				.andCollect(I_C_BankStatement.COLUMN_C_BankStatement_ID, I_C_BankStatement.class);
+
+		// Only the documents created after the given start time
+		if (startTime != null)
+		{
+			bankStatementQuery.addCompareFilter(I_C_BankStatement.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+
+		return bankStatementQuery.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
 				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
