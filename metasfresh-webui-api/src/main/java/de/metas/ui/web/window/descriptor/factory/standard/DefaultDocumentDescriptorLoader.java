@@ -224,7 +224,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 		List<I_AD_UI_Section> uiSections = uiProvider.getUISections(AD_Tab_ID);
 		if (uiSections.isEmpty())
 		{
-			uiProvider = new InMemoryUIElements();
+			uiProvider = new InMemoryUIElementsProvider();
 			logger.warn("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
 
 			uiSections = uiProvider.getUISections(AD_Tab_ID);

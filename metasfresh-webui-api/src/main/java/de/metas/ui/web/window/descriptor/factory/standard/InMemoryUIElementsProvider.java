@@ -43,9 +43,9 @@ import de.metas.logging.LogManager;
  */
 
 
-final class InMemoryUIElements implements IWindowUIElementsGeneratorConsumer, IWindowUIElementsProvider
+final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorConsumer, IWindowUIElementsProvider
 {
-	private static final Logger logger = LogManager.getLogger(InMemoryUIElements.class);
+	private static final Logger logger = LogManager.getLogger(InMemoryUIElementsProvider.class);
 
 	private final ListMultimap<Integer, I_AD_UI_Section> adTabId2sections = LinkedListMultimap.create();
 	private final ListMultimap<I_AD_UI_Section, I_AD_UI_Column> section2columns = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
