@@ -16,6 +16,11 @@ import com.google.common.collect.ImmutableList;
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 public final class ConstantLogicExpression implements ILogicExpression
 {
+	public static final ILogicExpression of(final boolean value)
+	{
+		return value ? TRUE : FALSE;
+	}
+	
 	public static final ILogicExpression TRUE = new ConstantLogicExpression(true);
 	public static final ILogicExpression FALSE = new ConstantLogicExpression(false);
 

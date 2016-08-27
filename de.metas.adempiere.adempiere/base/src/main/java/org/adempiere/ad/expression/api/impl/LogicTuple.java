@@ -17,6 +17,12 @@ import com.google.common.collect.ImmutableList;
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
 {
+	public static final String OPERATOR_Equals = "=";
+	public static final String OPERATOR_NotEquals = "!";
+	public static final String OPERATOR_GreaterThan = ">";
+	public static final String OPERATOR_LessThan = "<";
+	public static final List<String> OPERATORS = ImmutableList.of(OPERATOR_Equals, OPERATOR_NotEquals, OPERATOR_LessThan, OPERATOR_GreaterThan);
+
 	private final Object operand1;
 	private final boolean isParameter1;
 

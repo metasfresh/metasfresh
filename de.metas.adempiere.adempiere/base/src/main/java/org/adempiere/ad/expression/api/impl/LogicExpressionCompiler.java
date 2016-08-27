@@ -36,11 +36,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.base.Joiner;
+
 public class LogicExpressionCompiler implements ILogicExpressionCompiler
 {
 	public static final LogicExpressionCompiler instance = new LogicExpressionCompiler();
 
-	// private final transient Logger logger = CLogMgt.getLogger(getClass());
+	private static final String LOGIC_OPERATORS = Joiner.on("").join(LogicExpressionEvaluator.EVALUATORS_ByOperator.keySet()) // all logic operators
+			+ "()" // parenthesis
+			;
+
+	private static final String TUPLE_OPERATORS = Joiner.on("").join(LogicTuple.OPERATORS);
 
 	private LogicExpressionCompiler()
 	{
@@ -71,7 +77,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 
 		// NOTE: we shall not trim nor replace all whitespaces (i.e. replaceAll(" ", "")) from expressionStr because
 		// there can be values which really need to contain white spaces
-		final StringTokenizer st = new StringTokenizer(expressionStr, "&|()", true);
+		final StringTokenizer st = new StringTokenizer(expressionStr, LOGIC_OPERATORS, true);
 
 		final List<String> tokens = new ArrayList<String>();
 		while (st.hasMoreTokens())
@@ -88,7 +94,8 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 		// only uneven arguments
 		if (tokens.size() % 2 == 0)
 		{
-			throw new ExpressionCompileException("Logic does not comply with format '<expression> [<logic> <expression>]' => " + expressionStr);
+			throw new ExpressionCompileException("Logic does not comply with format '<expression> [<operator> <expression>]' => " + expressionStr
+					+ "\n Allowed logic operators are: " + LOGIC_OPERATORS);
 		}
 
 		return compile(tokens.iterator(), false);
@@ -152,38 +159,45 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 			// Error
 			else
 			{
-				throw new ExpressionCompileException("Unexpected token(2): " + token);
+				throw new ExpressionCompileException("Unexpected token(2): " + token
+						+ "\n Partial compiled expression: " + result);
 			}
 		}
 
 		return result.build();
 	}
 
-	private ILogicExpression compileTuple(final String tokenParam)
+	private ILogicExpression compileTuple(final String tupleExpressionStr)
 	{
-		// Fix common mistakes
-		String token = tokenParam.replace("!=", "!");
-		token = token.trim();
+		// Prepare: normalize tuple expression
+		final String tupleExpressionStrNormalized = tupleExpressionStr
+				.replace("!=", LogicTuple.OPERATOR_NotEquals) // fix common mistakes: using "!=" instead of "!"
+				.trim();
 
-		final StringTokenizer s1 = new StringTokenizer(token, "!=~^><", true);
-		if (s1.countTokens() != 3)
+		final boolean returnDelims = true;
+		final StringTokenizer tokenizer = new StringTokenizer(tupleExpressionStrNormalized, TUPLE_OPERATORS, returnDelims);
+		if (tokenizer.countTokens() != 3)
 		{
 			throw new ExpressionCompileException("Logic tuple does not comply with format "
-					+ "'@context@=value' where operand could be one of '=!^~><' => " + tokenParam);
+					+ "'@context@=value' where operand could be one of '" + TUPLE_OPERATORS + "' => " + tupleExpressionStr);
 		}
 
-		final Boolean constantValue = null; // consider it not constant atm
-		final LogicTuple tuple = new LogicTuple(constantValue, s1.nextToken(), s1.nextToken(), s1.nextToken());
+		final Boolean constantValue = null; // consider it not constant for now
+		final LogicTuple tuple = new LogicTuple(constantValue, tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
 		return tuple;
 	}
 
-	private boolean isTuple(final String token)
+	private static final boolean isTuple(final String token)
 	{
-		return token.indexOf("!") > 0
-				|| token.indexOf("=") > 0
-				|| token.indexOf("^") > 0 // metas: cg: support legacy NOT operator
-				|| token.indexOf("~") > 0 // metas: cg: support legacy NOT operator
-				|| token.indexOf(">") > 0
-				|| token.indexOf("<") > 0;
+		for (int i = 0, size = TUPLE_OPERATORS.length(); i < size; i++)
+		{
+			final char operator = TUPLE_OPERATORS.charAt(i);
+			if (token.indexOf(operator) > 0)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

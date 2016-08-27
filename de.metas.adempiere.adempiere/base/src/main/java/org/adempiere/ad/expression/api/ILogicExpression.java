@@ -49,7 +49,8 @@ public interface ILogicExpression extends IExpression<Boolean>
 
 	String LOGIC_OPERATOR_AND = "&";
 	String LOGIC_OPERATOR_OR = "|";
-	List<String> LOGIC_OPERATORS = ImmutableList.of(LOGIC_OPERATOR_AND, LOGIC_OPERATOR_OR);
+	String LOGIC_OPERATOR_XOR = "^";
+	List<String> LOGIC_OPERATORS = ImmutableList.of(LOGIC_OPERATOR_AND, LOGIC_OPERATOR_OR, LOGIC_OPERATOR_XOR);
 
 	@Override
 	String getExpressionString();
@@ -68,11 +69,11 @@ public interface ILogicExpression extends IExpression<Boolean>
 
 	/**
 	 * Evaluates given expression and returns {@link LogicExpressionResult}.
-	 * 
+	 *
 	 * Use this method if you need more informations about the evaluation (e.g. which were the parameters used etc).
-	 * 
+	 *
 	 * If you are just interested about the boolean result, please use {@link #evaluate(Evaluatee, OnVariableNotFound)}.
-	 * 
+	 *
 	 * @param ctx
 	 * @param onVariableNotFound
 	 * @return
@@ -100,15 +101,41 @@ public interface ILogicExpression extends IExpression<Boolean>
 	 */
 	ILogicExpression toConstantExpression(final boolean constantValue);
 
+	default boolean isConstantTrue()
+	{
+		return isConstant() && constantValue() == true;
+	}
+
+	default boolean isConstantFalse()
+	{
+		return isConstant() && constantValue() == false;
+	}
+
 	/** Compose this logic expression with the given one, using logic AND and return it */
 	default ILogicExpression and(final ILogicExpression expression)
 	{
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_AND, expression);
 	}
 
+	default ILogicExpression andNot(final ILogicExpression expression)
+	{
+		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_AND, expression.negate());
+	}
+
 	/** Compose this logic expression with the given one, using logic OR and return it */
 	default ILogicExpression or(final ILogicExpression expression)
 	{
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_OR, expression);
+	}
+
+	default ILogicExpression negate()
+	{
+		// NOTE: because we don't have unary operator support atm, we will use XOR as : !a = a XOR true
+		return xor(TRUE);
+	}
+
+	default ILogicExpression xor(final ILogicExpression expression)
+	{
+		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_XOR, expression);
 	}
 }

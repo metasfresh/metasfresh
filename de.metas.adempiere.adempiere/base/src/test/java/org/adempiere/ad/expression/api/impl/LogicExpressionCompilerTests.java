@@ -196,4 +196,12 @@ public class LogicExpressionCompilerTests
 		test_compile_ConstantExpressions(true, "(@A@=1 & @B@=1) & @C@=1 | 1=1");
 	}
 
+	@Test
+	public void test_compile_xor()
+	{
+		final LogicExpression expr = (LogicExpression)compile("@A@=1 ^ @B@=2", true);
+		Assert.assertEquals("Left", "@A@=1", expr.getLeft().getExpressionString());
+		Assert.assertEquals("Right", "@B@=2", expr.getRight().getExpressionString());
+		Assert.assertEquals("Operator", ILogicExpression.LOGIC_OPERATOR_XOR, expr.getOperator());
+	}
 }

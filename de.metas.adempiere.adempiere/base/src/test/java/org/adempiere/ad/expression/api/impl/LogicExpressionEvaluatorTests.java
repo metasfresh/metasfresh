@@ -65,6 +65,12 @@ public class LogicExpressionEvaluatorTests
 
 	private static final class Params implements Evaluatee2
 	{
+		public static final Params singleton(final String variableName, final String value)
+		{
+			return new Params()
+					.addParam(variableName, value);
+		}
+
 		private final Map<String, String> map = new HashMap<String, String>();
 
 		@Override
@@ -123,6 +129,12 @@ public class LogicExpressionEvaluatorTests
 	public void afterTest()
 	{
 		// POJOLookupMap.get().dumpStatus();
+	}
+
+	private void assertExpression(final boolean expectedValue, final String expressionStr, final Params params)
+	{
+		final boolean failOnMissingParam = true;
+		assertExpression(expectedValue, expressionStr, failOnMissingParam, params);
 	}
 
 	private void assertExpression(final boolean expectedValue, final String expressionStr, final boolean failOnMissingParam, final Params params)
@@ -230,22 +242,10 @@ public class LogicExpressionEvaluatorTests
 		assertExpression(true, "5!@a@", false, new Params()
 				.addParam("a", "3"));
 
-		assertExpression(true, "5^@a@", false, new Params()
-				.addParam("a", "3"));
-
-		assertExpression(true, "5~@a@", false, new Params()
-				.addParam("a", "3"));
-
-		assertExpression(true, "5=@a@ & (@b@!3 & @c@^4)", false, new Params()
+		assertExpression(true, "5=@a@ & (@b@!3 & @c@!4)", false, new Params()
 				.addParam("a", "5")
 				.addParam("b", "4")
 				.addParam("c", "3"));
-
-		assertExpression(true, "5=@a@ & (@b@!=3 & @c@~4)", false, new Params()
-				.addParam("a", "5")
-				.addParam("b", "4")
-				.addParam("c", "3"));
-
 	}
 
 	@Test
@@ -818,7 +818,7 @@ public class LogicExpressionEvaluatorTests
 				.addParam("A", "1");
 		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "@MissingB@=2 | @A@=1", params);
 	}
-	
+
 	@Test
 	public void test_evaluateLogic_MissingVariablesWhichDoesNotMatter_OrExpression_LastOneIsTrue()
 	{
@@ -826,7 +826,6 @@ public class LogicExpressionEvaluatorTests
 				.addParam("Z", "1");
 		test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "(@A@=1 & @B@=1) & @C@=1 | @Z@=1", params);
 	}
-
 
 	private final void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
 			final String expressionStr,
@@ -853,6 +852,37 @@ public class LogicExpressionEvaluatorTests
 				+ "\n OnVariableNotFound: " + onVariableNotFound
 				+ "\n";
 		Assert.assertEquals(message, expectedValue, actualValue);
-
 	}
+
+	@Test
+	public void test_evaluateLogic_xor()
+	{
+		final String expressionStr = "@A@=1 ^ @B@=2";
+		assertExpression(false, expressionStr, new Params()
+				.addParam("A", "not1")
+				.addParam("B", "not2"));
+		assertExpression(true, expressionStr, new Params()
+				.addParam("A", "1")
+				.addParam("B", "not2"));
+		assertExpression(true, expressionStr, new Params()
+				.addParam("A", "not1")
+				.addParam("B", "2"));
+		assertExpression(false, expressionStr, new Params()
+				.addParam("A", "1")
+				.addParam("B", "2"));
+	}
+
+	@Test
+	public void test_evaluateLogic_negate()
+	{
+		final ILogicExpression expr = compiler.compile("@A@=1");
+		final ILogicExpression exprNegated = expr.negate();
+
+		Assert.assertEquals(true, expr.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail));
+		Assert.assertEquals(false, exprNegated.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail));
+
+		Assert.assertEquals(false, expr.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail));
+		Assert.assertEquals(true, exprNegated.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail));
+	}
+
 }

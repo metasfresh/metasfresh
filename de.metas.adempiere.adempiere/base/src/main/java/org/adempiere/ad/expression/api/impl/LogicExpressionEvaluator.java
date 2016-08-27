@@ -188,9 +188,26 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 	};
 
+	private static final BooleanEvaluator EVALUATOR_XOR = (left, right) -> {
+		final Boolean leftValue = left.getValueOrNull();
+		if (leftValue == null)
+		{
+			return null;
+		}
+
+		final Boolean rightValue = right.getValueOrNull();
+		if (rightValue == null)
+		{
+			return null;
+		}
+
+		return leftValue.booleanValue() != rightValue.booleanValue();
+	};
+
 	/* package */static final Map<String, BooleanEvaluator> EVALUATORS_ByOperator = ImmutableMap.<String, LogicExpressionEvaluator.BooleanEvaluator> builder()
-			.put(AbstractLogicExpression.LOGIC_OPERATOR_AND, EVALUATOR_AND)
-			.put(AbstractLogicExpression.LOGIC_OPERATOR_OR, EVALUATOR_OR)
+			.put(ILogicExpression.LOGIC_OPERATOR_AND, EVALUATOR_AND)
+			.put(ILogicExpression.LOGIC_OPERATOR_OR, EVALUATOR_OR)
+			.put(ILogicExpression.LOGIC_OPERATOR_XOR, EVALUATOR_XOR)
 			.build();
 
 	@Override
@@ -342,22 +359,19 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	private final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
 	{
 		//
-		if (operand.equals("="))
+		if (operand.equals(LogicTuple.OPERATOR_Equals))
 		{
 			return value1.compareTo(value2) == 0;
 		}
-		else if (operand.equals("<"))
+		else if (operand.equals(LogicTuple.OPERATOR_LessThan))
 		{
 			return value1.compareTo(value2) < 0;
 		}
-		else if (operand.equals(">"))
+		else if (operand.equals(LogicTuple.OPERATOR_GreaterThan))
 		{
 			return value1.compareTo(value2) > 0;
 		}
-		else if (operand.equals("!")
-				|| operand.equals("^") // metas: cg: support legacy NOT operator
-				|| operand.equals("~") // metas: cg: support legacy NOT operator
-		)
+		else if (operand.equals(LogicTuple.OPERATOR_NotEquals))
 		{
 			return value1.compareTo(value2) != 0;
 		}
