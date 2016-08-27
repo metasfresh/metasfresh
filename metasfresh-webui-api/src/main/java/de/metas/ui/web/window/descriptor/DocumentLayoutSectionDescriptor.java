@@ -69,6 +69,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	public static final class Builder
 	{
 		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
+		private String invalidReason;
 
 		private Builder()
 		{
@@ -77,6 +78,10 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 
 		public DocumentLayoutSectionDescriptor build()
 		{
+			if (isInvalid())
+			{
+				throw new IllegalStateException("Builder is invalid: " + getInvalidReason());
+			}
 			return new DocumentLayoutSectionDescriptor(this);
 		}
 
@@ -94,6 +99,28 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			Check.assumeNotNull(columnBuilder, "Parameter columnBuilder is not null");
 			columnsBuilders.add(columnBuilder);
 			return this;
+		}
+
+		public Builder setInvalid(final String invalidReason)
+		{
+			Check.assumeNotEmpty(invalidReason, "invalidReason is not empty");
+			this.invalidReason = invalidReason;
+			return this;
+		}
+
+		public boolean isValid()
+		{
+			return invalidReason == null;
+		}
+
+		public boolean isInvalid()
+		{
+			return invalidReason != null;
+		}
+
+		public String getInvalidReason()
+		{
+			return invalidReason;
 		}
 	}
 }

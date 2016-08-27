@@ -147,18 +147,18 @@ public final class JSONDocumentLayout implements Serializable
 	}
 
 	@JsonAnySetter
-	public void putOtherProperty(final String name, final Object jsonValue)
+	/* package */void putOtherProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put(name, jsonValue);
 	}
 
-	public JSONDocumentLayout putDebugProperty(final String name, final Object jsonValue)
+	private JSONDocumentLayout putDebugProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put("debug-" + name, jsonValue);
 		return this;
 	}
 
-	public void putDebugProperties(final Map<String, ?> debugProperties)
+	private void putDebugProperties(final Map<String, ?> debugProperties)
 	{
 		if (debugProperties == null || debugProperties.isEmpty())
 		{

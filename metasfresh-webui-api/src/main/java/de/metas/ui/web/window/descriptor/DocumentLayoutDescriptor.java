@@ -52,13 +52,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	/** i.e. AD_Window_ID */
 	private final int AD_Window_ID;
-	private DocumentLayoutElementDescriptor documentNoElement;
-	private DocumentLayoutElementDescriptor docActionElement;
+	private final DocumentLayoutElementDescriptor documentNoElement;
+	private final DocumentLayoutElementDescriptor docActionElement;
 
 	private final List<DocumentLayoutSectionDescriptor> sections;
 
 	private final List<DocumentLayoutDetailDescriptor> details;
-	
+
 	private final Map<String, String> debugProperties;
 
 	private DocumentLayoutDescriptor(final Builder builder)
@@ -70,7 +70,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		details = ImmutableList.copyOf(builder.buildDetails());
-		
+
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
 
@@ -109,7 +109,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return details;
 	}
-	
+
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
@@ -132,6 +132,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 		{
 			super();
 		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("AD_Window_ID", AD_Window_ID)
+					.toString();
+		}
 
 		public DocumentLayoutDescriptor build()
 		{
@@ -139,7 +147,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			// Debug informations:
 			putDebugProperty("generator-thread", Thread.currentThread().getName());
 			putDebugProperty("generator-timestamp", new java.util.Date().toString());
-			if(stopwatch != null)
+			if (stopwatch != null)
 			{
 				putDebugProperty("generator-duration", stopwatch.toString());
 			}
@@ -151,6 +159,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		{
 			return sectionBuilders
 					.stream()
+					.filter(sectionBuilder -> sectionBuilder.isValid())
 					.map(sectionBuilder -> sectionBuilder.build())
 					.filter(section -> section.hasColumns())
 					.collect(GuavaCollectors.toImmutableList());
@@ -192,13 +201,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionsBuilders)
 		{
-			this.sectionBuilders.addAll(sectionsBuilders);
+			sectionBuilders.addAll(sectionsBuilders);
 			return this;
 		}
 
 		/**
 		 * Adds detail/tab if it's valid.
-		 * 
+		 *
 		 * @param detailBuilder detail/tab builder
 		 */
 		public Builder addDetailIfValid(@Nullable final DocumentLayoutDetailDescriptor.Builder detailBuilder)
@@ -217,13 +226,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 			detailsBuilders.add(detailBuilder);
 			return this;
 		}
-		
+
 		public Builder putDebugProperty(final String name, final String value)
 		{
 			debugProperties.put(name, value);
 			return this;
 		}
-		
+
 		public Builder setStopwatch(final Stopwatch stopwatch)
 		{
 			this.stopwatch = stopwatch;
