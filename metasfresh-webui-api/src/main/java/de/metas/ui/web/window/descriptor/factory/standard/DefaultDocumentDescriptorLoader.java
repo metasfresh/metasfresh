@@ -12,7 +12,6 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -52,6 +51,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
  * #%L
@@ -135,7 +135,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 
 		if (AD_Window_ID <= 0)
 		{
-			throw new AdempiereException("No window found for AD_Window_ID=" + AD_Window_ID);
+			throw new DocumentLayoutBuildException("No window found for AD_Window_ID=" + AD_Window_ID);
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -761,7 +761,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 		//
 		else
 		{
-			throw new IllegalArgumentException("Unknown displayType=" + displayType + " of " + gridFieldVO);
+			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of " + gridFieldVO);
 		}
 	}
 
@@ -865,7 +865,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 		//
 		else
 		{
-			throw new IllegalArgumentException("Unknown displayType=" + displayType + " of " + gridFieldVO);
+			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of " + gridFieldVO);
 		}
 	}
 

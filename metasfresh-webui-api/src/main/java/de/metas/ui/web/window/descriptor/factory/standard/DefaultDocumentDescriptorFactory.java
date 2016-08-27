@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
  * #%L
@@ -42,6 +43,13 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	@Override
 	public DocumentDescriptor getDocumentDescriptor(final int AD_Window_ID)
 	{
-		return documentDescriptorsByWindowId.getOrLoad(AD_Window_ID, () -> new DefaultDocumentDescriptorLoader(AD_Window_ID).load());
+		try
+		{
+			return documentDescriptorsByWindowId.getOrLoad(AD_Window_ID, () -> new DefaultDocumentDescriptorLoader(AD_Window_ID).load());
+		}
+		catch (final Exception e)
+		{
+			throw DocumentLayoutBuildException.wrapIfNeeded(e);
+		}
 	}
 }
