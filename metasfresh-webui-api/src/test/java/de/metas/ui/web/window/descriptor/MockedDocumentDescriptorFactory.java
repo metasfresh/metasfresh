@@ -74,10 +74,16 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 	private static DocumentDescriptor createDescriptor_Order(final int AD_Window_ID)
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
+				.setDetailId(null)
+				//
+				.setAllowCreateNewLogic(ILogicExpression.TRUE)
+				.setAllowDeleteLogic(ILogicExpression.TRUE)
+				//
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab__SalesOrder_Header)
 				.setTabNo(0)
 				.setIsSOTrx(true)
+				//
 				.setDataBinding(POJODocumentEntityDataBindingDescriptor.ofClass(I_C_Order.class))
 				.addField(DocumentFieldDescriptor.builder()
 						.setFieldName(I_C_Order.COLUMNNAME_C_Order_ID)
@@ -114,7 +120,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_DocumentNo)))))))
 														//
 														;
-		
+
 		return DocumentDescriptor.builder()
 				.setLayout(layoutBuilder.build())
 				.setEntityDescriptor(entityDescriptorBuilder.build())

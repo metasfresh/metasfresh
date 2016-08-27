@@ -202,8 +202,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
 
-		private String detailId;
-
 		private final List<SqlDocumentFieldDataBindingDescriptor> fields = new ArrayList<>();
 		private SqlDocumentFieldDataBindingDescriptor keyField;
 
@@ -335,30 +333,24 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlTableName;
 		}
 
-		public Builder setSqlTableAlias(final String sqlTableAlias)
+		private Builder setSqlTableAlias(final String sqlTableAlias)
 		{
 			this.sqlTableAlias = sqlTableAlias;
 			return this;
 		}
 
-		public Builder setSqlTableAliasAsMaster()
+		public Builder setSqlTableAliasFromDetailId(final String detailId)
 		{
-			setSqlTableAlias(TABLEALIAS_Master);
+			if (detailId == null)
+			{
+				setSqlTableAlias(TABLEALIAS_Master);
+			}
+			else
+			{
+				setSqlTableAlias("d" + detailId.trim());
+			}
+			
 			return this;
-		}
-
-		public Builder setDetailIdAndUpdateTableAlias(final String detailId)
-		{
-			Check.assumeNotEmpty(detailId, "detailId is not empty");
-
-			this.detailId = detailId.trim();
-			setSqlTableAlias("d" + this.detailId);
-			return this;
-		}
-
-		public String getDetailId()
-		{
-			return detailId;
 		}
 
 		public String getSqlTableAlias()

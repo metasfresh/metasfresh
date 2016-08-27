@@ -117,12 +117,22 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("detailId", detailId)
+					.add("caption", caption)
+					.add("elements-count", elementBuilders.size())
+					.toString();
+		}
+
 		public Builder setDetailId(final String detailId)
 		{
 			this.detailId = detailId;
 			return this;
 		}
-		
+
 		public String getDetailId()
 		{
 			return detailId;
@@ -146,7 +156,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			elementBuilders.add(elementBuilder);
 			return this;
 		}
-		
+
 		public boolean hasElements()
 		{
 			return !elementBuilders.isEmpty();

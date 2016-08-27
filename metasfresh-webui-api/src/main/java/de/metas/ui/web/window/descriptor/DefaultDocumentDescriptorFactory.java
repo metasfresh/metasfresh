@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -140,35 +141,24 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		//
 		// Layout: Create UI sections from main tab
 		final GridTabVO mainTabVO = gridWindowVO.getTab(MAIN_TabNo);
-		final DocumentEntityDescriptor.Builder mainEntityBuilder = DocumentEntityDescriptor.builder()
-				.setAD_Window_ID(AD_Window_ID) // legacy
-				.setAD_Tab_ID(mainTabVO.getAD_Tab_ID()) // legacy
-				.setTabNo(MAIN_TabNo) // legacy
-				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
-				;
+		final DocumentEntityDescriptor.Builder mainEntityBuilder = documentEntity(gridWindowVO, mainTabVO);
 		{
 			final SpecialFieldsCollector specialFieldsCollector = new SpecialFieldsCollector();
-			layoutBuilder.addSections(createSections(mainTabVO, specialFieldsCollector));
+			layoutBuilder.addSections(layoutSectionsList(mainTabVO, specialFieldsCollector));
 
 			// Set special field names
 			layoutBuilder
 					.setDocumentNoElement(specialFieldsCollector.buildDocumentNoElementAndConsume())
 					.setDocActionElement(specialFieldsCollector.buildDocActionElementAndConsume());
 
-			final SqlDocumentEntityDataBindingDescriptor.Builder mainEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
-					.setSqlTableName(mainTabVO.getTableName())
-					.setSqlTableAliasAsMaster()
-					.setAD_Table_ID(mainTabVO.getAD_Table_ID()) // legacy
-					.setSqlParentLinkColumnName(null) // no parent link on main tab
-					.setSqlWhereClause(mainTabVO.getWhereClause())
-					.setSqlOrderBy(mainTabVO.getOrderByClause());
+			final SqlDocumentEntityDataBindingDescriptor.Builder mainEntityBindingsBuilder = documentEntryDataBinding((GridTabVO)null, mainTabVO);
 
 			//
 			// Fields mapping & data binding
 			mainTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.map(gridFieldVO -> documentFieldDescriptor(mainEntityBindingsBuilder, mainTabVO, gridFieldVO))
+					.map(gridFieldVO -> documentField(mainEntityBindingsBuilder, mainTabVO, gridFieldVO))
 					.forEach(fieldDescriptor -> {
 						mainEntityBuilder.addField(fieldDescriptor);
 						mainEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -181,35 +171,17 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		// Layout: Create UI details from child tabs
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(MAIN_TabNo))
 		{
-			final DocumentLayoutDetailDescriptor.Builder detailBuilder = createDetail(detailTabVO);
-			if (!detailBuilder.hasElements())
-			{
-				continue;
-			}
-			layoutBuilder.addDetail(detailBuilder);
+			layoutBuilder.addDetailIfValid(layoutDetail(detailTabVO));
 
-			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = SqlDocumentEntityDataBindingDescriptor.builder()
-					.setSqlTableName(detailTabVO.getTableName())
-					.setDetailIdAndUpdateTableAlias(detailBuilder.getDetailId())
-					.setAD_Table_ID(detailTabVO.getAD_Table_ID()) // legacy
-					.setSqlParentLinkColumnName(extractParentLinkColumnName(mainTabVO, detailTabVO))
-					.setSqlWhereClause(detailTabVO.getWhereClause())
-					.setSqlOrderBy(detailTabVO.getOrderByClause());
-
-			final DocumentEntityDescriptor.Builder detailEntityBuilder = DocumentEntityDescriptor.builder()
-					.setDetailId(detailBuilder.getDetailId())
-					.setAD_Window_ID(AD_Window_ID) // legacy
-					.setAD_Tab_ID(detailTabVO.getAD_Tab_ID()) // legacy
-					.setTabNo(detailTabVO.getTabNo()) // legacy
-					.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
-					;
+			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = documentEntryDataBinding(mainTabVO, detailTabVO);
+			final DocumentEntityDescriptor.Builder detailEntityBuilder = documentEntity(gridWindowVO, detailTabVO);
 
 			//
 			// Fields mapping
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentFieldDescriptor(detailEntityBindingsBuilder, detailTabVO, gridFieldVO))
+					.map(gridFieldVO -> documentField(detailEntityBindingsBuilder, detailTabVO, gridFieldVO))
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -227,7 +199,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.build();
 	}
 
-	private List<DocumentLayoutSectionDescriptor.Builder> createSections(final GridTabVO gridTabVO, final SpecialFieldsCollector specialFieldsCollector)
+	private List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList(final GridTabVO gridTabVO, final SpecialFieldsCollector specialFieldsCollector)
 	{
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -248,118 +220,159 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
 		for (final I_AD_UI_Section uiSection : uiSections)
 		{
-			if (!uiSection.isActive())
+			final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = layoutSection(uiProvider, uiSection, gridTabVO, specialFieldsCollector);
+			if (layoutSectionBuilder == null)
 			{
 				continue;
 			}
-
-			final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder();
-
-			//
-			// UI Columns
-			for (final I_AD_UI_Column uiColumn : uiProvider.getUIColumns(uiSection))
-			{
-				if (!uiColumn.isActive())
-				{
-					continue;
-				}
-
-				final DocumentLayoutColumnDescriptor.Builder layoutColumnBuilder = DocumentLayoutColumnDescriptor.builder();
-
-				//
-				// UI Element Groups
-				for (final I_AD_UI_ElementGroup uiElementGroup : uiProvider.getUIElementGroups(uiColumn))
-				{
-					if (!uiElementGroup.isActive())
-					{
-						continue;
-					}
-
-					final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementGroupDescriptor.builder()
-							.setLayoutType(uiElementGroup.getUIStyle());
-
-					//
-					// UI Elements
-					boolean isFirstElementInGroup = true;
-					for (final I_AD_UI_Element uiElement : uiProvider.getUIElements(uiElementGroup))
-					{
-						if (!uiElement.isActive())
-						{
-							continue;
-						}
-
-						// TODO: atm if we setting first element in group as primary, others as secondary.
-						final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
-
-						//
-						// UI main field
-						final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
-								.setCaption(uiElement.getName())
-								.setDescription(uiElement.getDescription())
-								.setLayoutType(layoutType);
-						{
-							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
-							if (gridFieldVO != null)
-							{
-								layoutElementBuilder
-										.setWidgetType(extractWidgetType(gridFieldVO))
-										.addField(documentLayoutElementFieldDescriptorBuilder(gridTabVO, gridFieldVO));
-
-								specialFieldsCollector.collect(layoutElementBuilder);
-							}
-						}
-
-						//
-						// UI Element Fields (if any)
-						for (final I_AD_UI_ElementField uiElementField : uiProvider.getUIElementFields(uiElement))
-						{
-							if (!uiElementField.isActive())
-							{
-								continue;
-							}
-
-							final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
-							if (gridFieldVO != null)
-							{
-								if (layoutElementBuilder.getWidgetType() == null)
-								{
-									layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
-								}
-								final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = documentLayoutElementFieldDescriptorBuilder(gridTabVO, gridFieldVO);
-								layoutElementBuilder.addField(layoutElementFieldBuilder);
-
-								specialFieldsCollector.collect(layoutElementBuilder);
-							}
-						}
-
-						if (debugShowColumnNamesForCaption)
-						{
-							layoutElementBuilder.setCaptionAsFieldNames();
-						}
-
-						final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
-								.addElement(layoutElementBuilder);
-
-						layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
-
-						//
-						isFirstElementInGroup = false;
-					}                  // each uiElement
-
-					layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
-				}                  // each uiElementGroup
-
-				layoutSectionBuilder.addColumn(layoutColumnBuilder);
-			}                  // each uiColumn
-
 			layoutSectionBuilders.add(layoutSectionBuilder);
-		}                  // each uiSection
+		}
 
 		return layoutSectionBuilders;
 	}
 
-	private static DocumentLayoutDetailDescriptor.Builder createDetail(final GridTabVO tab)
+	private DocumentLayoutSectionDescriptor.Builder layoutSection(final IWindowUIElementsProvider uiProvider, final I_AD_UI_Section uiSection, final GridTabVO gridTabVO,
+			final SpecialFieldsCollector specialFieldsCollector)
 	{
+		if (!uiSection.isActive())
+		{
+			return null;
+		}
+
+		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder();
+
+		//
+		// UI Columns
+		for (final I_AD_UI_Column uiColumn : uiProvider.getUIColumns(uiSection))
+		{
+			final DocumentLayoutColumnDescriptor.Builder layoutColumnBuilder = layoutColumn(uiProvider, uiColumn, gridTabVO, specialFieldsCollector);
+			if (layoutColumnBuilder == null)
+			{
+				continue;
+			}
+			layoutSectionBuilder.addColumn(layoutColumnBuilder);
+		}
+
+		return layoutSectionBuilder;
+	}
+
+	private DocumentLayoutColumnDescriptor.Builder layoutColumn(final IWindowUIElementsProvider uiProvider, final I_AD_UI_Column uiColumn, final GridTabVO gridTabVO,
+			final SpecialFieldsCollector specialFieldsCollector)
+	{
+		if (!uiColumn.isActive())
+		{
+			return null;
+		}
+
+		final DocumentLayoutColumnDescriptor.Builder layoutColumnBuilder = DocumentLayoutColumnDescriptor.builder();
+
+		//
+		// UI Element Groups
+		for (final I_AD_UI_ElementGroup uiElementGroup : uiProvider.getUIElementGroups(uiColumn))
+		{
+			final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = layoutElementGroup(uiProvider, uiElementGroup, gridTabVO, specialFieldsCollector);
+			if (layoutElementGroupBuilder == null)
+			{
+				continue;
+			}
+			layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
+		}
+
+		return layoutColumnBuilder;
+	}
+
+	private DocumentLayoutElementGroupDescriptor.Builder layoutElementGroup(final IWindowUIElementsProvider uiProvider, final I_AD_UI_ElementGroup uiElementGroup, final GridTabVO gridTabVO,
+			final SpecialFieldsCollector specialFieldsCollector)
+	{
+		if (!uiElementGroup.isActive())
+		{
+			return null;
+		}
+
+		final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementGroupDescriptor.builder()
+				.setLayoutType(uiElementGroup.getUIStyle());
+
+		//
+		// UI Elements
+		boolean isFirstElementInGroup = true;
+		for (final I_AD_UI_Element uiElement : uiProvider.getUIElements(uiElementGroup))
+		{
+			if (!uiElement.isActive())
+			{
+				continue;
+			}
+
+			// TODO: atm if we setting first element in group as primary, others as secondary.
+			final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
+
+			//
+			// UI main field
+			final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
+					.setCaption(uiElement.getName())
+					.setDescription(uiElement.getDescription())
+					.setLayoutType(layoutType);
+			{
+				final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+				if (gridFieldVO != null)
+				{
+					layoutElementBuilder
+							.setWidgetType(extractWidgetType(gridFieldVO))
+							.addField(layoutElementField(gridTabVO, gridFieldVO));
+
+					specialFieldsCollector.collect(layoutElementBuilder);
+				}
+			}
+
+			//
+			// UI Element Fields (if any)
+			for (final I_AD_UI_ElementField uiElementField : uiProvider.getUIElementFields(uiElement))
+			{
+				if (!uiElementField.isActive())
+				{
+					continue;
+				}
+
+				final GridFieldVO gridFieldVO = gridTabVO.getFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
+				if (gridFieldVO != null)
+				{
+					if (layoutElementBuilder.getWidgetType() == null)
+					{
+						layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
+					}
+					final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(gridTabVO, gridFieldVO);
+					layoutElementBuilder.addField(layoutElementFieldBuilder);
+
+					specialFieldsCollector.collect(layoutElementBuilder);
+				}
+			}
+
+			if (debugShowColumnNamesForCaption)
+			{
+				layoutElementBuilder.setCaptionAsFieldNames();
+			}
+
+			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+					.addElement(layoutElementBuilder);
+
+			layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
+
+			//
+			isFirstElementInGroup = false;
+		} /* each uiElement */
+
+		return layoutElementGroupBuilder;
+	}
+
+	private static DocumentLayoutDetailDescriptor.Builder layoutDetail(final GridTabVO tab)
+	{
+		// If the detail is never displayed then don't add it to layout
+		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic(tab);
+		if (tabDisplayLogic.isConstantFalse())
+		{
+			logger.trace("Skip adding detail tab to layout because it's never displayed: {}, tabDisplayLogic={}", tab, tabDisplayLogic);
+			return null;
+		}
+
 		final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(extractDetailId(tab))
 				.setCaption(tab.getName())
@@ -374,25 +387,70 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 						.setDescription(gridFieldVO.getDescription())
 						.setWidgetType(extractWidgetType(gridFieldVO))
 						.setLayoutTypeNone() // does not matter for detail
-						.addField(documentLayoutElementFieldDescriptorBuilder(tab, gridFieldVO)))
+						.addField(layoutElementField(tab, gridFieldVO)))
 				.forEach(layoutDetailBuilder::addElement);
 
 		return layoutDetailBuilder;
 	}
 
-	private DocumentFieldDescriptor documentFieldDescriptor(
+	private DocumentEntityDescriptor.Builder documentEntity(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO)
+	{
+		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
+		final ILogicExpression allowDelete = ConstantLogicExpression.of(gridTabVO.isDeleteable());
+		final ILogicExpression readonly = extractTabReadonlyLogic(gridTabVO);
+
+		final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonly);
+		final ILogicExpression allowDeleteLogic = allowDelete.andNot(readonly);
+
+		final ILogicExpression displayLogic = extractTabDisplayLogic(gridTabVO);
+
+		return DocumentEntityDescriptor.builder()
+				.setDetailId(extractDetailId(gridTabVO))
+				//
+				.setAllowCreateNewLogic(allowCreateNewLogic)
+				.setAllowDeleteLogic(allowDeleteLogic)
+				.setDisplayLogic(displayLogic)
+				//
+				.setAD_Window_ID(gridTabVO.getAD_Window_ID()) // legacy
+				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
+				.setTabNo(gridTabVO.getTabNo()) // legacy
+				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
+				;
+	}
+	
+	private SqlDocumentEntityDataBindingDescriptor.Builder documentEntryDataBinding(final GridTabVO parentTab, final GridTabVO detailTabVO)
+	{
+		return SqlDocumentEntityDataBindingDescriptor.builder()
+				.setSqlTableName(detailTabVO.getTableName())
+				.setSqlTableAliasFromDetailId(extractDetailId(detailTabVO))
+				.setAD_Table_ID(detailTabVO.getAD_Table_ID()) // legacy
+				.setSqlParentLinkColumnName(extractParentLinkColumnName(parentTab, detailTabVO))
+				.setSqlWhereClause(detailTabVO.getWhereClause())
+				.setSqlOrderBy(detailTabVO.getOrderByClause());
+
+		
+	}
+
+	private DocumentFieldDescriptor documentField(
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder //
 			, final GridTabVO gridTabVO //
 			, final GridFieldVO gridFieldVO //
 	)
 	{
+		// From entry data-binding:
 		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
 		final String sqlTableAlias = detailEntityBindingsBuilder.getSqlTableAlias();
-		final String detailId = detailEntityBindingsBuilder.getDetailId();
-		//
+		final String sqlParentLinkColumnName = detailEntityBindingsBuilder.getSqlParentLinkColumnName();
+		
+		// From GridTabVO:
+		final String detailId = extractDetailId(gridTabVO);
+		
+		// From GridFieldVO:
 		final String sqlColumnName = gridFieldVO.getColumnName();
 		final boolean keyColumn = gridFieldVO.isKey();
-		final boolean parentLinkColumn = sqlColumnName.equals(detailEntityBindingsBuilder.getSqlParentLinkColumnName());
+		
+		//
+		final boolean isParentLinkColumn = sqlColumnName.equals(sqlParentLinkColumnName);
 
 		//
 		//
@@ -407,7 +465,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final boolean alwaysUpdateable;
 		final ILogicExpression mandatoryLogic;
 		final ILogicExpression displayLogic;
-		if (parentLinkColumn)
+		if (isParentLinkColumn)
 		{
 			displayType = DisplayType.ID;
 			AD_Reference_Value_ID = 0; // none
@@ -429,9 +487,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			widgetType = extractWidgetType(gridFieldVO);
 			valueClass = extractValueClass(gridFieldVO);
 			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
-			readonlyLogic = extractReadonlyLogic(gridTabVO, gridFieldVO);
+			readonlyLogic = extractFieldReadonlyLogic(gridTabVO, gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
-			displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
+			displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO);
 			publicField = isPublicField(keyColumn, displayLogic);
 			mandatoryLogic = extractMandatoryLogic(gridFieldVO, publicField);
 		}
@@ -454,7 +512,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.setAD_Val_Rule_ID(AD_Val_Rule_ID)
 				.setKeyColumn(keyColumn)
-				.setParentLinkColumn(parentLinkColumn)
+				.setParentLinkColumn(isParentLinkColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
 				.setOrderBy(orderBySortNo)
 				.build();
@@ -467,7 +525,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setDescription(gridFieldVO.getDescription())
 				//
 				.setKey(keyColumn)
-				.setParentLink(parentLinkColumn)
+				.setParentLink(isParentLinkColumn)
 				//
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
@@ -499,6 +557,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 	private static String extractParentLinkColumnName(final GridTabVO parentTabVO, final GridTabVO tabVO)
 	{
+		// If this is the master tab then there is no parent link
 		if (parentTabVO == null)
 		{
 			return null;
@@ -798,8 +857,13 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		return displayLogic.constantValue() == true;
 	}
 
-	private static ILogicExpression extractReadonlyLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractTabReadonlyLogic(final GridTabVO gridTabVO)
 	{
+		if (gridTabVO.isView())
+		{
+			return ILogicExpression.TRUE;
+		}
+
 		//
 		// Check if tab is always readonly
 		if (gridTabVO.isReadOnly())
@@ -810,7 +874,19 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		//
 		// Check if tab's readonly expression
 		final ILogicExpression tabReadonlyLogic = gridTabVO.getReadOnlyLogic();
-		if (tabReadonlyLogic.isConstant() && tabReadonlyLogic.constantValue() == true)
+		if (tabReadonlyLogic.isConstantTrue())
+		{
+			return ILogicExpression.TRUE;
+		}
+
+		return tabReadonlyLogic;
+	}
+
+	private static ILogicExpression extractFieldReadonlyLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
+	{
+		// If the tab is always readonly, we can assume any field in that tab is readonly
+		final ILogicExpression tabReadonlyLogic = extractTabReadonlyLogic(gridTabVO);
+		if (tabReadonlyLogic.isConstantTrue())
 		{
 			return ILogicExpression.TRUE;
 		}
@@ -845,6 +921,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 		final ILogicExpression fieldReadonlyLogic = gridFieldVO.getReadOnlyLogic();
 
+		// FIXME: not sure if using tabReadonlyLogic here is OK, because the tab logic shall be applied to parent tab!
 		ILogicExpression readonlyLogic = tabReadonlyLogic.or(fieldReadonlyLogic);
 
 		//
@@ -902,20 +979,25 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		// e.g. C_Order.M_Shipper_ID has AD_Field.IsMandatory=Y, AD_Field.IsDisplayed=N, AD_Column.IsMandatory=N
 		// => we need to NOT enforce setting it because it's not needed, user cannot change it and it might be no callouts to set it.
 		// Else, we won't be able to save our document.
-		if(!publicField && gridFieldVO.isMandatory() && !gridFieldVO.isMandatoryDB())
+		if (!publicField && gridFieldVO.isMandatory() && !gridFieldVO.isMandatoryDB())
 		{
 			return ILogicExpression.FALSE;
 		}
-		
+
 		if (gridFieldVO.isMandatory())
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		return gridFieldVO.getMandatoryLogic();
 	}
 
-	private static ILogicExpression extractDisplayLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractTabDisplayLogic(final GridTabVO gridTabVO)
+	{
+		return gridTabVO.getDisplayLogic();
+	}
+
+	private static ILogicExpression extractFieldDisplayLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
 		if (gridTabVO.getTabNo() == MAIN_TabNo)
 		{
@@ -932,7 +1014,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			}
 		}
 
-		return gridFieldVO.getDisplayLogic();
+		// FIXME: not sure if using tabDisplayLogic here is OK, because the tab logic shall be applied to parent tab!
+		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic(gridTabVO);
+		final ILogicExpression fieldDisplayLogic = gridFieldVO.getDisplayLogic();
+		return tabDisplayLogic.and(fieldDisplayLogic);
 	}
 
 	private IStringExpression extractDefaultValueExpression(final GridFieldVO gridFieldVO)
@@ -980,9 +1065,9 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		}
 	}
 
-	private static final DocumentLayoutElementFieldDescriptor.Builder documentLayoutElementFieldDescriptorBuilder(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
+	private static final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
-		final ILogicExpression displayLogic = extractDisplayLogic(gridTabVO, gridFieldVO);
+		final ILogicExpression displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO);
 		final boolean publicField = isPublicField(gridFieldVO.isKey(), displayLogic);
 
 		return DocumentLayoutElementFieldDescriptor.builder(gridFieldVO.getColumnName())

@@ -264,6 +264,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		return mandatoryLogic;
 	}
 
+	/** @return field data binding info; never null */
 	public DocumentFieldDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;

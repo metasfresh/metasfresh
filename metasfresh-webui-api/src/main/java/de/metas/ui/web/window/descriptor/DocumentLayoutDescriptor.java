@@ -5,11 +5,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -99,6 +104,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
+
 		private int AD_Window_ID;
 		private DocumentLayoutElementDescriptor documentNoElement;
 		private DocumentLayoutElementDescriptor docActionElement;
@@ -164,9 +171,24 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder addDetail(final DocumentLayoutDetailDescriptor.Builder detailBuilder)
+		/**
+		 * Adds detail/tab if it's valid.
+		 * 
+		 * @param detailBuilder detail/tab builder
+		 */
+		public Builder addDetailIfValid(@Nullable final DocumentLayoutDetailDescriptor.Builder detailBuilder)
 		{
-			Check.assumeNotNull(detailBuilder, "Parameter detailBuilder is not null");
+			if (detailBuilder == null)
+			{
+				return this;
+			}
+
+			if (!detailBuilder.hasElements())
+			{
+				logger.trace("Skip adding detail tab to layout because it does not have elements: {}", detailBuilder);
+				return this;
+			}
+
 			detailsBuilders.add(detailBuilder);
 			return this;
 		}

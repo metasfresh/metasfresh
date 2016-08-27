@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.adempiere.ad.expression.api.ILogicExpression;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -55,6 +57,13 @@ public class DocumentEntityDescriptor
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
 
+	@JsonProperty("allow-new")
+	private final ILogicExpression allowCreateNewLogic;
+	@JsonProperty("allow-delete")
+	private final ILogicExpression allowDeleteLogic;
+	@JsonProperty("displayLogic")
+	private final ILogicExpression displayLogic;
+
 	@JsonProperty("fields")
 	private final List<DocumentFieldDescriptor> fields;
 	@JsonIgnore
@@ -83,7 +92,17 @@ public class DocumentEntityDescriptor
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
+
+		if (!builder.detailIdSet)
+		{
+			throw new IllegalArgumentException("detailId was not set to " + builder);
+		}
 		detailId = builder.detailId;
+
+		allowCreateNewLogic = Preconditions.checkNotNull(builder.allowCreateNewLogic);
+		allowDeleteLogic = Preconditions.checkNotNull(builder.allowDeleteLogic);
+		displayLogic = Preconditions.checkNotNull(builder.displayLogic, "displayLogic not null");
+
 		fields = ImmutableList.copyOf(builder.fields);
 		idField = builder.idField;
 		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
@@ -95,15 +114,18 @@ public class DocumentEntityDescriptor
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
-		
+
 		//
 		id = String.valueOf(builder.AD_Tab_ID);
-
 	}
 
 	@JsonCreator
 	private DocumentEntityDescriptor(
 			@JsonProperty("detaildId") final String detailId //
+			, @JsonProperty("allow-new") final ILogicExpression allowCreateNewLogic //
+			, @JsonProperty("allow-delete") final ILogicExpression allowDeleteLogic //
+			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
+			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
 			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
 			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
 			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
@@ -115,6 +137,11 @@ public class DocumentEntityDescriptor
 	{
 		this(new Builder()
 				.setDetailId(detailId)
+				//
+				.setAllowCreateNewLogic(allowCreateNewLogic)
+				.setAllowDeleteLogic(allowDeleteLogic)
+				.setDisplayLogic(displayLogic)
+				//
 				.addFields(fields)
 				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
 				.setDataBinding(dataBinding)
@@ -166,6 +193,21 @@ public class DocumentEntityDescriptor
 	public String getDetailId()
 	{
 		return detailId;
+	}
+	
+	public ILogicExpression getAllowCreateNewLogic()
+	{
+		return allowCreateNewLogic;
+	}
+	
+	public ILogicExpression getAllowDeleteLogic()
+	{
+		return allowDeleteLogic;
+	}
+	
+	public ILogicExpression getDisplayLogic()
+	{
+		return displayLogic;
 	}
 
 	public DocumentFieldDescriptor getIdField()
@@ -237,7 +279,13 @@ public class DocumentEntityDescriptor
 		private DocumentFieldDescriptor idField;
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptor dataBinding;
+
 		private String detailId;
+		private boolean detailIdSet;
+
+		private ILogicExpression allowCreateNewLogic = ILogicExpression.TRUE;
+		private ILogicExpression allowDeleteLogic = ILogicExpression.TRUE;
+		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 
 		// Legacy
 		private Integer AD_Window_ID;
@@ -258,6 +306,7 @@ public class DocumentEntityDescriptor
 		public Builder setDetailId(final String detailId)
 		{
 			this.detailId = detailId;
+			this.detailIdSet = true;
 			return this;
 		}
 
@@ -338,6 +387,24 @@ public class DocumentEntityDescriptor
 		public Builder setIsSOTrx(final boolean isSOTrx)
 		{
 			this.isSOTrx = isSOTrx;
+			return this;
+		}
+
+		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)
+		{
+			this.allowCreateNewLogic = allowCreateNewLogic;
+			return this;
+		}
+
+		public Builder setAllowDeleteLogic(final ILogicExpression allowDeleteLogic)
+		{
+			this.allowDeleteLogic = allowDeleteLogic;
+			return this;
+		}
+		
+		public Builder setDisplayLogic(final ILogicExpression displayLogic)
+		{
+			this.displayLogic = displayLogic;
 			return this;
 		}
 	}
