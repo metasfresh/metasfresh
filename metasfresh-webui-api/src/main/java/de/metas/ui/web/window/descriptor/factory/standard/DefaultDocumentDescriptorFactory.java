@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -143,6 +144,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			throw new AdempiereException("No window found for AD_Window_ID=" + AD_Window_ID);
 		}
 
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Properties ctx = Env.getCtx(); // TODO
 		final int windowNo = 0; // TODO
 		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
@@ -150,7 +152,8 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
-				.setAD_Window_ID(gridWindowVO.getAD_Window_ID());
+				.setAD_Window_ID(gridWindowVO.getAD_Window_ID())
+				.setStopwatch(stopwatch);
 
 		//
 		// Layout: Create UI sections from main tab
@@ -204,6 +207,10 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 			detailEntityBuilder.setDataBinding(detailEntityBindingsBuilder.build());
 			mainEntityBuilder.addIncludedEntity(detailEntityBuilder.build());
 		}
+
+		//
+		// Layout debug properties
+		layoutBuilder.putDebugProperty("generator-name", this.toString());
 
 		//
 		//
@@ -431,7 +438,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setIsSOTrx(gridWindowVO.isSOTrx()) // legacy
 				;
 	}
-	
+
 	private SqlDocumentEntityDataBindingDescriptor.Builder documentEntryDataBinding(final GridTabVO parentTab, final GridTabVO detailTabVO)
 	{
 		return SqlDocumentEntityDataBindingDescriptor.builder()
@@ -442,7 +449,6 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 				.setSqlWhereClause(detailTabVO.getWhereClause())
 				.setSqlOrderBy(detailTabVO.getOrderByClause());
 
-		
 	}
 
 	private DocumentFieldDescriptor documentField(
@@ -455,14 +461,14 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
 		final String sqlTableAlias = detailEntityBindingsBuilder.getSqlTableAlias();
 		final String sqlParentLinkColumnName = detailEntityBindingsBuilder.getSqlParentLinkColumnName();
-		
+
 		// From GridTabVO:
 		final String detailId = extractDetailId(gridTabVO);
-		
+
 		// From GridFieldVO:
 		final String sqlColumnName = gridFieldVO.getColumnName();
 		final boolean keyColumn = gridFieldVO.isKey();
-		
+
 		//
 		final boolean isParentLinkColumn = sqlColumnName.equals(sqlParentLinkColumnName);
 

@@ -3,7 +3,9 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -12,7 +14,9 @@ import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 
@@ -54,6 +58,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private final List<DocumentLayoutSectionDescriptor> sections;
 
 	private final List<DocumentLayoutDetailDescriptor> details;
+	
+	private final Map<String, String> debugProperties;
 
 	private DocumentLayoutDescriptor(final Builder builder)
 	{
@@ -64,6 +70,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		details = ImmutableList.copyOf(builder.buildDetails());
+		
+		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
 
 	@Override
@@ -101,6 +109,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return details;
 	}
+	
+	public Map<String, String> getDebugProperties()
+	{
+		return debugProperties;
+	}
 
 	public static final class Builder
 	{
@@ -112,6 +125,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 
+		private final Map<String, String> debugProperties = new LinkedHashMap<>();
+		private Stopwatch stopwatch;
+
 		private Builder()
 		{
 			super();
@@ -119,6 +135,15 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		public DocumentLayoutDescriptor build()
 		{
+			//
+			// Debug informations:
+			putDebugProperty("generator-thread", Thread.currentThread().getName());
+			putDebugProperty("generator-timestamp", new java.util.Date().toString());
+			if(stopwatch != null)
+			{
+				putDebugProperty("generator-duration", stopwatch.toString());
+			}
+
 			return new DocumentLayoutDescriptor(this);
 		}
 
@@ -190,6 +215,18 @@ public final class DocumentLayoutDescriptor implements Serializable
 			}
 
 			detailsBuilders.add(detailBuilder);
+			return this;
+		}
+		
+		public Builder putDebugProperty(final String name, final String value)
+		{
+			debugProperties.put(name, value);
+			return this;
+		}
+		
+		public Builder setStopwatch(final Stopwatch stopwatch)
+		{
+			this.stopwatch = stopwatch;
 			return this;
 		}
 	}

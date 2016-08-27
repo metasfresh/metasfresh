@@ -1,8 +1,12 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -10,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -64,6 +69,9 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> tabs;
 
+	/** Other properties */
+	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
+
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout)
 	{
 		super();
@@ -72,6 +80,11 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections());
 		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails());
+
+		if (WindowConstants.isProtocolDebugging())
+		{
+			putDebugProperties(layout.getDebugProperties());
+		}
 	}
 
 	@JsonCreator
@@ -126,4 +139,36 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return tabs;
 	}
+
+	@JsonAnyGetter
+	public Map<String, Object> getOtherProperties()
+	{
+		return otherProperties;
+	}
+
+	@JsonAnySetter
+	public void putOtherProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put(name, jsonValue);
+	}
+
+	public JSONDocumentLayout putDebugProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put("debug-" + name, jsonValue);
+		return this;
+	}
+
+	public void putDebugProperties(final Map<String, ?> debugProperties)
+	{
+		if (debugProperties == null || debugProperties.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, ?> e : debugProperties.entrySet())
+		{
+			putDebugProperty(e.getKey(), e.getValue());
+		}
+	}
+
 }
