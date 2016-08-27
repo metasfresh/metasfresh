@@ -386,13 +386,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Window No - replicated  */
 	public final int WindowNo;
 	/** AD Window - replicated  */
-	public  int AD_Window_ID;
+	private int AD_Window_ID;
 
 	/** Tab No (not AD_Tab_ID) 0.. */
 	public final int TabNo;
 
 	/**	Tab	ID			*/
-	public	int		    AD_Tab_ID;
+	private int AD_Tab_ID;
 	/** Name			*/
 	public	String	    Name = "";
 	/** Description		*/
@@ -403,9 +403,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Single Row		*/
 	public	boolean	    IsSingleRow = false;
 	/** Read Only		*/
-	private boolean     IsReadOnly = false;
+	private boolean IsReadOnly = false;
 	/** Insert Record	*/
-	public 	boolean		IsInsertRecord = true;
+	private boolean IsInsertRecord = true;
 	/** Tree			*/
 	public  boolean	    HasTree = false;
 	/** Table			*/
@@ -417,13 +417,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Table Name		*/
 	public  String	    TableName;
 	/** Table is View	*/
-	public  boolean     IsView = false;
+	private boolean IsView = false;
 	/** Table Access Level	*/
 	public TableAccessLevel AccessLevel;
 	/** Security		*/
 	public  boolean	    IsSecurityEnabled = false;
 	/** Table Deleteable	*/
-	public  boolean	    IsDeleteable = false;
+	private boolean IsDeleteable = false;
 	/** Table High Volume	*/
 	public  boolean     IsHighVolume = false;
 	/** Process			*/
@@ -787,6 +787,11 @@ public class GridTabVO implements Evaluatee, Serializable
 		return TableName;
 	}
 	
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
+	}
+	
 	public int getAD_Tab_ID()
 	{
 		return AD_Tab_ID;
@@ -861,6 +866,11 @@ public class GridTabVO implements Evaluatee, Serializable
 		IsReadOnly = isReadOnly;
 	}
 	
+	public boolean isView()
+	{
+		return IsView;
+	}
+	
 	public String getOrderByClause()
 	{
 		return OrderByClause;
@@ -874,5 +884,15 @@ public class GridTabVO implements Evaluatee, Serializable
 	public String getDefaultWhereClause()
 	{
 		return DefaultWhereClause;
+	}
+	
+	public boolean isInsertRecord()
+	{
+		return IsInsertRecord;
+	}
+	
+	public boolean isDeleteable()
+	{
+		return IsDeleteable;
 	}
 }

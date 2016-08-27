@@ -182,8 +182,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		//
 		// Create MTable
 		m_mTable = new GridTable(m_vo.getCtx(), m_vo.AD_Table_ID, m_vo.TableName, m_vo.WindowNo, m_vo.TabNo, true, virtual);
-		m_mTable.setReadOnly(m_vo.isReadOnly() || m_vo.IsView);
-		m_mTable.setDeleteable(m_vo.IsDeleteable);
+		m_mTable.setReadOnly(m_vo.isReadOnly() || m_vo.isView());
+		m_mTable.setDeleteable(m_vo.isDeleteable());
 		m_mTable.setGridTab(this); // metas-2009_0021_AP1_G140
 
 		calloutExecutor = new CalloutExecutor(vo.getCtx(), vo.getWindowNo());
@@ -529,29 +529,29 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			if (m_mTable.getField("Created") == null)
 			{
 				final GridField created = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.WindowNo, m_vo.TabNo,
-						m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, true));
+						m_vo.getWindowNo(), m_vo.getTabNo(),
+						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, true));
 				m_mTable.addField(created);
 			}
 			if (m_mTable.getField("CreatedBy") == null)
 			{
 				final GridField createdBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.WindowNo, m_vo.TabNo,
-						m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, false));
+						m_vo.getWindowNo(), m_vo.getTabNo(),
+						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, false));
 				m_mTable.addField(createdBy);
 			}
 			if (m_mTable.getField("Updated") == null)
 			{
 				final GridField updated = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.WindowNo, m_vo.TabNo,
-						m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, true));
+						m_vo.getWindowNo(), m_vo.getTabNo(),
+						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, true));
 				m_mTable.addField(updated);
 			}
 			if (m_mTable.getField("UpdatedBy") == null)
 			{
 				final GridField updatedBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.WindowNo, m_vo.TabNo,
-						m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, false));
+						m_vo.getWindowNo(), m_vo.getTabNo(),
+						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, false));
 				m_mTable.addField(updatedBy);
 			}
 		}
@@ -2051,7 +2051,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return false;
 		}
-		return m_vo.IsInsertRecord;
+		return m_vo.isInsertRecord();
 	}	// isInsertRecord
 
 	/**
@@ -2070,7 +2070,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return false;
 		}
-		return m_vo.IsDeleteable;
+		return m_vo.isDeleteable();
 	}
 
 	/**
@@ -2153,7 +2153,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public int getAD_Tab_ID()
 	{
-		return m_vo.AD_Tab_ID;
+		return m_vo.getAD_Tab_ID();
 	}	// getAD_Tab_ID
 
 	/**
@@ -2163,7 +2163,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public int getAD_Table_ID()
 	{
-		return m_vo.AD_Table_ID;
+		return m_vo.getAD_Table_ID();
 	}	// getAD_Table_ID
 
 	/**
@@ -2173,7 +2173,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public int getAD_Window_ID()
 	{
-		return m_vo.AD_Window_ID;
+		return m_vo.getAD_Window_ID();
 	}	// getAD_Window_ID
 
 	/**
@@ -3441,14 +3441,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		final ToStringHelper builder = MoreObjects.toStringHelper(this);
 		if (m_vo != null)
 		{
-			builder.add("TabNo", m_vo.TabNo)
-					.add("Name", m_vo.Name)
-					.add("AD_Tab_ID", m_vo.AD_Tab_ID)
-					.add("TableName", m_vo.TableName);
+			builder.add("TabNo", m_vo.getTabNo())
+					.add("Name", m_vo.getName())
+					.add("AD_Tab_ID", m_vo.getAD_Tab_ID())
+					.add("TableName", m_vo.getTableName());
 		}
 		else
 		{
-			builder.add("vo", null);
+			builder.addValue("no VO");
 		}
 		return builder.toString();
 	}   // toString

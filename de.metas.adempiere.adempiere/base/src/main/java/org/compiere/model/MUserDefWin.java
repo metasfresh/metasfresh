@@ -119,9 +119,9 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	public static boolean apply(GridTabVO vo)
 	{
 		boolean isDisplayed = true;
-		for (MUserDefWin uw : get(vo.getCtx(), vo.AD_Window_ID))
+		for (MUserDefWin uw : get(vo.getCtx(), vo.getAD_Window_ID()))
 		{
-			MUserDefTab ut = uw.getTab(vo.AD_Tab_ID);
+			MUserDefTab ut = uw.getTab(vo.getAD_Tab_ID());
 			if (ut != null)
 			{
 				ut.apply(vo);
