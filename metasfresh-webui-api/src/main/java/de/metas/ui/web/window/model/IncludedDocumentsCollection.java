@@ -5,6 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -156,11 +159,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 	public synchronized Document createNewDocument()
 	{
 		assertWritable();
-
-		if (parentDocument.isProcessed())
-		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because parent is processed");
-		}
+		assertNewDocumentAllowed();
 
 		final Document document = getDocumentsRepository().createNewDocument(entityDescriptor, parentDocument);
 
@@ -168,6 +167,46 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		documents.put(documentId, document);
 
 		return document;
+	}
+
+	private void assertNewDocumentAllowed()
+	{
+		if (parentDocument.isProcessed())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because parent is processed");
+		}
+
+		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
+		if (!allowCreateNewLogic.isConstantFalse())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed");
+		}
+
+		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		if (!allowCreateNew.booleanValue())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed: " + allowCreateNew);
+		}
+	}
+
+	private void assertDeleteDocumentAllowed(final Document document)
+	{
+		if (parentDocument.isProcessed())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because parent is processed");
+		}
+
+		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
+		if (!allowDeleteLogic.isConstantFalse())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed");
+		}
+
+		final LogicExpressionResult allowDelete = allowDeleteLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		if (!allowDelete.booleanValue())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed: " + allowDelete);
+		}
 	}
 
 	private final void clearDocumentsExceptNewOnes()
@@ -258,7 +297,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 		return DocumentValidStatus.valid();
 	}
-	
+
 	/* package */boolean hasChangesRecursivelly()
 	{
 		for (final Document document : documents.values())
@@ -271,7 +310,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		}
 
 		return false; // no changes
-		
+
 	}
 
 	/* package */void saveIfHasChanges()
@@ -287,6 +326,8 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		assertWritable();
 
 		final Document document = getDocumentById(rowId);
+		assertDeleteDocumentAllowed(document);
+
 		if (!document.isNew())
 		{
 			getDocumentsRepository().delete(document);
