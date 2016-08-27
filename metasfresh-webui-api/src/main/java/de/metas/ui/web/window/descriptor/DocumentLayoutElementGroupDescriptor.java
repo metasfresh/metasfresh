@@ -124,5 +124,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			elementLinesBuilders.add(elementLineBuilder);
 			return this;
 		}
+		
+		public boolean hasElementLines()
+		{
+			return !elementLinesBuilders.isEmpty();
+		}
 	}
 }

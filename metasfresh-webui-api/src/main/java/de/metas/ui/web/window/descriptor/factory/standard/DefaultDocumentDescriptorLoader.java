@@ -63,12 +63,12 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,7 +108,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 
 	//
 	// Parameters
-	private int AD_Window_ID;
+	private final int AD_Window_ID;
 	private final boolean debugShowColumnNamesForCaption = true;
 
 	//
@@ -204,7 +204,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 
 		//
 		// Layout debug properties
-		layoutBuilder.putDebugProperty("generator-name", this.toString());
+		layoutBuilder.putDebugProperty("generator-name", toString());
 
 		//
 		//
@@ -336,75 +336,97 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 
 		//
 		// UI Elements
-		boolean isFirstElementInGroup = true;
 		for (final I_AD_UI_Element uiElement : getUIProvider().getUIElements(uiElementGroup))
 		{
-			if (!uiElement.isActive())
+			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement, layoutElementGroupBuilder);
+			if (layoutElementLineBuilder == null)
 			{
 				continue;
 			}
 
-			final GridTabVO mainTab = getMainTab();
-
-			// TODO: atm if we setting first element in group as primary, others as secondary.
-			final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
-
-			//
-			// UI main field
-			final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
-					.setCaption(uiElement.getName())
-					.setDescription(uiElement.getDescription())
-					.setLayoutType(layoutType);
-			{
-				final GridFieldVO gridFieldVO = mainTab.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
-				if (gridFieldVO != null)
-				{
-					layoutElementBuilder
-							.setWidgetType(extractWidgetType(gridFieldVO))
-							.addField(layoutElementField(mainTab, gridFieldVO));
-
-					specialFieldsCollector.collect(layoutElementBuilder);
-				}
-			}
-
-			//
-			// UI Element Fields (if any)
-			for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
-			{
-				if (!uiElementField.isActive())
-				{
-					continue;
-				}
-
-				final GridFieldVO gridFieldVO = mainTab.getFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
-				if (gridFieldVO != null)
-				{
-					if (layoutElementBuilder.getWidgetType() == null)
-					{
-						layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
-					}
-					final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(mainTab, gridFieldVO);
-					layoutElementBuilder.addField(layoutElementFieldBuilder);
-
-					specialFieldsCollector.collect(layoutElementBuilder);
-				}
-			}
-
-			if (debugShowColumnNamesForCaption)
-			{
-				layoutElementBuilder.setCaptionAsFieldNames();
-			}
-
-			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
-					.addElement(layoutElementBuilder);
-
 			layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
-
-			//
-			isFirstElementInGroup = false;
-		} /* each uiElement */
+		}
 
 		return layoutElementGroupBuilder;
+	}
+
+	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement, final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
+	{
+		// TODO: introduce the AD_UI_ElementLine table
+
+		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement, layoutElementGroupBuilder);
+		if (layoutElementBuilder == null)
+		{
+			return null;
+		}
+
+		final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+				.addElement(layoutElementBuilder);
+
+		return layoutElementLineBuilder;
+
+	}
+
+	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement, final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
+	{
+		if (!uiElement.isActive())
+		{
+			return null;
+		}
+
+		final GridTabVO mainTab = getMainTab();
+
+		// TODO: atm if we setting first element in group as primary, others as secondary.
+		final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
+		final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
+
+		//
+		// UI main field
+		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
+				.setCaption(uiElement.getName())
+				.setDescription(uiElement.getDescription())
+				.setLayoutType(layoutType);
+		{
+			final GridFieldVO gridFieldVO = mainTab.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+			if (gridFieldVO != null)
+			{
+				layoutElementBuilder
+						.setWidgetType(extractWidgetType(gridFieldVO))
+						.addField(layoutElementField(mainTab, gridFieldVO));
+
+				specialFieldsCollector.collect(layoutElementBuilder);
+			}
+		}
+
+		//
+		// UI Element Fields (if any)
+		for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+		{
+			if (!uiElementField.isActive())
+			{
+				continue;
+			}
+
+			final GridFieldVO gridFieldVO = mainTab.getFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
+			if (gridFieldVO != null)
+			{
+				if (layoutElementBuilder.getWidgetType() == null)
+				{
+					layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
+				}
+				final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(mainTab, gridFieldVO);
+				layoutElementBuilder.addField(layoutElementFieldBuilder);
+
+				specialFieldsCollector.collect(layoutElementBuilder);
+			}
+		}
+
+		if (debugShowColumnNamesForCaption)
+		{
+			layoutElementBuilder.setCaptionAsFieldNames();
+		}
+
+		return layoutElementBuilder;
 	}
 
 	private static DocumentLayoutDetailDescriptor.Builder layoutDetail(final GridTabVO detailTab)
