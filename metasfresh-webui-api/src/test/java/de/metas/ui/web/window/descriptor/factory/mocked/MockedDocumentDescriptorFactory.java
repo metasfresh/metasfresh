@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.factory.mocked;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +13,21 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.ui.web.WebRestApiApplication;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.LayoutType;
+import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.POJODocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 
 /*
  * #%L

@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent.JSONOperation;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.descriptor.MockedDocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.factory.mocked.MockedDocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 /*

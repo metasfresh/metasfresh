@@ -1,4 +1,6 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.factory;
+
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 
 /*
  * #%L
