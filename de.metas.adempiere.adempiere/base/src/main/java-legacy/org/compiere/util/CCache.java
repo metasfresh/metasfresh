@@ -381,6 +381,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		}
 
 		return get(key, new Callable<V>(){
+			@Override
+			public String toString()
+			{
+				return "Callable[" + valueInitializer + "]";
+			}
 
 			@Override
 			public V call() throws Exception
