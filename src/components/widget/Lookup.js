@@ -45,7 +45,7 @@ class Lookup extends Component {
         // Handling selection when main is not set or set.
         //
         if(this.state.property === ""){
-            this.inputSearch.value = select[Object.keys(select)[0]];
+            this.inputSearch.value = select && select[Object.keys(select)[0]];
             onChange(mainProperty[0].field, select);
             //call for more properties
             // - first will generate choice dropdown
@@ -167,10 +167,11 @@ class Lookup extends Component {
     }
 
     handleClear = (e) => {
+        const {onChange} = this.props;
         e.preventDefault();
         this.inputSearch.value = "";
-
         this.handleChange();
+        this.handleSelect(null);
     }
     handleKeyDown = (e) => {
         const {dispatch} = this.props;

@@ -20,7 +20,7 @@ class Widget extends Component {
         const {widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
         //check if we should update store
 
-        if(widgetData.value !== value ){
+        if(widgetData.value !== value){
             dispatch(updateProperty(property, value, tabId, rowId));
         }
         dispatch(patch(windowType, dataId, tabId, rowId, property, value));

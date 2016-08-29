@@ -46,7 +46,6 @@ class TableItem extends Component {
                     key={index}
                     tabIndex="0"
                     onDoubleClick={(e) => this.handleEditProperty(e,property)}
-                    onBlur={(e) => this.handleEditProperty(e,"")}
                 >
                     {
                         this.state.edited === property ?
