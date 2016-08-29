@@ -18,7 +18,7 @@ class Widget extends Component {
     }
     handlePatch = (property, value) => {
         const {widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
-
+console.log(value, widgetData.value)
         //check if we should update store
         if(widgetData.value !== value){
             dispatch(updateProperty(property, value, tabId, rowId));
@@ -267,7 +267,7 @@ class Widget extends Component {
                             type="checkbox"
                             value={data.value}
                             disabled={data.readonly}
-                            onClick={(e) => this.handlePatch(fields[0].field, e.target.value)}
+                            onClick={(e) => this.handlePatch(fields[0].field, e.target.checked)}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
@@ -284,7 +284,7 @@ class Widget extends Component {
                             type="checkbox"
                             checked={data.value}
                             disabled={data.readonly}
-                            onChange={(e) => this.handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => this.handlePatch(fields[0].field, e.target.checked)}
                         />
                         <div className="input-slider" />
                     </label>

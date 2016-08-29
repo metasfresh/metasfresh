@@ -53,8 +53,6 @@ class Header extends Component {
             "displayed": true
         };
 
-
-
         return (
             <div>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}

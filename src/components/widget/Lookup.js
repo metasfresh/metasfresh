@@ -40,7 +40,6 @@ class Lookup extends Component {
         this.setState({selected: null});
         let propertiesCopy = this.getItemsByProperty(properties, "source", "list")
         let mainProperty = this.getItemsByProperty(properties, "source", "lookup")
-
         //
         // Handling selection when main is not set or set.
         //
@@ -52,7 +51,7 @@ class Lookup extends Component {
             // - second should be chosen automatically
 
             let batchArray = [];
-            if(propertiesCopy.length > 1){
+            if(propertiesCopy.length >= 1){
                 let batch = new Promise((resolve, reject) => {
                     propertiesCopy.map((item) => {
                         dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
