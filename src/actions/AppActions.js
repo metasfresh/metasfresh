@@ -3,28 +3,6 @@ import axios from 'axios';
 import config from '../config';
 
 
-export function saveProductProperty(id, property, value) {
-    return {
-        type: 'SAVE_PRODUCT_PROPERTY',
-        id: id,
-        property: property,
-        value: value
-    }
-}
-export function changeProductProperty(value) {
-    return {
-        type: 'CHANGE_PRODUCT_PROPERTY',
-        value: value
-    }
-}
-export function editProductProperty(property) {
-    return {
-        type: 'EDIT_PRODUCT_PROPERTY',
-        property: property
-    }
-}
-
-
 export function selectProduct(id) {
     return {
         type: 'SELECT_PRODUCT',
@@ -74,11 +52,4 @@ export function dropdownRequest(windowType, propertyName, id = "NEW", tabId, row
         (tabId ? "&tabid=" + tabId : "") +
         (rowId ? "&rowId=" + rowId : "")
     );
-}
-
-export function changeOrderStatus(id){
-    return {
-        type: 'CHANGE_ORDER_STATUS',
-        value: id
-    }
 }

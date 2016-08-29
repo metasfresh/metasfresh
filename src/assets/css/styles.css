@@ -342,6 +342,7 @@ body {
     cursor: pointer;
     position: relative;
     border-bottom: 1px solid $brand-border-color;
+    height:55px;
 }
 .dropdown-status-toggler .tag {
     padding: .3rem 1.5rem;

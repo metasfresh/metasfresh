@@ -66,7 +66,7 @@ class List extends Component {
                         <input
                             type="text"
                             className="input-field font-weight-bold"
-                            readOnly={readonly}
+                            readOnly
                             placeholder={this.props.defaultValue}
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
