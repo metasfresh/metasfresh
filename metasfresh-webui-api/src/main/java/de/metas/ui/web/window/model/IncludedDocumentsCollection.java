@@ -177,15 +177,19 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
-		if (!allowCreateNewLogic.isConstantFalse())
+		if (allowCreateNewLogic.isConstantTrue())
 		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed");
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
+					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic
+					+ "\n EntityDescriptor: " + entityDescriptor);
 		}
 
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		if (!allowCreateNew.booleanValue())
 		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed: " + allowCreateNew);
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
+					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic + " => " + allowCreateNew
+					+ "\n EntityDescriptor: " + entityDescriptor);
 		}
 	}
 
