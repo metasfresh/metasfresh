@@ -38,11 +38,21 @@ export default function windowHandler(state = initialState, action) {
                         item
                 )
         })
+        case types.ADD_NEW_ROW:
+            return update(state, {
+                rowData: {
+                    [action.tabid]: {
+                        [action.rowid]: {$set: action.item}
+                    }
+                }
+            })
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
                 rowData: {
                     [action.tabid]: {
-                        [action.rowid]: {$push: action.item}
+                        [action.rowid]: {
+                            fields: {$set: action.item}
+                        }
                     }
                 }
             })

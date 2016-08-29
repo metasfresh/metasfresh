@@ -17,10 +17,10 @@ class Widget extends Component {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
-console.log(value, widgetData.value)
+        const {widgetType, widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
         //check if we should update store
-        if(widgetData.value !== value){
+        //except button value
+        if(widgetType !== "Button" && !widgetData.value !== value){
             dispatch(updateProperty(property, value, tabId, rowId));
         }
 

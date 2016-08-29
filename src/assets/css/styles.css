@@ -124,6 +124,7 @@ body {
 
 .th-lg {
     min-width: 200px;
+    width:200px;
     max-width: 200px;
 }
 .th-md {
@@ -138,6 +139,9 @@ body {
 .table td {
     cursor: pointer;
     border-top:0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
 }
 

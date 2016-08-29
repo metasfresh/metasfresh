@@ -102,7 +102,15 @@ export function updateDataSuccess(item) {
 }
 export function updateRowSuccess(item,tabid,rowid) {
     return {
-        type: types.UPDATE_DATA_SUCCESS,
+        type: types.UPDATE_ROW_SUCCESS,
+        item: item,
+        tabid: tabid,
+        rowid: rowid
+    }
+}
+export function addNewRow(item,tabid,rowid) {
+    return {
+        type: types.ADD_NEW_ROW,
         item: item,
         tabid: tabid,
         rowid: rowid
@@ -119,7 +127,11 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
             response.data.map(item1 => {
                 item1.fields.map(item2 => {
                     if(item1.tabid){
-                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId));
+                        if(rowId === "NEW"){
+                            dispatch(addNewRow(item1, item1.tabid, item1.rowId))
+                        }else{
+                            dispatch(updateRowSuccess(item1, item1.tabid, item1.rowId))
+                        }
                     }else{
                         dispatch(updateDataSuccess(item2));
                     }
@@ -188,6 +200,11 @@ export function updateRowProperty(property, value, tabid, rowid){
 
 export function findRowByPropName(arr, name) {
     let ret = -1;
+
+    if(!arr){
+        return ret;
+    }
+
     for(let i = 0; i < arr.length; i++){
         if(arr[i].field === name){
             ret = arr[i];

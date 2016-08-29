@@ -91,7 +91,7 @@ class Table extends Component {
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
-                        key={item[key].rowId}
+                        key={i}
                         rowId={item[key].rowId}
                         tabId={tabid}
                         cols={cols}
@@ -133,6 +133,7 @@ class Table extends Component {
                             widgetData={buttonData}
                             type={"primary"}
                             noLabel={true}
+                            key={'tmpButton'}
                             {...buttonLayout}
                         />
 

@@ -16,7 +16,6 @@ class TableItem extends Component {
     }
     handleEditProperty = (e,property) => {
         e.preventDefault();
-        console.log(e)
         this.setState({
             edited: property
         })
