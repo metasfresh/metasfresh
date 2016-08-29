@@ -49,8 +49,10 @@ class Header extends Component {
         const docNoData = findRowByPropName(data, "DocumentNo");
         const docStatusData = {
             "status": findRowByPropName(data, "DocStatus"),
-            "action": findRowByPropName(data, "DocAction")
+            "action": findRowByPropName(data, "DocAction"),
+            "displayed": true
         };
+
 
 
         return (
