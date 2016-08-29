@@ -101,11 +101,17 @@ public interface ILogicExpression extends IExpression<Boolean>
 	 */
 	ILogicExpression toConstantExpression(final boolean constantValue);
 
+	/**
+	 * @return true if the expression is constant and it's value is true
+	 */
 	default boolean isConstantTrue()
 	{
 		return isConstant() && constantValue() == true;
 	}
 
+	/**
+	 * @return true if the expression is constant and it's value is false
+	 */
 	default boolean isConstantFalse()
 	{
 		return isConstant() && constantValue() == false;
