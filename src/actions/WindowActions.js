@@ -8,7 +8,7 @@ export function createWindow(windowType, docId = "NEW"){
         // to do not re-render widgets on init
         dispatch(initWindow(windowType, docId))
             .then(response => {
-                docId = response.data[0].id
+                docId = response.data[0].id;
                 dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))}
             ).then(response =>
                 dispatch(initLayout(windowType))
@@ -125,17 +125,17 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
     return dispatch => {
         dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
             response.data.map(item1 => {
-                item1.fields.map(item2 => {
-                    if(item1.tabid){
-                        if(rowId === "NEW"){
-                            dispatch(addNewRow(item1, item1.tabid, item1.rowId))
+                if(rowId === "NEW"){
+                    dispatch(addNewRow(item1, item1.tabid, item1.rowId))
+                }else{
+                    item1.fields.map(item2 => {
+                        if(rowId){
+                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId))
                         }else{
-                            dispatch(updateRowSuccess(item1, item1.tabid, item1.rowId))
+                            dispatch(updateDataSuccess(item2));
                         }
-                    }else{
-                        dispatch(updateDataSuccess(item2));
-                    }
-                });
+                    });
+                }
             })
         })
     }

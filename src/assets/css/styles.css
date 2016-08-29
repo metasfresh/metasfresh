@@ -139,7 +139,6 @@ body {
 .table td {
     cursor: pointer;
     border-top:0;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
