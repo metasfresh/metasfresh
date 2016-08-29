@@ -13,7 +13,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(IN AD
 	currency character(3),
 	o_uom character varying(10),
 	o_qty numeric,
-	o_hu numeric,
 	movementdate timestamp without time zone,
 	orderdocumentno character varying,
 	io_bp_value character varying(40),
@@ -24,46 +23,19 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(IN AD
 AS
 $$
 
-
-select a.DateOrdered,
-	a.DocumentNo,
-	a.bp_value,
-	a.bp_name,
-	a.p_value,
-	a.p_name,
-	att.attributes,
-	a.price,	
-	a.total,
-	a.currency,
-	a.uomsymbol,
-	a.qty,
-	a.order_HU,
-
-	--inout part
-	a.movementdate,
-	a.orderdocumentno,
-	a.io_bp_value,
-	a.io_bp_name,
-	a.io_qty,
-	a.io_uom
-
-FROM	
-
-(
 SELECT distinct
 	o.DateOrdered,
 	o.DocumentNo,
-	ol.c_orderline_id,
 	bp.Value AS bp_value,
 	bp.Name AS bp_name,
 	p.Value AS p_value,
 	p.Name AS p_name,
+	(select attributes_value from de_metas_endcustomer_fresh_reports.get_attributes_value(ol.M_AttributeSetInstance_ID)) AS attributes,
 	ol.PriceEntered AS price,	
-	ol.PriceEntered * ol.qtyEntered AS total,
+	ol.linenetamt AS total,
 	c.iso_code AS currency,
 	uom.uomsymbol,
 	ol.qtyEntered AS qty,
-	hu.m_hu_id AS order_HU,
 
 	--inout part
 	c_io.movementdate,
@@ -97,6 +69,7 @@ LEFT OUTER JOIN M_HU_Trx_Line trx_line ON trx_line.M_HU_ID = huas.M_TU_HU_ID
 
 --counter inout's hus and inout 
 INNER JOIN M_HU_Assignment huas_io ON (huas_io.M_HU_ID = huas.M_HU_ID OR huas_io.M_TU_HU_ID IN (select distinct hu_id from de_metas_endcustomer_fresh_reports.recursive_hu_trace(trx_line.M_HU_Trx_Line_ID::integer))) AND huas_io.ad_table_id = get_table_id('M_InOutLine') AND huas_io.M_HU_Assignment_ID != huas.M_HU_Assignment_ID AND huas_io.Record_ID != o_iol.M_InOutLine_ID
+
 INNER JOIN M_InOutLine c_iol ON huas_io.Record_ID = c_iol.M_InOutLine_ID 
 INNER JOIN M_InOut c_io ON c_iol.M_InOut_ID = c_io.M_InOut_ID AND c_io.isSOTrx != o_io.isSOTrx
 
@@ -116,6 +89,7 @@ WHERE
 	AND ol.C_Activity_ID = (CASE WHEN $4 IS NULL THEN ol.C_Activity_ID ELSE $4 END)
 	AND o.C_BPartner_ID = (CASE WHEN $5 IS NULL THEN o.C_BPartner_ID ELSE $5 END)
 	AND ol.M_Product_ID = (CASE WHEN $6 IS NULL THEN ol.M_Product_ID ELSE $6 END)
+	AND ol.M_AttributeSetInstance_ID = (CASE WHEN null IS NULL THEN ol.M_AttributeSetInstance_ID ELSE null END)
 	AND o.isSOTrx= $7
 	AND o.isActive ='Y' AND o_io.isActive ='Y' AND c_o.isActive ='Y' AND c_io.isActive ='Y'
 	AND o.docStatus IN ('CO', 'CL')
@@ -123,14 +97,18 @@ WHERE
 	AND c_o.docStatus IN ('CO', 'CL')
 	AND c_io.docStatus IN ('CO', 'CL')
 	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-)a
+	AND  ol.M_AttributeSetInstance_ID = (CASE WHEN $8 IS NULL THEN ol.M_AttributeSetInstance_ID ELSE $8 END)
 
-INNER JOIN C_OrderLine ol ON ol.C_OrderLine_ID = a.C_OrderLine_ID
-LEFT OUTER JOIN	(SELECT	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
-		GROUP BY M_AttributeSetInstance_ID
-		) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID 
 
-WHERE  ol.M_AttributeSetInstance_ID = (CASE WHEN $8 IS NULL THEN ol.M_AttributeSetInstance_ID ELSE $8 END)
+ORDER BY 
+
+	o.DateOrdered,
+	o.DocumentNo,
+	bp.Value,
+	p.Value,
+	c_io.movementdate,
+	c_o.documentno,
+	c_bp.value
 
 $$
 LANGUAGE sql STABLE;
