@@ -13,6 +13,7 @@ import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
+import Widget from '../Widget';
 
 class Table extends Component {
     constructor(props) {
@@ -105,13 +106,36 @@ class Table extends Component {
         }
     }
     render() {
-        const {cols} = this.props;
+        const {cols, windowType, docId} = this.props;
+        const buttonLayout = {
+            fields: [{
+                field: "example"
+            }],
+            rowId: 'NEW',
+            tabId: 1,
+            dataId: docId,
+
+        }
+        const buttonData = {
+            displayed: true,
+            value: {"P": "New order line"}
+        }
         return (
             <div className="row">
                 <div className="col-xs-12">
                     <TableFilter />
                     <TableContextMenu />
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
+                        {/* Temporary button for adding new row*/}
+                        <Widget
+                            widgetType="Button"
+                            windowType={143}
+                            widgetData={buttonData}
+                            type={"primary"}
+                            noLabel={true}
+                            {...buttonLayout}
+                        />
+
                         <table className="table table-bordered-vertically table-striped">
                             <thead>
                                 <TableHeader cols={cols} />

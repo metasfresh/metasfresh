@@ -14,7 +14,9 @@ class TableItem extends Component {
             edited: ""
         };
     }
-    handleEditProperty = (property) => {
+    handleEditProperty = (e,property) => {
+        e.preventDefault();
+        console.log(e)
         this.setState({
             edited: property
         })
@@ -36,7 +38,6 @@ class TableItem extends Component {
         const { type, docId, rowId, tabId } = this.props;
         //iterate over layout settings
         return cols.map((item, index) => {
-            item['displayed'] = true;
             const property = item.fields[0].field;
             const widgetData = findRowByPropName(cells, property);
 
@@ -44,7 +45,8 @@ class TableItem extends Component {
                 <td
                     key={index}
                     tabIndex="0"
-                    onDoubleClick={() => this.handleEditProperty(property)}
+                    onDoubleClick={(e) => this.handleEditProperty(e,property)}
+                    onBlur={(e) => this.handleEditProperty(e,"")}
                 >
                     {
                         this.state.edited === property ?
@@ -56,8 +58,7 @@ class TableItem extends Component {
                                 rowId={rowId}
                                 tabId={tabId}
                                 noLabel={true}
-                                onChange={()=>this.handleEditProperty("")}
-                                />
+                            />
                         :
                             this.fieldToString(widgetData.value)
                     }

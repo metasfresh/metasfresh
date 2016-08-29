@@ -117,11 +117,28 @@ body {
     border:0;
     background-color: $brand-color-secondary;
     color: #fff;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.th-lg {
+    min-width: 200px;
+    max-width: 200px;
+}
+.th-md {
+    min-width: 100px;
+    max-width: 100px;
+}
+.th-sm {
+    min-width: 60px;
+    max-width: 100px;
 }
 
 .table td {
     cursor: pointer;
     border-top:0;
+
 }
 
 .table.table-bordered-horizontally td{

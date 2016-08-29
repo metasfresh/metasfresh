@@ -30,6 +30,11 @@ class Widget extends Component {
             onChange();
         }
     }
+    //
+    // This method may looks like a redundant for this one above,
+    // but is need to handle controlled components if
+    // they patch on other event than onchange
+    //
     handleChange = (e, property) => {
         const {dispatch, tabId, rowId} = this.props;
         e.preventDefault();
@@ -289,7 +294,12 @@ class Widget extends Component {
                 )
             case "Button":
                 return (
-                    <button className="btn btn-sm btn-meta-primary"></button>
+                    <button
+                        className="btn btn-sm btn-meta-primary"
+                        onClick={(e) => this.handlePatch(fields[0].field)}
+                    >
+                        {data.value[Object.keys(data.value)[0]]}
+                    </button>
                 )
             case "ActionButton":
                 return (
