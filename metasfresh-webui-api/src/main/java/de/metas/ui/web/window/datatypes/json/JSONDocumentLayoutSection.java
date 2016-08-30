@@ -41,27 +41,26 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutSection implements Serializable
 {
-
-	public static List<JSONDocumentLayoutSection> ofList(final List<DocumentLayoutSectionDescriptor> sections)
+	static List<JSONDocumentLayoutSection> ofList(final List<DocumentLayoutSectionDescriptor> sections, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return sections.stream()
-				.map(section -> of(section))
+				.map(section -> of(section, jsonFilteringOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section)
+	private static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayoutSection(section);
+		return new JSONDocumentLayoutSection(section, jsonFilteringOpts);
 	}
 
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
 
-	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section)
+	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
-		columns = JSONDocumentLayoutColumn.ofList(section.getColumns());
+		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonFilteringOpts);
 	}
 
 	@JsonCreator

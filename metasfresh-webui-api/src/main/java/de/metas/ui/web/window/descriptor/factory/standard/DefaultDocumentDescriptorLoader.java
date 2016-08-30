@@ -169,7 +169,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			mainTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.map(gridFieldVO -> documentField(mainEntityBindingsBuilder, mainTabVO, gridFieldVO))
+					.map(gridFieldVO -> documentField(mainEntityBindingsBuilder, mainTabVO, gridFieldVO, layoutBuilder.isAdvancedSectionField(gridFieldVO.getColumnName())))
 					.forEach(fieldDescriptor -> {
 						mainEntityBuilder.addField(fieldDescriptor);
 						mainEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -182,7 +182,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		// Layout: Create UI details from child tabs
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(MAIN_TabNo))
 		{
-			layoutBuilder.addDetailIfValid(layoutDetail(detailTabVO));
+			final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = layoutDetail(detailTabVO);
+			layoutBuilder.addDetailIfValid(layoutDetailBuilder);
 
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder = documentEntryDataBinding(mainTabVO, detailTabVO);
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = documentEntity(gridWindowVO, detailTabVO);
@@ -192,7 +193,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentField(detailEntityBindingsBuilder, detailTabVO, gridFieldVO))
+					.map(gridFieldVO -> documentField(detailEntityBindingsBuilder, detailTabVO, gridFieldVO, layoutDetailBuilder.isAdvancedField(gridFieldVO.getColumnName())))
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -385,7 +386,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
 				.setCaption(uiElement.getName())
 				.setDescription(uiElement.getDescription())
-				.setLayoutType(layoutType);
+				.setLayoutType(layoutType)
+				.setAdvancedField(uiElement.isAdvancedField());
 		{
 			final GridFieldVO gridFieldVO = mainTab.getFieldByAD_Field_ID(uiElement.getAD_Field_ID());
 			if (gridFieldVO != null)
@@ -499,7 +501,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder //
 			, final GridTabVO gridTabVO //
 			, final GridFieldVO gridFieldVO //
-	)
+			, final boolean advancedField)
 	{
 		// From entry data-binding:
 		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
@@ -599,6 +601,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setDefaultValueExpression(defaultValueExpression)
 				//
 				.setPublicField(publicField)
+				.setAdvancedField(advancedField)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(mandatoryLogic)

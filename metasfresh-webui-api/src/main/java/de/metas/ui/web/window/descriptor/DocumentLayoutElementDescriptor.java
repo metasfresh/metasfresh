@@ -54,6 +54,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private final LayoutType layoutType;
+	private final boolean advancedField;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -65,6 +66,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		description = builder.description;
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 		layoutType = builder.layoutType;
+		advancedField = builder.isAdvancedField();
 		fields = ImmutableSet.copyOf(builder.buildFields());
 	}
 
@@ -76,6 +78,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				.add("caption", caption)
 				.add("description", description)
 				.add("widgetType", widgetType)
+				.add("advancedField", advancedField)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
@@ -100,6 +103,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return layoutType;
 	}
 
+	public boolean isAdvancedField()
+	{
+		return advancedField;
+	}
+
 	public Set<DocumentLayoutElementFieldDescriptor> getFields()
 	{
 		return fields;
@@ -116,6 +124,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String description;
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
+		private boolean advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> fieldsBuilders = new LinkedHashMap<>();
 		private boolean consumed = false;
 
@@ -177,7 +186,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		}
 
 		public Builder setLayoutTypeNone()
-
 		{
 			layoutType = null;
 			return this;
@@ -186,6 +194,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public LayoutType getLayoutType()
 		{
 			return layoutType;
+		}
+
+		public Builder setAdvancedField(final boolean advancedField)
+		{
+			this.advancedField = advancedField;
+			return this;
+		}
+
+		public boolean isAdvancedField()
+		{
+			return advancedField;
 		}
 
 		public Builder addField(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
@@ -210,9 +229,14 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return fieldsBuilders.get(fieldName);
 		}
 
+		public boolean hasFieldName(final String fieldName)
+		{
+			return fieldsBuilders.containsKey(fieldName);
+		}
+
 		public Builder setConsumed()
 		{
-			this.consumed = true;
+			consumed = true;
 			return this;
 		}
 
@@ -223,7 +247,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		/**
 		 * (DEBUG option) Use field names instead of caption
-		 * 
+		 *
 		 * @return
 		 */
 		public Builder setCaptionAsFieldNames()

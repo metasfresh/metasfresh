@@ -42,28 +42,28 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElement implements Serializable
 {
-
-	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements)
+	static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return elements.stream()
-				.map(JSONDocumentLayoutElement::of)
+				.filter(jsonFilteringOpts.documentLayoutElementFilter())
+				.map(element -> of(element))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	private static JSONDocumentLayoutElement of(final DocumentLayoutElementDescriptor element)
 	{
+		// TODO
 		return new JSONDocumentLayoutElement(element);
 	}
-	
-	public static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element)
+
+	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element)
 	{
-		if(element == null)
+		if (element == null)
 		{
 			return null;
 		}
 		return new JSONDocumentLayoutElement(element);
 	}
-
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)

@@ -26,7 +26,6 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -64,7 +63,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocument implements Serializable
 {
-	private static final JSONDocument ofDocument(final Document document, final IDocumentFieldViewFilter fieldsFilter)
+	private static final JSONDocument ofDocument(final Document document, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -80,8 +79,7 @@ public final class JSONDocument implements Serializable
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
-				// .filter(field -> field.isPublicField()) // only those which are public fields // NOP, we allow the filter to decide!
-				.filter(fieldsFilter)
+				.filter(jsonFilteringOpts.documentFieldViewFilter())
 				.map(JSONDocumentField::ofDocumentField)
 				.forEach(jsonFields::add);
 
@@ -104,7 +102,7 @@ public final class JSONDocument implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
-			jsonDocument.putDebugProperty("fields-filter", String.valueOf(fieldsFilter));
+			jsonDocument.putDebugProperty("filtering-opts", jsonFilteringOpts);
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 
@@ -116,14 +114,14 @@ public final class JSONDocument implements Serializable
 	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
-	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final IDocumentFieldViewFilter fieldsFilter)
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return documents.stream()
-				.map(document -> ofDocument(document, fieldsFilter))
+				.map(document -> ofDocument(document, jsonFilteringOpts))
 				.collect(Collectors.toList());
 	}
 
-	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector)
+	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		final Collection<DocumentChanges> documentChangedEventList = documentChangesCollector.getDocumentChangesByPath().values();
 		if (documentChangedEventList.isEmpty())
@@ -134,7 +132,7 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
 		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
 		{
-			final JSONDocument jsonDocument = ofEvent(documentChangedEvents);
+			final JSONDocument jsonDocument = ofEvent(documentChangedEvents, jsonFilteringOpts);
 			if (jsonDocument == null)
 			{
 				continue;
@@ -145,7 +143,7 @@ public final class JSONDocument implements Serializable
 		return jsonDocuments;
 	}
 
-	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents)
+	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		if (documentChangedEvents.isEmpty())
 		{
@@ -159,7 +157,8 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 		documentChangedEvents.getFieldChangesList()
 				.stream()
-				.filter(field -> field.isPublicField()) // only those which are public fields
+				// TODO apply filtering
+				.filter(jsonFilteringOpts.documentFieldChangeFilter())
 				.forEach((field) -> {
 					// Add the pseudo-field "ID" first
 					if (field.isKey())

@@ -107,6 +107,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setWidgetType(DocumentFieldWidgetType.Integer)
 						.setDisplayLogic(ILogicExpression.FALSE)
 						.setPublicField(true) // key is always public
+						.setAdvancedField(false)
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_C_Order_ID))
 						.build())
 				.addField(DocumentFieldDescriptor.builder()
@@ -115,6 +116,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setDisplayLogic(ILogicExpression.TRUE)
 						.setPublicField(true)
+						.setAdvancedField(false)
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo))
 						.build())
 						//

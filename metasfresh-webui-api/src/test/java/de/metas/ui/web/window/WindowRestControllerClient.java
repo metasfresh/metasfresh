@@ -61,20 +61,21 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentLayout layout(final int adWindowId)
+	public JSONDocumentLayout layout(final int adWindowId, final boolean advanced)
 	{
-		final String json = httpGet("/layout?type=" + adWindowId);
+		final String json = httpGet("/layout?type=" + adWindowId + "&advanced=" + advanced);
 		final JSONDocumentLayout layout = fromJson(json, JSONDocumentLayout.class);
 		System.out.println("GOT layout:\n" + toJson(layout));
 		return layout;
 	}
 
 	@Override
-	public List<JSONDocument> data(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldsListStr)
+	public List<JSONDocument> data(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldsListStr, final boolean advanced)
 	{
 		final String httpPath = "/data?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
-				+ "&fields=" + Strings.nullToEmpty(fieldsListStr);
-		
+				+ "&fields=" + Strings.nullToEmpty(fieldsListStr)
+				+ "&advanced=" + advanced;
+
 		final String jsonResult = httpGet(httpPath);
 		final JSONDocument[] jsonDocuments = fromJson(jsonResult, JSONDocument[].class);
 		System.out.println("GOT data:\n" + toJson(jsonDocuments));
@@ -85,13 +86,17 @@ public class WindowRestControllerClient implements IWindowRestController
 	{
 		final String detailId = null;
 		final String rowId = null;
-		return commit(type, id, detailId, rowId, events);
+		final boolean advanced = false;
+		return commit(type, id, detailId, rowId, advanced, events);
 	}
 
 	@Override
-	public List<JSONDocument> commit(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final List<JSONDocumentChangedEvent> events)
+	public List<JSONDocument> commit(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final boolean advanced, final List<JSONDocumentChangedEvent> events)
 	{
-		final String httpPath = "/commit?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr);
+		final String httpPath = "/commit?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr)
+				+ "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
+				+ "&advanced=" + advanced;
+
 		System.out.println("COMMIT " + httpPath);
 		System.out.println("" + events);
 
@@ -109,7 +114,7 @@ public class WindowRestControllerClient implements IWindowRestController
 		System.out.println("DELETE " + httpPath);
 
 		final String jsonResult = httpDelete(httpPath);
-		
+
 		final JSONDocument[] jsonDocuments = fromJson(jsonResult, JSONDocument[].class);
 		System.out.println("GOT documents:\n" + toJson(jsonDocuments));
 		return Arrays.asList(jsonDocuments);

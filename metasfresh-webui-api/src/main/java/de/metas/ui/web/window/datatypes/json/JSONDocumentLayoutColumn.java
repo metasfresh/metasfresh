@@ -41,26 +41,26 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutColumn implements Serializable
 {
-	public static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns)
+	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return columns.stream()
-				.map(column -> of(column))
+				.map(column -> of(column, jsonFilteringOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column)
+	private static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayoutColumn(column);
+		return new JSONDocumentLayoutColumn(column, jsonFilteringOpts);
 	}
 
 	@JsonProperty("elementGroups")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementGroup> elementGroups;
 
-	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column)
+	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups());
+		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonFilteringOpts);
 	}
 
 	@JsonCreator

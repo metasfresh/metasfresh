@@ -99,7 +99,8 @@ public class SpringIntegrationTest
 	@Test
 	public void test_get_layout()
 	{
-		final JSONDocumentLayout layout = restController.layout(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder);
+		final boolean advanced = false;
+		final JSONDocumentLayout layout = restController.layout(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, advanced);
 		System.out.println("got layout: " + layout);
 	}
 
@@ -112,7 +113,8 @@ public class SpringIntegrationTest
 				JSONDocumentChangedEvent.of(JSONOperation.replace, "DocumentNo", "1234") //
 		);
 
-		final List<JSONDocument> result = restController.commit(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, orderId, null, null, events);
+		final boolean advanced = false;
+		final List<JSONDocument> result = restController.commit(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, orderId, null, null, advanced, events);
 		System.out.println("Got result:\n" + Joiner.on("\n").join(result));
 		// orderId = getId(result, orderId);
 		// System.out.println("=> orderId=" + orderId);

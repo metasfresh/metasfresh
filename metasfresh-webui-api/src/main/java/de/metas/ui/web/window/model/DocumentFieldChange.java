@@ -40,9 +40,9 @@ import de.metas.ui.web.window.datatypes.json.JSONValues;
  */
 public final class DocumentFieldChange
 {
-	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key, final boolean publicField)
+	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
 	{
-		return new DocumentFieldChange(fieldName, key, publicField);
+		return new DocumentFieldChange(fieldName, key, publicField, advancedField);
 	}
 
 	public static final String DEBUGPROPERTY_FieldInfo = "field-info";
@@ -52,6 +52,7 @@ public final class DocumentFieldChange
 	private final boolean key;
 	/** <code>true</code> if this field is public and will be published to API clients */
 	private final boolean publicField;
+	private final boolean advancedField;
 
 	//
 	private boolean valueSet;
@@ -72,12 +73,13 @@ public final class DocumentFieldChange
 
 	private Map<String, Object> debugProperties;
 
-	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField)
+	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
 	{
 		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
 		this.key = key;
 		this.publicField = publicField;
+		this.advancedField = advancedField;
 	}
 
 	@Override
@@ -87,7 +89,8 @@ public final class DocumentFieldChange
 				.omitNullValues()
 				.add("fieldName", fieldName)
 				.add("key", key ? Boolean.TRUE : null)
-				.add("publicField", publicField);
+				.add("privateField", !publicField ? Boolean.TRUE : null)
+				.add("advancedField", advancedField ? Boolean.TRUE : null);
 		if (valueSet)
 		{
 			toStringBuilder.add("value", value == null ? "<NULL>" : value);
@@ -132,10 +135,17 @@ public final class DocumentFieldChange
 		return key;
 	}
 
-	/** @return true if this field is public and will be published to API clients */
+	/**
+	 * @return true if this field is public and will be published to API clients
+	 */
 	public boolean isPublicField()
 	{
 		return publicField;
+	}
+
+	public boolean isAdvancedField()
+	{
+		return advancedField;
 	}
 
 	/* package */void setValue(final Object value, final String reason)

@@ -41,16 +41,16 @@ import io.swagger.annotations.ApiModel;
 public final class JSONDocumentLayoutElementGroup implements Serializable
 {
 
-	public static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups)
+	static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return elementGroups.stream()
-				.map(elementGroup -> of(elementGroup))
+				.map(elementGroup -> of(elementGroup, jsonFilteringOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup)
+	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayoutElementGroup(elementGroup);
+		return new JSONDocumentLayoutElementGroup(elementGroup, jsonFilteringOpts);
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
@@ -62,11 +62,11 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementLine> elementLines;
 
-	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup)
+	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
-		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines());
+		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines(), jsonFilteringOpts);
 	}
 
 	@JsonCreator

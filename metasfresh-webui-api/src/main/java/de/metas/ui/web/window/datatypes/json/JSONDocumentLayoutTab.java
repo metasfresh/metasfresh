@@ -40,16 +40,17 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutTab implements Serializable
 {
-	public static List<JSONDocumentLayoutTab> ofList(final List<DocumentLayoutDetailDescriptor> details)
+	static List<JSONDocumentLayoutTab> ofList(final List<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return details.stream()
-				.map(detail -> of(detail))
+				.map(detail -> of(detail, jsonFilteringOpts))
+				.filter(jsonDetail -> jsonDetail.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutTab of(final DocumentLayoutDetailDescriptor detail)
+	private static JSONDocumentLayoutTab of(final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayoutTab(detail);
+		return new JSONDocumentLayoutTab(detail, jsonFilteringOpts);
 	}
 
 	@JsonProperty("tabid")
@@ -67,13 +68,13 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutTab(final DocumentLayoutDetailDescriptor detail)
+	private JSONDocumentLayoutTab(final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		tabid = detail.getDetailId();
 		caption = detail.getCaption();
 		description = detail.getDescription();
-		elements = JSONDocumentLayoutElement.ofList(detail.getElements());
+		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonFilteringOpts);
 	}
 
 	@JsonCreator
@@ -120,6 +121,11 @@ public final class JSONDocumentLayoutTab implements Serializable
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
+	}
+
+	public boolean hasElements()
+	{
+		return !elements.isEmpty();
 	}
 
 }

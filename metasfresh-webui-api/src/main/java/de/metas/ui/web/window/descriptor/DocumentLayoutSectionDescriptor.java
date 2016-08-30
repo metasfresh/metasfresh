@@ -101,6 +101,22 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return this;
 		}
 
+		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		{
+			for (final DocumentLayoutColumnDescriptor.Builder columnBuilder : columnsBuilders)
+			{
+				final DocumentLayoutElementDescriptor.Builder elementBuilder = columnBuilder.findElementBuilderByFieldName(fieldName);
+				if (elementBuilder == null)
+				{
+					continue;
+				}
+
+				return elementBuilder;
+
+			}
+			return null;
+		}
+
 		public Builder setInvalid(final String invalidReason)
 		{
 			Check.assumeNotEmpty(invalidReason, "invalidReason is not empty");

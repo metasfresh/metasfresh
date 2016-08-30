@@ -53,6 +53,7 @@ public interface IDocumentFieldView
 	boolean isLookupValuesStale();
 	/** @return true if this field is public and will be published to API clients */
 	boolean isPublicField();
+	boolean isAdvancedField();
 	//@formatter:on
 
 	//@formatter:off

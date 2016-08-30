@@ -44,9 +44,9 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {
-	public static final JSONDocumentLayout of(final DocumentLayoutDescriptor layout)
+	public static final JSONDocumentLayout of(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayout(layout);
+		return new JSONDocumentLayout(layout, jsonFilteringOpts);
 	}
 
 	/** i.e. AD_Window_ID */
@@ -72,18 +72,19 @@ public final class JSONDocumentLayout implements Serializable
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
-	private JSONDocumentLayout(final DocumentLayoutDescriptor layout)
+	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		type = String.valueOf(layout.getAD_Window_ID());
 		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement());
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
-		sections = JSONDocumentLayoutSection.ofList(layout.getSections());
-		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails());
+		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
+		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
 
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties());
+			putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
 		}
 	}
 

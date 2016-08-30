@@ -455,6 +455,12 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	{
 		return descriptor.isPublicField();
 	}
+	
+	@Override
+	public boolean isAdvancedField()
+	{
+		return descriptor.isAdvancedField();
+	}
 
 	@Override
 	public boolean isLookupValuesStale()

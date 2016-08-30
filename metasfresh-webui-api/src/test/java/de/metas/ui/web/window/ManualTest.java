@@ -8,7 +8,6 @@ import org.adempiere.util.collections.ListUtils;
 import org.junit.Ignore;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -42,7 +41,7 @@ public class ManualTest
 {
 	public static void main(final String[] args) throws Exception
 	{
-		LogManager.setLoggerLevel(Logger.ROOT_LOGGER_NAME, Level.INFO);
+		LogManager.setLoggerLevel(org.slf4j.Logger.ROOT_LOGGER_NAME, Level.INFO);
 		// LogManager.dumpAllLevelsUpToRoot("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");
 
 		do
@@ -68,12 +67,14 @@ public class ManualTest
 
 	private void test1()
 	{
+		final boolean advanced = false;
+
 		//
 		//
 		System.out.println("---------------------------------------------------------------------");
 		System.out.println("Get Order layout");
 		{
-			restClient.layout(143);
+			restClient.layout(143, advanced);
 		}
 
 		//
@@ -117,7 +118,7 @@ public class ManualTest
 					, JSONDocumentChangedEvent.of(JSONOperation.replace, "M_AttributeSetInstance_ID", JSONLookupValue.of("0", "NEW")) // needed because some callouts are setting it to NULL
 			);
 
-			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, events);
+			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, advanced, events);
 			rowId = getRowId(response, rowId);
 			System.out.println("=> rowId=" + rowId);
 		}
@@ -132,7 +133,7 @@ public class ManualTest
 					JSONDocumentChangedEvent.of(JSONOperation.replace, "QtyEntered", BigDecimal.valueOf(100)) //
 			);
 
-			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, events);
+			final List<JSONDocument> response = restClient.commit(143, orderId, "1", rowId, advanced, events);
 			rowId = getRowId(response, rowId);
 			System.out.println("=> rowId=" + rowId);
 		}
@@ -182,7 +183,7 @@ public class ManualTest
 
 	private static String getRowId(final List<JSONDocument> jsonDocuments, final String defaultValue)
 	{
-		if(jsonDocuments.isEmpty())
+		if (jsonDocuments.isEmpty())
 		{
 			return defaultValue;
 		}

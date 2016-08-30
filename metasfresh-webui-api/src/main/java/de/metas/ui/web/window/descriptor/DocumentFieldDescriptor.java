@@ -81,6 +81,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	@JsonProperty("public")
 	private final boolean publicField;
+	@JsonProperty("advanced")
+	private final boolean advancedField;
 	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
 	@JsonProperty("alwaysUpdateable")
@@ -117,6 +119,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		defaultValueExpression = builder.defaultValueExpression;
 
 		publicField = builder.publicField;
+		advancedField = builder.advancedField;
 		readonlyLogic = builder.readonlyLogic;
 		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
@@ -141,6 +144,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			, @JsonProperty("valueClass") final Class<?> valueClass //
 			, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
 			, @JsonProperty("public") final boolean publicField //
+			, @JsonProperty("advanced") final boolean advancedField //
 			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
 			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
 			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
@@ -161,6 +165,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.setValueClass(valueClass)
 				.setDefaultValueExpression(defaultValueExpression)
 				.setPublicField(publicField)
+				.setAdvancedField(advancedField)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setDisplayLogic(displayLogic)
@@ -244,6 +249,11 @@ public final class DocumentFieldDescriptor implements Serializable
 		return publicField;
 	}
 
+	public boolean isAdvancedField()
+	{
+		return advancedField;
+	}
+
 	public ILogicExpression getReadonlyLogic()
 	{
 		return readonlyLogic;
@@ -264,7 +274,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		return mandatoryLogic;
 	}
 
-	/** @return field data binding info; never null */
+	/**
+	 * @return field data binding info; never null
+	 */
 	public DocumentFieldDataBindingDescriptor getDataBinding()
 	{
 		return dataBinding;
@@ -294,6 +306,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
 		private Boolean publicField;
+		private Boolean advancedField;
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
@@ -383,6 +396,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setPublicField(final boolean publicField)
 		{
 			this.publicField = publicField;
+			return this;
+		}
+
+		public Builder setAdvancedField(final boolean advancedField)
+		{
+			this.advancedField = advancedField;
 			return this;
 		}
 

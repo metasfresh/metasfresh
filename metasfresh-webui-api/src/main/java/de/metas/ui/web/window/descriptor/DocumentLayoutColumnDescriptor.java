@@ -93,5 +93,22 @@ public class DocumentLayoutColumnDescriptor
 			elementGroupsBuilders.add(elementGroupBuilder);
 			return this;
 		}
+		
+		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		{
+			for (final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder : elementGroupsBuilders)
+			{
+				final DocumentLayoutElementDescriptor.Builder elementBuilder = elementGroupBuilder.findElementBuilderByFieldName(fieldName);
+				if (elementBuilder == null)
+				{
+					continue;
+				}
+
+				return elementBuilder;
+
+			}
+			return null;
+		}
+
 	}
 }

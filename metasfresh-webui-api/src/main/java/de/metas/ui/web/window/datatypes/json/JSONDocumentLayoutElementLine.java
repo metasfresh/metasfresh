@@ -40,27 +40,28 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONDocumentLayoutElementLine implements Serializable
 {
-	public static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementLines)
+	static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementsLines, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return elementLines.stream()
-				.map(JSONDocumentLayoutElementLine::ofDocumentLayoutElementLineDescriptor)
+		return elementsLines.stream()
+				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonFilteringOpts))
+				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine)
+	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayoutElementLine(elementLine);
+		return new JSONDocumentLayoutElementLine(elementLine, jsonFilteringOpts);
 	}
 
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine)
+	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 
-		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements());
+		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonFilteringOpts);
 		this.elements = ImmutableList.copyOf(elements);
 	}
 
@@ -82,5 +83,10 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
+	}
+
+	public boolean hasElements()
+	{
+		return !elements.isEmpty();
 	}
 }

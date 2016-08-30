@@ -32,7 +32,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 public interface IWindowRestController
 {
 
-	JSONDocumentLayout layout(int adWindowId);
+	JSONDocumentLayout layout(int adWindowId, boolean advanced);
 
 	List<JSONDocument> data(
 			int adWindowId //
@@ -40,6 +40,7 @@ public interface IWindowRestController
 			, String detailId //
 			, String rowIdStr //
 			, String fieldsListStr //
+			, boolean advanced //
 	);
 
 	List<JSONDocument> commit(
@@ -47,7 +48,9 @@ public interface IWindowRestController
 			, String idStr//
 			, String detailId//
 			, String rowIdStr//
-			, List<JSONDocumentChangedEvent> events);
+			, boolean advanced //
+			, List<JSONDocumentChangedEvent> events //
+	);
 
 	List<JSONDocument> delete(
 			int adWindowId//

@@ -204,6 +204,28 @@ public final class DocumentLayoutDescriptor implements Serializable
 			sectionBuilders.addAll(sectionsBuilders);
 			return this;
 		}
+		
+		private final DocumentLayoutElementDescriptor.Builder findSectionElementBuilderByFieldName(final String fieldName)
+		{
+			for (final DocumentLayoutSectionDescriptor.Builder sectionBuilder : sectionBuilders)
+			{
+				final DocumentLayoutElementDescriptor.Builder elementBuilder = sectionBuilder.findElementBuilderByFieldName(fieldName);
+				if(elementBuilder == null)
+				{
+					continue;
+				}
+
+				return elementBuilder;
+			}
+			
+			return null;
+		}
+		
+		public boolean isAdvancedSectionField(final String fieldName)
+		{
+			final DocumentLayoutElementDescriptor.Builder elementBuilder = findSectionElementBuilderByFieldName(fieldName);
+			return elementBuilder != null && elementBuilder.isAdvancedField();
+		}
 
 		/**
 		 * Adds detail/tab if it's valid.

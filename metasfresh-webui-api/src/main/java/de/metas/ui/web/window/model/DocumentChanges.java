@@ -87,7 +87,7 @@ public final class DocumentChanges
 		}
 
 		return fieldChangesByName.computeIfAbsent(documentField.getFieldName(), (fieldName) -> {
-			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField());
+			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField(), documentField.isAdvancedField());
 			if (WindowConstants.isProtocolDebugging())
 			{
 				event.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, documentField.toString());
@@ -96,9 +96,9 @@ public final class DocumentChanges
 		});
 	}
 
-	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key, final boolean publicField)
+	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
 	{
-		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key, publicField));
+		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key, publicField, advancedField));
 	}
 
 	public List<DocumentFieldChange> getFieldChangesList()
@@ -185,7 +185,7 @@ public final class DocumentChanges
 	{
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
-			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField());
+			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField());
 			toFieldChange.mergeFrom(fromFieldChange);
 		}
 

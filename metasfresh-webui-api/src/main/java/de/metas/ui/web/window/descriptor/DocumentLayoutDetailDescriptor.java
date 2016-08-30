@@ -161,6 +161,26 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		{
 			return !elementBuilders.isEmpty();
 		}
+
+		private final DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		{
+			for (final DocumentLayoutElementDescriptor.Builder elementBuilder : elementBuilders)
+			{
+				if (elementBuilder.hasFieldName(fieldName))
+				{
+					return elementBuilder;
+				}
+			}
+
+			return null;
+		}
+
+		public boolean isAdvancedField(final String fieldName)
+		{
+			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
+			return elementBuilder != null && elementBuilder.isAdvancedField();
+		}
+
 	}
 
 }

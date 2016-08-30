@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -27,13 +26,12 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentFieldViewFilters;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentFieldViewFilter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 
@@ -65,6 +63,14 @@ import io.swagger.annotations.ApiParam;
 public class WindowRestController implements IWindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
+	private static final String PARAM_WindowId = "type";
+	private static final String PARAM_DocumentId = "id";
+	private static final String PARAM_TabId = "tabid";
+	private static final String PARAM_RowId = "rowId";
+	private static final String PARAM_Field = "field";
+	private static final String PARAM_FieldsList = "fields";
+	private static final String PARAM_Advanced = "advanced";
+	private static final String PARAM_Advanced_DefaultValue = "false";
 
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
@@ -115,24 +121,31 @@ public class WindowRestController implements IWindowRestController
 
 	@Override
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public JSONDocumentLayout layout(@RequestParam(name = "type", required = true) final int adWindowId)
+	public JSONDocumentLayout layout(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
+	)
 	{
 		autologin();
 
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
-		return JSONDocumentLayout.of(layout);
+
+		return JSONDocumentLayout.of(layout, JSONFilteringOptions.builder()
+				.setShowAdvancedFields(advanced)
+				.build());
 	}
 
 	@Override
 	@RequestMapping(value = "/data", method = RequestMethod.GET)
 	public List<JSONDocument> data(
-			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", required = true) final String idStr //
-			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
-			, @RequestParam(name = "fields", required = false) @ApiParam("comma separated field names") final String fieldsListStr //
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
 		autologin();
@@ -146,30 +159,22 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		//
-		// Create the fields filter
-		final IDocumentFieldViewFilter fieldsFilter;
-		if (Check.isEmpty(fieldsListStr, true))
-		{
-			fieldsFilter = DocumentFieldViewFilters.publicFields();
-		}
-		else
-		{
-			fieldsFilter = DocumentFieldViewFilters.fromFieldsNameSetString(fieldsListStr);
-		}
-
-		//
 		// Retrieve and return the documents
 		final List<Document> documents = documentCollection.getDocuments(documentPath);
-		return JSONDocument.ofDocumentsList(documents, fieldsFilter);
+		return JSONDocument.ofDocumentsList(documents, JSONFilteringOptions.builder()
+				.setShowAdvancedFields(advanced)
+				.setDataFieldsList(fieldsListStr)
+				.build());
 	}
 
 	@Override
 	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
 	public List<JSONDocument> commit(
-			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		autologin();
@@ -183,10 +188,14 @@ public class WindowRestController implements IWindowRestController
 				.allowNewRowId()
 				.build();
 
-		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events));
+		final JSONFilteringOptions jsonFilteringOpts = JSONFilteringOptions.builder()
+				.setShowAdvancedFields(advanced)
+				.build();
+
+		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events, jsonFilteringOpts));
 	}
 
-	private List<JSONDocument> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events)
+	private List<JSONDocument> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		//
 		// Fetch the document in writing mode
@@ -223,16 +232,16 @@ public class WindowRestController implements IWindowRestController
 
 		//
 		// Return the changes
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonFilteringOpts);
 	}
 
 	@Override
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public List<JSONDocument> delete(
-			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 	)
 	{
 		autologin();
@@ -244,20 +253,24 @@ public class WindowRestController implements IWindowRestController
 				.setRowId(rowIdStr)
 				.build();
 
+		final JSONFilteringOptions jsonFilteringOptions = JSONFilteringOptions.builder()
+				.setShowAdvancedFields(false)
+				.build();
+
 		return Execution.callInNewExecution("window.delete", () -> {
 			documentCollection.delete(documentPath);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector());
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonFilteringOptions);
 		});
 	}
 
 	@Override
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
 	public List<JSONLookupValue> typeahead(
-			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
-			, @RequestParam(name = "field", required = true) final String fieldName //
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
@@ -278,11 +291,11 @@ public class WindowRestController implements IWindowRestController
 	@Override
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
 	public List<JSONLookupValue> dropdown(
-			@RequestParam(name = "type", required = true) final int adWindowId //
-			, @RequestParam(name = "id", required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
-			, @RequestParam(name = "tabid", required = false) final String detailId //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
-			, @RequestParam(name = "field", required = true) final String fieldName //
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
 	)
 	{
 		autologin();
