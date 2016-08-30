@@ -3,6 +3,7 @@ import update from 'react-addons-update';
 
 const initialState = {
     connectionError: false,
+    modal: false,
     layout: {},
     data: [{
         value: 0
@@ -16,6 +17,14 @@ export default function windowHandler(state = initialState, action) {
         case types.NO_CONNECTION:
             return Object.assign({}, state, {
                 connectionError: action.status
+        })
+        case types.OPEN_MODAL:
+            return Object.assign({}, state, {
+                modal: true
+        })
+        case types.CLOSE_MODAL:
+            return Object.assign({}, state, {
+                modal: false
         })
         case types.INIT_LAYOUT_SUCCESS:
             return Object.assign({}, state, {

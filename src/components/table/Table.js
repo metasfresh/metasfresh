@@ -9,6 +9,11 @@ import {
     deselectAllProducts,
 } from '../../actions/AppActions';
 
+import {
+    openModal,
+    closeModal
+} from '../../actions/WindowActions';
+
 import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
@@ -80,6 +85,9 @@ class Table extends Component {
         //     return p.id
         // });
     }
+    openModal = () => {
+        this.props.dispatch(openModal());
+    }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
         if(rowData[tabid]){
@@ -136,6 +144,7 @@ class Table extends Component {
                             key={'tmpButton'}
                             {...buttonLayout}
                         />
+                        <button className="btn btn-meta-primary btn-sm" onClick={this.openModal}>Advanced edit</button>
 
                         <table className="table table-bordered-vertically table-striped">
                             <thead>
