@@ -169,7 +169,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			mainTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.map(gridFieldVO -> documentField(mainEntityBindingsBuilder, mainTabVO, gridFieldVO, layoutBuilder.isAdvancedSectionField(gridFieldVO.getColumnName())))
+					.map(gridFieldVO -> {
+						final String columnName = gridFieldVO.getColumnName();
+						final boolean presentInLayout = layoutBuilder.hasSectionElement(columnName);
+						final boolean advancedSectionField = layoutBuilder.isAdvancedSectionField(columnName);
+						return documentField(mainEntityBindingsBuilder, mainTabVO, gridFieldVO, presentInLayout, advancedSectionField);
+					})
 					.forEach(fieldDescriptor -> {
 						mainEntityBuilder.addField(fieldDescriptor);
 						mainEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -193,7 +198,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			detailTabVO.getFields()
 					.stream()
 					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.map(gridFieldVO -> documentField(detailEntityBindingsBuilder, detailTabVO, gridFieldVO, layoutDetailBuilder.isAdvancedField(gridFieldVO.getColumnName())))
+					.map(gridFieldVO -> {
+						final String columnName = gridFieldVO.getColumnName();
+						final boolean presentInLayout = layoutDetailBuilder.hasElement(columnName);
+						final boolean advancedSectionField = layoutDetailBuilder.isAdvancedField(columnName);
+						return documentField(detailEntityBindingsBuilder, detailTabVO, gridFieldVO, presentInLayout, advancedSectionField);
+					})
 					.forEach(fieldDescriptor -> {
 						detailEntityBuilder.addField(fieldDescriptor);
 						detailEntityBindingsBuilder.addField(fieldDescriptor.getDataBinding());
@@ -501,7 +511,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			final SqlDocumentEntityDataBindingDescriptor.Builder detailEntityBindingsBuilder //
 			, final GridTabVO gridTabVO //
 			, final GridFieldVO gridFieldVO //
-			, final boolean advancedField)
+			, final boolean presentInLayout //
+			, final boolean advancedField //
+	)
 	{
 		// From entry data-binding:
 		final String sqlTableName = detailEntityBindingsBuilder.getSqlTableName();
@@ -555,7 +567,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
 			readonlyLogic = extractFieldReadonlyLogic(gridTabVO, gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
-			displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO);
+			displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO, presentInLayout);
 			publicField = isPublicField(keyColumn, displayLogic);
 			mandatoryLogic = extractMandatoryLogic(gridFieldVO, publicField);
 		}
@@ -1064,21 +1076,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return gridTabVO.getDisplayLogic();
 	}
 
-	private static ILogicExpression extractFieldDisplayLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
+	private static ILogicExpression extractFieldDisplayLogic(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO, final boolean presentInLayout)
 	{
-		if (gridTabVO.getTabNo() == MAIN_TabNo)
+		if (!presentInLayout)
 		{
-			if (!gridFieldVO.isDisplayed())
-			{
-				return ILogicExpression.FALSE;
-			}
-		}
-		else
-		{
-			if (!gridFieldVO.isDisplayedGrid())
-			{
-				return ILogicExpression.FALSE;
-			}
+			return ILogicExpression.FALSE;
 		}
 
 		// FIXME: not sure if using tabDisplayLogic here is OK, because the tab logic shall be applied to parent tab!
@@ -1134,7 +1136,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private static final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridTabVO gridTabVO, final GridFieldVO gridFieldVO)
 	{
-		final ILogicExpression displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO);
+		final boolean presentInLayout = true;
+		final ILogicExpression displayLogic = extractFieldDisplayLogic(gridTabVO, gridFieldVO, presentInLayout);
 		final boolean publicField = isPublicField(gridFieldVO.isKey(), displayLogic);
 
 		return DocumentLayoutElementFieldDescriptor.builder(gridFieldVO.getColumnName())

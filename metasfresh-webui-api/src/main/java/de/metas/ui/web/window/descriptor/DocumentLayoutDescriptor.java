@@ -226,6 +226,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findSectionElementBuilderByFieldName(fieldName);
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
+		
+		public boolean hasSectionElement(final String fieldName)
+		{
+			return findSectionElementBuilderByFieldName(fieldName) != null;
+		}
 
 		/**
 		 * Adds detail/tab if it's valid.
