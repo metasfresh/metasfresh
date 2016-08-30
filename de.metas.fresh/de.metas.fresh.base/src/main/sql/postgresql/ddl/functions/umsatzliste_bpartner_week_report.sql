@@ -68,10 +68,12 @@ FROM
 			iol.M_Product_ID,
 			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($3 || ' ' ||(select fiscalyear from c_year where c_year_id =$1),'IW IYYY')))::date   -- base_week_start
 						AND io.MovementDate::date <= (select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$2),'IW IYYY')+ interval '6' day))::date ) -- base_week_end
+				THEN ROUND((COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE (uconv.multiplyrate, 1)),2)
 				ELSE 0 
 			END) AS SamePeriodSum,
 			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($7 || ' ' ||(select fiscalyear from c_year where c_year_id =$5),'IW IYYY')))::date  -- comp_week_start 
 						AND io.MovementDate::date <= (select (to_timestamp($8 || ' ' ||(select fiscalyear from c_year where c_year_id =$6),'IW IYYY')+ interval '6' day))::date ) -- comp_week_end 
+			  THEN ROUND((COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE (uconv.multiplyrate, 1)),2)
 			  ELSE 0 
 			END) AS CompPeriodSum	
 			
