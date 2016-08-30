@@ -264,9 +264,13 @@ input:checked + .input-slider:before {
  *  INPUT STATES
  */
 
-.input-mandatory {
+.input-primary.input-mandatory {
     border: 2px solid $brand-mandatory-color !important;
 }
+.input-secondary.input-mandatory {
+    border-bottom: 2px solid $brand-mandatory-color !important;
+}
+
 
 
 .input-auto {
@@ -448,7 +452,7 @@ input:checked + .input-slider:before {
     top:31px;
     width:100%;
     background-color: #fff;
-    z-index:5;
+    z-index:300;
     border: 1px solid $brand-light-color;
     max-height: 357px;
     height: auto;
