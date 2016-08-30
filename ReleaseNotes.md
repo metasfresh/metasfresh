@@ -10,12 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.32.32 (2016-35)
+# metasfresh 4.33.32 (2016-35)
 
 upcoming
 
 ## Features
-
+ * #320 material tracking - provide excel friendly information view
 
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
