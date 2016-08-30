@@ -387,9 +387,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		final GridTabVO mainTab = getMainTab();
 
-		// TODO: atm if we setting first element in group as primary, others as secondary.
-		final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
-		final LayoutType layoutType = layoutElementGroupBuilder.getLayoutType() == LayoutType.primary && isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
+		LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
+		if(layoutType == null)
+		{
+			final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
+			layoutType = isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
+		}
 
 		//
 		// UI main field
