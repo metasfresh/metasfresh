@@ -153,7 +153,7 @@ class Lookup extends Component {
         const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
 
         if(this.inputSearch.value != ""){
-            this.setState({isInputEmpty: false, loading: true});
+            this.setState({isInputEmpty: false, loading: true, query: this.inputSearch.value});
 
             dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId)).then((response)=>{
                 this.setState({list: response.data, loading: false});
@@ -237,7 +237,8 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly} = this.props;
+        const {rank, readonly, properties} = this.props;
+        console.log(this.state.query.length);
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -259,7 +260,8 @@ class Lookup extends Component {
                             disabled={readonly}
                         />
                     </div>
-                    <div ref={c => this.inputSearchRest = c} className="input-rest" />
+                    <div ref={c => this.inputSearchRest = c} className="input-rest">
+                    </div>
 
                     {this.state.isInputEmpty ?
                         <div className="input-icon input-icon-lg">
