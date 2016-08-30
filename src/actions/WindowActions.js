@@ -42,7 +42,16 @@ export function noConnection(status){
     }
 }
 
-
+export function openModal(){
+    return {
+        type: types.OPEN_MODAL
+    }
+}
+export function closeModal(){
+    return {
+        type: types.CLOSE_MODAL
+    }
+}
 
 export function initWindow(windowType, docId) {
     return (dispatch) => {

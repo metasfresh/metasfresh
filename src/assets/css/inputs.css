@@ -33,6 +33,7 @@ input {
     margin-bottom: .3rem;
     text-overflow: ellipsis;
     white-space: nowrap;
+    overflow: hidden;
 }
 /*
  *  CUSTOM BUTTONS

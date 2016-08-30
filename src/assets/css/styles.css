@@ -75,7 +75,12 @@ body {
 
 .panel {
     display: block;
+    position: relative;
     width: 100%;
+}
+.panel-modal {
+    max-width: 90%;
+    height: 90vh;
 }
 .panel-distance {
     margin-top: 2rem;
@@ -97,6 +102,18 @@ body {
     border-color: $brand-border-color;
     background-color: #FFF;
 }
+
+.panel-modal-close{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width:20px;
+    height:20px;
+    color: $brand-color-primary;
+    z-index:300;
+    cursor: pointer;
+}
+
 
 .panel-title {
     margin-bottom: .5rem;

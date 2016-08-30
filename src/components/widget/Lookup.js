@@ -238,7 +238,6 @@ class Lookup extends Component {
 
     render() {
         const {rank, readonly, properties} = this.props;
-        console.log(this.state.query.length);
         return (
             <div
                 onKeyDown={this.handleKeyDown}
