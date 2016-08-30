@@ -40,8 +40,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -65,12 +63,16 @@ import org.compiere.model.Query;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Tab to maintain Order/Sequence
@@ -195,7 +197,7 @@ public class VSortTab extends CPanel implements APanelTab
 	{
 		m_AD_Table_ID = AD_Table_ID;
 		int identifiersCount = 0;
-		StringBuffer identifierSql = new StringBuffer();
+		final StringBuilder identifierSql = new StringBuilder();
 		String sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, e.Name,"	//	1..4
 			+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "				//	4..8
 			+ "FROM AD_Table t, AD_Column c, AD_Element e "
@@ -220,7 +222,7 @@ public class VSortTab extends CPanel implements APanelTab
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, AD_Table_ID);
 			pstmt.setInt(2, AD_ColumnSortOrder_ID);
 			pstmt.setInt(3, AD_ColumnSortYesNo_ID);
@@ -230,46 +232,51 @@ public class VSortTab extends CPanel implements APanelTab
 			while (rs.next())
 			{
 				m_TableName = rs.getString(1);
+				final int adColumnId = rs.getInt(2);
+				final String columnName = rs.getString(3);
+				final String name = rs.getString(4);
+				
 				//	Sort Column
-				if (AD_ColumnSortOrder_ID == rs.getInt(2))
+				if (AD_ColumnSortOrder_ID == adColumnId)
 				{
-					log.debug("Sort=" + rs.getString(1) + "." + rs.getString(3));
-					m_ColumnSortName = rs.getString(3);
-					yesLabel.setText(rs.getString(4));
+					log.debug("Sort={}.{}", m_TableName, columnName);
+					m_ColumnSortName = columnName;
+					yesLabel.setText(name);
 				}
 				//	Optional YesNo
-				else if (AD_ColumnSortYesNo_ID == rs.getInt(2))
+				else if (AD_ColumnSortYesNo_ID == adColumnId)
 				{
-					log.debug("YesNo=" + rs.getString(1) + "." + rs.getString(3));
-					m_ColumnYesNoName = rs.getString(3);
+					log.debug("YesNo={}.{}", m_TableName, columnName);
+					m_ColumnYesNoName = columnName;
 				}
 				//	Parent2
-				else if (rs.getString(5).equals("Y"))
+				else if (DisplayType.toBoolean(rs.getString(5)))
 				{
-					log.debug("Parent=" + rs.getString(1) + "." + rs.getString(3));
-					m_ParentColumnName = rs.getString(3);
+					log.debug("Parent={}.{}", m_TableName, columnName);
+					m_ParentColumnName = columnName;
 				}
 				//	KeyColumn
-				else if (rs.getString(6).equals("Y"))
+				else if (DisplayType.toBoolean(rs.getString(6)))
 				{
-					log.debug("Key=" + rs.getString(1) + "." + rs.getString(3));
-					m_KeyColumnName = rs.getString(3);
+					log.debug("Key={}.{}", m_TableName, columnName);
+					m_KeyColumnName = columnName;
 				}
 				//	Identifier
-				else if (rs.getString(7).equals("Y"))
+				else if (DisplayType.toBoolean(rs.getString(7)))
 				{
-					log.debug("Identifier=" + rs.getString(1) + "." + rs.getString(3));
-					boolean isTranslated = trl && "Y".equals(rs.getString(8));
+					log.debug("Identifier={}.{}", m_TableName, columnName);
+					boolean isTranslated = trl && DisplayType.toBoolean(rs.getString(8));
 					if (identifierSql.length() > 0)
 						identifierSql.append(",");
-					identifierSql.append(isTranslated ? "tt." : "t.").append(rs.getString(3));
+					identifierSql.append(isTranslated ? "tt." : "t.").append(columnName).append("::varchar");
 					identifiersCount++;
-//					m_IdentifierColumnName = rs.getString(3);
 					if (isTranslated)
 						m_IdentifierTranslated = true;
 				}
 				else
-					log.debug("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
+				{
+					log.debug("??NotUsed??={}.{}", m_TableName, columnName);
+				}
 			}
 		}
 		catch (SQLException e)
