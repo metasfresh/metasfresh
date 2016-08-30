@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADFieldDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -20,7 +21,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
-import org.compiere.model.X_AD_UI_Column;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
@@ -67,7 +67,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			public void consume(final I_AD_UI_Column uiColumn, final I_AD_UI_Section parent)
 			{
 				InterfaceWrapperHelper.save(uiColumn);
-				addLog("Created {} (UIStyle={}) for {}", uiColumn, uiColumn.getUIStyle(), parent);
+				addLog("Created {} (SeqNo={}) for {}", uiColumn, uiColumn.getSeqNo(), parent);
 			}
 
 			@Override
@@ -117,9 +117,10 @@ public class AD_Window_CreateUIElements extends SvrProcess
 		{
 			return new WindowUIElementsGenerator(consumer);
 		}
-		
+
 		private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
+		private static final ModelDynAttributeAccessor<I_AD_UI_Element, Integer> DYNATTR_UIElementField_NextSeqNo = new ModelDynAttributeAccessor<>("UIElementField_NextSeqNo", Integer.class);
 		private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
 				.onResultOf((adField) -> adField.getSeqNo());
 
@@ -165,7 +166,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			final I_AD_Tab adTab = adTabs.get(0);
 			migratePrimaryTab(adTab);
 		}
-		
+
 		public void generateForMainTabId(final int AD_Tab_ID)
 		{
 			final I_AD_Tab adTab = InterfaceWrapperHelper.create(Env.getCtx(), AD_Tab_ID, I_AD_Tab.class, ITrx.TRXNAME_ThreadInherited);
@@ -179,13 +180,13 @@ public class AD_Window_CreateUIElements extends SvrProcess
 				throw new AdempiereException("Tab already has UI sections: " + adTab);
 			}
 
-			final I_AD_UI_Section uiSection = createUISection(adTab);
+			final I_AD_UI_Section uiSection = createUISection(adTab, 10);
 
-			final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Left);
+			final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, 10);
 			@SuppressWarnings("unused")
-			final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, X_AD_UI_Column.UISTYLE_Right);
+			final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, 20);
 
-			final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft);
+			final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft, 10);
 
 			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(adTab));
 			adFields.sort(ORDERING_AD_Field_BySeqNo);
@@ -241,35 +242,35 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			return elementId;
 		}
 
-		private I_AD_UI_Section createUISection(final I_AD_Tab adTab)
+		private I_AD_UI_Section createUISection(final I_AD_Tab adTab, final int seqNo)
 		{
 			final I_AD_UI_Section uiSection = InterfaceWrapperHelper.newInstance(I_AD_UI_Section.class, adTab);
 			uiSection.setAD_Tab(adTab);
 			uiSection.setName("main"); // FIXME hardcoded
-			uiSection.setSeqNo(10); // FIXME: hardcoded
+			uiSection.setSeqNo(seqNo);
 
 			consumer.consume(uiSection, adTab);
 
 			return uiSection;
 		}
 
-		private I_AD_UI_Column createUIColumn(final I_AD_UI_Section uiSection, final String uiStyle)
+		private I_AD_UI_Column createUIColumn(final I_AD_UI_Section uiSection, final int seqNo)
 		{
 			final I_AD_UI_Column uiColumn = InterfaceWrapperHelper.newInstance(I_AD_UI_Column.class, uiSection);
 			uiColumn.setAD_UI_Section(uiSection);
-			uiColumn.setUIStyle(uiStyle);
+			uiColumn.setSeqNo(seqNo);
 
 			consumer.consume(uiColumn, uiSection);
 
 			return uiColumn;
 		}
 
-		private I_AD_UI_ElementGroup createUIElementGroup(final I_AD_UI_Column uiColumn)
+		private I_AD_UI_ElementGroup createUIElementGroup(final I_AD_UI_Column uiColumn, final int seqNo)
 		{
 			final I_AD_UI_ElementGroup uiElementGroup = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementGroup.class, uiColumn);
 			uiElementGroup.setAD_UI_Column(uiColumn);
 			uiElementGroup.setName("default");
-			uiElementGroup.setSeqNo(10); // FIXME: hardcoded
+			uiElementGroup.setSeqNo(seqNo);
 			uiElementGroup.setUIStyle("primary");
 
 			consumer.consume(uiElementGroup, uiColumn);
@@ -285,7 +286,6 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			uiElement.setName(adField.getName());
 			uiElement.setDescription(adField.getDescription());
 			uiElement.setHelp(adField.getHelp());
-			uiElement.setIsBasicField(true);
 			uiElement.setIsAdvancedField(false);
 			uiElement.setSeqNo(seqNo);
 
@@ -296,11 +296,15 @@ public class AD_Window_CreateUIElements extends SvrProcess
 
 		private I_AD_UI_ElementField createUIElementField(final I_AD_UI_Element uiElement, final I_AD_Field adField)
 		{
+			final int seqNo = DYNATTR_UIElementField_NextSeqNo.getValue(uiElement, 10);
 			final I_AD_UI_ElementField uiElementField = InterfaceWrapperHelper.newInstance(I_AD_UI_ElementField.class, uiElement);
 			uiElementField.setAD_UI_Element(uiElement);
 			uiElementField.setAD_Field(adField);
+			uiElementField.setSeqNo(seqNo);
 
 			consumer.consume(uiElementField, uiElement);
+
+			DYNATTR_UIElementField_NextSeqNo.setValue(uiElement, seqNo + 10);
 
 			return uiElementField;
 		}
