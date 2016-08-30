@@ -518,3 +518,14 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.empty-info-text {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    min-height: 200px;
+}
+
+.empty-info-text div {
+    text-align: center;
+}

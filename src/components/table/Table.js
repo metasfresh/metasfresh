@@ -105,6 +105,18 @@ class Table extends Component {
             return ret;
         }
     }
+
+    renderEmptyInfo = () => {
+            return (
+                <div className="empty-info-text">
+                    <div>
+                        <h5>There are no pricing rules assigned to this product.</h5>
+                        <p>You can define them in "Pricing systems"</p>
+                    </div>
+                </div>
+            )
+    }
+
     render() {
         const {cols, windowType, docId} = this.props;
         const buttonLayout = {
@@ -147,6 +159,9 @@ class Table extends Component {
                             <tfoot>
                             </tfoot>
                         </table>
+
+                        { (this.renderTableBody() > 1) ? "" : this.renderEmptyInfo() }
+
                     </div>
                 </div>
             </div>
