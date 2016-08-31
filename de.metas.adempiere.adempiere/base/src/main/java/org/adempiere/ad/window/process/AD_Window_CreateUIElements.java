@@ -124,7 +124,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 		private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
 				.onResultOf((adField) -> adField.getSeqNo());
 
-		private final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
+		private static final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
 				//
 				.put("C_BPartner_ID", "C_BPartner_ID")
 				.put("C_BPartner_Location_ID", "C_BPartner_ID")
@@ -229,7 +229,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			}
 		}
 
-		private String extractElementId(final I_AD_Field adField)
+		private static String extractElementId(final I_AD_Field adField)
 		{
 			final String columnName = adField.getAD_Column().getColumnName();
 
