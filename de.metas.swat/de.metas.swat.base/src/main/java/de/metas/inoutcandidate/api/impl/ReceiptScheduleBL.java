@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysHandler;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -135,25 +134,25 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public BigDecimal getQtyOrdered(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysHandler.class).getQtyOrdered(rs);
+		return Services.get(IReceiptScheduleQtysBL.class).getQtyOrdered(rs);
 	}
 
 	@Override
 	public BigDecimal getQtyMoved(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysHandler.class).getQtyMoved(rs);
+		return Services.get(IReceiptScheduleQtysBL.class).getQtyMoved(rs);
 	}
 
 	@Override
 	public BigDecimal getQtyMovedWithIssues(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysHandler.class).getQtyMovedWithIssues(rs);
+		return Services.get(IReceiptScheduleQtysBL.class).getQtyMovedWithIssues(rs);
 	}
 
 	@Override
 	public BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysHandler.class).getQtyToMove(rs);
+		return Services.get(IReceiptScheduleQtysBL.class).getQtyToMove(rs);
 	}
 
 	/**
@@ -186,10 +185,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public I_C_BPartner_Location getC_BPartner_Location_Effective(final I_M_ReceiptSchedule sched)
 	{
-		final I_C_BPartner_Location location =
-				InterfaceWrapperHelper.create(
-						sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
-						I_C_BPartner_Location.class);
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
+				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
+				I_C_BPartner_Location.class);
 		return location;
 	}
 
@@ -208,10 +206,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(final I_M_ReceiptSchedule sched)
 	{
-		final I_C_BPartner bPartner =
-				InterfaceWrapperHelper.create(
-						sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
-						I_C_BPartner.class);
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(
+				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
+				I_C_BPartner.class);
 		return bPartner;
 	}
 
@@ -596,34 +593,23 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		Check.assumeNotNull(rs, "rs not null");
 
-		//
 		// Make sure receipt schedule was not already processed
 		if (isClosed(rs))
 		{
 			throw new AdempiereException("@Closed@=@Y@ (" + rs + ")");
 		}
 
-		//
-		// Fire listeners: before close
 		listeners.onBeforeClose(rs);
 
-		//
 		// Mark the receipt schedule as closed (i.e. processed)
 		rs.setProcessed(true);
-
-		//
-		// Make sure Qtys are correctly set
-		// NOTE: we do this AFTER we marked the receipt schedule as processed
-		// because the Qty Over/Under Delivery depends on that flag too
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleChanged(rs);
-
-		//
-		// Fire listeners: after close
-		listeners.onAfterClose(rs);
-
-		//
-		// Save the receipt schedule
 		InterfaceWrapperHelper.save(rs);
+
+		// this is already called by a model validator when the receipt schedule is saved
+		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
+
+		listeners.onAfterClose(rs);
+		InterfaceWrapperHelper.save(rs); // see javadoc on why we same two times
 	}
 
 	@Override
@@ -638,27 +624,17 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			throw new AdempiereException("@Closed@=@N@ (" + receiptSchedule + ")");
 		}
 
-		//
-		// Fire listeners: before re-open
 		listeners.onBeforeReopen(receiptSchedule);
+		InterfaceWrapperHelper.refresh(receiptSchedule); // because
 
-		//
 		// Mark the receipt schedule as not closed (i.e. not processed)
 		receiptSchedule.setProcessed(false);
+		InterfaceWrapperHelper.save(receiptSchedule);
 
-		//
-		// https://github.com/metasfresh/metasfresh/issues/315
-		// We don't call this BL anymore, because here it is too early.
-		// It needs to be called after the receipt schedule's QtyOrdered was updated. that updating takes place via an async processor.
-		// So instead of calling the logic here, we do it in the model interceptor de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule
-		// Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleChanged(receiptSchedule);
+		// this is already called by a model validator when the receipt schedule is saved
+		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
 
-		//
-		// Fire listeners: after re-open
 		listeners.onAfterReopen(receiptSchedule);
-
-		//
-		// Save the receipt schedule
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 

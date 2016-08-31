@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,18 +35,22 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
  * <ul>
  * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QtyMoved}
  * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QtyToMove}
+ * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QtyOrderedOverUnder}
+ * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QtyMovedWithIssues}
+ * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QualityDiscountPercent}
+ * <li> {@link I_M_ReceiptSchedule#COLUMNNAME_QualityNote}
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
-public interface IReceiptScheduleQtysHandler extends ISingletonService
+public interface IReceiptScheduleQtysBL extends ISingletonService
 {
 	/**
 	 * Gets Target Qty (i.e. how much shall we receive in the end).
-	 * 
+	 *
 	 * NOTE: {@link I_M_ReceiptSchedule#COLUMNNAME_QtyToMove_Override} is checked first and if is not set then {@link I_M_ReceiptSchedule#COLUMNNAME_QtyOrdered} is considered.
-	 * 
+	 *
 	 * @param rs
 	 * @return target qty
 	 */
@@ -54,9 +58,9 @@ public interface IReceiptScheduleQtysHandler extends ISingletonService
 
 	/**
 	 * Gets QtyToMove.
-	 * 
+	 *
 	 * NOTE: QtyToMove_Override is not considered
-	 * 
+	 *
 	 * @param rs
 	 * @return qty to move
 	 */
@@ -64,7 +68,7 @@ public interface IReceiptScheduleQtysHandler extends ISingletonService
 
 	/**
 	 * Gets QtyMoved
-	 * 
+	 *
 	 * @param rs
 	 * @return qty moved
 	 */
@@ -80,31 +84,33 @@ public interface IReceiptScheduleQtysHandler extends ISingletonService
 	BigDecimal getQtyOverUnderDelivery(I_M_ReceiptSchedule rs);
 
 	/**
-	 * Called when receipt schedule was created/updated and quantities needs to be set
-	 * 
+	 * Called by model interceptor {@link de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule} when the given <code>receiptSchedule</code> was created/updated and quantities needs to be set.
+	 * Since it's called by the MI, there is no need to call it manually throughout the code.
+	 * Please keep that MI in sync when you change those methods to use more/less/different properties of the given <code>receiptSchedule</code>.
+	 *
 	 * NOTE: implementor of this method shall not save the receiptSchedule. API is handling this.
-	 * 
+	 *
 	 * @param receiptSchedule
 	 */
 	void onReceiptScheduleChanged(I_M_ReceiptSchedule receiptSchedule);
 
 	/**
 	 * Called when an {@link I_M_ReceiptSchedule_Alloc} was created
-	 * 
+	 *
 	 * @param receiptScheduleAlloc
 	 */
 	void onReceiptScheduleAdded(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc);
 
 	/**
 	 * Called when an {@link I_M_ReceiptSchedule_Alloc} was changed
-	 * 
+	 *
 	 * @param receiptScheduleAlloc
 	 */
 	void onReceiptScheduleUpdated(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc);
 
 	/**
 	 * Called when an {@link I_M_ReceiptSchedule_Alloc} was deleted
-	 * 
+	 *
 	 * @param receiptScheduleAlloc
 	 */
 	void onReceiptScheduleDeleted(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc);
