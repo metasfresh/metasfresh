@@ -102,7 +102,7 @@ public final class JSONDocument implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getDataBinding().getTableName());
-			jsonDocument.putDebugProperty("filtering-opts", jsonFilteringOpts);
+			jsonDocument.putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 

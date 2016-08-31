@@ -107,6 +107,15 @@ public class ManualTest
 			System.out.println("=> orderId=" + orderId);
 		}
 
+		System.out.println("---------------------------------------------------------------------");
+		System.out.println("Get Order Header data");
+		{
+			final String detailId = null;
+			final String rowIdStr = null;
+			final String fieldsListStr = null;
+			restClient.data(143, orderId, detailId, rowIdStr, fieldsListStr, advanced);
+		}
+
 		//
 		//
 		System.out.println("---------------------------------------------------------------------");
