@@ -546,6 +546,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		//
 		//
 		po.set_ManualUserAction(document.getWindowNo());
+		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(po, true); // allow changing any columns
 
 		return po;
 	}
