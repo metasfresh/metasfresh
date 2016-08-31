@@ -30,7 +30,7 @@ export function createWindow(windowType, docId = "NEW"){
                         });
                 })
             }).catch(()=>{
-                dispatch(noConnection());
+                dispatch(noConnection(true));
             })
     }
 }
