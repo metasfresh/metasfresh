@@ -29,7 +29,8 @@ export function createWindow(windowType, docId = "NEW", isModal = false){
                             dispatch(addRowData(tabTmp, isModal));
                         });
                 })
-            }).catch(()=>{
+            }).catch((e)=>{
+                console.log(e);
                 dispatch(noConnection(true));
             })
     }

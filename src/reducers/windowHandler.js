@@ -9,12 +9,11 @@ const initialState = {
         data: [],
         rowData: {}
     },
-    layout: {},
-    data: [{
-        value: 0
-    }],
-    rowData: {},
-    orderStatus: 0
+    master: {
+        layout: {},
+        data: [],
+        rowData: {},
+    }
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -35,19 +34,27 @@ export default function windowHandler(state = initialState, action) {
                     visible: false
                 })
         })
+
+
         case types.INIT_LAYOUT_SUCCESS:
             return Object.assign({}, state, {
-                layout: action.layout
-        })
-        case types.INIT_DATA_SUCCESS:
-            return Object.assign({}, state, {
-                data: action.data,
-                rowData: {}
+                master: Object.assign({}, state.master, {
+                    layout: action.layout
+                })
         })
         case types.INIT_MODAL_LAYOUT_SUCCESS:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
                     layout: action.layout
+                })
+        })
+
+
+        case types.INIT_DATA_SUCCESS:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    data: action.data,
+                    rowData: {}
                 })
         })
         case types.INIT_MODAL_DATA_SUCCESS:
@@ -57,16 +64,21 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {}
                 })
         })
+
+
+        case types.ADD_ROW_DATA:
+            return Object.assign({}, state, {
+                master: Object.assign({}, state.master, {
+                    rowData: Object.assign({}, state.rowData, action.data)
+                })
+        })
         case types.ADD_MODAL_ROW_DATA:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
                     rowData: Object.assign({}, state.rowData, action.data)
                 })
         })
-        case types.ADD_ROW_DATA:
-            return Object.assign({}, state, {
-                rowData: Object.assign({}, state.rowData, action.data)
-        })
+        
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {
                 data: state.data.map(item =>

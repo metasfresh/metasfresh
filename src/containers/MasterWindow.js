@@ -18,14 +18,24 @@ class MasterWindow extends Component {
     }
 
     render() {
-        const {data, layout, connectionError, modal} = this.props;
-        const {documentNoElement, docActionElement, type} = this.props.layout;
-        const dataId = findRowByPropName(data, "ID").value;
+        const {master, connectionError, modal} = this.props;
+        const {documentNoElement, docActionElement, type} = master.layout;
+
+        const dataId = findRowByPropName(master.data, "ID").value;
+        const docNoData = findRowByPropName(master.data, "DocumentNo");
+        const docStatusData = {
+            "status": findRowByPropName(master.data, "DocStatus"),
+            "action": findRowByPropName(master.data, "DocAction"),
+            "displayed": true
+        };
+
         return (
             <div>
                 <Header
                     docStatus = {docActionElement}
+                    docStatusData = {docStatusData}
                     docNo = {documentNoElement}
+                    docNoData = {docNoData}
                     dataId={dataId}
                     windowType={type}
                 />
@@ -39,8 +49,8 @@ class MasterWindow extends Component {
                      />
                  }
                 <Window
-                    data={data}
-                    layout={layout}
+                    data={master.data}
+                    layout={master.layout}
                 />
             </div>
         );
@@ -50,27 +60,23 @@ class MasterWindow extends Component {
 MasterWindow.propTypes = {
     connectionError: PropTypes.bool.isRequired,
     modal: PropTypes.object.isRequired,
-    layout: PropTypes.object.isRequired,
-    data: PropTypes.array.isRequired,
+    master: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
     const { windowHandler } = state;
     const {
-        layout,
-        data,
+        master,
         connectionError,
         modal
     } = windowHandler || {
-        layout: {},
-        data:[],
+        master: {},
         connectionError: false,
         modal: false
     }
     return {
-        data,
-        layout,
+        master,
         connectionError,
         modal
     }

@@ -8,14 +8,6 @@ import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
 
-import {
-    findRowByPropName
-} from '../../actions/WindowActions';
-
-import {
-    changeOrderStatus
-} from '../../actions/AppActions';
-
 class Header extends Component {
     constructor(props){
         super(props);
@@ -44,14 +36,8 @@ class Header extends Component {
     }
 
     render() {
-        const {orderStatus, data, docNo, docStatus, windowType, dataId} = this.props;
+        const {docNoData, docNo, docStatus, docStatusData, windowType, dataId} = this.props;
         const {isSubheaderShow, isOrderListShow} = this.state;
-        const docNoData = findRowByPropName(data, "DocumentNo");
-        const docStatusData = {
-            "status": findRowByPropName(data, "DocStatus"),
-            "action": findRowByPropName(data, "DocAction"),
-            "displayed": true
-        };
 
         return (
             <div>
@@ -116,24 +102,11 @@ class Header extends Component {
 
 
 Header.propTypes = {
-    orderStatus: PropTypes.number.isRequired,
-    data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { windowHandler } = state;
-    const {
-        orderStatus,
-        data
-    } = windowHandler || {
-        orderStatus: 0,
-        data: []
-    }
-
     return {
-        orderStatus,
-        data
     }
 }
 

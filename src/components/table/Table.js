@@ -115,14 +115,14 @@ class Table extends Component {
     }
 
     renderEmptyInfo = () => {
-            return (
-                <div className="empty-info-text">
-                    <div>
-                        <h5>There are no pricing rules assigned to this product.</h5>
-                        <p>You can define them in "Pricing systems"</p>
-                    </div>
+        return (
+            <div className="empty-info-text">
+                <div>
+                    <h5>There are no pricing rules assigned to this product.</h5>
+                    <p>You can define them in "Pricing systems"</p>
                 </div>
-            )
+            </div>
+        )
     }
 
     render() {
@@ -140,7 +140,6 @@ class Table extends Component {
             displayed: true,
             value: {"P": "New order line"}
         }
-        console.log(rowData);
         return (
             <div className="row">
                 <div className="col-xs-12">
