@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import ReactOutsideEvent from 'react-onclickoutside';
 
 import {
     selectProduct,
@@ -20,6 +21,7 @@ import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
 import Widget from '../Widget';
 
+
 class Table extends Component {
     constructor(props) {
         super(props);
@@ -31,43 +33,53 @@ class Table extends Component {
             }
         }
     }
-    handleClick = (e, id, index) => {
-        // e.preventDefault();
-        //
-        // const {selectedProducts, dispatch} = this.props
-        // const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
-        // const selectRange = e.shiftKey;
-        // const isSelected = index > -1;
-        // const isAnySelected = selectedProducts.length > 0;
-        // const isMoreSelected = selectedProducts.length > 1;
-        //
-        // if(selectMore){
-        //     if(isSelected){
-        //         dispatch(deselectProduct(index));
-        //     }else{
-        //         dispatch(selectProduct(id));
-        //     }
-        // }else if(selectRange){
-        //     if(isAnySelected){
-        //         const idsToSelect = this.getProductRange(id);
-        //         dispatch(selectRangeProduct(idsToSelect));
-        //     }else{
-        //         dispatch(selectOneProduct(id));
-        //     }
-        // }else{
-        //     if(isSelected){
-        //         if(isMoreSelected){
-        //             dispatch(selectOneProduct(id));
-        //         }else{
-        //             dispatch(deselectAllProducts());
-        //         }
-        //     }else{
-        //         dispatch(selectOneProduct(id));
-        //     }
-        // }
+    handleClick = (e, id, selectedProd) => {
+        e.preventDefault();
+
+        const {selectedProducts, dispatch} = this.props
+        const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
+        const selectRange = e.shiftKey;
+        const isSelected = selectedProd.indexOf(id) > -1;
+        const isAnySelected = selectedProducts.length > 0;
+        const isMoreSelected = selectedProducts.length > 1;
+
+        console.log(id);
+        console.log(selectedProd.indexOf(id));
+
+        if(selectMore){
+          console.log('select more');
+            if(isSelected){
+                dispatch(deselectProduct(id));
+            }else{
+                dispatch(selectProduct(id));
+            }
+        }else if(selectRange){
+            console.log('select range');
+            if(isAnySelected){
+                const idsToSelect = this.getProductRange(id);
+                dispatch(selectRangeProduct(idsToSelect));
+            }else{
+                dispatch(selectOneProduct(id));
+            }
+        }else{
+            if(isSelected){
+                if(isMoreSelected){
+                    dispatch(selectOneProduct(id));
+                    // console.log(id);
+                }else{
+                    // dispatch(deselectAllProducts());
+                }
+            }else{
+                dispatch(selectOneProduct(id));
+                // console.log(id);
+            }
+        }
+
+        // console.log("selectedProducts");
+        // console.log(selectedProducts);
     }
     handleRemoveSelected = () => {
-        // this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
+        this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
     }
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
@@ -75,23 +87,27 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        // const {products, selectedProducts} = this.props;
-        // let selected = [
-        //     products.products.findIndex(x => x.id === id),
-        //     products.products.findIndex(x => x.id === selectedProducts[0])
-        // ];
-        // selected.sort((a,b) => a - b);
-        // return products.products.slice(selected[0], selected[1]+1).map(p => {
-        //     return p.id
-        // });
+        const {products, selectedProducts} = this.props;
+        let selected = [
+            products.products.findIndex(x => x.id === id),
+            products.products.findIndex(x => x.id === selectedProducts[0])
+        ];
+        selected.sort((a,b) => a - b);
+        return products.products.slice(selected[0], selected[1]+1).map(p => {
+            return p.id
+        });
     }
     openModal = () => {
         this.props.dispatch(openModal());
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
+        // console.log(this.props);
+        console.log(rowData.length);
         if(rowData[tabid]){
+
             let keys = Object.keys(rowData[tabid]);
+            // console.log(keys);
             const item = rowData[tabid];
             let ret = [];
             for(let i=0; i < keys.length; i++) {
@@ -105,7 +121,7 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        // onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
+                        onClick={(e) => this.handleClick(e, item[key].rowId, this.props.selectedProducts)}
                     />
                 );
             }
@@ -169,7 +185,9 @@ class Table extends Component {
                             </tfoot>
                         </table>
 
-                        { (this.renderTableBody() > 1) ? "" : this.renderEmptyInfo() }
+                        // { (this.renderTableBody() > 0) ? "" :  this.renderEmptyInfo() }
+
+                        { (this.props.rowData.length > 0) ? "" :  this.renderEmptyInfo() }
 
                     </div>
                 </div>
@@ -184,6 +202,7 @@ Table.propTypes = {
 };
 
 function mapStateToProps(state) {
+  // console.log(state);
     const { windowHandler } = state;
     const {
         rowData
@@ -191,8 +210,11 @@ function mapStateToProps(state) {
         rowData: {}
     }
 
+    const selectedProducts = state.appHandler.selectedProducts;
+
+// console.log(selectedProducts);
     return {
-        rowData
+        rowData, selectedProducts
     }
 }
 
