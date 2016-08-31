@@ -29,7 +29,7 @@ class ActionButton extends Component {
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
-        if(Object.keys(data.action.value)[0] !== abrev){
+        if((data.action.value !== undefined) && Object.keys(data.action.value)[0] !== abrev){
             return "";
         }
 
@@ -67,8 +67,8 @@ class ActionButton extends Component {
     }
     render() {
         const {data} = this.props
-        const abrev = Object.keys(data.status.value)[0];
-        const value = data.status.value[abrev];
+        const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
+        const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
         return (
             <div
                 className="meta-dropdown-toggle dropdown-status-toggler"
@@ -77,7 +77,7 @@ class ActionButton extends Component {
                 onBlur={this.handleDropdownBlur}
                 onFocus={this.handleDropdownFocus}
             >
-                <div className={"tag tag-" + this.getStatusContext(abrev)}>{value}</div>
+                <div className={"tag tag-" + this.getStatusContext(abrev)}>{value} </div>
                 <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(abrev)} />
                 <ul className="dropdown-status-list">
                     {this.renderStatusList(this.state.list)}
