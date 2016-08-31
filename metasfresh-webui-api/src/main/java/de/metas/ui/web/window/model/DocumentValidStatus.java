@@ -109,4 +109,9 @@ public final class DocumentValidStatus
 	{
 		return reason;
 	}
+	
+	public boolean isInitialInvalid()
+	{
+		return this == STATE_InitialInvalid;
+	}
 }

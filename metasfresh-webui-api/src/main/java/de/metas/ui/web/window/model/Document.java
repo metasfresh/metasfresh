@@ -426,6 +426,13 @@ public final class Document
 				throw Throwables.propagate(e);
 			}
 		}
+		finally
+		{
+			if (documentField.getValid().isInitialInvalid())
+			{
+				documentField.updateValid();
+			}
+		}
 
 		//
 		// After field was initialized, based on "mode", trigger events, update other fields etc
