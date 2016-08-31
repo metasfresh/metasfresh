@@ -16,6 +16,7 @@ import com.google.common.base.Optional;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
@@ -29,12 +30,12 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,7 +61,7 @@ public final class DocumentEvaluatee implements Evaluatee
 				.addValue(_document)
 				.toString();
 	}
-	
+
 	private Properties getCtx()
 	{
 		return _document.getCtx();
@@ -97,6 +98,13 @@ public final class DocumentEvaluatee implements Evaluatee
 		if (variableName == null)
 		{
 			return Optional.absent();
+		}
+
+		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName) && hasParent())
+		{
+			final String detailId = _document.getEntityDescriptor().getDetailId();
+			final int nextLineNo = _document.getParentDocument().getIncludedDocumentsCollection(detailId).getNextLineNo();
+			return Optional.of(String.valueOf(nextLineNo));
 		}
 
 		//
@@ -144,19 +152,19 @@ public final class DocumentEvaluatee implements Evaluatee
 				return value;
 			}
 		}
-		
+
 		//
 		// Fallback: Check again the documentField and assume some defaults
 		if (documentField != null)
 		{
 			final Class<?> valueClass = documentField.getDescriptor().getValueClass();
-			if(StringLookupValue.class.equals(valueClass))
+			if (StringLookupValue.class.equals(valueClass))
 			{
 				// corner case: e.g. Field: C_Order.IncotermLocation's DisplayLogic=@Incoterm@!''
 				return Optional.of("");
 			}
 		}
-		
+
 		//
 		// Value not found
 		if (logger.isTraceEnabled())
@@ -170,7 +178,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	}
 
 	/**
-	 * 
+	 *
 	 * @param variableName
 	 * @return value or <code>null</code> if does not apply
 	 */

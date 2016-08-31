@@ -93,6 +93,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_No;
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Zero;
 	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
+	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_NextLineNo;
 
 	static
 	{
@@ -104,6 +105,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_Zero = expressionFactory.compile("0", IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class);
+		DEFAULT_VALUE_EXPRESSION_NextLineNo = expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IStringExpression.class);
 	}
 
 	//
@@ -388,7 +390,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final GridTabVO mainTab = getMainTab();
 
 		LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
-		if(layoutType == null)
+		if (layoutType == null)
 		{
 			final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
 			layoutType = isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
@@ -1094,6 +1096,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private IStringExpression extractDefaultValueExpression(final GridFieldVO gridFieldVO)
 	{
+		if (WindowConstants.FIELDNAME_Line.equals(gridFieldVO.getColumnName()))
+		{
+			return DEFAULT_VALUE_EXPRESSION_NextLineNo;
+		}
+
 		final String defaultValueStr = gridFieldVO.getDefaultValue();
 		if (defaultValueStr == null || defaultValueStr.isEmpty())
 		{

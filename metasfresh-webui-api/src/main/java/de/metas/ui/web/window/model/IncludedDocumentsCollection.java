@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -338,5 +339,33 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		}
 
 		documents.remove(DocumentId.of(document.getDocumentId()));
+	}
+	
+	public int getNextLineNo()
+	{
+		final int lastLineNo = getLastLineNo();
+		final int nextLineNo = lastLineNo / 10 * 10 + 10;
+		return nextLineNo;
+	}
+	
+	private int getLastLineNo()
+	{
+		if(!fullyLoaded)
+		{
+			loadAll();
+		}
+
+		int maxLineNo = 0;
+		for (final Document document : documents.values())
+		{
+			final IDocumentFieldView lineNoField = document.getFieldView(WindowConstants.FIELDNAME_Line);
+			final int lineNo = lineNoField.getValueAsInt(0);
+			if(lineNo > maxLineNo)
+			{
+				maxLineNo = lineNo;
+			}
+		}
+		
+		return maxLineNo;
 	}
 }

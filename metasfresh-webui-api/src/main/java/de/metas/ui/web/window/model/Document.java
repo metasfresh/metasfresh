@@ -1060,7 +1060,7 @@ public final class Document
 		return includedDocuments.getDocuments();
 	}
 
-	private IncludedDocumentsCollection getIncludedDocumentsCollection(final String detailId)
+	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final String detailId)
 	{
 		final IncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
