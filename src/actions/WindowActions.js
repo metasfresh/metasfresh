@@ -2,18 +2,19 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 
-export function createWindow(windowType, docId = "NEW"){
+export function createWindow(windowType, docId = "NEW", isModal = false){
     return (dispatch) => {
         // this chain is really important,
         // to do not re-render widgets on init
         dispatch(initWindow(windowType, docId))
             .then(response => {
                 docId = response.data[0].id;
-                dispatch(initDataSuccess(nullToEmptyStrings(response.data[0].fields)))}
-            ).then(response =>
+                const preparedData = nullToEmptyStrings(response.data[0].fields);
+                dispatch(initDataSuccess(preparedData, isModal))
+            }).then(response =>
                 dispatch(initLayout(windowType))
             ).then(response =>
-                dispatch(initLayoutSuccess(response.data))
+                dispatch(initLayoutSuccess(response.data, isModal))
             ).then(response => {
                 let tabTmp = {};
 
@@ -26,7 +27,7 @@ export function createWindow(windowType, docId = "NEW"){
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
 
-                            dispatch(addRowData(tabTmp));
+                            dispatch(addRowData(tabTmp, isModal));
                         });
                 })
             }).catch(()=>{
@@ -85,21 +86,21 @@ export function getData(windowType, id, tabId, rowId) {
     );
 }
 
-export function initLayoutSuccess(layout) {
+export function initLayoutSuccess(layout, isModal) {
     return {
-        type: types.INIT_LAYOUT_SUCCESS,
+        type: isModal ? types.INIT_MODAL_LAYOUT_SUCCESS : types.INIT_LAYOUT_SUCCESS,
         layout: layout
     }
 }
-export function initDataSuccess(data) {
+export function initDataSuccess(data, isModal) {
     return {
-        type: types.INIT_DATA_SUCCESS,
+        type: isModal ? types.INIT_MODAL_DATA_SUCCESS : types.INIT_DATA_SUCCESS,
         data: data
     }
 }
-export function addRowData(data) {
+export function addRowData(data, isModal) {
     return {
-        type: types.ADD_ROW_DATA,
+        type: isModal ? types.ADD_MODAL_ROW_DATA : types.ADD_ROW_DATA,
         data: data
     }
 }

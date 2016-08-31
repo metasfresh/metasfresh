@@ -4,12 +4,16 @@ import {connect} from 'react-redux';
 import Window from '../Window';
 
 import {
-    closeModal
+    closeModal,
+    createWindow
 } from '../../actions/WindowActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
+
+        const {dispatch, windowType, dataId} = this.props;
+        dispatch(createWindow(windowType, "NEW", true));
     }
 
     componentDidMount() {

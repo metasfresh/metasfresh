@@ -30,11 +30,12 @@ class MasterWindow extends Component {
                     windowType={type}
                 />
                 {connectionError && <ErrorScreen />}
-                {modal &&
+                {modal.visible &&
                     <Modal
                         windowType={140}
-                        data={data}
-                        layout={layout}
+                        dataId={dataId}
+                        data={modal.data}
+                        layout={modal.layout}
                      />
                  }
                 <Window
@@ -48,7 +49,7 @@ class MasterWindow extends Component {
 
 MasterWindow.propTypes = {
     connectionError: PropTypes.bool.isRequired,
-    modal: PropTypes.bool.isRequired,
+    modal: PropTypes.object.isRequired,
     layout: PropTypes.object.isRequired,
     data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired

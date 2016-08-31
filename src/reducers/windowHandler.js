@@ -3,7 +3,12 @@ import update from 'react-addons-update';
 
 const initialState = {
     connectionError: false,
-    modal: false,
+    modal: {
+        visible: false,
+        layout: {},
+        data: [],
+        rowData: {}
+    },
     layout: {},
     data: [{
         value: 0
@@ -20,11 +25,15 @@ export default function windowHandler(state = initialState, action) {
         })
         case types.OPEN_MODAL:
             return Object.assign({}, state, {
-                modal: true
+                modal: Object.assign({}, state.modal, {
+                    visible: true
+                })
         })
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
-                modal: false
+                modal: Object.assign({}, state.modal, {
+                    visible: false
+                })
         })
         case types.INIT_LAYOUT_SUCCESS:
             return Object.assign({}, state, {
@@ -34,6 +43,25 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 data: action.data,
                 rowData: {}
+        })
+        case types.INIT_MODAL_LAYOUT_SUCCESS:
+            return Object.assign({}, state, {
+                modal: Object.assign({}, state.modal, {
+                    layout: action.layout
+                })
+        })
+        case types.INIT_MODAL_DATA_SUCCESS:
+            return Object.assign({}, state, {
+                modal: Object.assign({}, state.modal, {
+                    data: action.data,
+                    rowData: {}
+                })
+        })
+        case types.ADD_MODAL_ROW_DATA:
+            return Object.assign({}, state, {
+                modal: Object.assign({}, state.modal, {
+                    rowData: Object.assign({}, state.rowData, action.data)
+                })
         })
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
