@@ -120,6 +120,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_UI_Column.COLUMN_AD_UI_Section_ID, uiSection.getAD_UI_Section_ID())
 				.orderBy()
+				.addColumn(I_AD_UI_Column.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_Column.COLUMN_AD_UI_Column_ID)
 				.endOrderBy()
 				.create()
@@ -160,13 +161,13 @@ public class ADWindowDAO implements IADWindowDAO
 		{
 			return 10;
 		}
-		
+
 		if (lastSeqNo % 10 == 0)
 		{
 			return lastSeqNo + 10;
 		}
 
-		return ((lastSeqNo / 10) * 10) + 10;
+		return lastSeqNo / 10 * 10 + 10;
 	}
 
 	@Override
@@ -200,16 +201,22 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement)
 	{
+		return retrieveUIElementFieldsQuery(uiElement)
+				.create()
+				.list(I_AD_UI_ElementField.class);
+	}
+
+	private IQueryBuilder<I_AD_UI_ElementField> retrieveUIElementFieldsQuery(final I_AD_UI_Element uiElement)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_ElementField.class, uiElement)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_UI_ElementField.COLUMN_AD_UI_Element_ID, uiElement.getAD_UI_Element_ID())
 				.orderBy()
+				.addColumn(I_AD_UI_ElementField.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_ElementField.COLUMN_AD_UI_ElementField_ID)
-				.endOrderBy()
-				.create()
-				.list(I_AD_UI_ElementField.class);
+				.endOrderBy();
 	}
 
 	@Override

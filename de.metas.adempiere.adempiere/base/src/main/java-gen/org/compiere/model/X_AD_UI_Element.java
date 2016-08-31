@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1956074911L;
+	private static final long serialVersionUID = -1561021543L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -25,8 +25,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 			setAD_UI_Element_ID (0);
 			setIsAdvancedField (false);
 // N
-			setIsBasicField (true);
-// Y
 			setName (null);
 			setSeqNo (0);
 // @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Element WHERE AD_UI_ElementGroup_ID=@AD_UI_ElementGroup_ID@
@@ -199,29 +197,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return false;
 	}
 
-	/** Set Basic field.
-		@param IsBasicField Basic field	  */
-	@Override
-	public void setIsBasicField (boolean IsBasicField)
-	{
-		set_Value (COLUMNNAME_IsBasicField, Boolean.valueOf(IsBasicField));
-	}
-
-	/** Get Basic field.
-		@return Basic field	  */
-	@Override
-	public boolean isBasicField () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsBasicField);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -261,5 +236,21 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set UI Style.
+		@param UIStyle UI Style	  */
+	@Override
+	public void setUIStyle (java.lang.String UIStyle)
+	{
+		set_Value (COLUMNNAME_UIStyle, UIStyle);
+	}
+
+	/** Get UI Style.
+		@return UI Style	  */
+	@Override
+	public java.lang.String getUIStyle () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UIStyle);
 	}
 }

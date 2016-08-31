@@ -174,27 +174,31 @@ public interface I_AD_UI_Column
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set UI Style.
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
-	 * <br>Type: List
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setUIStyle (java.lang.String UIStyle);
+	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get UI Style.
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	 *
-	 * <br>Type: List
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUIStyle();
+	public int getSeqNo();
 
-    /** Column definition for UIStyle */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Column, Object> COLUMN_UIStyle = new org.adempiere.model.ModelColumn<I_AD_UI_Column, Object>(I_AD_UI_Column.class, "UIStyle", null);
-    /** Column name UIStyle */
-    public static final String COLUMNNAME_UIStyle = "UIStyle";
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Column, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_UI_Column, Object>(I_AD_UI_Column.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Aktualisiert.

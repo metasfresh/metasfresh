@@ -14,7 +14,7 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1321867842L;
+	private static final long serialVersionUID = -427476289L;
 
     /** Standard Constructor */
     public X_AD_UI_ElementField (Properties ctx, int AD_UI_ElementField_ID, String trxName)
@@ -24,6 +24,8 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
         {
 			setAD_Field_ID (0);
 			setAD_UI_ElementField_ID (0);
+			setSeqNo (0);
+// @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_ElementField WHERE AD_UI_Element_ID=@AD_UI_Element_ID@
         } */
     }
 
@@ -130,6 +132,28 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 	public int getAD_UI_ElementField_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UI_ElementField_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -14,7 +14,7 @@ public class X_AD_UI_Column extends org.compiere.model.PO implements I_AD_UI_Col
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -688368404L;
+	private static final long serialVersionUID = 191928515L;
 
     /** Standard Constructor */
     public X_AD_UI_Column (Properties ctx, int AD_UI_Column_ID, String trxName)
@@ -24,7 +24,8 @@ public class X_AD_UI_Column extends org.compiere.model.PO implements I_AD_UI_Col
         {
 			setAD_UI_Column_ID (0);
 			setAD_UI_Section_ID (0);
-			setUIStyle (null);
+			setSeqNo (0);
+// @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Column where AD_UI_Column.AD_UI_Section_ID=@AD_UI_Section_ID@
         } */
     }
 
@@ -99,29 +100,25 @@ public class X_AD_UI_Column extends org.compiere.model.PO implements I_AD_UI_Col
 		return ii.intValue();
 	}
 
-	/** 
-	 * UIStyle AD_Reference_ID=540664
-	 * Reference name: AD_UI_Column_UIStyle
-	 */
-	public static final int UISTYLE_AD_Reference_ID=540664;
-	/** Left = L */
-	public static final String UISTYLE_Left = "L";
-	/** Right = R */
-	public static final String UISTYLE_Right = "R";
-	/** Set UI Style.
-		@param UIStyle UI Style	  */
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
 	@Override
-	public void setUIStyle (java.lang.String UIStyle)
+	public void setSeqNo (int SeqNo)
 	{
-
-		set_Value (COLUMNNAME_UIStyle, UIStyle);
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 
-	/** Get UI Style.
-		@return UI Style	  */
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
 	@Override
-	public java.lang.String getUIStyle () 
+	public int getSeqNo () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UIStyle);
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

@@ -274,29 +274,6 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsAdvancedField = "IsAdvancedField";
 
 	/**
-	 * Set Basic field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsBasicField (boolean IsBasicField);
-
-	/**
-	 * Get Basic field.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isBasicField();
-
-    /** Column definition for IsBasicField */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsBasicField = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsBasicField", null);
-    /** Column name IsBasicField */
-    public static final String COLUMNNAME_IsBasicField = "IsBasicField";
-
-	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -347,6 +324,29 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set UI Style.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUIStyle (java.lang.String UIStyle);
+
+	/**
+	 * Get UI Style.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUIStyle();
+
+    /** Column definition for UIStyle */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_UIStyle = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "UIStyle", null);
+    /** Column name UIStyle */
+    public static final String COLUMNNAME_UIStyle = "UIStyle";
 
 	/**
 	 * Get Aktualisiert.
