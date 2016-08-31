@@ -16,7 +16,6 @@ export function createWindow(windowType, docId = "NEW"){
                 dispatch(initLayoutSuccess(response.data))
             ).then(response => {
                 let tabTmp = {};
-
                 response.layout.tabs.map(tab => {
                     tabTmp[tab.tabid] = {};
                     dispatch(getData(windowType, docId, tab.tabid))
