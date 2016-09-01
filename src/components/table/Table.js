@@ -145,8 +145,8 @@ class Table extends Component {
                     <TableContextMenu />
                     <div className="row">
                         <div className="col-xs-12">
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "?tabid=" + tabid)}>Add new</button>
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "?advanced=true")}>Advanced edit</button>
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&tabid=" + tabid)}>Add new</button>
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&advanced=true")}>Advanced edit</button>
                             <div className="pull-xs-right">
                                 <TableFilter />
                             </div>

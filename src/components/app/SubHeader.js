@@ -29,7 +29,7 @@ class Subheader extends Component {
                                 <div className="subheader-item" onClick={()=> this.redirect('window/143')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
-                                <div className="subheader-item" onClick={()=> this.openModal(windowType + '?advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>
+                                <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>
                                 <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
                                 <div className="subheader-item"><i className="meta-icon-message" /> Send message</div>
                                 <div className="subheader-item"><i className="meta-icon-duplicate" /> Clone</div>
