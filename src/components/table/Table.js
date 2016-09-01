@@ -148,7 +148,7 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, windowType, docId} = this.props;
+        const {cols, windowType, docId, rowData, tabid} = this.props;
         const buttonLayout = {
             fields: [{
                 field: "example"
@@ -162,6 +162,7 @@ class Table extends Component {
             displayed: true,
             value: {"P": "New order line"}
         }
+        console.log(rowData);
         return (
             <div className="row">
                 <div className="col-xs-12">
@@ -185,7 +186,8 @@ class Table extends Component {
                                 <TableHeader cols={cols} />
                             </thead>
                             <tbody>
-                                {this.renderTableBody()}
+                            {this.renderTableBody()}
+                            {/*rowData[tabid].length > 0 ? this.renderTableBody() : this.renderEmptyInfo()*/}
                             </tbody>
                             <tfoot>
                             </tfoot>

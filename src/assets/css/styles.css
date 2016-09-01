@@ -31,7 +31,6 @@ body {
     color: #fff;
 }
 
-
 /*
  *  Extension for bootstrap grid
  */
@@ -81,6 +80,7 @@ body {
 .panel-modal {
     max-width: 90%;
     height: 90vh;
+    overflow-y: auto;
 }
 .panel-distance {
     margin-top: 2rem;
@@ -515,6 +515,10 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.screen-freeze-behind {
+    overflow: hidden;
 }
 
 .rotate {

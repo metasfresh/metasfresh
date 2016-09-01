@@ -6,13 +6,9 @@ import {
 } from '../actions/WindowActions';
 
 import Widget from '../components/Widget';
-import ErrorScreen from '../components/app/ErrorScreen';
 import Tabs from '../components/widget/Tabs';
 import TabPane from '../components/widget/TabPane';
 import Table from '../components/table/Table';
-import Header from '../components/app/Header';
-import OrderList from '../components/app/OrderList';
-import Modal from '../components/app/Modal';
 
 import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -107,19 +103,10 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, type, tabs, documentNoElement, docActionElement} = this.props.layout;
-        const {connectionError, data, modal} = this.props;
-        const dataId = findRowByPropName(data,"ID").value;
+        const {sections, type, tabs} = this.props.layout;
+        const {data} = this.props;
         return (
             <div>
-                {connectionError && <ErrorScreen />}
-                <Header
-                    docStatus = {docActionElement}
-                    docNo = {documentNoElement}
-                    dataId={dataId}
-                    windowType={type}
-                />
-                {modal && <Modal />}
                 <div className="container header-sticky-distance" key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">
@@ -132,31 +119,11 @@ class Window extends Component {
 }
 
 Window.propTypes = {
-    connectionError: PropTypes.bool.isRequired,
-    modal: PropTypes.bool.isRequired,
-    layout: PropTypes.object.isRequired,
-    data: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { windowHandler } = state;
-    const {
-        layout,
-        data,
-        connectionError,
-        modal
-    } = windowHandler || {
-        layout: {},
-        data:[],
-        connectionError: false,
-        modal: false
-    }
     return {
-        data,
-        layout,
-        connectionError,
-        modal
     }
 }
 
