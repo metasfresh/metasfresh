@@ -42,7 +42,7 @@ class MasterWindow extends Component {
                 {connectionError && <ErrorScreen />}
                 {modal.visible &&
                     <Modal
-                        windowType={140}
+                        windowType={modal.type}
                         dataId={dataId}
                         data={modal.data}
                         layout={modal.layout}

@@ -542,11 +542,18 @@ body {
 
 .empty-info-text {
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
     min-height: 200px;
 }
 
 .empty-info-text div {
     text-align: center;
+}
+
+.h-oneline-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: flex-start;
 }

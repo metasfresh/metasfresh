@@ -85,8 +85,8 @@ class Table extends Component {
         //     return p.id
         // });
     }
-    openModal = () => {
-        this.props.dispatch(openModal());
+    openModal = (windowType) => {
+        this.props.dispatch(openModal(windowType));
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
@@ -126,7 +126,7 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, windowType, docId, rowData, tabid} = this.props;
+        const {cols, type, docId, rowData, tabid} = this.props;
         const buttonLayout = {
             fields: [{
                 field: "example"
@@ -142,21 +142,18 @@ class Table extends Component {
         return (
             <div className="row">
                 <div className="col-xs-12">
-                    <TableFilter />
                     <TableContextMenu />
-                    <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        {/* Temporary button for adding new row*/}
-                        <Widget
-                            widgetType="Button"
-                            windowType={143}
-                            widgetData={buttonData}
-                            type={"primary"}
-                            noLabel={true}
-                            key={'tmpButton'}
-                            {...buttonLayout}
-                        />
-                        <button className="btn btn-meta-primary btn-sm" onClick={this.openModal}>Advanced edit</button>
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "?tabid=" + tabid)}>Add new</button>
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "?advanced=true")}>Advanced edit</button>
+                            <div className="pull-xs-right">
+                                <TableFilter />
+                            </div>
+                        </div>
+                    </div>
 
+                    <div className="panel panel-primary panel-bordered panel-bordered-force">
                         <table className="table table-bordered-vertically table-striped">
                             <thead>
                                 <TableHeader cols={cols} />
@@ -169,6 +166,16 @@ class Table extends Component {
                             </tfoot>
                         </table>
                     </div>
+                    {/* Temporary button for adding new row*/}
+                    <Widget
+                        widgetType="Button"
+                        windowType={143}
+                        widgetData={buttonData}
+                        type={"primary"}
+                        noLabel={true}
+                        key={'tmpButton'}
+                        {...buttonLayout}
+                    />
                 </div>
             </div>
         )

@@ -13,7 +13,7 @@ class Modal extends Component {
         super(props);
 
         const {dispatch, windowType, dataId} = this.props;
-        dispatch(createWindow(windowType, "NEW", true));
+        dispatch(createWindow(windowType, dataId, true));
     }
 
     componentDidMount() {

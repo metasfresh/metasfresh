@@ -77,9 +77,10 @@ export function noConnection(status){
     }
 }
 
-export function openModal(){
+export function openModal(windowType){
     return {
-        type: types.OPEN_MODAL
+        type: types.OPEN_MODAL,
+        windowType: windowType
     }
 }
 export function closeModal(){
@@ -123,7 +124,6 @@ export function createWindow(windowType, docId = "NEW", isModal = false){
                 })
             }).catch((e)=>{
                 console.log(e);
-                dispatch(noConnection(true));
             })
     }
 }

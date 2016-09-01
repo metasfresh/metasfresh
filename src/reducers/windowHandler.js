@@ -5,6 +5,7 @@ const initialState = {
     connectionError: false,
     modal: {
         visible: false,
+        type: 0,
         layout: {},
         data: [],
         rowData: {}
@@ -27,7 +28,8 @@ export default function windowHandler(state = initialState, action) {
         case types.OPEN_MODAL:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
-                    visible: true
+                    visible: true,
+                    type: action.windowType
                 })
         })
 
