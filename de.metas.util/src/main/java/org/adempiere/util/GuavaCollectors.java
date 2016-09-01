@@ -12,6 +12,7 @@ import java.util.stream.Collector;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /*
@@ -123,7 +124,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect items and join them to String using given <code>joiner</code>.
-	 * 
+	 *
 	 * @param joiner
 	 * @return collector
 	 */
@@ -136,6 +137,15 @@ public final class GuavaCollectors
 			return l;
 		};
 		final Function<List<T>, String> finisher = joiner::join;
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKey(final Function<? super V, ? extends K> keyMapper)
+	{
+		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;
+		final BiConsumer<ImmutableMap.Builder<K, V>, V> accumulator = (builder, item) -> builder.put(keyMapper.apply(item), item);
+		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
+		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
