@@ -80,6 +80,14 @@ public class ManualTest
 		//
 		//
 		System.out.println("---------------------------------------------------------------------");
+		System.out.println("Get Order line layout");
+		{
+			restClient.tabLayout(143, "1", advanced);
+		}
+
+		//
+		//
+		System.out.println("---------------------------------------------------------------------");
 		System.out.println("Create Order Header");
 		String orderId = "NEW";
 		{

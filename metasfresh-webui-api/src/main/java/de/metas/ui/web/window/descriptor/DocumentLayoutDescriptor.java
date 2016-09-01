@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 
 /*
  * #%L
@@ -57,7 +58,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private final DocumentLayoutElementDescriptor docActionElement;
 
 	private final List<DocumentLayoutSectionDescriptor> sections;
-	private final List<DocumentLayoutDetailDescriptor> details;
+	private final Map<String, DocumentLayoutDetailDescriptor> details;
 	private final DocumentLayoutSideListDescriptor sideList;
 
 	private final Map<String, String> debugProperties;
@@ -70,7 +71,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		docActionElement = builder.docActionElement;
 
 		sections = ImmutableList.copyOf(builder.buildSections());
-		details = ImmutableList.copyOf(builder.buildDetails());
+		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideList = builder.getSideList();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
@@ -108,9 +109,26 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return sections;
 	}
 
-	public List<DocumentLayoutDetailDescriptor> getDetails()
+	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
-		return details;
+		return details.values();
+	}
+
+	/**
+	 * 
+	 * @param detailId
+	 * @return detail
+	 * @throws DocumentLayoutDetailNotFoundException
+	 */
+	public DocumentLayoutDetailDescriptor getDetail(final String detailId)
+	{
+		final DocumentLayoutDetailDescriptor detail = details.get(detailId);
+		if (detail == null)
+		{
+			throw new DocumentLayoutDetailNotFoundException("Tab '" + detailId + "' was not found. Available tabs are: " + details.keySet());
+		}
+
+		return detail;
 	}
 
 	public DocumentLayoutSideListDescriptor getSideList()
@@ -175,13 +193,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
-		private List<DocumentLayoutDetailDescriptor> buildDetails()
+		private Map<String, DocumentLayoutDetailDescriptor> buildDetails()
 		{
 			return detailsBuilders
 					.stream()
 					.map(detailBuilder -> detailBuilder.build())
 					.filter(detail -> detail.hasElements())
-					.collect(GuavaCollectors.toImmutableList());
+					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
 		}
 
 		public Builder setAD_Window_ID(final int AD_Window_ID)

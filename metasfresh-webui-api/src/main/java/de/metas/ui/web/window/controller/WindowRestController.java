@@ -26,9 +26,11 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -135,6 +137,27 @@ public class WindowRestController implements IWindowRestController
 		return JSONDocumentLayout.of(layout, JSONFilteringOptions.builder()
 				.setShowAdvancedFields(advanced)
 				.build());
+	}
+
+	@Override
+	@RequestMapping(value = "/tabLayout", method = RequestMethod.GET)
+	public JSONDocumentLayoutTab tabLayout(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_TabId, required = true) final String detailId //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
+	)
+	{
+		autologin();
+
+		final DocumentLayoutDetailDescriptor layoutDetail = documentCollection.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getLayout()
+				.getDetail(detailId);
+
+		return JSONDocumentLayoutTab.of(layoutDetail, JSONFilteringOptions.builder()
+				.setShowAdvancedFields(advanced)
+				.build());
+
 	}
 
 	@Override

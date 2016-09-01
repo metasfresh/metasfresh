@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
@@ -40,7 +41,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutTab implements Serializable
 {
-	static List<JSONDocumentLayoutTab> ofList(final List<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return details.stream()
 				.map(detail -> of(detail, jsonFilteringOpts))
@@ -48,7 +49,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutTab of(final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
+	public static JSONDocumentLayoutTab of(final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return new JSONDocumentLayoutTab(detail, jsonFilteringOpts);
 	}
