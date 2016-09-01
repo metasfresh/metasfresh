@@ -37,7 +37,13 @@ class Table extends Component {
 
 
     handleClickOutside = (event) => {
-      console.log('ssss');
+      console.log('deselected for '+ this.props.tabid);
+      const {selectedProducts, dispatch} = this.props
+      dispatch(deselectAllProducts());
+    }
+
+    aaa = (event) => {
+      console.log('aaa');
     }
 
     handleClick = (e, id, selectedProd) => {
@@ -172,6 +178,7 @@ class Table extends Component {
                         x={this.state.contextMenu.x}
                         y={this.state.contextMenu.y}
                         isDisplayed={this.state.contextMenu.open}
+                        onClick={(e) => this.aaa(e)}
                     />
                     <div className="row">
                         <div className="col-xs-12">
@@ -195,7 +202,8 @@ class Table extends Component {
                             </tfoot>
                         </table>
 
-                        { rowData && rowData[tabid] && rowData[tabid].length === 0 && this.renderEmptyInfo() }
+                        { /*rowData && rowData[tabid] && rowData[tabid].length === 0 && this.renderEmptyInfo()*/ }
+                        {this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null"}
 
                     </div>
                     {/* Temporary button for adding new row*/}
@@ -234,7 +242,13 @@ function mapStateToProps(state) {
     }
 }
 
-Table = connect(mapStateToProps)(Table)
+// Table = connect(mapStateToProps)(Table)
+
+if (typeof document !== 'undefined') { //this line is only needed for server side isomorphic rendering
+    Table = connect(
+        mapStateToProps //not connected to clicking outside 
+    )(onClickOutside(Table)); //here we wrap the component with the onClickOutside call
+}
 
 export default Table
 // export default onClickOutside(Table)

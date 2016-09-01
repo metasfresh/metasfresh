@@ -551,3 +551,13 @@ body {
 .empty-info-text div {
     text-align: center;
 }
+
+.indicator {
+    width: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.indicator img {
+    width: 100%;
+}

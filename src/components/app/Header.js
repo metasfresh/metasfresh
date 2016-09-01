@@ -3,6 +3,9 @@ import {connect} from 'react-redux';
 
 import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import loader from '../../assets/images/state2.gif';
+import saved from '../../assets/images/state3.png';
+import unsaved from '../../assets/images/state1.png';
 
 import Subheader from './SubHeader';
 import Widget from '../Widget';
@@ -81,6 +84,10 @@ class Header extends Component {
                                         {...docStatus}
                                     />
                                 }
+
+                                <div className="indicator">
+                                    <img src={loader} />
+                                </div>
 
                                 <div
                                     className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}

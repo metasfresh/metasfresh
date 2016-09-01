@@ -7,6 +7,7 @@ import {
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
+        console.log(props);
     }
     componentDidMount = () => {
         // this.contextMenu.addEventListener("blur", ()=>{
