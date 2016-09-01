@@ -19,6 +19,7 @@ upcoming
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
+* #319 material tracking - deduplicate numbers in article statistics report
 
 # metasfresh 4.33.32 (2016-35)
 
