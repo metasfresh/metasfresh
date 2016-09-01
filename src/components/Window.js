@@ -65,12 +65,13 @@ class Window extends Component {
         return group.map((elem, id)=> {
             const {type, elementsLine} = elem;
             return (
-                <div
-                    key={'elemGroups' + id}
-                    className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
-                >
-                    {elementsLine && elementsLine.length > 0 && this.renderElementsLine(elementsLine)}
-                </div>
+                elementsLine && elementsLine.length > 0 &&
+                    <div
+                        key={'elemGroups' + id}
+                        className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
+                    >
+                        {this.renderElementsLine(elementsLine)}
+                    </div>
             )
         })
     }
@@ -78,9 +79,10 @@ class Window extends Component {
         return elementsLine.map((elem, id)=> {
             const {elements} = elem;
             return (
-                <div className="elements-line" key={"line" + id}>
-                    {elements && elements.length > 0 && this.renderElements(elements)}
-                </div>
+                elements && elements.length > 0 &&
+                    <div className="elements-line" key={"line" + id}>
+                        {this.renderElements(elements)}
+                    </div>
             )
         })
     }

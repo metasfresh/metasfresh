@@ -399,7 +399,7 @@ input:checked + .input-slider:before {
 }
 
 .form-group {
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
 }
 
 .form-control {
