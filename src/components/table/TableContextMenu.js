@@ -10,10 +10,11 @@ class TableContextMenu extends Component {
         // });
     }
     render() {
-        const {isDisplayed} = this.props;
+        const {isDisplayed, x, y} = this.props;
+        console.log(isDisplayed,x,y);
         return (
             !!isDisplayed && <div
-                className="context-menu panel-bordered panel-primary"
+                className="context-menu context-menu-open panel-bordered panel-primary"
                 ref={(c) => this.contextMenu = c}
                 tabIndex="0" style={{left: this.props.x, top: this.props.y, display: (this.props.isDisplayed ? "block" : "none") }}
             >

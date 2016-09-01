@@ -82,13 +82,14 @@ class Table extends Component {
     }
     handleRightClick = (e) => {
         e.preventDefault();
-        console.log('right click');
-        // this.setState({x: e.clientX, y: e.clientY, contextMenuDisplayed: true})
-        this.state.contextMenu.x = e.clientX;
-        this.state.contextMenu.y = e.clientY;
-        this.state.contextMenu.contextMenuDisplayed = true;
-        console.log(this);
-
+        console.log()
+        this.setState({
+            contextMenu: {
+                x: e.clientX,
+                y: e.clientY,
+                open: true
+            }
+        });
     }
     handleRemoveSelected = () => {
         this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
@@ -141,14 +142,14 @@ class Table extends Component {
     }
 
     renderEmptyInfo = () => {
-            return (
-                <div className="empty-info-text">
-                    <div>
-                        <h5>There are no pricing rules assigned to this product.</h5>
-                        <p>You can define them in "Pricing systems"</p>
-                    </div>
+        return (
+            <div className="empty-info-text">
+                <div>
+                    <h5>There are no pricing rules assigned to this product.</h5>
+                    <p>You can define them in "Pricing systems"</p>
                 </div>
-            )
+            </div>
+        )
     }
 
     render() {
@@ -166,11 +167,16 @@ class Table extends Component {
             displayed: true,
             value: {"P": "New order line"}
         }
+        console.log(this.state.contextMenu.x);
         return (
             <div className="row">
                 <div className="col-xs-12">
                     <TableFilter />
-                    <TableContextMenu x={this.state.contextMenu.x} y={this.state.contextMenu.y} isDisplayed={this.state.contextMenu.contextMenuDisplayed} />
+                    <TableContextMenu
+                        x={this.state.contextMenu.x}
+                        y={this.state.contextMenu.y}
+                        isDisplayed={this.state.contextMenu.open}
+                    />
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
                         {/* Temporary button for adding new row*/}
                         <Widget
