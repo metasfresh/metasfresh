@@ -114,7 +114,6 @@ class Table extends Component {
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
-        console.log(rowData.length);
         if(rowData[tabid]){
 
             let keys = Object.keys(rowData[tabid]);
@@ -167,7 +166,6 @@ class Table extends Component {
             displayed: true,
             value: {"P": "New order line"}
         }
-        console.log(rowData);
         return (
             <div className="row">
                 <div className="col-xs-12">
@@ -191,14 +189,11 @@ class Table extends Component {
                                 <TableHeader cols={cols} />
                             </thead>
                             <tbody>
-                            {this.renderTableBody()}
+                                {this.renderTableBody()}
                             </tbody>
                             <tfoot>
                             </tfoot>
                         </table>
-
-                        {console.log("position x")}
-                        {console.log(this.state.contextMenu.x)}
 
                         { this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null" }
 
