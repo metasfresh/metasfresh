@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import ReactOutsideEvent from 'react-onclickoutside';
+import onClickOutside from 'react-onclickoutside';
 
 import {
     selectProduct,
@@ -25,6 +25,7 @@ import Widget from '../Widget';
 class Table extends Component {
     constructor(props) {
         super(props);
+        this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
             contextMenu: {
                 open: false,
@@ -35,8 +36,8 @@ class Table extends Component {
     }
 
 
-    handleClickOutside = () => {
-        dispatch(deselectAllProducts());
+    handleClickOutside = (event) => {
+      console.log('ssss');
     }
 
     handleClick = (e, id, selectedProd) => {
@@ -71,18 +72,23 @@ class Table extends Component {
             if(isSelected){
                 if(isMoreSelected){
                     dispatch(selectOneProduct(id));
-                    // console.log(id);
                 }else{
                     // dispatch(deselectAllProducts());
                 }
             }else{
                 dispatch(selectOneProduct(id));
-                // console.log(id);
             }
         }
+    }
+    handleRightClick = (e) => {
+        e.preventDefault();
+        console.log('right click');
+        // this.setState({x: e.clientX, y: e.clientY, contextMenuDisplayed: true})
+        this.state.contextMenu.x = e.clientX;
+        this.state.contextMenu.y = e.clientY;
+        this.state.contextMenu.contextMenuDisplayed = true;
+        console.log(this);
 
-        // console.log("selectedProducts");
-        // console.log(selectedProducts);
     }
     handleRemoveSelected = () => {
         this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
@@ -108,12 +114,10 @@ class Table extends Component {
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
-        // console.log(this.props);
         console.log(rowData.length);
         if(rowData[tabid]){
 
             let keys = Object.keys(rowData[tabid]);
-            // console.log(keys);
             const item = rowData[tabid];
             let ret = [];
             for(let i=0; i < keys.length; i++) {
@@ -128,6 +132,7 @@ class Table extends Component {
                         type={type}
                         docId={docId}
                         onClick={(e) => this.handleClick(e, item[key].rowId, this.props.selectedProducts)}
+                        onContextMenu={(e) => this.handleRightClick(e)}
                     />
                 );
             }
@@ -167,7 +172,7 @@ class Table extends Component {
             <div className="row">
                 <div className="col-xs-12">
                     <TableFilter />
-                    <TableContextMenu />
+                    <TableContextMenu x={this.state.contextMenu.x} y={this.state.contextMenu.y} isDisplayed={this.state.contextMenu.contextMenuDisplayed} />
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
                         {/* Temporary button for adding new row*/}
                         <Widget
@@ -181,17 +186,19 @@ class Table extends Component {
                         />
                         <button className="btn btn-meta-primary btn-sm" onClick={this.openModal}>Advanced edit</button>
 
-                        <table className="table table-bordered-vertically table-striped">
+                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
                             <tbody>
                             {this.renderTableBody()}
-                            {/*rowData[tabid].length > 0 ? this.renderTableBody() : this.renderEmptyInfo()*/}
                             </tbody>
                             <tfoot>
                             </tfoot>
                         </table>
+
+                        {console.log("position x")}
+                        {console.log(this.state.contextMenu.x)}
 
                         { this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null" }
 
@@ -208,7 +215,6 @@ Table.propTypes = {
 };
 
 function mapStateToProps(state) {
-  // console.log(state);
     const { windowHandler } = state;
     const {
         rowData
@@ -217,8 +223,6 @@ function mapStateToProps(state) {
     }
 
     const selectedProducts = state.appHandler.selectedProducts;
-
-// console.log(selectedProducts);
     return {
         rowData, selectedProducts
     }
@@ -227,3 +231,4 @@ function mapStateToProps(state) {
 Table = connect(mapStateToProps)(Table)
 
 export default Table
+// export default onClickOutside(Table)
