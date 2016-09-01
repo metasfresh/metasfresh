@@ -230,6 +230,7 @@ body {
     font-weight: normal;
     color: $brand-font-color;
     box-shadow: 0 0 6px rgba(0,0,0,.1);
+    z-index: 2;
 }
 .context-menu-open {
     display: block;
@@ -549,11 +550,4 @@ body {
 
 .empty-info-text div {
     text-align: center;
-}
-
-.h-oneline-container {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: flex-start;
 }

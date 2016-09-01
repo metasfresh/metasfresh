@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 
 import {
     selectProduct,
@@ -20,9 +21,11 @@ import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
 import Widget from '../Widget';
 
+
 class Table extends Component {
     constructor(props) {
         super(props);
+        this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
             contextMenu: {
                 open: false,
@@ -31,43 +34,65 @@ class Table extends Component {
             }
         }
     }
-    handleClick = (e, id, index) => {
-        // e.preventDefault();
-        //
-        // const {selectedProducts, dispatch} = this.props
-        // const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
-        // const selectRange = e.shiftKey;
-        // const isSelected = index > -1;
-        // const isAnySelected = selectedProducts.length > 0;
-        // const isMoreSelected = selectedProducts.length > 1;
-        //
-        // if(selectMore){
-        //     if(isSelected){
-        //         dispatch(deselectProduct(index));
-        //     }else{
-        //         dispatch(selectProduct(id));
-        //     }
-        // }else if(selectRange){
-        //     if(isAnySelected){
-        //         const idsToSelect = this.getProductRange(id);
-        //         dispatch(selectRangeProduct(idsToSelect));
-        //     }else{
-        //         dispatch(selectOneProduct(id));
-        //     }
-        // }else{
-        //     if(isSelected){
-        //         if(isMoreSelected){
-        //             dispatch(selectOneProduct(id));
-        //         }else{
-        //             dispatch(deselectAllProducts());
-        //         }
-        //     }else{
-        //         dispatch(selectOneProduct(id));
-        //     }
-        // }
+
+
+    handleClickOutside = (event) => {
+      console.log('ssss');
+    }
+
+    handleClick = (e, id, selectedProd) => {
+        e.preventDefault();
+
+        const {selectedProducts, dispatch} = this.props
+        const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
+        const selectRange = e.shiftKey;
+        const isSelected = selectedProd.indexOf(id) > -1;
+        const isAnySelected = selectedProducts.length > 0;
+        const isMoreSelected = selectedProducts.length > 1;
+
+        console.log(id);
+        console.log(selectedProd.indexOf(id));
+
+        if(selectMore){
+          console.log('select more');
+            if(isSelected){
+                dispatch(deselectProduct(id));
+            }else{
+                dispatch(selectProduct(id));
+            }
+        }else if(selectRange){
+            console.log('select range');
+            if(isAnySelected){
+                const idsToSelect = this.getProductRange(id);
+                dispatch(selectRangeProduct(idsToSelect));
+            }else{
+                dispatch(selectOneProduct(id));
+            }
+        }else{
+            if(isSelected){
+                if(isMoreSelected){
+                    dispatch(selectOneProduct(id));
+                }else{
+                    // dispatch(deselectAllProducts());
+                }
+            }else{
+                dispatch(selectOneProduct(id));
+            }
+        }
+    }
+    handleRightClick = (e) => {
+        e.preventDefault();
+        console.log()
+        this.setState({
+            contextMenu: {
+                x: e.clientX,
+                y: e.clientY,
+                open: true
+            }
+        });
     }
     handleRemoveSelected = () => {
-        // this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
+        this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
     }
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
@@ -75,15 +100,15 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        // const {products, selectedProducts} = this.props;
-        // let selected = [
-        //     products.products.findIndex(x => x.id === id),
-        //     products.products.findIndex(x => x.id === selectedProducts[0])
-        // ];
-        // selected.sort((a,b) => a - b);
-        // return products.products.slice(selected[0], selected[1]+1).map(p => {
-        //     return p.id
-        // });
+        const {products, selectedProducts} = this.props;
+        let selected = [
+            products.products.findIndex(x => x.id === id),
+            products.products.findIndex(x => x.id === selectedProducts[0])
+        ];
+        selected.sort((a,b) => a - b);
+        return products.products.slice(selected[0], selected[1]+1).map(p => {
+            return p.id
+        });
     }
     openModal = (windowType) => {
         this.props.dispatch(openModal(windowType));
@@ -105,7 +130,8 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        // onClick={(e) => this.handleClick(e, product.id, selectedProducts.indexOf(product.id))}
+                        onClick={(e) => this.handleClick(e, item[key].rowId, this.props.selectedProducts)}
+                        onContextMenu={(e) => this.handleRightClick(e)}
                     />
                 );
             }
@@ -139,10 +165,15 @@ class Table extends Component {
             displayed: true,
             value: {"P": "New order line"}
         }
+
         return (
             <div className="row">
                 <div className="col-xs-12">
-                    <TableContextMenu />
+                    <TableContextMenu
+                        x={this.state.contextMenu.x}
+                        y={this.state.contextMenu.y}
+                        isDisplayed={this.state.contextMenu.open}
+                    />
                     <div className="row">
                         <div className="col-xs-12">
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&tabid=" + tabid)}>Add new</button>
@@ -154,17 +185,19 @@ class Table extends Component {
                     </div>
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped">
+                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
                             <tbody>
-                            {this.renderTableBody()}
-                            {/*rowData[tabid].length > 0 ? this.renderTableBody() : this.renderEmptyInfo()*/}
+                                {this.renderTableBody()}
                             </tbody>
                             <tfoot>
                             </tfoot>
                         </table>
+
+                        { this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null" }
+
                     </div>
                     {/* Temporary button for adding new row*/}
                     <Widget
@@ -184,14 +217,25 @@ class Table extends Component {
 
 
 Table.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    selectedProducts: PropTypes.array.isRequired
 };
 
 function mapStateToProps(state) {
+    const { appHandler } = state;
+
+    const {
+        selectedProducts
+    } = appHandler || {
+        selectedProducts: []
+    }
+
     return {
+        selectedProducts
     }
 }
 
 Table = connect(mapStateToProps)(Table)
 
 export default Table
+// export default onClickOutside(Table)

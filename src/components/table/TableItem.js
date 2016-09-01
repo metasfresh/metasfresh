@@ -65,7 +65,7 @@ class TableItem extends Component {
         })
     }
     render() {
-        const {fields, selectedProducts, onClick, rowId, cols} = this.props;
+        const {fields, selectedProducts, onClick, onContextMenu, rowId, cols} = this.props;
         const index = selectedProducts.indexOf(rowId);
         const isSelected = index > -1;
         return (
