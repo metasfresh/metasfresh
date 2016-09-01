@@ -90,7 +90,7 @@ class Table extends Component {
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
-        if(rowData[tabid]){
+        if(rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
             let ret = [];
@@ -133,8 +133,7 @@ class Table extends Component {
             }],
             rowId: 'NEW',
             tabId: 1,
-            dataId: docId,
-
+            dataId: docId
         }
         const buttonData = {
             displayed: true,
@@ -182,15 +181,7 @@ Table.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const { windowHandler } = state;
-    const {
-        rowData
-    } = windowHandler || {
-        rowData: {}
-    }
-
     return {
-        rowData
     }
 }
 

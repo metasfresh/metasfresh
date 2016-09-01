@@ -46,11 +46,13 @@ class MasterWindow extends Component {
                         dataId={dataId}
                         data={modal.data}
                         layout={modal.layout}
+                        rowData={modal.rowData}
                      />
                  }
                 <Window
                     data={master.data}
                     layout={master.layout}
+                    rowData={master.rowData}
                 />
             </div>
         );

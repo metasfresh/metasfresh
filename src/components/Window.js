@@ -18,7 +18,7 @@ class Window extends Component {
     }
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
-        const {data} = this.props;
+        const {data, rowData} = this.props;
         const dataId = findRowByPropName(data,"ID").value;
 
         return(
@@ -31,7 +31,7 @@ class Window extends Component {
                                 caption={caption}
                                 key={tabid}
                             >
-                                <Table cols={elements} tabid={tabid} type={type} docId={dataId} />
+                                <Table rowData={rowData} cols={elements} tabid={tabid} type={type} docId={dataId} />
                             </TabPane>
                         )
                     })
