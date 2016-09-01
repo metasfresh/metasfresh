@@ -16,6 +16,8 @@ upcoming
 
 ## Features
 
+* #297 Performance problems related to zoom-to
+
 ## Fixes
 
 # metasfresh 4.33.32 (2016-35)
