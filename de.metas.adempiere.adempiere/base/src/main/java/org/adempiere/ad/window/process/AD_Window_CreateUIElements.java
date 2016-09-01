@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADFieldDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -22,7 +22,6 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
@@ -123,6 +122,8 @@ public class AD_Window_CreateUIElements extends SvrProcess
 		private static final ModelDynAttributeAccessor<I_AD_UI_Element, Integer> DYNATTR_UIElementField_NextSeqNo = new ModelDynAttributeAccessor<>("UIElementField_NextSeqNo", Integer.class);
 		private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
 				.onResultOf((adField) -> adField.getSeqNo());
+		private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNoGrid = Ordering.natural()
+				.onResultOf((adField) -> adField.getSeqNoGrid());
 
 		private static final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
 				//
@@ -154,6 +155,11 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			Check.assumeNotNull(consumer, "Parameter consumer is not null");
 			this.consumer = consumer;
 		}
+		
+		private final void log(final String msg, final Object...msgParameters)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+		}
 
 		public void generate(final I_AD_Window adWindow)
 		{
@@ -163,24 +169,69 @@ public class AD_Window_CreateUIElements extends SvrProcess
 				throw new AdempiereException("@NotFound@ @AD_Tab_ID@");
 			}
 
-			final I_AD_Tab adTab = adTabs.get(0);
-			migratePrimaryTab(adTab);
-		}
+			final I_AD_Tab masterTab = adTabs.get(0);
+			migratePrimaryTab(masterTab);
 
-		public void generateForMainTabId(final int AD_Tab_ID)
-		{
-			final I_AD_Tab adTab = InterfaceWrapperHelper.create(Env.getCtx(), AD_Tab_ID, I_AD_Tab.class, ITrx.TRXNAME_ThreadInherited);
-			migratePrimaryTab(adTab);
-		}
-
-		private void migratePrimaryTab(final I_AD_Tab adTab)
-		{
-			if (!windowDAO.retrieveUISections(adTab).isEmpty())
+			final List<I_AD_Tab> detailTabs = getDirectChildTabs(adTabs, masterTab);
+			for (final I_AD_Tab detailTab : detailTabs)
 			{
-				throw new AdempiereException("Tab already has UI sections: " + adTab);
+				migrateDetailTab(detailTab);
+			}
+		}
+
+		private static List<I_AD_Tab> getDirectChildTabs(final List<I_AD_Tab> tabs, final I_AD_Tab parentTab)
+		{
+			final int parentTabLevel = parentTab.getTabLevel();
+			final int childTabLevelExpected = parentTabLevel + 1;
+
+			final int tabsCount = tabs.size();
+			final List<I_AD_Tab> childTabs = new ArrayList<>();
+			boolean foundParentTab = false;
+			for (int childTabNo = 0; childTabNo < tabsCount; childTabNo++)
+			{
+				final I_AD_Tab childTab = tabs.get(childTabNo);
+
+				if (!foundParentTab)
+				{
+					if (childTab.getAD_Tab_ID() == parentTab.getAD_Tab_ID())
+					{
+						foundParentTab = true;
+					}
+
+					continue;
+				}
+
+				final int childTabLevel = childTab.getTabLevel();
+
+				if (childTabLevel == parentTabLevel)
+				{
+					// we just moved to another parent tab. Stop here.
+					break;
+				}
+				else if (childTabLevel == childTabLevelExpected)
+				{
+					// we found a child tab. Collect it.
+					childTabs.add(childTab);
+				}
+				else // childTabLevel > childTabLevelExpected
+				{
+					// we found a child of a child tab. Ignore it.
+					continue;
+				}
 			}
 
-			final I_AD_UI_Section uiSection = createUISection(adTab, 10);
+			return childTabs;
+		}
+
+		public void migratePrimaryTab(final I_AD_Tab masterTab)
+		{
+			if (windowDAO.hasUISections(masterTab))
+			{
+				log("Skip migrating {} because already has sections", masterTab);
+				return;
+			}
+
+			final I_AD_UI_Section uiSection = createUISection(masterTab, 10);
 
 			final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, 10);
 			@SuppressWarnings("unused")
@@ -188,7 +239,7 @@ public class AD_Window_CreateUIElements extends SvrProcess
 
 			final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft, 10);
 
-			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(adTab));
+			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(masterTab));
 			adFields.sort(ORDERING_AD_Field_BySeqNo);
 
 			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
@@ -216,6 +267,59 @@ public class AD_Window_CreateUIElements extends SvrProcess
 				if (uiElement == null)
 				{
 					uiElement = createUIElement(uiElementGroup_Left_Default, adField, uiElement_nextSeqNo);
+					if (uiElement != null)
+					{
+						uiElement_nextSeqNo += 10;
+						uiElementsById.put(uiElementId, uiElement);
+					}
+				}
+				else
+				{
+					createUIElementField(uiElement, adField);
+				}
+			}
+		}
+
+		public final void migrateDetailTab(final I_AD_Tab detailTab)
+		{
+			if (windowDAO.hasUISections(detailTab))
+			{
+				log("Skip migrating {} because already has sections", detailTab);
+				return;
+			}
+
+			final I_AD_UI_Section uiSection = createUISection(detailTab, 10);
+			final I_AD_UI_Column uiColumn = createUIColumn(uiSection, 10);
+			final I_AD_UI_ElementGroup uiElementGroup = createUIElementGroup(uiColumn, 10);
+
+			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(detailTab));
+			adFields.sort(ORDERING_AD_Field_BySeqNoGrid);
+
+			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
+
+			int uiElement_nextSeqNo = 10;
+			for (final I_AD_Field adField : adFields)
+			{
+				if (!adField.isActive())
+				{
+					continue;
+				}
+				if (!adField.isDisplayedGrid())
+				{
+					continue;
+				}
+				if (adField.getIncluded_Tab_ID() > 0)
+				{
+					// skip included tabs
+					continue;
+				}
+
+				final String uiElementId = extractElementId(adField);
+				I_AD_UI_Element uiElement = uiElementsById.get(uiElementId);
+
+				if (uiElement == null)
+				{
+					uiElement = createUIElement_Grid(uiElementGroup, adField, uiElement_nextSeqNo);
 					if (uiElement != null)
 					{
 						uiElement_nextSeqNo += 10;
@@ -278,16 +382,47 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			return uiElementGroup;
 		}
 
-		private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
+		private I_AD_UI_Element createUIElementCommon(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField)
 		{
+			final I_AD_Tab adTab = uiElementGroup.getAD_UI_Column().getAD_UI_Section().getAD_Tab();
+
 			final I_AD_UI_Element uiElement = InterfaceWrapperHelper.newInstance(I_AD_UI_Element.class, uiElementGroup);
+			uiElement.setAD_Tab(adTab);
 			uiElement.setAD_UI_ElementGroup(uiElementGroup);
 			uiElement.setAD_Field(adField);
 			uiElement.setName(adField.getName());
 			uiElement.setDescription(adField.getDescription());
 			uiElement.setHelp(adField.getHelp());
 			uiElement.setIsAdvancedField(false);
+
+			uiElement.setIsDisplayed(false);
+			uiElement.setSeqNo(0);
+
+			uiElement.setIsDisplayedGrid(false);
+			uiElement.setSeqNoGrid(0);
+
+			uiElement.setIsDisplayed_SideList(false);
+			uiElement.setSeqNo_SideList(0);
+
+			return uiElement;
+		}
+
+		private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
+		{
+			final I_AD_UI_Element uiElement = createUIElementCommon(uiElementGroup, adField);
+			uiElement.setIsDisplayed(true);
 			uiElement.setSeqNo(seqNo);
+
+			consumer.consume(uiElement, uiElementGroup);
+
+			return uiElement;
+		}
+
+		private I_AD_UI_Element createUIElement_Grid(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
+		{
+			final I_AD_UI_Element uiElement = createUIElementCommon(uiElementGroup, adField);
+			uiElement.setIsDisplayedGrid(true);
+			uiElement.setSeqNoGrid(seqNo);
 
 			consumer.consume(uiElement, uiElementGroup);
 

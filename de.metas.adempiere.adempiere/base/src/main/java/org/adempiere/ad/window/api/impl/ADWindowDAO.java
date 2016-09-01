@@ -83,6 +83,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, adWindow.getAD_Window_ID())
 				.orderBy()
 				.addColumn(I_AD_Tab.COLUMN_SeqNo)
+				.addColumn(I_AD_Tab.COLUMN_AD_Tab_ID)
 				.endOrderBy()
 				.create()
 				.list(I_AD_Tab.class);
@@ -93,11 +94,30 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(adTab);
 		final int AD_Tab_ID = adTab.getAD_Tab_ID();
-		return retrieveUISections(ctx, AD_Tab_ID);
+		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
+				.create()
+				.list(I_AD_UI_Section.class);
 	}
 
 	@Override
 	public List<I_AD_UI_Section> retrieveUISections(final Properties ctx, final int AD_Tab_ID)
+	{
+		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
+				.create()
+				.list(I_AD_UI_Section.class);
+	}
+
+	@Override
+	public boolean hasUISections(final I_AD_Tab adTab)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(adTab);
+		final int AD_Tab_ID = adTab.getAD_Tab_ID();
+		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
+				.create()
+				.match();
+	}
+
+	private IQueryBuilder<I_AD_UI_Section> retrieveUISectionsQuery(final Properties ctx, final int AD_Tab_ID)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
@@ -106,9 +126,8 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, AD_Tab_ID)
 				.orderBy()
 				.addColumn(I_AD_UI_Section.COLUMN_SeqNo)
-				.endOrderBy()
-				.create()
-				.list(I_AD_UI_Section.class);
+				.addColumn(I_AD_UI_Section.COLUMN_AD_UI_Section_ID)
+				.endOrderBy();
 	}
 
 	@Override
