@@ -1,3 +1,15 @@
+/* 
+ this function is currently used in "de.metas.handlingunits".recursive_hu_trace function
+ use: it takes an array of M_HU_Trx_Line(s) and returns for each M_HU_Trx_Line the directly related M_HU_Trx_Line(s) which come from splitting an HU.
+ in case an HU was split, you will have at least 2 M_HU_Trx_Line(s) with qty!=0 (one with + and one with -) which have on parent_hu_trx_line_id the M_HU_Trx_Line_ID of each other. The new split HU lies in it's parent.    
+ if the new HU is split again, then there is another M_HU_Trx_Line (a third one) with this HU. 
+ that's why first we search for the "latest" M_HU_Trx_Line, and if there is none we stay with the parent.
+ You can picture this function in layers:
+ Layer 1 is the transaction you have + the parent. Parent is the split HU. 
+ Layer 2 is the third transaction, with the same HU from Layer 1, and it announces a second split. If there is no second split, then there is just 1 layer. This is where this function stops.
+ To get to layer 3, you just have to call this function with the transaction(s) from Layer 2. And so on, until the HU is not split any more 
+*/
+
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace_sub(trxline integer[]);
 CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace_sub(trxline integer[]) RETURNS TABLE
 (
@@ -15,7 +27,7 @@ DECLARE
     
 BEGIN
     for r in (
-
+	
 	SELECT   COALESCE(trx_line3.M_HU_Trx_Line_id::integer, trx_line2.M_HU_Trx_Line_id::integer) AS M_HU_Trx_Line_id, trx_line2.M_HU_ID as M_HU_id FROM M_HU_Trx_Line trx_line --, trx_line2.M_HU_Trx_Line_id::integer AS passed_trx_id 
 		LEFT OUTER JOIN M_HU_Trx_hdr trx_hdr ON trx_line.M_HU_Trx_hdr_ID = trx_hdr.M_HU_Trx_Hdr_ID
 		LEFT OUTER JOIN M_HU_Trx_Line trx_line2 ON trx_line2.parent_hu_trx_line_id = trx_line.M_HU_Trx_Line_ID
