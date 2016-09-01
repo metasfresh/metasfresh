@@ -79,7 +79,7 @@ class Window extends Component {
             const {elements} = elem;
             return (
                 <div className="elements-line" key={"line" + id}>
-                    {elements && this.renderElements(elements)}
+                    {elements && elements.length > 0 && this.renderElements(elements)}
                 </div>
             )
         })
