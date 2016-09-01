@@ -412,7 +412,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	public  int		    AD_Table_ID;
 	/** Primary Link Column   */
 	private int		    AD_Column_ID = 0;
-	/** Parent Tab Link Column */
+	/** Parent Tab's Link Column */
 	private	int			Parent_Column_ID = 0;
 	/** Table Name		*/
 	public  String	    TableName;
@@ -895,4 +895,25 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsDeleteable;
 	}
+	
+	/**
+	 * Get Order column for sort tab
+	 *
+	 * @return AD_Column_ID
+	 */
+	public int getAD_ColumnSortOrder_ID()
+	{
+		return AD_ColumnSortOrder_ID;
+	}
+
+	/**
+	 * Get Yes/No column for sort tab
+	 *
+	 * @return AD_Column_ID
+	 */
+	public int getAD_ColumnSortYesNo_ID()
+	{
+		return AD_ColumnSortYesNo_ID;
+	}
+
 }

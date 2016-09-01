@@ -45,6 +45,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -1675,9 +1676,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// Set parent column name (if any)
 		if (m_vo.getParent_Column_ID() > 0)
 		{
-			m_parentColumnName = DB.getSQLValueString(ITrx.TRXNAME_None,
-					"SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?",
-					m_vo.getParent_Column_ID());
+			m_parentColumnName = Services.get(IADTableDAO.class).retrieveColumnName(m_vo.getParent_Column_ID());
 		}
 		else
 		{
@@ -1697,17 +1696,16 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		else
 		{
-			if (m_vo.getAD_Column_ID() <= 0)
+			final int linkColumnId = m_vo.getAD_Column_ID();
+			if (linkColumnId <= 0)
 			{
 				return;
 			}
 			// we have a link column identified (primary parent column)
 			else
 			{
-				m_linkColumnName = DB.getSQLValueString(ITrx.TRXNAME_None,
-						"SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?",
-						m_vo.getAD_Column_ID());
-				log.debug("AD_Column_ID=" + m_vo.getAD_Column_ID() + " - " + m_linkColumnName);
+				m_linkColumnName = Services.get(IADTableDAO.class).retrieveColumnName(linkColumnId);
+				log.debug("AD_Column_ID={} - {}", linkColumnId, m_linkColumnName);
 			}
 		}
 

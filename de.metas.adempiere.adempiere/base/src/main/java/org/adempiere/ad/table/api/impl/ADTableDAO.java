@@ -40,6 +40,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MTable;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 public class ADTableDAO implements IADTableDAO
@@ -87,6 +88,12 @@ public class ADTableDAO implements IADTableDAO
 		queryBuilder.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName, UpperCaseQueryFilterModifier.instance);
 
 		return queryBuilder;
+	}
+
+	@Override
+	public String retrieveColumnName(final int adColumnId)
+	{
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?", adColumnId);
 	}
 
 	@Override
