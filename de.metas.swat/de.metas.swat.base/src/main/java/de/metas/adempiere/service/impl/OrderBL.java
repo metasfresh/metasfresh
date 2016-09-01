@@ -27,8 +27,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -65,6 +63,7 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IOrderBL;
@@ -73,6 +72,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductPA;
 
@@ -676,7 +676,7 @@ public class OrderBL implements IOrderBL
 
 		if (!foundLoc)
 		{
-			logger.error("MOrder.setBPartner - Has no Ship To Address: " + bp);
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
 		}
 	}
 
@@ -900,7 +900,8 @@ public class OrderBL implements IOrderBL
 		//
 		// Update qty reservation
 		final I_C_Order order = orderLine.getC_Order();
-		Services.get(IOrderPA.class).reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
+		final IOrderPA orderPA = Services.get(IOrderPA.class);
+		orderPA.reserveStock(order, orderLine);
 
 	}
 

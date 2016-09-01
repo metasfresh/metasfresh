@@ -26,8 +26,8 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
@@ -35,25 +35,26 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysHandler;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-@Validator(I_M_ReceiptSchedule.class)
+@Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
 			, ifColumnsChanged = {
 					I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
 
-					// the next 3 columns are courtesy of https://github.com/metasfresh/metasfresh/issues/315:
-					// update QtyToMove and QtyOrderedOverUnder if any of theses 3 changes
+					// https://github.com/metasfresh/metasfresh/issues/315:
+					// call: onReceiptScheduleChanged if *any* for the "input" columns changed
 					I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered,
 					I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
 					I_M_ReceiptSchedule.COLUMNNAME_QtyMoved
 			})
 	public void updateQtys(final I_M_ReceiptSchedule sched)
 	{
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleChanged(sched);
+		final IReceiptScheduleQtysBL receiptScheduleQtysHandler = Services.get(IReceiptScheduleQtysBL.class);
+		receiptScheduleQtysHandler.onReceiptScheduleChanged(sched);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }
@@ -85,7 +86,7 @@ public class M_ReceiptSchedule
 		// Case: we just updated the receipt schedule => update fields in order line
 		else
 		{
-			qtyOverUnderDelivery = Services.get(IReceiptScheduleQtysHandler.class).getQtyOverUnderDelivery(sched);
+			qtyOverUnderDelivery = Services.get(IReceiptScheduleQtysBL.class).getQtyOverUnderDelivery(sched);
 		}
 
 		orderLine.setQtyOrderedOverUnder(qtyOverUnderDelivery);

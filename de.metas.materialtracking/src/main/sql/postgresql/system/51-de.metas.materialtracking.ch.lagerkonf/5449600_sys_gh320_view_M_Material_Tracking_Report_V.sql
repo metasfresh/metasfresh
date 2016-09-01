@@ -1,5 +1,4 @@
-﻿
-DROP VIEW IF EXISTS "de.metas.materialtracking".M_Material_Tracking_Report_V;
+﻿DROP VIEW IF EXISTS "de.metas.materialtracking".M_Material_Tracking_Report_V;
 CREATE OR REPLACE VIEW "de.metas.materialtracking".M_Material_Tracking_Report_V AS
 SELECT 
 	mt.Lot AS mt_Lot,
@@ -46,7 +45,7 @@ FROM M_Material_Tracking mt
 			LEFT JOIN PP_Cost_Collector cc_co1 ON cc_co1.PP_Order_ID=mtr.Record_ID -- Record_ID = PP_Order_ID
 					AND cc_co1.IsActive='Y' AND cc_co1.DocStatus IN ('CO', 'CL')
 					AND cc_co1.PP_Order_BOMLine_ID=ppo_bl_co1.PP_Order_BOMLine_ID
-					AND cc_co1.CostCollectorType='120' -- usage variance
+					AND cc_co1.CostCollectorType='150' -- mix variance
 					
 				LEFT JOIN M_Product p_co1 ON p_co1.M_Product_ID=cc_co1.M_Product_ID
 					LEFT JOIN C_UOM uom_co1 ON uom_co1.C_UOM_ID=p_co1.C_UOM_ID
@@ -72,5 +71,3 @@ Suggestest german column titles:
 * qty_co1_received: Menge
 * uom_co1_symbol: Einheit																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											
 ';
-
---select * FROM "de.metas.materialtracking".M_Material_Tracking_Report_V WHERE mt_Lot LIKE '16%'

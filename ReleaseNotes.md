@@ -10,9 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.33.32 (2016-35)
+# metasfresh 4.34.33 (2016-36)
 
 upcoming
+
+## Features
+* #297 Performance problems related to zoom-to
+
+## Fixes
+* #315 ReceiptSchedule.QtyToMove not properly updated on reopen
+* #319 material tracking - deduplicate numbers in article statistics report
+* #329 Revenue reports BPartner & Week show different amounts when HU Price
+* #340 Validation Rule in C_BPartner_Product for C_BPartner_ID wrong
+* #351 translate order summary
+
+# metasfresh 4.33.32 (2016-35)
 
 ## Features
  * #320 material tracking - provide excel friendly information view
@@ -28,8 +40,6 @@ upcoming
    - Fixed an issue with Org Role Access in Window Invoice Candidates. Now the Status Row considers the Org Access Permission.
 
 # metasfresh 4.32.31 (2016-34)
-
-RC for weekly release
 
 ## Features
  * #276 Report Konten-Info new Parameter
