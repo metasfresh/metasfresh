@@ -23,6 +23,7 @@ upcoming
 * #329 Revenue reports BPartner & Week show different amounts when HU Price
 * #340 Validation Rule in C_BPartner_Product for C_BPartner_ID wrong
 * #351 translate order summary
+* #335 Invoicing taking wrong Documenttype for Producer Invoice
 
 # metasfresh 4.33.32 (2016-35)
 
