@@ -15,8 +15,10 @@ Here come the actual release notes:
 upcoming
 
 ## Features
+* #297 Performance problems related to zoom-to
 
 ## Fixes
+* #315 ReceiptSchedule.QtyToMove not properly updated on reopen
 
 # metasfresh 4.33.32 (2016-35)
 

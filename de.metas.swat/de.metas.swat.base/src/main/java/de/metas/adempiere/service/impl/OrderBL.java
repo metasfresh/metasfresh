@@ -873,7 +873,8 @@ public class OrderBL implements IOrderBL
 		//
 		// Update qty reservation
 		final I_C_Order order = orderLine.getC_Order();
-		Services.get(IOrderPA.class).reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
+		final IOrderPA orderPA = Services.get(IOrderPA.class);
+		orderPA.reserveStock(order, orderLine);
 
 	}
 

@@ -1571,13 +1571,13 @@ public class MOrder extends X_C_Order implements DocAction
 				|| (MDocType.DOCSUBTYPE_Quotation.equals(docSubType)
 						&& DOCACTION_Close.equals(getDocAction())))  // || isDropShip() )
 		{
-				
+
 			binding = false;
 		}
 		boolean isSOTrx = isSOTrx();
-		
+
 		log.debug("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
-		
+
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
 		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
@@ -1935,7 +1935,7 @@ public class MOrder extends X_C_Order implements DocAction
 		setProcessed(true);
 		m_processMsg = info.toString();
 		//
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Re_Activate); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 

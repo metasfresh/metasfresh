@@ -44,7 +44,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -113,28 +112,12 @@ public class AttributeDAO implements IAttributeDAO
 		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
 
 		//
-		// First try: directly search by Value
+		// search by Value
 		final I_M_AttributeValue avDirect = map.get(value);
+		
 		if (avDirect != null)
 		{
 			return avDirect;
-		}
-
-		//
-		// Second try: search by linked AD_Ref_List.Value
-		for (final I_M_AttributeValue av : map.values())
-		{
-			final I_AD_Ref_List adRefList = av.getAD_Ref_List();
-			if (adRefList == null)
-			{
-				continue;
-			}
-
-			final String adRefListValue = adRefList.getValue();
-			if (Check.equals(value, adRefListValue))
-			{
-				return av;
-			}
 		}
 
 		//

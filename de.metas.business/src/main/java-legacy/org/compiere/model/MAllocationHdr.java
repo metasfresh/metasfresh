@@ -584,7 +584,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 

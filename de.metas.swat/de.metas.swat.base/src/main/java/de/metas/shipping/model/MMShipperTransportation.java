@@ -28,12 +28,12 @@ package de.metas.shipping.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,7 +68,7 @@ import de.metas.shipping.api.IShipperTransportationBL;
 public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8883936122691193136L;
 
@@ -111,7 +111,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -124,7 +124,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -147,7 +147,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -192,7 +192,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Schliessen);
+		setDocAction(DOCACTION_Reaktivieren); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -307,7 +307,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -320,7 +320,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -369,7 +369,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -411,7 +411,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -424,7 +424,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -446,7 +446,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reverse Correction
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -468,7 +468,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -481,7 +481,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
