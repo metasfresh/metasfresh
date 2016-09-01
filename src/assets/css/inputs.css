@@ -28,6 +28,10 @@ input {
     min-width: 50px;
 }
 
+.panel-primary .form-control-label {
+    margin-top:0;
+}
+
 .form-control-label {
     margin-top:.5rem;
     margin-bottom: .3rem;
@@ -395,7 +399,7 @@ input:checked + .input-slider:before {
 }
 
 .form-group {
-    margin-bottom: 0.65rem;
+    margin-bottom: 0.3rem;
 }
 
 .form-control {

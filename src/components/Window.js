@@ -69,7 +69,7 @@ class Window extends Component {
                     key={'elemGroups' + id}
                     className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
                 >
-                    {elementsLine && this.renderElementsLine(elementsLine)}
+                    {elementsLine && elementsLine.length > 0 && this.renderElementsLine(elementsLine)}
                 </div>
             )
         })
