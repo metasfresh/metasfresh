@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +50,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 
 /**
- * 
+ *
  */
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
@@ -107,15 +107,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// BPartner & Location
 		receiptSchedule.setC_BPartner_ID(line.getC_BPartner_ID());
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
-		receiptSchedule.setAD_User_ID(line.getC_Order().getAD_User_ID());
+		final I_C_Order order = line.getC_Order();
+		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
 
 		//
 		// Delivery rule, Priority rule
 		{
-			receiptSchedule.setDeliveryRule(line.getC_Order().getDeliveryRule());
-			receiptSchedule.setDeliveryViaRule(line.getC_Order().getDeliveryViaRule());
+			receiptSchedule.setDeliveryRule(order.getDeliveryRule());
+			receiptSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
 
-			receiptSchedule.setPriorityRule(line.getC_Order().getPriorityRule());
+			receiptSchedule.setPriorityRule(order.getPriorityRule());
 		}
 
 		//
@@ -158,7 +159,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setM_Product_ID(line.getM_Product_ID());
 
 			Services.get(IAttributeSetInstanceBL.class).cloneASI(receiptSchedule, line);
-			
+
 			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
 		}
 
@@ -172,7 +173,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setQtyMoved(line.getQtyDelivered());
 		}
 		receiptSchedule.setQtyOrdered(line.getQtyOrdered());
-		// receiptSchedule.setQtyToMove(line.getQtyOrdered()); // QtyToMove will be computed
+		// receiptSchedule.setQtyToMove(line.getQtyOrdered()); // QtyToMove will be computed in IReceiptScheduleQtysBL
 
 		//
 		// Update aggregation key
@@ -282,13 +283,13 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	/**
 	 * Suggests the C_DocType_ID to be used for the future Material Receipt.
-	 * 
+	 *
 	 * Basically, it checks:
 	 * <ul>
 	 * <li>order's C_DocType.C_DocType_Shipment_ID if set
 	 * <li>standard Material Receipt document type
 	 * </ul>
-	 * 
+	 *
 	 * @param orderLine
 	 * @return
 	 */

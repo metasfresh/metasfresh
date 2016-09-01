@@ -10,25 +10,24 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysHandler;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
@@ -36,12 +35,11 @@ import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
 
 /**
- * Implementation of this class is updating QtyMoved and QtyToMove columns when a {@link I_M_ReceiptSchedule_Alloc} is created, change or deleted.
- * 
- * @author tsa
- * 
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
-public class ReceiptScheduleQtysHandler implements IReceiptScheduleQtysHandler
+public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 {
 	@Override
 	public BigDecimal getQtyOrdered(final I_M_ReceiptSchedule rs)
@@ -104,9 +102,9 @@ public class ReceiptScheduleQtysHandler implements IReceiptScheduleQtysHandler
 
 	/**
 	 * Gets current receipt schedule quantities.
-	 * 
+	 *
 	 * NOTE: we are taking the values directly from receipt schedule and not from getters (e.g. {@link #getQtyMoved(I_M_ReceiptSchedule)}) because we are about to update them.
-	 * 
+	 *
 	 * @param rs
 	 * @return receipt schedule quantities
 	 */
@@ -187,7 +185,8 @@ public class ReceiptScheduleQtysHandler implements IReceiptScheduleQtysHandler
 
 		// QtyToMove shall be updated in "onReceiptScheduleChanged"
 		// NOTE: make sure it is called right away (see 6185, G01T010)
-		onReceiptScheduleChanged(receiptSchedule);
+		// note: it's called via model interceptor on save.
+		// onReceiptScheduleChanged(receiptSchedule);
 
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
@@ -216,7 +215,7 @@ public class ReceiptScheduleQtysHandler implements IReceiptScheduleQtysHandler
 
 		//
 		// Case: receipt schedule was marked as processed.
-		// Now we preciselly know which is the actual Over/Under Delivery.
+		// Now we precisely know which is the actual Over/Under Delivery.
 		// i.e. if qtyOverUnder < 0 it means it's an under delivery (we delivered less)
 		// but we know this for sure ONLY when receipt schedule line is closed.
 		// Else we can consider that more receipts will come after.
