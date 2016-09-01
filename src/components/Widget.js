@@ -17,14 +17,14 @@ class Widget extends Component {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {widgetType, widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
+        const {isModal, widgetType, widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
         //check if we should update store
         //except button value
         if(widgetType !== "Button" && !widgetData.value !== value){
-            dispatch(updateProperty(property, value, tabId, rowId));
+            dispatch(updateProperty(property, value, tabId, rowId, isModal));
         }
 
-        dispatch(patch(windowType, dataId, tabId, rowId, property, value));
+        dispatch(patch(windowType, dataId, tabId, rowId, property, value, isModal));
 
         //callback
         if(onChange){
@@ -37,9 +37,9 @@ class Widget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId} = this.props;
+        const {dispatch, tabId, rowId, isModal} = this.props;
         e.preventDefault();
-        dispatch(updateProperty(property, e.target.value, tabId, rowId));
+        dispatch(updateProperty(property, e.target.value, tabId, rowId, isModal));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){

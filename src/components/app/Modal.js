@@ -40,6 +40,7 @@ class Modal extends Component {
                     <Window
                         data={data}
                         layout={layout}
+                        modal={true}
                     />
                 </div>
             </div>

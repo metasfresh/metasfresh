@@ -92,24 +92,24 @@ export default function windowHandler(state = initialState, action) {
 
         case types.UPDATE_DATA_SUCCESS:
             return Object.assign({}, state, {
-                [action.scope]: {
+                [action.scope]: Object.assign({}, state[action.scope], {
                     data: state[action.scope].data.map(item =>
                         item.field === action.item.field ?
                             Object.assign({}, item, action.item) :
                             item
                     )
-                }
+                })
         })
 
         case types.UPDATE_DATA_PROPERTY:
             return Object.assign({}, state, {
-                [action.scope]: {
+                [action.scope]: Object.assign({}, state[action.scope], {
                     data: state[action.scope].data.map(item =>
                         item.field === action.property ?
                         Object.assign({}, item, { value: action.value }) :
                         item
                     )
-                }
+                })
         })
 
         case types.UPDATE_ROW_PROPERTY:

@@ -170,18 +170,18 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
+export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
         dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
             response.data.map(item1 => {
                 if(rowId === "NEW"){
-                    dispatch(addNewRow(item1, item1.tabid, item1.rowId))
+                    dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
                 }else{
                     item1.fields.map(item2 => {
                         if(rowId){
-                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId))
+                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
                         }else{
-                            dispatch(updateDataSuccess(item2));
+                            dispatch(updateDataSuccess(item2, getScope(isModal)));
                         }
                     });
                 }
@@ -190,12 +190,12 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value) {
     }
 }
 
-export function updateProperty(property, value, tabid, rowid){
+export function updateProperty(property, value, tabid, rowid, isModal){
     return dispatch => {
         if( tabid && rowid ){
-            dispatch(updateRowProperty(property, value, tabid, rowid))
+            dispatch(updateRowProperty(property, value, tabid, rowid, getScope(isModal)))
         }else{
-            dispatch(updateDataProperty(property, value))
+            dispatch(updateDataProperty(property, value, getScope(isModal)))
         }
     }
 }
