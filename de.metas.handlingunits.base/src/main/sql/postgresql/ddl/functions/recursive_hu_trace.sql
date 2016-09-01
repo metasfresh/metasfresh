@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.recursive_hu_trace(trxline integer[]);
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.recursive_hu_trace(trxline integer) RETURNS TABLE
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace(trxline integer);
+CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace(trxline integer) RETURNS TABLE
 (
 	trx_id numeric,
 	hu_id numeric
@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.recursive_hu_trace
   BEGIN
 	while(0 != any(rez))
 	LOOP
-		for r in (SELECT m_hu_trx_line_id::integer, m_hu_id::integer FROM de_metas_endcustomer_fresh_reports.recursive_hu_trace_sub(rez)) loop
+		for r in (SELECT m_hu_trx_line_id::integer, m_hu_id::integer FROM "de.metas.handlingunits".recursive_hu_trace_sub(rez)) loop
 			if (Array[r.m_hu_trx_line_id] <@ all_trx) 
 			then last_trx := last_trx;
 			--RAISE NOTICE 'removed %',r.m_hu_trx_line_id;

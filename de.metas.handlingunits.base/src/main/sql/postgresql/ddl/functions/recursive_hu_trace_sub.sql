@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.recursive_hu_trace_sub(trxline integer[]);
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.recursive_hu_trace_sub(trxline integer[]) RETURNS TABLE
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace_sub(trxline integer[]);
+CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace_sub(trxline integer[]) RETURNS TABLE
 (
 	M_hu_trx_line_id numeric,
 	m_hu_id numeric
