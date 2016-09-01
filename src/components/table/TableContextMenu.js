@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
 
+import {
+    openModal
+} from '../../actions/WindowActions';
+
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
@@ -15,6 +19,10 @@ class TableContextMenu extends Component {
         this.contextMenu.style.top = e.clientY + "px";
         this.contextMenu.focus();
     }
+    handleAdvancedEdit = () => {
+        const {dispatch, tabid} = this.props;
+        dispatch(openModal(windowType + "&tabid=" + tabid + "&advanced=true"));
+    }
     render() {
         return (
             <div
@@ -23,10 +31,7 @@ class TableContextMenu extends Component {
                 tabIndex="0"
             >
                 <div className="context-menu-item">
-                    <i className="meta-icon-file" /> Change log
-                </div>
-                <div className="context-menu-item">
-                    <i className="meta-icon-trash" /> Remove selected
+                    <i className="meta-icon-edit" /> Advanced edit
                 </div>
             </div>
         )

@@ -3,6 +3,10 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 
+import {
+    openModal
+} from '../../actions/WindowActions';
+
 class Subheader extends Component {
     constructor(props){
         super(props);
@@ -11,7 +15,11 @@ class Subheader extends Component {
         const {dispatch} = this.props;
         dispatch(push(where));
     }
+    openModal = (windowType) => {
+        this.props.dispatch(openModal(windowType));
+    }
     render() {
+        const { windowType } = this.props;
         return (
             <div className={"subheader-container " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container">
@@ -21,8 +29,8 @@ class Subheader extends Component {
                                 <div className="subheader-item" onClick={()=> this.redirect('window/143')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
-                                <div className="subheader-item" onClick={()=> this.redirect('ui')}><i className="meta-icon-preview-1" /> Preview</div>
-                                <div className="subheader-item" onClick={()=> this.redirect('window/test')}><i className="meta-icon-print" /> Print</div>
+                                <div className="subheader-item" onClick={()=> this.openModal(windowType + '?advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>
+                                <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
                                 <div className="subheader-item"><i className="meta-icon-message" /> Send message</div>
                                 <div className="subheader-item"><i className="meta-icon-duplicate" /> Clone</div>
                                 <div className="subheader-item"><i className="meta-icon-delete" /> Delete</div>

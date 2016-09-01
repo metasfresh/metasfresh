@@ -93,7 +93,7 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader open={isSubheaderShow} />
+                <Subheader open={isSubheaderShow} windowType={windowType} />
                 <OrderList open={isOrderListShow} />
             </div>
         )
