@@ -14,6 +14,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -56,8 +57,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private final DocumentLayoutElementDescriptor docActionElement;
 
 	private final List<DocumentLayoutSectionDescriptor> sections;
-
 	private final List<DocumentLayoutDetailDescriptor> details;
+	private final DocumentLayoutSideListDescriptor sideList;
 
 	private final Map<String, String> debugProperties;
 
@@ -70,6 +71,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		details = ImmutableList.copyOf(builder.buildDetails());
+		sideList = builder.getSideList();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -82,6 +84,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 				.add("AD_Window_ID", AD_Window_ID)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("details", details.isEmpty() ? null : details)
+				.add("sideList", sideList)
 				.toString();
 	}
 
@@ -110,6 +113,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return details;
 	}
 
+	public DocumentLayoutSideListDescriptor getSideList()
+	{
+		return sideList;
+	}
+
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
@@ -117,6 +125,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	public static final class Builder
 	{
+
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
 		private int AD_Window_ID;
@@ -124,6 +133,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private DocumentLayoutElementDescriptor docActionElement;
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
+		private DocumentLayoutSideListDescriptor sideList;
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
@@ -132,7 +142,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		{
 			super();
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -204,29 +214,29 @@ public final class DocumentLayoutDescriptor implements Serializable
 			sectionBuilders.addAll(sectionsBuilders);
 			return this;
 		}
-		
+
 		private final DocumentLayoutElementDescriptor.Builder findSectionElementBuilderByFieldName(final String fieldName)
 		{
 			for (final DocumentLayoutSectionDescriptor.Builder sectionBuilder : sectionBuilders)
 			{
 				final DocumentLayoutElementDescriptor.Builder elementBuilder = sectionBuilder.findElementBuilderByFieldName(fieldName);
-				if(elementBuilder == null)
+				if (elementBuilder == null)
 				{
 					continue;
 				}
 
 				return elementBuilder;
 			}
-			
+
 			return null;
 		}
-		
+
 		public boolean isAdvancedSectionField(final String fieldName)
 		{
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findSectionElementBuilderByFieldName(fieldName);
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
-		
+
 		public boolean hasSectionElement(final String fieldName)
 		{
 			return findSectionElementBuilderByFieldName(fieldName) != null;
@@ -252,6 +262,18 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 			detailsBuilders.add(detailBuilder);
 			return this;
+		}
+
+		public Builder setSideList(DocumentLayoutSideListDescriptor sideList)
+		{
+			this.sideList = sideList;
+			return this;
+		}
+
+		public DocumentLayoutSideListDescriptor getSideList()
+		{
+			Preconditions.checkNotNull(sideList, "sideList");
+			return sideList;
 		}
 
 		public Builder putDebugProperty(final String name, final String value)

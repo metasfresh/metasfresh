@@ -125,7 +125,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		displayLogic = builder.displayLogic;
 		mandatoryLogic = builder.mandatoryLogic;
 
-		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding is null");
+		dataBinding = builder.getDataBinding();
 
 		dependencies = builder.buildDependencies();
 	}
@@ -289,6 +289,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private DocumentFieldDescriptor _fieldBuilt;
+
 		private String fieldName;
 		public String detailId;
 
@@ -312,80 +314,103 @@ public final class DocumentFieldDescriptor implements Serializable
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
 
-		private DocumentFieldDataBindingDescriptor dataBinding;
+		private DocumentFieldDataBindingDescriptor _dataBinding;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public DocumentFieldDescriptor build()
+		public DocumentFieldDescriptor getOrBuild()
 		{
-			return new DocumentFieldDescriptor(this);
+			if(_fieldBuilt == null)
+			{
+				_fieldBuilt = new DocumentFieldDescriptor(this);
+			}
+			return _fieldBuilt;
+		}
+
+		private final void assertNotBuilt()
+		{
+			if (_fieldBuilt != null)
+			{
+				throw new IllegalStateException("Already built: " + this);
+			}
 		}
 
 		public Builder setFieldName(final String fieldName)
 		{
+			assertNotBuilt();
 			this.fieldName = fieldName;
 			return this;
 		}
 
 		public Builder setDetailId(final String detailId)
 		{
+			assertNotBuilt();
 			this.detailId = Strings.emptyToNull(detailId);
 			return this;
 		}
 
 		public Builder setCaption(final String caption)
 		{
+			assertNotBuilt();
 			this.caption = Strings.emptyToNull(caption);
 			return this;
 		}
 
 		public Builder setDescription(final String description)
 		{
+			assertNotBuilt();
 			this.description = Strings.emptyToNull(description);
 			return this;
 		}
 
 		public Builder setKey(final boolean key)
 		{
+			assertNotBuilt();
 			this.key = key;
 			return this;
 		}
 
 		public Builder setParentLink(final boolean parentLink)
 		{
+			assertNotBuilt();
 			this.parentLink = parentLink;
 			return this;
 		}
 
 		public Builder setVirtualField(final boolean virtualField)
 		{
+			assertNotBuilt();
 			this.virtualField = virtualField;
 			return this;
 		}
 
 		public Builder setCalculated(final boolean calculated)
 		{
+			assertNotBuilt();
 			this.calculated = calculated;
 			return this;
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
+			assertNotBuilt();
 			this.widgetType = widgetType;
 			return this;
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
 		{
+			assertNotBuilt();
 			this.valueClass = valueClass;
 			return this;
 		}
 
 		public Builder setDefaultValueExpression(final IStringExpression defaultValueExpression)
 		{
+			assertNotBuilt();
 			this.defaultValueExpression = Preconditions.checkNotNull(defaultValueExpression);
 			return this;
 		}
@@ -395,44 +420,57 @@ public final class DocumentFieldDescriptor implements Serializable
 		 */
 		public Builder setPublicField(final boolean publicField)
 		{
+			assertNotBuilt();
 			this.publicField = publicField;
 			return this;
 		}
 
 		public Builder setAdvancedField(final boolean advancedField)
 		{
+			assertNotBuilt();
 			this.advancedField = advancedField;
 			return this;
 		}
 
 		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
 		{
+			assertNotBuilt();
 			this.readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
 			return this;
 		}
 
 		public Builder setAlwaysUpdateable(final boolean alwaysUpdateable)
 		{
+			assertNotBuilt();
 			this.alwaysUpdateable = alwaysUpdateable;
 			return this;
 		}
 
 		public Builder setDisplayLogic(final ILogicExpression displayLogic)
 		{
+			assertNotBuilt();
 			this.displayLogic = Preconditions.checkNotNull(displayLogic);
 			return this;
 		}
 
 		public Builder setMandatoryLogic(final ILogicExpression mandatoryLogic)
 		{
+			assertNotBuilt();
 			this.mandatoryLogic = Preconditions.checkNotNull(mandatoryLogic);
 			return this;
 		}
 
 		public Builder setDataBinding(final DocumentFieldDataBindingDescriptor dataBinding)
 		{
-			this.dataBinding = dataBinding;
+			assertNotBuilt();
+			this._dataBinding = dataBinding;
 			return this;
+		}
+
+		public DocumentFieldDataBindingDescriptor getDataBinding()
+		{
+			Preconditions.checkNotNull(_dataBinding, "dataBinding is null");
+			return _dataBinding;
 		}
 
 		private DocumentFieldDependencyMap buildDependencies()
@@ -441,7 +479,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					.add(fieldName, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
 					.add(fieldName, displayLogic.getParameters(), DependencyType.DisplayLogic)
 					.add(fieldName, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic)
-					.add(fieldName, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
+					.add(fieldName, getDataBinding().getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
 					.build();
 		}
 

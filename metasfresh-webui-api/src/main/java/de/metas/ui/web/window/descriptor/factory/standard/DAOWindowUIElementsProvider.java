@@ -49,24 +49,28 @@ final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 	@Override
 	public List<I_AD_UI_Column> getUIColumns(final I_AD_UI_Section uiSection)
 	{
+		// TODO: caching
 		return windowDAO.retrieveUIColumns(uiSection);
 	}
 
 	@Override
 	public List<I_AD_UI_ElementGroup> getUIElementGroups(final I_AD_UI_Column uiColumn)
 	{
+		// TODO: caching
 		return windowDAO.retrieveUIElementGroups(uiColumn);
 	}
 
 	@Override
 	public List<I_AD_UI_Element> getUIElements(final I_AD_UI_ElementGroup uiElementGroup)
 	{
+		// TODO: caching
 		return windowDAO.retrieveUIElements(uiElementGroup);
 	}
 
 	@Override
 	public List<I_AD_UI_ElementField> getUIElementFields(final I_AD_UI_Element uiElement)
 	{
+		// TODO: caching
 		return windowDAO.retrieveUIElementFields(uiElement);
 	}
 }

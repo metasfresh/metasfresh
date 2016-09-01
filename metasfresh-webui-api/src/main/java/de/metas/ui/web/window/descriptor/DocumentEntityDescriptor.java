@@ -8,18 +8,21 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 
 /*
  * #%L
@@ -103,10 +106,10 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = Preconditions.checkNotNull(builder.allowDeleteLogic);
 		displayLogic = Preconditions.checkNotNull(builder.displayLogic, "displayLogic not null");
 
-		fields = ImmutableList.copyOf(builder.fields);
-		idField = builder.idField;
+		fields = ImmutableList.copyOf(builder.getFields());
+		idField = builder.getIdField();
 		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
-		dataBinding = Preconditions.checkNotNull(builder.dataBinding, "dataBinding not null");
+		dataBinding = builder.getOrBuildDataBinding();
 		dependencies = builder.buildDependencies();
 
 		// legacy:
@@ -194,17 +197,17 @@ public class DocumentEntityDescriptor
 	{
 		return detailId;
 	}
-	
+
 	public ILogicExpression getAllowCreateNewLogic()
 	{
 		return allowCreateNewLogic;
 	}
-	
+
 	public ILogicExpression getAllowDeleteLogic()
 	{
 		return allowDeleteLogic;
 	}
-	
+
 	public ILogicExpression getDisplayLogic()
 	{
 		return displayLogic;
@@ -275,10 +278,13 @@ public class DocumentEntityDescriptor
 
 	public static final class Builder
 	{
-		private final List<DocumentFieldDescriptor> fields = new ArrayList<>();
-		private DocumentFieldDescriptor idField;
+		private boolean _built = false;
+
+		private final List<Object> _fieldsOrBuilders = new ArrayList<>();
+		private List<DocumentFieldDescriptor> _fields = null; // will be built
+		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
-		private DocumentEntityDataBindingDescriptor dataBinding;
+		private Object _dataBindingOrBuilder;
 
 		private String detailId;
 		private boolean detailIdSet;
@@ -300,7 +306,21 @@ public class DocumentEntityDescriptor
 
 		public DocumentEntityDescriptor build()
 		{
+			if (_built)
+			{
+				throw new IllegalStateException("Already built: " + this);
+			}
+			_built = true;
+
 			return new DocumentEntityDescriptor(this);
+		}
+
+		private final void assertNotBuilt()
+		{
+			if (_built)
+			{
+				throw new IllegalStateException("Already built: " + this);
+			}
 		}
 
 		public Builder setDetailId(final String detailId)
@@ -310,29 +330,83 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder addField(final DocumentFieldDescriptor.Builder fieldBuilder)
+		{
+			assertNotBuilt();
+
+			Preconditions.checkNotNull(fieldBuilder, "fieldBuilder not null");
+			_fieldsOrBuilders.add(fieldBuilder);
+			return this;
+		}
+
 		public Builder addField(final DocumentFieldDescriptor field)
 		{
-			if (field.isKey())
-			{
-				if (idField != null)
-				{
-					throw new IllegalArgumentException("More than one ID fields are not allowed: " + idField + ", " + field);
-				}
-				idField = field;
-			}
+			assertNotBuilt();
 
-			fields.add(field);
+			Preconditions.checkNotNull(field, "field not null");
+
+			_fieldsOrBuilders.add(field);
 			return this;
 		}
 
 		public Builder addFields(final List<DocumentFieldDescriptor> fields)
 		{
-			if (fields == null)
+			if (fields == null || fields.isEmpty())
 			{
 				return this;
 			}
 			fields.stream().forEach(this::addField);
 			return this;
+		}
+
+		public DocumentFieldDescriptor getIdField()
+		{
+			if (_idField == null)
+			{
+				DocumentFieldDescriptor idField = null;
+				for (final DocumentFieldDescriptor field : getFields())
+				{
+					if (field.isKey())
+					{
+						if (idField != null)
+						{
+							throw new IllegalArgumentException("More than one ID fields are not allowed: " + idField + ", " + field);
+						}
+						idField = field;
+					}
+				}
+
+				_idField = Optional.fromNullable(idField);
+			}
+
+			return _idField.orNull();
+		}
+
+		public List<DocumentFieldDescriptor> getFields()
+		{
+			if (_fields == null)
+			{
+				_fields = _fieldsOrBuilders.stream()
+						.map(Builder::getOrBuildField)
+						.collect(GuavaCollectors.toImmutableList());
+			}
+			return _fields;
+		}
+
+		private static DocumentFieldDescriptor getOrBuildField(final Object fieldOrBuilder)
+		{
+			if (fieldOrBuilder instanceof DocumentFieldDescriptor.Builder)
+			{
+				return ((DocumentFieldDescriptor.Builder)fieldOrBuilder).getOrBuild();
+			}
+			else if (fieldOrBuilder instanceof DocumentFieldDescriptor)
+			{
+				return (DocumentFieldDescriptor)fieldOrBuilder;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown field or builder: " + fieldOrBuilder);
+			}
 		}
 
 		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
@@ -355,14 +429,37 @@ public class DocumentEntityDescriptor
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptor dataBinding)
 		{
-			this.dataBinding = dataBinding;
+			this._dataBindingOrBuilder = dataBinding;
 			return this;
+		}
+
+		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
+		{
+			this._dataBindingOrBuilder = dataBindingBuilder;
+			return this;
+		}
+
+		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
+		{
+			Preconditions.checkNotNull(_dataBindingOrBuilder, "dataBindingOrBuilder");
+			if (_dataBindingOrBuilder instanceof DocumentEntityDataBindingDescriptor)
+			{
+				return (DocumentEntityDataBindingDescriptor)_dataBindingOrBuilder;
+			}
+			else if (_dataBindingOrBuilder instanceof DocumentEntityDataBindingDescriptorBuilder)
+			{
+				return ((DocumentEntityDataBindingDescriptorBuilder)_dataBindingOrBuilder).getOrBuild();
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown dataBinding type: " + _dataBindingOrBuilder);
+			}
 		}
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
-			fields.stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
+			getFields().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
 
@@ -401,7 +498,7 @@ public class DocumentEntityDescriptor
 			this.allowDeleteLogic = allowDeleteLogic;
 			return this;
 		}
-		
+
 		public Builder setDisplayLogic(final ILogicExpression displayLogic)
 		{
 			this.displayLogic = displayLogic;

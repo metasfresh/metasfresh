@@ -69,6 +69,10 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> tabs;
 
+	@JsonProperty("sideList")
+	@JsonInclude(Include.NON_NULL)
+	private final JSONDocumentLayoutSideList sideList;
+
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -80,6 +84,7 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
 		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
+		sideList = JSONDocumentLayoutSideList.of(layout.getSideList(), jsonFilteringOpts);
 
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -95,6 +100,7 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
+			, @JsonProperty("sideList") final JSONDocumentLayoutSideList sideList //
 	)
 	{
 		super();
@@ -103,6 +109,7 @@ public final class JSONDocumentLayout implements Serializable
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
 		this.tabs = tabs == null ? ImmutableList.of() : ImmutableList.copyOf(tabs);
+		this.sideList = sideList;
 	}
 
 	@Override
@@ -113,6 +120,7 @@ public final class JSONDocumentLayout implements Serializable
 				.add("type", type)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("tabs", tabs.isEmpty() ? null : tabs)
+				.add("sideList", sideList)
 				.toString();
 	}
 
@@ -139,6 +147,11 @@ public final class JSONDocumentLayout implements Serializable
 	public List<JSONDocumentLayoutTab> getTabs()
 	{
 		return tabs;
+	}
+	
+	public JSONDocumentLayoutSideList getSideList()
+	{
+		return sideList;
 	}
 
 	@JsonAnyGetter

@@ -24,6 +24,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.POJODocumentFieldDataBindingDescriptor;
@@ -108,8 +109,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setDisplayLogic(ILogicExpression.FALSE)
 						.setPublicField(true) // key is always public
 						.setAdvancedField(false)
-						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_C_Order_ID))
-						.build())
+						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_C_Order_ID)))
 				.addField(DocumentFieldDescriptor.builder()
 						.setFieldName(I_C_Order.COLUMNNAME_DocumentNo)
 						.setValueClass(String.class)
@@ -117,8 +117,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setDisplayLogic(ILogicExpression.TRUE)
 						.setPublicField(true)
 						.setAdvancedField(false)
-						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo))
-						.build())
+						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo)))
 						//
 						;
 
@@ -137,6 +136,8 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_DocumentNo)))))))
 														//
 														;
+		
+		layoutBuilder.setSideList(DocumentLayoutSideListDescriptor.builder().build());
 
 		return DocumentDescriptor.builder()
 				.setLayout(layoutBuilder.build())

@@ -193,8 +193,10 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return fields;
 	}
 
-	public static final class Builder
+	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
 	{
+		private SqlDocumentEntityDataBindingDescriptor _built = null;
+
 		private String sqlTableName;
 		private String sqlTableAlias;
 		private String sqlParentLinkColumnName;
@@ -213,9 +215,22 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			super();
 		}
 
-		public SqlDocumentEntityDataBindingDescriptor build()
+		@Override
+		public SqlDocumentEntityDataBindingDescriptor getOrBuild()
 		{
-			return new SqlDocumentEntityDataBindingDescriptor(this);
+			if (_built == null)
+			{
+				_built = new SqlDocumentEntityDataBindingDescriptor(this);
+			}
+			return _built;
+		}
+
+		private final void assertNotBuilt()
+		{
+			if (_built != null)
+			{
+				throw new IllegalStateException("Already built: " + this);
+			}
 		}
 
 		/**
@@ -324,6 +339,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		public Builder setSqlTableName(final String sqlTableName)
 		{
+			assertNotBuilt();
 			this.sqlTableName = sqlTableName;
 			return this;
 		}
@@ -335,6 +351,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private Builder setSqlTableAlias(final String sqlTableAlias)
 		{
+			assertNotBuilt();
 			this.sqlTableAlias = sqlTableAlias;
 			return this;
 		}
@@ -349,7 +366,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			{
 				setSqlTableAlias("d" + detailId.trim());
 			}
-			
+
 			return this;
 		}
 
@@ -360,12 +377,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		public Builder setAD_Table_ID(final int AD_Table_ID)
 		{
+			assertNotBuilt();
 			this.AD_Table_ID = AD_Table_ID;
 			return this;
 		}
 
 		public Builder setSqlParentLinkColumnName(final String sqlParentLinkColumnName)
 		{
+			assertNotBuilt();
 			this.sqlParentLinkColumnName = sqlParentLinkColumnName;
 			return this;
 		}
@@ -377,6 +396,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		public Builder setSqlWhereClause(final String sqlWhereClause)
 		{
+			assertNotBuilt();
 			Check.assumeNotNull(sqlWhereClause, "Parameter sqlWhereClause is not null");
 			this.sqlWhereClause = sqlWhereClause;
 			return this;
@@ -384,18 +404,21 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private Builder setSqlWhereClauseExpression(final IStringExpression sqlWhereClauseExpression)
 		{
+			assertNotBuilt();
 			_sqlWhereClauseExpression = sqlWhereClauseExpression;
 			return this;
 		}
 
 		public Builder setSqlOrderBy(final String sqlOrderBy)
 		{
+			assertNotBuilt();
 			this.sqlOrderBy = Check.isEmpty(sqlOrderBy, true) ? null : sqlOrderBy.trim();
 			return this;
 		}
 
 		public Builder addField(final DocumentFieldDataBindingDescriptor field)
 		{
+			assertNotBuilt();
 			final SqlDocumentFieldDataBindingDescriptor sqlField = (SqlDocumentFieldDataBindingDescriptor)field;
 			fields.add(sqlField);
 

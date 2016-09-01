@@ -30,4 +30,9 @@ public interface DocumentEntityDataBindingDescriptor
 	String getTableName();
 
 	int getAD_Table_ID();
+	
+	interface DocumentEntityDataBindingDescriptorBuilder
+	{
+		DocumentEntityDataBindingDescriptor getOrBuild();
+	}
 }
