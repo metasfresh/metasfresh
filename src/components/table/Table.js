@@ -33,6 +33,12 @@ class Table extends Component {
             }
         }
     }
+
+
+    handleClickOutside = () => {
+        dispatch(deselectAllProducts());
+    }
+
     handleClick = (e, id, selectedProd) => {
         e.preventDefault();
 
@@ -185,9 +191,7 @@ class Table extends Component {
                             </tfoot>
                         </table>
 
-                        // { (this.renderTableBody() > 0) ? "" :  this.renderEmptyInfo() }
-
-                        { (this.props.rowData.length > 0) ? "" :  this.renderEmptyInfo() }
+                        { this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null" }
 
                     </div>
                 </div>
