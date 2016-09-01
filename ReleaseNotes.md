@@ -20,6 +20,7 @@ upcoming
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
 * #319 material tracking - deduplicate numbers in article statistics report
+* #329 Revenue reports BPartner & Week show different amounts when HU Price
 
 # metasfresh 4.33.32 (2016-35)
 
