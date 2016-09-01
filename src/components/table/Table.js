@@ -82,7 +82,6 @@ class Table extends Component {
     }
     handleRightClick = (e) => {
         e.preventDefault();
-        console.log()
         this.setState({
             contextMenu: {
                 x: e.clientX,
@@ -115,7 +114,7 @@ class Table extends Component {
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
-        if(rowData && rowData[tabid]){
+        if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
             let ret = [];
@@ -196,7 +195,7 @@ class Table extends Component {
                             </tfoot>
                         </table>
 
-                        { this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null" }
+                        { rowData && rowData[tabid] && rowData[tabid].length === 0 && this.renderEmptyInfo() }
 
                     </div>
                     {/* Temporary button for adding new row*/}

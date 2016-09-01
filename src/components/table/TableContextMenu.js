@@ -19,7 +19,6 @@ class TableContextMenu extends Component {
     }
     render() {
         const {isDisplayed, x, y} = this.props;
-        console.log(isDisplayed,x,y);
         return (
             !!isDisplayed && <div
                 className="context-menu context-menu-open panel-bordered panel-primary"
