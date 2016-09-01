@@ -21,7 +21,7 @@ class TableContextMenu extends Component {
     }
     render() {
 
-        if(this.props.isDisplayed){
+        // if(this.props.isDisplayed){
           return (
 
               <div
@@ -38,9 +38,9 @@ class TableContextMenu extends Component {
               </div>
 
           )
-        }else{
-          return false;
-        }
+        // }else{
+        //   return false
+        // }
     }
 }
 
