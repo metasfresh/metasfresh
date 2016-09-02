@@ -1,6 +1,7 @@
 package de.metas.ui.web;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
@@ -51,7 +52,10 @@ public class WebRestApiApplication
 
 	public static void main(String[] args)
 	{
-		System.setProperty("PropertyFile", "./metasfresh.properties");
+		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
+		{
+			System.setProperty("PropertyFile", "./metasfresh.properties");
+		}
 
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
