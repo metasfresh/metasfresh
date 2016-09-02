@@ -56,8 +56,10 @@ public class JSONDocumentLayoutElementLine implements Serializable
 
 	static List<JSONDocumentLayoutElementLine> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		final JSONDocumentLayoutElementLine elementLine = new JSONDocumentLayoutElementLine(detailLayout, jsonFilteringOpts);
-		return ImmutableList.of(elementLine);
+		return JSONDocumentLayoutElement.ofList(detailLayout.getElements(), jsonFilteringOpts)
+				.stream()
+				.map(element -> new JSONDocumentLayoutElementLine(element))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@JsonProperty("elements")
@@ -79,10 +81,10 @@ public class JSONDocumentLayoutElementLine implements Serializable
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
-	private JSONDocumentLayoutElementLine(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutElementLine(final JSONDocumentLayoutElement element)
 	{
 		super();
-		elements = JSONDocumentLayoutElement.ofDetailTab(detailLayout, jsonFilteringOpts);
+		elements = ImmutableList.of(element);
 	}
 
 	@Override

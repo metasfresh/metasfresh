@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -49,12 +48,6 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.filter(jsonFilteringOpts.documentLayoutElementFilter())
 				.map(element -> of(element))
 				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	static List<JSONDocumentLayoutElement> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
-	{
-		final List<DocumentLayoutElementDescriptor> elements = detailLayout.getElements();
-		return ofList(elements, jsonFilteringOpts);
 	}
 
 	private static JSONDocumentLayoutElement of(final DocumentLayoutElementDescriptor element)
