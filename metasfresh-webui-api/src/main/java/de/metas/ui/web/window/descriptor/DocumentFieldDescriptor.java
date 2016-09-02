@@ -83,6 +83,8 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final boolean publicField;
 	@JsonProperty("advanced")
 	private final boolean advancedField;
+	@JsonProperty("side-list")
+	private final boolean sideListField;
 	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
 	@JsonProperty("alwaysUpdateable")
@@ -120,6 +122,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		publicField = builder.publicField;
 		advancedField = builder.advancedField;
+		sideListField = builder.sideListField;
 		readonlyLogic = builder.readonlyLogic;
 		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
@@ -182,6 +185,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
 				.add("publicField", publicField)
+				.add("sideListField", sideListField ? Boolean.TRUE : null)
 				.add("fieldDataBinding", dataBinding)
 				.toString();
 	}
@@ -254,6 +258,11 @@ public final class DocumentFieldDescriptor implements Serializable
 		return advancedField;
 	}
 
+	public boolean isSideListField()
+	{
+		return sideListField;
+	}
+
 	public ILogicExpression getReadonlyLogic()
 	{
 		return readonlyLogic;
@@ -289,6 +298,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public static final class Builder
 	{
+
 		private DocumentFieldDescriptor _fieldBuilt;
 
 		private String fieldName;
@@ -309,6 +319,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private Boolean publicField;
 		private Boolean advancedField;
+		private boolean sideListField = false;
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
@@ -323,7 +334,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		public DocumentFieldDescriptor getOrBuild()
 		{
-			if(_fieldBuilt == null)
+			if (_fieldBuilt == null)
 			{
 				_fieldBuilt = new DocumentFieldDescriptor(this);
 			}
@@ -432,6 +443,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setSideListField(final boolean sideListField)
+		{
+			assertNotBuilt();
+			this.sideListField = sideListField;
+			return this;
+		}
+
 		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
@@ -463,7 +481,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDataBinding(final DocumentFieldDataBindingDescriptor dataBinding)
 		{
 			assertNotBuilt();
-			this._dataBinding = dataBinding;
+			_dataBinding = dataBinding;
 			return this;
 		}
 

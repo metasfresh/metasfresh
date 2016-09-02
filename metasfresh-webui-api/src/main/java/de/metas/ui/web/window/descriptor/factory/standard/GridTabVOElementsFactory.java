@@ -543,6 +543,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final ILogicExpression mandatoryLogic;
 		final ILogicExpression displayLogic;
 		final boolean advancedField = advancedFieldNames.contains(fieldName);
+		final boolean sideListField = keyColumn || documentEntryDataBinding().isSideListFieldName(fieldName);
 		if (isParentLinkColumn)
 		{
 			displayType = DisplayType.ID;
@@ -615,6 +616,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				//
 				.setPublicField(publicField)
 				.setAdvancedField(advancedField)
+				.setSideListField(sideListField)
+				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(mandatoryLogic)
@@ -1188,7 +1191,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.forEach(layoutSideListBuilder::addElement);
 
 		documentEntryDataBinding().addSideListFieldNames(layoutSideListBuilder.getFieldNames());
-
+		
 		return layoutSideListBuilder.build();
 	}
 }

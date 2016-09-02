@@ -91,6 +91,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		{
 			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
+			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
 
 			// Set special field names
 			final SpecialFieldsCollector specialFieldsCollector = mainTabFactory.getSpecialFieldsCollector();
@@ -124,12 +125,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailTabFactory.documentEntity();
 			mainTabFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
-		}
-
-		//
-		// Side list
-		{
-			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
 		}
 
 		//

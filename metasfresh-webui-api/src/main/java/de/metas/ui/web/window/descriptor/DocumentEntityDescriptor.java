@@ -71,6 +71,8 @@ public class DocumentEntityDescriptor
 	private final List<DocumentFieldDescriptor> fields;
 	@JsonIgnore
 	private final DocumentFieldDescriptor idField;
+	@JsonIgnore
+	private List<DocumentFieldDescriptor> _sideListFields; // lazy
 
 	@JsonProperty("included-entities")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -221,6 +223,18 @@ public class DocumentEntityDescriptor
 	public List<DocumentFieldDescriptor> getFields()
 	{
 		return fields;
+	}
+
+	public List<DocumentFieldDescriptor> getSideListFields()
+	{
+		if (_sideListFields == null)
+		{
+			_sideListFields = getFields()
+					.stream()
+					.filter(field -> field.isSideListField())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+		return _sideListFields;
 	}
 
 	@JsonIgnore
@@ -382,7 +396,7 @@ public class DocumentEntityDescriptor
 			return _idField.orNull();
 		}
 
-		public List<DocumentFieldDescriptor> getFields()
+		private List<DocumentFieldDescriptor> getFields()
 		{
 			if (_fields == null)
 			{

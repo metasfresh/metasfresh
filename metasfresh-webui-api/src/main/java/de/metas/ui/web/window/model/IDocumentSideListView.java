@@ -1,6 +1,9 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Map;
 import java.util.Set;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -26,9 +29,15 @@ import java.util.Set;
 
 public interface IDocumentSideListView
 {
+	DocumentPath getDocumentPath();
+
 	int getDocumentId();
+
+	String getIdFieldNameOrNull();
 
 	Set<String> getFieldNames();
 
-	Object getFieldValueAsJson();
+	Object getFieldValue(final String fieldName);
+	
+	Map<String, Object> getFieldNameAndJsonValues();
 }

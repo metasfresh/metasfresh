@@ -81,6 +81,13 @@ public final class JSONDocumentField implements Serializable
 		return new JSONDocumentField(FIELD_VALUE_ID)
 				.setValue(jsonValue, reason);
 	}
+	
+	public static final JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
+	{
+		final String reason = null; // N/A
+		return new JSONDocumentField(fieldName)
+				.setValue(jsonValue, reason);
+	}
 
 	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
 	{

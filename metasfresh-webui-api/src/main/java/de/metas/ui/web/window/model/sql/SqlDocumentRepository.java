@@ -39,6 +39,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONValues;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -46,6 +47,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
+import de.metas.ui.web.window.model.DocumentSideListView;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentSideListView;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
@@ -763,7 +765,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSideListSql(sqlParams, query);
+		final String sql = buildSql(sqlParams, query);
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
 		final List<IDocumentSideListView> sideListDocuments = new ArrayList<>(limit + 1);
@@ -799,39 +801,31 @@ public class SqlDocumentRepository implements DocumentRepository
 		return sideListDocuments;
 	}
 
-	private String buildSideListSql(final List<Object> sqlParams, final DocumentRepositoryQuery query)
-	{
-		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
-
-		final StringBuilder sql = new StringBuilder();
-
-		//
-		// SELECT ... FROM ...
-		sql.append(entityBinding.getSqlSelectSideListFrom());
-
-		//
-		// WHERE
-		final String sqlWhereClause = buildSqlWhereClause(sqlParams, query);
-		if (!Strings.isNullOrEmpty(sqlWhereClause))
-		{
-			sql.append("\n WHERE ").append(sqlWhereClause);
-		}
-
-		//
-		// ORDER BY
-		final String sqlOrderBy = entityBinding.getSqlOrderBy();
-		if (!Check.isEmpty(sqlOrderBy))
-		{
-			sql.append("\n ORDER BY ").append(sqlOrderBy);
-		}
-
-		return sql.toString();
-	}
-
 	private IDocumentSideListView retriveDocumentSideListView(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		final List<DocumentFieldDescriptor> fieldDescriptors = entityDescriptor.getSideListFields();
+		if (fieldDescriptors.isEmpty())
+		{
+			throw new IllegalStateException("No side list fields were defined by " + entityDescriptor);
+		}
+
+		final DocumentSideListView.Builder documentBuilder = DocumentSideListView.builder(entityDescriptor);
+		for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
+		{
+			final Object fieldValue = retrieveDocumentFieldValue(fieldDescriptor, rs);
+			final Object jsonValue = JSONValues.valueToJsonObject(fieldValue);
+
+			if (fieldDescriptor.isKey())
+			{
+				documentBuilder.putKeyFieldValue(fieldDescriptor.getFieldName(), jsonValue);
+			}
+			else
+			{
+				documentBuilder.putFieldValue(fieldDescriptor.getFieldName(), jsonValue);
+			}
+		}
+
+		return documentBuilder.build();
 	}
 
 }

@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -60,6 +61,12 @@ public final class JSONDocumentLayoutSection implements Serializable
 		return ImmutableList.of(section);
 	}
 
+	static List<JSONDocumentLayoutSection> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(sideListLayout, jsonFilteringOpts);
+		return ImmutableList.of(section);
+	}
+
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
@@ -72,7 +79,7 @@ public final class JSONDocumentLayoutSection implements Serializable
 
 	/**
 	 * From detail tab constructor
-	 * 
+	 *
 	 * @param detailLayout
 	 * @param jsonFilteringOpts
 	 */
@@ -80,6 +87,18 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonFilteringOpts);
+	}
+
+	/**
+	 * From side-list layout constructor
+	 *
+	 * @param detailLayout
+	 * @param jsonFilteringOpts
+	 */
+	private JSONDocumentLayoutSection(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		columns = JSONDocumentLayoutColumn.ofSideListLayout(sideListLayout, jsonFilteringOpts);
 	}
 
 	@JsonCreator

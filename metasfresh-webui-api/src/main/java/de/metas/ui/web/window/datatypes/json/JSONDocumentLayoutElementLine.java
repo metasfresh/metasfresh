@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -57,6 +58,14 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	static List<JSONDocumentLayoutElementLine> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return JSONDocumentLayoutElement.ofList(detailLayout.getElements(), jsonFilteringOpts)
+				.stream()
+				.map(element -> new JSONDocumentLayoutElementLine(element))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	static List<JSONDocumentLayoutElementLine> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		return JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonFilteringOpts)
 				.stream()
 				.map(element -> new JSONDocumentLayoutElementLine(element))
 				.collect(GuavaCollectors.toImmutableList());

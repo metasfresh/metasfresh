@@ -5,7 +5,6 @@ import java.util.List;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -35,7 +34,7 @@ public interface IWindowRestController
 
 	JSONDocumentLayout layout(int adWindowId, String detailId, boolean advanced);
 
-	JSONDocumentLayoutSideList sideListLayout(int adWindowId);
+	JSONDocumentLayout sideListLayout(int adWindowId);
 
 	List<JSONDocument> data(
 			int adWindowId //

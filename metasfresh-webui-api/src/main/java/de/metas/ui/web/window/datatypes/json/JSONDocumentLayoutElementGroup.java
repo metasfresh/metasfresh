@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -59,6 +60,12 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return ImmutableList.of(elementGroup);
 	}
 
+	static List<JSONDocumentLayoutElementGroup> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(sideListLayout, jsonFilteringOpts);
+		return ImmutableList.of(elementGroup);
+	}
+
 	/** Element group type (primary aka bordered, transparent etc) */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -85,7 +92,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	/**
 	 * From detail tab constructor
-	 * 
+	 *
 	 * @param detailLayout
 	 * @param jsonFilteringOpts
 	 */
@@ -94,6 +101,19 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		super();
 		type = null;
 		elementLines = JSONDocumentLayoutElementLine.ofDetailTab(detailLayout, jsonFilteringOpts);
+	}
+
+	/**
+	 * From side-list layout constructor
+	 *
+	 * @param sideListLayout
+	 * @param jsonFilteringOpts
+	 */
+	public JSONDocumentLayoutElementGroup(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		type = null;
+		elementLines = JSONDocumentLayoutElementLine.ofSideListLayout(sideListLayout, jsonFilteringOpts);
 	}
 
 	@Override

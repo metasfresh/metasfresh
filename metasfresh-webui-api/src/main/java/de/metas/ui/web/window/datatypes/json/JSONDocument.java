@@ -26,6 +26,7 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.IDocumentSideListView;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -186,6 +187,39 @@ public final class JSONDocument implements Serializable
 		{
 			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
 		}
+
+		return jsonDocument;
+	}
+
+	public static List<JSONDocument> ofSideDocumentList(final List<IDocumentSideListView> sideDocuments)
+	{
+		return sideDocuments.stream()
+				.map(JSONDocument::ofSideDocument)
+				.collect(Collectors.toList());
+	}
+
+	private static JSONDocument ofSideDocument(IDocumentSideListView sideDocument)
+	{
+		final JSONDocument jsonDocument = new JSONDocument(sideDocument.getDocumentPath());
+
+		final List<JSONDocumentField> jsonFields = new ArrayList<>();
+
+		// Add pseudo "ID" field first
+		final String idFieldName = sideDocument.getIdFieldNameOrNull();
+		if (idFieldName != null)
+		{
+			final int id = sideDocument.getDocumentId();
+			jsonFields.add(0, JSONDocumentField.idField(id));
+		}
+
+		// Append the other fields
+		sideDocument.getFieldNameAndJsonValues()
+				.entrySet()
+				.stream()
+				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+				.forEach(jsonFields::add);
+
+		jsonDocument.setFields(jsonFields);
 
 		return jsonDocument;
 	}

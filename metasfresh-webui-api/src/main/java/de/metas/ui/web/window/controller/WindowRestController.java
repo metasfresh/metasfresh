@@ -28,7 +28,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -147,8 +146,8 @@ public class WindowRestController implements IWindowRestController
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
-		
-		if(Strings.isNullOrEmpty(detailId))
+
+		if (Strings.isNullOrEmpty(detailId))
 		{
 			return JSONDocumentLayout.of(layout, jsonFilteringOpts);
 		}
@@ -162,7 +161,7 @@ public class WindowRestController implements IWindowRestController
 
 	@Override
 	@RequestMapping(value = "/sideListLayout", method = RequestMethod.GET)
-	public JSONDocumentLayoutSideList sideListLayout(
+	public JSONDocumentLayout sideListLayout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 	)
 	{
@@ -173,7 +172,7 @@ public class WindowRestController implements IWindowRestController
 				.getLayout()
 				.getSideList();
 
-		return JSONDocumentLayoutSideList.of(sideListLayout, JSONFilteringOptions.DEFAULT);
+		return JSONDocumentLayout.ofSideListLayout(adWindowId, sideListLayout, JSONFilteringOptions.DEFAULT);
 	}
 
 	@Override
@@ -353,12 +352,14 @@ public class WindowRestController implements IWindowRestController
 	}
 
 	@RequestMapping(value = "/sideListData", method = RequestMethod.GET)
-	public void sideListData(
+	public List<JSONDocument> sideListData(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 	)
 	{
-		final List<IDocumentSideListView> sideListDocuments = documentCollection.sideList(adWindowId);
-		// TODO: convert & return as JSON
+		autologin();
+
+		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId);
+		return JSONDocument.ofSideDocumentList(sideDocuments);
 	}
 
 	@Override
