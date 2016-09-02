@@ -40,19 +40,25 @@ class Lookup extends Component {
         } = this.props;
 
         // removing selection
-        this.setState({selected: null});
+        this.setState(
+            Object.assign({}, this.state, {
+                selected: null
+            })
+        );
 
         // dividing fields
-        let propertiesCopy = this.getItemsByProperty(properties, "source", "list")
-        let mainProperty = this.getItemsByProperty(properties, "source", "lookup")
-
+        let propertiesCopy = this.getItemsByProperty(properties, "source", "list");
+        let mainProperty = this.getItemsByProperty(properties, "source", "lookup");
         // handling selection when main is not set or set.
         if(this.state.property === ""){
+            console.log("MAIN FIELD SET");
             this.inputSearch.value = select && select[Object.keys(select)[0]];
+
             onChange(mainProperty[0].field, select).then(()=>{
+
                 // call for more properties
                 let batchArray = [];
-                if(propertiesCopy.length >= 1){
+                if(propertiesCopy.length > 0){
 
                     let batch = new Promise((resolve, reject) => {
                         propertiesCopy.map((item) => {
@@ -75,7 +81,9 @@ class Lookup extends Component {
                     });
 
                     batch.then(()=>{
-                        this.setState({model: select}, () => {
+                        this.setState(Object.assign({}, this.state, {
+                            model: select
+                        }), () => {
                             this.generatingPropsSelection();
                         });
                     });
@@ -87,89 +95,117 @@ class Lookup extends Component {
 
 
         } else {
-            this.setState({
-                properties: Object.keys(this.state.properties).reduce((previous, current) => {
-                    if(current == this.state.property){
-                        previous[current] = [select];
-                    }else{
-                        previous[current] = this.state.properties[current];
+            console.log("PROPERTY SET");
+
+            this.setState(
+                update(this.state, {
+                    properties: {
+                        [this.state.property]: {$set: [select]}
                     }
-                    return previous;
-                }, {})
-            }, () => {
+            }), () => {
                 this.generatingPropsSelection();
             });
+
             this.handleBlur();
         }
     }
 
     generatingPropsSelection = () => {
-        const {dispatch} = this.props;
+        const {dispatch, onChange} = this.props;
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
         const modelProps = this.state.properties;
         const modelPropsKeys = Object.keys(modelProps);
-        console.log(modelProps);
         //iteration over rest of unselected props
         for(let i=0; i < modelPropsKeys.length; i++){
+            onChange(modelPropsKeys[i], modelProps[modelPropsKeys[i]][0]);
+
             if(modelProps[modelPropsKeys[i]].length === 1){
                 // Selecting props that have no choice
+                onChange(modelPropsKeys[i], modelProps[modelPropsKeys[i]][0]);
             }else if(modelProps[modelPropsKeys[i]].length > 1){
                 // Generating list of props choice
-                this.setState({
+                this.setState(Object.assign({}, this.state, {
                     list: modelProps[modelPropsKeys[i]],
                     property: modelPropsKeys[i]
-                });
+                }));
+
                 break;
+
             }else{
                 this.handleBlur();
             }
         }
+
     }
 
     handleBlur = () => {
+        console.log("BLUR")
+
         this.dropdown.classList.remove("input-dropdown-focused");
-        this.state.property = "";
+        // this.setState(Object.assign({}, this.state, {
+        //     property: ""
+        // }))
     }
 
     handleFocus = (e) => {
-        const {dispatch,recent} = this.props;
+        console.log("FOCUS")
+        const {dispatch} = this.props;
         e.preventDefault();
-        this.setState({selected: null});
+        this.setState(Object.assign({}, this.state, {
+            selected: null
+        }));
         if(this.inputSearch.value !== this.state.query){
             this.handleChange();
         }
-        if(this.inputSearch.value === ""){
-            this.setState({property: "", list: recent});
-        }
+        // if(this.inputSearch.value === ""){
+        //     this.setState(Object.assign({}, this.state, {
+        //         property: "", list: recent
+        //     }));
+        // }
         this.dropdown.classList.add("input-dropdown-focused");
     }
 
     handleChange = () => {
+        console.log("CHANGE")
+
         const {dispatch, recent, windowType, properties, dataId} = this.props;
         this.inputSearchRest.innerHTML = "";
         this.dropdown.classList.add("input-dropdown-focused");
-        this.setState({selected: null, property: ""});
+        // this.setState(Object.assign({}, this.state, {
+        //     selected: null,
+        //     property: ""
+        // }));
 
         const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
 
         if(this.inputSearch.value != ""){
-            this.setState({isInputEmpty: false, loading: true, query: this.inputSearch.value});
+            this.setState(Object.assign({}, this.state, {
+                isInputEmpty: false,
+                loading: true,
+                query: this.inputSearch.value
+            }));
 
-            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId)).then((response)=>{
-                this.setState({list: response.data, loading: false});
-            })
+            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId))
+                .then((response)=>{
+                    this.setState(Object.assign({}, this.state, {
+                        list: response.data,
+                        loading: false
+                    }));
+                })
         }else{
-            this.setState({
+            this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
                 list: recent
-            });
+            }));
         }
     }
 
     handleClear = (e) => {
+        console.log("CLEAR")
+
         const {onChange} = this.props;
         e.preventDefault();
         this.inputSearch.value = "";
@@ -209,10 +245,12 @@ class Lookup extends Component {
         if(this.state.selected != null){
             const selectTarget = this.state.selected + (reverse ? (-1) : (1));
             if (typeof this.state.list[selectTarget] != "undefined") {
-                this.setState({selected: selectTarget});
+                this.setState(Object.assign({}, this.state, {
+                    selected: selectTarget}));
             }
         }else if(typeof this.state.list[0] != "undefined"){
-            this.setState({selected: 0})
+            this.setState(Object.assign({}, this.state, {
+                selected: 0}))
         }
     }
     getItemsByProperty = (arr, prop, value) => {
@@ -267,6 +305,7 @@ class Lookup extends Component {
                         />
                     </div>
                     <div ref={c => this.inputSearchRest = c} className="input-rest">
+
                     </div>
 
                     {this.state.isInputEmpty ?
