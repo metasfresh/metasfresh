@@ -389,7 +389,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	private int AD_Window_ID;
 
 	/** Tab No (not AD_Tab_ID) 0.. */
-	public final int TabNo;
+	private final int TabNo;
 
 	/**	Tab	ID			*/
 	private int AD_Tab_ID;
@@ -441,8 +441,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Tab Display		*/
 	private static final ILogicExpression DEFAULT_DisplayLogic = ILogicExpression.TRUE;
 	private ILogicExpression DisplayLogicExpr = DEFAULT_DisplayLogic;
-	/** Level			*/
-	public  int         TabLevel = 0;
+	/** Tab Level */
+	private int TabLevel = 0;
 	/** Image			*/
 	public int          AD_Image_ID = 0;
 	/** Included Tab	*/
