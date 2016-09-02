@@ -291,6 +291,14 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException(documentPath);
 		}
 	}
+	
+	public List<IDocumentSideListView> sideList(final int adWindowId)
+	{
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(descriptor.getEntityDescriptor())
+				.build();
+		return documentsRepository.retrieveDocumentsSideList(query);
+	}
 
 	private static final class DocumentKey
 	{

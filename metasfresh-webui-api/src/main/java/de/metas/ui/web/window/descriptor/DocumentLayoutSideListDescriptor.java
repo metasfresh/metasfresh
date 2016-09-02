@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -107,6 +108,13 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 		public boolean hasElements()
 		{
 			return !elementBuilders.isEmpty();
+		}
+
+		public Set<String> getFieldNames()
+		{
+			return elementBuilders.stream()
+					.flatMap(elementBuilder -> elementBuilder.getFieldNames().stream())
+					.collect(GuavaCollectors.toImmutableSet());
 		}
 	}
 }

@@ -1139,6 +1139,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.map(uiElement -> layoutElement(uiElement))
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
+		
+		documentEntryDataBinding().addSideListFieldNames(layoutSideListBuilder.getFieldNames());
 
 		return layoutSideListBuilder.build();
 	}

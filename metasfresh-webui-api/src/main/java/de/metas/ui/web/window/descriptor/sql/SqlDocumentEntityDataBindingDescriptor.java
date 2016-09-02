@@ -2,7 +2,9 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -13,7 +15,9 @@ import org.adempiere.util.Services;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -66,7 +70,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlParentLinkColumnName;
 
 	@JsonIgnore
-	private final String sqlSelectFrom;
+	private final String sqlSelectAllFrom;
+	@JsonIgnore
+	private final String sqlSelectSideListFrom;
 	@JsonProperty("sqlWhereClause")
 	private final IStringExpression sqlWhereClause;
 	@JsonProperty("sqlOrderBy")
@@ -82,20 +88,21 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
 		super();
-		sqlTableName = builder.sqlTableName;
+		sqlTableName = builder.getSqlTableName();
 		Check.assumeNotEmpty(sqlTableName, "sqlTableName is not empty");
 
-		sqlTableAlias = builder.sqlTableAlias;
+		sqlTableAlias = builder.getSqlTableAlias();
 		Check.assumeNotEmpty(sqlTableAlias, "sqlTableAlias is not empty");
 
-		sqlKeyColumnName = builder.keyField == null ? null : builder.keyField.getSqlColumnName();
-		// TODO: handle composed primary key
+		final SqlDocumentFieldDataBindingDescriptor keyField = builder.getKeyField();
+		sqlKeyColumnName = keyField == null ? null : keyField.getSqlColumnName();
 
-		sqlParentLinkColumnName = builder.sqlParentLinkColumnName;
+		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
-		fields = ImmutableList.copyOf(builder.fields);
+		fields = ImmutableList.copyOf(builder.getFields());
 
-		sqlSelectFrom = builder.buildSqlSelect();
+		sqlSelectAllFrom = builder.getSqlSelectAll();
+		sqlSelectSideListFrom = builder.getSqlSelectSideList();
 		sqlWhereClause = builder.getSqlWhereClauseExpression();
 		sqlOrderBy = builder.buildSqlOrderBy();
 
@@ -122,7 +129,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.setSqlOrderBy(sqlOrderBy)
 				.addFields(fields)
 				.setAD_Table_ID(AD_Table_ID));
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -173,9 +179,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlParentLinkColumnName;
 	}
 
-	public String getSqlSelectFrom()
+	public String getSqlSelectAllFrom()
 	{
-		return sqlSelectFrom;
+		return sqlSelectAllFrom;
+	}
+	
+	public String getSqlSelectSideListFrom()
+	{
+		return sqlSelectSideListFrom;
 	}
 
 	public IStringExpression getSqlWhereClause()
@@ -197,18 +208,25 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		private SqlDocumentEntityDataBindingDescriptor _built = null;
 
-		private String sqlTableName;
-		private String sqlTableAlias;
-		private String sqlParentLinkColumnName;
-		private String sqlOrderBy;
-		private String sqlWhereClause = null;
+		private String _sqlTableName;
+		private String _sqlTableAlias;
+		private String _sqlParentLinkColumnName;
+		private String _sqlOrderBy;
+		private String _sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
 
-		private final List<SqlDocumentFieldDataBindingDescriptor> fields = new ArrayList<>();
-		private SqlDocumentFieldDataBindingDescriptor keyField;
+		//
+		private static final Joiner JOINER_SqlSelectFields = Joiner.on("\n, ");
+		private String _sqlSelectAll = null; // will be built
+		private String _sqlSelectSideList = null; // will be built
+
+		private final List<SqlDocumentFieldDataBindingDescriptor> _fields = new ArrayList<>();
+		private SqlDocumentFieldDataBindingDescriptor _keyField;
+		private final Set<String> _fieldNamesSideList = new HashSet<>();
 
 		// legacy
 		private Integer AD_Table_ID;
+
 
 		private Builder()
 		{
@@ -233,30 +251,55 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 		}
 
+		private String getSqlSelectAll()
+		{
+			if (_sqlSelectAll == null)
+			{
+				buildSqlSelects();
+			}
+			return _sqlSelectAll;
+		}
+		
+		private String getSqlSelectSideList()
+		{
+			if(_sqlSelectSideList == null)
+			{
+				buildSqlSelects();
+			}
+			return _sqlSelectSideList;
+		}
+
 		/**
 		 * @return SELECT ... FROM ....
 		 */
-		private String buildSqlSelect()
+		private void buildSqlSelects()
 		{
+			final List<SqlDocumentFieldDataBindingDescriptor> fields = getFields();
+			final Set<String> sideListFieldNames = getSideListFieldNames();
+
 			if (fields.isEmpty())
 			{
 				throw new IllegalStateException("No SQL fields found");
 			}
 
-			final StringBuilder sqlSelectValues = new StringBuilder();
-			final StringBuilder sqlSelectDisplayNames = new StringBuilder();
+			final List<String> sqlSelectValues = new ArrayList<>(fields.size());
+			final List<String> sqlSelectValues_SideList = new ArrayList<>();
+			final List<String> sqlSelectDisplayNames = new ArrayList<>();
+			final List<String> sqlSelectDisplayNames_SideList = new ArrayList<>();
 			for (final SqlDocumentFieldDataBindingDescriptor sqlField : fields)
 			{
 				//
 				// Value column
 				final String columnSql = sqlField.getSqlColumnSql();
 				final String columnName = sqlField.getSqlColumnName();
+				final String sqlSelectValue = columnSql + " AS " + columnName;
+				final boolean isSideListColumn = sideListFieldNames.contains(columnName);
 				//
-				if (sqlSelectValues.length() > 0)
+				sqlSelectValues.add(sqlSelectValue);
+				if(isSideListColumn)
 				{
-					sqlSelectValues.append("\n, ");
+					sqlSelectValues_SideList.add(sqlSelectValue);
 				}
-				sqlSelectValues.append(columnSql).append(" AS ").append(columnName);
 
 				//
 				// Display column, if any
@@ -264,17 +307,48 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				{
 					final String displayColumnName = sqlField.getDisplayColumnName();
 					final String displayColumnSql = sqlField.getDisplayColumnSql();
-					sqlSelectDisplayNames.append("\n, (").append(displayColumnSql).append(") AS ").append(displayColumnName);
+					final String sqlSelectDisplayName = "(" + displayColumnSql + ") AS " + displayColumnName;
+					//
+					sqlSelectDisplayNames.add(sqlSelectDisplayName);
+					if(isSideListColumn)
+					{
+						sqlSelectDisplayNames_SideList.add(sqlSelectDisplayName);
+					}
 				}
 			}
 
 			//
-			if (sqlSelectDisplayNames.length() > 0)
+			final String sqlSelectAll = buildSqlSelect(sqlSelectValues, sqlSelectDisplayNames);
+			final String sqlSelectSideList;
+			if(!sqlSelectValues_SideList.isEmpty())
 			{
+				sqlSelectSideList = buildSqlSelect(sqlSelectValues_SideList, sqlSelectDisplayNames_SideList);
+			}
+			else
+			{
+				sqlSelectSideList = sqlSelectAll;
+			}
+
+			//
+			//
+			_sqlSelectAll = sqlSelectAll;
+			_sqlSelectSideList = sqlSelectSideList;
+		}
+
+		private final String buildSqlSelect(final List<String> sqlSelectValuesList, final List<String> sqlSelectDisplayNamesList)
+		{
+			final String sqlTableName = getSqlTableName();
+			final String sqlTableAlias = getSqlTableAlias();
+
+			final String sqlSelectValues = JOINER_SqlSelectFields.join(sqlSelectValuesList);
+
+			if (!sqlSelectDisplayNamesList.isEmpty())
+			{
+				final String sqlSelectDisplayNames = JOINER_SqlSelectFields.join(sqlSelectDisplayNamesList);
 				return new StringBuilder()
 						.append("SELECT ")
 						.append("\n").append(sqlTableAlias).append(".*") // Value fields
-						.append("\n").append(sqlSelectDisplayNames) // DisplayName fields
+						.append(", \n").append(sqlSelectDisplayNames) // DisplayName fields
 						.append("\n FROM (SELECT ").append(sqlSelectValues).append(" FROM ").append(sqlTableName).append(") ").append(sqlTableAlias) // FROM
 						.toString();
 			}
@@ -299,15 +373,15 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private IStringExpression buildSqlWhereClause()
 		{
-			if (Check.isEmpty(sqlWhereClause, true))
+			if (Check.isEmpty(_sqlWhereClause, true))
 			{
 				return IStringExpression.NULL;
 			}
 
-			final String sqlWhereClausePrepared = sqlWhereClause.trim()
+			final String sqlWhereClausePrepared = _sqlWhereClause.trim()
 					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
 					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
-					.replace(sqlTableName + ".", sqlTableAlias + ".") //
+					.replace(getSqlTableName() + ".", getSqlTableAlias() + ".") //
 					;
 
 			final IStringExpression sqlWhereClauseExpr = Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
@@ -317,13 +391,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String buildSqlOrderBy()
 		{
 			// Explicit ORDER BY
-			if (sqlOrderBy != null)
+			if (_sqlOrderBy != null)
 			{
-				return sqlOrderBy;
+				return _sqlOrderBy;
 			}
 
 			//
 			// Build the ORDER BY from fields
+			final List<SqlDocumentFieldDataBindingDescriptor> fields = getFields();
 			final String sqlOrderByBuilt = fields.stream()
 					.filter(field -> field.isOrderBy())
 					.sorted((field1, field2) -> field1.getOrderByPriority() - field2.getOrderByPriority())
@@ -340,19 +415,19 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		public Builder setSqlTableName(final String sqlTableName)
 		{
 			assertNotBuilt();
-			this.sqlTableName = sqlTableName;
+			this._sqlTableName = sqlTableName;
 			return this;
 		}
 
 		public String getSqlTableName()
 		{
-			return sqlTableName;
+			return _sqlTableName;
 		}
 
 		private Builder setSqlTableAlias(final String sqlTableAlias)
 		{
 			assertNotBuilt();
-			this.sqlTableAlias = sqlTableAlias;
+			this._sqlTableAlias = sqlTableAlias;
 			return this;
 		}
 
@@ -372,7 +447,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		public String getSqlTableAlias()
 		{
-			return sqlTableAlias;
+			return _sqlTableAlias;
 		}
 
 		public Builder setAD_Table_ID(final int AD_Table_ID)
@@ -385,20 +460,20 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		public Builder setSqlParentLinkColumnName(final String sqlParentLinkColumnName)
 		{
 			assertNotBuilt();
-			this.sqlParentLinkColumnName = sqlParentLinkColumnName;
+			this._sqlParentLinkColumnName = sqlParentLinkColumnName;
 			return this;
 		}
 
 		public String getSqlParentLinkColumnName()
 		{
-			return sqlParentLinkColumnName;
+			return _sqlParentLinkColumnName;
 		}
 
 		public Builder setSqlWhereClause(final String sqlWhereClause)
 		{
 			assertNotBuilt();
 			Check.assumeNotNull(sqlWhereClause, "Parameter sqlWhereClause is not null");
-			this.sqlWhereClause = sqlWhereClause;
+			this._sqlWhereClause = sqlWhereClause;
 			return this;
 		}
 
@@ -412,20 +487,22 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		public Builder setSqlOrderBy(final String sqlOrderBy)
 		{
 			assertNotBuilt();
-			this.sqlOrderBy = Check.isEmpty(sqlOrderBy, true) ? null : sqlOrderBy.trim();
+			this._sqlOrderBy = Check.isEmpty(sqlOrderBy, true) ? null : sqlOrderBy.trim();
 			return this;
 		}
 
 		public Builder addField(final DocumentFieldDataBindingDescriptor field)
 		{
 			assertNotBuilt();
+			Preconditions.checkNotNull(field, "field");
+
 			final SqlDocumentFieldDataBindingDescriptor sqlField = (SqlDocumentFieldDataBindingDescriptor)field;
-			fields.add(sqlField);
+			_fields.add(sqlField);
 
 			if (sqlField.isKeyColumn())
 			{
-				Check.assumeNull(keyField, "More than one key field is not allowed: {}, {}", keyField, field);
-				keyField = sqlField;
+				Check.assumeNull(_keyField, "More than one key field is not allowed: {}, {}", _keyField, field);
+				_keyField = sqlField;
 			}
 
 			return this;
@@ -442,5 +519,30 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
+		private List<SqlDocumentFieldDataBindingDescriptor> getFields()
+		{
+			return _fields;
+		}
+
+		private SqlDocumentFieldDataBindingDescriptor getKeyField()
+		{
+			return _keyField;
+		}
+
+		public Builder addSideListFieldNames(final Set<String> fieldNames)
+		{
+			if (fieldNames == null || fieldNames.isEmpty())
+			{
+				return this;
+			}
+
+			_fieldNamesSideList.addAll(fieldNames);
+			return this;
+		}
+
+		private Set<String> getSideListFieldNames()
+		{
+			return _fieldNamesSideList;
+		}
 	}
 }

@@ -25,6 +25,7 @@ import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -77,6 +78,15 @@ public class WindowRestControllerClient implements IWindowRestController
 		final JSONDocumentLayoutTab layoutTab = fromJson(json, JSONDocumentLayoutTab.class);
 		System.out.println("GOT tab layout:\n" + toJson(layoutTab));
 		return layoutTab;
+	}
+
+	@Override
+	public JSONDocumentLayoutSideList sideListLayout(final int adWindowId)
+	{
+		final String json = httpGet("/sideListLayout?type=" + adWindowId);
+		final JSONDocumentLayoutSideList layoutSideList = fromJson(json, JSONDocumentLayoutSideList.class);
+		System.out.println("GOT side list layout:\n" + toJson(layoutSideList));
+		return layoutSideList;
 	}
 
 	@Override

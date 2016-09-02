@@ -47,6 +47,8 @@ public final class JSONFilteringOptions
 	{
 		return new Builder();
 	}
+	
+	public static final JSONFilteringOptions DEFAULT = JSONFilteringOptions.builder().build();
 
 	private final boolean showAdvancedFields;
 	private final String dataFieldsListStr;

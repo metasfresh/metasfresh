@@ -26,14 +26,17 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentSideListView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 
@@ -158,6 +161,22 @@ public class WindowRestController implements IWindowRestController
 				.setShowAdvancedFields(advanced)
 				.build());
 
+	}
+
+	@Override
+	@RequestMapping(value = "/sideListLayout", method = RequestMethod.GET)
+	public JSONDocumentLayoutSideList sideListLayout(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+	)
+	{
+		autologin();
+
+		final DocumentLayoutSideListDescriptor sideListLayout = documentCollection.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getLayout()
+				.getSideList();
+
+		return JSONDocumentLayoutSideList.of(sideListLayout, JSONFilteringOptions.DEFAULT);
 	}
 
 	@Override
@@ -334,6 +353,15 @@ public class WindowRestController implements IWindowRestController
 		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
 
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
+	}
+
+	@RequestMapping(value = "/sideListData", method = RequestMethod.GET)
+	public void sideListData(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+	)
+	{
+		final List<IDocumentSideListView> sideListDocuments = documentCollection.sideList(adWindowId);
+		// TODO: convert & return as JSON
 	}
 
 	@Override

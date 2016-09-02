@@ -47,6 +47,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.IDocumentSideListView;
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
 
 /*
@@ -194,7 +195,7 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// SELECT ... FROM ...
-		sql.append(entityBinding.getSqlSelectFrom());
+		sql.append(entityBinding.getSqlSelectAllFrom());
 
 		//
 		// WHERE
@@ -704,7 +705,7 @@ public class SqlDocumentRepository implements DocumentRepository
 				return new Timestamp(((java.util.Date)value).getTime());
 			}
 		}
-		else if(Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
+		else if (Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
 		{
 			if (value == null)
 			{
@@ -717,9 +718,9 @@ public class SqlDocumentRepository implements DocumentRepository
 			else if (StringLookupValue.class.isAssignableFrom(valueClass))
 			{
 				// Corner case: e.g. Posted column which is a List but the PO is handling it as boolean
-				final StringLookupValue stringLookupValue = (StringLookupValue)value; 
+				final StringLookupValue stringLookupValue = (StringLookupValue)value;
 				final Boolean valueBoolean = DisplayType.toBoolean(stringLookupValue.getIdAsString(), null);
-				if(valueBoolean != null)
+				if (valueBoolean != null)
 				{
 					return valueBoolean;
 				}
@@ -747,4 +748,90 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		InterfaceWrapperHelper.delete(po);
 	}
+
+	@Override
+	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentRepositoryQuery query)
+	{
+		final int limit = -1;
+		return retrieveDocumentsSideList(query, limit);
+	}
+
+	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentRepositoryQuery query, final int limit)
+	{
+		logger.debug("Retrieving records: query={}, limit={}", query, limit);
+
+		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = buildSideListSql(sqlParams, query);
+		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
+
+		final List<IDocumentSideListView> sideListDocuments = new ArrayList<>(limit + 1);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				final IDocumentSideListView sideListDocument = retriveDocumentSideListView(entityDescriptor, rs);
+				sideListDocuments.add(sideListDocument);
+
+				// Stop if we reached the limit
+				if (limit > 0 && sideListDocuments.size() > limit)
+				{
+					break;
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw new DBException(e, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+
+		logger.debug("Retrieved {} records.", sideListDocuments.size());
+		return sideListDocuments;
+	}
+
+	private String buildSideListSql(final List<Object> sqlParams, final DocumentRepositoryQuery query)
+	{
+		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
+
+		final StringBuilder sql = new StringBuilder();
+
+		//
+		// SELECT ... FROM ...
+		sql.append(entityBinding.getSqlSelectSideListFrom());
+
+		//
+		// WHERE
+		final String sqlWhereClause = buildSqlWhereClause(sqlParams, query);
+		if (!Strings.isNullOrEmpty(sqlWhereClause))
+		{
+			sql.append("\n WHERE ").append(sqlWhereClause);
+		}
+
+		//
+		// ORDER BY
+		final String sqlOrderBy = entityBinding.getSqlOrderBy();
+		if (!Check.isEmpty(sqlOrderBy))
+		{
+			sql.append("\n ORDER BY ").append(sqlOrderBy);
+		}
+
+		return sql.toString();
+	}
+
+	private IDocumentSideListView retriveDocumentSideListView(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
 }

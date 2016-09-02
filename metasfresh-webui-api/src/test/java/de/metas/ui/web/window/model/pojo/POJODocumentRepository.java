@@ -32,6 +32,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentRepositoryQuery;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.IDocumentSideListView;
 
 /*
  * #%L
@@ -306,6 +307,13 @@ public class POJODocumentRepository implements DocumentRepository
 		final Object model = retrieveOrCreateModel(document);
 
 		InterfaceWrapperHelper.delete(model);
+	}
+	
+	@Override
+	public List<IDocumentSideListView> retrieveDocumentsSideList(DocumentRepositoryQuery query)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 
 }
