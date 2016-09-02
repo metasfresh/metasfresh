@@ -953,9 +953,7 @@ public class APanel extends CPanel
 					// GridController
 					if (gTab.isSortTab())
 					{
-						final VSortTab st = new VSortTab(m_curWindowNo, gTab.getGridTabVO());
-						st.setTabLevel(gTab.getTabLevel());
-						tabElement = st;
+						tabElement = new VSortTab(m_curWindowNo, gTab.getGridTabVO(), gTab.getParentTabNo());
 					}
 					else	// normal tab
 					{

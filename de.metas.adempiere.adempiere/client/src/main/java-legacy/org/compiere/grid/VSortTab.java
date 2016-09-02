@@ -100,12 +100,15 @@ public class VSortTab extends CPanel implements APanelTab
 	 * @param WindowNo Window No
 	 * @param gridTabVO
 	 */
-	public VSortTab(final int WindowNo, final GridTabVO gridTabVO)
+	public VSortTab(final int WindowNo, final GridTabVO gridTabVO, final int parentTabNo)
 	{
 		super();
 		
 		m_WindowNo = WindowNo;
 		this.gridTabVO = gridTabVO;
+		this.parentTabNo = parentTabNo;
+		
+		setTabLevel(gridTabVO.getTabLevel());
 
 		try
 		{
@@ -122,6 +125,7 @@ public class VSortTab extends CPanel implements APanelTab
 	private static final transient Logger log = LogManager.getLogger(VSortTab.class);
 	private final int m_WindowNo;
 	private final GridTabVO gridTabVO;
+	private final int parentTabNo;
 	private String		m_TableName = null;
 	private String		m_ColumnSortName= null;
 	private String		m_ColumnYesNoName = null;
@@ -539,12 +543,13 @@ public class VSortTab extends CPanel implements APanelTab
 		final int parentId;		
 		if(m_ParentLinkColumnName != null)
 		{	
-			parentId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, m_ParentLinkColumnName);
-			log.debug("{}={}", m_ParentLinkColumnName, parentId);
+			parentId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, parentTabNo, m_ParentLinkColumnName);
+			log.debug("{}={} (WindowNo={}, TabNo={})", m_ParentLinkColumnName, parentId, m_WindowNo, parentTabNo);
 		}
 		else
 		{
 			parentId = -1;
+			log.debug("Considering parentId={} because there is no parent link column", parentId);
 		}
 		
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
@@ -570,7 +575,9 @@ public class VSortTab extends CPanel implements APanelTab
 				int AD_Client_ID = rs.getInt(4);
 				int AD_Org_ID = rs.getInt(5);
 				if (m_ColumnYesNoName != null)
-					isYes = "Y".equals(rs.getString(6));
+				{
+					isYes = DisplayType.toBoolean(rs.getString(6));
+				}
 				
 				// metas: begin
 				if (hasColumnName)
