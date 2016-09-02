@@ -215,9 +215,7 @@ class Table extends Component {
                             <tfoot>
                             </tfoot>
                         </table>
-
-                        { rowData && rowData[tabid] && rowData[tabid].length === 0 && this.renderEmptyInfo() }
-
+                        {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
                     {/* Temporary button for adding new row*/}
                     <Widget
