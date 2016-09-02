@@ -47,8 +47,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.class);
-
+	private final String internalName;
+	
 	private final String caption;
 	private final String description;
 
@@ -62,6 +62,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		super();
 
+		internalName = builder.internalName;
 		caption = builder.caption;
 		description = builder.description;
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
@@ -75,6 +76,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("internalName", internalName)
 				.add("caption", caption)
 				.add("description", description)
 				.add("widgetType", widgetType)
@@ -120,6 +122,9 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.Builder.class);
+
+		private String internalName;
 		private String caption;
 		private String description;
 		private DocumentFieldWidgetType widgetType;
@@ -133,10 +138,28 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			super();
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("caption", caption)
+					.add("description", description)
+					.add("widgetType", widgetType)
+					.add("consumed", consumed ? Boolean.TRUE : null)
+					.add("fields-count", fieldsBuilders.size())
+					.toString();
+		}
+
 		public DocumentLayoutElementDescriptor build()
 		{
 			setConsumed();
-			return new DocumentLayoutElementDescriptor(this);
+
+			final DocumentLayoutElementDescriptor result = new DocumentLayoutElementDescriptor(this);
+
+			logger.trace("Built {} for {}", result, this);
+			return result;
 		}
 
 		private Set<DocumentLayoutElementFieldDescriptor> buildFields()
@@ -144,10 +167,32 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return fieldsBuilders
 					.values()
 					.stream()
-					.filter(fieldBuilder -> !fieldBuilder.isConsumed()) // skip those which were already consumed
-					.filter(fieldBuilder -> fieldBuilder.isPublicField()) // only those which are public
+					.filter(fieldBuilder -> checkValid(fieldBuilder))
 					.map(fieldBuilder -> fieldBuilder.build())
 					.collect(GuavaCollectors.toImmutableSet());
+		}
+
+		private boolean checkValid(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
+		{
+			if (fieldBuilder.isConsumed())
+			{
+				logger.trace("Skip adding {} to {} because it's already consumed", fieldBuilder, this);
+				return false;
+			}
+
+			if (!fieldBuilder.isPublicField())
+			{
+				logger.trace("Skip adding {} to {} because it's not a public field", fieldBuilder, this);
+				return false;
+			}
+
+			return true;
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public Builder setCaption(final String caption)

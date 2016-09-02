@@ -6,9 +6,12 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -40,11 +43,13 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private final String internalName;
 	private final List<DocumentLayoutColumnDescriptor> columns;
 
 	private DocumentLayoutSectionDescriptor(final Builder builder)
 	{
 		super();
+		internalName = builder.internalName;
 		columns = ImmutableList.copyOf(builder.buildColumns());
 	}
 
@@ -52,7 +57,9 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("columns", columns)
+				.omitNullValues()
+				.add("internalName", internalName)
+				.add("columns", columns.isEmpty() ? null : columns)
 				.toString();
 	}
 
@@ -68,12 +75,26 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutSectionDescriptor.Builder.class);
+
+		private String internalName;
 		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
 		private String invalidReason;
 
 		private Builder()
 		{
 			super();
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("invalidReason", invalidReason)
+					.add("columns-count", columnsBuilders.size())
+					.toString();
 		}
 
 		public DocumentLayoutSectionDescriptor build()
@@ -90,8 +111,25 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return columnsBuilders
 					.stream()
 					.map(columnBuilder -> columnBuilder.build())
-					.filter(column -> column.hasElementGroups())
+					.filter(column -> checkValid(column))
 					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		private boolean checkValid(final DocumentLayoutColumnDescriptor column)
+		{
+			if (!column.hasElementGroups())
+			{
+				logger.trace("Skip adding {} to {} because it does not have elements groups", column, this);
+				return false;
+			}
+
+			return true;
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public Builder addColumn(final DocumentLayoutColumnDescriptor.Builder columnBuilder)
@@ -121,6 +159,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		{
 			Check.assumeNotEmpty(invalidReason, "invalidReason is not empty");
 			this.invalidReason = invalidReason;
+			logger.trace("Layout section was marked as invalid: {}", this);
 			return this;
 		}
 
@@ -134,7 +173,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return invalidReason != null;
 		}
 
-		public String getInvalidReason()
+		private String getInvalidReason()
 		{
 			return invalidReason;
 		}

@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -38,11 +41,13 @@ public class DocumentLayoutColumnDescriptor
 		return new Builder();
 	}
 
+	private final String internalName;
 	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
 		super();
+		internalName = builder.internalName;
 		elementGroups = ImmutableList.copyOf(builder.buildElementGroups());
 	}
 
@@ -50,7 +55,9 @@ public class DocumentLayoutColumnDescriptor
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("elementGroups", elementGroups)
+				.omitNullValues()
+				.add("internalName", internalName)
+				.add("elementGroups", elementGroups.isEmpty() ? null : elementGroups)
 				.toString();
 	}
 
@@ -66,16 +73,32 @@ public class DocumentLayoutColumnDescriptor
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutColumnDescriptor.Builder.class);
+
+		private String internalName;
 		private final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
 			super();
 		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("elementGroups-count", elementGroupsBuilders.size())
+					.toString();
+		}
 
 		public DocumentLayoutColumnDescriptor build()
 		{
-			return new DocumentLayoutColumnDescriptor(this);
+			final DocumentLayoutColumnDescriptor result = new DocumentLayoutColumnDescriptor(this);
+			
+			logger.trace("Built {} for {}", result, this);
+			return result;
 		}
 
 		private List<DocumentLayoutElementGroupDescriptor> buildElementGroups()
@@ -83,8 +106,25 @@ public class DocumentLayoutColumnDescriptor
 			return elementGroupsBuilders
 					.stream()
 					.map(elementGroupBuilder -> elementGroupBuilder.build())
-					.filter(elementGroup -> elementGroup.hasElementLines())
+					.filter(elementGroup -> checkValid(elementGroup))
 					.collect(GuavaCollectors.toImmutableList());
+		}
+		
+		private boolean checkValid(final DocumentLayoutElementGroupDescriptor elementGroup)
+		{
+			if(!elementGroup.hasElementLines())
+			{
+				logger.trace("Skip adding {} to {} because it does not have element line", elementGroup, this);
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public Builder setInternalName(String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public Builder addElementGroup(final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)

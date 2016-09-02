@@ -7,9 +7,11 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -40,6 +42,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*package*/ class DefaultDocumentDescriptorLoader
 {
+	private static final Logger logger = LogManager.getLogger(DefaultDocumentDescriptorLoader.class);
+
 	//
 	// Parameters
 	private final int AD_Window_ID;
@@ -129,10 +133,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		//
-		//
-		return documentBuilder
+		// Build & return the final descriptor
+		final DocumentDescriptor descriptor = documentBuilder
 				.setLayout(layoutBuilder.build())
 				.setEntityDescriptor(mainTabFactory.documentEntity().build())
 				.build();
+		logger.trace("Descriptor loaded: {}", descriptor);
+		return descriptor;
 	}
 }

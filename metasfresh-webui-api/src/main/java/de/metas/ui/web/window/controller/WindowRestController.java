@@ -92,6 +92,11 @@ public class WindowRestController implements IWindowRestController
 	{
 		// FIXME: debug logging
 		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
+		//
+		// Descriptor & factory
+		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor", Level.TRACE);
+		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor.factory", null);
+		//
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
 		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);

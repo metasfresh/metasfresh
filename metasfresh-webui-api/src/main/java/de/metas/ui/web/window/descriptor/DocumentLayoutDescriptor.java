@@ -187,10 +187,32 @@ public final class DocumentLayoutDescriptor implements Serializable
 		{
 			return sectionBuilders
 					.stream()
-					.filter(sectionBuilder -> sectionBuilder.isValid())
+					.filter(sectionBuilder -> checkValid(sectionBuilder))
 					.map(sectionBuilder -> sectionBuilder.build())
-					.filter(section -> section.hasColumns())
+					.filter(section -> checkValid(section))
 					.collect(GuavaCollectors.toImmutableList());
+		}
+		
+		private boolean checkValid(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
+		{
+			if(sectionBuilder.isInvalid())
+			{
+				logger.trace("Skip adding {} to {} because it's not valid", sectionBuilder, this);
+				return false;
+			}
+			
+			return true;
+		}
+		
+		private final boolean checkValid(final DocumentLayoutSectionDescriptor section)
+		{
+			if(!section.hasColumns())
+			{
+				logger.trace("Skip adding {} to {} because it does not have columns", section, this);
+				return false;
+			}
+			
+			return true;
 		}
 
 		private Map<String, DocumentLayoutDetailDescriptor> buildDetails()

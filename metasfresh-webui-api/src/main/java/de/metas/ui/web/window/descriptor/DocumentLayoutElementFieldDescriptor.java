@@ -4,9 +4,12 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -49,6 +52,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		ActionButtonStatus, ActionButton //
 	}
 
+	private final String internalName;
 	private final String field;
 	private final LookupSource lookupSource;
 	private final FieldType fieldType;
@@ -57,6 +61,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		super();
 
+		internalName = builder.internalName;
 		field = Preconditions.checkNotNull(builder.getFieldName(), "field not null");
 		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
@@ -66,7 +71,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("field", field)
+				.add("internalName", internalName)
 				.toString();
 	}
 
@@ -108,6 +115,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementFieldDescriptor.Builder.class);
+
+		private String internalName;
 		private final String fieldName;
 		private LookupSource lookupSource;
 		private FieldType fieldType;
@@ -121,10 +131,31 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.fieldName = fieldName;
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("fieldName", fieldName)
+					.add("publicField", publicField)
+					.add("consumed", consumed)
+					.toString();
+		}
+
 		public DocumentLayoutElementFieldDescriptor build()
 		{
 			setConsumed();
-			return new DocumentLayoutElementFieldDescriptor(this);
+			final DocumentLayoutElementFieldDescriptor result = new DocumentLayoutElementFieldDescriptor(this);
+
+			logger.trace("Build {} for {}", result, this);
+			return result;
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public String getFieldName()
@@ -143,13 +174,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.fieldType = fieldType;
 			return this;
 		}
-		
+
 		public Builder setPublicField(final boolean publicField)
 		{
 			this.publicField = publicField;
 			return this;
 		}
-		
+
 		public boolean isPublicField()
 		{
 			return publicField;
@@ -157,7 +188,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		public Builder setConsumed()
 		{
-			this.consumed = true;
+			consumed = true;
 			return this;
 		}
 

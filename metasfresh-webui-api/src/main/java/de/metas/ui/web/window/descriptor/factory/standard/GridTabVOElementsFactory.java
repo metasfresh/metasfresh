@@ -133,15 +133,18 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		_gridWindowVO = gridWindowVO;
 		_gridTabVO = gridTabVO;
 		_parentTab = parentTab;
+		logger.trace("Creating factory for {}, parentTab={}", _gridTabVO, _parentTab);
 
 		//
 		// Detail ID
 		{
 			final int tabNo = _gridTabVO.getTabNo();
 			_detailId = tabNo == MAIN_TabNo ? null : String.valueOf(tabNo);
+			logger.trace("detailId={}", _detailId);
 		}
 
 		_tabReadonlyLogic = extractTabReadonlyLogic(gridTabVO);
+		logger.trace("TabReadonlyLogic={}", _tabReadonlyLogic);
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -159,6 +162,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			}
 
 			_uiSections = ImmutableList.copyOf(uiSections);
+			logger.trace("UI sections: {}", _uiSections);
+
 			_uiProvider = uiProvider;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
@@ -206,10 +211,13 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	public List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
 	{
+		final List<I_AD_UI_Section> uiSections = getUISections();
+		logger.trace("Generating layout sections list for {}", uiSections);
+		
 		//
 		// UI Sections
 		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
-		for (final I_AD_UI_Section uiSection : getUISections())
+		for (final I_AD_UI_Section uiSection : uiSections)
 		{
 			layoutSectionBuilders.add(layoutSection(uiSection));
 		}
@@ -219,7 +227,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private DocumentLayoutSectionDescriptor.Builder layoutSection(final I_AD_UI_Section uiSection)
 	{
-		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder();
+		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder()
+				.setInternalName(uiSection.toString());
 
 		if (!uiSection.isActive())
 		{
@@ -245,14 +254,19 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		if (!uiColumn.isActive())
 		{
+			logger.trace("Skip adding {} because it's not active", uiColumn);
 			return null;
 		}
 
-		final DocumentLayoutColumnDescriptor.Builder layoutColumnBuilder = DocumentLayoutColumnDescriptor.builder();
+		final List<I_AD_UI_ElementGroup> uiElementGroups = getUIProvider().getUIElementGroups(uiColumn);
+		logger.trace("Generating layout column for {}: {}", uiColumn, uiElementGroups);
+
+		final DocumentLayoutColumnDescriptor.Builder layoutColumnBuilder = DocumentLayoutColumnDescriptor.builder()
+				.setInternalName(uiColumn.toString());
 
 		//
 		// UI Element Groups
-		for (final I_AD_UI_ElementGroup uiElementGroup : getUIProvider().getUIElementGroups(uiColumn))
+		for (final I_AD_UI_ElementGroup uiElementGroup : uiElementGroups)
 		{
 			final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = layoutElementGroup(uiElementGroup);
 			if (layoutElementGroupBuilder == null)
@@ -269,15 +283,20 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		if (!uiElementGroup.isActive())
 		{
+			logger.trace("Skip building layout element group for {} because it's not active", uiElementGroup);
 			return null;
 		}
 
+		final List<I_AD_UI_Element> uiElements = getUIProvider().getUIElements(uiElementGroup);
+		logger.trace("Building layout element group for {}: {}", uiElementGroup, uiElements);
+
 		final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementGroupDescriptor.builder()
+				.setInternalName(uiElementGroup.toString())
 				.setLayoutType(uiElementGroup.getUIStyle());
 
 		//
 		// UI Elements
-		for (final I_AD_UI_Element uiElement : getUIProvider().getUIElements(uiElementGroup))
+		for (final I_AD_UI_Element uiElement : uiElements)
 		{
 			if (!uiElement.isDisplayed())
 			{
@@ -293,24 +312,27 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
 		}
 
+		logger.trace("Built layout element group for {}: {}", uiElementGroup, layoutElementGroupBuilder);
 		return layoutElementGroupBuilder;
 	}
 
 	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement, final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
 	{
-		// TODO: introduce the AD_UI_ElementLine table
+		logger.trace("Building layout element line for {}", uiElement);
 
 		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement, layoutElementGroupBuilder);
 		if (layoutElementBuilder == null)
 		{
+			logger.trace("Skip building layout element line because got null layout element", uiElement);
 			return null;
 		}
 
 		final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+				.setInternalName(uiElement.toString())
 				.addElement(layoutElementBuilder);
 
+		logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
 		return layoutElementLineBuilder;
-
 	}
 
 	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement)
@@ -321,8 +343,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement, @Nullable final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
 	{
+		logger.trace("Building layout element for {}", uiElement);
+
 		if (!uiElement.isActive())
 		{
+			logger.trace("Skip building layout element for {} because it's not active", uiElement);
 			return null;
 		}
 
@@ -336,6 +361,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		//
 		// UI main field
 		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
+				.setInternalName(uiElement.toString())
 				.setCaption(uiElement.getName())
 				.setDescription(uiElement.getDescription())
 				.setLayoutType(layoutType)
@@ -350,6 +376,10 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 				specialFieldsCollector.collect(layoutElementBuilder);
 			}
+			else
+			{
+				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElement, uiElement.getAD_Field_ID());
+			}
 		}
 
 		//
@@ -358,6 +388,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			if (!uiElementField.isActive())
 			{
+				logger.trace("Skip {} because it's not active", uiElementField);
 				continue;
 			}
 
@@ -373,6 +404,10 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 				specialFieldsCollector.collect(layoutElementBuilder);
 			}
+			else
+			{
+				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElementField, uiElementField.getAD_Field_ID());
+			}
 		}
 
 		if (layoutElementBuilder.isAdvancedField())
@@ -385,11 +420,14 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			layoutElementBuilder.setCaptionAsFieldNames();
 		}
 
+		logger.trace("Built layout element for {}: {}", uiElement, layoutElementBuilder);
 		return layoutElementBuilder;
 	}
 
 	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
 	{
+		logger.trace("Generating layout detail");
+		
 		final GridTabVO detailTab = getGridTabVO();
 
 		// If the detail is never displayed then don't add it to layout
@@ -1109,6 +1147,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridFieldVO gridFieldVO)
 	{
+		logger.trace("Building layout element field for {}", gridFieldVO);
+
 		final String fieldName = gridFieldVO.getColumnName();
 		final boolean presentInLayout = true;
 		final ILogicExpression displayLogic = extractFieldDisplayLogic(gridFieldVO, presentInLayout);
@@ -1119,16 +1159,22 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			publicFieldNames.add(fieldName);
 		}
 
-		return DocumentLayoutElementFieldDescriptor.builder(fieldName)
+		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
+				.setInternalName(gridFieldVO.toString())
 				.setLookupSource(extractLookupSource(gridFieldVO))
 				.setPublicField(publicField);
+
+		logger.trace("Built layout element field for {}: {}", gridFieldVO, layoutElementFieldBuilder);
+		return layoutElementFieldBuilder;
 	}
 
 	public final DocumentLayoutSideListDescriptor layoutSideList()
 	{
+		final List<I_AD_UI_Section> uiSections = getUISections();
+		logger.trace("Generating layout side list for {}", uiSections);
+		
 		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder();
 
-		final List<I_AD_UI_Section> uiSections = getUISections();
 		uiSections.stream()
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
 				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
@@ -1139,7 +1185,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.map(uiElement -> layoutElement(uiElement))
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
-		
+
 		documentEntryDataBinding().addSideListFieldNames(layoutSideListBuilder.getFieldNames());
 
 		return layoutSideListBuilder.build();

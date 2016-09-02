@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -37,11 +40,13 @@ public final class DocumentLayoutElementLineDescriptor
 		return new Builder();
 	}
 
+	private final String internalName;
 	private final List<DocumentLayoutElementDescriptor> elements;
 
 	private DocumentLayoutElementLineDescriptor(final Builder builder)
 	{
 		super();
+		internalName = builder.internalName;
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 
@@ -50,6 +55,7 @@ public final class DocumentLayoutElementLineDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("internalName", internalName)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
@@ -66,6 +72,9 @@ public final class DocumentLayoutElementLineDescriptor
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementLineDescriptor.Builder.class);
+
+		private String internalName;
 		private final List<DocumentLayoutElementDescriptor.Builder> elementsBuilders = new ArrayList<>();
 
 		private Builder()
@@ -73,19 +82,60 @@ public final class DocumentLayoutElementLineDescriptor
 			super();
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("elements-count", elementsBuilders.size())
+					.toString();
+		}
+
 		public DocumentLayoutElementLineDescriptor build()
 		{
-			return new DocumentLayoutElementLineDescriptor(this);
+			final DocumentLayoutElementLineDescriptor result = new DocumentLayoutElementLineDescriptor(this);
+
+			logger.trace("Built {} for {}", result, this);
+			return result;
 		}
 
 		private List<DocumentLayoutElementDescriptor> buildElements()
 		{
 			return elementsBuilders
 					.stream()
-					.filter(elementBuilder -> !elementBuilder.isConsumed())
+					.filter(elementBuilder -> checkValid(elementBuilder))
 					.map(elementBuilder -> elementBuilder.build())
-					.filter(element -> element.hasFields())
+					.filter(element -> checkValid(element))
 					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		private final boolean checkValid(final DocumentLayoutElementDescriptor.Builder elementBuilder)
+		{
+			if (elementBuilder.isConsumed())
+			{
+				logger.trace("Skip adding {} to {} because it's already consumed", elementBuilder, this);
+				return false;
+			}
+
+			return true;
+		}
+
+		private final boolean checkValid(final DocumentLayoutElementDescriptor element)
+		{
+			if (!element.hasFields())
+			{
+				logger.trace("Skip adding {} to {} because it does not have fields", element, this);
+				return false;
+			}
+
+			return true;
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)

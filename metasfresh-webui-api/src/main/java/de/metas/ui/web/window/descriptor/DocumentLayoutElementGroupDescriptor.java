@@ -6,9 +6,12 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -79,6 +82,9 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementGroupDescriptor.Builder.class);
+
+		private String internalName;
 		private LayoutType layoutType;
 		private final List<DocumentLayoutElementLineDescriptor.Builder> elementLinesBuilders = new ArrayList<>();
 
@@ -87,9 +93,23 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			super();
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("internalName", internalName)
+					.add("layoutType", layoutType)
+					.add("elementsLines-count", elementLinesBuilders.size())
+					.toString();
+		}
+
 		public DocumentLayoutElementGroupDescriptor build()
 		{
-			return new DocumentLayoutElementGroupDescriptor(this);
+			final DocumentLayoutElementGroupDescriptor result = new DocumentLayoutElementGroupDescriptor(this);
+			
+			logger.trace("Built {} for {}", result, this);
+			return result;
 		}
 
 		private List<DocumentLayoutElementLineDescriptor> buildElementLines()
@@ -97,8 +117,25 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return elementLinesBuilders
 					.stream()
 					.map(elementLinesBuilder -> elementLinesBuilder.build())
-					.filter(elementLine -> elementLine.hasElements())
+					.filter(elementLine -> checkValid(elementLine))
 					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		private final boolean checkValid(final DocumentLayoutElementLineDescriptor elementLine)
+		{
+			if (!elementLine.hasElements())
+			{
+				logger.trace("Skip adding {} to {} because it's empty", elementLine, this);
+				return false;
+			}
+
+			return true;
+		}
+
+		public Builder setInternalName(final String internalName)
+		{
+			this.internalName = internalName;
+			return this;
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)
