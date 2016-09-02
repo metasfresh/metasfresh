@@ -17,9 +17,41 @@ class Header extends Component {
 
         this.state = {
             isSubheaderShow: false,
-            isOrderListShow: false
+            isOrderListShow: false,
+            indicator: 'saved'
         }
     }
+    changeState = () => {
+      if(this.state.indicator == 'saved') {
+        this.setState({indicator: 'pending'});
+      } else {
+        this.setState({indicator: 'saved'});
+      }
+    }
+    renderSaved = () => {
+      return (
+        <div>
+          <img src={saved} />
+          <small>Saved</small>
+        </div>
+      )
+    }
+    renderPending = () => {
+      return (
+        <div>
+          <img src={loader} />
+        </div>
+      )
+    }
+    renderError = () => {
+      return (
+        <div>
+          <img src={unsaved} />
+          <small>Error</small>
+        </div>
+      )
+    }
+
     handleSubheaderOpen = () => {
         if(this.state.isSubheaderShow){
             this.setState({isSubheaderShow: false});
@@ -40,10 +72,10 @@ class Header extends Component {
 
     render() {
         const {docNoData, docNo, docStatus, docStatusData, windowType, dataId} = this.props;
-        const {isSubheaderShow, isOrderListShow} = this.state;
+        const {isSubheaderShow, isOrderListShow, indicator} = this.state;
 
         return (
-            <div>
+            <div onClick={(e) => this.changeState(e)}>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
                 <nav className="header header-super-faded">
                     <div className="container">
@@ -86,7 +118,7 @@ class Header extends Component {
                                 }
 
                                 <div className="indicator">
-                                    <img src={loader} />
+                                  {this.state.indicator === 'saved' ? this.renderSaved() : (this.state.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
                                 </div>
 
                                 <div
