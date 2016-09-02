@@ -48,7 +48,7 @@ class Table extends Component {
     deselectProduct = (id) => {
         this.setState(update(this.state, {
             selectedProducts: {$splice: [[id, 1]]}
-        })
+        }))
     }
 
     deselectAllProducts = () => {
