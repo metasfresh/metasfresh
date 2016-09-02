@@ -1,4 +1,6 @@
 import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+
 import onClickOutside from 'react-onclickoutside';
 import update from 'react-addons-update';
 
@@ -127,9 +129,9 @@ class Table extends Component {
             return p.id
         });
     }
-    openModal = (windowType) => {
+    openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
-        dispatch(openModal(windowType));
+        dispatch(openModal(windowType, tabId, rowId));
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
@@ -196,7 +198,7 @@ class Table extends Component {
                     />
                     <div className="row">
                         <div className="col-xs-12">
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&tabid=" + tabid)}>Add new</button>
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&advanced=true")}>Advanced edit</button>
                             <div className="pull-xs-right">
                                 <TableFilter />
@@ -232,5 +234,16 @@ class Table extends Component {
         )
     }
 }
+
+Table.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+function mapStateToProps(state) {
+    return {
+    }
+}
+
+Table = connect(mapStateToProps)(Table)
 
 export default Table

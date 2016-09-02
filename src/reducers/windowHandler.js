@@ -6,6 +6,8 @@ const initialState = {
     modal: {
         visible: false,
         type: 0,
+        tabId: null,
+        rowId: null,
         layout: {},
         data: [],
         rowData: {}
@@ -29,14 +31,18 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
                     visible: true,
-                    type: action.windowType
+                    type: action.windowType,
+                    tabId: action.tabId,
+                    rowId: action.rowId
                 })
         })
 
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
-                    visible: false
+                    visible: false,
+                    tabId: null,
+                    rowId: null
                 })
         })
 

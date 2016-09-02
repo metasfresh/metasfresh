@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import update from 'react-addons-update';
 
 import {
     autocompleteRequest,
@@ -21,12 +22,14 @@ class Lookup extends Component {
             loading: false
         }
     }
+
     componentDidMount() {
         const {defaultValue} = this.props;
         if(defaultValue){
             this.handleSelect(this.props.defaultValue);
         }
     }
+
     handleSelect = (select) => {
         const {
             dispatch,
@@ -36,53 +39,54 @@ class Lookup extends Component {
             fields
         } = this.props;
 
-        //removing selection
+        // removing selection
         this.setState({selected: null});
+
+        // dividing fields
         let propertiesCopy = this.getItemsByProperty(properties, "source", "list")
         let mainProperty = this.getItemsByProperty(properties, "source", "lookup")
-        //
-        // Handling selection when main is not set or set.
-        //
+
+        // handling selection when main is not set or set.
         if(this.state.property === ""){
             this.inputSearch.value = select && select[Object.keys(select)[0]];
-            onChange(mainProperty[0].field, select);
-            //call for more properties
-            // - first will generate choice dropdown
-            // - second should be chosen automatically
+            onChange(mainProperty[0].field, select).then(()=>{
+                // call for more properties
+                let batchArray = [];
+                if(propertiesCopy.length >= 1){
 
-            let batchArray = [];
-            if(propertiesCopy.length >= 1){
-                let batch = new Promise((resolve, reject) => {
-                    propertiesCopy.map((item) => {
-                        dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
-                            this.setState({
-                                properties: {
-                                    [item.field]: response.data
-                                }
+                    let batch = new Promise((resolve, reject) => {
+                        propertiesCopy.map((item) => {
+                            dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
+
+                                this.setState(update(this.state, {
+                                    properties: {
+                                        [item.field]: {$set: response.data}
+                                    }
+                                }), () => {
+                                    batchArray.push('0');
+
+                                    if(batchArray.length === propertiesCopy.length){
+                                        resolve();
+                                    }
+                                });
+
                             });
-                            batchArray.push('0');
-
-                            if(batchArray.length === propertiesCopy.length){
-                                resolve();
-                            }
                         });
                     });
-                });
 
-                batch.then(()=>{
-                    this.setState({model: select}, () => {
-                        this.generatingPropsSelection();
+                    batch.then(()=>{
+                        this.setState({model: select}, () => {
+                            this.generatingPropsSelection();
+                        });
                     });
-                });
 
-            }else{
-                this.handleBlur();
-            }
+                }else{
+                    this.handleBlur();
+                }
+            })
+
+
         } else {
-            //
-            // We cannot mutate state here, but we need to update
-            // the properties in model, to update whole model in store
-            //
             this.setState({
                 properties: Object.keys(this.state.properties).reduce((previous, current) => {
                     if(current == this.state.property){
@@ -101,20 +105,17 @@ class Lookup extends Component {
 
     generatingPropsSelection = () => {
         const {dispatch} = this.props;
-        //
+
         // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
-        //
         const modelProps = this.state.properties;
         const modelPropsKeys = Object.keys(modelProps);
-
+        console.log(modelProps);
         //iteration over rest of unselected props
         for(let i=0; i < modelPropsKeys.length; i++){
             if(modelProps[modelPropsKeys[i]].length === 1){
                 // Selecting props that have no choice
-                const noChoiceProp = modelProps[modelPropsKeys[i]][0];
-                this.inputSearchRest.innerHTML += " " + noChoiceProp[Object.keys(noChoiceProp)[0]];
             }else if(modelProps[modelPropsKeys[i]].length > 1){
                 // Generating list of props choice
                 this.setState({
@@ -132,6 +133,7 @@ class Lookup extends Component {
         this.dropdown.classList.remove("input-dropdown-focused");
         this.state.property = "";
     }
+
     handleFocus = (e) => {
         const {dispatch,recent} = this.props;
         e.preventDefault();
@@ -144,6 +146,7 @@ class Lookup extends Component {
         }
         this.dropdown.classList.add("input-dropdown-focused");
     }
+
     handleChange = () => {
         const {dispatch, recent, windowType, properties, dataId} = this.props;
         this.inputSearchRest.innerHTML = "";
@@ -161,7 +164,8 @@ class Lookup extends Component {
         }else{
             this.setState({
                 isInputEmpty: true,
-                list: recent});
+                list: recent
+            });
         }
     }
 
@@ -172,6 +176,7 @@ class Lookup extends Component {
         this.handleChange();
         this.handleSelect(null);
     }
+
     handleKeyDown = (e) => {
         const {dispatch} = this.props;
         switch(e.key){
@@ -199,6 +204,7 @@ class Lookup extends Component {
                 break;
         }
     }
+
     navigate = (reverse) => {
         if(this.state.selected != null){
             const selectTarget = this.state.selected + (reverse ? (-1) : (1));
@@ -218,6 +224,7 @@ class Lookup extends Component {
         });
         return ret;
     }
+
     getDropdownComponent = (index, item) => {
         const name = item[Object.keys(item)[0]];
         const key = Object.keys(item)[0];

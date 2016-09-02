@@ -24,7 +24,7 @@ class Widget extends Component {
             dispatch(updateProperty(property, value, tabId, rowId, isModal));
         }
 
-        dispatch(patch(windowType, dataId, tabId, rowId, property, value, isModal));
+        return dispatch(patch(windowType, dataId, tabId, rowId, property, value, isModal));
 
         //callback
         if(onChange){
