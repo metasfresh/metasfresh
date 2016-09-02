@@ -300,7 +300,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			if (!uiElement.isDisplayed())
 			{
-				return null;
+				logger.trace("Skip {} because it's not displayed", uiElement);
+				continue;
 			}
 
 			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement, layoutElementGroupBuilder);
