@@ -29,6 +29,7 @@ upcoming
 
 ## Features
  * #320 material tracking - provide excel friendly information view
+   - New SQL report for material tracking
 
 ## Fixes
  * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
