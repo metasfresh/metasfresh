@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -53,6 +54,12 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return new JSONDocumentLayoutColumn(column, jsonFilteringOpts);
 	}
 
+	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutColumn column = new JSONDocumentLayoutColumn(detailLayout, jsonFilteringOpts);
+		return ImmutableList.of(column);
+	}
+
 	@JsonProperty("elementGroups")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementGroup> elementGroups;
@@ -70,6 +77,18 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
 	}
 
+	/**
+	 * From detail tab constructor
+	 *
+	 * @param detailLayout
+	 * @param jsonFilteringOpts
+	 */
+	private JSONDocumentLayoutColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		elementGroups = JSONDocumentLayoutElementGroup.ofDetailTab(detailLayout, jsonFilteringOpts);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -82,5 +101,4 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	{
 		return elementGroups;
 	}
-
 }

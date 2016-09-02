@@ -12,10 +12,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -49,9 +51,18 @@ public final class JSONDocumentLayout implements Serializable
 		return new JSONDocumentLayout(layout, jsonFilteringOpts);
 	}
 
+	public static final JSONDocumentLayout ofDetailTab(final int adWindowId, final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		return new JSONDocumentLayout(adWindowId, detailLayout, jsonFilteringOpts);
+	}
+
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
 	private final String type;
+	
+	@JsonProperty("tabid")
+	@JsonInclude(Include.NON_NULL)
+	private final String tabid;
 
 	@JsonProperty("documentNoElement")
 	@JsonInclude(Include.NON_NULL)
@@ -80,6 +91,7 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		super();
 		type = String.valueOf(layout.getAD_Window_ID());
+		tabid = null;
 		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement());
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
@@ -93,9 +105,33 @@ public final class JSONDocumentLayout implements Serializable
 		}
 	}
 
+	/**
+	 * From detail tab constructor.
+	 *
+	 * @param detailLayout
+	 * @param jsonFilteringOpts
+	 */
+	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		type = String.valueOf(adWindowId);
+		tabid = detailLayout.getDetailId();
+		documentNoElement = null;
+		docActionElement = null;
+		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonFilteringOpts);
+		tabs = ImmutableList.of();
+		sideList = JSONDocumentLayoutSideList.EMPTY;
+
+		if (WindowConstants.isProtocolDebugging())
+		{
+			putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
+		}
+	}
+
 	@JsonCreator
 	private JSONDocumentLayout(
 			@JsonProperty("type") final String type//
+			, @JsonProperty("tabid") final String tabId //
 			, @JsonProperty("documentNoElement") final JSONDocumentLayoutElement documentNoElement//
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
@@ -105,6 +141,7 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		super();
 		this.type = type;
+		this.tabid = Strings.emptyToNull(tabId);
 		this.documentNoElement = documentNoElement;
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
@@ -128,6 +165,11 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return type;
 	}
+	
+	public String getTabid()
+	{
+		return tabid;
+	}
 
 	public JSONDocumentLayoutElement getDocumentNoElement()
 	{
@@ -148,7 +190,7 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return tabs;
 	}
-	
+
 	public JSONDocumentLayoutSideList getSideList()
 	{
 		return sideList;

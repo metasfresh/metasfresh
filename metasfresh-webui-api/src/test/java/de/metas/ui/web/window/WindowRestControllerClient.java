@@ -26,7 +26,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -63,21 +62,12 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentLayout layout(final int adWindowId, final boolean advanced)
+	public JSONDocumentLayout layout(final int adWindowId, final String detailId, final boolean advanced)
 	{
-		final String json = httpGet("/layout?type=" + adWindowId + "&advanced=" + advanced);
+		final String json = httpGet("/layout?type=" + adWindowId + "&tabid=" + Strings.emptyToNull(detailId) + "&advanced=" + advanced);
 		final JSONDocumentLayout layout = fromJson(json, JSONDocumentLayout.class);
 		System.out.println("GOT layout:\n" + toJson(layout));
 		return layout;
-	}
-
-	@Override
-	public JSONDocumentLayoutTab tabLayout(final int adWindowId, final String detailId, final boolean advanced)
-	{
-		final String json = httpGet("/tabLayout?type=" + adWindowId + "&tabid=" + detailId + "&advanced=" + advanced);
-		final JSONDocumentLayoutTab layoutTab = fromJson(json, JSONDocumentLayoutTab.class);
-		System.out.println("GOT tab layout:\n" + toJson(layoutTab));
-		return layoutTab;
 	}
 
 	@Override

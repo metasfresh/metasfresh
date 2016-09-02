@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -53,6 +54,12 @@ public final class JSONDocumentLayoutSection implements Serializable
 		return new JSONDocumentLayoutSection(section, jsonFilteringOpts);
 	}
 
+	static List<JSONDocumentLayoutSection> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(detailLayout, jsonFilteringOpts);
+		return ImmutableList.of(section);
+	}
+
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
@@ -61,6 +68,18 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonFilteringOpts);
+	}
+
+	/**
+	 * From detail tab constructor
+	 * 
+	 * @param detailLayout
+	 * @param jsonFilteringOpts
+	 */
+	private JSONDocumentLayoutSection(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonFilteringOpts);
 	}
 
 	@JsonCreator

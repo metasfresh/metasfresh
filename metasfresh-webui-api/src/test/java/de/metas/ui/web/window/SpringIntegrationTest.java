@@ -100,7 +100,8 @@ public class SpringIntegrationTest
 	public void test_get_layout()
 	{
 		final boolean advanced = false;
-		final JSONDocumentLayout layout = restController.layout(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, advanced);
+		final String detailId = null;
+		final JSONDocumentLayout layout = restController.layout(MockedDocumentDescriptorFactory.AD_WINDOW_ID_SalesOrder, detailId, advanced);
 		System.out.println("got layout: " + layout);
 	}
 

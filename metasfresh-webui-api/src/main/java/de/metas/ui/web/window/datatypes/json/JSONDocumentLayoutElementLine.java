@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -53,6 +54,12 @@ public class JSONDocumentLayoutElementLine implements Serializable
 		return new JSONDocumentLayoutElementLine(elementLine, jsonFilteringOpts);
 	}
 
+	static List<JSONDocumentLayoutElementLine> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutElementLine elementLine = new JSONDocumentLayoutElementLine(detailLayout, jsonFilteringOpts);
+		return ImmutableList.of(elementLine);
+	}
+
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -70,6 +77,12 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	{
 		super();
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
+	}
+
+	private JSONDocumentLayoutElementLine(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		elements = JSONDocumentLayoutElement.ofDetailTab(detailLayout, jsonFilteringOpts);
 	}
 
 	@Override

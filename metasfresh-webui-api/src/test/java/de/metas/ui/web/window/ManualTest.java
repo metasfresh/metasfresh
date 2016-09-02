@@ -74,7 +74,7 @@ public class ManualTest
 		System.out.println("---------------------------------------------------------------------");
 		System.out.println("Get Order layout");
 		{
-			restClient.layout(143, advanced);
+			restClient.layout(143, null, advanced);
 		}
 
 		//
@@ -82,7 +82,7 @@ public class ManualTest
 		System.out.println("---------------------------------------------------------------------");
 		System.out.println("Get Order line layout");
 		{
-			restClient.tabLayout(143, "1", advanced);
+			restClient.layout(143, "1", advanced);
 		}
 
 		//

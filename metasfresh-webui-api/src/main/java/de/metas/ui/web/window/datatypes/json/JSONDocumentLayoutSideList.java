@@ -42,7 +42,9 @@ public final class JSONDocumentLayoutSideList implements Serializable
 	{
 		return new JSONDocumentLayoutSideList(sideList, jsonFilteringOpts);
 	}
-
+	
+	public static final transient JSONDocumentLayoutSideList EMPTY = new JSONDocumentLayoutSideList(ImmutableList.of());
+	
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;

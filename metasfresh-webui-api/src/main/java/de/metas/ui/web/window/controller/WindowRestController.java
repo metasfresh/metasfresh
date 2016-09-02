@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Strings;
+
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -27,7 +29,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -128,38 +129,29 @@ public class WindowRestController implements IWindowRestController
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	public JSONDocumentLayout layout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
 		autologin();
+
+		final JSONFilteringOptions jsonFilteringOpts = JSONFilteringOptions.builder()
+				.setShowAdvancedFields(advanced)
+				.build();
 
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
-
-		return JSONDocumentLayout.of(layout, JSONFilteringOptions.builder()
-				.setShowAdvancedFields(advanced)
-				.build());
-	}
-
-	@Override
-	@RequestMapping(value = "/tabLayout", method = RequestMethod.GET)
-	public JSONDocumentLayoutTab tabLayout(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_TabId, required = true) final String detailId //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
-	{
-		autologin();
-
-		final DocumentLayoutDetailDescriptor layoutDetail = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(adWindowId)
-				.getLayout()
-				.getDetail(detailId);
-
-		return JSONDocumentLayoutTab.of(layoutDetail, JSONFilteringOptions.builder()
-				.setShowAdvancedFields(advanced)
-				.build());
+		
+		if(Strings.isNullOrEmpty(detailId))
+		{
+			return JSONDocumentLayout.of(layout, jsonFilteringOpts);
+		}
+		else
+		{
+			final DocumentLayoutDetailDescriptor detailLayout = layout.getDetail(detailId);
+			return JSONDocumentLayout.ofDetailTab(adWindowId, detailLayout, jsonFilteringOpts);
+		}
 
 	}
 

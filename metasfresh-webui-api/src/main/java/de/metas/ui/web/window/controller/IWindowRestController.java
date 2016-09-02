@@ -6,7 +6,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutSideList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -34,9 +33,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 public interface IWindowRestController
 {
 
-	JSONDocumentLayout layout(int adWindowId, boolean advanced);
-
-	JSONDocumentLayoutTab tabLayout(int adWindowId, String detailId, boolean advanced);
+	JSONDocumentLayout layout(int adWindowId, String detailId, boolean advanced);
 
 	JSONDocumentLayoutSideList sideListLayout(int adWindowId);
 

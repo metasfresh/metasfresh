@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -40,7 +41,6 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementGroup implements Serializable
 {
-
 	static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return elementGroups.stream()
@@ -51,6 +51,12 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonFilteringOpts);
+	}
+
+	static List<JSONDocumentLayoutElementGroup> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(detailLayout, jsonFilteringOpts);
+		return ImmutableList.of(elementGroup);
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
@@ -77,6 +83,19 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		this.elementLines = elementLines == null ? ImmutableList.of() : ImmutableList.copyOf(elementLines);
 	}
 
+	/**
+	 * From detail tab constructor
+	 * 
+	 * @param detailLayout
+	 * @param jsonFilteringOpts
+	 */
+	private JSONDocumentLayoutElementGroup(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		super();
+		type = null;
+		elementLines = JSONDocumentLayoutElementLine.ofDetailTab(detailLayout, jsonFilteringOpts);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -96,5 +115,4 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	{
 		return elementLines;
 	}
-
 }
