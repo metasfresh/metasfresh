@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
@@ -141,5 +142,11 @@ public class UserSession implements Serializable
 	public Locale getLocale()
 	{
 		return locale;
+	}
+
+	public UserRolePermissionsKey getUserRolePermissionsKey()
+	{
+		// TODO: cache the permissions key
+		return UserRolePermissionsKey.of(getCtx());
 	}
 }
