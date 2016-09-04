@@ -1,4 +1,4 @@
-package de.metas.ui.web.login;
+package de.metas.ui.web.login_old;
 
 import org.compiere.util.KeyNamePairList;
 import org.compiere.util.ValueNamePair;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window_old.shared.login.LoginAuthRequest;
@@ -40,8 +39,9 @@ import de.metas.ui.web.window_old.shared.login.LoginCompleteRequest;
  * #L%
  */
 
-@RestController
-@RequestMapping(value = LoginController.ENDPOINT)
+//@RestController
+//@RequestMapping(value = LoginController.ENDPOINT)
+@Deprecated
 public class LoginController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";

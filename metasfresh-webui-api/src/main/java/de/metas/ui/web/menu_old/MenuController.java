@@ -1,4 +1,4 @@
-package de.metas.ui.web.menu;
+package de.metas.ui.web.menu_old;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -16,7 +16,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.window_old.shared.ImageResource;
@@ -46,8 +45,9 @@ import de.metas.ui.web.window_old.shared.menu.MainMenuItem.MenuItemType;
  * #L%
  */
 
-@RestController
-@RequestMapping(value = MenuController.ENDPOINT)
+//@RestController
+//@RequestMapping(value = MenuController.ENDPOINT)
+@Deprecated
 public class MenuController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/menu";
@@ -160,7 +160,13 @@ public class MenuController
 			throw new AdempiereException("Menu tree not found");
 		}
 
-		final MTree mTree = new MTree(ctx, adTreeId, false, true, ITrx.TRXNAME_None);
+		final MTree mTree = MTree.builder()
+				.setCtx(ctx)
+				.setTrxName(ITrx.TRXNAME_None)
+				.setAD_Tree_ID(adTreeId)
+				.setEditable(false)
+				.setClientTree(true)
+				.build();
 		final MTreeNode rootNodeModel = mTree.getRoot();
 		return rootNodeModel;
 	}

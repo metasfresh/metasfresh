@@ -1,4 +1,4 @@
-package de.metas.ui.web.login;
+package de.metas.ui.web.login_old;
 
 import java.util.ArrayList;
 import java.util.List;

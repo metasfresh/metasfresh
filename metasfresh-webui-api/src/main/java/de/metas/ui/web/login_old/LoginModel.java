@@ -1,4 +1,4 @@
-package de.metas.ui.web.login;
+package de.metas.ui.web.login_old;
 
 import org.compiere.util.KeyNamePairList;
 import org.compiere.util.ValueNamePair;
