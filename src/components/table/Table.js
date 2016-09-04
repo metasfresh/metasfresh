@@ -39,11 +39,15 @@ class Table extends Component {
     handleClickOutside = (event) => {
       console.log('deselected for '+ this.props.tabid);
       const {selectedProducts, dispatch} = this.props
-      dispatch(deselectAllProducts());
+      //dispatch(deselectAllProducts());
     }
 
-    aaa = (event) => {
-      console.log('aaa');
+    closeContextMenu = (event) => {
+      this.setState({
+            contextMenu: {
+                open: false
+            }
+        });
     }
 
     handleClick = (e, id, selectedProd) => {
@@ -105,15 +109,13 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        const {products, selectedProducts} = this.props;
+        const {rowData, tabid, selectedProducts} = this.props;        
         let selected = [
-            products.products.findIndex(x => x.id === id),
-            products.products.findIndex(x => x.id === selectedProducts[0])
+            Object.keys(rowData[tabid]).findIndex(x => x === id),
+            Object.keys(rowData[tabid]).findIndex(x => x === selectedProducts[0])
         ];
         selected.sort((a,b) => a - b);
-        return products.products.slice(selected[0], selected[1]+1).map(p => {
-            return p.id
-        });
+        return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
     }
     openModal = (windowType) => {
         this.props.dispatch(openModal(windowType));
@@ -178,7 +180,7 @@ class Table extends Component {
                         x={this.state.contextMenu.x}
                         y={this.state.contextMenu.y}
                         isDisplayed={this.state.contextMenu.open}
-                        onClick={(e) => this.aaa(e)}
+                        blur={() => this.closeContextMenu()}
                     />
                     <div className="row">
                         <div className="col-xs-12">
