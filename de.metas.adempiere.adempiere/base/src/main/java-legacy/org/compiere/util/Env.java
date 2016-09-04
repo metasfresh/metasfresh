@@ -45,6 +45,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
@@ -1203,11 +1204,8 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final int adRoleId = Env.getAD_Role_ID(ctx);
-		final int adUserId = Env.getAD_User_ID(ctx);
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final Date date = Env.getDate(ctx);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(adRoleId, adUserId, adClientId, date);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
 
 	public static void resetUserRolePermissions()
