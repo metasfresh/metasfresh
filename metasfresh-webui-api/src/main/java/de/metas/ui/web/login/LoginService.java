@@ -64,6 +64,7 @@ public class LoginService
 		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
 		
 		
+		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTree.class, Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTreeLoader.class, Level.TRACE);
 		
 

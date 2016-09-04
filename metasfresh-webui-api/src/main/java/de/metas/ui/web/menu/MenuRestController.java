@@ -43,6 +43,12 @@ public class MenuRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/menu";
 
+	private static final String PARAM_NodeId = "nodeId";
+	private static final String PARAM_Depth = "depth";
+	private static final String PARAM_Type = "type";
+	private static final String PARAM_ElementId = "elementId";
+	private static final String PARAM_NameQuery = "nameQuery";
+
 	@Autowired
 	private LoginService loginService;
 
@@ -58,57 +64,74 @@ public class MenuRestController
 		return menuTreeRepository.getMenuTree(userRolePermissionsKey);
 	}
 
-	@RequestMapping(value = "/rootNodes", method = RequestMethod.GET)
-	public List<JSONMenuNode> getRootNodes()
+	@RequestMapping(value = "/root", method = RequestMethod.GET)
+	public JSONMenuNode getRoot(
+			@RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth)
 	{
 		loginService.autologin();
 
-		final List<MenuNode> nodes = getMenuTree()
-				.getRootNode()
-				.getChildren();
+		final MenuNode node = getMenuTree()
+				.getRootNode();
 
-		return JSONMenuNode.ofList(nodes);
+		return JSONMenuNode.of(node, depth);
 	}
 
-	@RequestMapping(value = "/children", method = RequestMethod.GET)
-	public List<JSONMenuNode> getChildren(
-			@RequestParam(name = "nodeId", required = true) final int nodeId //
-	)
+	@RequestMapping(value = "/node", method = RequestMethod.GET)
+	public JSONMenuNode getNode(
+			@RequestParam(name = PARAM_NodeId, required = true) final int nodeId //
+			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth)
 	{
 		loginService.autologin();
 
-		final List<MenuNode> children = getMenuTree()
-				.getNodeById(nodeId)
-				.getChildren();
+		final MenuNode node = getMenuTree()
+				.getNodeById(nodeId);
 
-		return JSONMenuNode.ofList(children);
+		return JSONMenuNode.of(node, depth);
 	}
 
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
-	public List<JSONMenuNode> getPath(
-			@RequestParam(name = "nodeId", required = true) final int nodeId //
+	public JSONMenuNode getPath(
+			@RequestParam(name = PARAM_NodeId, required = true) final int nodeId //
 	)
 	{
 		loginService.autologin();
 
-		final List<MenuNode> children = getMenuTree()
+		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
 
-		return JSONMenuNode.ofList(children);
+		return JSONMenuNode.ofPath(path);
 	}
 
 	@RequestMapping(value = "/elementPath", method = RequestMethod.GET)
-	public List<JSONMenuNode> getPath(
-			@RequestParam(name = "type", required = true) final JSONMenuNodeType jsonType //
-			, @RequestParam(name = "elementId", required = true) final int elementId //
+	public JSONMenuNode getPath(
+			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType //
+			, @RequestParam(name = PARAM_ElementId, required = true) final int elementId //
 	)
 	{
 		loginService.autologin();
 
-		final List<MenuNode> children = getMenuTree()
+		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
 
-		return JSONMenuNode.ofList(children);
+		return JSONMenuNode.ofPath(path);
+	}
+
+	@RequestMapping(value = "/elementPaths", method = RequestMethod.GET)
+	public JSONMenuNode query(
+			@RequestParam(name = PARAM_NameQuery, required = true) final String nameQuery //
+	)
+	{
+		loginService.autologin();
+
+		final MenuNode rootFiltered = getMenuTree()
+				.filter(nameQuery);
+
+		if (rootFiltered == null)
+		{
+			return null;
+		}
+
+		return JSONMenuNode.of(rootFiltered);
 	}
 
 }

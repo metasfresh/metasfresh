@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -13,6 +14,9 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 
 /*
@@ -43,6 +47,8 @@ public final class MenuTree
 	{
 		return new MenuTree(rootNode);
 	}
+	
+	private static final Logger logger = LogManager.getLogger(MenuTree.class);
 
 	private final MenuNode rootNode;
 	private final Map<Integer, MenuNode> nodesById;
@@ -128,5 +134,48 @@ public final class MenuTree
 		}
 
 		return path;
+	}
+
+	public MenuNode filter(final String nameQuery)
+	{
+		if (Check.isEmpty(nameQuery, true))
+		{
+			throw new IllegalArgumentException("Invalid name query '" + nameQuery + "'");
+		}
+		
+		final String nameQueryLC = nameQuery.toLowerCase();
+		logger.trace("Filtering using nameQueryLC={}", nameQueryLC);
+
+		return getRootNode()
+				.deepCopy(node -> {
+					if (node.isRoot())
+					{
+						logger.trace("Filter: accept root node: {}", node);
+						return MenuNodeFilterResolution.Accept;
+					}
+
+					final boolean matches = matchesNameQuery(node, nameQueryLC);
+					if (matches)
+					{
+						logger.trace("Filter: accept node because matches: {}", node);
+						return MenuNodeFilterResolution.Accept;
+					}
+
+					if(node.isGrouppingNode())
+					{
+						logger.trace("Filter: accept node (if has children!) because does matches and it's a groupping node: {}", node);
+						return MenuNodeFilterResolution.AcceptIfHasChildren;
+					}
+					else
+					{
+						logger.trace("Filter: reject node because does not match and it's leaf node: {}", node);
+						return MenuNodeFilterResolution.Reject;
+					}
+				});
+	}
+
+	private final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
+	{
+		return node.getCaption().toLowerCase().indexOf(nameQueryLC) >= 0;
 	}
 }

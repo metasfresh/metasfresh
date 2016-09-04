@@ -6,9 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 
 /*
  * #%L
@@ -44,6 +49,20 @@ public final class MenuNode
 		Group, Window, Process, Report,
 	}
 
+	@FunctionalInterface
+	public static interface MenuNodeFilter
+	{
+		public static enum MenuNodeFilterResolution
+		{
+			Accept, Reject, AcceptIfHasChildren
+		}
+
+		MenuNodeFilterResolution check(MenuNode node);
+	}
+
+	
+	private static final Logger logger = LogManager.getLogger(MenuNode.class);
+
 	private final int id;
 	private final String caption;
 	private final MenuNodeType type;
@@ -58,14 +77,30 @@ public final class MenuNode
 		super();
 		id = builder.id;
 		caption = builder.caption;
+		type = builder.type;
+		elementId = builder.elementId;
+
 		children = ImmutableList.copyOf(builder.children);
 		for (final MenuNode child : children)
 		{
 			child.parent = this;
 		}
+	}
 
-		type = builder.type;
-		elementId = builder.elementId;
+	/** Copy constructor */
+	private MenuNode(final MenuNode node, final List<MenuNode> children)
+	{
+		super();
+		id = node.id;
+		caption = node.caption;
+		type = node.type;
+		elementId = node.elementId;
+
+		this.children = ImmutableList.copyOf(children);
+		for (final MenuNode child : this.children)
+		{
+			child.parent = this;
+		}
 	}
 
 	@Override
@@ -119,7 +154,7 @@ public final class MenuNode
 	{
 		return caption;
 	}
-	
+
 	public MenuNode getParent()
 	{
 		return parent;
@@ -147,6 +182,43 @@ public final class MenuNode
 		{
 			child.iterate(consumer);
 		}
+	}
+
+	public MenuNode deepCopy(final MenuNodeFilter filter)
+	{
+		final MenuNodeFilterResolution resolution = filter.check(this);
+		if (resolution == MenuNodeFilterResolution.Reject)
+		{
+			return null;
+		}
+
+		final List<MenuNode> childrenCopy = new ArrayList<>();
+		for (final MenuNode child : children)
+		{
+			final MenuNode childCopy = child.deepCopy(filter);
+			if (childCopy == null)
+			{
+				continue;
+			}
+			childrenCopy.add(childCopy);
+		}
+
+		if (resolution == MenuNodeFilterResolution.AcceptIfHasChildren && childrenCopy.isEmpty())
+		{
+			return null;
+		}
+
+		return new MenuNode(this, childrenCopy);
+	}
+	
+	public boolean isRoot()
+	{
+		return parent == null;
+	}
+	
+	public boolean isGrouppingNode()
+	{
+		return type == MenuNodeType.Group;
 	}
 
 	public static final class Builder

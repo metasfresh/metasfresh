@@ -1,7 +1,6 @@
 package de.metas.ui.web.menu.datatypes.json;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.menu.MenuNode;
 
@@ -38,16 +38,31 @@ import de.metas.ui.web.menu.MenuNode;
 @SuppressWarnings("serial")
 public final class JSONMenuNode implements Serializable
 {
-	public static final List<JSONMenuNode> ofList(final Collection<MenuNode> nodes)
+	public static final JSONMenuNode ofPath(final List<MenuNode> path)
 	{
-		return nodes.stream()
-				.map(JSONMenuNode::of)
-				.collect(GuavaCollectors.toImmutableList());
+		if (path == null || path.isEmpty())
+		{
+			throw new IllegalArgumentException("Invalid path");
+		}
+
+		JSONMenuNode jsonChildNode = null;
+		for (int i = path.size() - 1; i >= 0; i--)
+		{
+			final MenuNode node = path.get(i);
+			jsonChildNode = new JSONMenuNode(node, jsonChildNode);
+		}
+		return jsonChildNode;
 	}
 
-	private static final JSONMenuNode of(final MenuNode node)
+	public static JSONMenuNode of(final MenuNode node)
 	{
-		return new JSONMenuNode(node);
+		final int depth = Integer.MAX_VALUE;
+		return new JSONMenuNode(node, depth);
+	}
+
+	public static JSONMenuNode of(final MenuNode node, final int depth)
+	{
+		return new JSONMenuNode(node, depth);
 	}
 
 	@JsonProperty("nodeId")
@@ -60,14 +75,50 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer elementId;
 
-	private JSONMenuNode(final MenuNode node)
+	@JsonProperty("children")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONMenuNode> children;
+
+	private JSONMenuNode(final MenuNode node, final int depth)
 	{
 		super();
 		nodeId = node.getId();
 		caption = node.getCaption();
 		type = JSONMenuNodeType.fromNullable(node.getType());
-		final int elementId = node.getElementId();
-		this.elementId = elementId > 0 ? elementId : null;
+		elementId = normalizeElementId(node.getElementId());
+
+		if (depth <= 0)
+		{
+			children = ImmutableList.of();
+		}
+		else
+		{
+			children = node.getChildren()
+					.stream()
+					.map(childNode -> new JSONMenuNode(childNode, depth - 1))
+					.collect(GuavaCollectors.toImmutableList());
+		}
+	}
+
+	/**
+	 * Path constructor
+	 *
+	 * @param node
+	 * @param jsonChildNode
+	 */
+	private JSONMenuNode(final MenuNode node, final JSONMenuNode jsonChildNode)
+	{
+		super();
+		nodeId = node.getId();
+		caption = node.getCaption();
+		type = JSONMenuNodeType.fromNullable(node.getType());
+		elementId = normalizeElementId(node.getElementId());
+		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
+	}
+
+	private static final Integer normalizeElementId(final int elementId)
+	{
+		return elementId <= 0 ? null : elementId;
 	}
 
 	@JsonCreator
@@ -76,6 +127,7 @@ public final class JSONMenuNode implements Serializable
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("type") final JSONMenuNodeType type //
 			, @JsonProperty("elementId") final Integer elementId //
+			, @JsonProperty("children") final List<JSONMenuNode> children //
 	)
 	{
 		super();
@@ -83,6 +135,7 @@ public final class JSONMenuNode implements Serializable
 		this.caption = caption;
 		this.type = type;
 		this.elementId = elementId;
+		this.children = children == null ? ImmutableList.of() : ImmutableList.copyOf(children);
 	}
 
 	@Override
@@ -114,5 +167,10 @@ public final class JSONMenuNode implements Serializable
 	public Integer getElementId()
 	{
 		return elementId;
+	}
+
+	public List<JSONMenuNode> getChildren()
+	{
+		return children;
 	}
 }
