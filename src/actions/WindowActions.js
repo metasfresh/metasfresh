@@ -90,6 +90,28 @@ export function closeModal(){
 }
 
 
+// INDICATOR ACTIONS
+export function showLoaderIndicator(){
+    return {
+        type: types.CHANGE_INDICATOR_STATE,
+        state: 'pending'
+    }
+}
+
+export function showSavedIndicator(){
+    return {
+        type: types.CHANGE_INDICATOR_STATE,
+        state: 'saved'
+    }
+}
+
+export function showErrorIndicator(){
+    return {
+        type: types.CHANGE_INDICATOR_STATE,
+        state: 'error'
+    }
+}
+
 // THUNK ACTIONS
 
 /*

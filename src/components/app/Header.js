@@ -11,6 +11,13 @@ import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
 
+
+import {
+    showLoaderIndicator,
+    showSavedIndicator,
+    showErrorIndicator
+} from '../../actions/WindowActions';
+
 class Header extends Component {
     constructor(props){
         super(props);
@@ -22,11 +29,12 @@ class Header extends Component {
         }
     }
     changeState = () => {
-      if(this.state.indicator == 'saved') {
-        this.setState({indicator: 'pending'});
-      } else {
-        this.setState({indicator: 'saved'});
-      }
+    //   if(this.state.indicator == 'saved') {
+    //     this.setState({indicator: 'pending'});
+    //   } else {
+    //     this.setState({indicator: 'saved'});
+    //   }
+      this.props.dispatch(showErrorIndicator())
     }
     renderSaved = () => {
       return (
