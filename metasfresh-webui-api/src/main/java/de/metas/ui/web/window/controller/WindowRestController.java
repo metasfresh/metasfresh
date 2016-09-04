@@ -1,12 +1,8 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,11 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
 
-import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -82,52 +76,11 @@ public class WindowRestController implements IWindowRestController
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@Autowired
-	private UserSession userSession;
+	private LoginService loginService;
 
 	@Autowired
 	private DocumentCollection documentCollection;
 
-	private final void autologin()
-	{
-		// FIXME: debug logging
-		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
-		//
-		// Descriptor & factory
-		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor", Level.TRACE);
-		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor.factory", null);
-		//
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
-		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
-		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);
-		WindowConstants.setProtocolDebugging(true);
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
-		//
-		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
-		//
-		// LogManager.setLoggerLevel("org.adempiere.ad.expression.api", Level.TRACE); // logic expressions debugging
-		//
-		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
-		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
-
-		// FIXME: only for testing
-		final Properties ctx = Env.getCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, "en_US");
-		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
-		Env.setContext(ctx, "#C_UOM_ID", 100);
-
-		Services.get(IValuePreferenceBL.class)
-				.getAllWindowPreferences(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx), Env.getAD_User_ID(ctx))
-				.stream()
-				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
-				.forEach(userValuePreference -> Env.setPreference(ctx, userValuePreference));
-
-		userSession.setLocale(Env.getLanguage(ctx).getLocale());
-		userSession.setLoggedIn(true);
-	}
 
 	@Override
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
@@ -137,7 +90,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final JSONFilteringOptions jsonFilteringOpts = JSONFilteringOptions.builder()
 				.setShowAdvancedFields(advanced)
@@ -165,7 +118,7 @@ public class WindowRestController implements IWindowRestController
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentLayoutSideListDescriptor sideListLayout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
@@ -186,7 +139,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -215,7 +168,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -282,7 +235,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -312,7 +265,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -336,7 +289,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -356,7 +309,7 @@ public class WindowRestController implements IWindowRestController
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 	)
 	{
-		autologin();
+		loginService.autologin();
 
 		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId);
 		return JSONDocument.ofSideDocumentList(sideDocuments);
