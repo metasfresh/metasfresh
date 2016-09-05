@@ -36,6 +36,7 @@ import java.awt.event.MouseMotionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +55,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -209,17 +211,28 @@ public class VSortTab extends CPanel implements APanelTab
 
 		int identifiersCount = 0;
 		final StringBuilder identifierSql = new StringBuilder();
-		String sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, e.Name,"	//	1..4
-			+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "				//	4..8
-			+ "FROM AD_Table t, AD_Column c, AD_Element e "
-			+ "WHERE t.AD_Table_ID=?"						//	#1
-			+ " AND t.AD_Table_ID=c.AD_Table_ID"
-			+ " AND (c.AD_Column_ID=? OR AD_Column_ID=?"	//	#2..3
-			+ " OR c.AD_Column_ID=?" // #4
-			+ " OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
-			+ " AND c.AD_Element_ID=e.AD_Element_ID";
+		final List<Object> sqlParams = new ArrayList<>();
+		String sql;
+		
 		final boolean trl = !Env.isBaseLanguage(Env.getCtx(), "AD_Element");
-		if (trl)
+		if (!trl)
+		{
+			sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, e.Name,"	// 1..4
+					+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "				// 4..8
+					+ "FROM AD_Table t, AD_Column c, AD_Element e "
+					+ "WHERE t.AD_Table_ID=?"						// #1
+					+ " AND t.AD_Table_ID=c.AD_Table_ID"
+					+ " AND (c.AD_Column_ID=? OR AD_Column_ID=?"	// #2..3
+					+ " OR c.AD_Column_ID=?" // #4
+					+ " OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
+					+ " AND c.AD_Element_ID=e.AD_Element_ID";
+			sqlParams.add(gridTabVO.getAD_Table_ID());
+			sqlParams.add(AD_ColumnSortOrder_ID);
+			sqlParams.add(AD_ColumnSortYesNo_ID);
+			sqlParams.add(link_Column_ID);
+		}
+		else
+		{
 			sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, et.Name,"	//	1..4
 				+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "		//	4..8
 				+ "FROM AD_Table t, AD_Column c, AD_Element_Trl et "
@@ -229,19 +242,21 @@ public class VSortTab extends CPanel implements APanelTab
 				+ " OR c.AD_Column_ID=?" // #4
 				+ "	OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
 				+ " AND c.AD_Element_ID=et.AD_Element_ID"
-				+ " AND et.AD_Language=?";						//	#4
+				+ " AND et.AD_Language=?";						//	#5
+			sqlParams.add(gridTabVO.getAD_Table_ID());
+			sqlParams.add(AD_ColumnSortOrder_ID);
+			sqlParams.add(AD_ColumnSortYesNo_ID);
+			sqlParams.add(link_Column_ID);
+			sqlParams.add(Env.getAD_Language(Env.getCtx()));
+		}
 		sql += " ORDER BY c.SeqNo";
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, gridTabVO.getAD_Table_ID());
-			pstmt.setInt(2, AD_ColumnSortOrder_ID);
-			pstmt.setInt(3, AD_ColumnSortYesNo_ID);
-			pstmt.setInt(4, link_Column_ID);
-			if (trl)
-				pstmt.setString(4, Env.getAD_Language(Env.getCtx()));
+			DB.setParameters(pstmt, sqlParams);
 			
 			rs = pstmt.executeQuery();
 			while (rs.next())
@@ -300,9 +315,10 @@ public class VSortTab extends CPanel implements APanelTab
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			log.error(sql.toString(), e);
+			final DBException dbEx = new DBException(e, sql, sqlParams);
+			log.error("Failed loading sort tab", dbEx);
 		}
 		finally
 		{
