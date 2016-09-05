@@ -92,6 +92,16 @@ export function closeModal(){
 }
 
 
+// INDICATOR ACTIONS
+
+export function indicatorState(state){
+    return {
+        type: types.CHANGE_INDICATOR_STATE,
+        state: state
+    }
+}
+
+
 // THUNK ACTIONS
 
 /*

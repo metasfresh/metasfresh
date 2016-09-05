@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-
 import onClickOutside from 'react-onclickoutside';
 import update from 'react-addons-update';
 
@@ -35,7 +34,7 @@ class Table extends Component {
         })
     }
 
-    selectRangeProdut = (ids) => {
+    selectRangeProduct = (ids) => {
         this.setState({
             selectedProducts: ids
         })
@@ -61,7 +60,19 @@ class Table extends Component {
 
 
     handleClickOutside = (event) => {
-      console.log('ssss');
+      if(this.state.selectedProducts.length>0){
+        const {dispatch} = this.props
+        // dispatch(deselectAllProducts());
+        this.deselectAllProducts();
+      }
+    }
+
+    closeContextMenu = (event) => {
+      this.setState({
+            contextMenu: {
+                open: false
+            }
+        });
     }
 
     handleClick = (e, id) => {
@@ -119,15 +130,13 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        const {products, selectedProducts} = this.props;
+        const {rowData, tabid} = this.props;
         let selected = [
-            products.products.findIndex(x => x.id === id),
-            products.products.findIndex(x => x.id === selectedProducts[0])
+            Object.keys(rowData[tabid]).findIndex(x => x === id),
+            Object.keys(rowData[tabid]).findIndex(x => x === this.state.selectedProducts[0])
         ];
         selected.sort((a,b) => a - b);
-        return products.products.slice(selected[0], selected[1]+1).map(p => {
-            return p.id
-        });
+        return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
     }
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
@@ -195,6 +204,7 @@ class Table extends Component {
                         x={this.state.contextMenu.x}
                         y={this.state.contextMenu.y}
                         isDisplayed={this.state.contextMenu.open}
+                        blur={() => this.closeContextMenu()}
                     />
                     <div className="row">
                         <div className="col-xs-12">
@@ -217,6 +227,7 @@ class Table extends Component {
                             <tfoot>
                             </tfoot>
                         </table>
+
                         {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
                     {/* Temporary button for adding new row*/}
@@ -239,11 +250,6 @@ Table.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-Table = connect(mapStateToProps)(Table)
+Table = connect()(onClickOutside(Table))
 
 export default Table

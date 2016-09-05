@@ -16,7 +16,8 @@ const initialState = {
         layout: {},
         data: [],
         rowData: {},
-    }
+    },
+    indicator: 'saved'
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -138,6 +139,13 @@ export default function windowHandler(state = initialState, action) {
             })
 
         // END OF SCOPED ACTIONS
+
+        // INDICATOR ACTIONS
+        case types.CHANGE_INDICATOR_STATE:
+                 return Object.assign({}, state, {
+                 indicator: action.state
+                });
+        // END OF INDICATOR ACTIONS
 
         default:
             return state

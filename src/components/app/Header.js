@@ -7,6 +7,12 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
+import Indicator from '../loader/Indicator';
+
+
+import {
+    indicatorState
+} from '../../actions/WindowActions';
 
 class Header extends Component {
     constructor(props){
@@ -14,9 +20,18 @@ class Header extends Component {
 
         this.state = {
             isSubheaderShow: false,
-            isOrderListShow: false
+            isOrderListShow: false,
+            indicator: 'saved'
         }
     }
+    changeState = () => {
+      if(this.props.indicator == 'saved') {
+        this.props.dispatch(indicatorState('pending'));
+      } else {
+        this.props.dispatch(indicatorState('saved'));
+      }
+    }
+
     handleSubheaderOpen = () => {
         if(this.state.isSubheaderShow){
             this.setState({isSubheaderShow: false});
@@ -37,10 +52,10 @@ class Header extends Component {
 
     render() {
         const {docNoData, docNo, docStatus, docStatusData, windowType, dataId} = this.props;
-        const {isSubheaderShow, isOrderListShow} = this.state;
+        const {isSubheaderShow, isOrderListShow, indicator} = this.state;
 
         return (
-            <div>
+            <div onClick={(e) => this.changeState(e)}>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
                 <nav className="header header-super-faded">
                     <div className="container">
@@ -82,6 +97,8 @@ class Header extends Component {
                                     />
                                 }
 
+                                <Indicator indicator={this.props.indicator} />
+
                                 <div
                                     className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
                                     onClick={this.handleOrderListToggle}
@@ -95,6 +112,7 @@ class Header extends Component {
 
                 <Subheader open={isSubheaderShow} windowType={windowType} />
                 <OrderList open={isOrderListShow} />
+
             </div>
         )
     }
@@ -106,7 +124,9 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
+    const { indicator } = state.windowHandler;
     return {
+      indicator
     }
 }
 
