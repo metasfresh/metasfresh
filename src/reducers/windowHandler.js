@@ -43,7 +43,10 @@ export default function windowHandler(state = initialState, action) {
                 modal: Object.assign({}, state.modal, {
                     visible: false,
                     tabId: null,
-                    rowId: null
+                    rowId: null,
+                    layout: {},
+                    data: [],
+                    rowData: {}
                 })
         })
 
@@ -142,9 +145,10 @@ export default function windowHandler(state = initialState, action) {
 
         // INDICATOR ACTIONS
         case types.CHANGE_INDICATOR_STATE:
-                 return Object.assign({}, state, {
-                 indicator: action.state
-                });
+            return Object.assign({}, state, {
+                indicator: action.state
+            }
+        );
         // END OF INDICATOR ACTIONS
 
         default:

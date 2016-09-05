@@ -7,7 +7,7 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
-import Indicator from '../loader/Indicator';
+import Indicator from './Indicator';
 
 
 import {

@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Window from '../Window';
+import Indicator from './Indicator';
 
 import {
     closeModal,
@@ -30,18 +31,26 @@ class Modal extends Component {
         document.body.style.overflow = "auto";
     }
     render() {
-        const {data, layout} = this.props;
+        const {data, layout, indicator, modalTitle} = this.props;
         return (
             <div className="screen-freeze">
-                <div className="panel panel-modal panel-spaced panel-bordered panel-primary">
-                    <div className="panel-modal-close" onClick={this.handleClose}>
-                        <i className="meta-icon-close-1"/>
+                <div className="panel panel-modal panel-modal-primary">
+                    <div className="panel-modal-header">
+                        <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
+                        <div className="items-row-2">
+                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
+                                Done
+                            </span>
+                            <Indicator indicator={indicator} />
+                        </div>
                     </div>
-                    <Window
-                        data={data}
-                        layout={layout}
-                        modal={true}
-                    />
+                    <div className="panel-modal-content">
+                        <Window
+                            data={data}
+                            layout={layout}
+                            modal={true}
+                        />
+                    </div>
                 </div>
             </div>
         )
@@ -53,8 +62,9 @@ Modal.propTypes = {
 };
 
 function mapStateToProps(state) {
+    const { indicator } = state.windowHandler;
     return {
-
+        indicator
     }
 }
 
