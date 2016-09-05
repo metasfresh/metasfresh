@@ -51,7 +51,7 @@ class TableItem extends Component {
                             <Widget
                                 {...item}
                                 dataId={docId}
-                                widgetData={widgetData}
+                                widgetData={[widgetData]}
                                 windowType={type}
                                 rowId={rowId}
                                 tabId={tabId}

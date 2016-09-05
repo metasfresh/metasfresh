@@ -59,7 +59,7 @@ class Header extends Component {
                                         <Widget
                                             windowType={windowType}
                                             dataId={dataId}
-                                            widgetData={docNoData}
+                                            widgetData={[docNoData]}
                                             noLabel={true}
                                             {...docNo}
                                         />
@@ -75,7 +75,7 @@ class Header extends Component {
                                     <Widget
                                         windowType={windowType}
                                         dataId={dataId}
-                                        widgetData={docStatusData}
+                                        widgetData={[docStatusData]}
                                         noLabel={true}
                                         type="primary"
                                         {...docStatus}

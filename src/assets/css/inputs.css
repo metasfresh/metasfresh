@@ -361,6 +361,12 @@ input:checked + .input-slider:before {
     white-space: nowrap;
     overflow: hidden;
     margin-right: 5px;
+    display: flex;
+}
+.input-rest span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 50%;
 }
 
 .input-block {

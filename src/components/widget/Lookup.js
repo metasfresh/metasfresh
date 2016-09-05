@@ -29,7 +29,7 @@ class Lookup extends Component {
     componentDidMount() {
         const {defaultValue} = this.props;
         if(defaultValue){
-            this.handleSelect(this.props.defaultValue[0]);
+            this.handleSelect(this.props.defaultValue[0].value);
         }
     }
 
@@ -58,8 +58,6 @@ class Lookup extends Component {
         // handling selection when main is not set or set.
         if(this.state.property === ""){
             console.log("MAIN FIELD SET");
-            this.inputSearch.value = select && select[Object.keys(select)[0]];
-
             onChange(mainProperty[0].field, select).then(()=>{
 
                 // call for more properties
@@ -177,7 +175,7 @@ class Lookup extends Component {
                 query: this.inputSearch.value
             }));
 
-            dispatch(autocompleteRequest(windowType, mainProperty.field, this.inputSearch.value, dataId))
+            dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data,
@@ -271,7 +269,7 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties} = this.props;
+        const {rank, readonly, properties, defaultValue} = this.props;
         const {propertiesCopy} = this.state;
         return (
             <div
@@ -293,7 +291,11 @@ class Lookup extends Component {
                         />
                     </div>
                     <div className="input-rest">
-                        {propertiesCopy.map((item, index) => <span key={index}>{item[Object.keys(item)[0]]}</span>)}
+                        {propertiesCopy.map((item, index) => {
+                            const objectValue = this.getItemsByProperty(defaultValue, "field", item.field)[0].value;
+                            return (<span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
+                        }
+                        )}
                     </div>
 
                     {this.state.isInputEmpty ?

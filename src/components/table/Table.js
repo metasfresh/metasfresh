@@ -223,7 +223,7 @@ class Table extends Component {
                     <Widget
                         widgetType="Button"
                         windowType={143}
-                        widgetData={buttonData}
+                        widgetData={[buttonData]}
                         type={"primary"}
                         noLabel={true}
                         key={'tmpButton'}
