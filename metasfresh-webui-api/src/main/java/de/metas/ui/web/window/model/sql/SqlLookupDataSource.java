@@ -169,7 +169,8 @@ public class SqlLookupDataSource implements LookupDataSource
 
 	private IntegerLookupValue findByIntegerId(final int id)
 	{
-		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
+		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById(adLanguage, "?");
 		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
 		if (displayName == null)
 		{
@@ -181,7 +182,8 @@ public class SqlLookupDataSource implements LookupDataSource
 
 	private StringLookupValue findByStringId(final String id)
 	{
-		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById("?");
+		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById(adLanguage, "?");
 		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
 		if (displayName == null)
 		{

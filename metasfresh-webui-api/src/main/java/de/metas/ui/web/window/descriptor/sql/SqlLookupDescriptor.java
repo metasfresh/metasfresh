@@ -131,12 +131,12 @@ public final class SqlLookupDescriptor
 		return sqlForFetchingDisplayNameByIdExpression.resolvePartial(ctx);
 	}
 
-	public String getSqlForFetchingDisplayNameById(final String sqlKeyColumn)
+	public String getSqlForFetchingDisplayNameById(final String adLanguage, final String sqlKeyColumn)
 	{
 		final Evaluatee ctx = Evaluatees.ofMap(ImmutableMap.<String, Object> builder()
 				.put(SQL_PARAM_KeyId.getName(), sqlKeyColumn)
 				.put(SQL_PARAM_ShowInactive.getName(), SQL_PARAM_VALUE_ShowInactive_Yes)
-//				.put(SQL_PARAM_AD_Language.getName(), Env.getAD_Language(Env.getCtx()))
+				.put(SQL_PARAM_AD_Language.getName(), adLanguage)
 				.build());
 
 		return sqlForFetchingDisplayNameByIdExpression.evaluate(ctx, OnVariableNotFound.Fail);
