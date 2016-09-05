@@ -148,4 +148,12 @@ public final class SqlDefaultValueExpression implements IStringExpression
 		return StringExpressionEvaluator.instance;
 	}
 
+	
+	@Override
+	public final IStringExpression resolvePartial(final Evaluatee ctx)
+	{
+		final IStringExpression stringExpressionNew = stringExpression.resolvePartial(ctx);
+		return new SqlDefaultValueExpression(stringExpressionNew);
+	}
+
 }
