@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import update from 'react-addons-update';
 
@@ -33,7 +34,7 @@ class Table extends Component {
         })
     }
 
-    selectRangeProdut = (ids) => {
+    selectRangeProduct = (ids) => {
         this.setState({
             selectedProducts: ids
         })
@@ -59,9 +60,11 @@ class Table extends Component {
 
 
     handleClickOutside = (event) => {
-      console.log('deselected for '+ this.props.tabid);
-      const {selectedProducts, dispatch} = this.props
-      //dispatch(deselectAllProducts());
+      if(this.state.selectedProducts.length>0){
+        const {dispatch} = this.props
+        // dispatch(deselectAllProducts());
+        this.deselectAllProducts();
+      }
     }
 
     closeContextMenu = (event) => {
@@ -127,10 +130,10 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        const {rowData, tabid, selectedProducts} = this.props;
+        const {rowData, tabid} = this.props;
         let selected = [
             Object.keys(rowData[tabid]).findIndex(x => x === id),
-            Object.keys(rowData[tabid]).findIndex(x => x === selectedProducts[0])
+            Object.keys(rowData[tabid]).findIndex(x => x === this.state.selectedProducts[0])
         ];
         selected.sort((a,b) => a - b);
         return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
@@ -241,6 +244,10 @@ class Table extends Component {
             </div>
         )
     }
+}
+
+if (typeof document !== 'undefined') { //this line is only needed for server side isomorphic rendering
+    Table = connect()(onClickOutside(Table)); //here we wrap the component with the onClickOutside call
 }
 
 export default Table

@@ -7,9 +7,15 @@ import {
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
-        console.log(props);
     }
 
+    componentDidMount = () => {
+        // this.contextMenu.addEventListener("blur", ()=>{
+        //     this.contextMenu.classList.remove('context-menu-open');
+        // });
+
+        // this.contextMenu.focus();
+    }
 
     handleAdvancedEdit = () => {
         const {dispatch, tabid} = this.props;
@@ -32,14 +38,7 @@ class TableContextMenu extends Component {
 
     }
 
-    componentDidMount = () => {
-        // this.contextMenu.addEventListener("blur", ()=>{
-        //     this.contextMenu.classList.remove('context-menu-open');
-        // });
 
-        // this.contextMenu.focus();
-        console.log(this.contextMenu);
-    }
 }
 
 export default TableContextMenu

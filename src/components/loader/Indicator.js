@@ -21,7 +21,7 @@ class Indicator extends Component {
     return (
       <div>
         <img src={unsaved} />
-        <small>Error</small>
+        <small className="error">Error</small>
       </div>
     )
   }
@@ -29,7 +29,7 @@ class Indicator extends Component {
     return (
       <div>
         <img src={saved} />
-        <small>Saved</small>
+        <small className="success">Saved</small>
       </div>
     )
   }

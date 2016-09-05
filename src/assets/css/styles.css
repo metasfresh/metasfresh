@@ -561,3 +561,11 @@ body {
 .indicator img {
     width: 100%;
 }
+
+.indicator .success {
+  color: $brand-success-color;
+}
+
+.indicator .error {
+  color: $brand-font-color-danger;
+}
