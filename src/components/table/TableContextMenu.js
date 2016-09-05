@@ -15,6 +15,7 @@ class TableContextMenu extends Component {
         // });
 
         // this.contextMenu.focus();
+
     }
 
     handleAdvancedEdit = () => {
@@ -26,7 +27,12 @@ class TableContextMenu extends Component {
         return (
             !!isDisplayed && <div
                 className="context-menu context-menu-open panel-bordered panel-primary"
-                ref={(c) => this.contextMenu = c}
+                //ref={(c) => this.contextMenu = c}
+                ref={function(menu) {
+                      if (menu != null) {
+                        menu.focus();
+                      }
+                    }}
                 tabIndex="0" style={{left: this.props.x, top: this.props.y, display: (this.props.isDisplayed ? "block" : "none") }}
                 onBlur={this.props.blur}
             >
