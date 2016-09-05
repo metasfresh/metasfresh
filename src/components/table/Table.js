@@ -1,18 +1,9 @@
 import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import update from 'react-addons-update';
 
 import {
-    selectProduct,
-    selectRangeProduct,
-    selectOneProduct,
-    deselectProduct,
-    deselectAllProducts,
-} from '../../actions/AppActions';
-
-import {
-    openModal,
-    closeModal
+    openModal
 } from '../../actions/WindowActions';
 
 import TableFilter from './TableFilter';
@@ -27,12 +18,43 @@ class Table extends Component {
         super(props);
         this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
+            selectedProducts: [],
             contextMenu: {
                 open: false,
                 x: 0,
                 y: 0
             }
         }
+    }
+
+    selectProduct = (id) => {
+        this.setState({
+            selectedProducts: this.state.selectedProducts.concat([id])
+        })
+    }
+
+    selectRangeProdut = (ids) => {
+        this.setState({
+            selectedProducts: ids
+        })
+    }
+
+    selectOneProduct = (id) => {
+        this.setState({
+            selectedProducts: [id]
+        })
+    }
+
+    deselectProduct = (id) => {
+        this.setState(update(this.state, {
+            selectedProducts: {$splice: [[id, 1]]}
+        }))
+    }
+
+    deselectAllProducts = () => {
+        this.setState({
+            selectedProducts: []
+        })
     }
 
 
@@ -50,43 +72,39 @@ class Table extends Component {
         });
     }
 
-    handleClick = (e, id, selectedProd) => {
+    handleClick = (e, id) => {
         e.preventDefault();
 
-        const {selectedProducts, dispatch} = this.props
+        const {dispatch} = this.props;
+        const {selectedProducts} = this.state;
         const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
         const selectRange = e.shiftKey;
-        const isSelected = selectedProd.indexOf(id) > -1;
+        const isSelected = selectedProducts.indexOf(id) > -1;
         const isAnySelected = selectedProducts.length > 0;
         const isMoreSelected = selectedProducts.length > 1;
 
-        console.log(id);
-        console.log(selectedProd.indexOf(id));
-
         if(selectMore){
-          console.log('select more');
             if(isSelected){
-                dispatch(deselectProduct(id));
+                this.deselectProduct(id);
             }else{
-                dispatch(selectProduct(id));
+                this.selectProduct(id);
             }
         }else if(selectRange){
-            console.log('select range');
             if(isAnySelected){
                 const idsToSelect = this.getProductRange(id);
-                dispatch(selectRangeProduct(idsToSelect));
+                this.selectRangeProduct(idsToSelect);
             }else{
-                dispatch(selectOneProduct(id));
+                this.selectOneProduct(id);
             }
         }else{
             if(isSelected){
                 if(isMoreSelected){
-                    dispatch(selectOneProduct(id));
+                    this.selectOneProduct(id);
                 }else{
-                    // dispatch(deselectAllProducts());
+                    // this.deselectAllProducts();
                 }
             }else{
-                dispatch(selectOneProduct(id));
+                this.selectOneProduct(id);
             }
         }
     }
@@ -101,7 +119,7 @@ class Table extends Component {
         });
     }
     handleRemoveSelected = () => {
-        this.props.dispatch(deleteSelectedProducts(this.props.selectedProducts));
+
     }
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
@@ -118,10 +136,12 @@ class Table extends Component {
         return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
     }
     openModal = (windowType) => {
-        this.props.dispatch(openModal(windowType));
+        const {dispatch} = this.props;
+        dispatch(openModal(windowType));
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
+        const {selectedProducts} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
@@ -137,7 +157,8 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        onClick={(e) => this.handleClick(e, item[key].rowId, this.props.selectedProducts)}
+                        isSelected={selectedProducts.indexOf(item[key].rowId) > -1}
+                        onClick={(e) => this.handleClick(e, item[key].rowId)}
                         onContextMenu={(e) => this.handleRightClick(e)}
                     />
                 );
@@ -204,9 +225,7 @@ class Table extends Component {
                             </tfoot>
                         </table>
 
-                        { /*rowData && rowData[tabid] && rowData[tabid].length === 0 && this.renderEmptyInfo()*/ }
-                        {this.props.rowData[this.props.tabid] ? ((Object.keys(this.props.rowData[this.props.tabid]).length > 0) ? "" :  this.renderEmptyInfo()) : "null"}
-
+                        {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
                     {/* Temporary button for adding new row*/}
                     <Widget
@@ -224,33 +243,4 @@ class Table extends Component {
     }
 }
 
-
-Table.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    selectedProducts: PropTypes.array.isRequired
-};
-
-function mapStateToProps(state) {
-    const { appHandler } = state;
-
-    const {
-        selectedProducts
-    } = appHandler || {
-        selectedProducts: []
-    }
-
-    return {
-        selectedProducts
-    }
-}
-
-// Table = connect(mapStateToProps)(Table)
-
-if (typeof document !== 'undefined') { //this line is only needed for server side isomorphic rendering
-    Table = connect(
-        mapStateToProps //not connected to clicking outside
-    )(onClickOutside(Table)); //here we wrap the component with the onClickOutside call
-}
-
 export default Table
-// export default onClickOutside(Table)
