@@ -24,7 +24,11 @@ package org.adempiere.ad.expression.api;
 
 import java.util.List;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionDeserializer;
+import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
@@ -51,4 +55,18 @@ public interface IStringExpression extends IExpression<String>
 
 	@Override
 	IExpressionEvaluator<IStringExpression, String> getEvaluator();
+
+	/**
+	 * Resolves all variables which available and returns a new string expression.
+	 * 
+	 * @param ctx
+	 * @return string expression with all available variables resolved.
+	 * @throws ExpressionEvaluationException
+	 */
+	default IStringExpression resolvePartial(final Evaluatee ctx) throws ExpressionEvaluationException
+	{
+		final String expressionStr = getEvaluator().evaluate(ctx, this, OnVariableNotFound.Preserve);
+		return StringExpressionCompiler.instance.compile(expressionStr);
+	}
+
 }

@@ -72,4 +72,10 @@ public final class NullStringExpression implements IStringExpression
 	{
 		return StringExpressionEvaluator.instance;
 	}
+	
+	@Override
+	public final IStringExpression resolvePartial(final Evaluatee ctx)
+	{
+		return this;
+	}
 }

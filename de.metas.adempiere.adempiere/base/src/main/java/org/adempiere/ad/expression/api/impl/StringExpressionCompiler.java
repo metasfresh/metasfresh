@@ -31,13 +31,15 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.CtxName;
 
-public class StringExpressionCompiler implements IExpressionCompiler<String, IStringExpression>
+public final class StringExpressionCompiler implements IExpressionCompiler<String, IStringExpression>
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(ExpressionFactory.class);
+	public static final transient StringExpressionCompiler instance = new StringExpressionCompiler();
 
 	private static final String PARAMETER_TAG = CtxName.NAME_Marker;
 	private static final int PARAMETER_TAG_LENGTH = CtxName.NAME_Marker.length();
 	private static final String PARAMETER_DOUBLE_TAG = PARAMETER_TAG + PARAMETER_TAG;
+	
+	// NOTE to developer: make sure there are no variables here since we are using a shared instance
 
 	@Override
 	public IStringExpression compile(final String expressionStr)
