@@ -80,4 +80,13 @@ public class DebugRestController
 		return userSession.getAD_Language();
 	}
 
+	// NOTE: using String parameter because when using boolean parameter, we get following error in swagger-ui:
+	// swagger-ui.min.js:10 Uncaught TypeError: Cannot read property 'toLowerCase' of undefined
+	@RequestMapping(value = "/showColumnNamesForCaption", method = RequestMethod.PUT)
+	public void setShowColumnNamesForCaption(@RequestBody final String showColumnNamesForCaptionStr)
+	{
+		final boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr);
+		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
+		logResourceValueChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
+	}
 }
