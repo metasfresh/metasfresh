@@ -112,6 +112,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
@@ -2268,7 +2269,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.getLookup_TableDirEmbed(Env.getLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)

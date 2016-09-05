@@ -928,7 +928,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return null;
 		}
-		return m_info.ZoomQuery;
+		return m_info.getZoomQuery();
 	}	// getZoom
 
 	/**
@@ -1068,16 +1068,6 @@ public final class MLookup extends Lookup implements Serializable
 	public boolean isAutoComplete()
 	{
 		return m_info != null && m_info.isAutoComplete();
-	}
-
-	public String getQuery()
-	{
-		return m_info.getSqlQuery();
-	}
-
-	public String getQueryDirect()
-	{
-		return m_info.getSqlQueryDirect();
 	}
 
 	public MLookupInfo getLookupInfo()

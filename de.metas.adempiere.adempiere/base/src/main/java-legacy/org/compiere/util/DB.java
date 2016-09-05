@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -1889,11 +1890,17 @@ public final class DB
 	 * @see org.compiere.util.Env
 	 *
 	 * */
-	public static String TO_CHAR(String columnName, int displayType, String AD_Language)
+	public static String TO_CHAR(String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
-		if (columnName == null || AD_Language == null || columnName.length() == 0)
-			throw new IllegalArgumentException("Required parameter missing");
-		return getDatabase().TO_CHAR(columnName, displayType, AD_Language);
+		return getDatabase().TO_CHAR(columnName, displayType);
+	}   // TO_CHAR
+
+	/**
+	 * @see #TO_CHAR(String, int, String)
+	 */
+	public static String TO_CHAR(String columnName, final int displayType)
+	{
+		return getDatabase().TO_CHAR(columnName, displayType);
 	}   // TO_CHAR
 
 	/**
@@ -1908,11 +1915,11 @@ public final class DB
 	 * @return SQL code
 	 * @see AdempiereDatabase#TO_CHAR(String, int, String, String)
 	 */
-	public static String TO_CHAR(String columnName, int displayType, String AD_Language, final String formatPattern)
+	public static String TO_CHAR(String columnName, int displayType, @Nullable String AD_Language_NOTUSED, final String formatPattern)
 	{
-		if (columnName == null || AD_Language == null || columnName.length() == 0)
+		if (columnName == null || columnName.length() == 0)
 			throw new IllegalArgumentException("Required parameter missing");
-		return getDatabase().TO_CHAR(columnName, displayType, AD_Language, formatPattern);
+		return getDatabase().TO_CHAR(columnName, displayType, formatPattern);
 	}   // TO_CHAR
 
 	/**

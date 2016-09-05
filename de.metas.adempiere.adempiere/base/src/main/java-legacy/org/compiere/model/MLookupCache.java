@@ -22,9 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  MLookup Data Cache.
@@ -68,12 +69,12 @@ public class MLookupCache
 	 *	@param info lookup info
 	 *	@return key
 	 */
-	private static String getKey (MLookupInfo info)
+	private static String getKey (final MLookupInfo info)
 	{
 		if (info == null)
 			return String.valueOf(System.currentTimeMillis());
 		//
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(info.getWindowNo()).append(":")
 		//	.append(info.Column_ID)
 			.append(info.getKeyColumnFQ())

@@ -967,7 +967,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		// Nothing to query
 		final String sqlQueryDirect = lookupInfo.getSqlQueryDirect();
-		if (key == null || sqlQueryDirect == null || sqlQueryDirect.length() == 0)
+		if (key == null || Check.isEmpty(sqlQueryDirect, true))
 		{
 			return null;
 		}
