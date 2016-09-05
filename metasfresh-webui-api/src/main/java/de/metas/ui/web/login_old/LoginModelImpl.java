@@ -2,7 +2,6 @@ package de.metas.ui.web.login_old;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -265,8 +264,7 @@ public class LoginModelImpl implements LoginModel
 		Env.verifyLanguage(language);
 		ctx.setAD_Language(language.getAD_Language());
 
-		 final Locale locale = language.getLocale();
-		 getUserSession().setLocale(locale);
+		 getUserSession().setAD_Language(language.getAD_Language());
 
 		final ValueNamePair languageVNP_Actual = ValueNamePair.of(language.getAD_Language(), language.getName());
 		this._language = languageVNP_Actual;

@@ -3,6 +3,7 @@ package de.metas.ui.web.login;
 import java.util.Properties;
 
 import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,21 +63,23 @@ public class LoginService
 		//
 		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
 		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
-		
-		
+
 		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTree.class, Level.TRACE);
 		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTreeLoader.class, Level.TRACE);
-		
 
 		// FIXME: only for testing
-		final Properties ctx = Env.getCtx();
+		final Properties ctx = userSession.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, "en_US");
 		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
 		Env.setContext(ctx, "#C_UOM_ID", 100);
+		
+		if(Check.isEmpty(userSession.getAD_Language()))
+		{
+			userSession.setAD_Language("en_US");
+		}
 
 		Services.get(IValuePreferenceBL.class)
 				.getAllWindowPreferences(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx), Env.getAD_User_ID(ctx))
@@ -84,8 +87,6 @@ public class LoginService
 				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
 				.forEach(userValuePreference -> Env.setPreference(ctx, userValuePreference));
 
-		userSession.setLocale(Env.getLanguage(ctx).getLocale());
 		userSession.setLoggedIn(true);
 	}
-
 }

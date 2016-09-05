@@ -3,10 +3,14 @@ package de.metas.ui.web.session;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.util.Check;
 import org.compiere.util.Env;
+import org.compiere.util.Language;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -15,7 +19,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
@@ -55,6 +58,8 @@ public class UserSession implements Serializable
 	private boolean loggedIn;
 	private Locale locale;
 
+	private final Map<String, Object> properties = new ConcurrentHashMap<>();
+
 	public UserSession()
 	{
 		super();
@@ -63,6 +68,8 @@ public class UserSession implements Serializable
 
 		userPreference = new UserPreference();
 		loggedIn = false;
+
+		// FIXME: get browser locale and only if not available get default!
 		locale = Locale.getDefault();
 
 		logger.trace("User session created: {}", this);
@@ -134,9 +141,29 @@ public class UserSession implements Serializable
 		}
 	}
 
-	public void setLocale(final Locale locale)
+	/**
+	 * @param adLanguage
+	 * @return old AD_Language
+	 */
+	public String setAD_Language(final String adLanguage)
 	{
-		this.locale = Preconditions.checkNotNull(locale, "locale cannot be null");
+		final Properties ctx = getCtx();
+		final String adLanguageOld = Env.getContext(ctx, Env.CTXNAME_AD_Language);
+
+		Check.assumeNotNull(ctx, "Parameter ctx is not null");
+		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+		final Language lang = Language.getLanguage(adLanguage);
+		Env.verifyLanguage(lang);
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, lang.getAD_Language());
+
+		locale = lang.getLocale();
+
+		return adLanguageOld;
+	}
+
+	public String getAD_Language()
+	{
+		return Env.getAD_Language(getCtx());
 	}
 
 	public Locale getLocale()
