@@ -161,12 +161,6 @@ public class WindowRestControllerClient implements IWindowRestController
 		return Arrays.asList(jsonLookupValues);
 	}
 
-	@Override
-	public void cacheReset()
-	{
-		httpGet("/cacheReset");
-	}
-
 	private <T> T fromJson(final String json, final Class<T> valueType)
 	{
 		try

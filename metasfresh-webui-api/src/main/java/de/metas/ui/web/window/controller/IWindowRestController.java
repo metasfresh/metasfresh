@@ -77,6 +77,4 @@ public interface IWindowRestController
 			, String rowIdStr//
 			, String fieldName//
 	);
-
-	void cacheReset();
 }

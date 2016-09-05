@@ -314,12 +314,4 @@ public class WindowRestController implements IWindowRestController
 		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId);
 		return JSONDocument.ofSideDocumentList(sideDocuments);
 	}
-
-	@Override
-	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
-	public void cacheReset()
-	{
-		CacheMgt.get().reset(); // FIXME: debugging - while debugging is useful to reset all caches
-		documentCollection.cacheReset();
-	}
 }
