@@ -88,7 +88,7 @@ class Window extends Component {
     }
     renderElements = (elements) => {
         const {type} = this.props.layout;
-        const {data,modal} = this.props;
+        const {data, modal, tabId} = this.props;
         return elements.map((elem, id)=> {
             const dataId = findRowByPropName(data,"ID").value;
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
@@ -100,6 +100,7 @@ class Window extends Component {
                     dataId={dataId}
                     widgetData={widgetData}
                     isModal={!!modal}
+                    tabId={tabId}
                     {...elem} />
             )
         })

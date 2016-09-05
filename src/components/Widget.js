@@ -24,7 +24,7 @@ class Widget extends Component {
         if(widgetType !== "Button" && !widgetData[0].value !== value){
             dispatch(updateProperty(property, value, tabId, rowId, isModal));
         }
-
+        console.log("PATCH " + tabId + " " + rowId)
         return dispatch(patch(windowType, dataId, tabId, rowId, property, value, isModal));
 
         //callback

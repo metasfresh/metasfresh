@@ -31,7 +31,7 @@ class Modal extends Component {
         document.body.style.overflow = "auto";
     }
     render() {
-        const {data, layout, indicator, modalTitle} = this.props;
+        const {data, layout, indicator, modalTitle, tabId} = this.props;
         return (
             <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
@@ -49,6 +49,7 @@ class Modal extends Component {
                             data={data}
                             layout={layout}
                             modal={true}
+                            tabId={tabId}
                         />
                     </div>
                 </div>
