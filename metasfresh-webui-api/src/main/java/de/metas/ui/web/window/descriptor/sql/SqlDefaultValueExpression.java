@@ -145,7 +145,7 @@ public final class SqlDefaultValueExpression implements IStringExpression
 	@Override
 	public IExpressionEvaluator<IStringExpression, String> getEvaluator()
 	{
-		throw new UnsupportedOperationException();
+		return StringExpressionEvaluator.instance;
 	}
 
 }
