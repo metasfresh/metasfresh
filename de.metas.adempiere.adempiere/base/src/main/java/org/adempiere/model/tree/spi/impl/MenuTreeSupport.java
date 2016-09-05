@@ -44,6 +44,7 @@ import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 /**
@@ -75,6 +76,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ " NULL AS " + COLUMNNAME_PrintColor + ","
 					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
 					+ " AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ sqlDeveloperMode
 					+ " FROM AD_Menu ");
 		}
@@ -84,6 +86,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ " NULL AS " + COLUMNNAME_PrintColor + ","
 					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
 					+ " AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ sqlDeveloperMode
 					+ "FROM AD_Menu, AD_Menu_Trl t");
 		}
@@ -178,12 +181,14 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
+		final boolean isCreateNewRecord = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsCreateNew));
 		
 		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
 		info.setAD_Form_ID(AD_Form_ID);
 		info.setAD_Workflow_ID(AD_Workflow_ID);
 		info.setAD_Task_ID(AD_Task_ID);
+		info.setIsCreateNewRecord(isCreateNewRecord);
 
 		if (!isCheckRoleAccessWhileLoading())
 		{
