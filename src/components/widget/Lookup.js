@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
 
@@ -19,14 +20,16 @@ class Lookup extends Component {
             model: null,
             property: "",
             properties: {},
-            loading: false
+            loading: false,
+            propertiesCopy: this.getItemsByProperty(this.props.properties, "source", "list"),
+            mainProperty: this.getItemsByProperty(this.props.properties, "source", "lookup")
         }
     }
 
     componentDidMount() {
         const {defaultValue} = this.props;
         if(defaultValue){
-            this.handleSelect(this.props.defaultValue);
+            this.handleSelect(this.props.defaultValue[0]);
         }
     }
 
@@ -39,6 +42,11 @@ class Lookup extends Component {
             fields
         } = this.props;
 
+        const {
+            mainProperty,
+            propertiesCopy
+        } = this.state;
+
         // removing selection
         this.setState(
             Object.assign({}, this.state, {
@@ -46,9 +54,7 @@ class Lookup extends Component {
             })
         );
 
-        // dividing fields
-        let propertiesCopy = this.getItemsByProperty(properties, "source", "list");
-        let mainProperty = this.getItemsByProperty(properties, "source", "lookup");
+
         // handling selection when main is not set or set.
         if(this.state.property === ""){
             console.log("MAIN FIELD SET");
@@ -88,8 +94,6 @@ class Lookup extends Component {
                         });
                     });
 
-                }else{
-                    this.handleBlur();
                 }
             })
 
@@ -105,8 +109,6 @@ class Lookup extends Component {
             }), () => {
                 this.generatingPropsSelection();
             });
-
-            this.handleBlur();
         }
     }
 
@@ -132,10 +134,10 @@ class Lookup extends Component {
                     property: modelPropsKeys[i]
                 }));
 
+
+
                 break;
 
-            }else{
-                this.handleBlur();
             }
         }
 
@@ -145,9 +147,6 @@ class Lookup extends Component {
         console.log("BLUR")
 
         this.dropdown.classList.remove("input-dropdown-focused");
-        // this.setState(Object.assign({}, this.state, {
-        //     property: ""
-        // }))
     }
 
     handleFocus = (e) => {
@@ -160,11 +159,6 @@ class Lookup extends Component {
         if(this.inputSearch.value !== this.state.query){
             this.handleChange();
         }
-        // if(this.inputSearch.value === ""){
-        //     this.setState(Object.assign({}, this.state, {
-        //         property: "", list: recent
-        //     }));
-        // }
         this.dropdown.classList.add("input-dropdown-focused");
     }
 
@@ -172,14 +166,9 @@ class Lookup extends Component {
         console.log("CHANGE")
 
         const {dispatch, recent, windowType, properties, dataId} = this.props;
-        this.inputSearchRest.innerHTML = "";
+        const {mainProperty} = this.state;
         this.dropdown.classList.add("input-dropdown-focused");
-        // this.setState(Object.assign({}, this.state, {
-        //     selected: null,
-        //     property: ""
-        // }));
 
-        const lookupProps = this.getItemsByProperty(properties, "source", "lookup")[0];
 
         if(this.inputSearch.value != ""){
             this.setState(Object.assign({}, this.state, {
@@ -188,7 +177,7 @@ class Lookup extends Component {
                 query: this.inputSearch.value
             }));
 
-            dispatch(autocompleteRequest(windowType, lookupProps.field, this.inputSearch.value, dataId))
+            dispatch(autocompleteRequest(windowType, mainProperty.field, this.inputSearch.value, dataId))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data,
@@ -283,13 +272,13 @@ class Lookup extends Component {
 
     render() {
         const {rank, readonly, properties} = this.props;
+        const {propertiesCopy} = this.state;
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 tabIndex="0"
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
-                onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
                 <div className={"input-dropdown input-block input-" + (rank ? rank : "primary")}>
@@ -297,15 +286,14 @@ class Lookup extends Component {
                         <input
                             type="text"
                             className="input-field font-weight-bold"
-                            onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             placeholder="(none)"
                             disabled={readonly}
                         />
                     </div>
-                    <div ref={c => this.inputSearchRest = c} className="input-rest">
-
+                    <div className="input-rest">
+                        {propertiesCopy.map((item, index) => <span key={index}>{item[Object.keys(item)[0]]}</span>)}
                     </div>
 
                     {this.state.isInputEmpty ?

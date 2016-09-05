@@ -104,9 +104,9 @@ class Widget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        defaultValue={data.value}
-                        readonly={data.readonly}
-                        mandatory={data.mandatory}
+                        defaultValue={data}
+                        readonly={data[0].readonly}
+                        mandatory={data[0].mandatory}
                         rank={type}
                         onChange={this.handlePatch}
                     />

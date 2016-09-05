@@ -91,7 +91,11 @@ class Window extends Component {
         const {data,modal} = this.props;
         return elements.map((elem, id)=> {
             const dataId = findRowByPropName(data,"ID").value;
-            const widgetData = findRowByPropName(data, elem.fields[0].field);
+            let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
+
+            if(widgetData.length === 1){
+                widgetData = widgetData[0];
+            }
 
             return (
                 <Widget
