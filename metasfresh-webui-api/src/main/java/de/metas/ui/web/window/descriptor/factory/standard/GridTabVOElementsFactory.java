@@ -40,6 +40,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -110,7 +111,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private final GridWindowVO _gridWindowVO;
 	private final GridTabVO _gridTabVO;
 	private final GridTabVO _parentTab;
-	
+
 	//
 	// Build parameters
 	private final String _detailId;
@@ -213,7 +214,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		logger.trace("Generating layout sections list for {}", uiSections);
-		
+
 		//
 		// UI Sections
 		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
@@ -367,52 +368,36 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setDescription(uiElement.getDescription())
 				.setLayoutType(layoutType)
 				.setAdvancedField(uiElement.isAdvancedField());
-		{
-			final GridFieldVO gridFieldVO = getGridFieldVOById(uiElement.getAD_Field_ID());
-			if (gridFieldVO != null)
-			{
-				layoutElementBuilder
-						.setCaptionTrls(gridFieldVO.getHeaderTrls())
-						.setDescriptionTrls(gridFieldVO.getDescriptionTrls())
-						.setWidgetType(extractWidgetType(gridFieldVO))
-						.addField(layoutElementField(gridFieldVO));
-
-				specialFieldsCollector.collect(layoutElementBuilder);
-			}
-			else
-			{
-				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElement, uiElement.getAD_Field_ID());
-			}
-		}
 
 		//
-		// UI Element Fields (if any)
-		for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+		// Fields
+		for (final GridFieldVO gridFieldVO : extractGridFieldVOs(uiElement))
 		{
-			if (!uiElementField.isActive())
-			{
-				logger.trace("Skip {} because it's not active", uiElementField);
-				continue;
-			}
+			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(gridFieldVO);
 
-			final GridFieldVO gridFieldVO = getGridFieldVOById(uiElementField.getAD_Field_ID());
-			if (gridFieldVO != null)
+			//
+			// Element Widget type
+			if(layoutElementBuilder.getWidgetType() == null)
 			{
-				if (layoutElementBuilder.getWidgetType() == null)
-				{
-					layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
-				}
-				final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(gridFieldVO);
-				layoutElementBuilder.addField(layoutElementFieldBuilder);
-
-				specialFieldsCollector.collect(layoutElementBuilder);
+				layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
 			}
-			else
+			
+			layoutElementBuilder.addField(layoutElementFieldBuilder);
+		}
+		
+		// NOTE: per jassy request, when dealing with composed lookup fields, first field shall be Lookup and not List.
+		if (layoutElementBuilder.getFieldsCount() > 1)
+		{
+			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementBuilder.getFirstField();
+			if(layoutElementFieldBuilder.isLookup())
 			{
-				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElementField, uiElementField.getAD_Field_ID());
+				layoutElementBuilder.setWidgetType(DocumentFieldWidgetType.Lookup);
+				layoutElementFieldBuilder.setLookupSource(LookupSource.lookup);
 			}
 		}
-
+		
+		specialFieldsCollector.collect(layoutElementBuilder);
+		
 		if (layoutElementBuilder.isAdvancedField())
 		{
 			advancedFieldNames.addAll(layoutElementBuilder.getFieldNames());
@@ -422,10 +407,47 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return layoutElementBuilder;
 	}
 
+	private List<GridFieldVO> extractGridFieldVOs(final I_AD_UI_Element uiElement)
+	{
+		final List<GridFieldVO> gridFieldVOs = new ArrayList<>();
+
+		{
+			final GridFieldVO gridFieldVO = getGridFieldVOById(uiElement.getAD_Field_ID());
+			if (gridFieldVO != null)
+			{
+				gridFieldVOs.add(gridFieldVO);
+			}
+			else
+			{
+				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElement, uiElement.getAD_Field_ID());
+			}
+		}
+
+		for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+		{
+			if (!uiElementField.isActive())
+			{
+				logger.trace("Skip {} because it's not active", uiElementField);
+				continue;
+			}
+
+			final GridFieldVO gridFieldVO = getGridFieldVOById(uiElementField.getAD_Field_ID());
+			if (gridFieldVO == null)
+			{
+				logger.warn("No grid field found for {} (AD_Field_ID={})", uiElementField, uiElementField.getAD_Field_ID());
+				continue;
+			}
+			
+			gridFieldVOs.add(gridFieldVO);
+		}
+		
+		return gridFieldVOs;
+	}
+
 	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
 	{
 		logger.trace("Generating layout detail");
-		
+
 		final GridTabVO detailTab = getGridTabVO();
 
 		// If the detail is never displayed then don't add it to layout
@@ -1172,7 +1194,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		logger.trace("Generating layout side list for {}", uiSections);
-		
+
 		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder();
 
 		uiSections.stream()
@@ -1187,7 +1209,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.forEach(layoutSideListBuilder::addElement);
 
 		documentEntryDataBinding().addSideListFieldNames(layoutSideListBuilder.getFieldNames());
-		
+
 		return layoutSideListBuilder.build();
 	}
 }

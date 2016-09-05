@@ -176,6 +176,16 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.lookupSource = lookupSource;
 			return this;
 		}
+		
+		public LookupSource getLookupSource()
+		{
+			return lookupSource;
+		}
+		
+		public boolean isLookup()
+		{
+			return lookupSource != null;
+		}
 
 		public Builder setFieldType(final FieldType fieldType)
 		{

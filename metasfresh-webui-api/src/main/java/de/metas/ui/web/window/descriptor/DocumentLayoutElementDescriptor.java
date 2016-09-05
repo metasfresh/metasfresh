@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -74,7 +73,10 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		captionTrls = builder.captionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.captionTrls);
 		description = builder.description;
 		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
-		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
+		
+		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
+		widgetType = builder.widgetType;
+		
 		layoutType = builder.layoutType;
 		advancedField = builder.isAdvancedField();
 		fields = ImmutableSet.copyOf(builder.buildFields());
@@ -299,7 +301,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			}
 			return this;
 		}
-
+		
 		public Set<String> getFieldNames()
 		{
 			return fieldsBuilders.keySet();
@@ -308,6 +310,16 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public DocumentLayoutElementFieldDescriptor.Builder getField(final String fieldName)
 		{
 			return fieldsBuilders.get(fieldName);
+		}
+		
+		public DocumentLayoutElementFieldDescriptor.Builder getFirstField()
+		{
+			return fieldsBuilders.values().iterator().next();
+		}
+		
+		public int getFieldsCount()
+		{
+			return fieldsBuilders.size();
 		}
 
 		public boolean hasFieldName(final String fieldName)
