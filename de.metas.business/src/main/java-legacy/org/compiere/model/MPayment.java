@@ -72,13 +72,13 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  *              Update C_BPartner Open Item Amount
  *      update invoice (IsPaid)
  *      link invoice-payment if batch
- * 
+ *
  *  Lifeline:
  *  -   Created by VPayment or directly
  *  -   When changed in VPayment
  *      - old payment is reversed
  *      - new payment created
- * 
+ *
  *  When Payment is posed, the Allocation is made
  * </pre>
  *
@@ -1961,7 +1961,7 @@ public final class MPayment extends X_C_Payment
 
 		//
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -2819,7 +2819,7 @@ public final class MPayment extends X_C_Payment
 		{
 			return;
 		}
-		
+
 		final I_C_DocType orderDocType = order.getC_DocType();
 		if (orderDocType == null)
 		{

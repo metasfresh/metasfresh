@@ -99,7 +99,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Payments Of BPartner
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_BPartner_ID id
 	 * @param trxName transaction
@@ -115,7 +115,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create new Invoice by copying
-	 * 
+	 *
 	 * @param from invoice
 	 * @param dateDoc date of the document date
 	 * @param acctDate original account date
@@ -148,7 +148,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get PDF File Name
-	 * 
+	 *
 	 * @param documentDir directory
 	 * @param C_Invoice_ID invoice
 	 * @return file name
@@ -168,7 +168,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get MInvoice from Cache
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_Invoice_ID id
 	 * @return MInvoice
@@ -190,7 +190,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**************************************************************************
 	 * Invoice Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_Invoice_ID invoice or 0 for new
 	 * @param trxName trx name
@@ -232,7 +232,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -244,7 +244,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create Invoice from Order
-	 * 
+	 *
 	 * @param order order
 	 * @param C_DocTypeTarget_ID target document type
 	 * @param invoiceDate date or null
@@ -280,7 +280,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create Invoice from Shipment
-	 * 
+	 *
 	 * @param ship shipment
 	 * @param invoiceDate date or null
 	 */
@@ -312,7 +312,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create Invoice from Batch Line
-	 * 
+	 *
 	 * @param batch batch
 	 * @param line batch line
 	 */
@@ -374,7 +374,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Overwrite Client/Org if required
-	 * 
+	 *
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 */
@@ -386,7 +386,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Business Partner Defaults & Details
-	 * 
+	 *
 	 * @param bp business partner
 	 */
 	public void setBPartner(MBPartner bp)
@@ -462,7 +462,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Order References
-	 * 
+	 *
 	 * @param order order
 	 */
 	public void setOrder(MOrder order)
@@ -472,7 +472,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Shipment References
-	 * 
+	 *
 	 * @param ship shipment
 	 */
 	public void setShipment(MInOut ship)
@@ -563,7 +563,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Target Document Type
-	 * 
+	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
 	 */
 	public void setC_DocTypeTarget_ID(String DocBaseType)
@@ -603,7 +603,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Grand Total
-	 * 
+	 *
 	 * @param creditMemoAdjusted adjusted for CM (negative)
 	 * @return grand total
 	 */
@@ -620,7 +620,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Invoice Lines of Invoice
-	 * 
+	 *
 	 * @param whereClause starting with AND
 	 * @return lines
 	 */
@@ -644,7 +644,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Invoice Lines
-	 * 
+	 *
 	 * @param requery
 	 * @return lines
 	 */
@@ -658,7 +658,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Lines of Invoice
-	 * 
+	 *
 	 * @return lines
 	 */
 	public MInvoiceLine[] getLines()
@@ -668,7 +668,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Renumber Lines
-	 * 
+	 *
 	 * @param step start and step
 	 */
 	public void renumberLines(int step)
@@ -707,7 +707,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Reversal
-	 * 
+	 *
 	 * @param reversal reversal
 	 */
 	private void setReversal(boolean reversal)
@@ -717,7 +717,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Is Reversal
-	 * 
+	 *
 	 * @return reversal
 	 */
 	public boolean isReversal()
@@ -727,7 +727,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Taxes
-	 * 
+	 *
 	 * @param requery requery
 	 * @return array of taxes
 	 */
@@ -746,7 +746,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 */
 	public void addDescription(String description)
@@ -760,7 +760,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Is it a Credit Memo?
-	 * 
+	 *
 	 * @return true if CM
 	 * @deprecated Please use {@link IInvoiceBL#isCreditMemo(I_C_Invoice)}
 	 */
@@ -778,7 +778,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	/**
 	 * Set Processed.
 	 * Propergate to Lines/Taxes
-	 * 
+	 *
 	 * @param processed processed
 	 */
 	@Override
@@ -799,7 +799,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Validate Invoice Pay Schedule
-	 * 
+	 *
 	 * @return pay schedule is valid
 	 */
 	public boolean validatePaySchedule()
@@ -837,7 +837,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**************************************************************************
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @return true
 	 */
@@ -912,7 +912,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Before Delete
-	 * 
+	 *
 	 * @return true if it can be deleted
 	 */
 	@Override
@@ -927,7 +927,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -944,7 +944,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Document Info
-	 * 
+	 *
 	 * @return document info (untranslated)
 	 */
 	@Override
@@ -956,7 +956,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -982,7 +982,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Price List (and Currency) when valid
-	 * 
+	 *
 	 * @param M_PriceList_ID price list
 	 */
 	@Override
@@ -998,7 +998,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Allocated Amt in Invoice Currency
-	 * 
+	 *
 	 * @return pos/neg amount or null.
 	 *         metas: null is returned when there are no allocations
 	 */
@@ -1047,7 +1047,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Test Allocation (and set paid flag)
-	 * 
+	 *
 	 * @return true if updated
 	 */
 	public boolean testAllocation()
@@ -1091,7 +1091,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Set Paid Flag for invoices
-	 * 
+	 *
 	 * @param ctx context
 	 * @param C_BPartner_ID if 0 all
 	 * @param trxName transaction
@@ -1136,7 +1136,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	/**
 	 * Get Open Amount.
 	 * Used by web interface
-	 * 
+	 *
 	 * @return Open Amt
 	 */
 	public BigDecimal getOpenAmt()
@@ -1146,7 +1146,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Open Amount
-	 * 
+	 *
 	 * @param creditMemoAdjusted adjusted for CM (negative)
 	 * @param paymentDate ignored Payment Date
 	 * @return Open Amt
@@ -1184,7 +1184,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Document Status
-	 * 
+	 *
 	 * @return Document Status Clear Text
 	 */
 	public String getDocStatusName()
@@ -1194,7 +1194,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**************************************************************************
 	 * Create PDF
-	 * 
+	 *
 	 * @return File or null
 	 */
 	@Override
@@ -1214,7 +1214,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create PDF file
-	 * 
+	 *
 	 * @param file output file
 	 * @return file if success
 	 */
@@ -1228,7 +1228,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get PDF File Name
-	 * 
+	 *
 	 * @param documentDir directory
 	 * @return file name
 	 */
@@ -1239,7 +1239,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get ISO Code of Currency
-	 * 
+	 *
 	 * @return Currency ISO
 	 */
 	public String getCurrencyISO()
@@ -1249,7 +1249,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Currency Precision
-	 * 
+	 *
 	 * @return precision
 	 * @deprecated Please use {@link IInvoiceBL#getPrecision(I_C_Invoice)}
 	 */
@@ -1261,7 +1261,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**************************************************************************
 	 * Process document
-	 * 
+	 *
 	 * @param processAction document action
 	 * @return true if performed
 	 */
@@ -1279,7 +1279,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1292,7 +1292,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1305,7 +1305,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -1489,7 +1489,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Calculate Tax and Total
-	 * 
+	 *
 	 * @return true if calculated
 	 */
 	public boolean calculateTaxTotal()
@@ -1585,7 +1585,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * (Re) Create Pay Schedule
-	 * 
+	 *
 	 * @return true if valid schedule
 	 */
 	private boolean createPaySchedule()
@@ -1599,7 +1599,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1612,7 +1612,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1634,7 +1634,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	public String completeIt0()
@@ -1878,7 +1878,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		m_processMsg = info.toString().trim();
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -1909,7 +1909,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Create Counter Document
-	 * 
+	 *
 	 * @return counter invoice
 	 */
 	private MInvoice createCounterDoc()
@@ -2001,7 +2001,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2081,7 +2081,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2105,7 +2105,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Reverse Correction - same date
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -2275,7 +2275,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -2297,7 +2297,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -2319,7 +2319,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/*************************************************************************
 	 * Get Summary
-	 * 
+	 *
 	 * @return Summary of Document
 	 */
 	@Override
@@ -2338,7 +2338,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Process Message
-	 * 
+	 *
 	 * @return clear text error message
 	 */
 	@Override
@@ -2349,7 +2349,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Document Owner (Responsible)
-	 * 
+	 *
 	 * @return AD_User_ID
 	 */
 	@Override
@@ -2360,7 +2360,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Get Document Approval Amount
-	 * 
+	 *
 	 * @return amount
 	 */
 	@Override
@@ -2406,7 +2406,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	/**
 	 * Document Status is Complete or Closed
-	 * 
+	 *
 	 * @return true if CO, CL or RE
 	 * @deprecated Please use {@link IInvoiceBL#isComplete(I_C_Invoice)}
 	 */

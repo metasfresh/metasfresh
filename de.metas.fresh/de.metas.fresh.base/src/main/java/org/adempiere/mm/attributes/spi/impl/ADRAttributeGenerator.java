@@ -97,7 +97,6 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 		adrAttributeValue.setM_Attribute(adrAttribute);
 		adrAttributeValue.setValue(adrRegionValue);
 		adrAttributeValue.setName(adrRegionName);
-		adrAttributeValue.setAD_Ref_List(adRefList);
 		InterfaceWrapperHelper.save(adrAttributeValue);
 
 		return adrAttributeValue;
