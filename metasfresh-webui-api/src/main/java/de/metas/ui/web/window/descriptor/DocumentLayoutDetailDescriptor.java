@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -10,6 +11,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /*
  * #%L
@@ -43,7 +45,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	private final String detailId;
 	private final String caption;
+	private final Map<String, String> captionTrls;
 	private final String description;
+	private final Map<String, String> descriptionTrls;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
@@ -52,7 +56,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		super();
 		detailId = builder.getDetailId();
 		caption = builder.caption;
+		captionTrls = builder.captionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.captionTrls);
 		description = builder.description;
+		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 
@@ -72,14 +78,14 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return detailId;
 	}
 
-	public String getCaption()
+	public String getCaption(final String adLanguage)
 	{
-		return caption;
+		return captionTrls.getOrDefault(adLanguage, caption);
 	}
 
-	public String getDescription()
+	public String getDescription(final String adLanguage)
 	{
-		return description;
+		return descriptionTrls.getOrDefault(adLanguage, description);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
@@ -96,7 +102,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	{
 		private String detailId;
 		private String caption;
+		private Map<String, String> captionTrls;
 		private String description;
+		private Map<String, String> descriptionTrls;
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
 		private Builder()
@@ -144,9 +152,21 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setCaptionTrls(final Map<String, String> captionTrls)
+		{
+			this.captionTrls = captionTrls;
+			return this;
+		}
+
 		public Builder setDescription(final String description)
 		{
 			this.description = Strings.emptyToNull(description);
+			return this;
+		}
+
+		public Builder setDescriptionTrls(final Map<String, String> descriptionTrls)
+		{
+			this.descriptionTrls = descriptionTrls;
 			return this;
 		}
 

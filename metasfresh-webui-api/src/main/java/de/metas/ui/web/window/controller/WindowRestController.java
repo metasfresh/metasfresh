@@ -2,9 +2,9 @@ package de.metas.ui.web.window.controller;
 
 import java.util.List;
 
-import org.compiere.util.CacheMgt;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,6 +16,7 @@ import com.google.common.base.Strings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -79,8 +80,21 @@ public class WindowRestController implements IWindowRestController
 	private LoginService loginService;
 
 	@Autowired
+	@Lazy
+	private UserSession userSession;
+
+	@Autowired
 	private DocumentCollection documentCollection;
 
+	private JSONFilteringOptions.Builder newJSONFilteringOptions()
+	{
+		final boolean debugShowColumnNamesForCaption = userSession.getPropertyAsBoolean(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption,
+				JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue);
+		
+		return JSONFilteringOptions.builder()
+				.setAD_Language(userSession.getAD_Language())
+				.setDebugShowColumnNamesForCaption(debugShowColumnNamesForCaption);
+	}
 
 	@Override
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
@@ -92,7 +106,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final JSONFilteringOptions jsonFilteringOpts = JSONFilteringOptions.builder()
+		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
 				.setShowAdvancedFields(advanced)
 				.build();
 
@@ -152,7 +166,7 @@ public class WindowRestController implements IWindowRestController
 		//
 		// Retrieve and return the documents
 		final List<Document> documents = documentCollection.getDocuments(documentPath);
-		return JSONDocument.ofDocumentsList(documents, JSONFilteringOptions.builder()
+		return JSONDocument.ofDocumentsList(documents, newJSONFilteringOptions()
 				.setShowAdvancedFields(advanced)
 				.setDataFieldsList(fieldsListStr)
 				.build());
@@ -179,7 +193,7 @@ public class WindowRestController implements IWindowRestController
 				.allowNewRowId()
 				.build();
 
-		final JSONFilteringOptions jsonFilteringOpts = JSONFilteringOptions.builder()
+		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
 				.setShowAdvancedFields(advanced)
 				.build();
 
@@ -244,7 +258,7 @@ public class WindowRestController implements IWindowRestController
 				.setRowId(rowIdStr)
 				.build();
 
-		final JSONFilteringOptions jsonFilteringOptions = JSONFilteringOptions.builder()
+		final JSONFilteringOptions jsonFilteringOptions = newJSONFilteringOptions()
 				.setShowAdvancedFields(false)
 				.build();
 

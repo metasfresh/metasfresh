@@ -94,8 +94,8 @@ public final class JSONDocumentLayout implements Serializable
 		super();
 		type = String.valueOf(layout.getAD_Window_ID());
 		tabid = null;
-		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement());
-		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement());
+		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonFilteringOpts);
+		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonFilteringOpts);
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
 		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
 

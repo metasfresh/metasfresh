@@ -50,8 +50,13 @@ public final class JSONFilteringOptions
 	
 	public static final JSONFilteringOptions DEFAULT = JSONFilteringOptions.builder().build();
 
+	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
+	public static final boolean SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue = true;
+
+	private final String adLanguage;
 	private final boolean showAdvancedFields;
 	private final String dataFieldsListStr;
+	private final boolean debugShowColumnNamesForCaption;
 
 	private static final transient Splitter FIELDS_LIST_SPLITTER = Splitter.on(",")
 			.trimResults()
@@ -214,8 +219,10 @@ public final class JSONFilteringOptions
 	private JSONFilteringOptions(final Builder builder)
 	{
 		super();
+		adLanguage = builder.adLanguage;
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
+		debugShowColumnNamesForCaption = builder.debugShowColumnNamesForCaption;
 	}
 
 	@Override
@@ -225,7 +232,18 @@ public final class JSONFilteringOptions
 				.omitNullValues()
 				.add("showAdvancedFields", showAdvancedFields)
 				.add("dataFieldsListStr", dataFieldsListStr)
+				.add("debugShowColumnNamesForCaption", debugShowColumnNamesForCaption)
 				.toString();
+	}
+	
+	public String getAD_Language()
+	{
+		return adLanguage;
+	}
+	
+	public boolean isDebugShowColumnNamesForCaption()
+	{
+		return debugShowColumnNamesForCaption;
 	}
 
 	public Predicate<DocumentLayoutElementDescriptor> documentLayoutElementFilter()
@@ -284,8 +302,10 @@ public final class JSONFilteringOptions
 
 	public static final class Builder
 	{
+		public String adLanguage;
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
+		private boolean debugShowColumnNamesForCaption;
 
 		private Builder()
 		{
@@ -295,6 +315,12 @@ public final class JSONFilteringOptions
 		public JSONFilteringOptions build()
 		{
 			return new JSONFilteringOptions(this);
+		}
+		
+		public Builder setAD_Language(String adLanguage)
+		{
+			this.adLanguage = adLanguage;
+			return this;
 		}
 
 		public Builder setShowAdvancedFields(final boolean showAdvancedFields)
@@ -306,6 +332,12 @@ public final class JSONFilteringOptions
 		public Builder setDataFieldsList(final String dataFieldsListStr)
 		{
 			this.dataFieldsListStr = dataFieldsListStr;
+			return this;
+		}
+		
+		public Builder setDebugShowColumnNamesForCaption(boolean debugShowColumnNamesForCaption)
+		{
+			this.debugShowColumnNamesForCaption = debugShowColumnNamesForCaption;
 			return this;
 		}
 	}

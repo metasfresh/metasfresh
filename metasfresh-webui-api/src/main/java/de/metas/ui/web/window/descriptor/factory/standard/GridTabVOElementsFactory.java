@@ -110,7 +110,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private final GridWindowVO _gridWindowVO;
 	private final GridTabVO _gridTabVO;
 	private final GridTabVO _parentTab;
-	private final boolean debugShowColumnNamesForCaption = true;
+	
 	//
 	// Build parameters
 	private final String _detailId;
@@ -372,6 +372,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			if (gridFieldVO != null)
 			{
 				layoutElementBuilder
+						.setCaptionTrls(gridFieldVO.getHeaderTrls())
+						.setDescriptionTrls(gridFieldVO.getDescriptionTrls())
 						.setWidgetType(extractWidgetType(gridFieldVO))
 						.addField(layoutElementField(gridFieldVO));
 
@@ -416,11 +418,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			advancedFieldNames.addAll(layoutElementBuilder.getFieldNames());
 		}
 
-		if (debugShowColumnNamesForCaption)
-		{
-			layoutElementBuilder.setCaptionAsFieldNames();
-		}
-
 		logger.trace("Built layout element for {}: {}", uiElement, layoutElementBuilder);
 		return layoutElementBuilder;
 	}
@@ -442,7 +439,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(getDetailId())
 				.setCaption(detailTab.getName())
-				.setDescription(detailTab.getDescription());
+				.setCaptionTrls(detailTab.getNameTrls())
+				.setDescription(detailTab.getDescription())
+				.setDescriptionTrls(detailTab.getDescriptionTrls());
 
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		uiSections.stream()

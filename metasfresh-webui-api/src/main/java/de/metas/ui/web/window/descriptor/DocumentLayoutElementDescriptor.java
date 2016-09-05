@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -13,6 +14,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
@@ -48,9 +50,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	}
 
 	private final String internalName;
-	
+
 	private final String caption;
+	private final Map<String, String> captionTrls;
 	private final String description;
+	private final Map<String, String> descriptionTrls;
 
 	private final DocumentFieldWidgetType widgetType;
 	private final LayoutType layoutType;
@@ -58,13 +62,18 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
+	private String _captionAsFieldNames; // lazy
+	private static final Joiner JOINER_FieldNames = Joiner.on(" | ").skipNulls();
+
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
 		super();
 
 		internalName = builder.internalName;
 		caption = builder.caption;
+		captionTrls = builder.captionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.captionTrls);
 		description = builder.description;
+		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
 		layoutType = builder.layoutType;
 		advancedField = builder.isAdvancedField();
@@ -85,14 +94,27 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				.toString();
 	}
 
-	public String getCaption()
+	public String getCaption(final String adLanguage)
 	{
-		return caption;
+		return captionTrls.getOrDefault(adLanguage, caption);
 	}
 
-	public String getDescription()
+	public String getCaptionAsFieldNames()
 	{
-		return description;
+		if (_captionAsFieldNames == null)
+		{
+			_captionAsFieldNames = fields
+					.stream()
+					.filter(field -> field.isPublicField()) // only those which are public
+					.map(field -> field.getField())
+					.collect(GuavaCollectors.toString(JOINER_FieldNames));
+		}
+		return _captionAsFieldNames;
+	}
+
+	public String getDescription(final String adLanguage)
+	{
+		return descriptionTrls.getOrDefault(adLanguage, description);
 	}
 
 	public DocumentFieldWidgetType getWidgetType()
@@ -126,7 +148,9 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		private String internalName;
 		private String caption;
+		private Map<String, String> captionTrls;
 		private String description;
+		private Map<String, String> descriptionTrls;
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
 		private boolean advancedField = false;
@@ -201,9 +225,21 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setCaptionTrls(final Map<String, String> captionTrls)
+		{
+			this.captionTrls = captionTrls;
+			return this;
+		}
+
 		public Builder setDescription(final String description)
 		{
 			this.description = Strings.emptyToNull(description);
+			return this;
+		}
+
+		public Builder setDescriptionTrls(final Map<String, String> descriptionTrls)
+		{
+			this.descriptionTrls = descriptionTrls;
 			return this;
 		}
 
@@ -289,22 +325,5 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return consumed;
 		}
-
-		/**
-		 * (DEBUG option) Use field names instead of caption
-		 *
-		 * @return
-		 */
-		public Builder setCaptionAsFieldNames()
-		{
-			final String caption = fieldsBuilders.values()
-					.stream()
-					.filter(fieldBuilder -> fieldBuilder.isPublicField()) // only those which are public
-					.map(fieldBuilder -> fieldBuilder.getFieldName())
-					.collect(GuavaCollectors.toString(Joiner.on(" | ").skipNulls()));
-			setCaption(caption);
-			return this;
-		}
-
 	}
 }

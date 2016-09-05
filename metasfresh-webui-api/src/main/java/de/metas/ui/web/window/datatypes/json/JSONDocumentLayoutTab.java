@@ -73,8 +73,11 @@ public final class JSONDocumentLayoutTab implements Serializable
 	{
 		super();
 		tabid = detail.getDetailId();
-		caption = detail.getCaption();
-		description = detail.getDescription();
+		
+		final String adLanguage = jsonFilteringOpts.getAD_Language();
+		caption = detail.getCaption(adLanguage);
+		description = detail.getDescription(adLanguage);
+		
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonFilteringOpts);
 	}
 

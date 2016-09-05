@@ -56,6 +56,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	private final String field;
 	private final LookupSource lookupSource;
 	private final FieldType fieldType;
+	private final boolean publicField;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
@@ -65,6 +66,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		field = Preconditions.checkNotNull(builder.getFieldName(), "field not null");
 		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
+		publicField = builder.publicField;
 	}
 
 	@Override
@@ -74,6 +76,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 				.omitNullValues()
 				.add("field", field)
 				.add("internalName", internalName)
+				.add("publicField", publicField)
 				.toString();
 	}
 
@@ -111,6 +114,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	public FieldType getFieldType()
 	{
 		return fieldType;
+	}
+	
+	public boolean isPublicField()
+	{
+		return publicField;
 	}
 
 	public static final class Builder

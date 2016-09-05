@@ -75,7 +75,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Properties ctx = Env.getCtx(); // TODO
 		final int windowNo = 0; // TODO: get rid of WindowNo from GridWindowVO
-		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
+		final int AD_Menu_ID = 0; // N/A
+		final boolean loadAllLanguages = true;
+		final GridWindowVO gridWindowVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
 		Check.assumeNotNull(gridWindowVO, "Parameter gridWindowVO is not null"); // shall never happen
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();

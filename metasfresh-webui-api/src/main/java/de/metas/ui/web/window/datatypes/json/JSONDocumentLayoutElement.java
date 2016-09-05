@@ -46,22 +46,17 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		return elements.stream()
 				.filter(jsonFilteringOpts.documentLayoutElementFilter())
-				.map(element -> of(element))
+				.map(element -> new JSONDocumentLayoutElement(element, jsonFilteringOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutElement of(final DocumentLayoutElementDescriptor element)
-	{
-		return new JSONDocumentLayoutElement(element);
-	}
-
-	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element)
+	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		if (element == null)
 		{
 			return null;
 		}
-		return new JSONDocumentLayoutElement(element);
+		return new JSONDocumentLayoutElement(element, jsonFilteringOpts);
 	}
 
 	@JsonProperty("caption")
@@ -84,11 +79,21 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
-	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element)
+	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
-		caption = element.getCaption();
-		description = element.getDescription();
+		final String adLanguage = jsonFilteringOpts.getAD_Language();
+		
+		if(jsonFilteringOpts.isDebugShowColumnNamesForCaption())
+		{
+			caption = element.getCaptionAsFieldNames();
+		}
+		else
+		{
+			caption = element.getCaption(adLanguage);
+		}
+		
+		description = element.getDescription(adLanguage);
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
