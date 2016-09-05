@@ -66,7 +66,7 @@ public final class JSONMenuNode implements Serializable
 	}
 
 	@JsonProperty("nodeId")
-	private final int nodeId;
+	private final String nodeId;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("type")
@@ -123,7 +123,7 @@ public final class JSONMenuNode implements Serializable
 
 	@JsonCreator
 	private JSONMenuNode(
-			@JsonProperty("nodeId") final int nodeId //
+			@JsonProperty("nodeId") final String nodeId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("type") final JSONMenuNodeType type //
 			, @JsonProperty("elementId") final Integer elementId //
@@ -149,7 +149,7 @@ public final class JSONMenuNode implements Serializable
 				.toString();
 	}
 
-	public int getNodeId()
+	public String getNodeId()
 	{
 		return nodeId;
 	}

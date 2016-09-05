@@ -51,7 +51,7 @@ public final class MenuTree
 	private static final Logger logger = LogManager.getLogger(MenuTree.class);
 
 	private final MenuNode rootNode;
-	private final Map<Integer, MenuNode> nodesById;
+	private final Map<String, MenuNode> nodesById;
 	private final ListMultimap<ArrayKey, MenuNode> nodesByTypeAndElementId;
 
 	private MenuTree(final MenuNode rootNode)
@@ -60,7 +60,7 @@ public final class MenuTree
 		Preconditions.checkNotNull(rootNode, "rootNode");
 		this.rootNode = rootNode;
 
-		final ImmutableMap.Builder<Integer, MenuNode> nodesByIdBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, MenuNode> nodesByIdBuilder = ImmutableMap.builder();
 		final ImmutableListMultimap.Builder<ArrayKey, MenuNode> nodesByTypeAndElementIdBuilder = ImmutableListMultimap.builder();
 		rootNode.iterate(node -> {
 			nodesByIdBuilder.put(node.getId(), node);
@@ -88,7 +88,7 @@ public final class MenuTree
 		return rootNode;
 	}
 
-	public MenuNode getNodeById(final int nodeId)
+	public MenuNode getNodeById(final String nodeId)
 	{
 		final MenuNode node = nodesById.get(nodeId);
 		if (node == null)
@@ -109,7 +109,7 @@ public final class MenuTree
 		return nodes.get(0);
 	}
 
-	public List<MenuNode> getPath(final int nodeId)
+	public List<MenuNode> getPath(final String nodeId)
 	{
 		final MenuNode node = getNodeById(nodeId);
 		return getPath(node);

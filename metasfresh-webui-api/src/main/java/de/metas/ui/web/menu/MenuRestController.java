@@ -78,7 +78,7 @@ public class MenuRestController
 
 	@RequestMapping(value = "/node", method = RequestMethod.GET)
 	public JSONMenuNode getNode(
-			@RequestParam(name = PARAM_NodeId, required = true) final int nodeId //
+			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
 			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth)
 	{
 		loginService.autologin();
@@ -91,7 +91,7 @@ public class MenuRestController
 
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
 	public JSONMenuNode getPath(
-			@RequestParam(name = PARAM_NodeId, required = true) final int nodeId //
+			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
 	)
 	{
 		loginService.autologin();

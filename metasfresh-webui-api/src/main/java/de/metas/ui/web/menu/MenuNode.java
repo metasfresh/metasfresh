@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
+import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 
 /*
@@ -46,7 +46,9 @@ public final class MenuNode
 
 	public static enum MenuNodeType
 	{
-		Group, Window, Process, Report,
+		Group //
+		, Window, NewRecord //
+		, Process, Report //
 	}
 
 	@FunctionalInterface
@@ -60,10 +62,7 @@ public final class MenuNode
 		MenuNodeFilterResolution check(MenuNode node);
 	}
 
-	
-	private static final Logger logger = LogManager.getLogger(MenuNode.class);
-
-	private final int id;
+	private final String id;
 	private final String caption;
 	private final MenuNodeType type;
 	private final int elementId;
@@ -75,12 +74,15 @@ public final class MenuNode
 	private MenuNode(final Builder builder)
 	{
 		super();
+
+		Check.assumeNotNull(builder.id, "Parameter ID is not null");
 		id = builder.id;
+
 		caption = builder.caption;
 		type = builder.type;
 		elementId = builder.elementId;
 
-		children = ImmutableList.copyOf(builder.children);
+		children = ImmutableList.copyOf(Iterables.concat(builder.childrenFirst, builder.childrenRest));
 		for (final MenuNode child : children)
 		{
 			child.parent = this;
@@ -142,10 +144,10 @@ public final class MenuNode
 		}
 
 		final MenuNode other = (MenuNode)obj;
-		return id == other.id;
+		return id.equals(other.id);
 	}
 
-	public int getId()
+	public String getId()
 	{
 		return id;
 	}
@@ -210,12 +212,12 @@ public final class MenuNode
 
 		return new MenuNode(this, childrenCopy);
 	}
-	
+
 	public boolean isRoot()
 	{
 		return parent == null;
 	}
-	
+
 	public boolean isGrouppingNode()
 	{
 		return type == MenuNodeType.Group;
@@ -223,12 +225,13 @@ public final class MenuNode
 
 	public static final class Builder
 	{
-		private Integer id;
+		private String id;
 
 		private String caption;
 		private MenuNodeType type;
 		private int elementId;
-		private final List<MenuNode> children = new ArrayList<>();
+		private final List<MenuNode> childrenFirst = new ArrayList<>();
+		private final List<MenuNode> childrenRest = new ArrayList<>();
 
 		private Builder()
 		{
@@ -241,6 +244,12 @@ public final class MenuNode
 		}
 
 		public Builder setId(final int id)
+		{
+			this.id = String.valueOf(id);
+			return this;
+		}
+
+		public Builder setId(final String id)
 		{
 			this.id = id;
 			return this;
@@ -259,10 +268,17 @@ public final class MenuNode
 			return this;
 		}
 
+		public Builder addChildToFirstsList(final MenuNode child)
+		{
+			Preconditions.checkNotNull(child, "child");
+			childrenFirst.add(child);
+			return this;
+		}
+
 		public Builder addChild(final MenuNode child)
 		{
 			Preconditions.checkNotNull(child, "child");
-			children.add(child);
+			childrenRest.add(child);
 			return this;
 		}
 
@@ -273,13 +289,8 @@ public final class MenuNode
 				return this;
 			}
 
-			this.children.addAll(children);
+			this.childrenRest.addAll(children);
 			return this;
-		}
-
-		public boolean hasChildren()
-		{
-			return !children.isEmpty();
 		}
 	}
 }

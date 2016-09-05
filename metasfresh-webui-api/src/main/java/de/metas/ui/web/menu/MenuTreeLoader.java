@@ -123,10 +123,20 @@ public final class MenuTreeLoader
 		while (childModels.hasMoreElements())
 		{
 			final MTreeNode childModel = (MTreeNode)childModels.nextElement();
+			
 			final MenuNode childNode = createMenuNodeRecursivelly(childModel, depth + 1);
 			if (childNode == null)
 			{
 				continue;
+			}
+			
+			if(childModel.isCreateNewRecord())
+			{
+				final MenuNode childNodeNewRecord = createNewRecordNode(childNode);
+				if(childNodeNewRecord != null)
+				{
+					nodeBuilder.addChildToFirstsList(childNodeNewRecord);
+				}
 			}
 
 			nodeBuilder.addChild(childNode);
@@ -169,6 +179,20 @@ public final class MenuTreeLoader
 		}
 
 		return builder;
+	}
+
+	private MenuNode createNewRecordNode(final MenuNode node)
+	{
+		if (node.getType() != MenuNodeType.Window)
+		{
+			return null;
+		}
+
+		return MenuNode.builder()
+				.setId(node.getId() + "-new")
+				.setCaption("New " + node.getCaption()) // TODO: trl
+				.setType(MenuNodeType.NewRecord, node.getElementId())
+				.build();
 	}
 
 	private MTreeNode retrieveRootNodeModel()

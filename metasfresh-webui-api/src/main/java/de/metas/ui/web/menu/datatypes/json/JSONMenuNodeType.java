@@ -29,7 +29,10 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 
 public enum JSONMenuNodeType
 {
-	group, window, process, report;
+	group //
+	, window, newRecord //
+	, process, report //
+	;
 
 	public static final JSONMenuNodeType fromNullable(final MenuNodeType type)
 	{
@@ -49,6 +52,7 @@ public enum JSONMenuNodeType
 	private static final BiMap<MenuNodeType, JSONMenuNodeType> type2json = ImmutableBiMap.<MenuNodeType, JSONMenuNodeType> builder()
 			.put(MenuNodeType.Group, group)
 			.put(MenuNodeType.Window, window)
+			.put(MenuNodeType.NewRecord, newRecord)
 			.put(MenuNodeType.Process, process)
 			.put(MenuNodeType.Report, report)
 			.build();
