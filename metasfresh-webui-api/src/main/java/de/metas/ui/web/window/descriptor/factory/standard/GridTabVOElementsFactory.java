@@ -375,6 +375,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(gridFieldVO);
 
+			if(layoutElementBuilder.getFieldsCount() <= 0)
+			{
+				layoutElementBuilder.setCaptionTrls(gridFieldVO.getHeaderTrls());
+				layoutElementBuilder.setDescriptionTrls(gridFieldVO.getDescriptionTrls());
+			}
+			
 			//
 			// Element Widget type
 			if(layoutElementBuilder.getWidgetType() == null)
