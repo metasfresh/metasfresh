@@ -3,13 +3,11 @@ import {connect} from 'react-redux';
 
 import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-import loader from '../../assets/images/state2.gif';
-import saved from '../../assets/images/state3.png';
-import unsaved from '../../assets/images/state1.png';
 
 import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
+import Indicator from '../loader/Indicator';
 
 
 import {
@@ -22,8 +20,8 @@ class Header extends Component {
 
         this.state = {
             isSubheaderShow: false,
-            isOrderListShow: false
-            // indicator: 'saved'
+            isOrderListShow: false,
+            indicator: 'saved'
         }
     }
     changeState = () => {
@@ -32,31 +30,6 @@ class Header extends Component {
       } else {
         this.props.dispatch(indicatorState('saved'));
       }
-
-      console.log(this.props);
-    }
-    renderSaved = () => {
-      return (
-        <div>
-          <img src={saved} />
-          <small>Saved</small>
-        </div>
-      )
-    }
-    renderPending = () => {
-      return (
-        <div>
-          <img src={loader} />
-        </div>
-      )
-    }
-    renderError = () => {
-      return (
-        <div>
-          <img src={unsaved} />
-          <small>Error</small>
-        </div>
-      )
     }
 
     handleSubheaderOpen = () => {
@@ -124,9 +97,7 @@ class Header extends Component {
                                     />
                                 }
 
-                                <div className="indicator">
-                                  {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
-                                </div>
+                                <Indicator indicator={this.props.indicator} />
 
                                 <div
                                     className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
@@ -141,6 +112,7 @@ class Header extends Component {
 
                 <Subheader open={isSubheaderShow} windowType={windowType} />
                 <OrderList open={isOrderListShow} />
+
             </div>
         )
     }

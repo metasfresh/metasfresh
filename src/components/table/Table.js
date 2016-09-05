@@ -109,7 +109,7 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        const {rowData, tabid, selectedProducts} = this.props;        
+        const {rowData, tabid, selectedProducts} = this.props;
         let selected = [
             Object.keys(rowData[tabid]).findIndex(x => x === id),
             Object.keys(rowData[tabid]).findIndex(x => x === selectedProducts[0])
@@ -248,7 +248,7 @@ function mapStateToProps(state) {
 
 if (typeof document !== 'undefined') { //this line is only needed for server side isomorphic rendering
     Table = connect(
-        mapStateToProps //not connected to clicking outside 
+        mapStateToProps //not connected to clicking outside
     )(onClickOutside(Table)); //here we wrap the component with the onClickOutside call
 }
 

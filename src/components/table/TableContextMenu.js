@@ -12,7 +12,10 @@ class TableContextMenu extends Component {
     componentDidMount = () => {
         // this.contextMenu.addEventListener("blur", ()=>{
         //     this.contextMenu.classList.remove('context-menu-open');
-        // });      
+        // });
+
+        // this.contextMenu.focus();
+        console.log(this.contextMenu);
     }
 
     handleAdvancedEdit = () => {
@@ -22,7 +25,7 @@ class TableContextMenu extends Component {
     render() {
         const {isDisplayed, x, y, blur} = this.props;
         return (
-            !!isDisplayed && <div                
+            !!isDisplayed && <div
                 className="context-menu context-menu-open panel-bordered panel-primary"
                 ref={(c) => this.contextMenu = c}
                 tabIndex="0" style={{left: this.props.x, top: this.props.y, display: (this.props.isDisplayed ? "block" : "none") }}
