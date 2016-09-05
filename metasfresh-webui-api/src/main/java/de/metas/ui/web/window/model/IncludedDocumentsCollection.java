@@ -243,7 +243,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
 		}
 
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(entityDescriptor)
+		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
 				.setRecordId(id.toInt())
 				.setParentDocument(parentDocument)
 				.build();
@@ -266,7 +266,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 	private final void loadAll()
 	{
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(entityDescriptor)
+		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.build();
 

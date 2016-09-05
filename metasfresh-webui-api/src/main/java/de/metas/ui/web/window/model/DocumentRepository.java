@@ -29,9 +29,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 public interface DocumentRepository
 {
 
-	List<Document> retriveDocuments(DocumentRepositoryQuery query);
+	List<Document> retriveDocuments(DocumentQuery query);
 
-	Document retriveDocument(DocumentRepositoryQuery query);
+	Document retriveDocument(DocumentQuery query);
 
 	/**
 	 *
@@ -47,5 +47,5 @@ public interface DocumentRepository
 
 	void delete(Document document);
 	
-	List<IDocumentSideListView> retrieveDocumentsSideList(DocumentRepositoryQuery query);
+	List<IDocumentSideListView> retrieveDocumentsSideList(DocumentQuery query);
 }

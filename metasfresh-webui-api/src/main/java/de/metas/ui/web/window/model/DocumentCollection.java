@@ -233,7 +233,7 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
+		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
 		final Document document = documentsRepository.retriveDocument(query);
 		if (document == null)
 		{
@@ -295,7 +295,7 @@ public class DocumentCollection
 	public List<IDocumentSideListView> sideList(final int adWindowId)
 	{
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.builder(descriptor.getEntityDescriptor())
+		final DocumentQuery query = DocumentQuery.builder(descriptor.getEntityDescriptor())
 				.build();
 		return documentsRepository.retrieveDocumentsSideList(query);
 	}

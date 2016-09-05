@@ -46,7 +46,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentRepository;
-import de.metas.ui.web.window.model.DocumentRepositoryQuery;
+import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentSideListView;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentSideListView;
@@ -106,13 +106,13 @@ public class SqlDocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public List<Document> retriveDocuments(final DocumentRepositoryQuery query)
+	public List<Document> retriveDocuments(final DocumentQuery query)
 	{
 		final int limit = -1;
 		return retriveDocuments(query, limit);
 	}
 
-	public List<Document> retriveDocuments(final DocumentRepositoryQuery query, final int limit)
+	public List<Document> retriveDocuments(final DocumentQuery query, final int limit)
 	{
 		logger.debug("Retrieving records: query={}, limit={}", query, limit);
 
@@ -157,7 +157,7 @@ public class SqlDocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public Document retriveDocument(final DocumentRepositoryQuery query)
+	public Document retriveDocument(final DocumentQuery query)
 	{
 		final int limit = 2;
 		final List<Document> documents = retriveDocuments(query, limit);
@@ -189,7 +189,7 @@ public class SqlDocumentRepository implements DocumentRepository
 				.build();
 	}
 
-	private final String buildSql(final List<Object> sqlParams, final DocumentRepositoryQuery query)
+	private final String buildSql(final List<Object> sqlParams, final DocumentQuery query)
 	{
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
 
@@ -219,7 +219,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		return sql.toString();
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentRepositoryQuery query)
+	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQuery query)
 	{
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
 
@@ -436,7 +436,7 @@ public class SqlDocumentRepository implements DocumentRepository
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(document.getEntityDescriptor(), documentId);
+		final DocumentQuery query = DocumentQuery.ofRecordId(document.getEntityDescriptor(), documentId);
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSql(sqlParams, query);
@@ -753,13 +753,13 @@ public class SqlDocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentRepositoryQuery query)
+	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query)
 	{
 		final int limit = -1;
 		return retrieveDocumentsSideList(query, limit);
 	}
 
-	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentRepositoryQuery query, final int limit)
+	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query, final int limit)
 	{
 		logger.debug("Retrieving records: query={}, limit={}", query, limit);
 

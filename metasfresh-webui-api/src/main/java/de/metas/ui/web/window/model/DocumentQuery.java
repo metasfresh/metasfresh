@@ -34,14 +34,14 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
-public final class DocumentRepositoryQuery
+public final class DocumentQuery
 {
 	public static final Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return new Builder(entityDescriptor);
 	}
 
-	public static final DocumentRepositoryQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final int recordId)
+	public static final DocumentQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final int recordId)
 	{
 		Check.assumeNotNull(recordId, "Parameter recordId is not null");
 		return builder(entityDescriptor).setRecordId(recordId).build();
@@ -53,7 +53,7 @@ public final class DocumentRepositoryQuery
 
 	private transient Evaluatee _evaluationContext = null; // lazy
 
-	private DocumentRepositoryQuery(final Builder builder)
+	private DocumentQuery(final Builder builder)
 	{
 		super();
 		entityDescriptor = builder.entityDescriptor; // not null
@@ -136,9 +136,9 @@ public final class DocumentRepositoryQuery
 			this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
 		}
 
-		public DocumentRepositoryQuery build()
+		public DocumentQuery build()
 		{
-			return new DocumentRepositoryQuery(this);
+			return new DocumentQuery(this);
 		}
 
 		public Builder setRecordId(final int recordId)

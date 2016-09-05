@@ -30,7 +30,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentRepository;
-import de.metas.ui.web.window.model.DocumentRepositoryQuery;
+import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentSideListView;
 
@@ -75,13 +75,13 @@ public class POJODocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public List<Document> retriveDocuments(final DocumentRepositoryQuery query)
+	public List<Document> retriveDocuments(final DocumentQuery query)
 	{
 		final int limit = -1;
 		return retriveDocuments(query, limit);
 	}
 
-	public List<Document> retriveDocuments(final DocumentRepositoryQuery query, final int limit)
+	public List<Document> retriveDocuments(final DocumentQuery query, final int limit)
 	{
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 		final Document parentDocument = query.getParentDocument();
@@ -92,7 +92,7 @@ public class POJODocumentRepository implements DocumentRepository
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private List<Object> retrieveModels(final DocumentRepositoryQuery query, final int limit)
+	private List<Object> retrieveModels(final DocumentQuery query, final int limit)
 	{
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 		final String tableName = entityDescriptor.getDataBinding().getTableName();
@@ -123,7 +123,7 @@ public class POJODocumentRepository implements DocumentRepository
 	}
 
 	@Override
-	public Document retriveDocument(final DocumentRepositoryQuery query)
+	public Document retriveDocument(final DocumentQuery query)
 	{
 		final int limit = 2;
 		final List<Document> documents = retriveDocuments(query, limit);
@@ -191,7 +191,7 @@ public class POJODocumentRepository implements DocumentRepository
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 
-		final DocumentRepositoryQuery query = DocumentRepositoryQuery.ofRecordId(document.getEntityDescriptor(), documentId);
+		final DocumentQuery query = DocumentQuery.ofRecordId(document.getEntityDescriptor(), documentId);
 		final List<Object> models = retrieveModels(query, 2);
 		if (models.isEmpty())
 		{
@@ -310,7 +310,7 @@ public class POJODocumentRepository implements DocumentRepository
 	}
 	
 	@Override
-	public List<IDocumentSideListView> retrieveDocumentsSideList(DocumentRepositoryQuery query)
+	public List<IDocumentSideListView> retrieveDocumentsSideList(DocumentQuery query)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
