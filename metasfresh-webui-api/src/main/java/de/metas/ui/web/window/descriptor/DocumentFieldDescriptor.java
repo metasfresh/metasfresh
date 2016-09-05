@@ -53,13 +53,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
 
-	@JsonProperty("caption")
-	private final String caption;
-
-	@JsonProperty("description")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String description;
-
 	/** Is this the key field ? */
 	@JsonProperty("key")
 	private final boolean key;
@@ -106,9 +99,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		detailId = builder.detailId;
 
-		caption = builder.caption;
-		description = builder.description;
-
 		key = builder.key;
 		parentLink = builder.parentLink;
 		virtualField = builder.virtualField;
@@ -137,8 +127,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	private DocumentFieldDescriptor(
 			@JsonProperty("fieldName") final String fieldName //
 			, @JsonProperty("detailId") final String detailId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("description") final String description //
 			, @JsonProperty("key") final boolean key //
 			, @JsonProperty("parentLink") final boolean parentLink //
 			, @JsonProperty("virtualField") final boolean virtualField //
@@ -158,8 +146,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		this(new Builder()
 				.setFieldName(fieldName)
 				.setDetailId(detailId)
-				.setCaption(caption)
-				.setDescription(description)
 				.setKey(key)
 				.setParentLink(parentLink)
 				.setVirtualField(virtualField)
@@ -198,16 +184,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	public String getDetailId()
 	{
 		return detailId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getDescription()
-	{
-		return description;
 	}
 
 	public boolean isKey()
@@ -304,9 +280,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		private String fieldName;
 		public String detailId;
 
-		private String caption;
-		private String description;
-
 		private boolean key = false;
 		private boolean parentLink = false;
 		private boolean virtualField;
@@ -360,20 +333,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			this.detailId = Strings.emptyToNull(detailId);
-			return this;
-		}
-
-		public Builder setCaption(final String caption)
-		{
-			assertNotBuilt();
-			this.caption = Strings.emptyToNull(caption);
-			return this;
-		}
-
-		public Builder setDescription(final String description)
-		{
-			assertNotBuilt();
-			this.description = Strings.emptyToNull(description);
 			return this;
 		}
 

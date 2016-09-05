@@ -600,9 +600,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setFieldName(sqlColumnName)
 				.setDetailId(detailId)
 				//
-				.setCaption(gridFieldVO.getHeader())
-				.setDescription(gridFieldVO.getDescription())
-				//
 				.setKey(keyColumn)
 				.setParentLink(isParentLinkColumn)
 				//
