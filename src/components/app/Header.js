@@ -13,9 +13,7 @@ import OrderList from '../app/OrderList';
 
 
 import {
-    showLoaderIndicator,
-    showSavedIndicator,
-    showErrorIndicator
+    indicatorState
 } from '../../actions/WindowActions';
 
 class Header extends Component {
@@ -24,17 +22,18 @@ class Header extends Component {
 
         this.state = {
             isSubheaderShow: false,
-            isOrderListShow: false,
-            indicator: 'saved'
+            isOrderListShow: false
+            // indicator: 'saved'
         }
     }
     changeState = () => {
-    //   if(this.state.indicator == 'saved') {
-    //     this.setState({indicator: 'pending'});
-    //   } else {
-    //     this.setState({indicator: 'saved'});
-    //   }
-      this.props.dispatch(showErrorIndicator())
+      if(this.props.indicator == 'saved') {
+        this.props.dispatch(indicatorState('pending'));
+      } else {
+        this.props.dispatch(indicatorState('saved'));
+      }
+
+      console.log(this.props);
     }
     renderSaved = () => {
       return (
@@ -126,7 +125,7 @@ class Header extends Component {
                                 }
 
                                 <div className="indicator">
-                                  {this.state.indicator === 'saved' ? this.renderSaved() : (this.state.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
+                                  {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
                                 </div>
 
                                 <div
@@ -153,7 +152,9 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
+    const { indicator } = state.windowHandler;
     return {
+      indicator
     }
 }
 

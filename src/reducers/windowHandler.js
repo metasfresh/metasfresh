@@ -14,7 +14,8 @@ const initialState = {
         layout: {},
         data: [],
         rowData: {},
-    }
+    },
+    indicator: 'saved'
 }
 
 export default function windowHandler(state = initialState, action) {
