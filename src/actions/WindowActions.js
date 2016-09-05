@@ -257,3 +257,15 @@ export function findRowByPropName(arr, name) {
 
     return ret;
 }
+
+export function getItemsByProperty(arr, prop, value) {
+    let ret = [];
+
+    arr.map((item, index) => {
+        if(item[prop] === value){
+            ret.push(item);
+        }
+    });
+
+    return ret;
+}

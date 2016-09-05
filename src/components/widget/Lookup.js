@@ -9,6 +9,10 @@ import {
     dropdownRequest,
 } from '../../actions/AppActions';
 
+import {
+    getItemsByProperty
+} from '../../actions/WindowActions';
+
 class Lookup extends Component {
     constructor(props) {
         super(props);
@@ -21,16 +25,15 @@ class Lookup extends Component {
             property: "",
             properties: {},
             loading: false,
-            propertiesCopy: this.getItemsByProperty(this.props.properties, "source", "list"),
-            mainProperty: this.getItemsByProperty(this.props.properties, "source", "lookup")
+            propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
+            mainProperty: getItemsByProperty(this.props.properties, "source", "lookup")
         }
     }
 
     componentDidMount() {
         const {defaultValue} = this.props;
-        if(defaultValue){
-            this.handleSelect(this.props.defaultValue[0].value);
-        }
+
+        !!defaultValue[0].value && this.handleSelect(defaultValue[0].value);
     }
 
     handleSelect = (select) => {
@@ -54,12 +57,10 @@ class Lookup extends Component {
             })
         );
 
-
         // handling selection when main is not set or set.
-        if(this.state.property === ""){
-            console.log("MAIN FIELD SET");
-            onChange(mainProperty[0].field, select).then(()=>{
-
+        if(this.state.property === "") {
+            onChange(mainProperty[0].field, select).then(() => {
+                this.inputSearch.value = select[Object.keys(select)[0]];
                 // call for more properties
                 let batchArray = [];
                 if(propertiesCopy.length > 0){
@@ -91,84 +92,83 @@ class Lookup extends Component {
                             this.generatingPropsSelection();
                         });
                     });
-
+                }else{
+                    this.handleBlur();
                 }
             })
-
-
         } else {
-            console.log("PROPERTY SET");
+            onChange(this.state.property, select);
 
             this.setState(
                 update(this.state, {
-                    properties: {
-                        [this.state.property]: {$set: [select]}
-                    }
-            }), () => {
-                this.generatingPropsSelection();
-            });
+                    properties:  {$apply: item => {
+                        delete item[this.state.property];
+                        return item;
+                    }}
+                }),
+                () => {
+                    this.generatingPropsSelection();
+                });
         }
     }
 
     generatingPropsSelection = () => {
         const {dispatch, onChange} = this.props;
+        const {properties} = this.state;
+        const propertiesKeys = Object.keys(properties);
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
-        const modelProps = this.state.properties;
-        const modelPropsKeys = Object.keys(modelProps);
-        //iteration over rest of unselected props
-        for(let i=0; i < modelPropsKeys.length; i++){
-            onChange(modelPropsKeys[i], modelProps[modelPropsKeys[i]][0]);
+        if(propertiesKeys.length === 0){
+            this.setState(Object.assign({}, this.state, {
+                property: ""
+            }));
 
-            if(modelProps[modelPropsKeys[i]].length === 1){
-                // Selecting props that have no choice
-                onChange(modelPropsKeys[i], modelProps[modelPropsKeys[i]][0]);
-            }else if(modelProps[modelPropsKeys[i]].length > 1){
-                // Generating list of props choice
-                this.setState(Object.assign({}, this.state, {
-                    list: modelProps[modelPropsKeys[i]],
-                    property: modelPropsKeys[i]
-                }));
-
-
-
-                break;
-
-            }
+            this.handleBlur();
+            return;
         }
 
+        for(let i=0; i < propertiesKeys.length; i++){
+            if(properties[propertiesKeys[i]].length > 1){
+                // Generating list of props choice
+                this.setState(Object.assign({}, this.state, {
+                    list: properties[propertiesKeys[i]],
+                    property: propertiesKeys[i]
+                }));
+                break;
+            }
+        }
     }
 
     handleBlur = () => {
-        console.log("BLUR")
-
         this.dropdown.classList.remove("input-dropdown-focused");
     }
 
     handleFocus = (e) => {
-        console.log("FOCUS")
         const {dispatch} = this.props;
+
         e.preventDefault();
+
         this.setState(Object.assign({}, this.state, {
             selected: null
         }));
+
         if(this.inputSearch.value !== this.state.query){
             this.handleChange();
         }
+
         this.dropdown.classList.add("input-dropdown-focused");
     }
 
     handleChange = () => {
-        console.log("CHANGE")
-
         const {dispatch, recent, windowType, properties, dataId} = this.props;
         const {mainProperty} = this.state;
+
         this.dropdown.classList.add("input-dropdown-focused");
 
-
         if(this.inputSearch.value != ""){
+
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: false,
                 loading: true,
@@ -191,17 +191,27 @@ class Lookup extends Component {
     }
 
     handleClear = (e) => {
-        console.log("CLEAR")
-
-        const {onChange} = this.props;
+        const {onChange, properties} = this.props;
         e.preventDefault();
         this.inputSearch.value = "";
-        this.handleChange();
-        this.handleSelect(null);
+
+        properties.map(item => {
+            onChange(item.field, "");
+        })
+
+        this.setState({
+            list: [],
+            isInputEmpty: true,
+            selected: null,
+            model: null,
+            property: "",
+            loading: false
+        });
+
+        this.handleBlur();
     }
 
     handleKeyDown = (e) => {
-        const {dispatch} = this.props;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -229,25 +239,18 @@ class Lookup extends Component {
     }
 
     navigate = (reverse) => {
-        if(this.state.selected != null){
+        if(this.state.selected !== null){
             const selectTarget = this.state.selected + (reverse ? (-1) : (1));
             if (typeof this.state.list[selectTarget] != "undefined") {
                 this.setState(Object.assign({}, this.state, {
-                    selected: selectTarget}));
+                    selected: selectTarget
+                }));
             }
         }else if(typeof this.state.list[0] != "undefined"){
             this.setState(Object.assign({}, this.state, {
-                selected: 0}))
+                selected: 0
+            }))
         }
-    }
-    getItemsByProperty = (arr, prop, value) => {
-        let ret = [];
-        arr.map((item, index) => {
-            if(item[prop] === value){
-                ret.push(item);
-            }
-        });
-        return ret;
     }
 
     getDropdownComponent = (index, item) => {
@@ -256,7 +259,7 @@ class Lookup extends Component {
         return (
             <div
                 key={key}
-                className={"input-dropdown-list-option " + (this.state.selected == key ? 'input-dropdown-list-option-key-on' : "") }
+                className={"input-dropdown-list-option " + (this.state.selected === index ? 'input-dropdown-list-option-key-on' : "") }
                 onClick={() => this.handleSelect(item)}
             >
                 <p className="input-dropdown-item-title">{name}</p>
@@ -292,10 +295,9 @@ class Lookup extends Component {
                     </div>
                     <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
-                            const objectValue = this.getItemsByProperty(defaultValue, "field", item.field)[0].value;
-                            return (<span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
-                        }
-                        )}
+                            const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
+                            return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
+                        })}
                     </div>
 
                     {this.state.isInputEmpty ?

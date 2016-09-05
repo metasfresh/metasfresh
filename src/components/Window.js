@@ -92,6 +92,7 @@ class Window extends Component {
         return elements.map((elem, id)=> {
             const dataId = findRowByPropName(data,"ID").value;
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
+
             return (
                 <Widget
                     key={'element' + id}
