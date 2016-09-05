@@ -22,7 +22,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -35,6 +38,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -65,7 +69,8 @@ public class GridWindowVO implements Serializable
 	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID)
 	{
 		final int adMenuId = 0; // N/A
-		return create (ctx, WindowNo, AD_Window_ID, adMenuId);
+		final boolean loadAllLanguages = false;
+		return create (ctx, WindowNo, AD_Window_ID, adMenuId, loadAllLanguages);
 	}   //  create
 
 	/**
@@ -78,13 +83,14 @@ public class GridWindowVO implements Serializable
 	 * @return loaded {@link GridWindowVO}; never returns <code>null</code>
 	 * @throws WindowLoadException if window was not found or if there is no access for current logged in role.
 	 */
-	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
+	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID, final boolean loadAllLanguages)
 	{
 		logger.info("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", WindowNo, AD_Window_ID, AD_Menu_ID);
-		GridWindowVO vo = new GridWindowVO (ctx, WindowNo);
+		final GridWindowVO vo = new GridWindowVO (ctx, WindowNo, loadAllLanguages);
 		vo.AD_Window_ID = AD_Window_ID;
 
-		//  Get Window_ID if required	- (used by HTML UI)
+		//
+		//  Get AD_Window_ID if required - (used by HTML UI)
 		if (vo.AD_Window_ID <= 0 && AD_Menu_ID > 0)
 		{
 			final String sql = "SELECT AD_Window_ID, IsSOTrx, IsReadOnly FROM AD_Menu WHERE AD_Menu_ID=? AND Action='W'";
@@ -127,65 +133,73 @@ public class GridWindowVO implements Serializable
 		//
 		//  --  Get Window
 		final List<Object> sqlParams = new ArrayList<>();
-		final StringBuilder sql = new StringBuilder("SELECT Name,Description,Help,WindowType, "
-			+ "AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, " // metas: removed a.IsReadWrite
-			+ "IsSOTrx "
-			+ ", IsOneInstanceOnly " // 10 // metas: US831
-			);
-		if (Env.isBaseLanguage(vo.getCtx(), I_AD_Window.Table_Name))
-		{
-			sql.append("FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive=?"); // metas: tsa: changed the query because we check for permissions later
-			sqlParams.add(vo.getAD_Window_ID());
-			sqlParams.add(true); // IsActive
-		}
-		else
-		{
-			sql.append("FROM AD_Window_vt w WHERE w.AD_Window_ID=?")  // metas: tsa: changed the query because we check for permissions later
-				.append(" AND w.IsActive=?")
-				.append(" AND w.AD_Language=?");
-			sqlParams.add(vo.getAD_Window_ID());
-			sqlParams.add(true); // IsActive
-			sqlParams.add(Env.getAD_Language(vo.getCtx()));
-		}
-		
+		final String sql = buildSql(vo.getCtx(), vo.getAD_Window_ID(), loadAllLanguages, sqlParams);
 		String windowName = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			//	create statement
-			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 
 			// 	get data
 			rs = pstmt.executeQuery();
-			if (rs.next())
+			boolean firstRow = true;
+			boolean loaded = false;
+			while (rs.next())
 			{
-				windowName = rs.getString(1);
-				vo.Name = windowName;
-				vo.Description = Util.coalesce(rs.getString(2), "");
-				vo.Help = Util.coalesce(rs.getString(3), "");
-				vo.WindowType = rs.getString(4);
+				windowName = rs.getString("Name");
+				vo.name = windowName;
+				vo.description = Util.coalesce(rs.getString("Description"), "");
+				vo.help = Util.coalesce(rs.getString("Help"), "");
+				
+				if(loadAllLanguages)
+				{
+					final String adLanguage = rs.getString("AD_Language");
+					if(firstRow)
+					{
+						vo.setName(adLanguage, vo.name);
+						vo.setDescription(adLanguage, vo.description);
+						vo.setHelp(adLanguage, vo.help);
+						
+						final String baseAD_Language = Language.getBaseAD_Language();
+						vo.setName(baseAD_Language, rs.getString("Name_BaseLang"));
+						vo.setDescription(baseAD_Language, rs.getString("Description_BaseLang"));
+						vo.setHelp(baseAD_Language, rs.getString("Help_BaseLang"));
+					}
+					else
+					{
+						vo.setName(adLanguage, rs.getString("Name"));
+						vo.setDescription(adLanguage, rs.getString("Description"));
+						vo.setHelp(adLanguage, rs.getString("Help"));
+					}
+				}
+				
+				vo.WindowType = rs.getString("WindowType");
 				//
-				vo.AD_Color_ID = rs.getInt(5);
-				vo.AD_Image_ID = rs.getInt(6);
+				vo.AD_Color_ID = rs.getInt("AD_Color_ID");
+				vo.AD_Image_ID = rs.getInt("AD_Image_ID");
 				// vo.IsReadWrite = rs.getString(7); // metas: not needed
 				//
-				vo.WinHeight = rs.getInt(7);
-				vo.WinWidth = rs.getInt(8);
+				vo.WinHeight = rs.getInt("WinHeight");
+				vo.WinWidth = rs.getInt("WinWidth");
 				//
-				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(9));
-				vo.setIsSOTrx(isSOTrx);
-				vo.IsOneInstanceOnly = DisplayType.toBoolean(rs.getString(10)); // metas: US831
+				vo.setIsSOTrx(DisplayType.toBoolean(rs.getString("IsSOTrx")));
+				vo.IsOneInstanceOnly = DisplayType.toBoolean(rs.getString("IsOneInstanceOnly")); // metas: US831
+				
+				firstRow = false;
+				loaded = true;
 			}
-			else
+			
+			if(!loaded)
 			{
 				throw new WindowLoadException("@NotFound@", "ID=" + Env.getAD_Role_ID(ctx) + " (does not matter)", windowName, AD_Window_ID);
 			}
 		}
 		catch (SQLException ex)
 		{
-			throw new DBException(ex, sql.toString(), sqlParams);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -237,6 +251,73 @@ public class GridWindowVO implements Serializable
 
 		return vo;
 	}   //  create
+	
+	private static final String buildSql(final Properties ctx, final int AD_Window_ID, final boolean loadAllLanguages, final List<Object> sqlParams)
+	{
+		//
+		final boolean useTrl;
+		final boolean filterByLanguage;
+		if (loadAllLanguages)
+		{
+			useTrl = true;
+			filterByLanguage = false;
+		}
+		else if (!Env.isBaseLanguage(ctx, I_AD_Window.Table_Name))
+		{
+			useTrl= true;
+			filterByLanguage = true;
+		}
+		else
+		{
+			useTrl = false;
+			filterByLanguage = false;
+		}
+
+		final StringBuilder sql;
+		if (!useTrl)
+		{
+			sql = new StringBuilder("SELECT "
+					+ " w.Name"
+					+ ", w.Description"
+					+ ", w.Help"
+					+ ", w.WindowType"
+					+ ", w.AD_Color_ID, w.AD_Image_ID, w.WinHeight, w.WinWidth "
+					+ ", IsSOTrx "
+					+ ", IsOneInstanceOnly " // 10 // metas: US831
+					);
+			sql.append(" FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive=?");
+			sqlParams.add(AD_Window_ID);
+			sqlParams.add(true); // IsActive
+		}
+		else
+		{
+			sql = new StringBuilder("SELECT "
+					+ " trl.AD_Language"
+					+ ", trl.Name"
+					+ ", w.Name as Name_BaseLang"
+					+ ", trl.Description"
+					+ ", w.Description as Description_BaseLang"
+					+ ", trl.Help"
+					+ ", w.Help as Help_BaseLang"
+					+ ", w.WindowType"
+					+ ", w.AD_Color_ID, w.AD_Image_ID, w.WinHeight, w.WinWidth "
+					+ ", w.IsSOTrx "
+					+ ", w.IsOneInstanceOnly " // 10 // metas: US831
+					);
+			sql.append(" FROM AD_Window w INNER JOIN AD_Window_Trl trl ON (trl.AD_Window_ID=w.AD_Window_ID)");
+			sql.append(" WHERE w.AD_Window_ID=? AND w.IsActive=?");
+			sqlParams.add(AD_Window_ID);
+			sqlParams.add(true); // IsActive
+			
+			if(filterByLanguage)
+			{
+				sql.append(" AND trl.AD_Language=?");
+				sqlParams.add(Env.getAD_Language(ctx));
+			}
+		}
+		
+		return sql.toString();
+	}
 
 	/**
 	 *  Create Window Tabs
@@ -247,10 +328,12 @@ public class GridWindowVO implements Serializable
 	{
 		final int adWindowId = mWindowVO.getAD_Window_ID();
 		final String windowType = mWindowVO.getWindowType();
-		
-		final List<GridTabVO> tabs = new ArrayList<GridTabVO>();
+		final boolean isReadonly = WINDOWTYPE_QUERY.equals(windowType);
+		final boolean onlyCurrentRows = WINDOWTYPE_TRX.equals(windowType);
+		final boolean isWindowReadonly = !mWindowVO.isReadWrite();
 
-		final String sql = GridTabVO.getSQL(mWindowVO.ctx);
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = GridTabVO.getSQL(mWindowVO.getCtx(), adWindowId, mWindowVO.isLoadAllLanguages(), sqlParams);
 		int TabNo = 0;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -258,35 +341,62 @@ public class GridWindowVO implements Serializable
 		{
 			//	create statement
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
 			pstmt.setInt(1, adWindowId);
 			rs = pstmt.executeQuery();
+			
+			final LinkedHashMap<Integer, GridTabVO> tabs = new LinkedHashMap<>();
 			boolean firstTab = true;
 			while (rs.next())
 			{
-				//  Create TabVO
-				final GridTabVO mTabVO = GridTabVO.create(mWindowVO, TabNo, rs,
-					windowType.equals(WINDOWTYPE_QUERY),  //  isRO
-					windowType.equals(WINDOWTYPE_TRX));   //  onlyCurrentRows
+				final int AD_Tab_ID = rs.getInt("AD_Tab_ID");
 				
-				if (mTabVO == null && firstTab)
+				GridTabVO mTabVO = tabs.get(AD_Tab_ID);
+				if(mTabVO == null)
 				{
-					break;		//	don't continue if first tab is null
-				}
-				if (mTabVO != null)
-				{
-					if (!mTabVO.isReadOnly() && !mWindowVO.isReadWrite())
+					//  Create TabVO
+					mTabVO = GridTabVO.create(mWindowVO, TabNo, rs, isReadonly, onlyCurrentRows);
+					if (mTabVO == null)
+					{
+						if(firstTab)
+						{
+							logger.warn("First tab could not be created for {}. Skip creating the window", mWindowVO);
+							break; // don't continue if first tab is null
+						}
+						else
+						{
+							continue;
+						}
+					}
+					
+					if (!mTabVO.isReadOnly() && isWindowReadonly)
 					{
 						mTabVO.setReadOnly(true);
 					}
-					tabs.add(mTabVO);
-					TabNo++;        //  must be same as mWindow.getTab(x)
+					tabs.put(AD_Tab_ID, mTabVO);
+					TabNo++; //  must be same as mWindow.getTab(x)
 					firstTab = false;
 				}
+				else
+				{
+					mTabVO.loadAdditionalLanguage(rs);
+				}
 			}
+			
+			//  No Tabs
+			if (TabNo == 0 || tabs.isEmpty())
+			{
+				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
+				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
+				return null;
+			}
+
+			return ImmutableList.copyOf(tabs.values());
 		}
 		catch (SQLException e)
 		{
-			logger.error("createTabs", e);
+			final DBException dbEx = new DBException(e, sql, sqlParams);
+			logger.error("Failed creating the tabs", dbEx);
 			return null;
 		}
 		finally
@@ -294,29 +404,20 @@ public class GridWindowVO implements Serializable
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-
-		//  No Tabs
-		if (TabNo == 0 || tabs.isEmpty())
-		{
-			mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
-			logger.error("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql);
-			return null;
-		}
-
-		return ImmutableList.copyOf(tabs);
 	}   //  createTabs
-
 
 	/**************************************************************************
 	 *  Private Constructor
 	 *  @param Ctx context
 	 *  @param windowNo window no
+	 * @param loadAllLanguages 
 	 */
-	private GridWindowVO (final Properties Ctx, final int windowNo)
+	private GridWindowVO (final Properties Ctx, final int windowNo, final boolean loadAllLanguages)
 	{
 		super();
 		ctx = Ctx;
 		WindowNo = windowNo;
+		this.loadAllLanguages = loadAllLanguages;
 	}
 
 	static final long serialVersionUID = 3802628212531678981L;
@@ -328,12 +429,16 @@ public class GridWindowVO implements Serializable
 
 	/** Window				*/
 	private int AD_Window_ID = 0;
+	private final boolean loadAllLanguages;
 	/** Name				*/
-	private String Name = "";
+	private String name = "";
+	private Map<String, String> nameTrls = null;
 	/** Desription			*/
-	private String Description = "";
+	private String description = "";
+	private Map<String, String> descriptionTrls = null;
 	/** Help				*/
-	private String Help = "";
+	private String help = "";
+	private Map<String, String> helpTrls = null;
 	/** Window Type			*/
 	private String WindowType = "";
 	/** Image				*/
@@ -388,11 +493,11 @@ public class GridWindowVO implements Serializable
 	{
 		try
 		{
-			final GridWindowVO  clone = new GridWindowVO(ctx, windowNo);
+			final GridWindowVO  clone = new GridWindowVO(ctx, windowNo, loadAllLanguages);
 			clone.AD_Window_ID = AD_Window_ID;
-			clone.Name = Name;
-			clone.Description = Description;
-			clone.Help = Help;
+			clone.name = name;
+			clone.description = description;
+			clone.help = help;
 			clone.WindowType = WindowType;
 			clone.AD_Image_ID = AD_Image_ID;
 			clone.AD_Color_ID = AD_Color_ID;
@@ -538,19 +643,82 @@ public class GridWindowVO implements Serializable
 	
 	public String getName()
 	{
-		return Name;
+		return name;
+	}
+
+	public Map<String, String> getNameTrls()
+	{
+		return nameTrls;
 	}
 	
+	private void setName(final String adLanguage, final String nameTrl)
+	{
+		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+		
+		if(nameTrl == null)
+		{
+			return;
+		}
+		
+		if(nameTrls == null)
+		{
+			nameTrls = new HashMap<>();
+		}
+		nameTrls.put(adLanguage, nameTrl);
+	}
+
 	public String getDescription()
 	{
-		return Description;
+		return description;
 	}
-	
+
+	public Map<String, String> getDescriptionTrls()
+	{
+		return descriptionTrls;
+	}
+
+	private void setDescription(final String adLanguage, final String descriptionTrl)
+	{
+		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+		
+		if(descriptionTrl == null)
+		{
+			return;
+		}
+		
+		if(descriptionTrls == null)
+		{
+			descriptionTrls = new HashMap<>();
+		}
+		descriptionTrls.put(adLanguage, descriptionTrl);
+	}
+
 	public String getHelp()
 	{
-		return Help;
+		return help;
+	}
+
+	public Map<String, String> getHelpTrls()
+	{
+		return helpTrls;
 	}
 	
+	private void setHelp(final String adLanguage, final String helpTrl)
+	{
+		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+		
+		if(helpTrl == null)
+		{
+			return;
+		}
+		
+		if(helpTrls == null)
+		{
+			helpTrls = new HashMap<>();
+		}
+		helpTrls.put(adLanguage, helpTrl);
+	}
+
 	void setReadWrite(final boolean readWrite)
 	{
 		this._isReadWrite = readWrite;
@@ -601,9 +769,9 @@ public class GridWindowVO implements Serializable
 		return _BaseTable_ID;
 	}
 	
-	private void setBaseTable_ID(final int adTableId)
+	public boolean isLoadAllLanguages()
 	{
-		this._BaseTable_ID = adTableId;
+		return loadAllLanguages;
 	}
-}   //  MWindowVO
+}
 

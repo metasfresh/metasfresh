@@ -573,12 +573,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		//
 		if (list.size() > 0 && LogManager.isLevelFiner())
 		{
-			final StringBuffer sb = new StringBuffer();
+			final StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < list.size(); i++)
 			{
 				sb.append(list.get(i)).append(" ");
 			}
-			log.trace("(" + m_vo.Name + ") " + sb.toString());
+			log.trace("DependentOn {}: {} ", m_vo, sb);
 		}
 		return list;
 	}   // getDependentOn
@@ -1573,7 +1573,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getName()
 	{
-		return m_vo.Name;
+		return m_vo.getName();
 	}	// getName
 
 	/**
@@ -1583,7 +1583,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getDescription()
 	{
-		return m_vo.Description;
+		return m_vo.getDescription();
 	}	// getDescription
 
 	/**
@@ -1593,7 +1593,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getHelp()
 	{
-		return m_vo.Help;
+		return m_vo.getHelp();
 	}	// getHelp
 
 	/**
@@ -1613,7 +1613,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public String getCommitWarning()
 	{
-		return m_vo.CommitWarning;
+		return m_vo.getCommitWarning();
 	}   // getCommitWarning
 
 	/**
@@ -1898,7 +1898,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// ** dynamic content ** uses get_ValueAsString
 		final ILogicExpression readOnlyLogic = m_vo.getReadOnlyLogic();
 		final boolean readOnly = readOnlyLogic.evaluate(this, true); // ignoreUnparsable=true // metas: 03093
-		log.trace(m_vo.Name + " (" + readOnlyLogic + ") => " + readOnly);
+		log.trace("Evaluated IsReadOnly: {} {} => {}", m_vo, readOnlyLogic, readOnly);
 		if (readOnly)
 		{
 			return true;

@@ -1427,6 +1427,8 @@ public final class Env
 	 */
 	public static void verifyLanguage(final Language language)
 	{
+		Check.assumeNotNull(language, "Parameter language is not null");
+		
 		// metas: method changed for Global Language Support
 		final List<String> AD_Languages = new ArrayList<String>();
 		String sql = "SELECT "
