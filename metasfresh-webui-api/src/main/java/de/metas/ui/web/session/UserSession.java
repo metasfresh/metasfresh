@@ -176,4 +176,25 @@ public class UserSession implements Serializable
 		// TODO: cache the permissions key
 		return UserRolePermissionsKey.of(getCtx());
 	}
+
+	public <T extends Serializable> Object setProperty(final String name, final T value)
+	{
+		return properties.put(name, value);
+	}
+
+	public <T> T getProperty(final String name)
+	{
+		final Object valueObj = properties.get(name);
+
+		@SuppressWarnings("unchecked")
+		final T valueConv = (T)valueObj;
+
+		return valueConv;
+	}
+
+	public boolean getPropertyAsBoolean(final String name, final boolean defaultValue)
+	{
+		final Boolean value = getProperty(name);
+		return value != null ? value : defaultValue;
+	}
 }
