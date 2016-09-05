@@ -25,7 +25,7 @@ module.exports = {
             loaders: ['react-hot', 'babel'],
             include: path.join(__dirname, 'src')
         }, {
-            test: /\.(jpg|png|svg|eot|woff|woff2|ttf)$/,
+            test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
             loader: 'file?name=[path][name].[hash].[ext]'
         }, {
             test: /\.css$/,
