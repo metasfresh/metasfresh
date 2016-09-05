@@ -197,7 +197,8 @@ public class SqlDocumentRepository implements DocumentRepository
 
 		//
 		// SELECT ... FROM ...
-		sql.append(entityBinding.getSqlSelectAllFrom());
+		final String adLanguage = Env.getAD_Language(Env.getCtx()); // TODO: introduce DocumentRepositoryQuery.getAD_Language() 
+		sql.append(entityBinding.getSqlSelectAllFrom(adLanguage));
 
 		//
 		// WHERE

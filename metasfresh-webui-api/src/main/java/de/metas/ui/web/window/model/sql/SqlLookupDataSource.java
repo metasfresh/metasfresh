@@ -13,7 +13,9 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
+import org.compiere.model.MLookupInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -235,6 +237,7 @@ public class SqlLookupDataSource implements LookupDataSource
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive.getName(), SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
+		validationCtx.putValue(MLookupInfo.CTXNAME_AD_Language.getName(), Env.getAD_Language(Env.getCtx()));
 		
 
 		// SQL validation rule

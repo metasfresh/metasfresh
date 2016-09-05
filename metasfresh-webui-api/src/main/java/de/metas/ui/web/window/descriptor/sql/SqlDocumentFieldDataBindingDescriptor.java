@@ -2,6 +2,8 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Collection;
 
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.compiere.util.DisplayType;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -71,7 +73,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@JsonIgnore
 	private final String displayColumnName;
 	@JsonIgnore
-	private final String displayColumnSql;
+	private final IStringExpression displayColumnSqlExpression;
 	@JsonIgnore
 	private final Boolean numericKey;
 
@@ -113,14 +115,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			usingDisplayColumn = true;
 			displayColumnName = sqlColumnName + "$Display";
-			displayColumnSql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById(sqlTableAlias + "." + sqlColumnName);
+			displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlTableAlias + "." + sqlColumnName);
 			numericKey = sqlLookupDescriptor.isNumericKey();
 		}
 		else
 		{
 			usingDisplayColumn = false;
 			displayColumnName = null;
-			displayColumnSql = null;
+			displayColumnSqlExpression = NullStringExpression.instance;
 			numericKey = null;
 		}
 
@@ -254,9 +256,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return displayColumnName;
 	}
 
-	public String getDisplayColumnSql()
+	public IStringExpression getDisplayColumnSqlExpression()
 	{
-		return displayColumnSql;
+		return displayColumnSqlExpression;
 	}
 
 	public boolean isNumericKey()
