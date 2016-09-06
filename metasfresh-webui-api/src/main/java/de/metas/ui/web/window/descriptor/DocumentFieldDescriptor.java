@@ -18,6 +18,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
@@ -383,8 +384,8 @@ public final class DocumentFieldDescriptor implements Serializable
 					final Integer valueInt = (Integer)value;
 					if (lookupDataSource != null)
 					{
-						@SuppressWarnings("unchecked")
-						final T valueConv = (T)lookupDataSource.findById(valueInt);
+						final LookupValue valueLookup = lookupDataSource.findById(valueInt);
+						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -399,8 +400,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 					if (lookupDataSource != null)
 					{
-						@SuppressWarnings("unchecked")
-						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
+						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -426,11 +427,18 @@ public final class DocumentFieldDescriptor implements Serializable
 
 					if (lookupDataSource != null)
 					{
-						@SuppressWarnings("unchecked")
-						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
+						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
+				}
+				else if (IntegerLookupValue.class == fromType)
+				{
+					final IntegerLookupValue lookupValueInt = (IntegerLookupValue)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)StringLookupValue.of(lookupValueInt.getIdAsString(), lookupValueInt.getDisplayName());
+					return valueConv;
 				}
 			}
 		}
