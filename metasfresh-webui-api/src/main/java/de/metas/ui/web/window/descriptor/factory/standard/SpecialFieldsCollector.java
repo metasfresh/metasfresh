@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -38,6 +41,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
 
 final class SpecialFieldsCollector
 {
+	private static final Logger logger = LogManager.getLogger(SpecialFieldsCollector.class);
+	
 	private static final Set<String> COLUMNNAMES = ImmutableSet.of(
 			WindowConstants.FIELDNAME_DocumentNo //
 			, WindowConstants.FIELDNAME_Value //
@@ -52,10 +57,19 @@ final class SpecialFieldsCollector
 	{
 		for (final String fieldName : layoutElementBuilder.getFieldNames())
 		{
-			if (COLUMNNAMES.contains(fieldName))
+			if (!COLUMNNAMES.contains(fieldName))
 			{
-				existingFields.put(fieldName, layoutElementBuilder);
+				continue;
 			}
+			
+			final DocumentLayoutElementDescriptor.Builder layoutElementBuilderExisting = existingFields.get(fieldName);
+			if (layoutElementBuilderExisting != null)
+			{
+				logger.warn("Skip collecting {} because we already collected {} for same field name", layoutElementBuilder, layoutElementBuilderExisting);
+				continue;
+			}
+			
+			existingFields.put(fieldName, layoutElementBuilder);
 		}
 	}
 
@@ -70,6 +84,7 @@ final class SpecialFieldsCollector
 			}
 			if (elementBuilder.isConsumed())
 			{
+				logger.warn("Skip {} while building documentNo because it's already consumed", elementBuilder);
 				continue;
 			}
 

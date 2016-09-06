@@ -146,7 +146,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	//
 	// State
-	private final SpecialFieldsCollector specialFieldsCollector = new SpecialFieldsCollector();
+	private final SpecialFieldsCollector _specialFieldsCollector = new SpecialFieldsCollector();
+	private boolean _specialFieldsCollectingEnabled = false;
 	//
 	private DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private SqlDocumentEntityDataBindingDescriptor.Builder _documentEntryDataBinding;
@@ -229,7 +230,29 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	public SpecialFieldsCollector getSpecialFieldsCollector()
 	{
-		return specialFieldsCollector;
+		return _specialFieldsCollector;
+	}
+
+	private final void collectSpecialField(final DocumentLayoutElementDescriptor.Builder layoutElementBuilder)
+	{
+		if (!isSpecialFieldsCollectingEnabled())
+		{
+			return;
+		}
+
+		getSpecialFieldsCollector().collect(layoutElementBuilder);
+	}
+
+	private boolean setSpecialFieldsCollectingEnabled(final boolean specialFieldsCollectingEnabled)
+	{
+		final boolean specialFieldsCollectingEnabledOld = _specialFieldsCollectingEnabled;
+		_specialFieldsCollectingEnabled = specialFieldsCollectingEnabled;
+		return specialFieldsCollectingEnabledOld;
+	}
+
+	private boolean isSpecialFieldsCollectingEnabled()
+	{
+		return _specialFieldsCollectingEnabled;
 	}
 
 	private String getDetailId()
@@ -242,15 +265,24 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		logger.trace("Generating layout sections list for {}", uiSections);
 
-		//
-		// UI Sections
-		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
-		for (final I_AD_UI_Section uiSection : uiSections)
+		final boolean specialFieldsCollectingEnabledOld = setSpecialFieldsCollectingEnabled(true);
+		try
 		{
-			layoutSectionBuilders.add(layoutSection(uiSection));
+			
+			//
+			// UI Sections
+			final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
+			for (final I_AD_UI_Section uiSection : uiSections)
+			{
+				layoutSectionBuilders.add(layoutSection(uiSection));
+			}
+	
+			return layoutSectionBuilders;
 		}
-
-		return layoutSectionBuilders;
+		finally
+		{
+			setSpecialFieldsCollectingEnabled(specialFieldsCollectingEnabledOld);
+		}
 	}
 
 	private DocumentLayoutSectionDescriptor.Builder layoutSection(final I_AD_UI_Section uiSection)
@@ -429,7 +461,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			}
 		}
 
-		specialFieldsCollector.collect(layoutElementBuilder);
+		collectSpecialField(layoutElementBuilder);
 
 		if (layoutElementBuilder.isAdvancedField())
 		{
