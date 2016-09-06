@@ -72,17 +72,22 @@ class Table extends Component {
         const {rowData, tabid} = this.props;
         const item = rowData[tabid];
         const {selected} = this.state;
-        console.log(selected);
+
+        console.log(document.activeElement.nextSibling.focus());
 
 
-        const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+        // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
 
-        if(actualId > 0 ){
-            let newId = actualId-1;
-            this.state.selected = [Object.keys(rowData[tabid])[newId]];
-            // this.deselectAllProducts();
-            // this.selectProduct(Object.keys(rowData[tabid])[newId]);
-        }
+        // if(actualId > 0 ){
+        //     let newId = actualId-1;
+        //     // this.state.selected = [Object.keys(rowData[tabid])[newId]];
+        //     this.deselectAllProducts();
+        //     let t = this;
+        //     setTimeout(function(){ 
+        //         t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+        //     }, 1);
+            
+        // }
         
 
 
@@ -94,27 +99,34 @@ class Table extends Component {
                 console.log("key down");
 
 
-                // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
 
-                // if(actualId > 0 ){
-                //     let newId = actualId-1;
-                //     this.state.selected = [Object.keys(rowData[tabid])[newId]];
-                //     // this.deselectAllProducts();
-                //     // this.selectProduct(Object.keys(rowData[tabid])[newId]);
-                // }
+                if(actualId < Object.keys(rowData[tabid]).length-1 ){
+                    let newId = actualId+1;
+                    this.state.selected = [Object.keys(rowData[tabid])[newId]];
+                    this.deselectAllProducts();
+                    let t = this;
+                    setTimeout(function(){ 
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                    }, 1);
+                }
 
                 break;
             case "ArrowUp":
                 e.preventDefault();
                 console.log("key up");
 
-                // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
 
-                // if(actualId > 0 ){
-                //     let newId = actualId-1;
-                //     this.deselectAllProducts();
-                //     // this.selectProduct(Object.keys(rowData[tabid])[newId]);
-                // }
+                if(actual > 0 ){
+                    let newId = actual-1;
+                    this.state.selected = [Object.keys(rowData[tabid])[newId]];
+                    this.deselectAllProducts();
+                    let t = this;
+                    setTimeout(function(){ 
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                    }, 1);
+                }
 
 
                 break;
