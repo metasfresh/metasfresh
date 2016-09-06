@@ -1128,7 +1128,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 
-	private static ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO, final boolean publicField)
+	private ILogicExpression extractMandatoryLogic(final GridFieldVO gridFieldVO, final boolean publicField)
 	{
 		final String columnName = gridFieldVO.getColumnName();
 		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
@@ -1157,6 +1157,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		if (!publicField && gridFieldVO.isMandatory() && !gridFieldVO.isMandatoryDB())
 		{
 			return ILogicExpression.FALSE;
+		}
+		
+		// Case: DocumentNo special field shall always be mandatory
+		if(getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
+		{
+			return ILogicExpression.TRUE;
 		}
 
 		if (gridFieldVO.isMandatory())

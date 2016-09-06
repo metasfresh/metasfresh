@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,32 +27,32 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 final class SpecialFieldsCollector
 {
 	private static final Logger logger = LogManager.getLogger(SpecialFieldsCollector.class);
-	
-	private static final Set<String> COLUMNNAMES = ImmutableSet.of(
-			WindowConstants.FIELDNAME_DocumentNo //
-			, WindowConstants.FIELDNAME_Value //
-			, WindowConstants.FIELDNAME_Name //
-			, WindowConstants.FIELDNAME_DocStatus //
-			, WindowConstants.FIELDNAME_DocAction //
-	);
+
+	private static final Set<String> COLUMNNAMES_DocumentNo = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name);
+	private static final Set<String> COLUMNNAMES = ImmutableSet.<String> builder()
+			.addAll(COLUMNNAMES_DocumentNo)
+			.add(WindowConstants.FIELDNAME_DocStatus)
+			.add(WindowConstants.FIELDNAME_DocAction)
+			.build();
 
 	private final Map<String, DocumentLayoutElementDescriptor.Builder> existingFields = new HashMap<>();
+
+	private final Set<String> fieldNamesCollectedAndConsumed = new HashSet<>();
 
 	public void collect(final DocumentLayoutElementDescriptor.Builder layoutElementBuilder)
 	{
@@ -61,14 +62,14 @@ final class SpecialFieldsCollector
 			{
 				continue;
 			}
-			
+
 			final DocumentLayoutElementDescriptor.Builder layoutElementBuilderExisting = existingFields.get(fieldName);
 			if (layoutElementBuilderExisting != null)
 			{
 				logger.warn("Skip collecting {} because we already collected {} for same field name", layoutElementBuilder, layoutElementBuilderExisting);
 				continue;
 			}
-			
+
 			existingFields.put(fieldName, layoutElementBuilder);
 		}
 	}
@@ -91,6 +92,9 @@ final class SpecialFieldsCollector
 			final DocumentLayoutElementDescriptor element = elementBuilder
 					.setLayoutTypeNone() // not relevant
 					.build();
+
+			fieldNamesCollectedAndConsumed.add(fieldName);
+
 			return element;
 		}
 
@@ -111,7 +115,7 @@ final class SpecialFieldsCollector
 			return null;
 		}
 
-		return DocumentLayoutElementDescriptor.builder()
+		final DocumentLayoutElementDescriptor layoutElement = DocumentLayoutElementDescriptor.builder()
 				.setCaption(null) // not relevant
 				.setDescription(null) // not relevant
 				.setLayoutTypeNone() // not relevant
@@ -119,6 +123,11 @@ final class SpecialFieldsCollector
 				.addField(docStatusFieldBuilder.setFieldType(FieldType.ActionButtonStatus))
 				.addField(docActionFieldBuilder.setFieldType(FieldType.ActionButton))
 				.build();
+
+		fieldNamesCollectedAndConsumed.add(WindowConstants.FIELDNAME_DocStatus);
+		fieldNamesCollectedAndConsumed.add(WindowConstants.FIELDNAME_DocAction);
+
+		return layoutElement;
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder getExistingField(final String fieldName)
@@ -136,5 +145,14 @@ final class SpecialFieldsCollector
 		}
 
 		return fieldBuilder;
+	}
+
+	public boolean isDocumentNoCollectedAndConsumed(final String fieldName)
+	{
+		if (!COLUMNNAMES_DocumentNo.contains(fieldName))
+		{
+			return false;
+		}
+		return fieldNamesCollectedAndConsumed.contains(fieldName);
 	}
 }
