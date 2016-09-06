@@ -14,12 +14,18 @@ Here come the actual release notes:
 
 upcoming
 
+## Features
+
+## Fixes
+
 # metasfresh 4.34.33 (2016-36)
 
 RC for this week
 
 ## Features
 * #297 Performance problems related to zoom-to
+* #249 Referenzliste in AttributeValue
+  - cleanup
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
