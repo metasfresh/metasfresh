@@ -9,37 +9,30 @@ class TableContextMenu extends Component {
     constructor(props) {
         super(props);
     }
-
-    componentDidMount = () => {
-        // this.contextMenu.addEventListener("blur", ()=>{
-        //     this.contextMenu.classList.remove('context-menu-open');
-        // });
-
-        // this.contextMenu.focus();
-
-    }
-
     handleAdvancedEdit = () => {
-        const {dispatch, tabId, type} = this.props;
-        dispatch(openModal("Advanced edit", type + "&advanced=true", tabId));
+        const {dispatch, tabId, type, selected} = this.props;
+
+        dispatch(openModal("Advanced edit", type + "&advanced=true", tabId, selected[0]));
     }
     render() {
-        const {isDisplayed, x, y, blur} = this.props;
+        const {isDisplayed, x, y, blur, selected} = this.props;
+        const style = {
+            left: this.props.x,
+            top: this.props.y,
+            display: (isDisplayed ? "block" : "none")
+        }
+
+        const isSelectedOne = selected.length === 1;
         return (
             !!isDisplayed && <div
                 className="context-menu context-menu-open panel-bordered panel-primary"
-                //ref={(c) => this.contextMenu = c}
-                ref={function(menu) {
-                      if (menu != null) {
-                        menu.focus();
-                      }
-                    }}
-                tabIndex="0" style={{left: this.props.x, top: this.props.y, display: (this.props.isDisplayed ? "block" : "none") }}
-                onBlur={this.props.blur}
+                ref={(c) => c && c.focus()}
+                tabIndex="0" style={style}
+                onBlur={blur}
             >
-                <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
+                {isSelectedOne && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
                     <i className="meta-icon-edit" /> Advanced edit
-                </div>
+                </div>}
             </div>
         )
 

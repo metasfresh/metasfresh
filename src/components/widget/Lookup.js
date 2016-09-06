@@ -33,7 +33,10 @@ class Lookup extends Component {
     componentDidMount() {
         const {defaultValue} = this.props;
 
-        !!defaultValue[0].value && this.handleSelect(defaultValue[0].value);
+        if(!!defaultValue[0].value) {
+            const init = defaultValue[0].value;
+            this.inputSearch.value = init[Object.keys(init)[0]];
+        }
     }
 
     handleSelect = (select) => {
