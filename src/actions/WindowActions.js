@@ -195,8 +195,13 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
  */
 export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
+        dispatch(indicatorState('pending'));
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
             response.data.map(item1 => {
+                setTimeout(function(){
+                  dispatch(indicatorState('saved'));
+                }, 3500);
+
                 if(rowId === "NEW"){
                     dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
                 }else{
