@@ -1065,23 +1065,30 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			return ILogicExpression.TRUE;
 		}
+		
+		if (gridFieldVO.isVirtualColumn())
+		{
+			return ILogicExpression.TRUE;
+		}
+		
+		if (gridFieldVO.isKey())
+		{
+			return ILogicExpression.TRUE;
+		}
+
+		// Case: DocumentNo special field not be readonly
+		final String columnName = gridFieldVO.getColumnName();
+		if(getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
+		{
+			return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
+		}
 
 		if (gridFieldVO.isReadOnly())
 		{
 			return ILogicExpression.TRUE;
 		}
 
-		if (gridFieldVO.isVirtualColumn())
-		{
-			return ILogicExpression.TRUE;
-		}
 
-		if (gridFieldVO.isKey())
-		{
-			return ILogicExpression.TRUE;
-		}
-
-		final String columnName = gridFieldVO.getColumnName();
 		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
 			// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
