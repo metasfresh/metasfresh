@@ -8,7 +8,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
@@ -66,6 +65,7 @@ public final class DocumentPath
 	private final DocumentId singleRowId;
 
 	private transient Integer _hashcode; // lazy
+	private transient String _toString; // lazy
 
 	private DocumentPath(final int adWindowId, final DocumentId documentId)
 	{
@@ -115,13 +115,27 @@ public final class DocumentPath
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("AD_Window_ID", adWindowId)
-				.add("documentId", documentId)
-				.add("detailId", detailId)
-				.add("rowIds", rowIds)
-				.toString();
+		if (_toString == null)
+		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append("/W").append(adWindowId).append("/").append(documentId);
+			if (detailId != null)
+			{
+				sb.append("/T").append(detailId);
+			}
+
+			if (singleRowId != null)
+			{
+				sb.append("/R").append(singleRowId);
+			}
+			else if (!rowIds.isEmpty())
+			{
+				sb.append("/R").append(rowIds);
+			}
+
+			_toString = sb.toString();
+		}
+		return _toString;
 	}
 
 	@Override
@@ -179,7 +193,7 @@ public final class DocumentPath
 
 	public DocumentId getSingleRowId()
 	{
-		if(singleRowId == null)
+		if (singleRowId == null)
 		{
 			throw new InvalidDocumentPathException(this, "There is no single rowId");
 		}
@@ -225,7 +239,7 @@ public final class DocumentPath
 
 		return rowIds.isEmpty();
 	}
-	
+
 	public boolean hasIncludedDocuments()
 	{
 		if (detailId == null)
@@ -255,7 +269,6 @@ public final class DocumentPath
 	{
 		private int adWindowId;
 		private DocumentId documentId;
-		private boolean documentId_allowNull = false;
 		private boolean documentId_allowNew = false;
 		private String detailId;
 		private final Set<DocumentId> rowIds = new LinkedHashSet<>();
@@ -281,7 +294,7 @@ public final class DocumentPath
 
 			//
 			// Validate documentId
-			if (!documentId_allowNull && documentId == null)
+			if (documentId == null)
 			{
 				throw new InvalidDocumentPathException("id cannot be null");
 			}
@@ -334,12 +347,6 @@ public final class DocumentPath
 		public Builder setDocumentId(final String documentIdStr)
 		{
 			documentId = DocumentId.fromNullable(documentIdStr);
-			return this;
-		}
-
-		public Builder allowNullDocumentId()
-		{
-			documentId_allowNull = true;
 			return this;
 		}
 
