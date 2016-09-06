@@ -67,8 +67,67 @@ class Table extends Component {
       }
     }
 
-    handleKeyDown = (event) => {
-      console.log('keydown');
+    handleKeyDown = (e) => {
+
+        const {rowData, tabid} = this.props;
+        const item = rowData[tabid];
+        const {selected} = this.state;
+        console.log(selected);
+
+
+        const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+
+        if(actualId > 0 ){
+            let newId = actualId-1;
+            this.state.selected = [Object.keys(rowData[tabid])[newId]];
+            // this.deselectAllProducts();
+            // this.selectProduct(Object.keys(rowData[tabid])[newId]);
+        }
+        
+
+
+
+
+        switch(e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+                console.log("key down");
+
+
+                // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+
+                // if(actualId > 0 ){
+                //     let newId = actualId-1;
+                //     this.state.selected = [Object.keys(rowData[tabid])[newId]];
+                //     // this.deselectAllProducts();
+                //     // this.selectProduct(Object.keys(rowData[tabid])[newId]);
+                // }
+
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                console.log("key up");
+
+                // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+
+                // if(actualId > 0 ){
+                //     let newId = actualId-1;
+                //     this.deselectAllProducts();
+                //     // this.selectProduct(Object.keys(rowData[tabid])[newId]);
+                // }
+
+
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                console.log("key left");
+                break;
+            case "ArrowRight":
+                e.preventDefault();
+                console.log("key right");
+                break;
+        }
+      
     }
 
     closeContextMenu = (event) => {
