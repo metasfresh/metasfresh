@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.34.33 (2016-36)
+# metasfresh 4.x.x (2016-37)
 
 upcoming
+
+# metasfresh 4.34.33 (2016-36)
+
+RC for this week
 
 ## Features
 * #297 Performance problems related to zoom-to
