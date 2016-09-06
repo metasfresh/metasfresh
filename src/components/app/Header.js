@@ -24,13 +24,6 @@ class Header extends Component {
             indicator: 'saved'
         }
     }
-    changeState = () => {
-      if(this.props.indicator == 'saved') {
-        this.props.dispatch(indicatorState('pending'));
-      } else {
-        this.props.dispatch(indicatorState('saved'));
-      }
-    }
 
     handleSubheaderOpen = () => {
         if(this.state.isSubheaderShow){
@@ -55,7 +48,7 @@ class Header extends Component {
         const {isSubheaderShow, isOrderListShow, indicator} = this.state;
 
         return (
-            <div onClick={(e) => this.changeState(e)}>
+            <div>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
                 <nav className="header header-super-faded">
                     <div className="container">
