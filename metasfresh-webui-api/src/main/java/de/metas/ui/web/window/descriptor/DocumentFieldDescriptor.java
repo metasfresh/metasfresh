@@ -351,8 +351,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			{
 				if (String.class == fromType)
 				{
+					final String valueStr = (String)value;
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)new BigDecimal((String)value);
+					final T valueConv = (T)(valueStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(valueStr));
 					return valueConv;
 				}
 				else if (Integer.class == fromType || int.class == fromType)
