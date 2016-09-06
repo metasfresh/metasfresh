@@ -2,8 +2,6 @@ package de.metas.ui.web.window.model;
 
 import java.util.Objects;
 
-import com.google.common.base.MoreObjects;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -33,6 +31,11 @@ public final class DocumentValidStatus
 		return STATE_InitialInvalid;
 	}
 
+	public static final DocumentValidStatus staled()
+	{
+		return STATE_Staled;
+	}
+
 	public static final DocumentValidStatus valid()
 	{
 		return STATE_Valid;
@@ -44,11 +47,13 @@ public final class DocumentValidStatus
 	}
 
 	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, "not validated yet");
+	private static final DocumentValidStatus STATE_Staled = new DocumentValidStatus(false, "staled");
 	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null);
 
 	private final boolean valid;
 	private final String reason;
 	private transient Integer _hashcode;
+	private transient String _toString;
 
 	private DocumentValidStatus(final boolean valid, final String reason)
 	{
@@ -60,11 +65,17 @@ public final class DocumentValidStatus
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("valid", valid)
-				.add("reason", reason)
-				.toString();
+		if (_toString == null)
+		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append(valid ? "Valid" : "Invalid");
+			if (reason != null && !reason.isEmpty())
+			{
+				sb.append("('").append(reason).append("')");
+			}
+			_toString = sb.toString();
+		}
+		return _toString;
 	}
 
 	public String toJson()
@@ -109,12 +120,17 @@ public final class DocumentValidStatus
 	{
 		return reason;
 	}
-	
+
 	public boolean isInitialInvalid()
 	{
 		return this == STATE_InitialInvalid;
 	}
-	
+
+	public boolean isStaled()
+	{
+		return this == STATE_Staled;
+	}
+
 	public boolean isInvalidButNotInitial()
 	{
 		return !isValid() && !isInitialInvalid();
