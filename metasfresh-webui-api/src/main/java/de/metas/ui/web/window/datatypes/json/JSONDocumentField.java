@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,6 +16,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.DocumentFieldChange;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 
@@ -74,14 +77,14 @@ public final class JSONDocumentField implements Serializable
 
 		return jsonField;
 	}
-	
+
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
 		return new JSONDocumentField(FIELD_VALUE_ID)
 				.setValue(jsonValue, reason);
 	}
-	
+
 	public static final JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
 	{
 		final String reason = null; // N/A
@@ -95,31 +98,31 @@ public final class JSONDocumentField implements Serializable
 
 		if (event.isValueSet())
 		{
-			jsonField.setValue(event.getValueAsJsonObject(), event.getValueReason());
+			jsonField.setValue(event.getValueAsJsonObject(), ReasonSupplier.toDebugString(event.getValueReason()));
 		}
 
-		final Boolean readonly = event.getReadonly();
+		final LogicExpressionResult readonly = event.getReadonly();
 		if (readonly != null)
 		{
-			jsonField.setReadonly(readonly, event.getValueReason());
+			jsonField.setReadonly(readonly.booleanValue(), ReasonSupplier.toDebugString(event.getReadonlyReason()));
 		}
 
-		final Boolean mandatory = event.getMandatory();
+		final LogicExpressionResult mandatory = event.getMandatory();
 		if (mandatory != null)
 		{
-			jsonField.setMandatory(mandatory, event.getMandatoryReason());
+			jsonField.setMandatory(mandatory.booleanValue(), ReasonSupplier.toDebugString(event.getMandatoryReason()));
 		}
 
-		final Boolean displayed = event.getDisplayed();
+		final LogicExpressionResult displayed = event.getDisplayed();
 		if (displayed != null)
 		{
-			jsonField.setDisplayed(displayed, event.getDisplayedReason());
+			jsonField.setDisplayed(displayed.booleanValue(), ReasonSupplier.toDebugString(event.getDisplayedReason()));
 		}
 
 		final Boolean lookupValuesStale = event.getLookupValuesStale();
 		if (lookupValuesStale != null)
 		{
-			jsonField.setLookupValuesStale(lookupValuesStale, event.getLookupValuesStaleReason());
+			jsonField.setLookupValuesStale(lookupValuesStale, ReasonSupplier.toDebugString(event.getLookupValuesStaleReason()));
 		}
 
 		jsonField.putDebugProperties(event.getDebugProperties());

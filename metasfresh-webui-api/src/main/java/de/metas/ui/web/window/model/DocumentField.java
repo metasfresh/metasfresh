@@ -54,9 +54,14 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	// State
 	private Object _initialValue;
 	private Object _value;
-	private LogicExpressionResult _mandatory = LogicExpressionResult.FALSE;
-	private LogicExpressionResult _readonly = LogicExpressionResult.FALSE;
-	private LogicExpressionResult _displayed = LogicExpressionResult.FALSE;
+
+	private static final LogicExpressionResult MANDATORY_InitialValue = LogicExpressionResult.namedConstant("mandatory-initial", false);
+	private LogicExpressionResult _mandatory = MANDATORY_InitialValue;
+	private static final LogicExpressionResult READONLY_InitialValue = LogicExpressionResult.namedConstant("readonly-initial", false);
+	private LogicExpressionResult _readonly = READONLY_InitialValue;
+	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
+	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
+
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
@@ -150,15 +155,31 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	 */
 	/* package */ void setInitialValue(final Object value)
 	{
-		final Object valueConv = convertToValueClass(value);
-		_initialValue = valueConv;
-		_value = valueConv;
+		final Object valueNew = convertToValueClass(value);
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("Set {}'s initial value: {}", getFieldName(), valueConv);
+			logger.trace("setInitialValue: {} = {}", getFieldName(), valueNew);
 		}
+		_initialValue = valueNew;
 
-		updateValid();
+		//
+		// Update the current value too, if needed
+		final Object valueOld = _value;
+		if (DataTypes.equals(valueNew, valueOld))
+		{
+			return;
+		}
+		_value = valueNew;
+
+		//
+		// Set valid state to Staled
+		final DocumentValidStatus validOld = _valid;
+		final DocumentValidStatus validNew = DocumentValidStatus.staled();
+		_valid = validNew;
+		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
+		{
+			logger.debug("setInitialValue: {}: {} <- {}", getFieldName(), validNew, validOld);
+		}
 	}
 
 	/* package */void setValue(final Object value)
@@ -174,7 +195,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		_value = valueNew;
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("Changed {}'s value: {} -> {}", getFieldName(), valueOld, valueNew);
+			logger.trace("setValue: {} = {} <- {}", getFieldName(), valueNew, valueOld);
 		}
 
 		updateValid();
@@ -238,20 +259,26 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _mandatory.booleanValue();
 	}
 
-	/* package */ LogicExpressionResult getMandatory()
+	@Override
+	public LogicExpressionResult getMandatory()
 	{
 		return _mandatory;
 	}
 
 	/* package */ void setMandatory(final LogicExpressionResult mandatory)
 	{
-		if (_mandatory.valueEquals(mandatory))
+		if (mandatory == null)
 		{
-			return;
+			throw new NullPointerException("mandatory");
 		}
 
+		final LogicExpressionResult mandatoryOld = _mandatory;
 		_mandatory = mandatory;
-		updateValid();
+		
+		if (!mandatoryOld.equalsByValue(mandatory))
+		{
+			updateValid();
+		}
 	}
 
 	@Override
@@ -260,13 +287,18 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _readonly.booleanValue();
 	}
 
-	/* package */ LogicExpressionResult getReadonly()
+	@Override
+	public LogicExpressionResult getReadonly()
 	{
 		return _readonly;
 	}
 
 	/* package */void setReadonly(final LogicExpressionResult readonly)
 	{
+		if (readonly == null)
+		{
+			throw new NullPointerException("readonly");
+		}
 		_readonly = readonly;
 	}
 
@@ -276,13 +308,18 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _displayed.booleanValue();
 	}
 
-	/* package */LogicExpressionResult getDisplayed()
+	@Override
+	public LogicExpressionResult getDisplayed()
 	{
 		return _displayed;
 	}
 
 	/* package */void setDisplayed(final LogicExpressionResult displayed)
 	{
+		if (displayed == null)
+		{
+			throw new NullPointerException("displayed");
+		}
 		_displayed = displayed;
 	}
 
@@ -349,20 +386,28 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	{
 		final DocumentValidStatus validOld = _valid;
 		final DocumentValidStatus validNew = checkValid();
-		if (Objects.equals(validOld, validNew))
+		_valid = validNew;
+
+		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
+		{
+			logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
+		}
+	}
+
+	final void updateValidIfStaled()
+	{
+		if (!_valid.isStaled())
 		{
 			return;
 		}
 
-		_valid = validNew;
-		logger.debug("Changed valid state {}->{} for {}", validOld, validNew, this);
+		updateValid();
 	}
 
 	private final DocumentValidStatus checkValid()
 	{
 		if (isMandatory() && getValue() == null)
 		{
-			logger.debug("Not valid because mandatory field is not filled: {}", this);
 			return DocumentValidStatus.invalidMandatoryFieldNotFilled(getFieldName());
 		}
 

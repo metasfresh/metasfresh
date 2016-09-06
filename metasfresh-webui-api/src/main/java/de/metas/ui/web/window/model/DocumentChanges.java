@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -106,79 +108,29 @@ public final class DocumentChanges
 		return ImmutableList.copyOf(fieldChangesByName.values());
 	}
 
-	private static final String extractReason(final ReasonSupplier reasonSupplier)
-	{
-		if (reasonSupplier == null)
-		{
-			return null;
-		}
-
-		// Extract the reason only if debugging is enabled
-		if (!WindowConstants.isProtocolDebugging())
-		{
-			return null;
-		}
-
-		return reasonSupplier.get();
-	}
-
-	private static final String mergeReasons(final ReasonSupplier reason, final String previousReason)
-	{
-		final Object previousValue = null;
-		return mergeReasons(reason, previousReason, previousValue);
-	}
-
-	private static final String mergeReasons(final ReasonSupplier reasonSupplier, final String previousReason, final Object previousValue)
-	{
-		// Collect the reason only if debugging is enabled
-		if (!WindowConstants.isProtocolDebugging())
-		{
-			return null;
-		}
-
-		final String reason = reasonSupplier == null ? null : reasonSupplier.get();
-		if (previousReason == null && previousValue == null)
-		{
-			return reason;
-		}
-
-		final StringBuilder reasonNew = new StringBuilder();
-		reasonNew.append(reason == null ? "unknown reason" : reason);
-
-		if (previousReason != null)
-		{
-			reasonNew.append(" | previous reason: ").append(previousReason);
-		}
-		if (previousValue != null)
-		{
-			reasonNew.append(" | previous value: ").append(previousValue);
-		}
-		return reasonNew.toString();
-	}
-
 	/* package */ void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		fieldChangesOf(documentField).setValue(documentField.getValue(), extractReason(reason));
+		fieldChangesOf(documentField).setValue(documentField.getValue(), reason);
 	}
 
 	/* package */ void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		fieldChangesOf(documentField).setReadonly(documentField.isReadonly(), extractReason(reason));
+		fieldChangesOf(documentField).setReadonly(documentField.getReadonly(), reason);
 	}
 
 	/* package */ void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		fieldChangesOf(documentField).setMandatory(documentField.isMandatory(), extractReason(reason));
+		fieldChangesOf(documentField).setMandatory(documentField.getMandatory(), reason);
 	}
 
 	/* package */ void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		fieldChangesOf(documentField).setDisplayed(documentField.isDisplayed(), extractReason(reason));
+		fieldChangesOf(documentField).setDisplayed(documentField.getDisplayed(), reason);
 	}
 
 	/* package */ void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
 	{
-		fieldChangesOf(documentField).setLookupValuesStale(true, extractReason(reason));
+		fieldChangesOf(documentField).setLookupValuesStale(true, reason);
 	}
 
 	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
@@ -226,7 +178,7 @@ public final class DocumentChanges
 		if (!toEvent.isValueSet())
 		{
 			final Object value = documentField.getValue();
-			toEvent.setValue(value, extractReason(reason));
+			toEvent.setValue(value, reason);
 		}
 		else
 		{
@@ -234,35 +186,39 @@ public final class DocumentChanges
 			final Object previousValue = toEvent.getValue();
 			if (!DataTypes.equals(value, previousValue))
 			{
-				toEvent.setValue(value, mergeReasons(reason, toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue));
+				final ReasonSupplier reasonNew = reason.addPreviousReason(toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue);
+				toEvent.setValue(value, reasonNew);
 				collected = true;
 			}
 		}
 
 		//
 		// Readonly
-		final boolean readonly = documentField.isReadonly();
-		if (!DataTypes.equals(readonly, toEvent.getReadonly()))
+		final LogicExpressionResult readonly = documentField.getReadonly();
+		if (!readonly.equals(toEvent.getReadonly()))
 		{
-			toEvent.setReadonly(readonly, mergeReasons(reason, toEvent.getReadonlyReason()));
+			final ReasonSupplier reasonNew = reason.add("readonly", readonly).addPreviousReason(toEvent.getReadonlyReason());
+			toEvent.setReadonly(readonly, reasonNew);
 			collected = true;
 		}
 
 		//
 		// Mandatory
-		final boolean mandatory = documentField.isMandatory();
-		if (!DataTypes.equals(mandatory, toEvent.getMandatory()))
+		final LogicExpressionResult mandatory = documentField.getMandatory();
+		if (!mandatory.equals(toEvent.getMandatory()))
 		{
-			toEvent.setMandatory(mandatory, mergeReasons(reason, toEvent.getMandatoryReason()));
+			final ReasonSupplier reasonNew = reason.add("mandatory", mandatory).addPreviousReason(toEvent.getMandatoryReason());
+			toEvent.setMandatory(mandatory, reasonNew);
 			collected = true;
 		}
 
 		//
 		// Displayed
-		final boolean displayed = documentField.isDisplayed();
-		if (!DataTypes.equals(displayed, toEvent.getDisplayed()))
+		final LogicExpressionResult displayed = documentField.getDisplayed();
+		if (!displayed.equals(toEvent.getDisplayed()))
 		{
-			toEvent.setDisplayed(displayed, mergeReasons(reason, toEvent.getDisplayedReason()));
+			final ReasonSupplier reasonNew = reason.add("displayed", displayed).addPreviousReason(toEvent.getDisplayedReason());
+			toEvent.setDisplayed(displayed, reasonNew);
 			collected = true;
 		}
 

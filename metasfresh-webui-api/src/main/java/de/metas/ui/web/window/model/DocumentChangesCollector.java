@@ -4,10 +4,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
@@ -95,24 +98,65 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectValueIfChanged(final IDocumentFieldView documentField, final Object valueOld, final ReasonSupplier reason)
 	{
+		// If there is no change, don't collect the value
+		final Object valueNew = documentField.getValue();
+		if (DataTypes.equals(valueOld, valueNew))
+		{
+			return;
+		}
+
 		documentChanges(documentField)
-				.collectReadonlyChanged(documentField, reason);
+				.collectValueChanged(documentField, reason);
 	}
 
 	@Override
-	public void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectReadonlyIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
 	{
+		// If there is no change, don't collect the value
+		final LogicExpressionResult value = documentField.getReadonly();
+		if (value.equalsByNameAndValue(valueOld))
+		{
+			return;
+		}
+
+		final ReasonSupplier reasonNew = reason.add("readonly", value);
+
 		documentChanges(documentField)
-				.collectMandatoryChanged(documentField, reason);
+				.collectReadonlyChanged(documentField, reasonNew);
 	}
 
 	@Override
-	public void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectMandatoryIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
 	{
+		// If there is no change, don't collect the value
+		final LogicExpressionResult value = documentField.getMandatory();
+		if (value.equalsByNameAndValue(valueOld))
+		{
+			return;
+		}
+
+		final ReasonSupplier reasonNew = reason.add("mandatory", value);
+
 		documentChanges(documentField)
-				.collectDisplayedChanged(documentField, reason);
+				.collectMandatoryChanged(documentField, reasonNew);
+	}
+
+	@Override
+	public void collectDisplayedIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
+	{
+		// If there is no change, don't collect the value
+		final LogicExpressionResult value = documentField.getDisplayed();
+		if (value.equalsByNameAndValue(valueOld))
+		{
+			return;
+		}
+
+		final ReasonSupplier reasonNew = reason.add("displayed", value);
+
+		documentChanges(documentField)
+				.collectDisplayedChanged(documentField, reasonNew);
 	}
 
 	@Override

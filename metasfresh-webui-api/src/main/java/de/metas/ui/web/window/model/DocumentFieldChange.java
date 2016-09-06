@@ -3,12 +3,17 @@ package de.metas.ui.web.window.model;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -45,6 +50,8 @@ public final class DocumentFieldChange
 		return new DocumentFieldChange(fieldName, key, publicField, advancedField);
 	}
 
+	private static final Logger logger = LogManager.getLogger(DocumentFieldChange.class);
+
 	public static final String DEBUGPROPERTY_FieldInfo = "field-info";
 
 	private final String fieldName;
@@ -57,19 +64,19 @@ public final class DocumentFieldChange
 	//
 	private boolean valueSet;
 	private Object value;
-	private String valueReason;
+	private ReasonSupplier valueReason;
 	//
-	private Boolean readonly;
-	private String readonlyReason;
+	private LogicExpressionResult readonly;
+	private ReasonSupplier readonlyReason;
 	//
-	private Boolean mandatory;
-	private String mandatoryReason;
+	private LogicExpressionResult mandatory;
+	private ReasonSupplier mandatoryReason;
 	//
-	private Boolean displayed;
-	private String displayedReason;
+	private LogicExpressionResult displayed;
+	private ReasonSupplier displayedReason;
 	//
 	private Boolean lookupValuesStale;
-	private String lookupValuesStaleReason;
+	private ReasonSupplier lookupValuesStaleReason;
 
 	private Map<String, Object> debugProperties;
 
@@ -148,11 +155,16 @@ public final class DocumentFieldChange
 		return advancedField;
 	}
 
-	/* package */void setValue(final Object value, final String reason)
+	/* package */void setValue(final Object value, final ReasonSupplier reason)
 	{
 		valueSet = true;
 		this.value = value;
 		valueReason = reason;
+
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("collect {} value: {} -- {}", fieldName, value, reason == null ? null : reason.get());
+		}
 	}
 
 	public boolean isValueSet()
@@ -170,57 +182,69 @@ public final class DocumentFieldChange
 		return Values.valueToJsonObject(value);
 	}
 
-	public String getValueReason()
+	public ReasonSupplier getValueReason()
 	{
 		return valueReason;
 	}
 
-	public Boolean getReadonly()
+	public LogicExpressionResult getReadonly()
 	{
 		return readonly;
 	}
 
-	public String getReadonlyReason()
+	public ReasonSupplier getReadonlyReason()
 	{
 		return readonlyReason;
 	}
 
-	/* package */void setReadonly(final Boolean readonly, final String reason)
+	/* package */void setReadonly(final LogicExpressionResult readonly, final ReasonSupplier reason)
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("collect {} readonly: {} -- {}", fieldName, readonly, reason == null ? null : reason.get());
+		}
 	}
 
-	public Boolean getMandatory()
+	public LogicExpressionResult getMandatory()
 	{
 		return mandatory;
 	}
 
-	public String getMandatoryReason()
+	public ReasonSupplier getMandatoryReason()
 	{
 		return mandatoryReason;
 	}
 
-	/* package */void setMandatory(final Boolean mandatory, final String reason)
+	/* package */void setMandatory(final LogicExpressionResult mandatory, final ReasonSupplier reason)
 	{
 		this.mandatory = mandatory;
 		mandatoryReason = reason;
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("collect {} mandatory: {} -- {}", fieldName, mandatory, reason == null ? null : reason.get());
+		}
 	}
 
-	public Boolean getDisplayed()
+	public LogicExpressionResult getDisplayed()
 	{
 		return displayed;
 	}
 
-	public String getDisplayedReason()
+	public ReasonSupplier getDisplayedReason()
 	{
 		return displayedReason;
 	}
 
-	/* package */void setDisplayed(final Boolean displayed, final String reason)
+	/* package */void setDisplayed(final LogicExpressionResult displayed, final ReasonSupplier reason)
 	{
 		this.displayed = displayed;
 		displayedReason = reason;
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("collect {} displayed: {} -- {}", fieldName, displayed, reason == null ? null : reason.get());
+		}
 	}
 
 	public Boolean getLookupValuesStale()
@@ -228,15 +252,16 @@ public final class DocumentFieldChange
 		return lookupValuesStale;
 	}
 
-	public String getLookupValuesStaleReason()
+	public ReasonSupplier getLookupValuesStaleReason()
 	{
 		return lookupValuesStaleReason;
 	}
 
-	/* package */void setLookupValuesStale(final Boolean lookupValuesStale, final String reason)
+	/* package */void setLookupValuesStale(final Boolean lookupValuesStale, final ReasonSupplier reason)
 	{
 		this.lookupValuesStale = lookupValuesStale;
 		lookupValuesStaleReason = reason;
+		logger.trace("collect {} lookupValuesStale: {} -- {}", fieldName, lookupValuesStale, lookupValuesStaleReason);
 	}
 
 	/* package */ void mergeFrom(final DocumentFieldChange fromEvent)

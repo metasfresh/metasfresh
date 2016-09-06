@@ -3,6 +3,9 @@ package de.metas.ui.web.window.model;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
@@ -31,39 +34,92 @@ public interface IDocumentChangesCollector
 {
 	Set<String> getFieldNames(DocumentPath documentPath);
 
-//	List<DocumentFieldChangedEvent> toEventsList();
 	Map<DocumentPath, DocumentChanges> getDocumentChangesByPath();
 
 	void collectValueChanged(IDocumentFieldView documentField, ReasonSupplier reason);
 
-	void collectReadonlyChanged(IDocumentFieldView documentField, ReasonSupplier reason);
+	void collectValueIfChanged(IDocumentFieldView documentField, final Object valueOld, ReasonSupplier reason);
 
-	void collectMandatoryChanged(IDocumentFieldView documentField, ReasonSupplier reason);
+	void collectReadonlyIfChanged(IDocumentFieldView documentField, LogicExpressionResult valueOld, ReasonSupplier reason);
 
-	void collectDisplayedChanged(IDocumentFieldView documentField, ReasonSupplier reason);
+	void collectMandatoryIfChanged(IDocumentFieldView documentField, LogicExpressionResult valueOld, ReasonSupplier reason);
+
+	void collectDisplayedIfChanged(IDocumentFieldView documentField, LogicExpressionResult valueOld, ReasonSupplier reason);
 
 	void collectLookupValuesStaled(IDocumentFieldView documentField, ReasonSupplier reason);
 
 	void collectFrom(IDocumentChangesCollector fromCollector);
-	
+
 	/**
 	 * Collect changes from given document (only those which were not yet collected).
-	 * 
+	 *
 	 * @param fromCollector
 	 * @return true if something was collected
 	 */
 	boolean collectFrom(Document document, ReasonSupplier reason);
-	
+
 	void collectDocumentValidStatusChanged(DocumentPath documentPath, DocumentValidStatus documentValidStatus);
 
 	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
 
 	@FunctionalInterface
-	interface ReasonSupplier
+	public interface ReasonSupplier
 	{
 		/**
 		 * @return actual reason string
 		 */
 		String get();
+
+		default ReasonSupplier add(final String name, final Object value)
+		{
+			return () -> this.get() + " | " + name + "=" + value;
+		}
+
+		default ReasonSupplier addPreviousReason(final ReasonSupplier previousReason)
+		{
+			final Object previousValue = null;
+			return addPreviousReason(previousReason, previousValue);
+		}
+
+		default ReasonSupplier addPreviousReason(final ReasonSupplier previousReason, final Object previousValue)
+		{
+			if (previousReason == null && previousValue == null)
+			{
+				return this;
+			}
+
+			return () -> {
+				final String reason = this.get();
+				final StringBuilder reasonNew = new StringBuilder();
+				reasonNew.append(reason == null ? "unknown reason" : reason);
+
+				if (previousReason != null)
+				{
+					reasonNew.append(" | previous reason: ").append(previousReason);
+				}
+				if (previousValue != null)
+				{
+					reasonNew.append(" | previous value: ").append(previousValue);
+				}
+				return reasonNew.toString();
+			};
+		}
+
+		static String toDebugString(final ReasonSupplier reasonSupplier)
+		{
+			if (reasonSupplier == null)
+			{
+				return null;
+			}
+
+			// Extract the reason only if debugging is enabled
+			if (!WindowConstants.isProtocolDebugging())
+			{
+				return null;
+			}
+
+			return reasonSupplier.get();
+		}
+
 	}
 }

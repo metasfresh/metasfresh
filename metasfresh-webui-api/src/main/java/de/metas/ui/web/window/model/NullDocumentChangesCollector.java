@@ -3,6 +3,8 @@ package de.metas.ui.web.window.model;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -58,19 +60,25 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
-	public void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectValueIfChanged(final IDocumentFieldView documentField, final Object valueOld, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectReadonlyIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
 	{
 		// do nothing
 	}
 
 	@Override
-	public void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	public void collectMandatoryIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
+	{
+		// do nothing
+	}
+
+	@Override
+	public void collectDisplayedIfChanged(final IDocumentFieldView documentField, final LogicExpressionResult valueOld, final ReasonSupplier reason)
 	{
 		// do nothing
 	}

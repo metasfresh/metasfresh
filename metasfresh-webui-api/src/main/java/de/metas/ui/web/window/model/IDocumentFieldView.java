@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
@@ -48,8 +50,14 @@ public interface IDocumentFieldView
 
 	//@formatter:off
 	boolean isReadonly();
+	LogicExpressionResult getReadonly();
+	//
 	boolean isMandatory();
+	LogicExpressionResult getMandatory();
+	//
 	boolean isDisplayed();
+	LogicExpressionResult getDisplayed();
+	//
 	boolean isLookupValuesStale();
 	/** @return true if this field is public and will be published to API clients */
 	boolean isPublicField();
