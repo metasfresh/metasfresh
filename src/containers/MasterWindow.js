@@ -55,6 +55,7 @@ class MasterWindow extends Component {
                     data={master.data}
                     layout={master.layout}
                     rowData={master.rowData}
+                    dataId={dataId}
                 />
             </div>
         );

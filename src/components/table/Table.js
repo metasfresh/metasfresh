@@ -184,18 +184,6 @@ class Table extends Component {
 
     render() {
         const {cols, type, docId, rowData, tabid} = this.props;
-        const buttonLayout = {
-            fields: [{
-                field: "example"
-            }],
-            rowId: 'NEW',
-            tabId: 1,
-            dataId: docId
-        }
-        const buttonData = {
-            displayed: true,
-            value: {"P": "New order line"}
-        }
 
         return (
             <div className="row">
@@ -230,16 +218,6 @@ class Table extends Component {
 
                         {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
-                    {/* Temporary button for adding new row*/}
-                        <Widget
-                            widgetType="Button"
-                            windowType={143}
-                            widgetData={[buttonData]}
-                            type={"primary"}
-                            noLabel={true}
-                            key={'tmpButton'}
-                            {...buttonLayout}
-                        />
                 </div>
             </div>
         )

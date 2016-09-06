@@ -199,7 +199,6 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
-            console.log(response.data)
             dispatch(mapDataToState(response.data, isModal, rowId));
         })
     }
@@ -209,10 +208,10 @@ function mapDataToState(data, isModal, rowId){
     return dispatch => {
         data.map(item1 => {
             if(rowId === "NEW"){
-                dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
+                dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
             }else{
                 item1.fields.map(item2 => {
-                    if(rowId){
+                    if(rowId && !isModal){
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
                     }else{
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
@@ -226,7 +225,10 @@ function mapDataToState(data, isModal, rowId){
 export function updateProperty(property, value, tabid, rowid, isModal){
     return dispatch => {
         if( tabid && rowid ){
-            dispatch(updateRowProperty(property, value, tabid, rowid, getScope(isModal)))
+            dispatch(updateRowProperty(property, value, tabid, rowid, "master"))
+            if(isModal){
+                dispatch(updateDataProperty(property, value, "modal"))
+            }
         }else{
             dispatch(updateDataProperty(property, value, getScope(isModal)))
         }

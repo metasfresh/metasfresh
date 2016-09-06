@@ -137,6 +137,8 @@ class Lookup extends Component {
                     property: propertiesKeys[i]
                 }));
                 break;
+            }else{
+                this.handleBlur();
             }
         }
     }

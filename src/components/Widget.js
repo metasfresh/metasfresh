@@ -17,15 +17,19 @@ class Widget extends Component {
         super(props);
     }
     handlePatch = (property, value) => {
-        const {isModal, widgetType, widgetData,dataId, windowType, dispatch, rowId, tabId, onChange} = this.props;
+        const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId} = this.props;
+        let currRowId = rowId;
+
+        if(rowId === "NEW"){
+            currRowId = relativeDocId;
+        }
 
         //check if we should update store
         //except button value
         if(widgetType !== "Button" && !widgetData[0].value !== value){
-            dispatch(updateProperty(property, value, tabId, rowId, isModal));
+            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
-        console.log("PATCH " + tabId + " " + rowId)
-        return dispatch(patch(windowType, dataId, tabId, rowId, property, value, isModal));
+        return dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
 
         //callback
         if(onChange){
@@ -38,9 +42,15 @@ class Widget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal} = this.props;
+        const {dispatch, tabId, rowId, isModal, relativeDocId} = this.props;
+        let currRowId = rowId;
+
+        if(rowId === "NEW"){
+            currRowId = relativeDocId;
+        }
+
         e.preventDefault();
-        dispatch(updateProperty(property, e.target.value, tabId, rowId, isModal));
+        dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){
