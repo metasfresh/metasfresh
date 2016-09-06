@@ -239,6 +239,11 @@ public final class JSONFilteringOptions
 		return adLanguage;
 	}
 	
+	public boolean isShowAdvancedFields()
+	{
+		return showAdvancedFields;
+	}
+	
 	public boolean isDebugShowColumnNamesForCaption()
 	{
 		return debugShowColumnNamesForCaption;

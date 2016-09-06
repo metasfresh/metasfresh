@@ -103,7 +103,17 @@ public final class JSONDocumentLayout implements Serializable
 		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonFilteringOpts);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonFilteringOpts);
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
-		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
+
+		if (jsonFilteringOpts.isShowAdvancedFields())
+		{
+			tabs = ImmutableList.of();
+			putDebugProperty("tabs-info", "not showing tabs when showing advanced fields");
+		}
+		else
+		{
+			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
+		}
+
 		filters = JSONDocumentQueryFilterDescriptor.ofList(layout.getFilters(), jsonFilteringOpts.getAD_Language());
 
 		if (WindowConstants.isProtocolDebugging())
@@ -143,7 +153,8 @@ public final class JSONDocumentLayout implements Serializable
 	 * @param sideListLayout
 	 * @param jsonFilteringOpts
 	 */
-	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters,
+			final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		type = String.valueOf(adWindowId);

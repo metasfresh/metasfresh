@@ -110,13 +110,13 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
-				.setShowAdvancedFields(advanced)
-				.build();
-
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
+
+		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
+				.setShowAdvancedFields(advanced)
+				.build();
 
 		if (Strings.isNullOrEmpty(detailId))
 		{
