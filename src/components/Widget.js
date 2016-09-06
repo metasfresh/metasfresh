@@ -276,9 +276,9 @@ class Widget extends Component {
                         }>
                         <input
                             type="checkbox"
-                            value={data[0].value}
+                            checked={data[0].value}
                             disabled={data[0].readonly}
-                            onClick={(e) => this.handlePatch(fields[0].field, e.target.checked)}
+                            onChange={(e) => this.handlePatch(fields[0].field, e.target.checked)}
                         />
                         <div className="input-checkbox-tick"/>
                     </label>
