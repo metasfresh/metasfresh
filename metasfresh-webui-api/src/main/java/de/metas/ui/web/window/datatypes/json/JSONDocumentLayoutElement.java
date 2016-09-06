@@ -96,7 +96,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = element.getDescription(adLanguage);
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
-		fields = JSONDocumentLayoutElementField.ofSet(element.getFields());
+		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonFilteringOpts);
 	}
 
 	@JsonCreator

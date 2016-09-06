@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 
 /*
@@ -57,6 +59,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	private final LookupSource lookupSource;
 	private final FieldType fieldType;
 	private final boolean publicField;
+	
+	private final ITranslatableString emptyText;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
@@ -67,6 +71,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
 		publicField = builder.publicField;
+		this.emptyText = builder.emptyText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyText);
 	}
 
 	@Override
@@ -116,6 +121,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return fieldType;
 	}
 	
+	public String getEmptyText(final String adLanguage)
+	{
+		return emptyText.translate(adLanguage);
+	}
+	
 	public boolean isPublicField()
 	{
 		return publicField;
@@ -129,6 +139,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private final String fieldName;
 		private LookupSource lookupSource;
 		private FieldType fieldType;
+		private ITranslatableString emptyText;
 		private boolean publicField = true;
 		private boolean consumed = false;
 
@@ -213,6 +224,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		public boolean isConsumed()
 		{
 			return consumed;
+		}
+		
+		public Builder setEmptyText(ITranslatableString emptyText)
+		{
+			this.emptyText = emptyText;
+			return this;
 		}
 	}
 }

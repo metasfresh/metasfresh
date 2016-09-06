@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -107,6 +109,15 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class);
 		DEFAULT_VALUE_EXPRESSION_NextLineNo = expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IStringExpression.class);
 	}
+
+	// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
+	private static final ITranslatableString HARDCODED_FIELD_EMPTY_TEXT = ImmutableTranslatableString.builder()
+			.setDefaultValue("none")
+			.put("de_DE", "nicht")
+			.put("de_CH", "nicht")
+			.put("en_US", "none")
+			.put("en_UK", "none")
+			.build();
 
 	//
 	// Parameters
@@ -1195,6 +1206,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
 				.setInternalName(gridFieldVO.toString())
 				.setLookupSource(extractLookupSource(gridFieldVO))
+				.setEmptyText(HARDCODED_FIELD_EMPTY_TEXT)
 				.setPublicField(publicField);
 
 		logger.trace("Built layout element field for {}: {}", gridFieldVO, layoutElementFieldBuilder);

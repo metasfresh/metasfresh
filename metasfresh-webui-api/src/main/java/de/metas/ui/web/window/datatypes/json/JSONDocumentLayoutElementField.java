@@ -43,16 +43,16 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementField implements Serializable
 {
-	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors)
+	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONFilteringOptions jsonOpts)
 	{
 		return fieldDescriptors.stream()
-				.map(JSONDocumentLayoutElementField::of)
+				.map(fieldDescriptor -> of(fieldDescriptor, jsonOpts))
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutElementField(fieldDescriptor);
+		return new JSONDocumentLayoutElementField(fieldDescriptor, jsonOpts);
 	}
 
 	@ApiModel("field-type")
@@ -117,12 +117,17 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLookupSource source;
 
-	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor)
+	@JsonProperty("emptyText")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String emptyText;
+
+	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 		field = fieldDescriptor.getField();
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
+		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
 	}
 
 	@JsonCreator
@@ -130,12 +135,14 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			@JsonProperty("field") final String field //
 			, @JsonProperty("type") final JSONFieldType type //
 			, @JsonProperty("source") final JSONLookupSource source //
+			, @JsonProperty("emptyText") final String emptyText //
 	)
 	{
 		super();
 		this.field = field;
 		this.type = type;
 		this.source = source;
+		this.emptyText = emptyText;
 	}
 
 	@Override
@@ -146,6 +153,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.add("field", field)
 				.add("type", type)
 				.add("source", source)
+				.add("emptyText", emptyText)
 				.toString();
 	}
 
@@ -162,5 +170,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	public JSONLookupSource getSource()
 	{
 		return source;
+	}
+
+	public String getEmptyText()
+	{
+		return emptyText;
 	}
 }
