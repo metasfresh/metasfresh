@@ -1217,7 +1217,7 @@ public class GridField
 	 */
 	public boolean isSelectionColumn()
 	{
-		return m_vo.IsSelectionColumn;
+		return m_vo.isSelectionColumn();
 	}
 
 	/**

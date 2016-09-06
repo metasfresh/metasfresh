@@ -631,7 +631,7 @@ public class GridFieldVO implements Serializable
 	/**	Storage Encryption	*/
 	public boolean      IsEncryptedColumn = false;
 	/**	Find Selection		*/
-	public boolean		IsSelectionColumn = false;
+	private boolean IsSelectionColumn = false;
 	/**	Order By		*/
 	public int          SortNo = 0;
 	/**	Field Length		*/
@@ -1334,5 +1334,10 @@ public class GridFieldVO implements Serializable
 	public int getSortNo()
 	{
 		return SortNo;
+	}
+	
+	public boolean isSelectionColumn()
+	{
+		return IsSelectionColumn;
 	}
 }
