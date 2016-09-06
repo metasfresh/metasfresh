@@ -29,8 +29,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentSideListView;
 
@@ -236,11 +236,11 @@ public class POJODocumentRepository implements DocumentRepository
 		final int idNew = InterfaceWrapperHelper.getId(model);
 		refresh(document, idNew);
 	}
-	
+
 	private Object retrieveOrCreateModel(final Document document)
 	{
 		final Class<?> modelClass = POJODocumentEntityDataBindingDescriptor.getModelClass(document);
-		
+
 		//
 		// Load the PO / Create new PO instance
 		final Object model;
@@ -260,7 +260,7 @@ public class POJODocumentRepository implements DocumentRepository
 
 		return model;
 	}
-	
+
 	private void setModelValue(final Object model, final IDocumentFieldView documentField)
 	{
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
@@ -293,9 +293,9 @@ public class POJODocumentRepository implements DocumentRepository
 	{
 		return value;
 	}
-	
+
 	@Override
-	public void delete(Document document)
+	public void delete(final Document document)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
@@ -308,9 +308,9 @@ public class POJODocumentRepository implements DocumentRepository
 
 		InterfaceWrapperHelper.delete(model);
 	}
-	
+
 	@Override
-	public List<IDocumentSideListView> retrieveDocumentsSideList(DocumentQuery query)
+	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();

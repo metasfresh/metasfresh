@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.compiere.model.POInfo;
 import org.compiere.util.CtxName;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -151,7 +152,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlTableName;
 	}
-
+	
 	@Override
 	@JsonIgnore
 	public String getTableName()
@@ -169,6 +170,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public int getAD_Table_ID()
 	{
 		return AD_Table_ID;
+	}
+
+	@JsonIgnore
+	public POInfo getPOInfo()
+	{
+		return POInfo.getPOInfo(sqlTableName);
 	}
 
 	public String getSqlKeyColumnName()

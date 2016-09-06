@@ -60,6 +60,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private final List<DocumentLayoutSectionDescriptor> sections;
 	private final Map<String, DocumentLayoutDetailDescriptor> details;
 	private final DocumentLayoutSideListDescriptor sideList;
+	private final List<DocumentQueryFilterDescriptor> filters;
 
 	private final Map<String, String> debugProperties;
 
@@ -73,6 +74,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		sections = ImmutableList.copyOf(builder.buildSections());
 		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideList = builder.getSideList();
+		filters = builder.getFilters();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -115,7 +117,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @param detailId
 	 * @return detail
 	 * @throws DocumentLayoutDetailNotFoundException
@@ -136,6 +138,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return sideList;
 	}
 
+	public List<DocumentQueryFilterDescriptor> getFilters()
+	{
+		return filters;
+	}
+
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
@@ -152,6 +159,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 		private DocumentLayoutSideListDescriptor sideList;
+		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
@@ -192,26 +200,26 @@ public final class DocumentLayoutDescriptor implements Serializable
 					.filter(section -> checkValid(section))
 					.collect(GuavaCollectors.toImmutableList());
 		}
-		
+
 		private boolean checkValid(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
 		{
-			if(sectionBuilder.isInvalid())
+			if (sectionBuilder.isInvalid())
 			{
 				logger.trace("Skip adding {} to {} because it's not valid", sectionBuilder, this);
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		private final boolean checkValid(final DocumentLayoutSectionDescriptor section)
 		{
-			if(!section.hasColumns())
+			if (!section.hasColumns())
 			{
 				logger.trace("Skip adding {} to {} because it does not have columns", section, this);
 				return false;
 			}
-			
+
 			return true;
 		}
 
@@ -304,7 +312,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setSideList(DocumentLayoutSideListDescriptor sideList)
+		public Builder setSideList(final DocumentLayoutSideListDescriptor sideList)
 		{
 			this.sideList = sideList;
 			return this;
@@ -325,6 +333,17 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public Builder setStopwatch(final Stopwatch stopwatch)
 		{
 			this.stopwatch = stopwatch;
+			return this;
+		}
+
+		private List<DocumentQueryFilterDescriptor> getFilters()
+		{
+			return ImmutableList.copyOf(filters);
+		}
+
+		public Builder addFilters(final List<DocumentQueryFilterDescriptor> filters)
+		{
+			this.filters.addAll(filters);
 			return this;
 		}
 	}

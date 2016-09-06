@@ -19,6 +19,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -57,9 +58,10 @@ public final class JSONDocumentLayout implements Serializable
 		return new JSONDocumentLayout(adWindowId, detailLayout, jsonFilteringOpts);
 	}
 
-	public static final JSONDocumentLayout ofSideListLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocumentLayout ofSideListLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters,
+			final JSONFilteringOptions jsonFilteringOpts)
 	{
-		return new JSONDocumentLayout(adWindowId, sideListLayout, jsonFilteringOpts);
+		return new JSONDocumentLayout(adWindowId, sideListLayout, filters, jsonFilteringOpts);
 	}
 
 	/** i.e. AD_Window_ID */
@@ -86,6 +88,10 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> tabs;
 
+	@JsonProperty("filters")
+	@JsonInclude(Include.NON_EMPTY)
+	private final List<JSONDocumentQueryFilterDescriptor> filters;
+
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -98,6 +104,7 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonFilteringOpts);
 		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
 		tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
+		filters = JSONDocumentQueryFilterDescriptor.ofList(layout.getFilters(), jsonFilteringOpts.getAD_Language());
 
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -121,6 +128,7 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = null;
 		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonFilteringOpts);
 		tabs = ImmutableList.of();
+		filters = JSONDocumentQueryFilterDescriptor.ofList(detailLayout.getFilters(), jsonFilteringOpts.getAD_Language());
 
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -135,7 +143,7 @@ public final class JSONDocumentLayout implements Serializable
 	 * @param sideListLayout
 	 * @param jsonFilteringOpts
 	 */
-	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		type = String.valueOf(adWindowId);
@@ -144,6 +152,7 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = null;
 		sections = JSONDocumentLayoutSection.ofSideListLayout(sideListLayout, jsonFilteringOpts);
 		tabs = ImmutableList.of();
+		this.filters = JSONDocumentQueryFilterDescriptor.ofList(filters, jsonFilteringOpts.getAD_Language());
 
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -159,6 +168,7 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
+			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
 	)
 	{
 		super();
@@ -168,6 +178,7 @@ public final class JSONDocumentLayout implements Serializable
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
 		this.tabs = tabs == null ? ImmutableList.of() : ImmutableList.copyOf(tabs);
+		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
 	}
 
 	@Override
@@ -178,6 +189,7 @@ public final class JSONDocumentLayout implements Serializable
 				.add("type", type)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("tabs", tabs.isEmpty() ? null : tabs)
+				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
 	}
 

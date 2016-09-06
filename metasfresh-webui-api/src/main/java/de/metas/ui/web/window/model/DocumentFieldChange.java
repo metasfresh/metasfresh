@@ -8,7 +8,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.window.datatypes.json.JSONValues;
+import de.metas.ui.web.window.datatypes.Values;
 
 /*
  * #%L
@@ -167,7 +167,7 @@ public final class DocumentFieldChange
 
 	public Object getValueAsJsonObject()
 	{
-		return JSONValues.valueToJsonObject(value);
+		return Values.valueToJsonObject(value);
 	}
 
 	public String getValueReason()

@@ -94,6 +94,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
 			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
+			layoutBuilder.addFilters(mainTabFactory.documentFilters());
 
 			// Set special field names
 			final SpecialFieldsCollector specialFieldsCollector = mainTabFactory.getSpecialFieldsCollector();

@@ -39,14 +39,15 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONValues;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentQueryFilter;
+import de.metas.ui.web.window.model.DocumentRepository;
 import de.metas.ui.web.window.model.DocumentSideListView;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentSideListView;
@@ -192,17 +193,18 @@ public class SqlDocumentRepository implements DocumentRepository
 	private final String buildSql(final List<Object> sqlParams, final DocumentQuery query)
 	{
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
+		final POInfo poInfo = entityBinding.getPOInfo();
 
 		final StringBuilder sql = new StringBuilder();
 
 		//
 		// SELECT ... FROM ...
-		final String adLanguage = Env.getAD_Language(Env.getCtx()); // TODO: introduce DocumentRepositoryQuery.getAD_Language() 
+		final String adLanguage = Env.getAD_Language(Env.getCtx()); // TODO: introduce DocumentRepositoryQuery.getAD_Language()
 		sql.append(entityBinding.getSqlSelectAllFrom(adLanguage));
 
 		//
 		// WHERE
-		final String sqlWhereClause = buildSqlWhereClause(sqlParams, query);
+		final String sqlWhereClause = buildSqlWhereClause(sqlParams, query, poInfo);
 		if (!Strings.isNullOrEmpty(sqlWhereClause))
 		{
 			sql.append("\n WHERE ").append(sqlWhereClause);
@@ -215,13 +217,27 @@ public class SqlDocumentRepository implements DocumentRepository
 		{
 			sql.append("\n ORDER BY ").append(sqlOrderBy);
 		}
+		
+		//
+		// LIMIT/OFFSET
+		final int firstRow = query.getFirstRow();
+		if(firstRow > 0)
+		{
+			sql.append("\n OFFSET ").append(firstRow);
+		}
+		final int pageLength = query.getPageLength();
+		if(pageLength > 0)
+		{
+			sql.append("\n LIMIT ").append(pageLength);
+		}
 
 		return sql.toString();
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQuery query)
+	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQuery query, final POInfo poInfo)
 	{
-		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
+		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
@@ -282,7 +298,61 @@ public class SqlDocumentRepository implements DocumentRepository
 			}
 		}
 
+		for (final DocumentQueryFilter filter : query.getFilters())
+		{
+			final String sqlFilter = buildSqlWhereClause(sqlParams, filter, entityDescriptor, poInfo);
+			if (Check.isEmpty(sqlFilter, true))
+			{
+				continue;
+			}
+
+			if (sqlWhereClause.length() > 0)
+			{
+				sqlWhereClause.append("\n AND ");
+			}
+			sqlWhereClause.append(" /* filter */ ( ").append(sqlFilter).append(" )");
+		}
+
 		return sqlWhereClause.toString();
+	}
+
+	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilter filter, final DocumentEntityDescriptor entityDescriptor, final POInfo poInfo)
+	{
+		// FIXME: refactor and introduce DocumentQueryFilter Descriptor and SQL DataBinding
+		// TODO: improve SQL logic
+
+		final String fieldName = filter.getFieldName();
+		final DocumentFieldDescriptor field = entityDescriptor.getField(fieldName);
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.cast(field.getDataBinding());
+
+		final String sqlColumn = fieldBinding.getSqlColumnSql();
+		final String columnName = fieldBinding.getColumnName();
+		final Class<?> targetClass = poInfo.getColumnClass(columnName);
+		final Object sqlValue = convertValueToPO(filter.getValue(), columnName, targetClass);
+		final Object sqlValueTo = convertValueToPO(filter.getValueTo(), columnName, targetClass);
+
+		if (sqlValueTo == null)
+		{
+			if (sqlValue == null)
+			{
+				return "(" + sqlColumn + ") IS NULL";
+			}
+
+			sqlParams.add(sqlValue);
+			return "(" + sqlColumn + ") = ?";
+		}
+		else
+		{
+			if (sqlValue == null)
+			{
+				sqlParams.add(sqlValueTo);
+				return "(" + sqlColumn + ") <= ?";
+			}
+
+			sqlParams.add(sqlValue);
+			sqlParams.add(sqlValueTo);
+			return "(" + sqlColumn + ") BETWEEN ? AND ?";
+		}
 	}
 
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs)
@@ -617,7 +687,8 @@ public class SqlDocumentRepository implements DocumentRepository
 			//
 			// Check if value was changed, compared with PO's current value
 			final Object poValue = po.get_Value(columnName);
-			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, po);
+			final Class<?> poValueClass = poInfo.getColumnClass(columnName);
+			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, poValueClass);
 			if (DataTypes.equals(fieldValueConv, poValue))
 			{
 				logger.trace("Skip setting PO's column because it was not changed: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
@@ -628,7 +699,7 @@ public class SqlDocumentRepository implements DocumentRepository
 			// Check if the field value was changed from when we last queried it
 			if (!po.is_new())
 			{
-				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, po);
+				final Object fieldInitialValueConv = convertValueToPO(documentField.getInitialValue(), columnName, poValueClass);
 				if (!DataTypes.equals(fieldInitialValueConv, poValue))
 				{
 					throw new AdempiereException("Document's field was changed from when we last queried it. Please re-query."
@@ -658,10 +729,9 @@ public class SqlDocumentRepository implements DocumentRepository
 		}
 	}
 
-	private static Object convertValueToPO(final Object value, final String columnName, final PO po)
+	private static Object convertValueToPO(final Object value, final String columnName, final Class<?> targetClass)
 	{
 		final Class<?> valueClass = value == null ? null : value.getClass();
-		final Class<?> targetClass = po.getPOInfo().getColumnClass(columnName);
 
 		if (valueClass != null && targetClass.isAssignableFrom(valueClass))
 		{
@@ -755,13 +825,12 @@ public class SqlDocumentRepository implements DocumentRepository
 	@Override
 	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query)
 	{
-		final int limit = -1;
-		return retrieveDocumentsSideList(query, limit);
-	}
-
-	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query, final int limit)
-	{
-		logger.debug("Retrieving records: query={}, limit={}", query, limit);
+		logger.debug("Retrieving records: query={}", query);
+		
+		final int firstRow = query.getFirstRow();
+		final int pageLength = query.getPageLength();
+		Check.assume(firstRow >= 0, "firstRow >= 0 but it was {}", firstRow);
+		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
 
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 
@@ -769,7 +838,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		final String sql = buildSql(sqlParams, query);
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final List<IDocumentSideListView> sideListDocuments = new ArrayList<>(limit + 1);
+		final List<IDocumentSideListView> sideListDocuments = new ArrayList<>(pageLength + 1);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -783,7 +852,7 @@ public class SqlDocumentRepository implements DocumentRepository
 				sideListDocuments.add(sideListDocument);
 
 				// Stop if we reached the limit
-				if (limit > 0 && sideListDocuments.size() > limit)
+				if (pageLength > 0 && sideListDocuments.size() > pageLength)
 				{
 					break;
 				}
@@ -814,7 +883,7 @@ public class SqlDocumentRepository implements DocumentRepository
 		for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
 		{
 			final Object fieldValue = retrieveDocumentFieldValue(fieldDescriptor, rs);
-			final Object jsonValue = JSONValues.valueToJsonObject(fieldValue);
+			final Object jsonValue = Values.valueToJsonObject(fieldValue);
 
 			if (fieldDescriptor.isKey())
 			{

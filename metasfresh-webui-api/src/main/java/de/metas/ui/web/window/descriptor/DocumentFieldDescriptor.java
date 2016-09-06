@@ -1,9 +1,14 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Map;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,7 +18,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+import de.metas.ui.web.window.model.LookupDataSource;
 
 /*
  * #%L
@@ -270,6 +280,166 @@ public final class DocumentFieldDescriptor implements Serializable
 	public DocumentFieldDependencyMap getDependencies()
 	{
 		return dependencies;
+	}
+
+	public <T> T convertToValueClass(final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		final Class<?> fromType = value.getClass();
+
+		try
+		{
+			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail
+			if (java.util.Date.class.equals(targetType) && Timestamp.class.equals(fromType))
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)JSONDate.fromTimestamp((Timestamp)value);
+				return valueConv;
+			}
+
+			if (targetType.isAssignableFrom(fromType))
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)value;
+				return valueConv;
+			}
+
+			if (String.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					// this is not allowed for consistency. let it fail.
+				}
+				// For any other case, blindly convert it to string
+				else
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)value.toString();
+					return valueConv;
+				}
+			}
+			else if (java.util.Date.class == targetType)
+			{
+				if (value instanceof String)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONDate.fromJson((String)value);
+					return valueConv;
+				}
+			}
+			else if (Integer.class == targetType)
+			{
+				if (value instanceof String)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)Integer.parseInt((String)value);
+					return valueConv;
+				}
+				else if (value instanceof Number)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)((Number)value).intValue();
+					return valueConv;
+				}
+			}
+			else if (BigDecimal.class == targetType)
+			{
+				if (String.class == fromType)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)new BigDecimal((String)value);
+					return valueConv;
+				}
+				else if (Integer.class == fromType || int.class == fromType)
+				{
+					final int valueInt = (int)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)BigDecimal.valueOf(valueInt);
+					return valueConv;
+				}
+			}
+			else if (Boolean.class == targetType)
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)DisplayType.toBoolean(value, Boolean.FALSE);
+				return valueConv;
+			}
+			else if (IntegerLookupValue.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONLookupValue.integerLookupValueFromJsonMap(map);
+					return valueConv;
+				}
+				else if (Integer.class.isAssignableFrom(fromType))
+				{
+					final Integer valueInt = (Integer)value;
+					if (lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueInt);
+						// TODO: what if valueConv was not found?
+						return valueConv;
+					}
+				}
+				else if (String.class == fromType)
+				{
+					final String valueStr = (String)value;
+					if (valueStr.isEmpty())
+					{
+						return null;
+					}
+
+					if (lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						// TODO: what if valueConv was not found?
+						return valueConv;
+					}
+				}
+			}
+			else if (StringLookupValue.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONLookupValue.stringLookupValueFromJsonMap(map);
+					return valueConv;
+				}
+				else if (String.class == fromType)
+				{
+					final String valueStr = (String)value;
+					if (valueStr.isEmpty())
+					{
+						return null;
+					}
+
+					if (lookupDataSource != null)
+					{
+						@SuppressWarnings("unchecked")
+						final T valueConv = (T)lookupDataSource.findById(valueStr);
+						// TODO: what if valueConv was not found?
+						return valueConv;
+					}
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
+		}
+
+		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType);
 	}
 
 	public static final class Builder

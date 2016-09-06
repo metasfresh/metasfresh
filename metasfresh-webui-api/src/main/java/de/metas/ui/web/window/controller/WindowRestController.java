@@ -23,13 +23,17 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentSideListView;
 import io.swagger.annotations.Api;
@@ -90,7 +94,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		final boolean debugShowColumnNamesForCaption = userSession.getPropertyAsBoolean(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption,
 				JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue);
-		
+
 		return JSONFilteringOptions.builder()
 				.setAD_Language(userSession.getAD_Language())
 				.setDebugShowColumnNamesForCaption(debugShowColumnNamesForCaption);
@@ -134,12 +138,12 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final DocumentLayoutSideListDescriptor sideListLayout = documentCollection.getDocumentDescriptorFactory()
+		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
-				.getLayout()
-				.getSideList();
-
-		return JSONDocumentLayout.ofSideListLayout(adWindowId, sideListLayout, JSONFilteringOptions.DEFAULT);
+				.getLayout();
+		final DocumentLayoutSideListDescriptor sideListLayout = layout.getSideList();
+		final List<DocumentQueryFilterDescriptor> filters = layout.getFilters();
+		return JSONDocumentLayout.ofSideListLayout(adWindowId, sideListLayout, filters, newJSONFilteringOptions().build());
 	}
 
 	@Override
@@ -318,14 +322,25 @@ public class WindowRestController implements IWindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
-	@RequestMapping(value = "/sideListData", method = RequestMethod.GET)
+	@RequestMapping(value = "/sideListData", method = RequestMethod.PUT)
 	public List<JSONDocument> sideListData(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
 	)
 	{
 		loginService.autologin();
 
-		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId);
+		final DocumentEntityDescriptor entityDescriptor = documentCollection
+				.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getEntityDescriptor();
+		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters))
+				.setFirstRow(0)
+				.setPageLength(100)
+				.build();
+
+		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId, query);
 		return JSONDocument.ofSideDocumentList(sideDocuments);
 	}
 }

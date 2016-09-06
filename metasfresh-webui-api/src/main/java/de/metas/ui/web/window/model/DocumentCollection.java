@@ -96,7 +96,7 @@ public class DocumentCollection
 
 	/**
 	 * Gets an existing root document
-	 * 
+	 *
 	 * @param documentPath
 	 * @return root document (readonly)
 	 */
@@ -117,7 +117,7 @@ public class DocumentCollection
 
 	/**
 	 * Creates a new root document.
-	 * 
+	 *
 	 * @param documentPath
 	 * @return new root document (writable)
 	 */
@@ -291,12 +291,9 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException(documentPath);
 		}
 	}
-	
-	public List<IDocumentSideListView> sideList(final int adWindowId)
+
+	public List<IDocumentSideListView> sideList(final int adWindowId, final DocumentQuery query)
 	{
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
-		final DocumentQuery query = DocumentQuery.builder(descriptor.getEntityDescriptor())
-				.build();
 		return documentsRepository.retrieveDocumentsSideList(query);
 	}
 

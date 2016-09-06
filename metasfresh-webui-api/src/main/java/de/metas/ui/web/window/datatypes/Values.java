@@ -1,6 +1,7 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.datatypes;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -30,7 +31,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class JSONValues
+public final class Values
 {
 	public static final Object valueToJsonObject(final Object value)
 	{
@@ -53,9 +54,9 @@ public final class JSONValues
 			return value;
 		}
 	}
-
-	private JSONValues()
+	
+	private Values()
 	{
-		super();
+		throw new UnsupportedOperationException();
 	}
 }

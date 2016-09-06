@@ -51,6 +51,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
+	private final List<DocumentQueryFilterDescriptor> filters;
+
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
 		super();
@@ -60,6 +62,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		description = builder.description;
 		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
 		elements = ImmutableList.copyOf(builder.buildElements());
+		filters = ImmutableList.copyOf(builder.filters);
 	}
 
 	@Override
@@ -70,6 +73,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 				.add("detailId", detailId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
+				.add("filters", filters)
 				.toString();
 	}
 
@@ -98,6 +102,11 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
+	public List<DocumentQueryFilterDescriptor> getFilters()
+	{
+		return filters;
+	}
+
 	public static final class Builder
 	{
 		private String detailId;
@@ -106,6 +115,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private String description;
 		private Map<String, String> descriptionTrls;
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
 
 		private Builder()
 		{
@@ -132,6 +142,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.add("detailId", detailId)
 					.add("caption", caption)
 					.add("elements-count", elementBuilders.size())
+					.add("filters-count", filters.size())
 					.toString();
 		}
 
@@ -206,6 +217,16 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
 
+		public Builder addFilters(final List<DocumentQueryFilterDescriptor> filters)
+		{
+			if (filters == null || filters.isEmpty())
+			{
+				return this;
+			}
+
+			this.filters.addAll(filters);
+			return this;
+		}
 	}
 
 }

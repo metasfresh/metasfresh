@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
@@ -9,6 +11,7 @@ import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -50,6 +53,9 @@ public final class DocumentQuery
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int recordId;
 	private final Document parentDocument;
+	private final List<DocumentQueryFilter> filters;
+	private final int firstRow;
+	private final int pageLength;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
 
@@ -59,6 +65,10 @@ public final class DocumentQuery
 		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
+		filters = builder.filters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.filters);
+
+		firstRow = builder.firstRow;
+		pageLength = builder.pageLength;
 	}
 
 	@Override
@@ -69,6 +79,9 @@ public final class DocumentQuery
 				.add("recordId", recordId)
 				.add("parentDocument", parentDocument)
 				.add("entityDescriptor", entityDescriptor)
+				.add("filters", filters.isEmpty() ? null : filters)
+				.add("firstRow", firstRow > 0 ? firstRow : null)
+				.add("pageLength", pageLength > 0 ? pageLength : null)
 				.toString();
 	}
 
@@ -124,11 +137,29 @@ public final class DocumentQuery
 		return Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
 	}
 
+	public List<DocumentQueryFilter> getFilters()
+	{
+		return filters;
+	}
+
+	public int getFirstRow()
+	{
+		return firstRow;
+	}
+
+	public int getPageLength()
+	{
+		return pageLength;
+	}
+
 	public static final class Builder
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private int recordId = -1;
+		public List<DocumentQueryFilter> filters = null;
+		private int firstRow = -1;
+		private int pageLength = -1;
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -150,6 +181,45 @@ public final class DocumentQuery
 		public Builder setParentDocument(final Document parentDocument)
 		{
 			this.parentDocument = parentDocument;
+			return this;
+		}
+
+		public Builder addFilter(final DocumentQueryFilter filter)
+		{
+			Check.assumeNotNull(filter, "Parameter filter is not null");
+			
+			if(filters == null)
+			{
+				filters = new ArrayList<>();
+			}
+			filters.add(filter);
+			return this;
+		}
+
+		public Builder addFilters(final List<DocumentQueryFilter> filtersToAdd)
+		{
+			if (filtersToAdd == null || filtersToAdd.isEmpty())
+			{
+				return this;
+			}
+
+			if(filters == null)
+			{
+				filters = new ArrayList<>();
+			}
+			filters.addAll(filtersToAdd);
+			return this;
+		}
+
+		public Builder setFirstRow(final int firstRow)
+		{
+			this.firstRow = firstRow;
+			return this;
+		}
+
+		public Builder setPageLength(final int pageLength)
+		{
+			this.pageLength = pageLength;
 			return this;
 		}
 	}

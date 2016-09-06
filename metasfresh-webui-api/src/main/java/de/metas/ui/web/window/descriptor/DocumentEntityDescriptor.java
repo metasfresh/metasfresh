@@ -68,7 +68,7 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression displayLogic;
 
 	@JsonProperty("fields")
-	private final List<DocumentFieldDescriptor> fields;
+	private final Map<String, DocumentFieldDescriptor> fields;
 	@JsonIgnore
 	private final DocumentFieldDescriptor idField;
 	@JsonIgnore
@@ -108,7 +108,7 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = Preconditions.checkNotNull(builder.allowDeleteLogic);
 		displayLogic = Preconditions.checkNotNull(builder.displayLogic, "displayLogic not null");
 
-		fields = ImmutableList.copyOf(builder.getFields());
+		fields = ImmutableMap.copyOf(builder.getFields());
 		idField = builder.getIdField();
 		includedEntitiesByDetailId = ImmutableMap.copyOf(builder.includedEntitiesByDetailId);
 		dataBinding = builder.getOrBuildDataBinding();
@@ -220,9 +220,25 @@ public class DocumentEntityDescriptor
 		return idField;
 	}
 
-	public List<DocumentFieldDescriptor> getFields()
+	public Collection<DocumentFieldDescriptor> getFields()
 	{
-		return fields;
+		return fields.values();
+	}
+
+	public DocumentFieldDescriptor getFieldOrNull(final String fieldName)
+	{
+		return fields.get(fieldName);
+	}
+
+	public DocumentFieldDescriptor getField(final String fieldName)
+	{
+		final DocumentFieldDescriptor field = fields.get(fieldName);
+		if (field == null)
+		{
+			throw new IllegalArgumentException("Field " + fieldName + " not found in " + this);
+		}
+		
+		return field;
 	}
 
 	public List<DocumentFieldDescriptor> getSideListFields()
@@ -295,7 +311,7 @@ public class DocumentEntityDescriptor
 		private boolean _built = false;
 
 		private final List<Object> _fieldsOrBuilders = new ArrayList<>();
-		private List<DocumentFieldDescriptor> _fields = null; // will be built
+		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private Object _dataBindingOrBuilder;
@@ -378,7 +394,7 @@ public class DocumentEntityDescriptor
 			if (_idField == null)
 			{
 				DocumentFieldDescriptor idField = null;
-				for (final DocumentFieldDescriptor field : getFields())
+				for (final DocumentFieldDescriptor field : getFields().values())
 				{
 					if (field.isKey())
 					{
@@ -396,13 +412,13 @@ public class DocumentEntityDescriptor
 			return _idField.orNull();
 		}
 
-		private List<DocumentFieldDescriptor> getFields()
+		private Map<String, DocumentFieldDescriptor> getFields()
 		{
 			if (_fields == null)
 			{
 				_fields = _fieldsOrBuilders.stream()
 						.map(Builder::getOrBuildField)
-						.collect(GuavaCollectors.toImmutableList());
+						.collect(GuavaCollectors.toImmutableMapByKey(field -> field.getFieldName()));
 			}
 			return _fields;
 		}
@@ -473,7 +489,7 @@ public class DocumentEntityDescriptor
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
-			getFields().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
+			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
 

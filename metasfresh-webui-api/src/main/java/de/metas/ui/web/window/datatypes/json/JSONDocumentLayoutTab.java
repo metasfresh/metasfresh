@@ -69,16 +69,22 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
+	@JsonProperty("filters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentQueryFilterDescriptor> filters;
+
 	private JSONDocumentLayoutTab(final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
 		tabid = detail.getDetailId();
-		
+
 		final String adLanguage = jsonFilteringOpts.getAD_Language();
 		caption = detail.getCaption(adLanguage);
 		description = detail.getDescription(adLanguage);
-		
+
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonFilteringOpts);
+
+		filters = JSONDocumentQueryFilterDescriptor.ofList(detail.getFilters(), jsonFilteringOpts.getAD_Language());
 	}
 
 	@JsonCreator
@@ -87,6 +93,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
+			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
 	)
 	{
 		super();
@@ -94,6 +101,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 		this.caption = caption;
 		this.description = description;
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
+		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
 	}
 
 	@Override
@@ -104,6 +112,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 				.add("tabid", tabid)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
+				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
 	}
 
@@ -132,4 +141,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		return !elements.isEmpty();
 	}
 
+	public List<JSONDocumentQueryFilterDescriptor> getFilters()
+	{
+		return filters;
+	}
 }
