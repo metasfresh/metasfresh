@@ -399,9 +399,33 @@ public final class Document
 		Object valueOld = null;
 		try
 		{
+			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
+
+			//
+			// Set initial flags if they are constant
+			if(mode == FieldInitializationMode.NewDocument || mode == FieldInitializationMode.Load)
+			{
+				final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
+				if(mandatoryLogic.isConstant())
+				{
+					documentField.setMandatory(LogicExpressionResult.ofConstantExpression(mandatoryLogic));
+				}
+				
+				final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
+				if(readonlyLogic.isConstant())
+				{
+					documentField.setReadonly(LogicExpressionResult.ofConstantExpression(readonlyLogic));
+				}
+				
+				final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
+				if(displayLogic.isConstant())
+				{
+					documentField.setDisplayed(LogicExpressionResult.ofConstantExpression(displayLogic));
+				}
+			}
+			
 			//
 			// Get the initialization value
-			final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 			final Object initialValue = initialValueSupplier.getInitialValue(fieldDescriptor);
 
 			//
