@@ -189,11 +189,23 @@ public class MLookupFactory
 	{
 		final MLookupInfo info;
 		// List
-		if (AD_Reference_ID == DisplayType.List
-				|| (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID > 0) // Button with attached list
-		)
+		if (AD_Reference_ID == DisplayType.List)
 		{
 			info = getLookup_List(AD_Reference_Value_ID);
+		}
+		//
+		// Button with attached list or table
+		else if (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID > 0)
+		{
+			final boolean isTableReference = Services.get(ILookupDAO.class).isTableReference(AD_Reference_Value_ID);
+			if (isTableReference)
+			{
+				info = getLookup_Table(ctx, WindowNo, AD_Reference_Value_ID);
+			}
+			else
+			{
+				info = getLookup_List(AD_Reference_Value_ID);
+			}
 		}
 		// Table or Search with Reference_Value
 		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID > 0)
@@ -357,12 +369,12 @@ public class MLookupFactory
 
 		//
 		final MLookupInfo lookupInfo = new MLookupInfo(
-				realSQL_BaseLang.toString(),  // Query_BaseLang
-				realSQL_Trl.toString(),  // Query_Trl
-				"AD_Ref_List",  // TableName
-				"AD_Ref_List.Value",  // KeyColumn
-				101,  // zoomWindow
-				101,  // zoomWindowPO
+				realSQL_BaseLang.toString(),   // Query_BaseLang
+				realSQL_Trl.toString(),   // Query_Trl
+				"AD_Ref_List",   // TableName
+				"AD_Ref_List.Value",   // KeyColumn
+				101,   // zoomWindow
+				101,   // zoomWindowPO
 				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID) // Zoom Query
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
