@@ -114,4 +114,9 @@ public final class DocumentValidStatus
 	{
 		return this == STATE_InitialInvalid;
 	}
+	
+	public boolean isInvalidButNotInitial()
+	{
+		return !isValid() && !isInitialInvalid();
+	}
 }

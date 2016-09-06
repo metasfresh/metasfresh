@@ -917,6 +917,20 @@ public final class Document
 		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
 		try
 		{
+			//
+			// Consider the field as not-readonly if it's mandatory and not valid
+			// FIXME: i think this logic shall be embedded in "readonly logic" and it shall also check if the record is processed or the tab is really readonly!
+			if(documentField.getValid().isInvalidButNotInitial())
+			{
+				final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
+				if(mandatoryLogic.isConstantTrue())
+				{
+					documentField.setReadonly(LogicExpressionResult.FALSE);
+					return;
+				}
+			}
+
+			
 			final LogicExpressionResult readonly = readonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 			documentField.setReadonly(readonly);
 		}
@@ -925,7 +939,7 @@ public final class Document
 			logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField, e);
 		}
 	}
-
+	
 	private final void updateFieldMandatory(final DocumentField documentField)
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
