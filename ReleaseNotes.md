@@ -26,6 +26,7 @@ RC for this week
 * #297 Performance problems related to zoom-to
 * #249 Referenzliste in AttributeValue
   - cleanup
+* #347 change default docaction after complete
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
