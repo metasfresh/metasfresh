@@ -345,7 +345,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _calloutField;
 	}
 
-	public final void updateValid()
+	final void updateValid()
 	{
 		final DocumentValidStatus validOld = _valid;
 		final DocumentValidStatus validNew = checkValid();
