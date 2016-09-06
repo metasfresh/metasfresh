@@ -112,6 +112,10 @@ class Table extends Component {
         }
     }
     handleRightClick = (e) => {
+        // const {selectedProducts} = this.state;
+        // if(selectedProducts.length < 1) {
+        //   this.selectProduct(id);
+        // }
         e.preventDefault();
         this.setState({
             contextMenu: {
