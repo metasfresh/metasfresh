@@ -120,7 +120,11 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 }
                 docId = response.data[0].id;
                 const preparedData = nullToEmptyStrings(response.data[0].fields);
+
                 dispatch(initDataSuccess(preparedData, getScope(isModal)))
+                if(isModal && rowId === "NEW"){
+                    dispatch(mapDataToState([response.data[0]], false, "NEW"));
+                }
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>
@@ -128,20 +132,19 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
             ).then(response => {
                 let tabTmp = {};
 
-                response.layout.tabs.map(tab => {
+                response.layout.tabs && response.layout.tabs.map(tab => {
                     tabTmp[tab.tabid] = {};
                     dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
 
-                            res.data.map(row => {
+
+                            res.data && res.data.map(row => {
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
                             dispatch(addRowData(tabTmp, getScope(isModal)));
                         })
                 })
-            }).catch((e)=>{
-                console.log(e);
-            })
+            });
     }
 }
 
@@ -196,19 +199,26 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
-            response.data.map(item1 => {
-                if(rowId === "NEW"){
-                    dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
-                }else{
-                    item1.fields.map(item2 => {
-                        if(rowId){
-                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
-                        }else{
-                            dispatch(updateDataSuccess(item2, getScope(isModal)));
-                        }
-                    });
-                }
-            })
+            console.log(response.data)
+            dispatch(mapDataToState(response.data, isModal, rowId));
+        })
+    }
+}
+
+function mapDataToState(data, isModal, rowId){
+    return dispatch => {
+        data.map(item1 => {
+            if(rowId === "NEW"){
+                dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
+            }else{
+                item1.fields.map(item2 => {
+                    if(rowId){
+                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
+                    }else{
+                        dispatch(updateDataSuccess(item2, getScope(isModal)));
+                    }
+                });
+            }
         })
     }
 }

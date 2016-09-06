@@ -26,7 +26,7 @@ class Subheader extends Component {
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column">
-                                <div className="subheader-item" onClick={()=> this.redirect('window/143')}>
+                                <div className="subheader-item" onClick={()=> this.redirect('/window/143')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
                                 <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>
