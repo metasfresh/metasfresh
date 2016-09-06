@@ -13,9 +13,10 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 
 /*
@@ -50,10 +51,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final String internalName;
 
-	private final String caption;
-	private final Map<String, String> captionTrls;
-	private final String description;
-	private final Map<String, String> descriptionTrls;
+	private final ITranslatableString caption;
+	private final ITranslatableString description;
 
 	private final DocumentFieldWidgetType widgetType;
 	private final LayoutType layoutType;
@@ -69,10 +68,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		super();
 
 		internalName = builder.internalName;
-		caption = builder.caption;
-		captionTrls = builder.captionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.captionTrls);
-		description = builder.description;
-		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
+		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
+		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
 		
 		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
 		widgetType = builder.widgetType;
@@ -98,7 +95,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	public String getCaption(final String adLanguage)
 	{
-		return captionTrls.getOrDefault(adLanguage, caption);
+		return caption.translate(adLanguage);
 	}
 
 	public String getCaptionAsFieldNames()
@@ -116,7 +113,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	public String getDescription(final String adLanguage)
 	{
-		return descriptionTrls.getOrDefault(adLanguage, description);
+		return description.translate(adLanguage);
 	}
 
 	public DocumentFieldWidgetType getWidgetType()

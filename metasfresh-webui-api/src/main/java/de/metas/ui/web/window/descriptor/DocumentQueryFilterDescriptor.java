@@ -5,7 +5,9 @@ import java.util.Map;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L
@@ -38,7 +40,7 @@ public final class DocumentQueryFilterDescriptor
 
 	private final String fieldName;
 	private final DocumentFieldWidgetType widgetType;
-	private final Map<String, String> displayNameTrls;
+	private final ITranslatableString displayNameTrls;
 	private final boolean frequentUsed;
 
 	private final boolean requiresParameters;
@@ -54,7 +56,7 @@ public final class DocumentQueryFilterDescriptor
 		widgetType = builder.widgetType;
 		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
 
-		displayNameTrls = builder.displayNameTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.displayNameTrls);
+		displayNameTrls = ImmutableTranslatableString.ofMap(builder.displayNameTrls);
 
 		frequentUsed = builder.frequentUsed;
 
@@ -86,7 +88,7 @@ public final class DocumentQueryFilterDescriptor
 
 	public String getDisplayName(final String adLanguage)
 	{
-		return displayNameTrls.get(adLanguage);
+		return displayNameTrls.translate(adLanguage);
 	}
 
 	public boolean isFrequentUsed()

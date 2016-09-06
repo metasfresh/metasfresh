@@ -11,7 +11,9 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L
@@ -44,10 +46,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	}
 
 	private final String detailId;
-	private final String caption;
-	private final Map<String, String> captionTrls;
-	private final String description;
-	private final Map<String, String> descriptionTrls;
+	private final ITranslatableString caption;
+	private final ITranslatableString description;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
@@ -57,10 +57,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	{
 		super();
 		detailId = builder.getDetailId();
-		caption = builder.caption;
-		captionTrls = builder.captionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.captionTrls);
-		description = builder.description;
-		descriptionTrls = builder.descriptionTrls == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.descriptionTrls);
+		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
+		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
 		elements = ImmutableList.copyOf(builder.buildElements());
 		filters = ImmutableList.copyOf(builder.filters);
 	}
@@ -84,12 +82,12 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	public String getCaption(final String adLanguage)
 	{
-		return captionTrls.getOrDefault(adLanguage, caption);
+		return caption.translate(adLanguage);
 	}
 
 	public String getDescription(final String adLanguage)
 	{
-		return descriptionTrls.getOrDefault(adLanguage, description);
+		return description.translate(adLanguage);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
