@@ -16,7 +16,7 @@ class Subheader extends Component {
         dispatch(push(where));
     }
     openModal = (windowType) => {
-        this.props.dispatch(openModal(windowType));
+        this.props.dispatch(openModal("Advanced edit", windowType));
     }
     render() {
         const { windowType } = this.props;

@@ -44,12 +44,12 @@ input {
  */
 
  .btn-icon {
-     width: 30px;
-     height: 30px;
+     width: 32px;
+     height: 32px;
      border-radius: 3px;
      border: 1px solid $brand-light-color;
      font-size: 16px;
-     line-height: 30px;
+     line-height: 32px;
      text-align: center;
      text-decoration: none !important;
      color: $brand-font-color;

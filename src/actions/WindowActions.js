@@ -78,12 +78,13 @@ export function noConnection(status){
     }
 }
 
-export function openModal(windowType, tabId, rowId){
+export function openModal(title, windowType, tabId, rowId){
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
         tabId: tabId,
-        rowId: rowId
+        rowId: rowId,
+        title: title
     }
 }
 export function closeModal(){

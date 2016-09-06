@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { Component,PropTypes } from 'react';
+import { connect } from 'react-redux';
 
 import {
     openModal
@@ -19,8 +20,8 @@ class TableContextMenu extends Component {
     }
 
     handleAdvancedEdit = () => {
-        const {dispatch, tabid} = this.props;
-        dispatch(openModal(windowType + "&tabid=" + tabid + "&advanced=true"));
+        const {dispatch, tabId, type} = this.props;
+        dispatch(openModal("Advanced edit", type + "&advanced=true", tabId));
     }
     render() {
         const {isDisplayed, x, y, blur} = this.props;
@@ -36,15 +37,19 @@ class TableContextMenu extends Component {
                 tabIndex="0" style={{left: this.props.x, top: this.props.y, display: (this.props.isDisplayed ? "block" : "none") }}
                 onBlur={this.props.blur}
             >
-                <div className="context-menu-item">
+                <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
                     <i className="meta-icon-edit" /> Advanced edit
                 </div>
             </div>
         )
 
     }
-
-
 }
+
+TableContextMenu.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+TableContextMenu = connect()(TableContextMenu)
 
 export default TableContextMenu

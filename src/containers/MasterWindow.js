@@ -49,6 +49,7 @@ class MasterWindow extends Component {
                         rowData={modal.rowData}
                         tabId={modal.tabId}
                         rowId={modal.rowId}
+                        modalTitle={modal.title}
                      />
                  }
                 <Window
@@ -56,6 +57,7 @@ class MasterWindow extends Component {
                     layout={master.layout}
                     rowData={master.rowData}
                     dataId={dataId}
+                    isModal={false}
                 />
             </div>
         );

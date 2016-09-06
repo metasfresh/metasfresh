@@ -10,7 +10,8 @@ const initialState = {
         rowId: null,
         layout: {},
         data: [],
-        rowData: {}
+        rowData: {},
+        modalTitle: ""
     },
     master: {
         layout: {},
@@ -34,7 +35,8 @@ export default function windowHandler(state = initialState, action) {
                     visible: true,
                     type: action.windowType,
                     tabId: action.tabId,
-                    rowId: action.rowId
+                    rowId: action.rowId,
+                    title: action.title
                 })
         })
 
@@ -46,6 +48,7 @@ export default function windowHandler(state = initialState, action) {
                     rowId: null,
                     layout: {},
                     data: [],
+                    title: "",
                     rowData: {}
                 })
         })

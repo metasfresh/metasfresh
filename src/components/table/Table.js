@@ -144,7 +144,7 @@ class Table extends Component {
     }
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
-        dispatch(openModal(windowType, tabId, rowId));
+        dispatch(openModal("Add new", windowType, tabId, rowId));
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
@@ -197,11 +197,12 @@ class Table extends Component {
                         y={this.state.contextMenu.y}
                         isDisplayed={this.state.contextMenu.open}
                         blur={() => this.closeContextMenu()}
+                        type={type}
+                        tabId={tabid}
                     />
                     <div className="row">
                         <div className="col-xs-12">
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&advanced=true")}>Advanced edit</button>
                             <div className="pull-xs-right">
                                 <TableFilter />
                             </div>

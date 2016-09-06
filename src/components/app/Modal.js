@@ -52,6 +52,7 @@ class Modal extends Component {
                             modal={true}
                             tabId={tabId}
                             rowId={rowId}
+                            isModal={true}
                         />
                     </div>
                 </div>
