@@ -146,12 +146,12 @@ public class DocumentCollection
 	{
 		final Document rootDocument = getRootDocument(documentPath);
 
-		if (!documentPath.isIncludedDocument())
+		if (documentPath.isRootDocument())
 		{
 			return rootDocument;
 		}
 
-		return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+		return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
 	}
 
 	/**
@@ -181,13 +181,13 @@ public class DocumentCollection
 		{
 			return rootDocumentWritable;
 		}
-		else if (documentPath.isNewIncludedDocument())
+		else if (documentPath.isSingleNewIncludedDocument())
 		{
 			return rootDocumentWritable.createIncludedDocument(documentPath.getDetailId());
 		}
-		else if (documentPath.isIncludedDocument())
+		else if (documentPath.isSingleIncludedDocument())
 		{
-			return rootDocumentWritable.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+			return rootDocumentWritable.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
 		}
 		else
 		{
@@ -213,9 +213,9 @@ public class DocumentCollection
 		{
 			return rootDocument.getIncludedDocuments(documentPath.getDetailId());
 		}
-		else if (documentPath.isIncludedDocument())
+		else if (documentPath.isSingleIncludedDocument())
 		{
-			return ImmutableList.of(rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getRowId()));
+			return ImmutableList.of(rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()));
 		}
 		else
 		{
@@ -280,10 +280,10 @@ public class DocumentCollection
 			final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
 			documents.invalidate(rootDocumentKey);
 		}
-		else if (documentPath.isIncludedDocument())
+		else if (documentPath.hasIncludedDocuments())
 		{
 			final Document rootDocument = getRootDocument(documentPath).copyWritable();
-			rootDocument.deleteIncludedDocument(documentPath.getDetailId(), documentPath.getRowId());
+			rootDocument.deleteIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds());
 			commit(rootDocument);
 		}
 		else

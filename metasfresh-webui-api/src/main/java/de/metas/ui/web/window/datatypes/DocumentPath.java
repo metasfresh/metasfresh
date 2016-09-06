@@ -1,12 +1,16 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
@@ -58,7 +62,8 @@ public final class DocumentPath
 	private final int adWindowId;
 	private final DocumentId documentId;
 	private final String detailId;
-	private final DocumentId rowId;
+	private final Set<DocumentId> rowIds;
+	private final DocumentId singleRowId;
 
 	private transient Integer _hashcode; // lazy
 
@@ -68,16 +73,43 @@ public final class DocumentPath
 		this.adWindowId = adWindowId;
 		this.documentId = documentId;
 		detailId = null;
-		rowId = null;
+		rowIds = ImmutableSet.of();
+		singleRowId = null;
 	}
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId rowId)
+	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final Set<DocumentId> rowIds)
 	{
 		super();
 		this.adWindowId = adWindowId;
 		this.documentId = documentId;
 		this.detailId = detailId;
-		this.rowId = rowId;
+
+		if (rowIds == null || rowIds.isEmpty())
+		{
+			this.rowIds = ImmutableSet.of();
+			singleRowId = null;
+		}
+		else if (rowIds.size() == 1)
+		{
+			this.rowIds = ImmutableSet.copyOf(rowIds);
+			singleRowId = this.rowIds.iterator().next();
+		}
+		else
+		{
+			this.rowIds = ImmutableSet.copyOf(rowIds);
+			singleRowId = null;
+
+		}
+	}
+
+	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId singleRowId)
+	{
+		super();
+		this.adWindowId = adWindowId;
+		this.documentId = documentId;
+		this.detailId = detailId;
+		this.singleRowId = singleRowId;
+		rowIds = singleRowId == null ? ImmutableSet.of() : ImmutableSet.of(singleRowId);
 	}
 
 	@Override
@@ -88,7 +120,7 @@ public final class DocumentPath
 				.add("AD_Window_ID", adWindowId)
 				.add("documentId", documentId)
 				.add("detailId", detailId)
-				.add("rowId", rowId)
+				.add("rowIds", rowIds)
 				.toString();
 	}
 
@@ -97,7 +129,7 @@ public final class DocumentPath
 	{
 		if (_hashcode == null)
 		{
-			_hashcode = Objects.hash(adWindowId, documentId, detailId, rowId);
+			_hashcode = Objects.hash(adWindowId, documentId, detailId, rowIds);
 		}
 		return _hashcode;
 	}
@@ -122,7 +154,7 @@ public final class DocumentPath
 		return DataTypes.equals(adWindowId, other.adWindowId)
 				&& DataTypes.equals(documentId, other.documentId)
 				&& DataTypes.equals(detailId, other.detailId)
-				&& DataTypes.equals(rowId, other.rowId);
+				&& DataTypes.equals(rowIds, other.rowIds);
 	}
 
 	public int getAD_Window_ID()
@@ -134,7 +166,7 @@ public final class DocumentPath
 	{
 		return documentId;
 	}
-	
+
 	public boolean isNewDocument()
 	{
 		return documentId != null && documentId.isNew();
@@ -145,29 +177,63 @@ public final class DocumentPath
 		return detailId;
 	}
 
-	public DocumentId getRowId()
+	public DocumentId getSingleRowId()
 	{
-		return rowId;
+		if(singleRowId == null)
+		{
+			throw new InvalidDocumentPathException(this, "There is no single rowId");
+		}
+		return singleRowId;
 	}
-	
+
+	public Set<DocumentId> getRowIds()
+	{
+		return rowIds;
+	}
+
 	public boolean isRootDocument()
 	{
-		return detailId == null && rowId == null;
+		return detailId == null && rowIds.isEmpty();
 	}
 
-	public boolean isIncludedDocument()
+	public boolean isSingleIncludedDocument()
 	{
-		return detailId != null && rowId != null && !rowId.isNew();
+		if (detailId == null)
+		{
+			return false;
+		}
+
+		return singleRowId != null && !singleRowId.isNew();
 	}
 
-	public boolean isNewIncludedDocument()
+	public boolean isSingleNewIncludedDocument()
 	{
-		return detailId != null && rowId != null && rowId.isNew();
+		if (detailId == null)
+		{
+			return false;
+		}
+
+		return singleRowId != null && singleRowId.isNew();
 	}
 
 	public boolean isAnyIncludedDocument()
 	{
-		return detailId != null && rowId == null;
+		if (detailId == null)
+		{
+			return false;
+		}
+
+		return rowIds.isEmpty();
+	}
+	
+	public boolean hasIncludedDocuments()
+	{
+		if (detailId == null)
+		{
+			return false;
+		}
+
+		return !rowIds.isEmpty();
 	}
 
 	public DocumentPath createChildPath(final String detailId, final int rowIdInt)
@@ -192,9 +258,11 @@ public final class DocumentPath
 		private boolean documentId_allowNull = false;
 		private boolean documentId_allowNew = false;
 		private String detailId;
-		private DocumentId rowId;
+		private final Set<DocumentId> rowIds = new LinkedHashSet<>();
 		private boolean rowId_allowNull = false;
 		private boolean rowId_allowNew = false;
+
+		private static final Splitter SPLITTER_RowIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
 		private Builder()
 		{
@@ -224,25 +292,31 @@ public final class DocumentPath
 
 			//
 			// Validate rowId
-			if (!rowId_allowNull && detailId != null && rowId == null)
+			if (!rowId_allowNull && detailId != null && rowIds.isEmpty())
 			{
 				throw new InvalidDocumentPathException("rowId cannot be null when detailId=" + detailId);
 			}
-			if (!rowId_allowNew && rowId != null && rowId.isNew())
+			if (!rowId_allowNew)
 			{
-				throw new InvalidDocumentPathException("rowId cannot be NEW");
+				for (final DocumentId rowId : rowIds)
+				{
+					if (rowId.isNew())
+					{
+						throw new InvalidDocumentPathException("rowId cannot be NEW");
+					}
+				}
 			}
 
 			//
 			// Validate detailId
-			if (rowId != null && detailId == null)
+			if (detailId == null && !rowIds.isEmpty())
 			{
-				throw new InvalidDocumentPathException("rowId cannot be null when detailId=" + detailId + " (not null)");
+				throw new InvalidDocumentPathException("detailId cannot be null when we have rowIds: " + rowIds);
 			}
 
 			//
 			// Create & return the document path
-			return new DocumentPath(adWindowId, documentId, detailId, rowId);
+			return new DocumentPath(adWindowId, documentId, detailId, rowIds);
 		}
 
 		public Builder setAD_Window_ID(final int AD_Window_ID)
@@ -290,7 +364,42 @@ public final class DocumentPath
 
 		public Builder setRowId(final String rowIdStr)
 		{
-			rowId = DocumentId.fromNullable(rowIdStr);
+			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+			setRowId(rowId);
+			return this;
+		}
+
+		public Builder setRowId(final DocumentId rowId)
+		{
+			rowIds.clear();
+			if (rowId != null)
+			{
+				rowIds.add(rowId);
+			}
+
+			return this;
+		}
+
+		public Builder setRowIdsList(final String rowIdsListStr)
+		{
+			rowIds.clear();
+
+			if (rowIdsListStr == null || rowIdsListStr.isEmpty())
+			{
+				return this;
+			}
+
+			for (final String rowIdStr : SPLITTER_RowIds.splitToList(rowIdsListStr))
+			{
+				final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+				if (rowId == null)
+				{
+					continue;
+				}
+
+				rowIds.add(rowId);
+			}
+
 			return this;
 		}
 

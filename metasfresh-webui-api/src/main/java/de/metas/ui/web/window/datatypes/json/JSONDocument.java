@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -255,15 +256,20 @@ public final class JSONDocument implements Serializable
 		super();
 
 		id = documentPath.getDocumentId().toJson();
-		if (documentPath.isIncludedDocument())
-		{
-			tabid = documentPath.getDetailId();
-			rowId = documentPath.getRowId().toJson();
-		}
-		else
+		if (documentPath.isRootDocument())
 		{
 			tabid = null;
 			rowId = null;
+		}
+		else if (documentPath.isSingleIncludedDocument())
+		{
+			tabid = documentPath.getDetailId();
+			rowId = documentPath.getSingleRowId().toJson();
+		}
+		else
+		{
+			// shall not happen
+			throw new InvalidDocumentPathException(documentPath, "only root path and single included document path are allowed");
 		}
 	}
 

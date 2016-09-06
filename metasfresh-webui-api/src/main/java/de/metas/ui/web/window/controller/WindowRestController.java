@@ -250,7 +250,7 @@ public class WindowRestController implements IWindowRestController
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
 			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = PARAM_RowId, required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
 		loginService.autologin();
@@ -259,7 +259,7 @@ public class WindowRestController implements IWindowRestController
 				.setAD_Window_ID(adWindowId)
 				.setDocumentId(idStr)
 				.setDetailId(detailId)
-				.setRowId(rowIdStr)
+				.setRowIdsList(rowIdsListStr)
 				.build();
 
 		final JSONFilteringOptions jsonFilteringOptions = newJSONFilteringOptions()

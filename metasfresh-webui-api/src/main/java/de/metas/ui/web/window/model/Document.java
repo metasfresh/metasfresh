@@ -1076,10 +1076,10 @@ public final class Document
 		return includedDocuments.createNewDocument();
 	}
 
-	public void deleteIncludedDocument(final String detailId, final DocumentId rowId)
+	public void deleteIncludedDocuments(final String detailId, final Set<DocumentId> rowIds)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
-		includedDocuments.deleteDocument(rowId);
+		includedDocuments.deleteDocuments(rowIds);
 	}
 
 	/* package */ICalloutExecutor getFieldCalloutExecutor()

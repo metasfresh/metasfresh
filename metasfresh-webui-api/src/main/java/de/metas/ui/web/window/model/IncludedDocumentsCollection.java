@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -202,9 +203,9 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		}
 
 		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
-		if (!allowDeleteLogic.isConstantFalse())
+		if (allowDeleteLogic.isConstantFalse())
 		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed");
+			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's never allowed");
 		}
 
 		final LogicExpressionResult allowDelete = allowDeleteLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
@@ -326,31 +327,41 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		}
 	}
 
-	public synchronized void deleteDocument(final DocumentId rowId)
+	public synchronized void deleteDocuments(final Set<DocumentId> rowIds)
 	{
-		assertWritable();
-
-		final Document document = getDocumentById(rowId);
-		assertDeleteDocumentAllowed(document);
-
-		if (!document.isNew())
+		if (rowIds == null || rowIds.isEmpty())
 		{
-			getDocumentsRepository().delete(document);
+			throw new IllegalArgumentException("At least one rowId shall be specified when deleting included documents");
 		}
 
-		documents.remove(DocumentId.of(document.getDocumentId()));
+		assertWritable();
+
+		final DocumentRepository documentsRepository = getDocumentsRepository();
+
+		for (final DocumentId rowId : rowIds)
+		{
+			final Document document = getDocumentById(rowId);
+			assertDeleteDocumentAllowed(document);
+
+			if (!document.isNew())
+			{
+				documentsRepository.delete(document);
+			}
+
+			documents.remove(DocumentId.of(document.getDocumentId()));
+		}
 	}
-	
+
 	public int getNextLineNo()
 	{
 		final int lastLineNo = getLastLineNo();
 		final int nextLineNo = lastLineNo / 10 * 10 + 10;
 		return nextLineNo;
 	}
-	
+
 	private int getLastLineNo()
 	{
-		if(!fullyLoaded)
+		if (!fullyLoaded)
 		{
 			loadAll();
 		}
@@ -360,12 +371,12 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		{
 			final IDocumentFieldView lineNoField = document.getFieldView(WindowConstants.FIELDNAME_Line);
 			final int lineNo = lineNoField.getValueAsInt(0);
-			if(lineNo > maxLineNo)
+			if (lineNo > maxLineNo)
 			{
 				maxLineNo = lineNo;
 			}
 		}
-		
+
 		return maxLineNo;
 	}
 }
