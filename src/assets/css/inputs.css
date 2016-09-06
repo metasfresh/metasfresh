@@ -77,6 +77,12 @@ input {
      line-height: 1.5;
      border-radius: .2rem;
  }
+ .btn-md {
+     padding: .5rem 1.2rem;
+     font-size: .875rem;
+     line-height: 1.5;
+     border-radius: .2rem;
+ }
 
  .btn-xs.dropdown-toggle {
      padding: .25rem;
@@ -149,7 +155,10 @@ input {
  }
 
  .btn-distance {
-    margin-right: .4rem;
+    margin-right: .5rem;
+ }
+ .btn-distance-3 {
+    margin-right: 1.5rem;
  }
 
 
@@ -361,6 +370,12 @@ input:checked + .input-slider:before {
     white-space: nowrap;
     overflow: hidden;
     margin-right: 5px;
+    display: flex;
+}
+.input-rest span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 50%;
 }
 
 .input-block {

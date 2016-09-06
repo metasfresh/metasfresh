@@ -7,7 +7,7 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
-import Indicator from '../loader/Indicator';
+import Indicator from './Indicator';
 
 
 import {
@@ -74,7 +74,7 @@ class Header extends Component {
                                         <Widget
                                             windowType={windowType}
                                             dataId={dataId}
-                                            widgetData={docNoData}
+                                            widgetData={[docNoData]}
                                             noLabel={true}
                                             {...docNo}
                                         />
@@ -90,7 +90,7 @@ class Header extends Component {
                                     <Widget
                                         windowType={windowType}
                                         dataId={dataId}
-                                        widgetData={docStatusData}
+                                        widgetData={[docStatusData]}
                                         noLabel={true}
                                         type="primary"
                                         {...docStatus}

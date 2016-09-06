@@ -142,9 +142,9 @@ class Table extends Component {
         selected.sort((a,b) => a - b);
         return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
     }
-    openModal = (windowType) => {
+    openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
-        dispatch(openModal(windowType));
+        dispatch(openModal(windowType, tabId, rowId));
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
@@ -212,7 +212,7 @@ class Table extends Component {
                     />
                     <div className="row">
                         <div className="col-xs-12">
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&tabid=" + tabid)}>Add new</button>
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type + "&advanced=true")}>Advanced edit</button>
                             <div className="pull-xs-right">
                                 <TableFilter />
@@ -234,24 +234,16 @@ class Table extends Component {
 
                         {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
-                    {/* Temporary button for adding new row*/}
-                    <Widget
-                        widgetType="Button"
-                        windowType={143}
-                        widgetData={buttonData}
-                        type={"primary"}
-                        noLabel={true}
-                        key={'tmpButton'}
-                        {...buttonLayout}
-                    />
                 </div>
             </div>
         )
     }
 }
 
-if (typeof document !== 'undefined') { //this line is only needed for server side isomorphic rendering
-    Table = connect()(onClickOutside(Table)); //here we wrap the component with the onClickOutside call
-}
+Table.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+Table = connect()(onClickOutside(Table))
 
 export default Table

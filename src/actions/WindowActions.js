@@ -1,6 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
+import {push} from 'react-router-redux';
 
 
 export function initLayoutSuccess(layout, scope) {
@@ -77,10 +78,12 @@ export function noConnection(status){
     }
 }
 
-export function openModal(windowType){
+export function openModal(windowType, tabId, rowId){
     return {
         type: types.OPEN_MODAL,
-        windowType: windowType
+        windowType: windowType,
+        tabId: tabId,
+        rowId: rowId
     }
 }
 export function closeModal(){
@@ -105,17 +108,21 @@ export function indicatorState(state){
 /*
  * Main method to generate window
  */
-export function createWindow(windowType, docId = "NEW", isModal = false){
+export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false){
     return (dispatch) => {
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(initWindow(windowType, docId))
+        dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
+                // TODO: This is temporary solution - GITHUB ISSUE
+                if(docId === "NEW" && !isModal){
+                    dispatch(push("/window/"+ windowType + "/" + response.data[0].id));
+                }
                 docId = response.data[0].id;
                 const preparedData = nullToEmptyStrings(response.data[0].fields);
                 dispatch(initDataSuccess(preparedData, getScope(isModal)))
             }).then(response =>
-                dispatch(initLayout(windowType))
+                dispatch(initLayout(windowType, tabId))
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data, getScope(isModal)))
             ).then(response => {
@@ -138,12 +145,18 @@ export function createWindow(windowType, docId = "NEW", isModal = false){
     }
 }
 
-export function initWindow(windowType, docId) {
+export function initWindow(windowType, docId, tabId, rowId = null) {
     return (dispatch) => {
         if(docId === "NEW"){
             return dispatch(patchRequest(windowType, docId))
         }else{
-            return dispatch(getData(windowType, docId))
+            if(rowId === "NEW"){
+                return dispatch(patchRequest(windowType, docId, tabId, "NEW"))
+            }else if(rowId){
+                return dispatch(getData(windowType, docId, tabId, rowId))
+            }else{
+                return dispatch(getData(windowType, docId))
+            }
         }
     }
 }
@@ -182,7 +195,7 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
  */
 export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
-        dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
+        return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
             response.data.map(item1 => {
                 if(rowId === "NEW"){
                     dispatch(addNewRow(item1, item1.tabid, item1.rowId, getScope(isModal)))
@@ -210,8 +223,12 @@ export function updateProperty(property, value, tabid, rowid, isModal){
     }
 }
 
-export function initLayout(windowType){
-    return dispatch => axios.get(config.API_URL + '/window/layout?type=' + windowType);
+export function initLayout(windowType, tabId){
+    return dispatch => axios.get(
+        config.API_URL +
+        '/window/layout?type=' + windowType +
+        (tabId ? "&tabid=" + tabId : "")
+    );
 }
 
 export function getData(windowType, id, tabId, rowId) {
@@ -252,6 +269,18 @@ export function findRowByPropName(arr, name) {
             break;
         }
     }
+
+    return ret;
+}
+
+export function getItemsByProperty(arr, prop, value) {
+    let ret = [];
+
+    arr.map((item, index) => {
+        if(item[prop] === value){
+            ret.push(item);
+        }
+    });
 
     return ret;
 }
