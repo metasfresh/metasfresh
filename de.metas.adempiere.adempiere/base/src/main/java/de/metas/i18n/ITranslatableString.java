@@ -1,5 +1,7 @@
 package de.metas.i18n;
 
+import java.util.Set;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,4 +33,8 @@ package de.metas.i18n;
 public interface ITranslatableString
 {
 	public String translate(final String adLanguage);
+	
+	public String getDefaultValue();
+	
+	public Set<String> getAD_Languages();
 }

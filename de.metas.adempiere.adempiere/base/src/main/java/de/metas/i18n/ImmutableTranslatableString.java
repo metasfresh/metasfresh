@@ -1,8 +1,14 @@
 package de.metas.i18n;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+
+import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 /*
@@ -29,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
 
 /**
  * Immutable {@link ITranslatableString} implementation.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -56,6 +62,36 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		return new ImmutableTranslatableString(trlMap, EMPTY.defaultValue);
 	}
 
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static final ImmutableTranslatableString copyOf(final ITranslatableString trl)
+	{
+		Preconditions.checkNotNull(trl, "trl");
+
+		if (trl instanceof ImmutableTranslatableString)
+		{
+			return (ImmutableTranslatableString)trl;
+		}
+
+		final Set<String> adLanguages = trl.getAD_Languages();
+		final Map<String, String> trlMap = new LinkedHashMap<>(adLanguages.size());
+		for (final String adLanguage : adLanguages)
+		{
+			final String trlString = trl.translate(adLanguage);
+			if (trlString == null)
+			{
+				continue;
+			}
+
+			trlMap.put(adLanguage, trlString);
+		}
+
+		return ofMap(trlMap, trl.getDefaultValue());
+	}
+
 	public static final ImmutableTranslatableString EMPTY = new ImmutableTranslatableString();
 
 	private final Map<String, String> trlMap;
@@ -75,6 +111,13 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		defaultValue = "";
 	}
 
+	private ImmutableTranslatableString(final Builder builder)
+	{
+		super();
+		trlMap = ImmutableMap.copyOf(builder.trlMap);
+		defaultValue = builder.defaultValue == null ? "" : builder.defaultValue;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -89,5 +132,49 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	public String translate(final String adLanguage)
 	{
 		return trlMap.getOrDefault(adLanguage, defaultValue);
+	}
+
+	@Override
+	public String getDefaultValue()
+	{
+		return defaultValue;
+	}
+
+	@Override
+	public Set<String> getAD_Languages()
+	{
+		return trlMap.keySet();
+	}
+
+	public static final class Builder
+	{
+		private final Map<String, String> trlMap = new HashMap<>();
+		private String defaultValue;
+
+		private Builder()
+		{
+			super();
+		}
+
+		public ImmutableTranslatableString build()
+		{
+			return new ImmutableTranslatableString(this);
+		}
+
+		public Builder put(final String adLanguage, final String trlString)
+		{
+			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+			Check.assumeNotNull(trlString, "trlString is not empty");
+
+			trlMap.put(adLanguage, trlString);
+
+			return this;
+		}
+
+		public Builder setDefaultValue(final String defaultValue)
+		{
+			this.defaultValue = defaultValue;
+			return this;
+		}
 	}
 }
