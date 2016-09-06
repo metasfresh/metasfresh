@@ -11,6 +11,9 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -41,11 +44,15 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private final ITranslatableString emptyResultText;
+	private final ITranslatableString emptyResultHint;
 	private final List<DocumentLayoutElementDescriptor> elements;
 
 	private DocumentLayoutSideListDescriptor(final Builder builder)
 	{
 		super();
+		emptyResultText = builder.emptyResultText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultText);
+		emptyResultHint = builder.emptyResultHint == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 
@@ -56,6 +63,16 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 				.omitNullValues()
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
+	}
+
+	public String getEmptyResultText(final String adLanguage)
+	{
+		return emptyResultText.translate(adLanguage);
+	}
+
+	public String getEmptyResultHint(final String adLanguage)
+	{
+		return emptyResultHint.translate(adLanguage);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
@@ -71,6 +88,9 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 	public static final class Builder
 	{
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+
+		private ITranslatableString emptyResultText;
+		private ITranslatableString emptyResultHint;
 
 		private Builder()
 		{
@@ -96,6 +116,18 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 			return MoreObjects.toStringHelper(this)
 					.add("elements-count", elementBuilders.size())
 					.toString();
+		}
+
+		public Builder setEmptyResultText(final ITranslatableString emptyResultText)
+		{
+			this.emptyResultText = emptyResultText;
+			return this;
+		}
+
+		public Builder setEmptyResultHint(ITranslatableString emptyResultHint)
+		{
+			this.emptyResultHint = emptyResultHint;
+			return this;
 		}
 
 		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)

@@ -65,6 +65,14 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String description;
 
+	@JsonProperty("emptyResultText")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String emptyResultText;
+
+	@JsonProperty("emptyResultHint")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String emptyResultHint;
+
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -81,6 +89,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		final String adLanguage = jsonFilteringOpts.getAD_Language();
 		caption = detail.getCaption(adLanguage);
 		description = detail.getDescription(adLanguage);
+		emptyResultText = detail.getEmptyResultText(adLanguage);
+		emptyResultHint = detail.getEmptyResultHint(adLanguage);
 
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonFilteringOpts);
 
@@ -92,14 +102,20 @@ public final class JSONDocumentLayoutTab implements Serializable
 			@JsonProperty("tabid") final String tabid //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
+			, @JsonProperty("emptyResultText") final String emptyResultText //
+			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
 	)
 	{
 		super();
 		this.tabid = tabid;
+
 		this.caption = caption;
 		this.description = description;
+		this.emptyResultText = emptyResultText;
+		this.emptyResultHint = emptyResultHint;
+
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
 	}
@@ -129,6 +145,16 @@ public final class JSONDocumentLayoutTab implements Serializable
 	public String getDescription()
 	{
 		return description;
+	}
+
+	public String getEmptyResultText()
+	{
+		return emptyResultText;
+	}
+
+	public String getEmptyResultHint()
+	{
+		return emptyResultHint;
 	}
 
 	public List<JSONDocumentLayoutElement> getElements()

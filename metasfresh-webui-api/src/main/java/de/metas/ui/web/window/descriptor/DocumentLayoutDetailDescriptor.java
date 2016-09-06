@@ -48,6 +48,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final String detailId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
+	private final ITranslatableString emptyResultText;
+	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
@@ -59,6 +61,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		detailId = builder.getDetailId();
 		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
 		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
+		emptyResultText = builder.emptyResultText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultText);
+		emptyResultHint = builder.emptyResultHint == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 		filters = ImmutableList.copyOf(builder.filters);
 	}
@@ -90,6 +94,16 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return description.translate(adLanguage);
 	}
 
+	public String getEmptyResultText(final String adLanguage)
+	{
+		return emptyResultText.translate(adLanguage);
+	}
+
+	public String getEmptyResultHint(final String adLanguage)
+	{
+		return emptyResultHint.translate(adLanguage);
+	}
+
 	public List<DocumentLayoutElementDescriptor> getElements()
 	{
 		return elements;
@@ -112,6 +126,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private Map<String, String> captionTrls;
 		private String description;
 		private Map<String, String> descriptionTrls;
+		private ITranslatableString emptyResultText;
+		private ITranslatableString emptyResultHint;
+
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
 
@@ -176,6 +193,18 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		public Builder setDescriptionTrls(final Map<String, String> descriptionTrls)
 		{
 			this.descriptionTrls = descriptionTrls;
+			return this;
+		}
+
+		public Builder setEmptyResultText(final ITranslatableString emptyResultText)
+		{
+			this.emptyResultText = emptyResultText;
+			return this;
+		}
+
+		public Builder setEmptyResultHint(ITranslatableString emptyResultHint)
+		{
+			this.emptyResultHint = emptyResultHint;
 			return this;
 		}
 

@@ -117,6 +117,19 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			.put("de_CH", "nicht")
 			.put("en_US", "none")
 			.put("en_UK", "none")
+
+	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
+	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
+			.setDefaultValue("There are no detail rows")
+			.put("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
+			.put("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
+			.build();
+
+	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
+	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
+			.setDefaultValue("You can create them in this window.")
+			.put("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
+			.put("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
 			.build();
 
 	//
@@ -485,6 +498,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setCaptionTrls(detailTab.getNameTrls())
 				.setDescription(detailTab.getDescription())
 				.setDescriptionTrls(detailTab.getDescriptionTrls())
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.addFilters(documentFilters());
 
 		final List<I_AD_UI_Section> uiSections = getUISections();
@@ -1218,7 +1233,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		logger.trace("Generating layout side list for {}", uiSections);
 
-		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder();
+		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder()
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
 		uiSections.stream()
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
