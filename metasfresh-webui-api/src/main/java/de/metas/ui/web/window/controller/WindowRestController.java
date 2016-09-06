@@ -232,6 +232,7 @@ public class WindowRestController implements IWindowRestController
 		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
 		if (documentPath.isNewDocument())
 		{
+			logger.debug("Checking if we collected all events for the new document");
 			final boolean somethingCollected = Execution.getCurrentDocumentChangesCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
 			if (somethingCollected)
 			{
