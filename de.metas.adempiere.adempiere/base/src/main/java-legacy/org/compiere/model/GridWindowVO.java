@@ -85,7 +85,7 @@ public class GridWindowVO implements Serializable
 	 */
 	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID, final boolean loadAllLanguages)
 	{
-		logger.info("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", WindowNo, AD_Window_ID, AD_Menu_ID);
+		logger.debug("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", WindowNo, AD_Window_ID, AD_Menu_ID);
 		final GridWindowVO vo = new GridWindowVO (ctx, WindowNo, loadAllLanguages);
 		vo.AD_Window_ID = AD_Window_ID;
 
