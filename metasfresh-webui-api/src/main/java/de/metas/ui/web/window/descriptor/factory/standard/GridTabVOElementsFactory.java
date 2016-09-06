@@ -113,10 +113,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
 	private static final ITranslatableString HARDCODED_FIELD_EMPTY_TEXT = ImmutableTranslatableString.builder()
 			.setDefaultValue("none")
-			.put("de_DE", "nicht")
-			.put("de_CH", "nicht")
-			.put("en_US", "none")
-			.put("en_UK", "none")
+			.put("de_DE", "leer")
+			.put("de_CH", "leer")
+			.build();
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
