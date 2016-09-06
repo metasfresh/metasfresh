@@ -19,7 +19,7 @@ class Table extends Component {
         super(props);
         this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
-            selectedProducts: [],
+            selected: [],
             contextMenu: {
                 open: false,
                 x: 0,
@@ -29,38 +29,38 @@ class Table extends Component {
     }
 
     selectProduct = (id) => {
-        this.setState({
-            selectedProducts: this.state.selectedProducts.concat([id])
-        })
+        this.setState(Object.assign({}, this.state, {
+            selected: this.state.selected.concat([id])
+        }))
     }
 
     selectRangeProduct = (ids) => {
-        this.setState({
-            selectedProducts: ids
-        })
+        this.setState(Object.assign({}, this.state, {
+            selected: ids
+        }))
     }
 
     selectOneProduct = (id) => {
-        this.setState({
-            selectedProducts: [id]
-        })
+        this.setState(Object.assign({}, this.state, {
+            selected: [id]
+        }))
     }
 
     deselectProduct = (id) => {
         this.setState(update(this.state, {
-            selectedProducts: {$splice: [[id, 1]]}
+            selected: {$splice: [[id, 1]]}
         }))
     }
 
     deselectAllProducts = () => {
-        this.setState({
-            selectedProducts: []
-        })
+        this.setState(Object.assign({}, this.state, {
+            selected: []
+        }))
     }
 
 
     handleClickOutside = (event) => {
-      if(this.state.selectedProducts.length>0){
+      if(this.state.selected.length>0){
         const {dispatch} = this.props
         // dispatch(deselectAllProducts());
         this.deselectAllProducts();
@@ -68,23 +68,23 @@ class Table extends Component {
     }
 
     closeContextMenu = (event) => {
-      this.setState({
-            contextMenu: {
+      this.setState(Object.assign({}, this.state, {
+            contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
-            }
-        });
+            })
+        }))
     }
 
     handleClick = (e, id) => {
         e.preventDefault();
 
         const {dispatch} = this.props;
-        const {selectedProducts} = this.state;
+        const {selected} = this.state;
         const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
         const selectRange = e.shiftKey;
-        const isSelected = selectedProducts.indexOf(id) > -1;
-        const isAnySelected = selectedProducts.length > 0;
-        const isMoreSelected = selectedProducts.length > 1;
+        const isSelected = selected.indexOf(id) > -1;
+        const isAnySelected = selected.length > 0;
+        const isMoreSelected = selected.length > 1;
 
         if(selectMore){
             if(isSelected){
@@ -112,8 +112,8 @@ class Table extends Component {
         }
     }
     handleRightClick = (e) => {
-        // const {selectedProducts} = this.state;
-        // if(selectedProducts.length < 1) {
+        // const {selected} = this.state;
+        // if(selected.length < 1) {
         //   this.selectProduct(id);
         // }
         e.preventDefault();
@@ -137,7 +137,7 @@ class Table extends Component {
         const {rowData, tabid} = this.props;
         let selected = [
             Object.keys(rowData[tabid]).findIndex(x => x === id),
-            Object.keys(rowData[tabid]).findIndex(x => x === this.state.selectedProducts[0])
+            Object.keys(rowData[tabid]).findIndex(x => x === this.state.selected[0])
         ];
         selected.sort((a,b) => a - b);
         return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
@@ -148,7 +148,7 @@ class Table extends Component {
     }
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
-        const {selectedProducts} = this.state;
+        const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
@@ -164,7 +164,7 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selectedProducts.indexOf(item[key].rowId) > -1}
+                        isSelected={selected.indexOf(item[key].rowId) > -1}
                         onClick={(e) => this.handleClick(e, item[key].rowId)}
                         onContextMenu={(e) => this.handleRightClick(e)}
                     />
@@ -188,17 +188,18 @@ class Table extends Component {
 
     render() {
         const {cols, type, docId, rowData, tabid} = this.props;
-
+        const {x,y,contextMenu,selected} = this.state;
         return (
             <div className="row">
                 <div className="col-xs-12">
                     <TableContextMenu
-                        x={this.state.contextMenu.x}
-                        y={this.state.contextMenu.y}
-                        isDisplayed={this.state.contextMenu.open}
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        isDisplayed={contextMenu.open}
                         blur={() => this.closeContextMenu()}
                         type={type}
                         tabId={tabid}
+                        selected={selected}
                     />
                     <div className="row">
                         <div className="col-xs-12">
