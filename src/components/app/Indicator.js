@@ -14,6 +14,7 @@ class Indicator extends Component {
     return (
       <div>
         <img src={loader} />
+        <small>Saving</small>
       </div>
     )
   }

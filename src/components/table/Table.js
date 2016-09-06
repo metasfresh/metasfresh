@@ -67,6 +67,10 @@ class Table extends Component {
       }
     }
 
+    handleKeyDown = (event) => {
+      console.log('keydown');
+    }
+
     closeContextMenu = (event) => {
       this.setState({
             contextMenu: {
@@ -210,7 +214,7 @@ class Table extends Component {
                     </div>
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)}>
+                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)} onKeyDown = {(e) => this.handleKeyDown(e)}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
