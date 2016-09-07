@@ -104,6 +104,7 @@ export function indicatorState(state){
 }
 
 
+
 // THUNK ACTIONS
 
 /*
@@ -317,4 +318,17 @@ export function fieldToString(field) {
                 return field;
         }
     }
+}
+
+//DELETE
+export function deleteData(windowType, id, tabId, rowId) {
+    console.log('window action delete');
+
+    return dispatch => axios.delete(
+        config.API_URL +
+        '/window/delete?type=' + windowType +
+        '&id=' + id +
+        (tabId ? "&tabid=" + tabId : "") +
+        (rowId ? "&rowid=" + rowId : "")
+    );
 }

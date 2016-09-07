@@ -2,7 +2,8 @@ import React, { Component,PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import {
-    openModal
+    openModal,
+    deleteData
 } from '../../actions/WindowActions';
 
 class TableContextMenu extends Component {
@@ -15,7 +16,10 @@ class TableContextMenu extends Component {
         dispatch(openModal("Advanced edit", type + "&advanced=true", tabId, selected[0]));
     }
     handleDelete = () => {
+        const {dispatch,  tabId, type, docId, selected} = this.props;
         console.log('deleted');
+
+        dispatch(deleteData(type, docId, tabId, selected[0]));
     }
     render() {
         const {isDisplayed, x, y, blur, selected} = this.props;

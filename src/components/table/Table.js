@@ -278,6 +278,7 @@ class Table extends Component {
                         y={contextMenu.y}
                         isDisplayed={contextMenu.open}
                         blur={() => this.closeContextMenu()}
+                        docId={docId}
                         type={type}
                         tabId={tabid}
                         selected={selected}
