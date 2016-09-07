@@ -33,8 +33,13 @@
 
 .header-breadcrumb {
     color: $brand-font-color-secondary;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     margin-left: 15px;
+}
+
+.header-breadcrumb a {
+    color: $brand-link-color;
+    margin: 0 .4rem;
 }
 
 .header-super-faded {

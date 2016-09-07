@@ -61,19 +61,21 @@ class Header extends Component {
                                     <i className="meta-icon-more" />
                                 </div>
 
-                                <div className="header-breadcrumb">
-                                    <div>Home / Sales orders</div>
-                                    {docNo && <div className="input-icon-container header-input-id header-input-sm">
-                                        <Widget
-                                            windowType={windowType}
-                                            dataId={dataId}
-                                            widgetData={[docNoData]}
-                                            noLabel={true}
-                                            {...docNo}
-                                        />
-                                        <i className="meta-icon-edit input-icon-right"></i>
-                                    </div>}
-                                </div>
+                                <span className="header-breadcrumb">
+                                    <a>Home</a>/ 
+                                    <a>Sales orders</a>
+                                </span>
+
+                                {docNo && <div className="input-icon-container header-input-id header-input-sm">
+                                    <Widget
+                                        windowType={windowType}
+                                        dataId={dataId}
+                                        widgetData={[docNoData]}
+                                        noLabel={true}
+                                        {...docNo}
+                                    />
+                                    <i className="meta-icon-edit input-icon-right"></i>
+                                </div>}
                             </div>
                             <div className="header-center">
                                 <img src={logo} className="header-logo"/>
