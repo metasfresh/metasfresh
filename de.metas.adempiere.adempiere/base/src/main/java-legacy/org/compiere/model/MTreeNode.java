@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Mutable Tree Node (not a PO).
@@ -820,4 +822,59 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		this.internalName = internalName;
 	}
 
+	private int AD_Window_ID = -1;
+	private int AD_Process_ID = -1;
+	private int AD_Form_ID = -1;
+	private int AD_Workflow_ID = -1;
+	private int AD_Task_ID = -1;
+
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
+	}
+
+	public void setAD_Window_ID(int aD_Window_ID)
+	{
+		AD_Window_ID = aD_Window_ID;
+	}
+
+	public int getAD_Process_ID()
+	{
+		return AD_Process_ID;
+	}
+
+	public void setAD_Process_ID(int aD_Process_ID)
+	{
+		AD_Process_ID = aD_Process_ID;
+	}
+
+	public int getAD_Form_ID()
+	{
+		return AD_Form_ID;
+	}
+
+	public void setAD_Form_ID(int aD_Form_ID)
+	{
+		AD_Form_ID = aD_Form_ID;
+	}
+
+	public int getAD_Workflow_ID()
+	{
+		return AD_Workflow_ID;
+	}
+
+	public void setAD_Workflow_ID(int aD_Workflow_ID)
+	{
+		AD_Workflow_ID = aD_Workflow_ID;
+	}
+
+	public int getAD_Task_ID()
+	{
+		return AD_Task_ID;
+	}
+
+	public void setAD_Task_ID(int aD_Task_ID)
+	{
+		AD_Task_ID = aD_Task_ID;
+	}
 }   // MTreeNode

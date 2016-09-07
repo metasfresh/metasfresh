@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -49,9 +48,8 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.exception.CommissionException;
@@ -69,6 +67,7 @@ import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.PrecedingFactFinder;
 import de.metas.document.IDocumentPA;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 /**
@@ -97,7 +96,7 @@ class CommissionFactRecordAllocationLine
 	{
 		final MInvoice invoice = allocLinePO.getInvoice();
 
-		final I_C_AllocationLine allocLine = POWrapper.create(allocLinePO, I_C_AllocationLine.class);
+		final I_C_AllocationLine allocLine = InterfaceWrapperHelper.create(allocLinePO, I_C_AllocationLine.class);
 		if (allocLine.getReversalLine_ID() > 0
 				&& allocLine.getC_AllocationLine_ID() > allocLine.getReversalLine_ID())
 		{

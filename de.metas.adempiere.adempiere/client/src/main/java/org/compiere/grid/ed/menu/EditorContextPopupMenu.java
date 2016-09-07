@@ -31,8 +31,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -49,7 +47,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.swing.CMenuItem;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 
 /**
@@ -352,7 +353,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 			}
 		}
 	}
-	
+
 	private static final void addSeparator(final Container menuComp)
 	{
 		if (menuComp instanceof JMenu)
@@ -394,6 +395,11 @@ public class EditorContextPopupMenu extends JPopupMenu
 			{
 				action.run();
 			}
+		}
+		catch (Exception e)
+		{
+			final int windowNo = Env.getWindowNo(item);
+			Services.get(IClientUI.class).error(windowNo, e);
 		}
 		finally
 		{

@@ -35,14 +35,12 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.commission.interfaces.IAdvComInstance;
@@ -56,6 +54,7 @@ import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.ISponsorCondition;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.HierarchyDescender;
+import de.metas.logging.LogManager;
 
 public class SponsorCondition implements ISponsorCondition
 {
@@ -67,8 +66,8 @@ public class SponsorCondition implements ISponsorCondition
 	{
 		Check.assume(condChange.isProcessed(), condChange + " has Processed='Y'");
 
-		final Properties ctx = POWrapper.getCtx(condChange);
-		final String trxName = POWrapper.getTrxName(condChange);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(condChange);
+		final String trxName = InterfaceWrapperHelper.getTrxName(condChange);
 
 		// Check if there are existing commission instances that might be affected by the change
 		// If there are existing instances, check if the current user is allowed to do retroactive changes.
@@ -76,7 +75,7 @@ public class SponsorCondition implements ISponsorCondition
 
 		for (final int comSystemId : comSystemId2AffectedInstances.keySet())
 		{
-			final I_C_AdvComSystem comSystem = POWrapper.create(ctx, comSystemId, I_C_AdvComSystem.class, trxName);
+			final I_C_AdvComSystem comSystem = InterfaceWrapperHelper.create(ctx, comSystemId, I_C_AdvComSystem.class, trxName);
 
 			if (!isLoginUserAdminForComSystem(ctx, comSystem, trxName))
 			{
@@ -114,7 +113,7 @@ public class SponsorCondition implements ISponsorCondition
 						final I_C_Sponsor_SalesRep newSsrBeforeLine = copySSR(ctx, oldSSR, trxName);
 						newSsrBeforeLine.setValidFrom(oldSSRValidFrom);
 						newSsrBeforeLine.setValidTo(TimeUtil.addDays(line.getDateFrom(), -1));
-						POWrapper.save(newSsrBeforeLine);
+						InterfaceWrapperHelper.save(newSsrBeforeLine);
 
 						newSSRs.add(newSsrBeforeLine);
 					}
@@ -124,7 +123,7 @@ public class SponsorCondition implements ISponsorCondition
 						final I_C_Sponsor_SalesRep newSsrAfterLine = copySSR(ctx, oldSSR, trxName);
 						newSsrAfterLine.setValidFrom(TimeUtil.addDays(line.getDateTo(), 1));
 						newSsrAfterLine.setValidTo(oldSSRValidTo);
-						POWrapper.save(newSsrAfterLine);
+						InterfaceWrapperHelper.save(newSsrAfterLine);
 
 						newSSRs.add(newSsrAfterLine);
 					}
@@ -168,7 +167,7 @@ public class SponsorCondition implements ISponsorCondition
 			return Collections.emptyList();
 		}
 
-		final I_C_Sponsor_SalesRep newSsrForLine = POWrapper.create(ctx, I_C_Sponsor_SalesRep.class, trxName);
+		final I_C_Sponsor_SalesRep newSsrForLine = InterfaceWrapperHelper.create(ctx, I_C_Sponsor_SalesRep.class, trxName);
 
 		newSsrForLine.setSponsorSalesRepType(line.getSponsorSalesRepType());
 		newSsrForLine.setAD_Org_ID(line.getAD_Org_ID());
@@ -180,7 +179,7 @@ public class SponsorCondition implements ISponsorCondition
 		newSsrForLine.setValidTo(line.getDateTo());
 		newSsrForLine.setC_Sponsor_ID(condChange.getC_Sponsor_ID());
 
-		POWrapper.save(newSsrForLine);
+		InterfaceWrapperHelper.save(newSsrForLine);
 
 		return Collections.singletonList(newSsrForLine);
 	}
@@ -287,8 +286,8 @@ public class SponsorCondition implements ISponsorCondition
 	public List<I_C_Sponsor_CondLine> retrieveLines(
 			final I_C_Sponsor_Cond condChange)
 	{
-		final Properties ctx = POWrapper.getCtx(condChange);
-		final String trxName = POWrapper.getTrxName(condChange);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(condChange);
+		final String trxName = InterfaceWrapperHelper.getTrxName(condChange);
 
 		final String wc = I_C_Sponsor_Cond.COLUMNNAME_C_Sponsor_Cond_ID + "=?";
 

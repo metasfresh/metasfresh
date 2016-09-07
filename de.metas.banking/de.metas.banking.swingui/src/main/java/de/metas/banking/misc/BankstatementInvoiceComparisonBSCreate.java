@@ -46,7 +46,6 @@ import javax.swing.JTextField;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.MiscUtils;
 import org.compiere.grid.ed.Calendar;
@@ -306,7 +305,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 		newBankstatementPO.setAD_Org_ID(selectedBankAccount.getAD_Org_ID());
 
-		final I_C_BankStatement newBankstatement = POWrapper.create(
+		final I_C_BankStatement newBankstatement = InterfaceWrapperHelper.create(
 				newBankstatementPO, I_C_BankStatement.class);
 
 		newBankstatement.setStatementDate(new Timestamp(date.getTime()));
@@ -327,7 +326,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 			final MBankStatementLine linePO = new MBankStatementLine(Env
 					.getCtx(), 0, trx.getTrxName());
-			final I_C_BankStatementLine line = POWrapper.create(linePO,
+			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO,
 					I_C_BankStatementLine.class);
 
 			final BankstatementLine mt940Line = (BankstatementLine) objectList
@@ -565,7 +564,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 			final MBankStatementLine linePO = new MBankStatementLine(Env
 					.getCtx(), 0, trx.getTrxName());
-			final I_C_BankStatementLine line = POWrapper.create(linePO,
+			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO,
 					I_C_BankStatementLine.class);
 
 			line.setC_BankStatement_ID(existingBankstatement.get_ID());

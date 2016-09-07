@@ -51,4 +51,21 @@ public class UtilTest
 		}
 	}
 
+@Test
+	public void test_clearAmp()
+	{
+		test_clearAmp(null, null);
+		test_clearAmp("", "");
+		
+		test_clearAmp("nothing", "nothing");
+		
+		test_clearAmp("Springe zu Eintrag (wo verwendet)", "&Springe zu Eintrag (wo verwendet)");
+	}
+	
+	private void test_clearAmp(final String expected, final String input)
+	{
+		final String actual = Util.cleanAmp(input);
+		Assert.assertEquals("Invalid result for input: "+input, expected, actual);
+	}
+
 }

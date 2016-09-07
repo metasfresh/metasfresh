@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -43,7 +43,7 @@ public class ILCandHandler extends CalloutEngine
 			final GridField mField,
 			final Object value)
 	{
-		final I_C_ILCandHandler ilCandGenerator = GridTabWrapper.create(mTab, I_C_ILCandHandler.class);
+		final I_C_ILCandHandler ilCandGenerator = InterfaceWrapperHelper.create(mTab, I_C_ILCandHandler.class);
 
 		final boolean failIfClassNotFound = false;
 		Services.get(IInvoiceCandidateHandlerBL.class).evalClassName(ilCandGenerator, failIfClassNotFound);

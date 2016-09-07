@@ -28,7 +28,6 @@ package de.metas.esb.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
@@ -74,7 +73,7 @@ public class EXPFormatUpdateFromTable extends SvrProcess
 		if (p_EXP_Format_ID <= 0)
 			throw new FillMandatoryException("EXP_Format_ID");
 
-		I_EXP_Format format = POWrapper.create(new MEXPFormat(getCtx(), p_EXP_Format_ID, get_TrxName()), I_EXP_Format.class);
+		I_EXP_Format format = InterfaceWrapperHelper.create(new MEXPFormat(getCtx(), p_EXP_Format_ID, get_TrxName()), I_EXP_Format.class);
 		MTable table = (MTable)format.getAD_Table();
 		for (MColumn column : table.getColumns(true))
 		{
@@ -142,7 +141,7 @@ public class EXPFormatUpdateFromTable extends SvrProcess
 		{
 			formatLine.setType(X_EXP_FormatLine.TYPE_XMLElement);
 		}
-		POWrapper.save(formatLine);
+		InterfaceWrapperHelper.save(formatLine);
 		return formatLine;
 	}
 }

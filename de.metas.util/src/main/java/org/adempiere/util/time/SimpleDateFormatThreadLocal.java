@@ -1,5 +1,7 @@
 package org.adempiere.util.time;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * de.metas.util
@@ -28,7 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * {@link SimpleDateFormat} wrapped in a {@link ThreadLocal} which makes it thread safe.
@@ -44,9 +47,12 @@ import org.adempiere.util.lang.ObjectUtils;
  * @author tsa
  *
  */
-public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFormat>
+@SuppressWarnings("serial")
+public final class SimpleDateFormatThreadLocal implements Serializable
 {
 	private final String pattern;
+	
+	private final transient ThreadLocal<SimpleDateFormat> dateFormatHolder = new ThreadLocal<>();
 
 	/**
 	 * 
@@ -57,18 +63,33 @@ public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFor
 		super();
 		Check.assumeNotEmpty(pattern, "pattern not empty");
 		this.pattern = pattern;
+		
+		// we are calling this method just to eagerly validate the pattern
+		getDateFormatInternal();
 	}
 
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("pattern", pattern)
+				.toString();
 	}
 
-	@Override
-	protected SimpleDateFormat initialValue()
+	public SimpleDateFormat getDateFormat()
 	{
-		return new SimpleDateFormat(pattern);
+		return (SimpleDateFormat)getDateFormatInternal().clone();
+	}
+
+	private SimpleDateFormat getDateFormatInternal()
+	{
+		SimpleDateFormat dateFormat = dateFormatHolder.get();
+		if(dateFormat == null)
+		{
+			dateFormat = new SimpleDateFormat(pattern);
+			dateFormatHolder.set(dateFormat);
+		}
+		return dateFormat;
 	}
 
 	/**
@@ -76,7 +97,7 @@ public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFor
 	 */
 	public String format(final Date date)
 	{
-		return get().format(date);
+		return getDateFormatInternal().format(date);
 	}
 
 	/**
@@ -84,7 +105,7 @@ public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFor
 	 */
 	public Object format(final Object value)
 	{
-		return get().format(value);
+		return getDateFormatInternal().format(value);
 	}
 
 	/**
@@ -92,7 +113,7 @@ public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFor
 	 */
 	public Date parse(final String source) throws ParseException
 	{
-		return get().parse(source);
+		return getDateFormatInternal().parse(source);
 	}
 
 	/**
@@ -100,6 +121,6 @@ public final class SimpleDateFormatThreadLocal extends ThreadLocal<SimpleDateFor
 	 */
 	public Object parseObject(final String source) throws ParseException
 	{
-		return get().parseObject(source);
+		return getDateFormatInternal().parseObject(source);
 	}
 }

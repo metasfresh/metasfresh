@@ -10,18 +10,17 @@ package org.adempiere.ad.validationRule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -32,47 +31,43 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 /**
- * SQL Validation Rule is a validation rule which has only an SQL Where Clause.
- * 
+ * Immutable SQL Validation Rule is a validation rule which has only an SQL Where Clause.
+ *
  * @author tsa
- * 
+ *
  */
-public class SQLValidationRule implements IValidationRule
+/* package */final class SQLValidationRule implements IValidationRule
 {
 	private static final String SYSCONFIG_IsIgnoredValidationCodeFail = "org.adempiere.ad.api.impl.SQLValidationRule.IsIgnoredValidationCodeFail";
 
-	private final Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(SQLValidationRule.class);
 
-	private final boolean isIgnoredValidationCodeFail;
-
+	private final String name;
 	private final IStringExpression whereClause;
 	private final boolean isStaticWhereClause;
-	private String whereClauseParsed;
+	private final boolean isIgnoredValidationCodeFail;
 
-	public SQLValidationRule(String whereClause)
+	// private String whereClauseParsed;
+
+	public SQLValidationRule(final String name, final String whereClause)
 	{
 		super();
-		this.isIgnoredValidationCodeFail = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsIgnoredValidationCodeFail, false);
+		this.name = name;
+		isIgnoredValidationCodeFail = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsIgnoredValidationCodeFail, false);
 
 		this.whereClause = Services.get(IExpressionFactory.class).compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
 
-		this.isStaticWhereClause = this.whereClause.getParameters().isEmpty();
-	}
-
-	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		return true; // FIXME
-//		final String whereClauseParsedNow = parseWhereClause(evalCtx);
-//		final boolean valid = Util.equals(whereClauseParsedNow, this.whereClauseParsed);
-//		return !valid;
+		isStaticWhereClause = this.whereClause.getParameters().isEmpty();
 	}
 
 	/**
@@ -85,22 +80,22 @@ public class SQLValidationRule implements IValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
 		return whereClause.getParameters();
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public String getPrefilterWhereClause(final IValidationContext evalCtx)
 	{
 		if (isStaticWhereClause)
 		{
 			return whereClause.getExpressionString();
 		}
 
-		String validation = parseWhereClause(evalCtx);
-		this.whereClauseParsed = validation;
-		boolean validationFailed = Check.isEmpty(validation);
+		final String validation = parseWhereClause(evalCtx);
+		// this.whereClauseParsed = validation;
+		final boolean validationFailed = Check.isEmpty(validation);
 
 		if (!validationFailed)
 		{
@@ -110,20 +105,20 @@ public class SQLValidationRule implements IValidationRule
 		// metas: begin: us1261
 		if (isIgnoredValidationCodeFail)
 		{
-			log.debug("Loader NOT Validated BUT IGNORED: " + this);
+			log.debug("Loader NOT Validated BUT IGNORED: {}", this);
 			return "1=1";
 		}
 		// metas: end: us1261
 
-		log.debug("Loader NOT Validated: " + whereClause);
+		log.debug("Loader NOT Validated: {}", this);
 		// Bug 1843862 - Lookups not working on Report Viewer window
 		// globalqss - when called from Viewer window ignore error about unparsabe context variables
 		// there is no context in report viewer windows
 		final int windowNo = evalCtx.getWindowNo();
 		if (Ini.isClient() == false ||
-				(Env.isRegularOrMainWindowNo(windowNo)
-				&& Env.getWindow(windowNo) != null // metas-ts: in some integration tests, there might be no window at all
-				&& !Env.getWindow(windowNo).getClass().getName().equals("org.compiere.print.Viewer")))
+				Env.isRegularOrMainWindowNo(windowNo)
+						&& Env.getWindow(windowNo) != null // metas-ts: in some integration tests, there might be no window at all
+						&& !Env.getWindow(windowNo).getClass().getName().equals("org.compiere.print.Viewer"))
 		{
 			return WHERECLAUSE_ERROR;
 		}
@@ -131,13 +126,13 @@ public class SQLValidationRule implements IValidationRule
 		return validation;
 	}
 
-	private String parseWhereClause(IValidationContext evalCtx)
+	private String parseWhereClause(final IValidationContext evalCtx)
 	{
 		if (isStaticWhereClause)
 		{
 			return whereClause.getExpressionString();
 		}
-		
+
 		final boolean ignoreUnparsable = false;
 		final String whereClauseParsedNow = whereClause.evaluate(evalCtx, ignoreUnparsable);
 		return whereClauseParsedNow;
@@ -147,7 +142,7 @@ public class SQLValidationRule implements IValidationRule
 	 * This method always returns true!
 	 */
 	@Override
-	public final boolean accept(IValidationContext evalCtx, NamePair item)
+	public final boolean accept(final IValidationContext evalCtx, final NamePair item)
 	{
 		return true;
 	}
@@ -155,11 +150,17 @@ public class SQLValidationRule implements IValidationRule
 	@Override
 	public String toString()
 	{
-		return "SQLValidationRule [whereClause=" + whereClause + ", isStaticWhereClause=" + isStaticWhereClause + "]";
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("name", name)
+				.add("whereClause", whereClause)
+				.add("isStaticWhereClause", isStaticWhereClause)
+				.add("isIgnoredValidationCodeFail", isIgnoredValidationCodeFail)
+				.toString();
 	}
 
 	@Override
-	public NamePair getValidValue(Object currentValue)
+	public NamePair getValidValue(final Object currentValue)
 	{
 		return null;
 	}

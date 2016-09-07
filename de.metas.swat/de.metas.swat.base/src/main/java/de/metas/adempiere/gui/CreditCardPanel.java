@@ -39,7 +39,7 @@ import java.util.Properties;
 import javax.swing.JComponent;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.grid.IPayableDocument;
@@ -57,14 +57,15 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class CreditCardPanel implements PropertyChangeListener, IVPaymentPanel
 {
@@ -430,7 +431,7 @@ public class CreditCardPanel implements PropertyChangeListener, IVPaymentPanel
 			return;
 		}
 
-		final MPayment paymentPO = (MPayment)POWrapper.getPO(payment);
+		final MPayment paymentPO = (MPayment)InterfaceWrapperHelper.getPO(payment);
 		final String ccExp = paymentPO.getCreditCardExp(null); // TODO: refactor and include it in PaymentBL
 
 		loadCCTypes(paymentPO);

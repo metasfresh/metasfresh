@@ -37,8 +37,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -76,7 +74,6 @@ import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Lookup;
-import org.compiere.model.MColumn;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -86,8 +83,6 @@ import org.compiere.model.MProductPrice;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.PopupMenuListenerAdapter;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -95,6 +90,11 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Lookup Visual Field.
@@ -1137,7 +1137,7 @@ public class VLookup extends JComponent
 
 			if(m_mField != null)
 			{
-				int AD_Table_ID = MColumn.getTable_ID(Env.getCtx(), m_mField.getAD_Column_ID(), null);
+				int AD_Table_ID = m_mField.getAD_Table_ID();
 				multipleSelection = (MOrderLine.Table_ID ==  AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID) || (MProductPrice.Table_ID == AD_Table_ID);
 			}
 			

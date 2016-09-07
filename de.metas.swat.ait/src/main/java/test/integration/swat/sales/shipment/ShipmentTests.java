@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
@@ -153,7 +153,7 @@ public class ShipmentTests extends AIntegrationTestDriver
 		{
 			olsAndSchedsToLock.add(
 					new OlAndSched(
-							POWrapper.create(ol, I_C_OrderLine.class),
+							InterfaceWrapperHelper.create(ol, I_C_OrderLine.class),
 							shipmentSchedulePA.retrieveForOrderLine(Env.getCtx(), ol.getC_OrderLine_ID(), trxName)));
 		}
 		return olsAndSchedsToLock;

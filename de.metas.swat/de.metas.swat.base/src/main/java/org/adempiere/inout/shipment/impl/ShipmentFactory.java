@@ -36,14 +36,12 @@ import org.adempiere.inout.shipment.ShipmentParams;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inout.model.I_M_InOut;
@@ -53,6 +51,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 /**
  * Tool class that does the actual work of creating {@link I_M_InOut}s and {@link I_M_InOutLine}s. It caches all required POs (e.g. Orders) to make sure the need to be loaded from DB only once.
@@ -227,7 +226,7 @@ public class ShipmentFactory
 			return order;
 		}
 
-		order = POWrapper.create(ol.getC_Order(), I_C_Order.class);
+		order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 		orderCache.put(orderId, order);
 
 		return order;

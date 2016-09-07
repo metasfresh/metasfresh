@@ -41,11 +41,9 @@ package de.metas.commission.callout;
  */
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.grid.ICreateFrom;
@@ -93,7 +91,7 @@ public class Invoice extends CalloutEngine
 			final Object value)
 	{
 
-		final I_C_Invoice invoice = GridTabWrapper.create(mTab, I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
 		if (invoice.getC_Invoice_ID() <= 0)
 		{
 			return "";

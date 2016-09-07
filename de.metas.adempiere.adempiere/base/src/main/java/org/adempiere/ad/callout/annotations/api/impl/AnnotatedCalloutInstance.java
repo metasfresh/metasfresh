@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -39,6 +37,11 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 public final class AnnotatedCalloutInstance implements ICalloutInstance
 {
@@ -74,6 +77,14 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 
 		Check.assumeNotEmpty(mapPointcuts, "mapPointcuts not empty");
 		this.mapPointcuts = mapPointcuts;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(annotatedObject)
+				.toString();
 	}
 
 	private CalloutMethodPointcutKey mkKey(final String columnName)

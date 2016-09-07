@@ -9,7 +9,7 @@ import java.util.List;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
@@ -115,7 +115,7 @@ public class BankingBL implements IBankingBL
 		final MInvoice invoice = new MInvoice(line.getCtx(), 0, line.get_TrxName());
 		invoice.setAD_Org_ID(line.getAD_Org_ID());
 
-		final I_C_Invoice extInvoice = POWrapper.create(invoice, I_C_Invoice.class);
+		final I_C_Invoice extInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		extInvoice.setC_RecurrentPaymentLine_ID(line.get_ID());
 
 		final Timestamp dateInvoiced = SystemTime.asTimestamp();

@@ -333,7 +333,7 @@ public final class POInfo implements Serializable
 				String ValueMax = rs.getString(16);
 				boolean IsTranslated = "Y".equals(rs.getString(17));
 				//
-				String ColumnSQL = rs.getString(19);
+				final String ColumnSQL = rs.getString(19);
 				boolean IsEncrypted = "Y".equals(rs.getString(20));
 				boolean IsAllowLogging = "Y".equals(rs.getString(21));
 				boolean IsLazyLoading = "Y".equals(rs.getString(23)); // metas
@@ -679,16 +679,15 @@ public final class POInfo implements Serializable
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
-		return m_columns[index].ColumnName;
+		return m_columns[index].getColumnName();
 	}   // getColumnName
 
 	/**
-	 * Get Column SQL or Column Name
+	 * Get Column SQL or Column Name, including the "AS ColumnName"
 	 * 
-	 * @param index index
-	 * @return ColumnSQL column sql or name
+	 * @param index column index
 	 */
-	public String getColumnSQL(final int index)
+	public String getColumnSqlForSelect(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 		{
@@ -697,7 +696,55 @@ public final class POInfo implements Serializable
 
 		final POInfoColumn columnInfo = m_columns[index];
 		return columnInfo.getColumnSqlForSelect();
-	}   // getColumnSQL
+	}
+
+	/**
+	 * Get Column SQL or Column Name, including the "AS ColumnName".
+	 * 
+	 * @param columnName
+	 */
+	public String getColumnSqlForSelect(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new IllegalArgumentException("Column name " + columnName + " not found in " + this);
+		}
+		return getColumnSqlForSelect(columnIndex);
+	}
+
+	/**
+	 * Get Column SQL or Column Name, without the "AS ColumnName"
+	 * 
+	 * @param index
+	 * @see #getColumnSqlForSelect(int)
+	 */
+	public String getColumnSql(final int index)
+	{
+		if (index < 0 || index >= m_columns.length)
+		{
+			return null;
+		}
+
+		final POInfoColumn columnInfo = m_columns[index];
+		return columnInfo.isVirtualColumn() ? columnInfo.getColumnSQL() : columnInfo.getColumnName();
+	}
+
+	/**
+	 * Get Column SQL or Column Name, without the "AS ColumnName"
+	 * 
+	 * @param columnName
+	 * @see #getColumnSqlForSelect(String)
+	 */
+	public String getColumnSql(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new IllegalArgumentException("Column name " + columnName + " not found in " + this);
+		}
+		return getColumnSql(columnIndex);
+	}
 
 	/**
 	 * Is Column Virtual?
@@ -763,6 +810,23 @@ public final class POInfo implements Serializable
 			return null;
 		return m_columns[index].ColumnClass;
 	}   // getColumnClass
+	
+	/**
+	 * Get Column Class
+	 * 
+	 * @param columnName
+	 * @return Class
+	 */
+	public Class<?> getColumnClass(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			return null;
+		}
+		return getColumnClass(columnIndex);
+	}
+
 
 	/**
 	 * Get Column Display Type
@@ -917,7 +981,7 @@ public final class POInfo implements Serializable
 					m_columns[columnIndex].AD_Column_ID,
 					m_columns[columnIndex].DisplayType,
 					Env.getLanguage(ctx),
-					m_columns[columnIndex].ColumnName,
+					m_columns[columnIndex].getColumnName(),
 					m_columns[columnIndex].AD_Reference_Value_ID,
 					m_columns[columnIndex].IsParent,
 					m_columns[columnIndex].AD_Val_Rule_ID);
@@ -1180,7 +1244,7 @@ public final class POInfo implements Serializable
 				continue;
 			if (sql.length() > 0)
 				sql.append(",");
-			sql.append(getColumnSQL(i));	// Normal and Virtual Column
+			sql.append(getColumnSqlForSelect(i)); // Normal and Virtual Column
 		}
 
 		return sql.toString();

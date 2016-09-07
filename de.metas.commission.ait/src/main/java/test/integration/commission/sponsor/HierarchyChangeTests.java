@@ -33,10 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.test.TestClientUI;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
@@ -53,8 +50,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import test.integration.commission.helper.Helper;
-import test.integration.swat.sales.scenario.SalesScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.BPartnerHelper;
@@ -64,13 +59,13 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
 import de.metas.commission.interfaces.I_C_Invoice;
 import de.metas.commission.interfaces.I_C_InvoiceLine;
 import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_AdvCommissionFact;
-import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.MCAdvCommissionFact;
 import de.metas.commission.model.X_C_AdvCommissionFact;
@@ -80,6 +75,9 @@ import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.interfaces.I_C_OrderLine;
+import junit.framework.Assert;
+import test.integration.commission.helper.Helper;
+import test.integration.swat.sales.scenario.SalesScenario;
 
 /**
  * Creates a setup as follows:
@@ -400,12 +398,12 @@ public class HierarchyChangeTests extends AIntegrationTestDriver
 
 			for (final I_C_AdvCommissionFact fact : facts)
 			{
-				final I_C_InvoiceLine il = POWrapper.create(MCAdvCommissionFact.retrievePO(fact), I_C_InvoiceLine.class);
+				final I_C_InvoiceLine il = InterfaceWrapperHelper.create(MCAdvCommissionFact.retrievePO(fact), I_C_InvoiceLine.class);
 				if (commissionInvoices.containsKey(il.getC_Invoice_ID()))
 				{
 					continue;
 				}
-				final I_C_Invoice invoice = POWrapper.create(il.getC_Invoice(), I_C_Invoice.class);
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(il.getC_Invoice(), I_C_Invoice.class);
 				Check.assume(!invoice.isSOTrx(), "Commission invoice " + invoice + " has SOTrx='N'");
 
 				final I_C_DocType docType = invoice.getC_DocType();
@@ -416,7 +414,7 @@ public class HierarchyChangeTests extends AIntegrationTestDriver
 						CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC.equals(docType.getDocSubType()),
 						"Commission invoice " + invoice + " has DocSubType=" + CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC);
 
-				commissionInvoices.put(il.getC_Invoice_ID(), POWrapper.create(invoice, I_C_Invoice.class));
+				commissionInvoices.put(il.getC_Invoice_ID(), InterfaceWrapperHelper.create(invoice, I_C_Invoice.class));
 			}
 		}
 	}
@@ -541,14 +539,14 @@ public class HierarchyChangeTests extends AIntegrationTestDriver
 		final BPartnerHelper bpartnerHelper = getHelper().mkBPartnerHelper();
 		
 		sr1 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR1_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr1Location = POWrapper.create(MBPartnerLocation.getForBPartner(getCtx(), sr1.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr1Location = InterfaceWrapperHelper.create(MBPartnerLocation.getForBPartner(getCtx(), sr1.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
 		sr1Location.setIsCommissionTo(true);
-		POWrapper.save(sr1Location);
+		InterfaceWrapperHelper.save(sr1Location);
 
 		sr2 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_SR2_(*)", I_C_BPartner.class);
-		final I_C_BPartner_Location sr2Location = POWrapper.create(MBPartnerLocation.getForBPartner(getCtx(), sr2.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
+		final I_C_BPartner_Location sr2Location = InterfaceWrapperHelper.create(MBPartnerLocation.getForBPartner(getCtx(), sr2.getC_BPartner_ID())[0], I_C_BPartner_Location.class);
 		sr2Location.setIsCommissionTo(true);
-		POWrapper.save(sr2Location);
+		InterfaceWrapperHelper.save(sr2Location);
 
 		cust3 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_CUST3_(*)", I_C_BPartner.class);
 		cust4 = bpartnerHelper.getC_BPartnerByName(bPartnerPrefix + "_CUST4_(*)", I_C_BPartner.class);

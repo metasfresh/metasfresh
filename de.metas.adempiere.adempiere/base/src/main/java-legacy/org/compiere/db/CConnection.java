@@ -32,7 +32,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -212,8 +211,6 @@ public final class CConnection implements Serializable, Cloneable
 	 * don't access directly, but use {@link #getStatusServiceOrNull()} instead.
 	 */
 	private IStatusService m_statusServiceEndpoint = null;
-
-	private final static String SECURITY_PRINCIPAL = "org.adempiere.security.principal";
 
 	/*************************************************************************
 	 * Get Name
@@ -1339,16 +1336,6 @@ public final class CConnection implements Serializable, Cloneable
 	public static boolean isServerEmbedded()
 	{
 		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
-	}
-
-	public void setAppServerCredential(String principal, String credential)
-	{
-		SecurityPrincipal sp = new SecurityPrincipal();
-		sp.principal = principal;
-		sp.credential = credential;
-		Env.getCtx().put(SECURITY_PRINCIPAL, sp);
-		// m_iContext = null;
-		// m_env = null;
 	}
 
 	@Override

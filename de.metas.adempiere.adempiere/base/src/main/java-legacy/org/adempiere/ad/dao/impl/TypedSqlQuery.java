@@ -612,7 +612,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final int columnIndex = poInfo.getColumnIndex(sqlExpression);
 		if (columnIndex >= 0 && poInfo.isVirtualColumn(columnIndex))
 		{
-			sqlExpression = poInfo.getColumnSQL(columnIndex);
+			sqlExpression = poInfo.getColumnSql(columnIndex);
 		}
 
 		if (Check.isEmpty(sqlExpression, true))
@@ -693,7 +693,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				throw new DBException("Column '" + columnName + "' not found for table " + tableName);
 			}
 
-			final String columnSql = poInfo.getColumnSQL(columnIndex);
+			final String columnSql = poInfo.getColumnSqlForSelect(columnIndex);
 			if (sqlColumnNames.length() > 0)
 			{
 				sqlColumnNames.append(", ");

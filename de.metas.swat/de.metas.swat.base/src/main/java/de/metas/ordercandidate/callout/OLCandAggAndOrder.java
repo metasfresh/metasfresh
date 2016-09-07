@@ -25,16 +25,16 @@ package de.metas.ordercandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 
@@ -75,7 +75,7 @@ public class OLCandAggAndOrder extends CalloutEngine
 
 	private String evaluate(final GridTab mTab)
 	{
-		final I_C_OLCandAggAndOrder aggAndOrder = GridTabWrapper.create(mTab, I_C_OLCandAggAndOrder.class);
+		final I_C_OLCandAggAndOrder aggAndOrder = InterfaceWrapperHelper.create(mTab, I_C_OLCandAggAndOrder.class);
 
 		if (aggAndOrder.getAD_Column_OLCand_ID() <= 0)
 		{

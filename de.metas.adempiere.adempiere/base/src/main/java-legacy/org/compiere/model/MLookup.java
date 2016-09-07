@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -685,7 +686,7 @@ public final class MLookup extends Lookup implements Serializable
 	 */
 	public int getAD_Reference_Value_ID()
 	{
-		return m_info.AD_Reference_Value_ID;
+		return m_info.getAD_Reference_Value_ID();
 	}   // getAD_Reference_Value_ID
 
 	/**
@@ -906,7 +907,7 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		// Need to check SO/PO
-		final boolean isSOTrx = DB.isSOTrx(m_info.TableName, query.getWhereClause(false));
+		final boolean isSOTrx = DB.isSOTrx(m_info.getTableName(), query.getWhereClause(false));
 		//
 		if (!isSOTrx)
 		{
@@ -1043,7 +1044,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		if (IValidationContext.NULL != validationCtx)
 		{
-			for (final String parameterName : lookupInfo.getValidationRule().getParameters(validationCtx))
+			for (final String parameterName : lookupInfo.getValidationRule().getParameters())
 			{
 				final String parameterValue = validationCtx.get_ValueAsString(parameterName);
 				keys.add(parameterName);
@@ -1071,12 +1072,12 @@ public final class MLookup extends Lookup implements Serializable
 
 	public String getQuery()
 	{
-		return m_info.getQuery();
+		return m_info.getSqlQuery();
 	}
 
 	public String getQueryDirect()
 	{
-		return m_info.QueryDirect;
+		return m_info.getSqlQueryDirect();
 	}
 
 	public MLookupInfo getLookupInfo()
@@ -1095,12 +1096,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public List<String> getParameters()
 	{
-		return getParameters(getValidationContext());
-	}
-
-	public List<String> getParameters(IValidationContext validationCtx)
-	{
-		return m_info.getValidationRule().getParameters(validationCtx);
+		return m_info.getValidationRule().getParameters();
 	}
 
 	@Override

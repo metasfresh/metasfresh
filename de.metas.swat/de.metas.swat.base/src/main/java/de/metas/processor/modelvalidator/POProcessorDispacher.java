@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -37,11 +37,11 @@ import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_POProcessor;
+import de.metas.logging.LogManager;
 import de.metas.processor.api.IPOProcessorBL;
 import de.metas.processor.api.impl.POProcessorBL;
 import de.metas.processor.spi.IPOProcessor;
@@ -112,7 +112,7 @@ public class POProcessorDispacher implements ModelValidator
 	@Override
 	public String modelChange(final PO po, final int type)
 	{
-		final I_AD_POProcessor processorDef = POWrapper.create(po, I_AD_POProcessor.class);
+		final I_AD_POProcessor processorDef = InterfaceWrapperHelper.create(po, I_AD_POProcessor.class);
 
 		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 		{
@@ -169,7 +169,7 @@ public class POProcessorDispacher implements ModelValidator
 		}
 		else
 		{
-			final I_AD_POProcessor processorDefOld = POWrapper.create(processorDef, I_AD_POProcessor.class, true);
+			final I_AD_POProcessor processorDefOld = InterfaceWrapperHelper.create(processorDef, I_AD_POProcessor.class, true);
 			unregisterClassName = processorDefOld.getClassname();
 		}
 
@@ -220,7 +220,7 @@ public class POProcessorDispacher implements ModelValidator
 
 	private static final String getSourceTableName(final IPOProcessor processor)
 	{
-		return POWrapper.getTableName(processor.getTrxClass());
+		return InterfaceWrapperHelper.getTableName(processor.getTrxClass());
 	}
 
 	public ModelValidationEngine getModelValidationEngine()

@@ -3178,7 +3178,8 @@ public class APanel extends CPanel
 			// Refresh data
 			if (pi.isRefreshAllAfterExecution())
 			{
-				m_curTab.dataRefreshAll();
+				final boolean retainCurrentRowIfAny = false;
+				m_curTab.dataRefreshAll(retainCurrentRowIfAny);
 			}
 			else
 			{

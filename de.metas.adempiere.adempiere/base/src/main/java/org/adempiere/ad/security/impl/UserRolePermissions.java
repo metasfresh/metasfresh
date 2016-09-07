@@ -27,11 +27,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -56,6 +57,7 @@ import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -64,10 +66,13 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.MPrivateAccess;
-import org.compiere.model.X_C_Invoice;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -118,6 +123,8 @@ class UserRolePermissions implements IUserRolePermissions
 	private final ElementPermissions formPermissions;
 
 	private final GenericPermissions miscPermissions;
+	
+	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
 	/** Permission constraints */
 	private final Constraints constraints;
@@ -390,6 +397,18 @@ class UserRolePermissions implements IUserRolePermissions
 				.or(LoginOrgConstraint.DEFAULT);
 
 		return orgPermissions.getResourcesWithAccessThatMatch(Access.LOGIN, loginOrgConstraint.asOrgResourceMatcher());
+	}
+
+	@Override
+	public Set<KeyNamePair> getLoginClients()
+	{
+		final Set<KeyNamePair> clientsList = new TreeSet<>();
+		for (final OrgResource orgResource : getLoginOrgs())
+		{
+			clientsList.add(orgResource.asClientKeyNamePair());
+		}
+
+		return clientsList;
 	}
 
 	@Deprecated
@@ -715,7 +734,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final int posOrder = SQL.lastIndexOf(" ORDER BY ");
 		if (posOrder != -1)
 		{
-			orderBy = SQL.substring(posOrder);
+			orderBy = "\n" + SQL.substring(posOrder);
 			retSQL.append(SQL.substring(0, posOrder));
 		}
 		else
@@ -764,6 +783,7 @@ class UserRolePermissions implements IUserRolePermissions
 		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
 		{ // globalqss, bug 1662433
 			// Client Access
+			retSQL.append("\n /* security-client */ ");
 			if (fullyQualified)
 			{
 				retSQL.append(tableName).append(".");
@@ -773,6 +793,7 @@ class UserRolePermissions implements IUserRolePermissions
 			// Org Access
 			if (!isAccessAllOrgs())
 			{
+				retSQL.append("\n /* security-org */ ");
 				retSQL.append(" AND ");
 				if (fullyQualified)
 				{
@@ -783,7 +804,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		else
 		{
-			retSQL.append("1=1");
+			retSQL.append("\n /* no security */ 1=1");
 		}
 
 		// ** Data Access **
@@ -805,7 +826,7 @@ class UserRolePermissions implements IUserRolePermissions
 			// Data Table Access
 			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, !rw))
 			{
-				retSQL.append(" AND 1=3");	// prevent access at all
+				retSQL.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
 				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, retSQL);
 				break;	// no need to check further
 			}
@@ -835,7 +856,7 @@ class UserRolePermissions implements IUserRolePermissions
 			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, rw);
 			if (recordWhere.length() > 0)
 			{
-				retSQL.append(" AND ").append(recordWhere);
+				retSQL.append("\n /* security-record */ AND ").append(recordWhere);
 				logger.trace("Record access: {}", recordWhere);
 			}
 		}	// for all table info
@@ -1016,64 +1037,50 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	/**
-	 * Checks the access rights of the given role/client for the given document actions.
+	 * Retains only those DocActions on which current role has access.
 	 *
 	 * @param optionsCtx
 	 * @param adClientId
-	 * @return number of valid actions in the String[] options
-	 * @see metas-2009_0021_AP1_G94
 	 */
-	private int checkActionAccess(final IDocActionOptionsContext optionsCtx, final int adClientId)
+	private void retainDocActionsWithAccess(final IDocActionOptionsContext optionsCtx)
 	{
-		final Set<String> options = optionsCtx.getOptions();
-		final int maxIndex = options.size();
-
+		final Set<String> docActions = optionsCtx.getDocActions();
+		
 		// Do nothing if there are no options to filter
-		if (maxIndex <= 0)
+		if(docActions.isEmpty())
 		{
-			return maxIndex;
+			return;
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final int docTypeId = optionsCtx.getC_DocType_ID();
+		if(docTypeId <= 0)
+		{
+			return;
+		}
+
+		final int adClientId = optionsCtx.getAD_Client_ID();
+		final Set<String> allDocActionsAllowed = getAllowedDocActions(adClientId, docTypeId);
+		final Set<String> docActionsAllowed = new LinkedHashSet<>(docActions);
+		docActionsAllowed.retainAll(allDocActionsAllowed);
+		optionsCtx.setDocActions(docActionsAllowed);
+	}
+	
+	private final Set<String> getAllowedDocActions(final int adClientId, final int docTypeId)
+	{
+		final ArrayKey key = Util.mkKey(adClientId, docTypeId);
+		return docActionsAllowed.computeIfAbsent(key, (k)->retrieveAllowedDocActions(adClientId, docTypeId));
+	}
+	
+	private final Set<String> retrieveAllowedDocActions(final int adClientId, final int docTypeId)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.add(adClientId);
-		sqlParams.add(optionsCtx.getC_DocType_ID());
-
-		final StringBuilder sql_values = new StringBuilder();
-		for (final String option : options)
-		{
-			if (sql_values.length() > 0)
-			{
-				sql_values.append(",");
-			}
-			sql_values.append("?");
-			sqlParams.add(option);
-		}
-
+		sqlParams.add(docTypeId);
 		final String sql = "SELECT rl.Value FROM AD_Document_Action_Access a"
 				+ " INNER JOIN AD_Ref_List rl ON (rl.AD_Reference_ID=135 and rl.AD_Ref_List_ID=a.AD_Ref_List_ID)"
 				+ " WHERE a.IsActive='Y' AND a.AD_Client_ID=? AND a.C_DocType_ID=?" // #1,2
-				+ " AND rl.Value IN (" + sql_values + ")"
 				+ " AND " + getIncludedRolesWhereClause("a.AD_Role_ID", sqlParams);
-
-		//
-		// Valid options shall be ordered as the previous options were
-		final Comparator<String> validOptionsComparator;
-		{
-			final List<String> optionsList = new ArrayList<>(options); // use list because it's index-friendly
-
-			validOptionsComparator = new Comparator<String>()
-			{
-				@Override
-				public int compare(final String o1, final String o2)
-				{
-					final int index1 = optionsList.indexOf(o1);
-					final int index2 = optionsList.indexOf(o2);
-					return index1 - index2;
-				}
-			};
-		}
-		final Set<String> validOptions = new TreeSet<>(validOptionsComparator);
-
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1081,15 +1088,19 @@ class UserRolePermissions implements IUserRolePermissions
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
+
+			final ImmutableSet.Builder<String> options = ImmutableSet.builder();
 			while (rs.next())
 			{
 				final String op = rs.getString(1);
-				validOptions.add(op);
+				options.add(op);
 			}
+			
+			return options.build();
 		}
 		catch (final SQLException e)
 		{
-			logger.error(sql, e);
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
@@ -1097,23 +1108,18 @@ class UserRolePermissions implements IUserRolePermissions
 			rs = null;
 			pstmt = null;
 		}
-
-		optionsCtx.setOptions(validOptions);
-
-		final int newMaxIndex = validOptions.size();
-		return newMaxIndex;
 	}
 
 	@Override
-	public int getActionAccess(final IDocActionOptionsContext optionsCtx, final int adClientId)
+	public void applyActionAccess(final IDocActionOptionsContext optionsCtx)
 	{
-		final int index = checkActionAccess(optionsCtx, adClientId);
+		retainDocActionsWithAccess(optionsCtx);
 
 		final String targetDocAction = optionsCtx.getDocActionToUse();
 
-		if (targetDocAction != null && !X_C_Invoice.DOCACTION_None.equals(targetDocAction))
+		if (targetDocAction != null && !DocAction.ACTION_None.equals(targetDocAction))
 		{
-			final Set<String> options = optionsCtx.getOptions();
+			final Set<String> options = optionsCtx.getDocActions();
 
 			final Boolean access;
 			if (options.contains(targetDocAction))
@@ -1126,9 +1132,8 @@ class UserRolePermissions implements IUserRolePermissions
 			}
 			Services.get(IRolePermLoggingBL.class).logDocActionAccess(getAD_Role_ID(), optionsCtx.getC_DocType_ID(), targetDocAction, access);
 		}
+		
 		optionsCtx.setDocActionToUse(targetDocAction);
-
-		return index;
 	}
 
 	/**

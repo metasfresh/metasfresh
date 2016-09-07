@@ -17,19 +17,19 @@
 package org.compiere.model;
 
 import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.compiere.util.DB;
+import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Info Class for Lookup SQL (ValueObject)
@@ -37,55 +37,9 @@ import org.compiere.util.DB;
  * @author Jorg Janke
  * @version $Id: MLookupInfo.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
  */
-public class MLookupInfo implements Serializable, Cloneable
+public final class MLookupInfo implements Serializable, Cloneable
 {
 	private static final transient Logger logger = LogManager.getLogger(MLookupInfo.class);
-
-	/**
-	 * Get first AD_Reference_ID of a matching Reference Name.
-	 * Can have SQL LIKE placeholders.
-	 * (This is more a development tool than used for production)
-	 * 
-	 * @param referenceName reference name
-	 * @return AD_Reference_ID
-	 */
-	public static int getAD_Reference_ID(String referenceName)
-	{
-		int retValue = 0;
-		String sql = "SELECT AD_Reference_ID,Name,ValidationType,IsActive "
-				+ "FROM AD_Reference WHERE Name LIKE ?";
-		try
-		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setString(1, referenceName);
-			ResultSet rs = pstmt.executeQuery();
-			//
-			int i = 0;
-			int id = 0;
-			String refName = "";
-			String validationType = "";
-			boolean isActive = false;
-			while (rs.next())
-			{
-				id = rs.getInt(1);
-				if (i == 0)
-					retValue = id;
-				refName = rs.getString(2);
-				validationType = rs.getString(3);
-				isActive = rs.getString(4).equals("Y");
-				logger.info("AD_Reference Name=" + refName + ", ID=" + id + ", Type=" + validationType + ", Active=" + isActive);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (SQLException e)
-		{
-			logger.error(sql, e);
-		}
-		return retValue;
-	}   // getAD_Reference_ID
-
-	// public static int getAD_Column_ID (String columnName) // metas: removed
 
 	/**************************************************************************
 	 * Constructor.
@@ -120,17 +74,19 @@ public class MLookupInfo implements Serializable, Cloneable
 	static final long serialVersionUID = -7958664359250070233L;
 
 	/** SQL Query */
-	public String Query;
+	private String Query;
 	/** Table Name */
-	public final String TableName;
+	private final String TableName;
 	/** Key Column */
-	public final String KeyColumn;
+	private final String KeyColumn;
 	/** Display Column SQL */
 	private String displayColumnSQL = null;
 	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
 	private String selectSqlPart = null;
 	private String fromSqlPart = null;
 	private String whereClauseSqlPart = null;
+	/** SQL WHERE part (without WHERE keyword); this SQL includes context variables references */
+	private String whereClauseDynamicSqlPart = null;
 	private String orderBySqlPart = null;
 	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
 	private boolean securityDisabled = false;
@@ -142,30 +98,32 @@ public class MLookupInfo implements Serializable, Cloneable
 	public MQuery ZoomQuery = null;
 
 	/** Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
-	public String QueryDirect = "";
+	private String QueryDirect = "";
 	/** Parent Flag */
-	public boolean IsParent = false;
+	private boolean IsParent = false;
 	/** Key Flag */
 	private boolean IsKey = false;
 	// /** Validation code */
 	// public String ValidationCode = "";
 	// /** Validation flag */
 	// public boolean IsValidated = true;
-	private IValidationRule validationRule = NullValidationRule.instance;
+	private IValidationRule _validationRule = NullValidationRule.instance;
+	private IValidationRule _validationRuleEffective = null; // lazy
 
 	/** Context */
 	private Properties ctx = null;
 	/** WindowNo */
-	public int WindowNo;
+	private int WindowNo;
 
 	/** AD_Column_Info or AD_Process_Para */
-	public int Column_ID;
+	private int Column_ID;
 	/** AD_Reference_ID */
 	private int DisplayType;
 	/** Real AD_Reference_ID */
-	public int AD_Reference_Value_ID;
+	private int AD_Reference_Value_ID;
 	/** CreadedBy?updatedBy */
 	private boolean IsCreadedUpdatedBy = false;
+	@Deprecated
 	public String InfoFactoryClass = null;
 	private boolean autoComplete = false;
 	private boolean queryHasEntityType = false;
@@ -178,7 +136,7 @@ public class MLookupInfo implements Serializable, Cloneable
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MLookupInfo[")
+		StringBuilder sb = new StringBuilder("MLookupInfo[")
 				.append(KeyColumn)
 				.append("-Direct=").append(QueryDirect)
 				.append("]");
@@ -215,27 +173,55 @@ public class MLookupInfo implements Serializable, Cloneable
 		this.ctx = ctxNew;
 	}
 	
+	/** @return the whole SQL query, including SELECT, FROM, WHERE, ORDER BY */
 	public String getSqlQuery()
 	{
 		return Query;
 	}
+	
+	void setSqlQuery(final String sqlQuery)
+	{
+		this.Query = sqlQuery;
+	}
+
+	/** @return Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
+	public String getSqlQueryDirect()
+	{
+		return this.QueryDirect;
+	}
+	
+	void setSqlQueryDirect(final String sqlQueryDirect)
+	{
+		this.QueryDirect = sqlQueryDirect;
+	}
 
 	// metas
+	/** @return effective validation rule */
 	public IValidationRule getValidationRule()
 	{
-		return validationRule;
+		if (_validationRuleEffective == null)
+		{
+			final IValidationRule whereClauseDynamicValidationRule;
+			if(!Check.isEmpty(whereClauseDynamicSqlPart, true))
+			{
+				whereClauseDynamicValidationRule = Services.get(IValidationRuleFactory.class).createSQLValidationRule(whereClauseDynamicSqlPart);
+			}
+			else
+			{
+				whereClauseDynamicValidationRule = NullValidationRule.instance;
+			}
+			
+			_validationRuleEffective = CompositeValidationRule.compose(_validationRule, whereClauseDynamicValidationRule);
+		}
+		return _validationRuleEffective;
 	}
 
-	/* package */void setValidationRule(IValidationRule validationRule)
+	/* package */void setValidationRule(final IValidationRule validationRule)
 	{
-		this.validationRule = validationRule;
+		this._validationRule = validationRule == null ? NullValidationRule.instance : validationRule;
+		this._validationRuleEffective = null; // reset
 	}
-
-	public String getQuery()
-	{
-		return Query;
-	}
-
+	
 	public String getDisplayColumnSQL()
 	{
 		return displayColumnSQL;
@@ -246,7 +232,7 @@ public class MLookupInfo implements Serializable, Cloneable
 		this.displayColumnSQL = displayColumnSQL;
 	}
 
-	public void setDisplayColumns(final List<ILookupDisplayColumn> displayColumns)
+	void setDisplayColumns(final List<ILookupDisplayColumn> displayColumns)
 	{
 		if (displayColumns == null || displayColumns.isEmpty())
 		{
@@ -263,6 +249,7 @@ public class MLookupInfo implements Serializable, Cloneable
 		return displayColumns;
 	}
 
+	/** @return SELECT Key, Value, Name, IsActive, EntityType FROM ... (without WHERE!) */
 	public String getSelectSqlPart()
 	{
 		return selectSqlPart;
@@ -273,6 +260,7 @@ public class MLookupInfo implements Serializable, Cloneable
 		this.selectSqlPart = selectSqlPart;
 	}
 
+	/** @return SQL FROM part, with joins to translation tables if needed, without FROM keyword */
 	public String getFromSqlPart()
 	{
 		return fromSqlPart;
@@ -283,16 +271,24 @@ public class MLookupInfo implements Serializable, Cloneable
 		this.fromSqlPart = fromSqlPart;
 	}
 
+	/** @return SQL WHERE part (without WHERE keyword); this SQL is NOT including the {@link #getValidationRule()} code */
 	public String getWhereClauseSqlPart()
 	{
 		return whereClauseSqlPart;
 	}
-
+	
 	/* package */void setWhereClauseSqlPart(String whereClauseSqlPart)
 	{
 		this.whereClauseSqlPart = whereClauseSqlPart;
 	}
 
+	/* package */void setWhereClauseDynamicSqlPart(String whereClauseDynamicSqlPart)
+	{
+		this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
+		this._validationRuleEffective = null; // reset
+	}
+
+	/** @return SQL ORDER BY part (without ORDER BY keyword) */
 	public String getOrderBySqlPart()
 	{
 		return orderBySqlPart;
@@ -355,8 +351,27 @@ public class MLookupInfo implements Serializable, Cloneable
 
 	public boolean isNumericKey()
 	{
-		final boolean isNumeric = KeyColumn != null && KeyColumn.endsWith("_ID");
-		return isNumeric;
+		return isNumericKey(KeyColumn);
+	}
+	
+	public static final boolean isNumericKey(final String keyColumn)
+	{
+		if (keyColumn == null)
+		{
+			return false; // shall not happen
+		}
+		
+		// FIXME: hardcoded
+		if ("CreatedBy".equals(keyColumn) || "UpdatedBy".equals(keyColumn))
+		{
+			return true;
+		}
+		
+		if (keyColumn.endsWith("_ID"))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	public int getDisplayType()
@@ -368,6 +383,16 @@ public class MLookupInfo implements Serializable, Cloneable
 	{
 		this.DisplayType = displayType;
 	}
+	
+	public int getAD_Reference_Value_ID()
+	{
+		return AD_Reference_Value_ID;
+	}
+	
+	void setAD_Reference_Value_ID(int aD_Reference_Value_ID)
+	{
+		AD_Reference_Value_ID = aD_Reference_Value_ID;
+	}
 
 	public boolean isKey()
 	{
@@ -378,10 +403,15 @@ public class MLookupInfo implements Serializable, Cloneable
 	{
 		this.IsKey = isKey;
 	}
-
+	
 	public int getWindowNo()
 	{
 		return this.WindowNo;
+	}
+	
+	void setWindowNo(int windowNo)
+	{
+		this.WindowNo = windowNo;
 	}
 
 	public boolean isParent()
@@ -389,12 +419,22 @@ public class MLookupInfo implements Serializable, Cloneable
 		return this.IsParent;
 	}
 
+	void setIsParent(final boolean isParent)
+	{
+		this.IsParent = isParent;
+	}
+
 	public int getAD_Column_ID()
 	{
 		return this.Column_ID;
 	}
+	
+	void setAD_Column_ID(int column_ID)
+	{
+		this.Column_ID = column_ID;
+	}
 
-	public void setAutoComplete(boolean autoComplete)
+	void setAutoComplete(boolean autoComplete)
 	{
 		this.autoComplete = autoComplete;
 	}

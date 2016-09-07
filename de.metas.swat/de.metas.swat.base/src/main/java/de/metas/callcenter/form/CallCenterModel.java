@@ -29,11 +29,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
@@ -52,6 +50,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
@@ -60,6 +59,7 @@ import de.metas.callcenter.model.I_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
 import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -183,7 +183,7 @@ public class CallCenterModel
 	{
 		if (refresh)
 			m_mTab.dataRefresh();
-		I_RV_R_Group_Prospect contact = GridTabWrapper.create(m_mTab, I_RV_R_Group_Prospect.class);
+		I_RV_R_Group_Prospect contact = InterfaceWrapperHelper.create(m_mTab, I_RV_R_Group_Prospect.class);
 		return contact;
 	}
 	

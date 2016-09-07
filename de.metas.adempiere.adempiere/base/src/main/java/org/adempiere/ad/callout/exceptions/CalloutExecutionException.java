@@ -53,7 +53,7 @@ public class CalloutExecutionException extends CalloutException
 			}
 		}
 		
-		return new CalloutExecutionException(throwable.getLocalizedMessage(), throwable);
+		return new CalloutExecutionException(extractMessage(throwable), throwable);
 	}
 	
 	public CalloutExecutionException(final String message)

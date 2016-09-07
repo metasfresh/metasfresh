@@ -35,7 +35,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
@@ -43,9 +43,6 @@ import org.compiere.model.MProductPricing;
 import org.compiere.util.Env;
 import org.junit.Assume;
 
-import test.integration.contracts.ContractsHelper;
-import test.integration.contracts.ContractsTestConfig;
-import test.integration.swat.sales.SalesTestDriver;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.event.TestEvent;
@@ -65,6 +62,9 @@ import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.IProductPA;
+import test.integration.contracts.ContractsHelper;
+import test.integration.contracts.ContractsTestConfig;
+import test.integration.swat.sales.SalesTestDriver;
 
 public class FlatFeeTestListener
 {
@@ -276,9 +276,9 @@ public class FlatFeeTestListener
 			eventTypes = EventType.INVOICECAND_CREATE_AFTER)
 	public void onNewInvoiceCandidate(final TestEvent evt)
 	{
-		final I_C_Invoice_Candidate ic = POWrapper.create(evt.getObj(), I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(evt.getObj(), I_C_Invoice_Candidate.class);
 
-		final I_M_Product icProduct = POWrapper.create(ic.getM_Product(), I_M_Product.class);
+		final I_M_Product icProduct = InterfaceWrapperHelper.create(ic.getM_Product(), I_M_Product.class);
 		final AIntegrationTestDriver driver = evt.getSource();
 		final ContractsHelper helper = new ContractsHelper(driver.getHelper());
 

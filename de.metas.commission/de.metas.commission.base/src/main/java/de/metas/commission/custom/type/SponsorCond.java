@@ -37,7 +37,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
@@ -47,10 +46,9 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IParameterizable;
 import de.metas.commission.custom.config.BaseConfig;
@@ -82,6 +80,7 @@ import de.metas.commission.service.ISponsorCondition;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.HierarchyAscender;
 import de.metas.commission.util.HierarchyDescender;
+import de.metas.logging.LogManager;
 
 /**
  * Type handles {@link I_C_Sponsor_SalesRep} changes, i.e. changes made to the sponsor hierarchy
@@ -110,7 +109,7 @@ public class SponsorCond implements ICommissionType
 		{
 			return;
 		}
-		if (!X_C_Sponsor_Cond.DOCSTATUS_Fertiggestellt.equals(POWrapper.create(po, I_C_Sponsor_Cond.class).getDocStatus()))
+		if (!X_C_Sponsor_Cond.DOCSTATUS_Fertiggestellt.equals(InterfaceWrapperHelper.create(po, I_C_Sponsor_Cond.class).getDocStatus()))
 		{
 			return;
 		}
@@ -221,7 +220,7 @@ public class SponsorCond implements ICommissionType
 				// collect all invoices and orders for all bPartner's that are connected to 'sponsorCurrentLevel'
 				final Set<Integer> bPartnersSeen = new HashSet<Integer>();
 
-				final I_C_BPartner bPartnerCust = POWrapper.create(sponsorCurrentLevel.getC_BPartner(), I_C_BPartner.class);
+				final I_C_BPartner bPartnerCust = InterfaceWrapperHelper.create(sponsorCurrentLevel.getC_BPartner(), I_C_BPartner.class);
 				bPartnersSeen.add(bPartnerCust.getC_BPartner_ID());
 				retrieveDocsForBP(bPartnerCust, newOrdersAndInvoices, newTheRest);
 
@@ -229,7 +228,7 @@ public class SponsorCond implements ICommissionType
 				{
 					if (bPartnersSeen.add(ssr.getC_BPartner_ID()))
 					{
-						retrieveDocsForBP(POWrapper.create(ssr.getC_BPartner(), I_C_BPartner.class), newOrdersAndInvoices, newTheRest);
+						retrieveDocsForBP(InterfaceWrapperHelper.create(ssr.getC_BPartner(), I_C_BPartner.class), newOrdersAndInvoices, newTheRest);
 					}
 				}
 				return Result.GO_ON;
@@ -316,8 +315,8 @@ public class SponsorCond implements ICommissionType
 	{
 		final IFieldAccessBL faBL = Services.get(IFieldAccessBL.class);
 
-		final Properties ctx = POWrapper.getCtx(condChangeLine);
-		final String trxName = POWrapper.getTrxName(condChangeLine);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(condChangeLine);
+		final String trxName = InterfaceWrapperHelper.getTrxName(condChangeLine);
 
 		for (final Object po : ordersAndInvoices)
 		{

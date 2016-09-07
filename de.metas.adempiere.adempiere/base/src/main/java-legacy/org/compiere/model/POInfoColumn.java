@@ -72,10 +72,20 @@ public final class POInfoColumn implements Serializable
 			int fieldLength, String valueMin, String valueMax,
 			boolean isTranslated, boolean isEncrypted, boolean isAllowLogging)
 	{
+		super();
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
-		ColumnSQL = columnSQL;
-		this.virtualColumn = !Check.isEmpty(this.ColumnSQL, false); // trimWhitespaces=false to preserve back compatibility
+		this.virtualColumn = !Check.isEmpty(columnSQL, false); // trimWhitespaces=false to preserve back compatibility
+		if (virtualColumn)
+		{
+			this.ColumnSQL = columnSQL;
+			this.sqlColumnForSelect = ColumnSQL + " AS " + ColumnName;
+		}
+		else
+		{
+			this.ColumnSQL = null;
+			this.sqlColumnForSelect = ColumnName;
+		}
 
 		int displayTypeToSet = displayType;
 		if (columnName.equals("AD_Language") || columnName.equals("EntityType"))
@@ -120,26 +130,14 @@ public final class POInfoColumn implements Serializable
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
-
-		//
-		// Build Column SQL for SELECTs
-		if (virtualColumn)
-		{
-			this.sqlColumnForSelect = ColumnSQL + " AS " + ColumnName;
-		}
-		else
-		{
-			this.sqlColumnForSelect = ColumnName;
-		}
-
 	}   // Column
 
 	/** Column ID */
 	final int AD_Column_ID;
 	/** Column Name */
-	final String ColumnName;
+	private final String ColumnName;
 	/** Virtual Column SQL */
-	final String ColumnSQL;
+	private final String ColumnSQL;
 	/** Is Virtual Column */
 	private final boolean virtualColumn;
 	/** Is Lazy Loading */

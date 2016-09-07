@@ -162,7 +162,15 @@ public class JaxRsBL implements IJaxRsBL
 		svrFactory.getFeatures().add(createJMSConfigFeature(
 				request.getRequestQueue(),
 				request.getResponseQueue()));
-		svrFactory.getFeatures().add(loggingFeature);
+		
+		if (loggingFeature != null)
+		{
+			svrFactory.getFeatures().add(loggingFeature);
+		}
+		else
+		{
+			logger.warn("Skip adding {} because is null", LoggingFeature.class);
+		}
 
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
@@ -349,10 +357,21 @@ public class JaxRsBL implements IJaxRsBL
 
 		for (final Class<T> endPointclass : request.getEndpointClasses())
 		{
+			final List<Feature> features;
+			if (loggingFeature == null)
+			{
+				logger.warn("No logging feature was wired for {}. Going without it", LoggingFeature.class);
+				features = Collections.emptyList();
+			}
+			else
+			{
+				features = Collections.singletonList((Feature)loggingFeature);
+			}
+			
 			final T client = JAXRSClientFactory.create(clientURL,
 					endPointclass,
 					Collections.singletonList(jacksonJaxbJsonProvider),
-					Collections.singletonList((Feature)loggingFeature),
+					features,
 					null); // not providing a particular configLocation);
 
 			WebClient.client(client)

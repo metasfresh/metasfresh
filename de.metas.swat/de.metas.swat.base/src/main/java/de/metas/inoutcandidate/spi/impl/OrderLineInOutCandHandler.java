@@ -34,7 +34,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -80,7 +79,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
-		final I_M_ShipmentSchedule newSched = POWrapper.create(ctx, I_M_ShipmentSchedule.class, trxName);
+		final I_M_ShipmentSchedule newSched = InterfaceWrapperHelper.create(ctx, I_M_ShipmentSchedule.class, trxName);
 
 		final BigDecimal qtyOrdered_Effective = orderLine.getQtyOrdered();
 
@@ -165,7 +164,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 		final boolean display = Services.get(IProductBL.class).isItem(orderLine.getM_Product());
 		newSched.setIsDisplayed(display);
 
-		POWrapper.save(newSched);
+		InterfaceWrapperHelper.save(newSched);
 
 		// FIXME: disabled invalidation for
 		// invalidateForOrderLine(orderLine, order, trxName);

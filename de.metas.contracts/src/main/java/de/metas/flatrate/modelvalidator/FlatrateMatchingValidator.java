@@ -24,7 +24,7 @@ package de.metas.flatrate.modelvalidator;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -66,7 +66,7 @@ public class FlatrateMatchingValidator implements ModelValidator
 	{
 		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
 		{
-			final I_C_Flatrate_Matching matching = POWrapper.create(po, I_C_Flatrate_Matching.class);
+			final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.create(po, I_C_Flatrate_Matching.class);
 
 			final I_C_Flatrate_Conditions fc = matching.getC_Flatrate_Conditions();
 

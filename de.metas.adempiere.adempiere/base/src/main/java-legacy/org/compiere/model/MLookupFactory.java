@@ -18,8 +18,6 @@ package org.compiere.model;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -37,6 +35,9 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Create MLookups
@@ -176,7 +177,9 @@ public class MLookupFactory
 		boolean IsParent, String ValidationCode)
 	{
 		final MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID, language, ColumnName, AD_Reference_Value_ID, IsParent, -1);
+		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
+		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 	
@@ -187,12 +190,14 @@ public class MLookupFactory
 	{
 		final MLookupInfo info;
 		//	List
-		if (AD_Reference_ID == DisplayType.List)	//	17
+		if (AD_Reference_ID == DisplayType.List
+				|| (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID > 0) // Button with attached list
+		)
 		{
 			info = getLookup_List(language, AD_Reference_Value_ID);
 		}
 		//	Table or Search with Reference_Value
-		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID != 0)
+		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID > 0)
 		{
 			info = getLookup_Table (ctx, language, WindowNo, AD_Reference_Value_ID);
 		}
@@ -211,12 +216,13 @@ public class MLookupFactory
 		//	remaining values
 		// NOTE: because some of the previous getters can retrieve a clone of a cached lookup info, here we need to set the actual values again
 		info.setCtx(ctx);
-		info.WindowNo = WindowNo;
-		info.Column_ID = Column_ID;
+		info.setWindowNo(WindowNo);
+		info.setAD_Column_ID(Column_ID);
 		info.setDisplayType(AD_Reference_ID);
-		info.AD_Reference_Value_ID = AD_Reference_Value_ID;
-		info.IsParent = IsParent;
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.TableName, AD_Val_Rule_ID));
+		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
+		info.setIsParent(IsParent);
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.getTableName(), AD_Val_Rule_ID));
+		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
 		//	Variables in SQL WHERE
 		// NOTE(metas): there is no point to parse the where clause (even if just partially, for global variables) because it will be parsed anyway on valiadation time 
@@ -238,7 +244,7 @@ public class MLookupFactory
 //		}
 
 		//	Direct Query - NO Validation/Security
-		info.QueryDirect = createQueryDirect(info);
+		info.setSqlQueryDirect(createQueryDirect(info));
 
 		//	Validation
 		// NOTE (metas): we are not adding the validation here because it will be added on load time (from IValidationRule)
@@ -246,7 +252,7 @@ public class MLookupFactory
 		//	Add Security
 		if (!info.isSecurityDisabled())
 		{
-			info.Query = Env.getUserRolePermissions(ctx).addAccessSQL(info.Query, info.TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			info.setSqlQuery(Env.getUserRolePermissions(ctx).addAccessSQL(info.getSqlQuery(), info.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
 		}
 		
 		//
@@ -462,8 +468,7 @@ public class MLookupFactory
 			return s_cacheRefTable.get(cacheKey).cloneIt();
 		}
 
-		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class)
-				.retrieveLookupDisplayInfo(tableRefInfo);
+		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
 		if (lookupDisplayInfo == null)
 		{
 			return null;
@@ -585,6 +590,7 @@ public class MLookupFactory
 		//
 		// SQL Where Clause
 		final String sqlWhereClause;
+		final String sqlWhereClauseDynamic;
 		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
 		{
 			final String whereClauseInitial = tableRefInfo.getWhereClause();
@@ -597,7 +603,15 @@ public class MLookupFactory
 			if (Check.isEmpty(whereClauseParsed, true))
 			{
 				sqlWhereClause = null;
-				s_log.error("Could not resolve: " + whereClauseInitial + ". WhereClause Ignored.");
+				sqlWhereClauseDynamic = whereClauseInitial.trim();
+				
+				if(s_log.isDebugEnabled())
+				{
+					final AdempiereException ex = new AdempiereException("Could not resolve: " + whereClauseInitial + ". "
+							+ "\n Considering it as dynamic where clause which will be processed together with validation rules."
+							+ "\n tableRefInfo=" + tableRefInfo);
+					s_log.debug("", ex);
+				}
 			}
 			else
 			{
@@ -606,11 +620,13 @@ public class MLookupFactory
 					s_log.error("getLookup_Table - " + TableName + ": WHERE should be fully qualified: " + whereClauseInitial);
 				}
 				sqlWhereClause = whereClauseParsed;
+				sqlWhereClauseDynamic = null;
 			}
 		}
 		else
 		{
 			sqlWhereClause = null;
+			sqlWhereClauseDynamic = null;
 		}
 		
 		//
@@ -681,12 +697,13 @@ public class MLookupFactory
 		final MLookupInfo lookupInfo = new MLookupInfo(sqlQueryFinal.toString(),
 				TableName, keyColumnFQ,
 				ZoomWindow, ZoomWindowPO, zoomQuery);
-		lookupInfo.WindowNo = windowNo;
+		lookupInfo.setWindowNo(windowNo);
 		lookupInfo.setDisplayColumns(displayColumns);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL.toString());
 		lookupInfo.setSelectSqlPart(sqlSelect.toString());
 		lookupInfo.setFromSqlPart(sqlFrom.toString());
 		lookupInfo.setWhereClauseSqlPart(sqlWhereClause);
+		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());

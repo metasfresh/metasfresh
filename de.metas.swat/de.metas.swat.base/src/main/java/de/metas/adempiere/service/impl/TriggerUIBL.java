@@ -47,7 +47,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.I_AD_TriggerUI;
 import org.adempiere.model.I_AD_TriggerUI_Action;
 import org.adempiere.model.I_AD_TriggerUI_Criteria;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.X_AD_TriggerUI_Action;
 import org.adempiere.model.X_AD_TriggerUI_Criteria;
 import org.adempiere.util.Check;
@@ -61,14 +61,14 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ITriggerUIBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -99,8 +99,15 @@ public class TriggerUIBL implements ITriggerUIBL
 		@Override
 		public void execute(final ICalloutExecutor executor, final ICalloutField field)
 		{
-			final GridField gridField = (GridField)field; // FIXME: find a better way to get rid of direct GridField access
-			trigger(gridField);
+			if (field instanceof GridField)
+			{
+				final GridField gridField = (GridField)field; // FIXME: find a better way to get rid of direct GridField access
+				trigger(gridField);
+			}
+			else
+			{
+				// FIXME: not supported
+			}
 		}
 
 		@Override
@@ -218,19 +225,19 @@ public class TriggerUIBL implements ITriggerUIBL
 			if (I_AD_TriggerUI.Table_Name.equals(po.get_TableName()) && TYPE_BEFORE_DELETE == type)
 			{
 				ITriggerUIBL triggerService = Services.get(ITriggerUIBL.class);
-				triggerService.removeDependencies(POWrapper.create(po, I_AD_TriggerUI.class));
+				triggerService.removeDependencies(InterfaceWrapperHelper.create(po, I_AD_TriggerUI.class));
 			}
 			if (I_AD_TriggerUI_Criteria.Table_Name.equals(po.get_TableName())
 					&& (TYPE_BEFORE_NEW == type || TYPE_BEFORE_CHANGE == type))
 			{
 				ITriggerUIBL triggerService = Services.get(ITriggerUIBL.class);
-				triggerService.validate(POWrapper.create(po, I_AD_TriggerUI_Criteria.class));
+				triggerService.validate(InterfaceWrapperHelper.create(po, I_AD_TriggerUI_Criteria.class));
 			}
 			if (I_AD_TriggerUI_Action.Table_Name.equals(po.get_TableName())
 					&& (TYPE_BEFORE_NEW == type || TYPE_BEFORE_CHANGE == type))
 			{
 				ITriggerUIBL triggerService = Services.get(ITriggerUIBL.class);
-				triggerService.validate(POWrapper.create(po, I_AD_TriggerUI_Action.class));
+				triggerService.validate(InterfaceWrapperHelper.create(po, I_AD_TriggerUI_Action.class));
 			}
 
 			return null;
@@ -293,8 +300,8 @@ public class TriggerUIBL implements ITriggerUIBL
 
 	public List<I_AD_TriggerUI_Criteria> retrieveCriterias(I_AD_TriggerUI trigger)
 	{
-		final Properties ctx = POWrapper.getCtx(trigger);
-		final String trxName = POWrapper.getTrxName(trigger);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(trigger);
+		final String trxName = InterfaceWrapperHelper.getTrxName(trigger);
 		final int AD_TriggerUI_ID = trigger.getAD_TriggerUI_ID();
 		return retrieveCriterias(ctx, AD_TriggerUI_ID, trxName);
 	}
@@ -316,8 +323,8 @@ public class TriggerUIBL implements ITriggerUIBL
 
 	public List<I_AD_TriggerUI_Action> retrieveActions(I_AD_TriggerUI trigger)
 	{
-		Properties ctx = POWrapper.getCtx(trigger);
-		String trxName = POWrapper.getTrxName(trigger);
+		Properties ctx = InterfaceWrapperHelper.getCtx(trigger);
+		String trxName = InterfaceWrapperHelper.getTrxName(trigger);
 		final int AD_TriggerUI_ID = trigger.getAD_TriggerUI_ID();
 		return retrieveActions(ctx, AD_TriggerUI_ID, trxName);
 	}
@@ -679,11 +686,11 @@ public class TriggerUIBL implements ITriggerUIBL
 	{
 		for (I_AD_TriggerUI_Criteria criteria : retrieveCriterias(trigger))
 		{
-			POWrapper.delete(criteria);
+			InterfaceWrapperHelper.delete(criteria);
 		}
 		for (I_AD_TriggerUI_Action action : retrieveActions(trigger))
 		{
-			POWrapper.delete(action);
+			InterfaceWrapperHelper.delete(action);
 		}
 	}
 

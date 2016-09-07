@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 import javax.swing.JMenuItem;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 import org.eevolution.tools.swing.SwingTool;
 import org.eevolution.tools.worker.SingleWorker;
@@ -189,7 +189,7 @@ public abstract class PopupAction extends JMenuItem implements ActionListener {
 	
 	protected void savePO(Object model)
 	{
-		final PO po = POWrapper.getPO(model);
+		final PO po = InterfaceWrapperHelper.getPO(model);
 		success = po.save(ITrx.TRXNAME_None);
 	}
 

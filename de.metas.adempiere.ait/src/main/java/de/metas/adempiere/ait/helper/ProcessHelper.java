@@ -43,7 +43,7 @@ import java.util.Map;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
@@ -136,7 +136,7 @@ public class ProcessHelper
 
 	public ProcessHelper setPO(Object o)
 	{
-		PO po = POWrapper.getPO(o);
+		PO po = InterfaceWrapperHelper.getStrictPO(o);
 		if (po != null)
 		{
 			setTableId(po.get_Table_ID());

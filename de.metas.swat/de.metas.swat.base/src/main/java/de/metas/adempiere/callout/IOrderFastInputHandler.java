@@ -38,5 +38,5 @@ public interface IOrderFastInputHandler
 	 */
 	boolean requestFocus(GridTab gridTab);
 
-	IGridTabRowBuilder createLineBuilderFromHeader(GridTab gridTab);
+	IGridTabRowBuilder createLineBuilderFromHeader(Object model);
 }

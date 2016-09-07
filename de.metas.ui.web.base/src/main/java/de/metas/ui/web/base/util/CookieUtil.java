@@ -1,8 +1,5 @@
 package de.metas.ui.web.base.util;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,6 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -65,13 +65,19 @@ public final class CookieUtil
 	public static String getCookie(final HttpServletRequest request, final String name)
 	{
 		Check.assume(request != null, "request not null");
-		Check.assume(!Check.isEmpty(name), "name not empty");
-
 		final Cookie[] cookies = request.getCookies();
+		
+		return getCookie(cookies, name);
+	}
+
+	public static String getCookie(final Cookie[] cookies, final String name)
+	{
 		if (cookies == null || cookies.length == 0)
 		{
 			return null;
 		}
+
+		Check.assumeNotEmpty(name, "name is not empty");
 
 		for (final Cookie cookie : cookies)
 		{
@@ -82,6 +88,7 @@ public final class CookieUtil
 		}
 
 		return null;
+		
 	}
 
 	public static boolean setCookie(final HttpServletResponse response, final String name, final String value)

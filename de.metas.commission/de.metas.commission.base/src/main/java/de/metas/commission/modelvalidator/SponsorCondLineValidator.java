@@ -24,7 +24,7 @@ package de.metas.commission.modelvalidator;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -67,7 +67,7 @@ public class SponsorCondLineValidator implements ModelValidator
 					|| po.is_ValueChanged(I_C_Sponsor_CondLine.COLUMNNAME_C_BPartner_ID)
 					|| po.is_ValueChanged(I_C_Sponsor_CondLine.COLUMNNAME_C_AdvCommissionCondition_ID))
 			{
-				final I_C_Sponsor_CondLine condLine = POWrapper.create(po, I_C_Sponsor_CondLine.class);
+				final I_C_Sponsor_CondLine condLine = InterfaceWrapperHelper.create(po, I_C_Sponsor_CondLine.class);
 
 				if (condLine.getC_BPartner_ID() > 0)
 				{

@@ -37,7 +37,6 @@ import java.util.Properties;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -52,10 +51,10 @@ import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.ICopyHandlerBL;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderPA;
 
@@ -213,7 +212,7 @@ public class OrderPA implements IOrderPA
 
 			while (rs.next())
 			{
-				result.add(POWrapper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class));
+				result.add(InterfaceWrapperHelper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class));
 			}
 			return result;
 
@@ -256,7 +255,7 @@ public class OrderPA implements IOrderPA
 
 			while (rs.next())
 			{
-				result.add(POWrapper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class));
+				result.add(InterfaceWrapperHelper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class));
 			}
 			return result;
 
@@ -291,7 +290,7 @@ public class OrderPA implements IOrderPA
 	@Override
 	public I_C_OrderLine createNewOrderLine(String trxName)
 	{
-		return POWrapper.create(new MOrderLine(Env.getCtx(), 0, trxName), I_C_OrderLine.class);
+		return InterfaceWrapperHelper.create(new MOrderLine(Env.getCtx(), 0, trxName), I_C_OrderLine.class);
 	}
 
 	@Override
@@ -348,7 +347,7 @@ public class OrderPA implements IOrderPA
 	@Override
 	public I_C_OrderLine retrieveOrderLine(final int orderLineId, final String trxName)
 	{
-		return POWrapper.create(new MOrderLine(Env.getCtx(), orderLineId, trxName), I_C_OrderLine.class);
+		return InterfaceWrapperHelper.create(new MOrderLine(Env.getCtx(), orderLineId, trxName), I_C_OrderLine.class);
 	}
 
 	/**
@@ -357,7 +356,7 @@ public class OrderPA implements IOrderPA
 	@Override
 	public I_C_OrderLine createOrderLine(ResultSet rs, String trxName)
 	{
-		return POWrapper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class);
+		return InterfaceWrapperHelper.create(new MOrderLine(Env.getCtx(), rs, trxName), I_C_OrderLine.class);
 	}
 
 	/**
@@ -373,7 +372,7 @@ public class OrderPA implements IOrderPA
 
 		for (final MOrderLine currentLine : lines)
 		{
-			result.add(POWrapper.create(currentLine, clazz));
+			result.add(InterfaceWrapperHelper.create(currentLine, clazz));
 		}
 
 		return result;
@@ -397,7 +396,7 @@ public class OrderPA implements IOrderPA
 
 		for (X_C_OrderLine olPO : xOrderLines)
 		{
-			result.add(POWrapper.create(olPO, I_C_OrderLine.class));
+			result.add(InterfaceWrapperHelper.create(olPO, I_C_OrderLine.class));
 		}
 
 		return result;
@@ -424,7 +423,7 @@ public class OrderPA implements IOrderPA
 		final ArrayList<T> result = new ArrayList<T>();
 		for (final MOrderLine olPO : ols)
 		{
-			result.add(POWrapper.create(olPO, clazz));
+			result.add(InterfaceWrapperHelper.create(olPO, clazz));
 		}
 
 		return result;

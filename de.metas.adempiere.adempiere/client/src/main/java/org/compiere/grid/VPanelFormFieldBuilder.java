@@ -106,7 +106,7 @@ public final class VPanelFormFieldBuilder
 		fieldVO.IsEncryptedField = false;
 		fieldVO.setColumnName(getColumnName());
 		layoutConstraints.setSameLine(isSameLine());
-		fieldVO.IsMandatory = isMandatory();
+		fieldVO.setMandatory(isMandatory());
 		fieldVO.setAutocomplete(isAutocomplete());
 		fieldVO.setDisplayType(getDisplayType());
 		fieldVO.AD_Reference_Value_ID = 0; // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);

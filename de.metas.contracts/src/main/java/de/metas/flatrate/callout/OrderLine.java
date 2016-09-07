@@ -26,17 +26,13 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.CalloutOrder;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -45,64 +41,60 @@ public class OrderLine extends CalloutEngine
 {
 
 	/**
-	 * This callout "interposes" the callout {@link CalloutOrder#amt(java.util.Properties, int, GridTab, GridField, Object)}
+	 * This callout "interposes" the callout {@link CalloutOrder#amt(ICalloutField)}
 	 *
 	 * and decides whether that callout should be executed. If no subscription is selected or this callout is invoked
 	 * for another field than 'QtyEntered' that callout is executed, otherwise it is not.
 	 */
-	public String amt(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String amt(ICalloutField calloutField)
 	{
 
 		if (isCalloutActive())
 		{// prevent recursive
-			return "";
+			return NO_ERROR;
 		}
 
-		if (isDoInvocation(mTab, mField))
+		if (isDoInvocation(calloutField))
 		{
-			return new CalloutOrder().amt(ctx, WindowNo, mTab, mField, value);
+			return new CalloutOrder().amt(calloutField);
 		}
-		return "";
+		return NO_ERROR;
 	}
 
 	/**
-	 * This callout "interposes" {@link CalloutOrder#qty(java.util.Properties, int, GridTab, GridField, Object)}
+	 * This callout "interposes" {@link CalloutOrder#qty(ICalloutField)}
 	 *
 	 * and decides whether that callout should be executed. If no subscription is selected or this is invoked for
 	 * another field than 'QtyEntered' that callout is executed, otherwise not.
 	 */
-	public String qty(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String qty(final ICalloutField calloutField)
 	{
 
 		if (isCalloutActive())
 		{// prevent recursive
-			return "";
+			return NO_ERROR;
 		}
 
-		if (isDoInvocation(mTab, mField))
+		if (isDoInvocation(calloutField))
 		{
-			return new CalloutOrder().qty(ctx, WindowNo, mTab, mField, value);
+			return new CalloutOrder().qty(calloutField);
 		}
-		return "";
+		return NO_ERROR;
 	}
 
-	private boolean isDoInvocation(final GridTab mTab, final GridField mField)
+	private boolean isDoInvocation(final ICalloutField calloutField)
 	{
 
-		if (!I_C_OrderLine.COLUMNNAME_QtyEntered.equals(mField.getColumnName()))
+		if (!I_C_OrderLine.COLUMNNAME_QtyEntered.equals(calloutField.getColumnName()))
 		{
 			// execute the callout
 			return true;
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 
-		if (subscriptionId == 0)
+		if (subscriptionId <= 0)
 		{
 			// execute the callout
 			return true;
@@ -115,34 +107,30 @@ public class OrderLine extends CalloutEngine
 
 
 	// metas
-	public String subscriptionLocation(Properties ctx, int WindowNo,
-			final GridTab mTab, GridField mField, Object value)
+	public String subscriptionLocation(final ICalloutField calloutField)
 	{
+		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
+		final I_C_Order order = ol.getC_Order();
+		final boolean IsSOTrx = order.isSOTrx();
+		final boolean isSubscription = ol.isSubscription();
 
-		boolean IsSOTrx = Env.isSOTrx(ctx, WindowNo);
-		final String isSubscription = Env.getContext(ctx, WindowNo,
-				"IsSubscription");
-
-		if (IsSOTrx && isSubscription.equals("N"))
+		if (IsSOTrx && !isSubscription)
 		{
-			mTab.setValue("C_Subscription_ID", null);
-			final I_C_OrderLine ol = GridTabWrapper.create(mTab,
-					I_C_OrderLine.class);
+			// FIXME: remove following line because there is no C_Order/C_OrderLine.C_Subscription_ID 
+			//mTab.setValue("C_Subscription_ID", null);
 
-			final int priceListId = Env.getContextAsInt(ctx, WindowNo,
-					I_C_Order.COLUMNNAME_M_PriceList_ID);
+			final int priceListId = order.getM_PriceList_ID();
 
 			final BigDecimal qty = ol.getQtyEntered();
 			ol.setQtyOrdered(qty);
 
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol, priceListId,
+			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(calloutField.getCtx(), ol, priceListId,
 					qty, BigDecimal.ONE, false, // usePriceUOM = false
 					null);
 		}
-		if (IsSOTrx && isSubscription.equals("Y"))
+		if (IsSOTrx && isSubscription)
 		{
-			int C_BPartner_ID = Env.getContextAsInt(ctx, WindowNo,
-					"C_BPartner_ID");
+			int C_BPartner_ID = order.getC_BPartner_ID();
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
@@ -156,10 +144,9 @@ public class OrderLine extends CalloutEngine
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					mTab.setValue("C_BPartner_Location_ID", rs.getInt(1));
-					log
-							.debug("C_BPartner_Location_ID for Subscription changed -> "
-									+ rs.getInt(1));
+					final int bpartnerLocationId = rs.getInt(1);
+					order.setC_BPartner_Location_ID(bpartnerLocationId);
+					log.debug("C_BPartner_Location_ID for Subscription changed -> " + bpartnerLocationId);
 				}
 			}
 			catch (SQLException e)
@@ -174,7 +161,7 @@ public class OrderLine extends CalloutEngine
 				pstmt = null;
 			}
 		}
-		return "";
+		return NO_ERROR;
 	}
 
 }

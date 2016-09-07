@@ -32,7 +32,6 @@ import java.util.Map;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -124,11 +123,11 @@ public class BPOpenBalanceValidator implements ModelValidator
 		{
 			if (timing == TIMING_BEFORE_COMPLETE)
 			{
-				recordState(POWrapper.create(po, I_C_Payment.class).getC_BPartner());
+				recordState(InterfaceWrapperHelper.create(po, I_C_Payment.class).getC_BPartner());
 			}
 			else if (timing == TIMING_AFTER_COMPLETE)
 			{
-				afterPaymentComplete(POWrapper.create(po, I_C_Payment.class));
+				afterPaymentComplete(InterfaceWrapperHelper.create(po, I_C_Payment.class));
 			}
 
 		}
@@ -183,7 +182,7 @@ public class BPOpenBalanceValidator implements ModelValidator
 			payAmtAbs = payAmtAbs.negate();
 
 		final BigDecimal totalOpenBalanceExpected = bpAmt.totalOpenBalance.subtract(payAmtAbs);
-		POWrapper.refresh(bp);
+		InterfaceWrapperHelper.refresh(bp);
 		assertThat("BP open amount is not correct after payment " + payment, stats.getTotalOpenBalance(), comparesEqualTo(totalOpenBalanceExpected));
 
 		updateFrom(bpAmt, stats);

@@ -61,10 +61,10 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {
@@ -159,7 +159,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 	@Override
 	public void onRecordChange(final Object model, final ModelChangeType changeType)
 	{
-		log.info("" + model + " Type: " + changeType);
+		log.debug("onRecordChange: {}, Type: {}", model, changeType);
 
 		final IMRPSourceEvent event = createMRPSourceEvent(model, changeType);
 		if (event.isDelete() || event.isVoided() || !event.isModelActive() || event.isClosed())

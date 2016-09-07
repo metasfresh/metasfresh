@@ -22,12 +22,12 @@ package org.compiere.util;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -41,15 +41,15 @@ public final class CtxName
 	public static final String NAME_Marker = "@";
 	public static final String SEPARATOR = "/";
 	public static final String MODIFIER_Old = "old";
-	private static final List<String> MODIFIERS = ImmutableList.<String>builder()
+	private static final List<String> MODIFIERS = ImmutableList.<String> builder()
 			.add(MODIFIER_Old)
 			.build();
 
 	public static final String VALUE_NULL = null;
 
-	public static CtxName parse(final String context)
+	public static CtxName parse(final String contextWithoutMarkers)
 	{
-		if (context == null)
+		if (contextWithoutMarkers == null)
 		{
 			return null;
 		}
@@ -57,12 +57,12 @@ public final class CtxName
 		String name = null;
 
 		final List<String> modifiers = new ArrayList<String>();
-		final String[] tokens = context.split(SEPARATOR);
+		final String[] tokens = contextWithoutMarkers.split(SEPARATOR);
 		for (int i = 0; i < tokens.length; i++)
 		{
 			if (i == 0)
 			{
-				name = tokens[i];
+				name = tokens[i].trim();
 			}
 			else
 			{
@@ -81,6 +81,27 @@ public final class CtxName
 		}
 
 		return new CtxName(name, modifiers, defaultValue);
+	}
+
+	/** Parse a given name, surrounded by {@value #NAME_Marker} */
+	public static CtxName parseWithMarkers(final String contextWithMarkers)
+	{
+		if (contextWithMarkers == null)
+		{
+			return null;
+		}
+
+		String contextWithoutMarkers = contextWithMarkers.trim();
+		if (contextWithoutMarkers.startsWith(NAME_Marker))
+		{
+			contextWithoutMarkers = contextWithoutMarkers.substring(1);
+		}
+		if (contextWithoutMarkers.endsWith(NAME_Marker))
+		{
+			contextWithoutMarkers = contextWithoutMarkers.substring(0, contextWithoutMarkers.length() - 1);
+		}
+
+		return parse(contextWithoutMarkers);
 	}
 
 	/**
@@ -136,10 +157,12 @@ public final class CtxName
 	private final List<String> modifiers;
 	private final String defaultValue;
 	private transient volatile String cachedToStringWithTagMarkers = null;
-	private transient volatile String cachedToString;
+	private transient volatile String cachedToStringWithoutTagMarkers = null;
+	
+	private Integer _hashcode; // lazy
 
-	// NOTE: package and not private because we want to test it
-	/* package */CtxName(final String name, final List<String> modifiers, final String defaultValue)
+	@VisibleForTesting
+	/* package */ CtxName(final String name, final List<String> modifiers, final String defaultValue)
 	{
 		super();
 		if (Check.isEmpty(name))
@@ -179,6 +202,19 @@ public final class CtxName
 	 */
 	public boolean isExplicitGlobal()
 	{
+		return isExplicitGlobal(name);
+	}
+	
+	/**
+	 * @name context name
+	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
+	 */
+	public static boolean isExplicitGlobal(final String name)
+	{
+		if(name == null)
+		{
+			return false;
+		}
 		return name.startsWith("#") || name.startsWith("$");
 	}
 
@@ -238,26 +274,23 @@ public final class CtxName
 
 	public String toString(final boolean includeTagMarkers)
 	{
+		return includeTagMarkers ? toStringWithMarkers() : toStringWithoutMarkers();
+	}
+
+	public String toStringWithMarkers()
+	{
 		if (cachedToStringWithTagMarkers == null)
 		{
-			if (!includeTagMarkers)
-			{
-				cachedToStringWithTagMarkers = toString();
-			}
-			else
-			{
-				final StringBuilder sb = new StringBuilder();
-				sb.append(NAME_Marker).append(toString()).append(NAME_Marker);
-				cachedToStringWithTagMarkers = sb.toString();
-			}
+			final StringBuilder sb = new StringBuilder();
+			sb.append(NAME_Marker).append(toStringWithoutMarkers()).append(NAME_Marker);
+			cachedToStringWithTagMarkers = sb.toString();
 		}
 		return cachedToStringWithTagMarkers;
 	}
 
-	@Override
-	public String toString()
+	public String toStringWithoutMarkers()
 	{
-		if (cachedToString == null)
+		if (cachedToStringWithoutTagMarkers == null)
 		{
 			final StringBuilder sb = new StringBuilder();
 			sb.append(name);
@@ -272,20 +305,30 @@ public final class CtxName
 			{
 				sb.append(SEPARATOR).append(defaultValue);
 			}
-			cachedToString = sb.toString();
+			cachedToStringWithoutTagMarkers = sb.toString();
 		}
-		return cachedToString;
+		return cachedToStringWithoutTagMarkers;
+	}
+
+	@Override
+	public String toString()
+	{
+		return toStringWithoutMarkers();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (defaultValue == null ? 0 : defaultValue.hashCode());
-		result = prime * result + (modifiers == null ? 0 : modifiers.hashCode());
-		result = prime * result + (name == null ? 0 : name.hashCode());
-		return result;
+		if (_hashcode == null)
+		{
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (defaultValue == null ? 0 : defaultValue.hashCode());
+			result = prime * result + (modifiers == null ? 0 : modifiers.hashCode());
+			result = prime * result + (name == null ? 0 : name.hashCode());
+			_hashcode = result;
+		}
+		return _hashcode;
 	}
 
 	@Override

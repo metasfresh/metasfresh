@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
@@ -38,7 +37,6 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductCategory;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.IProductAware;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -50,6 +48,7 @@ import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.service.IContractBL;
 import de.metas.commission.service.IInstanceTriggerBL;
 import de.metas.commission.util.CommissionTools;
+import de.metas.logging.LogManager;
 
 public class InstanceTriggerBL implements IInstanceTriggerBL
 {
@@ -165,7 +164,7 @@ public class InstanceTriggerBL implements IInstanceTriggerBL
 	private BigDecimal retrievePointsForInvoice(final I_C_InvoiceLine il, final String trxName)
 	{
 		final I_C_Invoice invoice = il.getC_Invoice();
-		final I_C_OrderLine ol = POWrapper.create(il.getC_OrderLine(), I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 
 		BigDecimal comPoints;
 

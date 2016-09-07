@@ -32,7 +32,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -115,7 +115,7 @@ public class PerformPackaging extends SvrProcess
 					// TODO: print the packages, if there is more than one
 				}
 				
-				final I_C_Order order = POWrapper.create(inOut.getC_Order(), I_C_Order.class);
+				final I_C_Order order = InterfaceWrapperHelper.create(inOut.getC_Order(), I_C_Order.class);
 				
 				final boolean generateInvoice;
 				if (order.getBill_Location_ID() != inOut.getC_BPartner_Location_ID())
@@ -151,7 +151,7 @@ public class PerformPackaging extends SvrProcess
 					// won't find the new invoice
 					Trx.get(get_TrxName(), false).commit(true);
 
-					printInvoice(POWrapper.create(invoice, I_C_Invoice.class));
+					printInvoice(InterfaceWrapperHelper.create(invoice, I_C_Invoice.class));
 				}
 				else
 				{

@@ -1,5 +1,7 @@
 package de.metas.adempiere.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -38,8 +40,8 @@ public class C_OrderFastInputTabCallout extends TabCalloutAdapter
 	 * Make sure that on a new order record, the (numeric) quick-input fields are empty, and not just 0. If they are just 0, there care problems with the quick-input callouts (task 09232).
 	 */
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		OrderFastInput.clearFields(gridTab, false); // just clear them, don't try to save yet because mandatory fields are not yet set.
+		OrderFastInput.clearFields(calloutRecord, false); // just clear them, don't try to save yet because mandatory fields are not yet set.
 	}
 }

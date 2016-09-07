@@ -69,5 +69,17 @@ public class EvaluateeValidationContext implements IValidationContext
 	{
 		return evaluatee.get_ValueAsString(variableName);
 	}
+	
+	@Override
+	public int get_ValueAsInt(String variableName, int defaultValue)
+	{
+		return evaluatee.get_ValueAsInt(variableName, defaultValue);
+	}
+	
+	@Override
+	public boolean get_ValueAsBoolean(String variableName, boolean defaultValue)
+	{
+		return evaluatee.get_ValueAsBoolean(variableName, defaultValue);
+	}
 
 }

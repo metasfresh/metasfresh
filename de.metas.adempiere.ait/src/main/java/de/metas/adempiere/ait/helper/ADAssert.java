@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -42,7 +41,6 @@ import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.util.Services;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Color;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_ModelValidator;
 import org.compiere.model.I_AD_Ref_List;
@@ -54,7 +52,6 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MField;
 import org.compiere.model.MOrg;
 import org.compiere.model.MReference;
-import org.compiere.model.MRole;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidator;
@@ -330,38 +327,6 @@ public class ADAssert
 			fail("Missing column '" + columnName + "' in Table '"
 					+ getTableName(adTableId, columnName, trxName) + "'.");
 		}
-	}
-
-	/**
-	 * Checks if the given column's {@link I_AD_Column#COLUMNNAME_ColumnSQL} value is set to any value. Also checks that
-	 * the sql value doesn't contain the string <code>WHERE</code> (in capitals) because this causes errors in
-	 * {@link MRole#addAccessSQL(String, String, boolean, boolean)}.
-	 * 
-	 * @param adTableId
-	 * @param columnName
-	 * @param trxName
-	 */
-	public static void assertColumnSQL(
-			final int adTableId,
-			final String columnName, final String trxName)
-	{
-		assertColumnExists(adTableId, columnName, trxName);
-
-		final POInfo poInfo = POInfo
-				.getPOInfo(Env.getCtx(), adTableId, trxName);
-
-		final String columnSQL = poInfo.getColumnSQL(getColIdx(adTableId,
-				columnName, trxName));
-
-		assertNotNull(
-				getFailMsgPrefix(columnName, poInfo) + " be not null",
-				columnSQL);
-
-		assertFalse(getFailMsgPrefix(columnName, poInfo) + " be not empty",
-				columnSQL.equals(""));
-
-		assertTrue(getFailMsgPrefix(columnName, poInfo) + " not contain the string 'WHERE' (use 'where' instead).",
-				columnSQL.indexOf("WHERE") == -1);
 	}
 
 	public static void assertColumnLength(final int adTableId,

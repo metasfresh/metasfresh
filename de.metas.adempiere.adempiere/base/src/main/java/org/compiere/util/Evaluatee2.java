@@ -25,8 +25,10 @@ package org.compiere.util;
 
 
 /**
- * Evaluator source
- * Extend Evaluatee interface with more methods
+ * Extend {@link Evaluatee} interface with more methods.
+ * 
+ * To create {@link Evaluatee2} instances, please use {@link Evaluatees}.
+
  * @author tsa
  *
  */

@@ -34,7 +34,7 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -296,7 +296,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		final BigDecimal productWeight = product.getWeight();
 		// if the product has no weight info, make the field editable
 		final boolean productHasNoWeightInfo = productWeight == null || productWeight.signum() == 0;
-		final I_C_OrderLine ol = POWrapper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
 		String desc;
 		if (ol.isIndividualDescription())
 		{

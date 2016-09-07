@@ -19,6 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 
 /**
  *	Field Model
@@ -75,11 +77,11 @@ public class MField extends X_AD_Field
 	 * 	Parent Constructor
 	 *	@param parent parent
 	 */
-	public MField (MTab parent)
+	public MField (final I_AD_Tab parent)
 	{
-		this (parent.getCtx(), 0, parent.get_TrxName());
-		setClientOrg(parent);
-		setAD_Tab_ID(parent.getAD_Tab_ID());
+		this (InterfaceWrapperHelper.getCtx(parent), 0, InterfaceWrapperHelper.getTrxName(parent));
+		setClientOrgFromModel(parent);
+		setAD_Tab(parent);
 	}	//	MField
 	
 	/**

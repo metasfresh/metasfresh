@@ -28,9 +28,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
@@ -38,6 +37,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
+import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -62,10 +63,12 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.logging.LogManager;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -117,6 +120,8 @@ public class LookupDAO implements ILookupDAO
 
 	/* package */static class TableRefInfo implements ITableRefInfo
 	{
+		@SuppressWarnings("unused")
+		private final String name; // used only for debugging
 		private final String TableName;
 		private final String KeyColumn;
 		private final String DisplayColumn;
@@ -131,7 +136,9 @@ public class LookupDAO implements ILookupDAO
 		private final int overrideZoomWindow;
 		private final boolean autoComplete;
 
-		public TableRefInfo(String tableName,
+		public TableRefInfo(
+				String name,
+				String tableName,
 				String keyColumn, String displayColumn, boolean valueDisplayed, String displayColumnSQL,
 				boolean translated,
 				String whereClause,
@@ -140,6 +147,8 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete)
 		{
 			super();
+			
+			this.name = name; 
 
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			TableName = tableName;
@@ -428,7 +437,9 @@ public class LookupDAO implements ILookupDAO
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
+				+ ", r.Name as ReferenceName" // 14
 				+ " FROM AD_Ref_Table rt"
+				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
 				+ " INNER JOIN AD_Column ck ON (rt.AD_Key=ck.AD_Column_ID)"
 				+ " LEFT OUTER JOIN AD_Column cd ON (rt.AD_Display=cd.AD_Column_ID) "
@@ -457,8 +468,10 @@ public class LookupDAO implements ILookupDAO
 				final String displayColumnSQL = rs.getString(11);
 				final int overrideZoomWindow = rs.getInt(12);
 				final boolean autoComplete = "Y".equals(rs.getString(13));
+				final String referenceName = rs.getString(14);
 
-				tableRefInfo = new TableRefInfo(TableName,
+				tableRefInfo = new TableRefInfo(referenceName,
+						TableName,
 						KeyColumn, DisplayColumn, isValueDisplayed, displayColumnSQL,
 						IsTranslated,
 						WhereClause,
@@ -545,7 +558,9 @@ public class LookupDAO implements ILookupDAO
 			pstmt = null;
 		}
 
-		final ITableRefInfo tableRefInfo = new TableRefInfo(tableName,
+		final ITableRefInfo tableRefInfo = new TableRefInfo(
+				"Direct_" + tableName,
+				tableName,
 				keyColumn,
 				null, // DisplayColumn,
 				false, // isValueDisplayed,
@@ -711,7 +726,7 @@ public class LookupDAO implements ILookupDAO
 		return isOrderByValue;
 	}
 
-	private static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
+	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
 	{
 		private final String sql;
 		private final boolean numericKey;
@@ -725,6 +740,26 @@ public class LookupDAO implements ILookupDAO
 			this.sql = sql;
 			this.numericKey = numericKey;
 			this.entityTypeColumnIndex = entityTypeColumnIndex;
+		}
+
+		/** Fetch and return all data from this iterator (from current's position until the end) */
+		public List<NamePair> fetchAll()
+		{
+			final List<NamePair> result = new LinkedList<>();
+			try (final INamePairIterator data = this)
+			{
+				if (!data.isValid())
+				{
+					return result;
+				}
+
+				for (NamePair itemModel = data.next(); itemModel != null; itemModel = data.next())
+				{
+					result.add(itemModel);
+				}
+			}
+
+			return result;
 		}
 
 		@Override
@@ -824,7 +859,14 @@ public class LookupDAO implements ILookupDAO
 	@Override
 	public INamePairIterator retrieveLookupValues(final IValidationContext validationCtx, final MLookupInfo lookupInfo)
 	{
-		final String sql = getSQL(validationCtx, lookupInfo);
+		final IValidationRule additionalValidationRule = NullValidationRule.instance;
+		return retrieveLookupValues(validationCtx, lookupInfo, additionalValidationRule);
+	}
+	
+	@Override
+	public INamePairIterator retrieveLookupValues(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final IValidationRule additionalValidationRule)
+	{
+		final String sql = getSQL(validationCtx, lookupInfo, additionalValidationRule);
 		final boolean numericKey = lookupInfo.isNumericKey();
 		final int entityTypeColumnIndex = lookupInfo.isQueryHasEntityType() ? MLookupFactory.COLUMNINDEX_EntityType : -1;
 
@@ -840,24 +882,26 @@ public class LookupDAO implements ILookupDAO
 	@Override
 	public Object createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo)
 	{
-		return getSQL(validationCtx, lookupInfo);
+		final IValidationRule additionalValidationRule = NullValidationRule.instance;
+		return getSQL(validationCtx, lookupInfo, additionalValidationRule);
 	}
 
-	private static String getSQL(final IValidationContext validationCtx, final MLookupInfo lookupInfo)
+	private static String getSQL(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final IValidationRule additionalValidationRule)
 	{
-		// final MLookupInfo lookupInfo = m_info;
-
-		final String validation;
+		final IValidationRule lookupInfoValidationRule;
 		if (validationCtx == IValidationContext.DISABLED)
 		{
 			// NOTE: if validation is disabled we shall not add any where clause
-			validation = "";
+			lookupInfoValidationRule = NullValidationRule.instance;
 		}
 		else
 		{
-			validation = lookupInfo.getValidationRule().getPrefilterWhereClause(validationCtx);
+			lookupInfoValidationRule = lookupInfo.getValidationRule();
 		}
+		
+		final IValidationRule validationRule = CompositeValidationRule.compose(lookupInfoValidationRule, additionalValidationRule);
 
+		final String validation = validationRule.getPrefilterWhereClause(validationCtx);
 		if (IValidationRule.WHERECLAUSE_ERROR == validation)
 		{
 			return null;
@@ -922,7 +966,8 @@ public class LookupDAO implements ILookupDAO
 			@CacheAllowMutable final Object key)
 	{
 		// Nothing to query
-		if (key == null || lookupInfo.QueryDirect == null || lookupInfo.QueryDirect.length() == 0)
+		final String sqlQueryDirect = lookupInfo.getSqlQueryDirect();
+		if (key == null || sqlQueryDirect == null || sqlQueryDirect.length() == 0)
 		{
 			return null;
 		}
@@ -950,11 +995,11 @@ public class LookupDAO implements ILookupDAO
 		final String sql;
 		if (IValidationRule.WHERECLAUSE_ERROR == validation)
 		{
-			sql = lookupInfo.QueryDirect;
+			sql = sqlQueryDirect;
 		}
 		else
 		{
-			sql = injectWhereClause(lookupInfo.QueryDirect, validation);
+			sql = injectWhereClause(sqlQueryDirect, validation);
 		}
 		// 04617 end
 
@@ -975,7 +1020,7 @@ public class LookupDAO implements ILookupDAO
 			{
 				if (directValue != null)
 				{
-					logger.error(lookupInfo.KeyColumn + ": Not unique (first returned) for " + key + " SQL=" + sql);
+					logger.error(lookupInfo.getKeyColumnFQ() + ": Not unique (first returned) for " + key + " SQL=" + sql);
 					break;
 				}
 

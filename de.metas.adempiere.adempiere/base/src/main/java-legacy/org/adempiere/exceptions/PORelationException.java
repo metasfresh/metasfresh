@@ -13,33 +13,12 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -88,36 +67,31 @@ public class PORelationException extends AdempiereException {
 		this.msgParams = msgParams;
 	}
 
-	public static void throwWrongKeyColumnCount(final PO po) {
+	public static void throwWrongKeyColumnCount(final IZoomSource source)
+	{
+		logger.debug("Invoked with {}", source);
 
-		logger.debug("Invoked with po " + po);
+		final Object[] msgParams = new Object[] { source.toString(), source.getKeyColumnNames().size() };
 
-		final Object[] msgParams = new Object[] { po.toString(),
-				po.get_KeyColumns().length };
-
-		final String msg = Msg.getMsg(po.getCtx(), MSG_ERR_KEY_COLUMNS_2P,
-				msgParams);
+		final String msg = Msg.getMsg(source.getCtx(), MSG_ERR_KEY_COLUMNS_2P, msgParams);
 
 		final StringBuffer sb = new StringBuffer(msg);
 
-		for (final String keyCol : po.get_KeyColumns()) {
+		for (final String keyCol : source.getKeyColumnNames()) {
 			sb.append("\n");
 			sb.append(keyCol);
 		}
 
-		throw new PORelationException(sb.toString(), MSG_ERR_KEY_COLUMNS_2P,
-				msgParams);
+		throw new PORelationException(sb.toString(), MSG_ERR_KEY_COLUMNS_2P, msgParams);
 	}
 
-	public static void throwMissingWindowId(final PO po,
+	public static void throwMissingWindowId(final IZoomSource source,
 			final String referenceName, final String tableName,
 			final boolean isSOTrx) {
 
-		final Object[] msgParams = { referenceName, tableName,
-				isSOTrx ? "Y" : "N" };
+		final Object[] msgParams = { referenceName, tableName, DisplayType.toBooleanString(isSOTrx) };
 
-		final String msg = Msg
-				.getMsg(po.getCtx(), MSG_ERR_WINDOW_3P, msgParams);
+		final String msg = Msg.getMsg(source.getCtx(), MSG_ERR_WINDOW_3P, msgParams);
 
 		throw new PORelationException(msg, MSG_ERR_WINDOW_3P, msgParams);
 	}
