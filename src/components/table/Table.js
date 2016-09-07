@@ -17,7 +17,6 @@ import Widget from '../Widget';
 class Table extends Component {
     constructor(props) {
         super(props);
-        this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
             selected: [],
             contextMenu: {
@@ -186,11 +185,27 @@ class Table extends Component {
             }
         }
     }
-    handleRightClick = (e) => {
+    handleRightClick = (e, id) => {
         // const {selected} = this.state;
         // if(selected.length < 1) {
         //   this.selectProduct(id);
         // }
+        const {selected} = this.state;
+        const isAnySelected = selected.length > 0;
+
+        if(!isAnySelected){
+            this.selectProduct(id);
+        } else if(selected.length === 1){
+            this.deselectAllProducts();
+            let t = this;
+            setTimeout(function(){ 
+                t.selectProduct(id);
+            }, 1);
+            
+        }
+
+        
+
         e.preventDefault();
         this.setState({
             contextMenu: {
@@ -241,7 +256,7 @@ class Table extends Component {
                         docId={docId}
                         isSelected={selected.indexOf(item[key].rowId) > -1}
                         onClick={(e) => this.handleClick(e, item[key].rowId)}
-                        onContextMenu={(e) => this.handleRightClick(e)}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                     />
                 );
             }
@@ -286,7 +301,7 @@ class Table extends Component {
                     </div>
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)} onKeyDown = {(e) => this.handleKeyDown(e)}>
+                        <table className="table table-bordered-vertically table-striped"  onKeyDown = {(e) => this.handleKeyDown(e)}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
