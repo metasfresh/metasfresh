@@ -305,3 +305,16 @@ export function getItemsByProperty(arr, prop, value) {
 
     return ret;
 }
+export function fieldToString(field) {
+    if(field === null){
+        return "";
+    }else{
+        switch(typeof field){
+            case "object":
+                return field[Object.keys(field)[0]];
+                break;
+            default:
+                return field;
+        }
+    }
+}

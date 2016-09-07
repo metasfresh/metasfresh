@@ -17,7 +17,6 @@ import Widget from '../Widget';
 class Table extends Component {
     constructor(props) {
         super(props);
-        this.handleClickOutside = this.handleClickOutside.bind(this);
         this.state = {
             selected: [],
             contextMenu: {
@@ -60,15 +59,13 @@ class Table extends Component {
 
 
     handleClickOutside = (event) => {
-      if(this.state.selected.length>0){
-        const {dispatch} = this.props
-        // dispatch(deselectAllProducts());
-        this.deselectAllProducts();
-      }
+        if(this.state.selected.length > 0){
+            this.deselectAllProducts();
+        }
     }
 
     closeContextMenu = (event) => {
-      this.setState(Object.assign({}, this.state, {
+        this.setState(Object.assign({}, this.state, {
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
             })
@@ -124,9 +121,6 @@ class Table extends Component {
                 open: true
             }
         });
-    }
-    handleRemoveSelected = () => {
-
     }
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
@@ -234,7 +228,7 @@ class Table extends Component {
 
 Table.propTypes = {
     dispatch: PropTypes.func.isRequired
-};
+}
 
 Table = connect()(onClickOutside(Table))
 

@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
@@ -37,6 +38,10 @@ class Lookup extends Component {
             const init = defaultValue[0].value;
             this.inputSearch.value = init[Object.keys(init)[0]];
         }
+    }
+
+    handleClickOutside = () => {
+        this.handleBlur();
     }
 
     handleSelect = (select) => {
@@ -150,19 +155,7 @@ class Lookup extends Component {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
 
-    handleFocus = (e) => {
-        const {dispatch} = this.props;
-
-        e.preventDefault();
-
-        this.setState(Object.assign({}, this.state, {
-            selected: null
-        }));
-
-        if(this.inputSearch.value !== this.state.query){
-            this.handleChange();
-        }
-
+    handleFocus = () => {
         this.dropdown.classList.add("input-dropdown-focused");
     }
 
@@ -293,6 +286,7 @@ class Lookup extends Component {
                             type="text"
                             className="input-field font-weight-bold"
                             onChange={this.handleChange}
+                            onFocus={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
@@ -317,11 +311,9 @@ class Lookup extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {this.state.loading === false && (
-                            (this.state.list.length > 0 ) ?
+                        {(this.state.list.length > 0 ) ?
                                 (this.state.query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
                                 "There's no matching items."
-                            )
                         }
                         {(this.state.loading && this.state.list.length === 0) && (
                             <div className="input-dropdown-list-header">
@@ -345,13 +337,8 @@ class Lookup extends Component {
 
 Lookup.propTypes = {
     dispatch: PropTypes.func.isRequired
-};
-
-function mapStateToProps(state) {
-    return {
-    }
 }
 
-Lookup = connect(mapStateToProps)(Lookup)
+Lookup = connect()(onClickOutside(Lookup))
 
 export default Lookup

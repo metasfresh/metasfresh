@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-
-import Widget from '../Widget';
+import TableCell from './TableCell';
 
 import {
     findRowByPropName
@@ -16,51 +15,34 @@ class TableItem extends Component {
     }
     handleEditProperty = (e,property) => {
         e.preventDefault();
+
         this.setState({
             edited: property
         })
     }
-    fieldToString = (field) => {
-        if(field === null){
-            return "";
-        }else{
-            switch(typeof field){
-                case "object":
-                    return field[Object.keys(field)[0]];
-                    break;
-                default:
-                    return field;
-            }
-        }
-    }
     renderCells = (cols, cells) => {
         const { type, docId, rowId, tabId } = this.props;
+        const { edited } = this.state;
+
         //iterate over layout settings
         return cols.map((item, index) => {
             const property = item.fields[0].field;
             const widgetData = findRowByPropName(cells, property);
 
             return (
-                <td
+                <TableCell
+                    type={type}
+                    docId={docId}
+                    rowId={rowId}
+                    tabId={tabId}
+                    item={item}
                     key={index}
-                    tabIndex="0"
+                    widgetData={widgetData}
+                    isEdited={edited === property}
                     onDoubleClick={(e) => this.handleEditProperty(e,property)}
-                >
-                    {
-                        this.state.edited === property ?
-                            <Widget
-                                {...item}
-                                dataId={docId}
-                                widgetData={[widgetData]}
-                                windowType={type}
-                                rowId={rowId}
-                                tabId={tabId}
-                                noLabel={true}
-                            />
-                        :
-                            this.fieldToString(widgetData.value)
-                    }
-                </td>
+                    onClickOutside={(e) => this.handleEditProperty(e)}
+                    disableOnClickOutside={edited !== property}
+                />
             )
         })
     }
@@ -81,19 +63,6 @@ TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const { appHandler } = state;
-    const {
-        selectedProducts
-    } = appHandler || {
-        selectedProducts: []
-    }
-
-    return {
-        selectedProducts
-    }
-}
-
-TableItem = connect(mapStateToProps)(TableItem)
+TableItem = connect()(TableItem)
 
 export default TableItem
