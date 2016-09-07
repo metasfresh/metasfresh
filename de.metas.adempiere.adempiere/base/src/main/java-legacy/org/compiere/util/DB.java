@@ -1026,7 +1026,8 @@ public final class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
 			{
-				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params);
+				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params)
+						.setSqlIfAbsent(sql, params);
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: end
 
@@ -1036,7 +1037,8 @@ public final class DB
 				try
 				{
 					final Connection connection = cs.getConnection();
-					sqlException = new DBDeadLockDetectedException(sqlException, connection);
+					sqlException = new DBDeadLockDetectedException(sqlException, connection)
+							.setSqlIfAbsent(sql, params);
 				}
 				catch (final SQLException | DBException e1)
 				{
@@ -1053,7 +1055,8 @@ public final class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isForeignKeyViolation(sqlException))
 			{
-				sqlException = new DBForeignKeyConstraintException(sqlException);
+				sqlException = new DBForeignKeyConstraintException(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 
 			//
@@ -1069,13 +1072,15 @@ public final class DB
 			}
 			else if (onFail == OnFail.ThrowException)
 			{
-				throw DBException.wrapIfNeeded(sqlException);
+				throw DBException.wrapIfNeeded(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
-				throw DBException.wrapIfNeeded(sqlException);
+				throw DBException.wrapIfNeeded(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 		}
 		finally
