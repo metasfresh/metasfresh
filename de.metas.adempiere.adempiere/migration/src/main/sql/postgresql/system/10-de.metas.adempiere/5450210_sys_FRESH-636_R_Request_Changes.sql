@@ -1046,3 +1046,53 @@ UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2016-09-07 15:59:20','Y
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2016-09-07 16:31:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555042
 ;
 
+-- 07.09.2016 17:13
+-- URL zum Konzept
+UPDATE AD_Field SET DisplayLogic='@R_RequestType_InternalName/-1@ !''A_CustomerComplaint'' & @R_RequestType_InternalName/-1@ ! ''B_VendorComplaint''',Updated=TO_TIMESTAMP('2016-09-07 17:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11988
+;
+
+-- 07.09.2016 17:14
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Beleg Nr',Updated=TO_TIMESTAMP('2016-09-07 17:14:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11993
+;
+
+-- 07.09.2016 17:14
+-- URL zum Konzept
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=11993
+;
+
+-- 07.09.2016 17:15
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Erstellt',Updated=TO_TIMESTAMP('2016-09-07 17:15:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11999
+;
+
+-- 07.09.2016 17:15
+-- URL zum Konzept
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=11999
+;
+
+-- 07.09.2016 17:15
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Erstellt durch',Updated=TO_TIMESTAMP('2016-09-07 17:15:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12000
+;
+
+-- 07.09.2016 17:15
+-- URL zum Konzept
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=12000
+;
+
+-- 07.09.2016 17:26
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N', IsSameLine='N',Updated=TO_TIMESTAMP('2016-09-07 17:26:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11988
+;
+
+-- 07.09.2016 17:33
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2016-09-07 17:33:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11988
+;
+
+-- 07.09.2016 17:35
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayedGrid='Y',Updated=TO_TIMESTAMP('2016-09-07 17:35:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11988
+;
+
