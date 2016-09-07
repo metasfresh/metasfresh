@@ -24,6 +24,7 @@ class Widget extends Component {
         const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId} = this.props;
         const {cachedValue} = this.state;
         let currRowId = rowId;
+        let ret = null;
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
@@ -39,7 +40,7 @@ class Widget extends Component {
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
+            ret = dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
         }
 
         this.setState(Object.assign({}, this.state, {
@@ -51,6 +52,7 @@ class Widget extends Component {
             onChange();
         }
 
+        return ret;
     }
     //
     // This method may looks like a redundant for this one above,
