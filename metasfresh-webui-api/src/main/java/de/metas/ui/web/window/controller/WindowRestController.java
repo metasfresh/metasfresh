@@ -24,9 +24,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewInfo;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
@@ -34,8 +36,10 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentSideListView;
+import de.metas.ui.web.window.model.IDocumentView;
+import de.metas.ui.web.window.model.IDocumentViewSelection;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 
@@ -90,6 +94,9 @@ public class WindowRestController implements IWindowRestController
 	@Autowired
 	private DocumentCollection documentCollection;
 
+	@Autowired
+	private DocumentViewsRepository documentViewsRepo;
+
 	private JSONFilteringOptions.Builder newJSONFilteringOptions()
 	{
 		final boolean debugShowColumnNamesForCaption = userSession.getPropertyAsBoolean(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption,
@@ -127,7 +134,25 @@ public class WindowRestController implements IWindowRestController
 			final DocumentLayoutDetailDescriptor detailLayout = layout.getDetail(detailId);
 			return JSONDocumentLayout.ofDetailTab(adWindowId, detailLayout, jsonFilteringOpts);
 		}
+	}
 
+	@Override
+	@RequestMapping(value = "/gridLayout", method = RequestMethod.GET)
+	public JSONDocumentLayout gridLayout(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+	)
+	{
+		loginService.autologin();
+
+		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getLayout();
+
+		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
+				.build();
+
+		final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
+		return JSONDocumentLayout.ofDetailTab(adWindowId, gridLayout, jsonFilteringOpts);
 	}
 
 	@Override
@@ -323,6 +348,40 @@ public class WindowRestController implements IWindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
+	@RequestMapping(value = "/createView", method = RequestMethod.PUT)
+	public JSONDocumentViewInfo createView(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
+	)
+	{
+		loginService.autologin();
+
+		final DocumentEntityDescriptor entityDescriptor = documentCollection
+				.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getEntityDescriptor();
+
+		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+				.setViewFields(entityDescriptor.getFieldsWithCharacteristic(Characteristic.GridViewField))
+				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters))
+				.build();
+
+		final IDocumentViewSelection view = documentViewsRepo.createView(query);
+		return JSONDocumentViewInfo.of(view);
+	}
+
+	@RequestMapping(value = "/browseView", method = RequestMethod.GET)
+	public List<JSONDocument> browseView(
+			@RequestParam(name = "viewId", required = true) final String viewId//
+			, @RequestParam(name = "firstRow", required = true) final int firstRow //
+			, @RequestParam(name = "pageLength", required = true) final int pageLength //
+	)
+	{
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+		final List<IDocumentView> page = view.getPage(firstRow, pageLength);
+		return JSONDocument.ofDocumentViewList(page);
+	}
+
 	@RequestMapping(value = "/sideListData", method = RequestMethod.PUT)
 	public List<JSONDocument> sideListData(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
@@ -336,12 +395,11 @@ public class WindowRestController implements IWindowRestController
 				.getDocumentDescriptor(adWindowId)
 				.getEntityDescriptor();
 		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+				.setViewFields(entityDescriptor.getFieldsWithCharacteristic(Characteristic.SideListField))
 				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters))
-				.setFirstRow(0)
-				.setPageLength(100)
 				.build();
 
-		final List<IDocumentSideListView> sideDocuments = documentCollection.sideList(adWindowId, query);
-		return JSONDocument.ofSideDocumentList(sideDocuments);
+		final List<IDocumentView> sideDocuments = documentViewsRepo.createView(query).getPage(0, 100);
+		return JSONDocument.ofDocumentViewList(sideDocuments);
 	}
 }

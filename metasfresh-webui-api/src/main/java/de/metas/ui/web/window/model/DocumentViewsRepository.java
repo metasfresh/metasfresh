@@ -1,9 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -14,38 +10,23 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface DocumentRepository
+public interface DocumentViewsRepository
 {
 
-	List<Document> retriveDocuments(DocumentQuery query);
+	IDocumentViewSelection createView(DocumentQuery query);
 
-	Document retriveDocument(DocumentQuery query);
+	IDocumentViewSelection getView(String viewId);
 
-	/**
-	 *
-	 * @param entityDescriptor
-	 * @param parentDocument
-	 * @return newly created document (not saved); never returns null
-	 */
-	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
-
-	void refresh(Document document);
-
-	void save(Document document);
-
-	void delete(Document document);
-	
-	List<IDocumentSideListView> retrieveDocumentsSideList(DocumentQuery query);
 }

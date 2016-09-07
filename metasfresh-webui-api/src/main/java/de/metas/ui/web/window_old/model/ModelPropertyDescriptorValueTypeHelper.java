@@ -28,6 +28,7 @@ import de.metas.ui.web.window_old.shared.descriptor.PropertyDescriptorValueType;
  * #L%
  */
 
+@Deprecated
 public final class ModelPropertyDescriptorValueTypeHelper
 {
 	private ModelPropertyDescriptorValueTypeHelper()

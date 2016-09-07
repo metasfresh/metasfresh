@@ -54,14 +54,26 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	/** i.e. AD_Window_ID */
 	private final int AD_Window_ID;
+
+	/** Special element: DocumentNo */
 	private final DocumentLayoutElementDescriptor documentNoElement;
+	/** Special element: DocStatus/DocAction */
 	private final DocumentLayoutElementDescriptor docActionElement;
 
+	/** Single row layout: header sections */
 	private final List<DocumentLayoutSectionDescriptor> sections;
+	private final DocumentLayoutDetailDescriptor gridView;
+	
+	/** Single row layout: included tabs */
 	private final Map<String, DocumentLayoutDetailDescriptor> details;
+
+	/** Side list layout */
 	private final DocumentLayoutSideListDescriptor sideList;
+
+	/** Filters */
 	private final List<DocumentQueryFilterDescriptor> filters;
 
+	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
 
 	private DocumentLayoutDescriptor(final Builder builder)
@@ -72,6 +84,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		docActionElement = builder.docActionElement;
 
 		sections = ImmutableList.copyOf(builder.buildSections());
+		gridView = builder.gridView.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideList = builder.getSideList();
 		filters = builder.getFilters();
@@ -86,6 +99,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 				.omitNullValues()
 				.add("AD_Window_ID", AD_Window_ID)
 				.add("sections", sections.isEmpty() ? null : sections)
+				.add("gridView", gridView)
 				.add("details", details.isEmpty() ? null : details)
 				.add("sideList", sideList)
 				.toString();
@@ -109,6 +123,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 	public List<DocumentLayoutSectionDescriptor> getSections()
 	{
 		return sections;
+	}
+	
+	public DocumentLayoutDetailDescriptor getGridView()
+	{
+		return gridView;
 	}
 
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
@@ -156,7 +175,10 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private int AD_Window_ID;
 		private DocumentLayoutElementDescriptor documentNoElement;
 		private DocumentLayoutElementDescriptor docActionElement;
+
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
+		private DocumentLayoutDetailDescriptor.Builder gridView;
+
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 		private DocumentLayoutSideListDescriptor sideList;
 		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
@@ -288,6 +310,12 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public boolean hasSectionElement(final String fieldName)
 		{
 			return findSectionElementBuilderByFieldName(fieldName) != null;
+		}
+
+		public Builder setGridView(final DocumentLayoutDetailDescriptor.Builder gridView)
+		{
+			this.gridView = gridView;
+			return this;
 		}
 
 		/**

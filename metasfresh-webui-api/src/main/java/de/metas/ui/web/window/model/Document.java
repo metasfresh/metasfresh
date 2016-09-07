@@ -95,7 +95,7 @@ public final class Document
 
 	//
 	// Descriptors & paths
-	private final DocumentRepository documentRepository;
+	private final DocumentsRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final DocumentPath documentPath;
@@ -595,7 +595,7 @@ public final class Document
 		return windowNo;
 	}
 
-	/* package */DocumentRepository getDocumentRepository()
+	/* package */DocumentsRepository getDocumentRepository()
 	{
 		return documentRepository;
 	}
@@ -1312,7 +1312,7 @@ public final class Document
 
 	public static final class Builder
 	{
-		private DocumentRepository documentRepository;
+		private DocumentsRepository documentRepository;
 		private DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
@@ -1348,7 +1348,7 @@ public final class Document
 			return document;
 		}
 
-		public Builder setDocumentRepository(final DocumentRepository documentRepository)
+		public Builder setDocumentRepository(final DocumentsRepository documentRepository)
 		{
 			this.documentRepository = documentRepository;
 			return this;

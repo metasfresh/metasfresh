@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 /*
  * #%L
@@ -53,9 +54,13 @@ public final class DocumentQuery
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int recordId;
 	private final Document parentDocument;
+	
 	private final List<DocumentQueryFilter> filters;
+	
 	private final int firstRow;
 	private final int pageLength;
+	
+	private final List<DocumentFieldDescriptor> viewFields;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
 
@@ -65,10 +70,13 @@ public final class DocumentQuery
 		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
+		
 		filters = builder.filters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.filters);
 
 		firstRow = builder.firstRow;
 		pageLength = builder.pageLength;
+		
+		viewFields = builder.viewFields == null ? ImmutableList.of() : ImmutableList.copyOf(builder.viewFields);
 	}
 
 	@Override
@@ -82,6 +90,7 @@ public final class DocumentQuery
 				.add("filters", filters.isEmpty() ? null : filters)
 				.add("firstRow", firstRow > 0 ? firstRow : null)
 				.add("pageLength", pageLength > 0 ? pageLength : null)
+				.add("viewFields", viewFields.isEmpty() ? null : viewFields)
 				.toString();
 	}
 
@@ -136,6 +145,12 @@ public final class DocumentQuery
 		final boolean onlyWindow = false;
 		return Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
 	}
+	
+	public String getAD_Language()
+	{
+		// TODO: introduce AD_Language as parameter
+		return Env.getAD_Language(Env.getCtx());
+	}
 
 	public List<DocumentQueryFilter> getFilters()
 	{
@@ -151,6 +166,11 @@ public final class DocumentQuery
 	{
 		return pageLength;
 	}
+	
+	public List<DocumentFieldDescriptor> getViewFields()
+	{
+		return viewFields;
+	}
 
 	public static final class Builder
 	{
@@ -160,6 +180,7 @@ public final class DocumentQuery
 		public List<DocumentQueryFilter> filters = null;
 		private int firstRow = -1;
 		private int pageLength = -1;
+		public List<DocumentFieldDescriptor> viewFields;
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -183,7 +204,7 @@ public final class DocumentQuery
 			this.parentDocument = parentDocument;
 			return this;
 		}
-
+		
 		public Builder addFilter(final DocumentQueryFilter filter)
 		{
 			Check.assumeNotNull(filter, "Parameter filter is not null");
@@ -220,6 +241,12 @@ public final class DocumentQuery
 		public Builder setPageLength(final int pageLength)
 		{
 			this.pageLength = pageLength;
+			return this;
+		}
+		
+		public Builder setViewFields(List<DocumentFieldDescriptor> viewFields)
+		{
+			this.viewFields = viewFields;
 			return this;
 		}
 	}

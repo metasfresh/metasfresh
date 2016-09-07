@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 /*
@@ -326,13 +327,13 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean isPublicField()
 	{
-		return descriptor.isPublicField();
+		return descriptor.hasCharacteristic(Characteristic.PublicField);
 	}
 
 	@Override
 	public boolean isAdvancedField()
 	{
-		return descriptor.isAdvancedField();
+		return descriptor.hasCharacteristic(Characteristic.AdvancedField);
 	}
 
 	@Override

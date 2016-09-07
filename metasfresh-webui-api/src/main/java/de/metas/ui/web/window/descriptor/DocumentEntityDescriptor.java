@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 /*
  * #%L
@@ -71,8 +73,6 @@ public class DocumentEntityDescriptor
 	private final Map<String, DocumentFieldDescriptor> fields;
 	@JsonIgnore
 	private final DocumentFieldDescriptor idField;
-	@JsonIgnore
-	private List<DocumentFieldDescriptor> _sideListFields; // lazy
 
 	@JsonProperty("included-entities")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -93,6 +93,9 @@ public class DocumentEntityDescriptor
 	private final int tabNo;
 	@JsonProperty("IsSOTrx")
 	private final boolean isSOTrx;
+
+	@JsonIgnore
+	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -237,20 +240,21 @@ public class DocumentEntityDescriptor
 		{
 			throw new IllegalArgumentException("Field " + fieldName + " not found in " + this);
 		}
-		
+
 		return field;
 	}
 
-	public List<DocumentFieldDescriptor> getSideListFields()
+	public List<DocumentFieldDescriptor> getFieldsWithCharacteristic(final Characteristic characteristic)
 	{
-		if (_sideListFields == null)
-		{
-			_sideListFields = getFields()
-					.stream()
-					.filter(field -> field.isSideListField())
-					.collect(GuavaCollectors.toImmutableList());
-		}
-		return _sideListFields;
+		return fieldsByCharacteristic.computeIfAbsent(characteristic, (c) -> buildFieldsWithCharacteristic(c));
+	}
+
+	private List<DocumentFieldDescriptor> buildFieldsWithCharacteristic(final Characteristic characteristic)
+	{
+		return getFields()
+				.stream()
+				.filter(field -> field.hasCharacteristic(characteristic))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@JsonIgnore

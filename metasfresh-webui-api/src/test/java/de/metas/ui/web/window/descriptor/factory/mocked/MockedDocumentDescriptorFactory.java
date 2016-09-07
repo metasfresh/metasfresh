@@ -16,6 +16,7 @@ import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -107,16 +108,14 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						.setValueClass(Integer.class)
 						.setWidgetType(DocumentFieldWidgetType.Integer)
 						.setDisplayLogic(ILogicExpression.FALSE)
-						.setPublicField(true) // key is always public
-						.setAdvancedField(false)
+						.addCharacteristic(Characteristic.PublicField) // key is always public
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_C_Order_ID)))
 				.addField(DocumentFieldDescriptor.builder()
 						.setFieldName(I_C_Order.COLUMNNAME_DocumentNo)
 						.setValueClass(String.class)
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.setDisplayLogic(ILogicExpression.TRUE)
-						.setPublicField(true)
-						.setAdvancedField(false)
+						.addCharacteristic(Characteristic.PublicField) // key is always public
 						.setDataBinding(POJODocumentFieldDataBindingDescriptor.of(I_C_Order.COLUMNNAME_DocumentNo)))
 						//
 						;

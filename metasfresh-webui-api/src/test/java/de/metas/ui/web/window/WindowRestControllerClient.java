@@ -70,6 +70,15 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
+	public JSONDocumentLayout gridLayout(final int adWindowId)
+	{
+		final String json = httpGet("/gridLayout?type=" + adWindowId);
+		final JSONDocumentLayout layoutGrid = fromJson(json, JSONDocumentLayout.class);
+		System.out.println("GOT grid layout:\n" + toJson(layoutGrid));
+		return layoutGrid;
+	}
+
+	@Override
 	public JSONDocumentLayout sideListLayout(final int adWindowId)
 	{
 		final String json = httpGet("/sideListLayout?type=" + adWindowId);

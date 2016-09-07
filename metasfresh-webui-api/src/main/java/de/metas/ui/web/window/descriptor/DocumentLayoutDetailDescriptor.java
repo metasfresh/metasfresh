@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -61,8 +63,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		detailId = builder.getDetailId();
 		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
 		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
-		emptyResultText = builder.emptyResultText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultText);
-		emptyResultHint = builder.emptyResultHint == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultHint);
+		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
+		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 		filters = ImmutableList.copyOf(builder.filters);
 	}
@@ -215,6 +217,13 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder addElements(final Stream<DocumentLayoutElementDescriptor.Builder> elementBuilders)
+		{
+			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
+			elementBuilders.forEach(this::addElement);
+			return this;
+		}
+
 		public boolean hasElements()
 		{
 			return !elementBuilders.isEmpty();
@@ -238,6 +247,14 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return findElementBuilderByFieldName(fieldName) != null;
 		}
 
+		public Set<String> getFieldNames()
+		{
+			return elementBuilders
+					.stream()
+					.flatMap(element -> element.getFieldNames().stream())
+					.collect(GuavaCollectors.toImmutableSet());
+		}
+
 		public boolean isAdvancedField(final String fieldName)
 		{
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
@@ -252,6 +269,12 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			}
 
 			this.filters.addAll(filters);
+			return this;
+		}
+
+		public Builder clearFilters()
+		{
+			filters.clear();
 			return this;
 		}
 	}

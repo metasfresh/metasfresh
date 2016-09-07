@@ -3,7 +3,10 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -17,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -83,12 +87,17 @@ public final class DocumentFieldDescriptor implements Serializable
 	@JsonProperty("defaultValueExpression")
 	private final IStringExpression defaultValueExpression;
 
-	@JsonProperty("public")
-	private final boolean publicField;
-	@JsonProperty("advanced")
-	private final boolean advancedField;
-	@JsonProperty("side-list")
-	private final boolean sideListField;
+	public static enum Characteristic
+	{
+		PublicField //
+		, AdvancedField //
+		, SideListField //
+		, GridViewField //
+	};
+
+	@JsonProperty("characteristics")
+	private final Set<Characteristic> characteristics;
+
 	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
 	@JsonProperty("alwaysUpdateable")
@@ -121,9 +130,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		defaultValueExpression = builder.defaultValueExpression;
 
-		publicField = builder.publicField;
-		advancedField = builder.advancedField;
-		sideListField = builder.sideListField;
+		characteristics = Sets.immutableEnumSet(builder.characteristics);
 		readonlyLogic = builder.readonlyLogic;
 		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
@@ -145,8 +152,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
 			, @JsonProperty("valueClass") final Class<?> valueClass //
 			, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
-			, @JsonProperty("public") final boolean publicField //
-			, @JsonProperty("advanced") final boolean advancedField //
+			, @JsonProperty("characteristics") final Set<Characteristic> characteristics //
 			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
 			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
 			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
@@ -164,8 +170,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
 				.setDefaultValueExpression(defaultValueExpression)
-				.setPublicField(publicField)
-				.setAdvancedField(advancedField)
+				.addCharacteristics(characteristics)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setDisplayLogic(displayLogic)
@@ -181,8 +186,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.add("name", fieldName)
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
-				.add("publicField", publicField)
-				.add("sideListField", sideListField ? Boolean.TRUE : null)
+				.add("characteristics", characteristics.isEmpty() ? null : characteristics)
 				.add("fieldDataBinding", dataBinding)
 				.toString();
 	}
@@ -232,22 +236,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		return defaultValueExpression;
 	}
 
-	/**
-	 * @return true if this field is public and will be published to API clients
-	 */
-	public boolean isPublicField()
+	public boolean hasCharacteristic(final Characteristic c)
 	{
-		return publicField;
-	}
-
-	public boolean isAdvancedField()
-	{
-		return advancedField;
-	}
-
-	public boolean isSideListField()
-	{
-		return sideListField;
+		return characteristics.contains(c);
 	}
 
 	public ILogicExpression getReadonlyLogic()
@@ -469,9 +460,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private IStringExpression defaultValueExpression = IStringExpression.NULL;
 
-		private Boolean publicField;
-		private Boolean advancedField;
-		private boolean sideListField = false;
+		private final Set<Characteristic> characteristics = new TreeSet<>();
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
@@ -564,27 +553,25 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		/**
-		 * @param publicField true if this field is public and will be published to API clients
-		 */
-		public Builder setPublicField(final boolean publicField)
+		public Builder addCharacteristic(final Characteristic c)
 		{
-			assertNotBuilt();
-			this.publicField = publicField;
+			characteristics.add(c);
 			return this;
 		}
 
-		public Builder setAdvancedField(final boolean advancedField)
+		public Builder addCharacteristicIfTrue(final boolean test, final Characteristic c)
 		{
-			assertNotBuilt();
-			this.advancedField = advancedField;
+			if (test)
+			{
+				characteristics.add(c);
+			}
+
 			return this;
 		}
 
-		public Builder setSideListField(final boolean sideListField)
+		private Builder addCharacteristics(final Collection<Characteristic> characteristics)
 		{
-			assertNotBuilt();
-			this.sideListField = sideListField;
+			characteristics.addAll(characteristics);
 			return this;
 		}
 

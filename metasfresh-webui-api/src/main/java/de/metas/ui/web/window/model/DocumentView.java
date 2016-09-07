@@ -33,7 +33,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
-public class DocumentSideListView implements IDocumentSideListView
+public class DocumentView implements IDocumentView
 {
 	public static final Builder builder(DocumentEntityDescriptor entityDescriptor)
 	{
@@ -42,16 +42,16 @@ public class DocumentSideListView implements IDocumentSideListView
 
 	private final DocumentPath documentPath;
 	private final String idFieldName;
-	private final int id;
+	private final int documentId;
 	private final Map<String, Object> values;
 
-	private DocumentSideListView(final Builder builder)
+	private DocumentView(final Builder builder)
 	{
 		super();
 		documentPath = builder.getDocumentPath();
 
 		idFieldName = builder.idFieldName;
-		id = builder.id;
+		documentId = builder.documentId;
 		values = ImmutableMap.copyOf(builder.values);
 	}
 
@@ -59,7 +59,7 @@ public class DocumentSideListView implements IDocumentSideListView
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("id", id)
+				.add("id", documentId)
 				.add("values", values)
 				.toString();
 	}
@@ -79,7 +79,7 @@ public class DocumentSideListView implements IDocumentSideListView
 	@Override
 	public int getDocumentId()
 	{
-		return id;
+		return documentId;
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class DocumentSideListView implements IDocumentSideListView
 	}
 
 	@Override
-	public Object getFieldValue(final String fieldName)
+	public Object getFieldValueAsJson(final String fieldName)
 	{
 		return values.get(fieldName);
 	}
@@ -104,7 +104,7 @@ public class DocumentSideListView implements IDocumentSideListView
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
 		private String idFieldName;
-		private int id;
+		private int documentId;
 		private final Map<String, Object> values = new LinkedHashMap<>();
 
 		private Builder(DocumentEntityDescriptor entityDescriptor)
@@ -113,32 +113,41 @@ public class DocumentSideListView implements IDocumentSideListView
 			this.entityDescriptor = entityDescriptor;
 		}
 
-		public DocumentSideListView build()
+		public DocumentView build()
 		{
-			return new DocumentSideListView(this);
+			documentId = findId();
+			return new DocumentView(this);
 		}
-		
-		public DocumentPath getDocumentPath()
-		{
-			return DocumentPath.rootDocumentPath(entityDescriptor.getAD_Window_ID(), id);
-		}
-		
-		public Builder putKeyFieldValue(final String fieldName, final Object jsonValue)
-		{
-			putFieldValue(fieldName, jsonValue);
 
-			idFieldName = fieldName;
-			Preconditions.checkNotNull(jsonValue, "id");
-
-			if (jsonValue instanceof Integer)
+		private int findId()
+		{
+			if (idFieldName == null)
 			{
-				id = (Integer)jsonValue;
+				throw new IllegalStateException("No idFieldName was specified");
+			}
+
+			final Object idJson = values.get(idFieldName);
+			Preconditions.checkNotNull(idJson, "id");
+
+			if (idJson instanceof Integer)
+			{
+				return (Integer)idJson;
 			}
 			else
 			{
-				throw new IllegalArgumentException("Cannot convert id '" + jsonValue + "' to integer");
+				throw new IllegalArgumentException("Cannot convert id '" + idJson + "' to integer");
 			}
-			
+
+		}
+
+		public DocumentPath getDocumentPath()
+		{
+			return DocumentPath.rootDocumentPath(entityDescriptor.getAD_Window_ID(), documentId);
+		}
+
+		public Builder setIdFieldName(final String idFieldName)
+		{
+			this.idFieldName = idFieldName;
 			return this;
 		}
 

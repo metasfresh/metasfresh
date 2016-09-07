@@ -143,6 +143,16 @@ public final class DocumentLayoutElementLineDescriptor
 			elementsBuilders.add(elementBuilder);
 			return this;
 		}
+		
+		public boolean hasElements()
+		{
+			return !elementsBuilders.isEmpty();
+		}
+		
+		public DocumentLayoutElementDescriptor.Builder getFirstElement()
+		{
+			return elementsBuilders.get(0);
+		}
 
 		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
 		{

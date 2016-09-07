@@ -30,9 +30,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
-import de.metas.ui.web.window.model.DocumentRepository;
+import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.ui.web.window.model.IDocumentSideListView;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ import de.metas.ui.web.window.model.IDocumentSideListView;
 @Repository
 @Profile(WebRestApiApplication.PROFILE_Test)
 @Primary
-public class POJODocumentRepository implements DocumentRepository
+public class POJODocumentRepository implements DocumentsRepository
 {
 	private static final transient Logger logger = LogManager.getLogger(POJODocumentRepository.class);
 
@@ -308,12 +307,4 @@ public class POJODocumentRepository implements DocumentRepository
 
 		InterfaceWrapperHelper.delete(model);
 	}
-
-	@Override
-	public List<IDocumentSideListView> retrieveDocumentsSideList(final DocumentQuery query)
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-
 }

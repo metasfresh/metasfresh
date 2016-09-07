@@ -27,7 +27,7 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.ui.web.window.model.IDocumentSideListView;
+import de.metas.ui.web.window.model.IDocumentView;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -81,7 +81,7 @@ public final class JSONDocument implements Serializable
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
-				.filter(jsonFilteringOpts.documentFieldViewFilter())
+				.filter(jsonFilteringOpts.documentFieldFilter())
 				.map(JSONDocumentField::ofDocumentField)
 				.forEach(jsonFields::add);
 
@@ -192,29 +192,29 @@ public final class JSONDocument implements Serializable
 		return jsonDocument;
 	}
 
-	public static List<JSONDocument> ofSideDocumentList(final List<IDocumentSideListView> sideDocuments)
+	public static List<JSONDocument> ofDocumentViewList(final List<IDocumentView> documentViews)
 	{
-		return sideDocuments.stream()
-				.map(JSONDocument::ofSideDocument)
+		return documentViews.stream()
+				.map(JSONDocument::ofDocumentView)
 				.collect(Collectors.toList());
 	}
 
-	private static JSONDocument ofSideDocument(IDocumentSideListView sideDocument)
+	private static JSONDocument ofDocumentView(final IDocumentView documentView)
 	{
-		final JSONDocument jsonDocument = new JSONDocument(sideDocument.getDocumentPath());
+		final JSONDocument jsonDocument = new JSONDocument(documentView.getDocumentPath());
 
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 		// Add pseudo "ID" field first
-		final String idFieldName = sideDocument.getIdFieldNameOrNull();
+		final String idFieldName = documentView.getIdFieldNameOrNull();
 		if (idFieldName != null)
 		{
-			final int id = sideDocument.getDocumentId();
+			final int id = documentView.getDocumentId();
 			jsonFields.add(0, JSONDocumentField.idField(id));
 		}
 
 		// Append the other fields
-		sideDocument.getFieldNameAndJsonValues()
+		documentView.getFieldNameAndJsonValues()
 				.entrySet()
 				.stream()
 				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))

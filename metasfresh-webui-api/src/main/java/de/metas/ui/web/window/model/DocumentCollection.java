@@ -56,7 +56,7 @@ public class DocumentCollection
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	@Autowired
-	private DocumentRepository documentsRepository;
+	private DocumentsRepository documentsRepository;
 
 	private final LoadingCache<DocumentKey, Document> documents = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<DocumentKey, Document>()
@@ -290,11 +290,6 @@ public class DocumentCollection
 		{
 			throw new InvalidDocumentPathException(documentPath);
 		}
-	}
-
-	public List<IDocumentSideListView> sideList(final int adWindowId, final DocumentQuery query)
-	{
-		return documentsRepository.retrieveDocumentsSideList(query);
 	}
 
 	private static final class DocumentKey

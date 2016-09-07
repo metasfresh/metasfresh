@@ -100,7 +100,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 				.toString();
 	}
 
-	private DocumentRepository getDocumentsRepository()
+	private DocumentsRepository getDocumentsRepository()
 	{
 		return parentDocument.getDocumentRepository();
 	}
@@ -336,7 +336,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 		assertWritable();
 
-		final DocumentRepository documentsRepository = getDocumentsRepository();
+		final DocumentsRepository documentsRepository = getDocumentsRepository();
 
 		for (final DocumentId rowId : rowIds)
 		{

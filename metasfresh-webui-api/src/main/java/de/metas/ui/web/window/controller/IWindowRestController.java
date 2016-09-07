@@ -34,6 +34,8 @@ public interface IWindowRestController
 
 	JSONDocumentLayout layout(int adWindowId, String detailId, boolean advanced);
 
+	JSONDocumentLayout gridLayout(int adWindowId);
+
 	JSONDocumentLayout sideListLayout(int adWindowId);
 
 	List<JSONDocument> data(

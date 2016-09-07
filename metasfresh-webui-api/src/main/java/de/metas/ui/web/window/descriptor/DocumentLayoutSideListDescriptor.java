@@ -51,8 +51,8 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 	private DocumentLayoutSideListDescriptor(final Builder builder)
 	{
 		super();
-		emptyResultText = builder.emptyResultText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultText);
-		emptyResultHint = builder.emptyResultHint == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyResultHint);
+		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
+		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 

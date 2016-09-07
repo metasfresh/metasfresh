@@ -2,9 +2,12 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +28,8 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -38,6 +43,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -149,11 +155,15 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	// State
 	private final SpecialFieldsCollector _specialFieldsCollector = new SpecialFieldsCollector();
 	private boolean _specialFieldsCollectingEnabled = false;
+
 	//
+	// State: pre-build cached entities
 	private DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private SqlDocumentEntityDataBindingDescriptor.Builder _documentEntryDataBinding;
 	private final Set<String> publicFieldNames = new HashSet<>();
 	private final Set<String> advancedFieldNames = new HashSet<>();
+	private final Set<String> layout_SideList_fieldNames = new HashSet<>();
+	private final Set<String> layout_GridView_fieldNames = new HashSet<>();
 	//
 	private List<DocumentQueryFilterDescriptor> _documentFilters;
 
@@ -259,6 +269,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private String getDetailId()
 	{
 		return _detailId;
+	}
+
+	private static final ArrayKey mkKey(GridFieldVO gridFieldVO)
+	{
+		return Util.mkKey(gridFieldVO.getAD_Column_ID());
 	}
 
 	public List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
@@ -370,6 +385,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				continue;
 			}
+			if (!layoutElementLineBuilder.hasElements())
+			{
+				logger.trace("Skip {} because it's empty", layoutElementLineBuilder);
+				continue;
+			}
 
 			layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
 		}
@@ -462,8 +482,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			}
 		}
 
+		//
+		// Collect special fields
 		collectSpecialField(layoutElementBuilder);
 
+		//
+		// Collect advanced fields
 		if (layoutElementBuilder.isAdvancedField())
 		{
 			advancedFieldNames.addAll(layoutElementBuilder.getFieldNames());
@@ -516,14 +540,14 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		logger.trace("Generating layout detail for {}", detailTab);
 
 		// If the detail is never displayed then don't add it to layout
-		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic();
+		final ILogicExpression tabDisplayLogic = getTabDisplayLogic();
 		if (tabDisplayLogic.isConstantFalse())
 		{
 			logger.trace("Skip adding detail tab to layout because it's never displayed: {}, tabDisplayLogic={}", detailTab, tabDisplayLogic);
 			return null;
 		}
 
-		final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = DocumentLayoutDetailDescriptor.builder()
+		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(getDetailId())
 				.setCaption(detailTab.getName())
 				.setCaptionTrls(detailTab.getNameTrls())
@@ -531,20 +555,24 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setDescriptionTrls(detailTab.getDescriptionTrls())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.addFilters(documentFilters());
+				.addFilters(documentFilters())
+				.addElements(layoutElementsGridView());
+		
+		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
+		return layoutDetail;
+	}
 
+	private Stream<DocumentLayoutElementDescriptor.Builder> layoutElementsGridView()
+	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
-		uiSections.stream()
+		return uiSections.stream()
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
 				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
 				.filter(uiElement -> uiElement.isDisplayedGrid())
 				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNoGrid() - uiElement2.getSeqNoGrid())
 				.map(uiElement -> layoutElement(uiElement))
-				.filter(uiElement -> uiElement != null)
-				.forEach(layoutDetailBuilder::addElement);
-
-		return layoutDetailBuilder;
+				.filter(uiElement -> uiElement != null);
 	}
 
 	public DocumentEntityDescriptor.Builder documentEntity()
@@ -559,7 +587,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonly);
 			final ILogicExpression allowDeleteLogic = allowDelete.andNot(readonly);
 
-			final ILogicExpression displayLogic = extractTabDisplayLogic();
+			final ILogicExpression displayLogic = getTabDisplayLogic();
 
 			_documentEntityBuilder = DocumentEntityDescriptor.builder()
 					.setDetailId(getDetailId())
@@ -631,8 +659,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final boolean alwaysUpdateable;
 		final ILogicExpression mandatoryLogic;
 		final ILogicExpression displayLogic;
-		final boolean advancedField = advancedFieldNames.contains(fieldName);
-		final boolean sideListField = keyColumn || documentEntryDataBinding().isSideListFieldName(fieldName);
+
 		if (isParentLinkColumn)
 		{
 			displayType = DisplayType.ID;
@@ -658,7 +685,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			readonlyLogic = extractFieldReadonlyLogic(gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 			final boolean presentInLayout = publicFieldNames.contains(fieldName);
-			displayLogic = extractFieldDisplayLogic(gridFieldVO, presentInLayout);
+			displayLogic = getFieldDisplayLogic(gridFieldVO, presentInLayout);
 			publicField = isPublicField(keyColumn, displayLogic);
 			mandatoryLogic = extractMandatoryLogic(gridFieldVO, publicField);
 		}
@@ -700,9 +727,10 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				//
 				.setDefaultValueExpression(defaultValueExpression)
 				//
-				.setPublicField(publicField)
-				.setAdvancedField(advancedField)
-				.setSideListField(sideListField)
+				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
+				.addCharacteristicIfTrue(advancedFieldNames.contains(fieldName), Characteristic.AdvancedField)
+				.addCharacteristicIfTrue(keyColumn || layout_SideList_fieldNames.contains(fieldName), Characteristic.SideListField)
+				.addCharacteristicIfTrue(keyColumn || layout_GridView_fieldNames.contains(fieldName), Characteristic.GridViewField)
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
@@ -1179,23 +1207,32 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return gridFieldVO.getMandatoryLogic();
 	}
 
-	private ILogicExpression extractTabDisplayLogic()
+	private ILogicExpression getTabDisplayLogic()
 	{
 		return getGridTabVO().getDisplayLogic();
 	}
 
-	private ILogicExpression extractFieldDisplayLogic(final GridFieldVO gridFieldVO, final boolean presentInLayout)
+	private ILogicExpression getFieldDisplayLogic(final GridFieldVO gridFieldVO, final boolean presentInLayout)
 	{
 		if (!presentInLayout)
 		{
 			return ILogicExpression.FALSE;
 		}
 
-		// FIXME: not sure if using tabDisplayLogic here is OK, because the tab logic shall be applied to parent tab!
-		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic();
-		final ILogicExpression fieldDisplayLogic = gridFieldVO.getDisplayLogic();
-		return tabDisplayLogic.and(fieldDisplayLogic);
+		return getFieldDisplayLogic(gridFieldVO);
 	}
+
+	private ILogicExpression getFieldDisplayLogic(final GridFieldVO gridFieldVO)
+	{
+		return _fieldDisplayLogic.computeIfAbsent(mkKey(gridFieldVO), key -> {
+			// FIXME: not sure if using tabDisplayLogic here is OK, because the tab logic shall be applied to parent tab!
+			final ILogicExpression tabDisplayLogic = getTabDisplayLogic();
+			final ILogicExpression fieldDisplayLogic = gridFieldVO.getDisplayLogic();
+			return tabDisplayLogic.and(fieldDisplayLogic);
+		});
+	}
+
+	private final Map<ArrayKey, ILogicExpression> _fieldDisplayLogic = new HashMap<>();
 
 	private IStringExpression extractDefaultValueExpression(final GridFieldVO gridFieldVO)
 	{
@@ -1252,8 +1289,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		logger.trace("Building layout element field for {}", gridFieldVO);
 
 		final String fieldName = gridFieldVO.getColumnName();
-		final boolean presentInLayout = true;
-		final ILogicExpression displayLogic = extractFieldDisplayLogic(gridFieldVO, presentInLayout);
+		final ILogicExpression displayLogic = getFieldDisplayLogic(gridFieldVO);
 		final boolean publicField = isPublicField(gridFieldVO.isKey(), displayLogic);
 
 		if (publicField)
@@ -1291,7 +1327,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
 
-		documentEntryDataBinding().addSideListFieldNames(layoutSideListBuilder.getFieldNames());
+		layout_SideList_fieldNames.addAll(layoutSideListBuilder.getFieldNames());
 
 		return layoutSideListBuilder.build();
 	}

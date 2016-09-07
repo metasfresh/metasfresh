@@ -63,7 +63,7 @@ public final class JSONFilteringOptions
 			.omitEmptyStrings();
 
 	private Predicate<DocumentLayoutElementDescriptor> _documentLayoutElementFilter; // lazy
-	private Predicate<IDocumentFieldView> _documentFieldViewFilter; // lazy
+	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
@@ -260,16 +260,16 @@ public final class JSONFilteringOptions
 		return _documentLayoutElementFilter;
 	}
 
-	public Predicate<IDocumentFieldView> documentFieldViewFilter()
+	public Predicate<IDocumentFieldView> documentFieldFilter()
 	{
-		if (_documentFieldViewFilter == null)
+		if (_documentFieldFilter == null)
 		{
-			_documentFieldViewFilter = createDocumentFieldViewFilter();
+			_documentFieldFilter = createDocumentFieldFilter();
 		}
-		return _documentFieldViewFilter;
+		return _documentFieldFilter;
 	}
 
-	private Predicate<IDocumentFieldView> createDocumentFieldViewFilter()
+	private Predicate<IDocumentFieldView> createDocumentFieldFilter()
 	{
 		final Predicate<IDocumentFieldView> filter = showAdvancedFields ? FILTER_DocumentFieldView_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldView_BASIC_PUBLIC_FIELDS;
 

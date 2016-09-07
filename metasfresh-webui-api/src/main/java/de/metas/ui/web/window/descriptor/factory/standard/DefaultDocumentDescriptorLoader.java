@@ -15,7 +15,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
@@ -93,6 +92,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		{
 			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
+			layoutBuilder.setGridView(mainTabFactory.layoutDetail().clearFilters());
 			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
 			layoutBuilder.addFilters(mainTabFactory.documentFilters());
 
@@ -115,9 +115,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(GridTabVOElementsFactory.MAIN_TabNo))
 		{
 			final GridTabVOElementsFactory detailTabFactory = new GridTabVOElementsFactory(gridWindowVO, detailTabVO, mainTabVO);
-
-			final DocumentLayoutDetailDescriptor.Builder layoutDetailBuilder = detailTabFactory.layoutDetail();
-			layoutBuilder.addDetailIfValid(layoutDetailBuilder);
+			layoutBuilder.addDetailIfValid(detailTabFactory.layoutDetail());
 
 			//
 			// Fields mapping

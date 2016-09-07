@@ -1,9 +1,8 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
-import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
  * #%L
@@ -27,17 +26,24 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
  * #L%
  */
 
-public interface IDocumentSideListView
+public interface DocumentsRepository
 {
-	DocumentPath getDocumentPath();
 
-	int getDocumentId();
+	List<Document> retriveDocuments(DocumentQuery query);
 
-	String getIdFieldNameOrNull();
+	Document retriveDocument(DocumentQuery query);
 
-	Set<String> getFieldNames();
+	/**
+	 *
+	 * @param entityDescriptor
+	 * @param parentDocument
+	 * @return newly created document (not saved); never returns null
+	 */
+	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
 
-	Object getFieldValue(final String fieldName);
-	
-	Map<String, Object> getFieldNameAndJsonValues();
+	void refresh(Document document);
+
+	void save(Document document);
+
+	void delete(Document document);
 }

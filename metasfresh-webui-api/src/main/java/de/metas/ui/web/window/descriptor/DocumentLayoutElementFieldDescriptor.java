@@ -71,7 +71,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
 		publicField = builder.publicField;
-		this.emptyText = builder.emptyText == null ? ImmutableTranslatableString.EMPTY : ImmutableTranslatableString.copyOf(builder.emptyText);
+		this.emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
 	}
 
 	@Override
