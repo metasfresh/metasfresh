@@ -64,6 +64,76 @@ class Table extends Component {
         }
     }
 
+    handleKeyDown = (e) => {
+
+        const {rowData, tabid} = this.props;
+        const item = rowData[tabid];
+        const {selected} = this.state;
+        const selectRange = e.shiftKey;
+
+        let nodeList = Array.prototype.slice.call( document.activeElement.parentElement.children);
+        let idActive = nodeList.indexOf(document.activeElement);
+        
+
+        switch(e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+
+                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+
+                if(actualId < Object.keys(rowData[tabid]).length-1 ){
+                    let newId = actualId+1;
+                    // this.state.selected = [Object.keys(rowData[tabid])[newId]];
+                    if(!selectRange) {
+                        this.deselectAllProducts();
+                    }
+
+                    let t = this;
+                    setTimeout(function(){ 
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                        if(idActive > -1) {
+                            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idActive].focus();
+                        }
+                    }, 1);
+                }
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+
+                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+
+                if(actual > 0 ){
+                    let newId = actual-1;
+
+                    if(!selectRange) {
+                        this.deselectAllProducts();
+                    }
+
+                    let t = this;
+                    setTimeout(function(){ 
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                        if(idActive > -1) {
+                            document.getElementsByClassName('row-selected')[0].children[idActive].focus();
+                        }
+                    }, 1);
+                }
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                if(document.activeElement.previousSibling){
+                    document.activeElement.previousSibling.focus();
+                }
+                break;
+            case "ArrowRight":
+                e.preventDefault();
+                if(document.activeElement.nextSibling){
+                   document.activeElement.nextSibling.focus(); 
+                }
+                break;
+        }
+      
+    }
+
     closeContextMenu = (event) => {
         this.setState(Object.assign({}, this.state, {
             contextMenu: Object.assign({}, this.state.contextMenu, {
@@ -108,11 +178,26 @@ class Table extends Component {
             }
         }
     }
-    handleRightClick = (e) => {
+    handleRightClick = (e, id) => {
         // const {selected} = this.state;
         // if(selected.length < 1) {
         //   this.selectProduct(id);
         // }
+        const {selected} = this.state;
+        const isAnySelected = selected.length > 0;
+
+        if(!isAnySelected){
+            this.selectProduct(id);
+        } else if(selected.length === 1){
+            this.deselectAllProducts();
+            let t = this;
+            setTimeout(function(){ 
+                t.selectProduct(id);
+            }, 1);
+            
+        }
+
+        
         e.preventDefault();
         this.setState({
             contextMenu: {
@@ -160,7 +245,7 @@ class Table extends Component {
                         docId={docId}
                         isSelected={selected.indexOf(item[key].rowId) > -1}
                         onClick={(e) => this.handleClick(e, item[key].rowId)}
-                        onContextMenu={(e) => this.handleRightClick(e)}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                     />
                 );
             }
@@ -207,7 +292,7 @@ class Table extends Component {
                     </div>
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped" onContextMenu={(e) => this.handleRightClick(e)}>
+                        <table className="table table-bordered-vertically table-striped"  onKeyDown = {(e) => this.handleKeyDown(e)}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>

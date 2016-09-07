@@ -583,10 +583,11 @@ body {
     width: 30px;
     display: flex;
     align-items: center;
+    text-align: center;
 }
 
 .indicator img {
-    width: 100%;
+    width: 30px;
 }
 
 .indicator .success {

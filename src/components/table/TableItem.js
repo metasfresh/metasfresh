@@ -51,6 +51,7 @@ class TableItem extends Component {
         return (
             <tr
                 onClick={onClick}
+                onContextMenu = {onContextMenu}
                 className={isSelected ? "row-selected" : null}
             >
                 {this.renderCells(cols, fields)}
