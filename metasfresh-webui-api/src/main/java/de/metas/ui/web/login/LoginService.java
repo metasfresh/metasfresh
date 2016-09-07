@@ -53,6 +53,7 @@ public class LoginService
 		//
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
 		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
+		// LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChange.class, Level.TRACE); // Document Changes Collector
 		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);
 		WindowConstants.setProtocolDebugging(true);
 		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
