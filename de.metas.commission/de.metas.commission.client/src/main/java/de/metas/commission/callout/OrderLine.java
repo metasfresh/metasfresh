@@ -26,7 +26,7 @@ package de.metas.commission.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.Services;
@@ -50,7 +50,7 @@ import de.metas.commission.service.IOrderLineBL;
 public class OrderLine extends CalloutEngine
 {
 
-	private static final String TRX_NAME = null;
+	private static final String TRX_NAME = ITrx.TRXNAME_None;
 
 	public String cSubscriptionId(
 			final Properties ctx,
@@ -156,7 +156,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 		return Services.get(IInstanceTriggerBL.class).setCommissionPoints(ctx, ol, false, TRX_NAME);
 	}
 
@@ -170,7 +170,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 		return Services.get(IInstanceTriggerBL.class).setCommissionPointsSum(ctx, ol, false, TRX_NAME);
 	}
 
@@ -183,7 +183,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 		if (ol.getM_Product_ID() == 0)
 		{
 			return "";
@@ -203,7 +203,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 
 		final IInstanceTriggerBL instanceTriggerBL = Services.get(IInstanceTriggerBL.class);
 		return instanceTriggerBL.setCommissionPointsSum(ctx, ol, false, TRX_NAME);
@@ -218,7 +218,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 
 		Services.get(IInstanceTriggerBL.class).updateCommissionPointsNet(ol);
 
@@ -234,7 +234,7 @@ public class OrderLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 		if (ol.getM_Product_ID() <= 0)
 		{
 			return "";
@@ -283,7 +283,7 @@ public class OrderLine extends CalloutEngine
 		String retVal = "";
 		if (!(Boolean)value)
 		{
-			final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
+			final I_C_OrderLine ol = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
 			final IInstanceTriggerBL instanceTriggerBL = Services.get(IInstanceTriggerBL.class);
 
 			retVal = instanceTriggerBL.setCommissionPoints(ctx, ol, false, TRX_NAME);

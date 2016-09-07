@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MSystem;
 import org.compiere.util.Ini;
@@ -60,7 +61,7 @@ public class SystemBL implements ISystemBL
 		//
 		// If running on server side, update the system info
 		// TODO i think we shall move this logic somewhere else where is obvious what we are doing and not hidden here.
-		if (!Ini.isClient())
+		if (Ini.getRunMode() == RunMode.BACKEND)
 		{
 			if (systemPO.setInfo())
 			{

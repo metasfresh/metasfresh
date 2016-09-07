@@ -24,7 +24,6 @@ package de.metas.flatrate.process;
 
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -83,7 +82,7 @@ public class C_FlatrateTerm_Create_From_OLCand extends SvrProcess implements ISv
 			return false;
 		}
 
-		final I_C_OLCand olCand = GridTabWrapper.create(gridTab, I_C_OLCand.class);
+		final I_C_OLCand olCand = InterfaceWrapperHelper.create(gridTab, I_C_OLCand.class);
 		if(olCand.isError())
 		{
 			return false;

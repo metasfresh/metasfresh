@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,7 +33,14 @@ import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Model Window Value Object
@@ -45,6 +50,8 @@ import org.compiere.util.Env;
  */
 public class GridWindowVO implements Serializable
 {
+	public static final String CTXNAME_BaseTable_ID = "BaseTable_ID";
+
 	private static final transient Logger logger = LogManager.getLogger(GridWindowVO.class);
 
 	/**
@@ -52,7 +59,8 @@ public class GridWindowVO implements Serializable
 	 *  @param ctx context
 	 *  @param WindowNo window no for ctx
 	 *  @param AD_Window_ID window id
-	 *  @return MWindowVO
+	 *  @return {@link GridWindowVO}; never returns null
+	 *  @see #create(Properties, int, int, int)
 	 */
 	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID)
 	{
@@ -61,31 +69,8 @@ public class GridWindowVO implements Serializable
 	}   //  create
 
 	/**
-	 *  Create Window Value Object
-	 *
-	 *  @param ctx context
-	 *  @param WindowNo window no for ctx
-	 *  @param AD_Window_ID window id
-	 *  @param AD_Menu_ID menu id
-	 *  @return {@link GridWindowVO} or <code>null</code> (if not found or no access)
-	 */
-	public static GridWindowVO createOrNull (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID)
-	{
-		try
-		{
-			final GridWindowVO gridWindowVO = create(ctx, WindowNo, AD_Window_ID, AD_Menu_ID);
-			return gridWindowVO;
-		}
-		catch (Exception ex)
-		{
-			logger.error(ex.getLocalizedMessage(), ex);
-			return null;
-		}
-	}
-	
-	/**
 	 * Load {@link GridWindowVO}.
-	 * 
+	 *
 	 * @param ctx
 	 * @param WindowNo
 	 * @param AD_Window_ID
@@ -95,7 +80,7 @@ public class GridWindowVO implements Serializable
 	 */
 	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
 	{
-		logger.info("#" + WindowNo + " - AD_Window_ID=" + AD_Window_ID + "; AD_Menu_ID=" + AD_Menu_ID);
+		logger.info("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", WindowNo, AD_Window_ID, AD_Menu_ID);
 		GridWindowVO vo = new GridWindowVO (ctx, WindowNo);
 		vo.AD_Window_ID = AD_Window_ID;
 
@@ -114,14 +99,11 @@ public class GridWindowVO implements Serializable
 				if (rs.next())
 				{
 					vo.AD_Window_ID = rs.getInt(1);
-					String IsSOTrx = rs.getString(2);
-					Env.setContext(ctx, WindowNo, "IsSOTrx", (IsSOTrx != null && IsSOTrx.equals("Y")));
+					final boolean isSOTrx = DisplayType.toBoolean(rs.getString(2));
+					vo.setIsSOTrx(isSOTrx);
 					//
-					String IsReadOnly = rs.getString(3);
-					if (IsReadOnly != null && IsReadOnly.equals("Y"))
-						vo.IsReadWrite = "Y";
-					else
-						vo.IsReadWrite = "N";
+					final boolean isReadOnly = DisplayType.toBoolean(rs.getString(3));
+					vo.setReadWrite(!isReadOnly);
 				}
 			}
 			catch (SQLException e)
@@ -133,23 +115,39 @@ public class GridWindowVO implements Serializable
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-			logger.info("AD_Window_ID=" + vo.AD_Window_ID);
+			//
+			if (vo.getAD_Window_ID() <= 0)
+			{
+				throw new WindowLoadException("@NotFound@ @AD_Menu_ID@="+AD_Menu_ID, "-", "-", vo.getAD_Window_ID());
+			}
+			
+			logger.debug("AD_Window_ID={}", vo.getAD_Window_ID());
 		}
 
+		//
 		//  --  Get Window
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT Name,Description,Help,WindowType, "
 			+ "AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, " // metas: removed a.IsReadWrite
 			+ "IsSOTrx "
 			+ ", IsOneInstanceOnly " // 10 // metas: US831
 			);
-
-		if (Env.isBaseLanguage(vo.ctx, "AD_Window"))
-			sql.append("FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive='Y'"); // metas: tsa: changed the query because we check for permissions later
+		if (Env.isBaseLanguage(vo.getCtx(), I_AD_Window.Table_Name))
+		{
+			sql.append("FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive=?"); // metas: tsa: changed the query because we check for permissions later
+			sqlParams.add(vo.getAD_Window_ID());
+			sqlParams.add(true); // IsActive
+		}
 		else
+		{
 			sql.append("FROM AD_Window_vt w WHERE w.AD_Window_ID=?")  // metas: tsa: changed the query because we check for permissions later
-				.append(" AND AD_Language='")
-				.append(Env.getAD_Language(vo.ctx)).append("'");
-		final List<Object> sqlParams = Arrays.<Object>asList(vo.AD_Window_ID);
+				.append(" AND w.IsActive=?")
+				.append(" AND w.AD_Language=?");
+			sqlParams.add(vo.getAD_Window_ID());
+			sqlParams.add(true); // IsActive
+			sqlParams.add(Env.getAD_Language(vo.getCtx()));
+		}
+		
 		String windowName = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -158,19 +156,15 @@ public class GridWindowVO implements Serializable
 			//	create statement
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
-			
+
 			// 	get data
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				windowName = rs.getString(1);
 				vo.Name = windowName;
-				vo.Description = rs.getString(2);
-				if (vo.Description == null)
-					vo.Description = "";
-				vo.Help = rs.getString(3);
-				if (vo.Help == null)
-					vo.Help = "";
+				vo.Description = Util.coalesce(rs.getString(2), "");
+				vo.Help = Util.coalesce(rs.getString(3), "");
 				vo.WindowType = rs.getString(4);
 				//
 				vo.AD_Color_ID = rs.getInt(5);
@@ -180,11 +174,14 @@ public class GridWindowVO implements Serializable
 				vo.WinHeight = rs.getInt(7);
 				vo.WinWidth = rs.getInt(8);
 				//
-				vo.IsSOTrx = "Y".equals(rs.getString(9));
-				vo.IsOneInstanceOnly = "Y".equals(rs.getString(10)); // metas: US831
+				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(9));
+				vo.setIsSOTrx(isSOTrx);
+				vo.IsOneInstanceOnly = DisplayType.toBoolean(rs.getString(10)); // metas: US831
 			}
 			else
-				vo = null;
+			{
+				throw new WindowLoadException("@NotFound@", "ID=" + Env.getAD_Role_ID(ctx) + " (does not matter)", windowName, AD_Window_ID);
+			}
 		}
 		catch (SQLException ex)
 		{
@@ -195,41 +192,48 @@ public class GridWindowVO implements Serializable
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		// Ensure ASP exceptions
-		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-		// metas: begin: check for permissions using MRole API
-		Boolean windowAccess = null; 
+
+		//
+		// Check for permissions using Role API
 		if (vo != null)
-			windowAccess = role.getWindowAccess(vo.AD_Window_ID);
-		if (vo != null && windowAccess == null)
-			vo = null;		//	Not found
-		if (vo != null && windowAccess != null)
-			vo.IsReadWrite = (windowAccess.booleanValue() ? "Y" : "N");
-		// metas: end: check for permissions using MRole API
-		if (vo == null)
 		{
-			final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, AD_Window_ID);
-			Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), AD_Window_ID, null, ex.getLocalizedMessage());
-			throw ex;
+			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
+			final Boolean windowAccess = role.checkWindowAccess(vo.getAD_Window_ID());
+			
+			// no access 
+			if (windowAccess == null)
+			{
+				final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, AD_Window_ID);
+				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), AD_Window_ID, null, ex.getLocalizedMessage());
+				throw ex;
+			}
+			// read-only access
+			else if (Boolean.FALSE.equals(windowAccess))
+			{
+				vo.setReadWrite(false);
+			}
+			// read-write access
+			else
+			{
+				vo.setReadWrite(true);
+			}
 		}
-		//	Read Write
-		if (vo.IsReadWrite == null)
-		{
-			final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, AD_Window_ID);
-			Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), AD_Window_ID, null, ex.getLocalizedMessage()); // metas: 1934
-			throw ex;
-		}
-		MUserDefWin.apply(vo); // Apply UserDef settings
+
+		//
+		// Apply UserDef settings
+		MUserDefWin.apply(vo);
 
 		//  Create Tabs
-		createTabs (vo);
-		if (vo.Tabs == null || vo.Tabs.size() == 0)
+		final List<GridTabVO> tabs = createTabs(vo);
+		if (tabs == null || tabs.isEmpty())
 		{
 			final String loadErrorMessage = vo.getLoadErrorMessage() == null ? "Window tabs load error" : vo.getLoadErrorMessage();
-			final WindowLoadException ex = new WindowLoadException(loadErrorMessage, role.getName(), windowName, AD_Window_ID);
-			Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), AD_Window_ID, null, ex.getLocalizedMessage()); // metas: 1934
+			final String roleName = "-";
+			final WindowLoadException ex = new WindowLoadException(loadErrorMessage, roleName, windowName, AD_Window_ID);
 			throw ex;
 		}
+		vo._tabs = tabs;
+		vo._BaseTable_ID = tabs.get(0).getAD_Table_ID();
 
 		return vo;
 	}   //  create
@@ -239,9 +243,12 @@ public class GridWindowVO implements Serializable
 	 *  @param mWindowVO Window Value Object
 	 *  @return true if tabs were created
 	 */
-	private static boolean createTabs (GridWindowVO mWindowVO)
+	private static List<GridTabVO> createTabs (final GridWindowVO mWindowVO)
 	{
-		mWindowVO.Tabs = new ArrayList<GridTabVO>();
+		final int adWindowId = mWindowVO.getAD_Window_ID();
+		final String windowType = mWindowVO.getWindowType();
+		
+		final List<GridTabVO> tabs = new ArrayList<GridTabVO>();
 
 		final String sql = GridTabVO.getSQL(mWindowVO.ctx);
 		int TabNo = 0;
@@ -251,24 +258,27 @@ public class GridWindowVO implements Serializable
 		{
 			//	create statement
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, mWindowVO.AD_Window_ID);
+			pstmt.setInt(1, adWindowId);
 			rs = pstmt.executeQuery();
 			boolean firstTab = true;
 			while (rs.next())
 			{
-				if (mWindowVO.AD_Table_ID == 0)
-					mWindowVO.AD_Table_ID = rs.getInt("AD_Table_ID");
 				//  Create TabVO
-				GridTabVO mTabVO = GridTabVO.create(mWindowVO, TabNo, rs,
-					mWindowVO.WindowType.equals(WINDOWTYPE_QUERY),  //  isRO
-					mWindowVO.WindowType.equals(WINDOWTYPE_TRX));   //  onlyCurrentRows
+				final GridTabVO mTabVO = GridTabVO.create(mWindowVO, TabNo, rs,
+					windowType.equals(WINDOWTYPE_QUERY),  //  isRO
+					windowType.equals(WINDOWTYPE_TRX));   //  onlyCurrentRows
+				
 				if (mTabVO == null && firstTab)
+				{
 					break;		//	don't continue if first tab is null
+				}
 				if (mTabVO != null)
 				{
-					if (!mTabVO.IsReadOnly && "N".equals(mWindowVO.IsReadWrite))
-						mTabVO.IsReadOnly = true;
-					mWindowVO.Tabs.add(mTabVO);
+					if (!mTabVO.isReadOnly() && !mWindowVO.isReadWrite())
+					{
+						mTabVO.setReadOnly(true);
+					}
+					tabs.add(mTabVO);
 					TabNo++;        //  must be same as mWindow.getTab(x)
 					firstTab = false;
 				}
@@ -277,7 +287,7 @@ public class GridWindowVO implements Serializable
 		catch (SQLException e)
 		{
 			logger.error("createTabs", e);
-			return false;
+			return null;
 		}
 		finally
 		{
@@ -286,64 +296,63 @@ public class GridWindowVO implements Serializable
 		}
 
 		//  No Tabs
-		if (TabNo == 0 || mWindowVO.Tabs.size() == 0)
+		if (TabNo == 0 || tabs.isEmpty())
 		{
-			mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + mWindowVO.AD_Window_ID + " - " + sql, true); // metas: 1934
-			logger.error("No Tabs - AD_Window_ID=" + mWindowVO.AD_Window_ID + " - " + sql);
-			return false;
+			mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
+			logger.error("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql);
+			return null;
 		}
 
-		//	Put base table of window in ctx (for VDocAction)
-		Env.setContext(mWindowVO.ctx, mWindowVO.WindowNo, "BaseTable_ID", mWindowVO.AD_Table_ID);
-		return true;
+		return ImmutableList.copyOf(tabs);
 	}   //  createTabs
 
-	
+
 	/**************************************************************************
 	 *  Private Constructor
 	 *  @param Ctx context
 	 *  @param windowNo window no
 	 */
-	private GridWindowVO (Properties Ctx, int windowNo)
+	private GridWindowVO (final Properties Ctx, final int windowNo)
 	{
+		super();
 		ctx = Ctx;
 		WindowNo = windowNo;
-	}   //  MWindowVO
+	}
 
 	static final long serialVersionUID = 3802628212531678981L;
 
 	/** Properties      */
-	public Properties   ctx;
+	private Properties   ctx;
 	/** Window Number	*/
-	public int 		    WindowNo;
+	private int WindowNo;
 
 	/** Window				*/
-	public	int			AD_Window_ID = 0;
+	private int AD_Window_ID = 0;
 	/** Name				*/
-	public	String		Name = "";
+	private String Name = "";
 	/** Desription			*/
-	public	String		Description = "";
+	private String Description = "";
 	/** Help				*/
-	public	String		Help = "";
+	private String Help = "";
 	/** Window Type			*/
-	public	String		WindowType = "";
+	private String WindowType = "";
 	/** Image				*/
-	public int          AD_Image_ID = 0;
+	private int AD_Image_ID = 0;
 	/** Color				*/
-	public int          AD_Color_ID = 0;
+	private int AD_Color_ID = 0;
 	/** Read Write			*/
-	public String		IsReadWrite = null;
+	private Boolean _isReadWrite = null;
 	/** Window Width		*/
-	public int			WinWidth = 0;
+	private int WinWidth = 0;
 	/** Window Height		*/
-	public int			WinHeight = 0;
+	private int WinHeight = 0;
 	/** Sales Order Trx		*/
-	public boolean		IsSOTrx = false;
+	private boolean _isSOTrx = false;
 
 	/** Tabs contains GridTabVO elements   */
-	public List<GridTabVO>	Tabs = null;
-	/** Base Table		*/
-	public int 			AD_Table_ID = 0;
+	private List<GridTabVO> _tabs = null;
+	/** Base Table (AD_Table_ID) */
+	private int _BaseTable_ID = 0;
 
 	/** Qyery				*/
 	public static final String	WINDOWTYPE_QUERY = "Q";
@@ -356,27 +365,30 @@ public class GridWindowVO implements Serializable
 	 *  Set Context including contained elements
 	 *  @param newCtx context
 	 */
-	public void setCtx (Properties newCtx)
+	public void setCtx (final Properties newCtx)
 	{
 		ctx = newCtx;
-		for (int i = 0; i < Tabs.size() ; i++)
+		final List<GridTabVO> tabs = getTabs();
+		if(tabs != null)
 		{
-			GridTabVO tab = Tabs.get(i);
-			tab.setCtx(newCtx);
+			for (GridTabVO tab : tabs)
+			{
+				tab.setCtx(newCtx);
+			}
 		}
 	}   //  setCtx
 
 	/**
-	 * 	Clone
-	 * 	@param windowNo no
-	 *	@return WindowVO
+	 * Clone
+	 * 
+	 * @param windowNo no
+	 * @return cloned VO or <code>null</code>
 	 */
-	public GridWindowVO clone (int windowNo)
+	public GridWindowVO clone (final int windowNo)
 	{
-		GridWindowVO clone = null;
 		try
 		{
-			clone = new GridWindowVO(ctx, windowNo);
+			final GridWindowVO  clone = new GridWindowVO(ctx, windowNo);
 			clone.AD_Window_ID = AD_Window_ID;
 			clone.Name = Name;
 			clone.Description = Description;
@@ -384,30 +396,51 @@ public class GridWindowVO implements Serializable
 			clone.WindowType = WindowType;
 			clone.AD_Image_ID = AD_Image_ID;
 			clone.AD_Color_ID = AD_Color_ID;
-			clone.IsReadWrite = IsReadWrite;
+			clone._isReadWrite = _isReadWrite;
 			clone.WinWidth = WinWidth;
 			clone.WinHeight = WinHeight;
-			clone.IsSOTrx = IsSOTrx;
-			Env.setContext(ctx, windowNo, "IsSOTrx", clone.IsSOTrx);
-			clone.AD_Table_ID = AD_Table_ID;
-			Env.setContext(ctx, windowNo, "BaseTable_ID", clone.AD_Table_ID);
+			clone._isSOTrx = _isSOTrx;
+			clone.IsOneInstanceOnly = this.IsOneInstanceOnly;
+			
 			//
-			clone.Tabs = new ArrayList<GridTabVO>();
-			for (int i = 0; i < Tabs.size(); i++)
+			// Tabs
+			clone._BaseTable_ID = _BaseTable_ID;
+			//
+			final List<GridTabVO> tabs = getTabs();
+			if (tabs != null)
 			{
-				GridTabVO tab = Tabs.get(i);
-				GridTabVO cloneTab = tab.clone(clone.ctx, windowNo);
-				if (cloneTab == null)
-					return null;
-				clone.Tabs.add(cloneTab);
+				final List<GridTabVO> tabsClone = new ArrayList<GridTabVO>();
+				for (GridTabVO tab : tabs)
+				{
+					final GridTabVO cloneTab = tab.clone(clone.getCtx(), windowNo);
+					if (cloneTab == null)
+						return null;
+					tabsClone.add(cloneTab);
+				}
+				
+				clone._tabs = ImmutableList.copyOf(tabsClone);
 			}
+			
+			clone.updateContext();
+			
+			return clone;
 		}
 		catch (Exception e)
 		{
-			clone = null;
+			logger.warn("Failed cloning {}. Returning null.", this, e);
+			return null;
 		}
-		return clone;
-	}	//	clone
+	}
+	
+	private void updateContext()
+	{
+		final Properties ctx = getCtx();
+		final int windowNo = getWindowNo();
+		Env.setContext(ctx, windowNo, Env.CTXNAME_IsSOTrx, isSOTrx());
+		
+		//	Put base table of window in ctx (for VDocAction)
+		Env.setContext(ctx, windowNo, CTXNAME_BaseTable_ID, getBaseTable_ID());
+	}
 
 // metas: begin
 	private boolean IsOneInstanceOnly = false; // metas: US831
@@ -415,7 +448,7 @@ public class GridWindowVO implements Serializable
 	{
 		return IsOneInstanceOnly;
 	}
-	
+
 	private StringBuffer loadErrorMessages = null;
 	protected void addLoadErrorMessage(String message, boolean checkEmpty)
 	{
@@ -428,15 +461,149 @@ public class GridWindowVO implements Serializable
 			// Don't add this message
 			if (checkEmpty)
 				return;
-			
+
 			loadErrorMessages.append("\n");
 		}
 		loadErrorMessages.append(message);
 	}
-	public String getLoadErrorMessage()
+	
+	private String getLoadErrorMessage()
 	{
 		return loadErrorMessages == null || loadErrorMessages.length() == 0 ? null : loadErrorMessages.toString();
 	}
-// metas: end
+	
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
+	}
+	
+	public int getWindowNo()
+	{
+		return WindowNo;
+	}
+
+	public Properties getCtx()
+	{
+		return ctx;
+	}
+
+	public List<GridTabVO> getTabs()
+	{
+		return _tabs;
+	}
+	
+	public GridTabVO getTab(final int tabNo)
+	{
+		return _tabs.get(tabNo);
+	}
+	
+	/**
+	 * Gets direct children of given tab.
+	 * 
+	 * @param tabNo
+	 * @return list of direct children
+	 */
+	public List<GridTabVO> getChildTabs(final int tabNo)
+	{
+		final GridTabVO masterTab = _tabs.get(tabNo);
+		final int masterTabLevel = masterTab.getTabLevel();
+		final int childTabLevelExpected = masterTabLevel + 1;
+		
+		final int tabsCount = _tabs.size();
+		final List<GridTabVO> childTabs = new ArrayList<>();
+		for (int childTabNo = tabNo + 1; childTabNo < tabsCount; childTabNo++)
+		{
+			final GridTabVO childTab = _tabs.get(childTabNo);
+			final int childTabLevel = childTab.getTabLevel();
+			
+			if(childTabLevel == masterTabLevel)
+			{
+				// we just moved to another master tab. Stop here.
+				break;
+			}
+			else if (childTabLevel == childTabLevelExpected)
+			{
+				// we found a child tab. Collect it.
+				childTabs.add(childTab);
+			}
+			else // childTabLevel > childTabLevelExpected
+			{
+				// we found a child of a child tab. Ignore it.
+				continue;
+			}
+		}
+		
+		return childTabs;
+	}
+	
+	public String getName()
+	{
+		return Name;
+	}
+	
+	public String getDescription()
+	{
+		return Description;
+	}
+	
+	public String getHelp()
+	{
+		return Help;
+	}
+	
+	void setReadWrite(final boolean readWrite)
+	{
+		this._isReadWrite = readWrite;
+	}
+	
+	public boolean isReadWrite()
+	{
+		return Boolean.TRUE.equals(_isReadWrite);
+	}
+	
+	private void setIsSOTrx(final boolean isSOTrx)
+	{
+		this._isSOTrx = isSOTrx;
+	}
+	
+	public boolean isSOTrx()
+	{
+		return _isSOTrx;
+	}
+	
+	public int getAD_Color_ID()
+	{
+		return AD_Color_ID;
+	}
+	
+	public int getAD_Image_ID()
+	{
+		return AD_Image_ID;
+	}
+	
+	public int getWinWidth()
+	{
+		return WinWidth;
+	}
+	
+	public int getWinHeight()
+	{
+		return WinHeight;
+	}
+	
+	public String getWindowType()
+	{
+		return WindowType;
+	}
+	
+	private int getBaseTable_ID()
+	{
+		return _BaseTable_ID;
+	}
+	
+	private void setBaseTable_ID(final int adTableId)
+	{
+		this._BaseTable_ID = adTableId;
+	}
 }   //  MWindowVO
 

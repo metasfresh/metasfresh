@@ -1,5 +1,18 @@
 package de.metas.adempiere.modelvalidator;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.MFreightCost;
+import org.adempiere.util.Services;
+import org.compiere.model.MClient;
+import org.compiere.model.MOrder;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,21 +37,6 @@ package de.metas.adempiere.modelvalidator;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
-import org.adempiere.model.POWrapper;
-import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.MOrder;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.model.I_C_Order;
@@ -46,6 +44,7 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.adempiere.service.impl.OrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 /**
  * @deprecated the code form this class shall be moved a new MV de.metas.modelvalidator.C_OrderLine.
@@ -134,7 +133,7 @@ public class OrderLine implements ModelValidator
 			return;
 		}
 
-		final I_C_OrderLine ol = POWrapper.create(po, I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 
 		//
 		// updating the freight cost amount, if necessary
@@ -153,7 +152,7 @@ public class OrderLine implements ModelValidator
 				{
 					// this ol is not a freight cost order line
 
-					final I_C_Order order = POWrapper.create(orderPO, I_C_Order.class);
+					final I_C_Order order = InterfaceWrapperHelper.create(orderPO, I_C_Order.class);
 
 					final IOrderBL orderBL = Services.get(IOrderBL.class);
 					if (orderBL.updateFreightAmt(po.getCtx(), order, po.get_TrxName()))

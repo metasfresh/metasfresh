@@ -32,11 +32,9 @@ import java.util.Set;
 
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -45,6 +43,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductBL;
 
@@ -196,14 +195,14 @@ public class UpdatableSchedulesCollector implements IUpdatableSchedulesCollector
 		{
 			if (productsSeen.add(lineOfOrder.getM_Product_ID()))
 			{
-				if (isNonItemProduct(ctx, co, POWrapper.create(lineOfOrder, I_C_OrderLine.class), trxName))
+				if (isNonItemProduct(ctx, co, InterfaceWrapperHelper.create(lineOfOrder, I_C_OrderLine.class), trxName))
 				{
 					final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(ctx, lineOfOrder.getC_OrderLine_ID(), trxName);
 					if (sched != null)
 					{
 						// note: if sched is null, it is no problem, because the updater will create (and update!) any
 						// sched that is not yet there
-						newOlAndScheds.add(new OlAndSched(POWrapper.create(lineOfOrder, I_C_OrderLine.class), sched));
+						newOlAndScheds.add(new OlAndSched(InterfaceWrapperHelper.create(lineOfOrder, I_C_OrderLine.class), sched));
 					}
 				}
 			}

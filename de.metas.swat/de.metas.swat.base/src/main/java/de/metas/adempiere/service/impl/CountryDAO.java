@@ -167,7 +167,7 @@ public class CountryDAO implements ICountryDAO
 		}
 		if (s_default == null)
 			s_default = usa;
-		s_log.debug("#" + s_countries.size()
-				+ " - Default=" + s_default);
+		
+		s_log.debug("#" + s_countries.size() + " - Default=" + s_default);
 	} // loadAllCountries
 }

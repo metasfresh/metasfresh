@@ -73,7 +73,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -103,6 +102,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.MSort;
 import org.compiere.util.Util;
@@ -777,7 +777,7 @@ public abstract class Info extends Component
 		}
 
 		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql.toString(), IStringExpression.class);
-		final Evaluatee evalCtx = new EvaluateeCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
+		final Evaluatee evalCtx = Evaluatees.ofCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
 		String countSql = sqlExpression.evaluate(evalCtx, true); // ignoreUnparsable=true
 
 		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);

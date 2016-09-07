@@ -28,7 +28,7 @@ package de.metas.esb.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -46,7 +46,7 @@ public class CalloutEXP_FormatLine extends CalloutEngine
 {
 	public String column(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_EXP_FormatLine formatLine = GridTabWrapper.create(mTab, I_EXP_FormatLine.class);
+		I_EXP_FormatLine formatLine = InterfaceWrapperHelper.create(mTab, I_EXP_FormatLine.class);
 		I_AD_Column column = formatLine.getAD_Column();
 		if (column == null || column.getAD_Column_ID() <= 0)
 			return "";

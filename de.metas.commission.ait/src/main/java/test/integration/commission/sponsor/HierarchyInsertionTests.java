@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.test.TestClientUI;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
@@ -47,8 +46,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import test.integration.commission.helper.Helper;
-import test.integration.swat.sales.scenario.SalesScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.BPartnerHelper;
@@ -58,17 +55,19 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
 import de.metas.commission.interfaces.I_C_Invoice;
 import de.metas.commission.model.I_C_AdvCommissionCondition;
-import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.X_C_Sponsor_CondLine;
 import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.interfaces.I_C_OrderLine;
+import test.integration.commission.helper.Helper;
+import test.integration.swat.sales.scenario.SalesScenario;
 
 /**
  * Creates a setup as follows:
@@ -305,7 +304,7 @@ public class HierarchyInsertionTests extends AIntegrationTestDriver
 		final int commissionconditionId = getHelper().getConfig().getCustomParamInt(Helper.C_ADV_COMMISSION_CONDITION_ID);
 
 		final I_C_Calendar commissionCal =
-				POWrapper.create(getCtx(), commissionconditionId, I_C_AdvCommissionCondition.class, getTrxName()).getC_Calendar();
+				InterfaceWrapperHelper.create(getCtx(), commissionconditionId, I_C_AdvCommissionCondition.class, getTrxName()).getC_Calendar();
 
 		getHelper().runProcess_CalculateCommission(commissionCal, date);
 

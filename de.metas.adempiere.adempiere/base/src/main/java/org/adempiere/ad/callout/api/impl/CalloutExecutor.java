@@ -29,8 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutFactory;
@@ -41,6 +39,11 @@ import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Services;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 public class CalloutExecutor implements ICalloutExecutor
 {
@@ -49,8 +52,8 @@ public class CalloutExecutor implements ICalloutExecutor
 	private final Properties ctx;
 	private final int windowNo;
 
-	private final Map<ArrayKey, List<ICalloutInstance>> calloutInstances = new HashMap<ArrayKey, List<ICalloutInstance>>();
-	private final List<ICalloutInstance> activeCalloutInstances = new ArrayList<ICalloutInstance>();
+	private final Map<ArrayKey, List<ICalloutInstance>> calloutInstances = new HashMap<>();
+	private final List<ICalloutInstance> activeCalloutInstances = new ArrayList<>();
 
 	private ICalloutFactory calloutFactory = null;
 
@@ -60,6 +63,14 @@ public class CalloutExecutor implements ICalloutExecutor
 
 		this.ctx = ctx;
 		this.windowNo = windowNo;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("windowNo", windowNo)
+				.toString();
 	}
 
 	@Override
@@ -93,12 +104,14 @@ public class CalloutExecutor implements ICalloutExecutor
 	{
 		if (!isEligibleForExecuting(field))
 		{
+			logger.trace("Skip executing callouts for {} because it's not eligible", field);
 			return;
 		}
 
 		final List<ICalloutInstance> fieldCalloutInstances = getCalloutInstances(field);
 		if (fieldCalloutInstances.isEmpty())
 		{
+			logger.trace("Skip executing callouts for {} because there are none", field);
 			return;
 		}
 
@@ -111,7 +124,7 @@ public class CalloutExecutor implements ICalloutExecutor
 			}
 			catch (CalloutInitException e)
 			{
-				logger.error("Callout " + fieldCalloutInstance + " failed with init error on execution. Discarding it.");
+				logger.error("Callout {} failed with init error on execution. Discarding it from next calls.", fieldCalloutInstance, e);
 				it.remove();
 				throw e;
 			}
@@ -142,7 +155,7 @@ public class CalloutExecutor implements ICalloutExecutor
 		final Object value = field.getValue();
 		final Object valueOld = field.getOldValue();
 
-		logger.debug("{}={} - old={}, callout={}", new Object[] { field, value, valueOld, fieldCalloutInstance });
+		logger.debug("Executing callout {}: {}={} - old={}", fieldCalloutInstance, field, value, valueOld);
 
 		try
 		{

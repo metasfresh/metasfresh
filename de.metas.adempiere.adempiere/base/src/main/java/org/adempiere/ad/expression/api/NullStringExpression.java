@@ -1,34 +1,14 @@
 package org.adempiere.ad.expression.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.Evaluatee;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
 
 /**
  * NULL {@link IStringExpression}
@@ -36,9 +16,15 @@ import org.compiere.util.Evaluatee;
  * @author tsa
  * 
  */
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class NullStringExpression implements IStringExpression
 {
 	public static final NullStringExpression instance = new NullStringExpression();
+	
+	public static final boolean isNull(final IStringExpression expression)
+	{
+		return expression == null || expression == NullStringExpression.instance;
+	}
 
 	private NullStringExpression()
 	{
@@ -60,13 +46,13 @@ public final class NullStringExpression implements IStringExpression
 	@Override
 	public List<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableList.of();
 	}
 
 	@Override
 	public List<Object> getExpressionChunks()
 	{
-		return Collections.emptyList();
+		return ImmutableList.of();
 	}
 
 	@Override

@@ -179,6 +179,12 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
+		
+		info.setAD_Window_ID(AD_Window_ID);
+		info.setAD_Process_ID(AD_Process_ID);
+		info.setAD_Form_ID(AD_Form_ID);
+		info.setAD_Workflow_ID(AD_Workflow_ID);
+		info.setAD_Task_ID(AD_Task_ID);
 
 		if (!isCheckRoleAccessWhileLoading())
 		{

@@ -26,7 +26,7 @@ package de.schaeffer.pay.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MPayment;
 
 import de.metas.banking.model.I_C_Payment;
@@ -59,7 +59,7 @@ public class PayOnlinePaymentHistory extends X_Pay_OnlinePaymentHistory {
 	 */
 	public void setValuesFromPayment(MPayment paymentPO) {
 		
-		final I_C_Payment payment = POWrapper.create(paymentPO, I_C_Payment.class); 
+		final I_C_Payment payment = InterfaceWrapperHelper.create(paymentPO, I_C_Payment.class); 
 		
 		setC_Payment_ID(payment.getC_Payment_ID());
 		setTenderType(payment.getTenderType());

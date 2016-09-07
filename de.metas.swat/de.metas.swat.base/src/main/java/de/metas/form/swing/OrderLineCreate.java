@@ -45,7 +45,7 @@ import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.MDocNumber;
@@ -97,7 +97,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 	public OrderLineCreate(int windowNo, GridTab orderTab) {
 		super(Env.getWindow(windowNo), true);
 
-		final I_C_Order orderBean = GridTabWrapper.create(orderTab,
+		final I_C_Order orderBean = InterfaceWrapperHelper.create(orderTab,
 				I_C_Order.class);
 
 		if (orderBean.getC_Order_ID() <= 0) {
@@ -242,6 +242,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 			return new BigDecimal(value.toString());
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == fQtyOrdered) {
 			try {
@@ -255,6 +256,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 		}
 	}
 
+	@Override
 	public void vetoableChange(PropertyChangeEvent evt)
 			throws PropertyVetoException {
 		if (evt.getPropertyName().equals(I_C_OrderLine.COLUMNNAME_M_Product_ID)) {

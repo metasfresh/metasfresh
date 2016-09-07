@@ -22,7 +22,6 @@ package de.metas.document.engine;
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -30,6 +29,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * Configuration for DocAction list retrieval
@@ -38,45 +40,36 @@ import org.adempiere.util.Check;
  */
 public class DefaultDocActionOptionsContext implements IDocActionOptionsContext
 {
-	public static DefaultDocActionContextBuilder builder(final Properties ctx)
+	public static Builder builder(final Properties ctx)
 	{
-		return new DefaultDocActionContextBuilder(ctx);
+		return new Builder(ctx);
 	}
 
 	private final Properties ctx;
 
-	private final int AD_Table_ID;
-	private final int Record_ID;
+	private final String tableName;
 	private final String DocStatus;
-	private final String DocAction;
 	private final int C_DocType_ID;
 	private final boolean Processing;
 	private final String OrderType;
 	private final boolean IsSOTrx;
 
-	private final Set<String> _options = new LinkedHashSet<>();
-	private final Set<String> optionsRO = Collections.unmodifiableSet(_options);
+	private final Set<String> _docActions = new LinkedHashSet<>();
+	private final Set<String> docActionsRO = Collections.unmodifiableSet(_docActions);
 
 	private String DocActionToUse;
 
-	private DefaultDocActionOptionsContext(final DefaultDocActionContextBuilder builder)
+	private DefaultDocActionOptionsContext(final Builder builder)
 	{
 		super();
 
 		ctx = builder.ctx;
 
-		Check.assumeNotNull(builder.AD_Table_ID, "builder.AD_Table_ID not null");
-		AD_Table_ID = builder.AD_Table_ID;
-
-		Check.assumeNotNull(builder.Record_ID, "builder.Record_ID not null");
-		Record_ID = builder.Record_ID;
+		Check.assumeNotEmpty(builder.tableName, "builder.tableName is not empty");
+		tableName = builder.tableName;
 
 		Check.assumeNotEmpty(builder.DocStatus, "builder.DocStatus not empty");
 		DocStatus = builder.DocStatus;
-
-		Check.assumeNotEmpty(builder.DocAction, "builder.DocAction not empty");
-		DocAction = builder.DocAction;
-		DocActionToUse = DocAction; // initialize with original doc action
 
 		//
 		// C_DocType_ID
@@ -100,78 +93,20 @@ public class DefaultDocActionOptionsContext implements IDocActionOptionsContext
 		IsSOTrx = builder.IsSOTrx;
 	}
 
-	public static class DefaultDocActionContextBuilder
+	@Override
+	public String toString()
 	{
-		private final Properties ctx;
-
-		private Integer AD_Table_ID;
-		private Integer Record_ID;
-		private String DocStatus;
-		private String DocAction;
-		private Integer C_DocType_ID;
-		private Boolean Processing;
-		private String OrderType = null;
-		private Boolean IsSOTrx;
-
-		private DefaultDocActionContextBuilder(final Properties ctx)
-		{
-			super();
-
-			this.ctx = ctx;
-		}
-
-		public IDocActionOptionsContext build()
-		{
-			return new DefaultDocActionOptionsContext(this);
-		}
-
-		public DefaultDocActionContextBuilder setAD_Table_ID(final int AD_Table_ID)
-		{
-			this.AD_Table_ID = AD_Table_ID;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setRecord_ID(final int Record_ID)
-		{
-			this.Record_ID = Record_ID;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setDocStatus(final String DocStatus)
-		{
-			this.DocStatus = DocStatus;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setDocAction(final String DocAction)
-		{
-			this.DocAction = DocAction;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setC_DocType_ID(final Integer C_DocType_ID)
-		{
-			this.C_DocType_ID = C_DocType_ID;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setProcessing(final boolean Processing)
-		{
-			this.Processing = Processing;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setOrderType(final String OrderType)
-		{
-			this.OrderType = OrderType;
-			return this;
-		}
-
-		public DefaultDocActionContextBuilder setIsSOTrx(final boolean IsSOTrx)
-		{
-			this.IsSOTrx = IsSOTrx;
-			return this;
-		}
+		return MoreObjects.toStringHelper(this)
+				.add("DocStatus", DocStatus)
+				.add("Options", _docActions)
+				.add("DocActionToUse", DocActionToUse)
+				.add("tableName", tableName)
+				.add("C_DocType_ID", C_DocType_ID)
+				.add("Processing", Processing)
+				.add("OrderType", OrderType)
+				.add("IsSOTrx", IsSOTrx)
+				// .add("ctx", ctx) // to big
+				.toString();
 	}
 
 	@Override
@@ -181,27 +116,21 @@ public class DefaultDocActionOptionsContext implements IDocActionOptionsContext
 	}
 
 	@Override
-	public int getAD_Table_ID()
+	public int getAD_Client_ID()
 	{
-		return AD_Table_ID;
+		return Env.getAD_Client_ID(ctx);
 	}
 
 	@Override
-	public int getRecord_ID()
+	public String getTableName()
 	{
-		return Record_ID;
+		return tableName;
 	}
 
 	@Override
 	public String getDocStatus()
 	{
 		return DocStatus;
-	}
-
-	@Override
-	public String getDocActionInitial()
-	{
-		return DocAction;
 	}
 
 	@Override
@@ -241,15 +170,76 @@ public class DefaultDocActionOptionsContext implements IDocActionOptionsContext
 	}
 
 	@Override
-	public Set<String> getOptions()
+	public Set<String> getDocActions()
 	{
-		return optionsRO;
+		return docActionsRO;
 	}
 
 	@Override
-	public void setOptions(final Collection<String> options)
+	public void setDocActions(final Collection<String> docActions)
 	{
-		_options.clear();
-		_options.addAll(options);
+		_docActions.clear();
+		_docActions.addAll(docActions);
+	}
+
+	public static class Builder
+	{
+		private final Properties ctx;
+
+		private String tableName;
+		private String DocStatus;
+		private Integer C_DocType_ID;
+		private Boolean Processing;
+		private String OrderType = null;
+		private Boolean IsSOTrx;
+
+		private Builder(final Properties ctx)
+		{
+			super();
+
+			Check.assumeNotNull(ctx, "Parameter ctx is not null");
+			this.ctx = ctx;
+		}
+
+		public IDocActionOptionsContext build()
+		{
+			return new DefaultDocActionOptionsContext(this);
+		}
+
+		public Builder setTableName(final String tableName)
+		{
+			this.tableName = tableName;
+			return this;
+		}
+
+		public Builder setDocStatus(final String DocStatus)
+		{
+			this.DocStatus = DocStatus;
+			return this;
+		}
+
+		public Builder setC_DocType_ID(final Integer C_DocType_ID)
+		{
+			this.C_DocType_ID = C_DocType_ID;
+			return this;
+		}
+
+		public Builder setProcessing(final boolean Processing)
+		{
+			this.Processing = Processing;
+			return this;
+		}
+
+		public Builder setOrderType(final String OrderType)
+		{
+			this.OrderType = OrderType;
+			return this;
+		}
+
+		public Builder setIsSOTrx(final boolean IsSOTrx)
+		{
+			this.IsSOTrx = IsSOTrx;
+			return this;
+		}
 	}
 }

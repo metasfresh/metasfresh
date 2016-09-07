@@ -31,7 +31,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
@@ -97,7 +97,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					else
 						orderUser = user;
 					//
-					I_C_BPartner partnerPO = POWrapper.create(user.getC_BPartner(), I_C_BPartner.class);
+					I_C_BPartner partnerPO = InterfaceWrapperHelper.create(user.getC_BPartner(), I_C_BPartner.class);
 					if (partnerPO.isShippingNotificationEmail() && user.get_ValueAsBoolean("IsDefaultContact"))
 					{
 						String message = sendEMail(text, (MInOut)sp.getM_InOut(), orderUser);

@@ -26,7 +26,7 @@ package de.metas.prepayorder.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -44,7 +44,7 @@ public class Payment extends CalloutEngine
 		{
 			return "";
 		}
-		final I_C_Payment payment = GridTabWrapper.create(mTab, I_C_Payment.class);
+		final I_C_Payment payment = InterfaceWrapperHelper.create(mTab, I_C_Payment.class);
 
 		final int orderId = payment.getC_Order_ID();
 		

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
@@ -121,7 +121,7 @@ class POIterator<T> implements Iterator<T>
 				final PO o = TableModelLoader.instance.getPO(ctx, tableName, recordId, trxName);
 				if (clazz != null && !o.getClass().isAssignableFrom(clazz))
 				{
-					return POWrapper.create(o, clazz);
+					return InterfaceWrapperHelper.create(o, clazz);
 				}
 				else
 				{
@@ -134,7 +134,7 @@ class POIterator<T> implements Iterator<T>
 				final PO o = TableModelLoader.instance.getPO(ctx, tableName, keyWhereClause, ids, trxName);
 				if (clazz != null && !o.getClass().isAssignableFrom(clazz))
 				{
-					return POWrapper.create(o, clazz);
+					return InterfaceWrapperHelper.create(o, clazz);
 				}
 				else
 				{

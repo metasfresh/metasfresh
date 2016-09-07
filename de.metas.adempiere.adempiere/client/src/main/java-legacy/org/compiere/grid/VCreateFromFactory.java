@@ -37,16 +37,18 @@ package org.compiere.grid;
 
 
 import java.util.HashMap;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.GridTab;
+import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_RMA;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class VCreateFromFactory
 {
@@ -85,7 +87,7 @@ public class VCreateFromFactory
 	public static ICreateFrom create (GridTab mTab)
 	{
 		//	dynamic init preparation
-		int AD_Table_ID = Env.getContextAsInt(Env.getCtx(), mTab.getWindowNo(), "BaseTable_ID");
+		int AD_Table_ID = Env.getContextAsInt(Env.getCtx(), mTab.getWindowNo(), GridWindowVO.CTXNAME_BaseTable_ID);
 
 		ICreateFrom retValue = null;
 		Class<? extends ICreateFrom> cl = s_registeredClasses.get(AD_Table_ID);

@@ -24,24 +24,23 @@ package de.metas.adempiere.ait.helper;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Trx;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BP_Group;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 public class BPartnerHelper
 {
@@ -170,7 +169,7 @@ public class BPartnerHelper
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bp);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bp);
 
-		I_C_BPartner_Location bpl = POWrapper.create(ctx, I_C_BPartner_Location.class, trxName);
+		I_C_BPartner_Location bpl = InterfaceWrapperHelper.create(ctx, I_C_BPartner_Location.class, trxName);
 		bpl.setAD_Org_ID(bp.getAD_Org_ID());
 		bpl.setC_BPartner_ID(bp.getC_BPartner_ID());
 		bpl.setC_Location_ID(createLocation(ctx, trxName).getC_Location_ID());
@@ -193,8 +192,8 @@ public class BPartnerHelper
 	 */
 	public I_C_Location createLocation(Properties ctx, String trxName)
 	{
-		I_C_Location loc = POWrapper.create(ctx, I_C_Location.class, trxName);
-		POWrapper.save(loc);
+		I_C_Location loc = InterfaceWrapperHelper.create(ctx, I_C_Location.class, trxName);
+		InterfaceWrapperHelper.save(loc);
 		return loc;
 	}
 
@@ -209,11 +208,11 @@ public class BPartnerHelper
 				.firstOnly(I_C_BP_Group.class);
 		if (bpg == null)
 		{
-			bpg = POWrapper.create(ctx, I_C_BP_Group.class, null);
+			bpg = InterfaceWrapperHelper.create(ctx, I_C_BP_Group.class, null);
 			bpg.setValue(valueFinal);
 			bpg.setName(valueFinal);
 			bpg.setDescription(parent.getGeneratedBy());
-			POWrapper.save(bpg);
+			InterfaceWrapperHelper.save(bpg);
 		}
 		return bpg;
 	}

@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
@@ -47,8 +46,6 @@ import org.compiere.model.MRefList;
 import org.compiere.model.MTax;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Concept;
 import org.eevolution.model.I_HR_Employee;
@@ -57,6 +54,7 @@ import org.eevolution.model.I_HR_Period;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.MHRMovement;
 import org.eevolution.model.X_HR_Movement;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.commission.exception.CommissionException;
@@ -75,6 +73,7 @@ import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.ICommissionTermDAO;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.IPayrollProvider;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -253,11 +252,11 @@ public class PayrollProvider implements IPayrollProvider
 					Msg.getMsg(ctx, MSG_PARTNER_MISSING_COMMISSION_ADDRESS_1P, new Object[] { bpPayroll.getValue() }),
 					bpPayroll);
 		}
-		final I_C_BPartner_Location payrollLoc = POWrapper.create(payrollLocPO, I_C_BPartner_Location.class);
+		final I_C_BPartner_Location payrollLoc = InterfaceWrapperHelper.create(payrollLocPO, I_C_BPartner_Location.class);
 
 		final int taxId;
 
-		if (MCVATSmallBusiness.retrieveIsTaxExempt(POWrapper.create(bpPayroll, I_C_BPartner.class), date))
+		if (MCVATSmallBusiness.retrieveIsTaxExempt(InterfaceWrapperHelper.create(bpPayroll, I_C_BPartner.class), date))
 		{
 			// "Kleinunternehmer-Regel"
 			taxId = Services.get(ITaxBL.class).getExemptTax(ctx, bpPayroll.getAD_Org_ID());

@@ -24,12 +24,13 @@ package org.compiere.grid.ed;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.util.NamePair;
+
+import com.google.common.collect.ImmutableList;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
 {
@@ -57,21 +58,15 @@ import org.compiere.util.NamePair;
 	}
 
 	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		return !immutable;
-	}
-
-	@Override
 	public String getPrefilterWhereClause(IValidationContext evalCtx)
 	{
 		return whereClause;
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableList.of();
 	}
 	
 	public List<Object> getParameterValues(final String searchSQL)

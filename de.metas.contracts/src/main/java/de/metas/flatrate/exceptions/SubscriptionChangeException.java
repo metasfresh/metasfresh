@@ -26,7 +26,7 @@ package de.metas.flatrate.exceptions;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -89,9 +89,9 @@ public class SubscriptionChangeException extends AdempiereException
 			final int newSubscriptionId,
 			final Timestamp date)
 	{
-		final I_C_Flatrate_Conditions oldS = POWrapper.create(Env.getCtx(), oldSubscriptionId, I_C_Flatrate_Conditions.class, null);
+		final I_C_Flatrate_Conditions oldS = InterfaceWrapperHelper.create(Env.getCtx(), oldSubscriptionId, I_C_Flatrate_Conditions.class, null);
 
-		final I_C_Flatrate_Conditions newS = POWrapper.create(Env.getCtx(), newSubscriptionId, I_C_Flatrate_Conditions.class, null);
+		final I_C_Flatrate_Conditions newS = InterfaceWrapperHelper.create(Env.getCtx(), newSubscriptionId, I_C_Flatrate_Conditions.class, null);
 
 		return Msg.getMsg(Env.getCtx(), MSG_NO_CHANGE_ALLOWED,
 				new Object[] { oldS.getName(), newS.getName(), date });
@@ -102,7 +102,7 @@ public class SubscriptionChangeException extends AdempiereException
 			final String newStatus,
 			final Timestamp date)
 	{
-		final I_C_Flatrate_Conditions oldS = POWrapper.create(Env.getCtx(), oldSubscriptionId, I_C_Flatrate_Conditions.class, null);
+		final I_C_Flatrate_Conditions oldS = InterfaceWrapperHelper.create(Env.getCtx(), oldSubscriptionId, I_C_Flatrate_Conditions.class, null);
 
 		return Msg.getMsg(Env.getCtx(), MSG_NO_CHANGE_ALLOWED, 
 				new Object[] { oldS.getName(), newStatus, date });

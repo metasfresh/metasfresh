@@ -25,10 +25,11 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	System Display Types.
@@ -246,7 +247,8 @@ public final class DisplayType
 		return displayType == Location
 				|| displayType == Locator
 				|| displayType == Account
-				|| displayType == PAttribute;
+				|| displayType == PAttribute
+				|| displayType == Assignment;
 	}
 	
 	/**
@@ -694,7 +696,7 @@ public final class DisplayType
 			// Boolean
 			if (displayType == DisplayType.YesNo)
 			{
-				return Boolean.valueOf("Y".equals(value));
+				return toBoolean(value);
 			}
 
 			// Default

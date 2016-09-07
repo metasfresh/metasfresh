@@ -1,5 +1,6 @@
 -- NOTE: keep in sync with ad_field_v
 
+drop view if exists ad_field_vt;
 CREATE OR REPLACE VIEW ad_field_vt AS 
 SELECT
 c_trl.ad_language
@@ -34,6 +35,7 @@ c_trl.ad_language
 , c.iskey
 , c.isparent
 , COALESCE(f.ismandatory, c.ismandatory) AS ismandatory
+, c.IsMandatory as IsMandatoryDB
 , c.isidentifier
 , c.istranslated
 , COALESCE(f.ad_reference_value_id, c.ad_reference_value_id) AS ad_reference_value_id

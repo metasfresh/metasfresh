@@ -24,19 +24,18 @@ package de.metas.acct.callout;
 
 
 import org.adempiere.acct.api.IGLJournalLineBL;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 
 public class GL_JournalLine_TabCallout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_GL_JournalLine glJournalLine = InterfaceWrapperHelper.create(gridTab, I_GL_JournalLine.class);
+		final I_GL_JournalLine glJournalLine = calloutRecord.getModel(I_GL_JournalLine.class);
 
 		Services.get(IGLJournalLineBL.class).setGroupNoAndFlags(glJournalLine);
 

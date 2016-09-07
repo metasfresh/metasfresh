@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
@@ -57,7 +56,7 @@ public final class InOutPA implements IInOutPA
 			final int inoutLineId,
 			final String trxName)
 	{
-		return POWrapper.create(new MInOutLine(Env.getCtx(), inoutLineId, trxName), I_M_InOutLine.class);
+		return InterfaceWrapperHelper.create(new MInOutLine(Env.getCtx(), inoutLineId, trxName), I_M_InOutLine.class);
 	}
 
 	/**
@@ -86,7 +85,7 @@ public final class InOutPA implements IInOutPA
 	 * Invokes {@link MInOutLine#setOrderLine(MOrderLine, int, BigDecimal)}
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if POWrapper.getPO() is not able to produce an {@link MInOutLine} final the given line or orderLine
+	 *             if InterfaceWrapperHelper.getPO() is not able to produce an {@link MInOutLine} final the given line or orderLine
 	 *             is not an {@link MOrderLine}.
 	 */
 	@Override
@@ -111,7 +110,7 @@ public final class InOutPA implements IInOutPA
 	@Override
 	public void setLineQty(final I_M_InOutLine line, final BigDecimal qty)
 	{
-		final MInOutLine linePO = POWrapper.getPO(line);
+		final MInOutLine linePO = InterfaceWrapperHelper.getPO(line);
 		linePO.setQty(qty);
 	}
 
@@ -124,7 +123,7 @@ public final class InOutPA implements IInOutPA
 	@Override
 	public void setLineWareHouseId(final I_M_InOutLine line, final int warehouseId)
 	{
-		final MInOutLine linePO = POWrapper.getPO(line);
+		final MInOutLine linePO = InterfaceWrapperHelper.getPO(line);
 		linePO.setM_Warehouse_ID(warehouseId);
 	}
 
@@ -143,7 +142,7 @@ public final class InOutPA implements IInOutPA
 
 		for (final MInOutLine currentLine : lines)
 		{
-			result.add(POWrapper.create(currentLine, I_M_InOutLine.class));
+			result.add(InterfaceWrapperHelper.create(currentLine, I_M_InOutLine.class));
 		}
 		return result;
 	}

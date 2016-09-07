@@ -25,10 +25,8 @@ package de.metas.payment.esr.validationRule;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,6 +37,8 @@ import org.adempiere.util.StringUtils;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 
@@ -48,6 +48,11 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
  */
 public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 {
+	private static final ImmutableList<String> PARAMETERS = ImmutableList.of(
+			I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt,
+			I_ESR_ImportLine.COLUMNNAME_C_Payment_ID,
+			I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID);
+
 	@Override
 	public boolean isImmutable()
 	{
@@ -65,11 +70,11 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		{
 			return true;
 		}
-		
+
 		final String openAmtStr = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt);
 		final String paymentIdStr = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_C_Payment_ID);
 		final String invoiceIdStr = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID);
-		//final String esrDocumentStatus = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_ESR_Document_Status);
+		// final String esrDocumentStatus = evalCtx.get_ValueAsString(I_ESR_ImportLine.COLUMNNAME_ESR_Document_Status);
 
 		if (null == item)
 		{
@@ -124,7 +129,6 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
 		// underPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 
-
 		// Done like this so we can quickly add future actions to one (or both) groups.
 		boolean acceptOverpaymentItem = false;
 		boolean acceptUnderPaymentItem = false;
@@ -147,13 +151,9 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(final IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
-		return Arrays.asList(
-				I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt,
-				I_ESR_ImportLine.COLUMNNAME_C_Payment_ID,
-				I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID
-				);
+		return PARAMETERS;
 	}
 
 }

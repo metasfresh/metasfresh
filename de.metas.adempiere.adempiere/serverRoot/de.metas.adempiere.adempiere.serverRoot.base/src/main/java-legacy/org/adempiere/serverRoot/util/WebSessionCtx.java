@@ -19,6 +19,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -394,7 +395,7 @@ public class WebSessionCtx implements Serializable
 		if (AD_Language != null)
 		{
 			Language lang = Language.getLanguage(AD_Language);
-			Env.verifyLanguage (ctx, lang);
+			Env.verifyLanguage (lang);
 			Env.setContext(ctx, Env.CTXNAME_AD_Language, lang.getAD_Language());
 			Msg.getMsg(ctx, "0");
 			cProp.setProperty(Env.CTXNAME_AD_Language, lang.getAD_Language());

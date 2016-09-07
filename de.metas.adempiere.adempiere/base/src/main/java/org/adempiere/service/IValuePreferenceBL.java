@@ -1,5 +1,7 @@
 package org.adempiere.service;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,22 +24,34 @@ package org.adempiere.service;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
 public interface IValuePreferenceBL extends ISingletonService
 {
+	public interface IUserValuePreference
+	{
+		int AD_WINDOW_ID_NONE = 0;
 
-	boolean remove(Properties ctx, String attribute, int adClientId, int adOrgId, int adUserId, int adWindowId);
+		int getAD_Window_ID();
 
-	void save(Properties ctx, String attribute, Object value, int adClientId, int adOrgId, int adUserId, int adWindowId);
+		String getName();
 
-	void save(Properties ctx, String attribute, Object value, int adWindowId);
+		String getValue();
+	}
 
-	<T> T getValue(Properties ctx, String attribute, int adWindowId, Class<T> clazz);
+	public interface IUserValuePreferences
+	{
+		int getAD_Window_ID();
 
-	String getValueAsString(Properties ctx, String attribute, int adWindowId);
+		String getValue(String name);
+		
+		Collection<IUserValuePreference> values();
+	}
+
+	IUserValuePreferences getWindowPreferences(Properties ctx, int adWindowId);
+
+	Collection<IUserValuePreferences> getAllWindowPreferences(int AD_Client_ID, int AD_Org_ID, int AD_User_ID);
 
 }

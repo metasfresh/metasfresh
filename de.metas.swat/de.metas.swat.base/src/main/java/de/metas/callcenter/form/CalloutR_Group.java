@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.search.InfoSimple;
 import org.compiere.apps.search.InfoSimpleFactory;
@@ -55,7 +55,7 @@ public class CalloutR_Group extends CalloutEngine
 {
 	public String selectProspects(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		final I_R_Group bundle = GridTabWrapper.create(mTab, I_R_Group.class);
+		final I_R_Group bundle = InterfaceWrapperHelper.create(mTab, I_R_Group.class);
 
 		// If new record, we need to save it first
 		final int R_Group_ID = bundle.getR_Group_ID();

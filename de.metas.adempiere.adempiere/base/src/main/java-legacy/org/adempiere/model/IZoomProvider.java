@@ -35,25 +35,21 @@ package org.adempiere.model;
  * #L%
  */
 
-
 import java.util.List;
 
-import org.compiere.model.MQuery;
-import org.compiere.model.PO;
+import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
 /**
  * 
- * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and
- *         RelationTypes
+ * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
-public interface IZoomProvider {
-
+public interface IZoomProvider
+{
 	/**
 	 * 
-	 * @param po
-	 *            the po we need zoom targets for
-	 * @return a list of zoom targets. The {@link MQuery#getRecordCount()} of
-	 *         the ZoomInfo's query member might be zero.
+	 * @param source the source we need zoom targets for
+	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	List<ZoomInfoFactory.ZoomInfo> retrieveZoomInfos(PO po);
+	List<ZoomInfo> retrieveZoomInfos(IZoomSource source);
 }

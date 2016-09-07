@@ -1,37 +1,18 @@
 package org.adempiere.ad.expression.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Standard implementation of {@link IStringExpression}
@@ -39,22 +20,23 @@ import org.compiere.util.Evaluatee;
  * @author tsa
  * 
  */
-/* package */class StringExpression implements IStringExpression
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
+/* package */final class StringExpression implements IStringExpression
 {
 	private final String expressionStr;
 	private final List<Object> expressionChunks;
 
-	private final transient List<String> stringParams = new ArrayList<String>();
-	private final transient List<String> stringParamsRO = Collections.unmodifiableList(stringParams);
+	private final List<String> stringParams;
 
 	/* package */StringExpression(final String expressionStr, final List<Object> expressionChunks)
 	{
 		super();
 		this.expressionStr = expressionStr;
-		this.expressionChunks = expressionChunks;
+		this.expressionChunks = ImmutableList.copyOf(expressionChunks);
 
 		//
 		// Initialize stringParams list
+		final Set<String> stringParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
 		for (final Object chunk : expressionChunks)
 		{
 			if (chunk instanceof CtxName)
@@ -64,6 +46,7 @@ import org.compiere.util.Evaluatee;
 				stringParams.add(parameterName);
 			}
 		}
+		this.stringParams = ImmutableList.copyOf(stringParams);
 	}
 
 	@Override
@@ -134,7 +117,7 @@ import org.compiere.util.Evaluatee;
 	@Override
 	public List<String> getParameters()
 	{
-		return stringParamsRO;
+		return stringParams;
 	}
 
 	@Override

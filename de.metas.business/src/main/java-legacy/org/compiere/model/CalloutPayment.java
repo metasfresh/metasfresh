@@ -22,12 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -342,7 +339,7 @@ public class CalloutPayment extends CalloutEngine
 		if (isCalloutActive ()) // assuming it is resetting value
 			return "";
 
-		final I_C_Payment payment = GridTabWrapper.create(mTab, I_C_Payment.class);
+		final I_C_Payment payment = InterfaceWrapperHelper.create(mTab, I_C_Payment.class);
 		Services.get(IPaymentBL.class).updateAmounts(payment, mField.getColumnName(), true);
 		return "";
 	} // amounts

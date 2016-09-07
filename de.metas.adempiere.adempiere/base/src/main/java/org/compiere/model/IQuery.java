@@ -39,6 +39,7 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ListMultimap;
@@ -232,6 +233,12 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<AT> AT aggregate(String columnName, String sqlFunction, Class<AT> returnType) throws DBException;
+
+	default <AT> AT aggregate(final ModelColumn<T, ?> column, final String sqlFunction, final Class<AT> returnType) throws DBException
+	{
+		final String columnName = column.getColumnName();
+		return aggregate(columnName, sqlFunction, returnType);
+	}
 
 	/**
 	 * Turn on/off the data access filter.

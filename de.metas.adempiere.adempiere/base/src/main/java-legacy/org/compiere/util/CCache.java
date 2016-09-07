@@ -381,6 +381,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		}
 
 		return get(key, new Callable<V>(){
+			@Override
+			public String toString()
+			{
+				return "Callable[" + valueInitializer + "]";
+			}
 
 			@Override
 			public V call() throws Exception
@@ -431,6 +436,20 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		{
 			throw (Error)e.getCause();
 		}
+	}
+
+	/**
+	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
+	 * 
+	 * @param key
+	 * @param valueLoader
+	 * @return
+	 * @see #get(Object, Callable).
+	 * @see #get(Object, Supplier)
+	 */
+	public V getOrLoad(final K key, final Callable<V> valueLoader)
+	{
+		return get(key, valueLoader);
 	}
 
 	/**

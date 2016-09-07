@@ -120,12 +120,12 @@ public class MFreightCost extends X_M_FreightCost
 
 	public static MFreightCost retrieveFor(final MOrder order)
 	{
-		return retrieveFor(order.getCtx(), POWrapper.create(order, I_OrderOrInOut.class), order.getDateOrdered(), order.get_TrxName());
+		return retrieveFor(order.getCtx(), InterfaceWrapperHelper.create(order, I_OrderOrInOut.class), order.getDateOrdered(), order.get_TrxName());
 	}
 
 	public static MFreightCost retrieveFor(final MInOut inOut)
 	{
-		return retrieveFor(inOut.getCtx(), POWrapper.create(inOut, I_OrderOrInOut.class), inOut.getMovementDate(), inOut.get_TrxName());
+		return retrieveFor(inOut.getCtx(), InterfaceWrapperHelper.create(inOut, I_OrderOrInOut.class), inOut.getMovementDate(), inOut.get_TrxName());
 	}
 
 	private static MFreightCost retrieveForOrderOrInOut(final Properties ctx,

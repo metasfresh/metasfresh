@@ -66,8 +66,21 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name);
 			if (!Check.isEmpty(springContextValue, true))
 			{
-				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, springApplicationContext });
+				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, springContextValue });
 				return springContextValue.trim();
+			}
+		}
+		else
+		{
+			// If there is no Spring context then go an check JVM System Properties.
+			// Usually we will get here when we will run some tools based on metasfresh framework.
+			
+			final Properties systemProperties = System.getProperties();
+			final String systemPropertyValue = systemProperties.getProperty(Name);
+			if(!Check.isEmpty(systemPropertyValue, true))
+			{
+				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", new Object[] { Name, systemPropertyValue });
+				return systemPropertyValue.trim();
 			}
 		}
 

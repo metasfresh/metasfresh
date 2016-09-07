@@ -10,21 +10,20 @@ package org.adempiere.ad.validationRule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -32,60 +31,50 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.Check;
 import org.compiere.util.NamePair;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
 /**
- * Composite validation rule consist of a collection of child validation rules.
- * 
+ * Immutable composite validation rule consist of a collection of child validation rules.
+ *
  * @author tsa
- * 
+ *
  */
-public class CompositeValidationRule implements IValidationRule
+public final class CompositeValidationRule implements IValidationRule
 {
-	private final List<IValidationRule> rules = new ArrayList<IValidationRule>();
-	private final List<IValidationRule> rulesRO = Collections.unmodifiableList(rules);
-
-	private boolean immutable = true;
-
-	public void addValidationRule(IValidationRule rule)
+	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
 	{
-		if (rule == null)
-		{
-			return;
-		}
+		return builder()
+				.add(rule1)
+				.add(rule2)
+				.build();
+	}
 
-		if (rule instanceof NullValidationRule)
-		{
-			return;
-		}
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
 
-		if (rules.contains(rule))
-		{
-			return;
-		}
+	private final List<IValidationRule> rules;
+	private final boolean immutable;
+	private final List<String> parameters;
 
-		//
-		// Update immutable flag
-		this.immutable = this.immutable && rule.isImmutable();
-
-		rules.add(rule);
+	private CompositeValidationRule(final Builder builder)
+	{
+		super();
+		rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
+		immutable = builder.immutable;
+		parameters = ImmutableList.copyOf(builder.parameters);
 	}
 
 	public List<IValidationRule> getValidationRules()
 	{
-		return rulesRO;
+		return rules;
 	}
 
-	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
+	public boolean isEmpty()
 	{
-		for (final IValidationRule rule : rules)
-		{
-			if (rule.isValidationRequired(evalCtx))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return rules.isEmpty();
 	}
 
 	/**
@@ -98,7 +87,7 @@ public class CompositeValidationRule implements IValidationRule
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public String getPrefilterWhereClause(final IValidationContext evalCtx)
 	{
 		final StringBuilder wc = new StringBuilder();
 		for (final IValidationRule rule : rules)
@@ -107,6 +96,11 @@ public class CompositeValidationRule implements IValidationRule
 			if (Check.isEmpty(ruleWhereClause, true))
 			{
 				continue;
+			}
+
+			if (IValidationRule.WHERECLAUSE_ERROR == ruleWhereClause)
+			{
+				return IValidationRule.WHERECLAUSE_ERROR;
 			}
 
 			if (wc.length() > 0)
@@ -120,28 +114,13 @@ public class CompositeValidationRule implements IValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
-		final List<String> parameters = new ArrayList<String>();
-
-		//
-		// Add parameters
-		for (IValidationRule rule : rules)
-		{
-			for (String p : rule.getParameters(evalCtx))
-			{
-				if (!parameters.contains(p))
-				{
-					parameters.add(p);
-				}
-			}
-		}
-
 		return parameters;
 	}
 
 	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public boolean accept(final IValidationContext evalCtx, final NamePair item)
 	{
 		for (final IValidationRule rule : rules)
 		{
@@ -157,12 +136,14 @@ public class CompositeValidationRule implements IValidationRule
 	@Override
 	public String toString()
 	{
-		return "CompositeValidationRule [rules=" + rules + "]";
+		return MoreObjects.toStringHelper(this)
+				.addValue(rules)
+				.toString();
 	}
 
 	/**
 	 * For composite validation rules, returns the first not null valid value of its children.
-	 * 
+	 *
 	 * @param currentValue Current value of the field to be changed.
 	 * @return
 	 */
@@ -177,7 +158,78 @@ public class CompositeValidationRule implements IValidationRule
 				return value;
 			}
 		}
-		
+
 		return null;
+	}
+
+	public static final class Builder
+	{
+		private final List<IValidationRule> rules = new ArrayList<>();
+		private final LinkedHashSet<String> parameters = new LinkedHashSet<>();
+		private boolean immutable = true;
+
+		private Builder()
+		{
+			super();
+		}
+
+		public IValidationRule build()
+		{
+			if (rules.isEmpty())
+			{
+				return NullValidationRule.instance;
+			}
+			else if (rules.size() == 1)
+			{
+				return rules.get(0);
+			}
+			else
+			{
+				return new CompositeValidationRule(this);
+			}
+		}
+
+		public Builder add(final IValidationRule rule)
+		{
+			final boolean explodeComposite = false;
+			add(rule, explodeComposite);
+			return this;
+		}
+
+		public Builder addExploded(final IValidationRule rule)
+		{
+			final boolean explodeComposite = true;
+			add(rule, explodeComposite);
+			return this;
+		}
+
+		private Builder add(final IValidationRule rule, final boolean explodeComposite)
+		{
+			// Don't add null rules
+			if (NullValidationRule.isNull(rule))
+			{
+				return this;
+			}
+
+			// Don't add if already exists
+			if (rules.contains(rule))
+			{
+				return this;
+			}
+
+			if (explodeComposite && rule instanceof CompositeValidationRule)
+			{
+				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
+				compositeRule.getValidationRules().stream().forEach(includedRule -> add(includedRule, explodeComposite));
+			}
+			else
+			{
+				rules.add(rule);
+				immutable = immutable && rule.isImmutable();
+				parameters.addAll(rule.getParameters());
+			}
+
+			return this;
+		}
 	}
 }

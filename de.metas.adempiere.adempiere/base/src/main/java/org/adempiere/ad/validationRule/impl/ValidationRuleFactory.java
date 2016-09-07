@@ -10,27 +10,23 @@ package org.adempiere.ad.validationRule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -48,17 +44,22 @@ import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 public class ValidationRuleFactory implements IValidationRuleFactory
 {
 	private final Logger logger = LogManager.getLogger(getClass());
-	
+
 	private static final int ROWINDEX_None = -1;
 
 	private final Map<String, List<Class<? extends IValidationRule>>> tableRuleClassesMap = new HashMap<String, List<Class<? extends IValidationRule>>>();
 
 	@Override
-	public void registerTableValidationRule(String tableName, Class<? extends IValidationRule> ruleClass)
+	public void registerTableValidationRule(final String tableName, final Class<? extends IValidationRule> ruleClass)
 	{
 		Check.assume(ruleClass != null, "ruleClass not null");
 		List<Class<? extends IValidationRule>> rules = tableRuleClassesMap.get(tableName);
@@ -75,10 +76,10 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public void unregisterTableValidationRule(String tableName, Class<? extends IValidationRule> ruleClass)
+	public void unregisterTableValidationRule(final String tableName, final Class<? extends IValidationRule> ruleClass)
 	{
 		Check.assume(ruleClass != null, "ruleClass not null");
-		List<Class<? extends IValidationRule>> rules = tableRuleClassesMap.get(tableName);
+		final List<Class<? extends IValidationRule>> rules = tableRuleClassesMap.get(tableName);
 		if (rules == null)
 		{
 			return;
@@ -95,24 +96,28 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	@Override
 	public IValidationRule create(final Properties ctx, final String tableName, final int adValRuleId)
 	{
-		final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(ctx, adValRuleId);
+		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
 
-		// Primary validation rule
-		final IValidationRule validationRule = create(tableName, valRule);
-
-		final CompositeValidationRule compositeValidationRule = toCompositeValidationRule(validationRule);
+		//
+		// Add primary validation rule
+		if(adValRuleId > 0)
+		{
+			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(ctx, adValRuleId);
+			final IValidationRule validationRule = create(tableName, valRule);
+			builder.addExploded(validationRule);
+		}
 
 		//
 		// Add table specific validation rules
 		for (final IValidationRule tableValidationRule : retrieveTableValidationRules(tableName))
 		{
-			compositeValidationRule.addValidationRule(tableValidationRule);
+			builder.addExploded(tableValidationRule);
 		}
 
-		return compositeValidationRule;
+		return builder.build();
 	}
 
-	private IValidationRule create(String tableName, I_AD_Val_Rule valRule)
+	private IValidationRule create(final String tableName, final I_AD_Val_Rule valRule)
 	{
 		if (valRule == null)
 		{
@@ -122,7 +127,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final String type = valRule.getType();
 		if (X_AD_Val_Rule.TYPE_SQL.equals(type))
 		{
-			return createSQLValidationRule(valRule.getCode());
+			return createSQLValidationRule(valRule.getName(), valRule.getCode());
 		}
 		else if (X_AD_Val_Rule.TYPE_Java.equals(type))
 		{
@@ -138,7 +143,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		}
 	}
 
-	private IValidationRule createJavaValidationRule(I_AD_Val_Rule valRule)
+	private IValidationRule createJavaValidationRule(final I_AD_Val_Rule valRule)
 	{
 		final String classname = valRule.getClassname();
 		if (Check.isEmpty(classname, true))
@@ -152,49 +157,52 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationRule createSQLValidationRule(String whereClause)
+	public IValidationRule createSQLValidationRule(final String whereClause)
+	{
+		final String name = null; // N/A
+		return createSQLValidationRule(name, whereClause);
+		
+	}
+	
+	public IValidationRule createSQLValidationRule(final String name, final String whereClause)
 	{
 		if (Check.isEmpty(whereClause, true))
 		{
 			return NullValidationRule.instance;
 		}
-		return new SQLValidationRule(whereClause);
+		
+		return new SQLValidationRule(name, whereClause);
 	}
 
 	private IValidationRule createCompositeValidationRule(final String tableName, final I_AD_Val_Rule valRule)
 	{
-		final CompositeValidationRule compositeRule = new CompositeValidationRule();
+		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
 		for (final I_AD_Val_Rule childValRule : Services.get(IValidationRuleDAO.class).retrieveChildValRules(valRule))
 		{
 			final IValidationRule childRule = create(tableName, childValRule);
-			compositeRule.addValidationRule(childRule);
+			builder.addExploded(childRule);
 		}
 
-		if (compositeRule.getValidationRules().isEmpty())
-		{
-			return NullValidationRule.instance;
-		}
-
-		return compositeRule;
+		return builder.build();
 	}
 
-	private List<IValidationRule> retrieveTableValidationRules(String tableName)
+	private List<IValidationRule> retrieveTableValidationRules(final String tableName)
 	{
 		final List<Class<? extends IValidationRule>> ruleClasses = tableRuleClassesMap.get(tableName);
-		if (ruleClasses == null)
+		if (ruleClasses == null || ruleClasses.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
-		final List<IValidationRule> rules = new ArrayList<IValidationRule>();
-		for (Class<? extends IValidationRule> ruleClass : ruleClasses)
+		final List<IValidationRule> rules = new ArrayList<>(ruleClasses.size());
+		for (final Class<? extends IValidationRule> ruleClass : ruleClasses)
 		{
 			try
 			{
 				final IValidationRule rule = ruleClass.newInstance();
 				rules.add(rule);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Cannot instantiate rule class " + ruleClass + " [SKIP]", e);
 			}
@@ -202,28 +210,14 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return rules;
 	}
 
-	public CompositeValidationRule toCompositeValidationRule(IValidationRule rule)
-	{
-		if (rule instanceof CompositeValidationRule)
-		{
-			return (CompositeValidationRule)rule;
-		}
-		else
-		{
-			final CompositeValidationRule composite = new CompositeValidationRule();
-			composite.addValidationRule(rule);
-			return composite;
-		}
-	}
-
 	@Override
-	public IValidationContext createValidationContext(Properties ctx, int windowNo, int tabNo, String tableName)
+	public IValidationContext createValidationContext(final Properties ctx, final int windowNo, final int tabNo, final String tableName)
 	{
 		return new GridTabValidationContext(ctx, windowNo, tabNo, tableName);
 	}
 
 	@Override
-	public IValidationContext createValidationContext(Properties ctx, String tableName, GridTab gridTab, int rowIndex)
+	public IValidationContext createValidationContext(final Properties ctx, final String tableName, final GridTab gridTab, final int rowIndex)
 	{
 		final GridRowCtx ctxToUse = new GridRowCtx(ctx, gridTab, rowIndex);
 		final int windowNo = gridTab.getWindowNo();
@@ -236,7 +230,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	public IValidationContext createValidationContext(final GridField gridField)
 	{
 		Check.assumeNotNull(gridField, "gridField not null");
-		
+
 		final GridTab gridTab = gridField.getGridTab();
 		// Check.assumeNotNull(gridTab, "gridTab not null");
 		if (gridTab == null)
@@ -273,12 +267,12 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 				tableName = parentEvalCtx.getTableName();
 			}
 		}
-		
+
 		if (tableName == null)
 		{
 			return IValidationContext.DISABLED;
 		}
-		
+
 		//
 		// Check if is a Process Parameter
 		if (gridField.getVO().isProcessParameter())
@@ -298,7 +292,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationContext createValidationContext(Evaluatee evaluatee)
+	public IValidationContext createValidationContext(final Evaluatee evaluatee)
 	{
 		return new EvaluateeValidationContext(evaluatee);
 	}

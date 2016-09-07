@@ -25,6 +25,7 @@ package org.adempiere.ad.trx.api;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
@@ -132,12 +133,22 @@ public interface ITrxManager extends ISingletonService
 	 */
 	String createTrxName(String prefix, boolean createTrx);
 
+	<T> T call(Callable<T> callable);
+
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
 	 *
 	 * @see #run(String, TrxRunnable)
 	 */
 	void run(TrxRunnable r);
+
+	/**
+	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
+	 *
+	 * @return callable's return value
+	 * @see #call(String, TrxRunnable)
+	 */
+	<T> T call(TrxCallable<T> callable);
 
 	/**
 	 * Executes the runnable object. Same as calling {@link #run(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
@@ -151,14 +162,31 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, TrxRunnable r);
 
 	/**
-	 * Execute runnable object using provided transaction. If execution fails, database operations will be rolled back.
+	 * Executes the callable object. Same as calling {@link #call(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
+	 * and to roll back to in case of problems and doesn't commit in case of success.
+	 *
+	 * @param trxName transaction name
+	 *
+	 * @param r runnable object
+	 * @return callable's return value
+	 * @see #call(String, boolean, TrxRunnable)
+	 */
+	<T> T call(String trxName, TrxCallable<T> callable);
+
+	/**
+	 * @see #call(String, boolean, TrxCallable)
+	 */
+	void run(String trxName, boolean manageTrx, TrxRunnable r);
+
+	/**
+	 * Execute callable object using provided transaction. If execution fails, database operations will be rolled back.
 	 * <p>
 	 * Example:
 	 *
 	 * <pre>
-	 * Trx.run(null, new {@link TrxRunnable}() {
-	 *     public void run(String trxName) {
-	 *         // do something using trxName
+	 * Trx.call(null, new {@link TrxCallable}() {
+	 *     public SomeResult call() {
+	 *         // do something using in transaction
 	 *     }
 	 * )};
 	 * </pre>
@@ -177,9 +205,10 @@ public interface ITrxManager extends ISingletonService
 	 * @param manageTrx if <code>true</code>, or <code>trxName</code> is {@link #isNull(String)}, the transaction will be managed by this method. Also, in case transaction is managed, a trxName will
 	 *            be created using given "trxName" as name prefix. If trxName is null a new transaction name will be created with prefix "TrxRun". If trxName is null, the transaction will be
 	 *            automatically managed, even if the manageTrx parameter is false.
-	 * @param r runnable object
+	 * @param callable
+	 * @return callable's return value
 	 */
-	void run(String trxName, boolean manageTrx, TrxRunnable r);
+	<T> T call(String trxName, boolean manageTrx, TrxCallable<T> callable);
 
 	/**
 	 * Execute the given <code>runnable</code> config.
@@ -190,6 +219,16 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 */
 	void run(String trxName, ITrxRunConfig cfg, TrxRunnable runnable);
+
+	/**
+	 * Execute the given <code>callable</code> in given transation using given transaction options.
+	 *
+	 * @param trxName
+	 * @param cfg
+	 * @param runnable
+	 * @return callable's return value
+	 */
+	<T> T call(String trxName, ITrxRunConfig cfg, TrxCallable<T> callable);
 
 	/**
 	 * Convenient method to execute the given runnable, but out of transaction (i.e. NO transaction management will be involved).

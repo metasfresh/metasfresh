@@ -44,16 +44,19 @@ public class StringExpressionCompiler implements IExpressionCompiler<String, ISt
 	{
 		// Check if it's an empty expression
 		// NOTE: we are preserving all whitespaces from expressions, so that's why we are not trimming the string
-		if (expressionStr == null || expressionStr.length() == 0)
+		if (expressionStr == null || expressionStr.isEmpty())
 		{
 			return IStringExpression.NULL;
 		}
 
 		String inStr = expressionStr;
-
-		final List<Object> chunks = new ArrayList<Object>();
-
 		int i = inStr.indexOf(PARAMETER_TAG);
+		if (i < 0)
+		{
+			return new ConstantStringExpression(expressionStr);
+		}
+		
+		final List<Object> chunks = new ArrayList<Object>();
 		while (i != -1)
 		{
 			// up to first parameter marker
@@ -73,7 +76,7 @@ public class StringExpressionCompiler implements IExpressionCompiler<String, ISt
 			if (j < 0)
 			{
 				// no second tag
-				throw new ExpressionCompileException("Missing closing tag '" + PARAMETER_TAG + "' in " + inStr);
+				throw new ExpressionCompileException("Missing closing tag '" + PARAMETER_TAG + "' in '" + inStr + "': " + expressionStr);
 			}
 			else if (j == 0)
 			{
