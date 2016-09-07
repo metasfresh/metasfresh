@@ -72,71 +72,71 @@ class Table extends Component {
         const {rowData, tabid} = this.props;
         const item = rowData[tabid];
         const {selected} = this.state;
+        const selectRange = e.shiftKey;
 
-        console.log(document.activeElement.nextSibling.focus());
-
-
-        // const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
-
-        // if(actualId > 0 ){
-        //     let newId = actualId-1;
-        //     // this.state.selected = [Object.keys(rowData[tabid])[newId]];
-        //     this.deselectAllProducts();
-        //     let t = this;
-        //     setTimeout(function(){ 
-        //         t.selectProduct(Object.keys(rowData[tabid])[newId]); 
-        //     }, 1);
-            
-        // }
+        let nodeList = Array.prototype.slice.call( document.activeElement.parentElement.children);
+        let idActive = nodeList.indexOf(document.activeElement);
         
-
-
-
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
-                console.log("key down");
 
-
-                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
 
                 if(actualId < Object.keys(rowData[tabid]).length-1 ){
                     let newId = actualId+1;
-                    this.state.selected = [Object.keys(rowData[tabid])[newId]];
-                    this.deselectAllProducts();
+                    // this.state.selected = [Object.keys(rowData[tabid])[newId]];
+                    if(!selectRange) {
+                        console.log('not range');
+                        this.deselectAllProducts();
+                    }
+
                     let t = this;
                     setTimeout(function(){ 
                         t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                        if(idActive > -1) {
+                            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idActive].focus();
+                        }
                     }, 1);
                 }
-
                 break;
             case "ArrowUp":
                 e.preventDefault();
                 console.log("key up");
 
-                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[0])
+                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
 
                 if(actual > 0 ){
                     let newId = actual-1;
-                    this.state.selected = [Object.keys(rowData[tabid])[newId]];
-                    this.deselectAllProducts();
+
+                    if(!selectRange) {
+                        console.log('not range');
+                        this.deselectAllProducts();
+                    }
+
                     let t = this;
                     setTimeout(function(){ 
                         t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                        if(idActive > -1) {
+                            document.getElementsByClassName('row-selected')[0].children[idActive].focus();
+                        }
                     }, 1);
                 }
-
-
                 break;
             case "ArrowLeft":
                 e.preventDefault();
                 console.log("key left");
+                if(document.activeElement.previousSibling){
+                    document.activeElement.previousSibling.focus();
+                }
                 break;
             case "ArrowRight":
                 e.preventDefault();
                 console.log("key right");
+                if(document.activeElement.nextSibling){
+                   document.activeElement.nextSibling.focus(); 
+                }
                 break;
         }
       
