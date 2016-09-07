@@ -15,8 +15,11 @@ Here come the actual release notes:
 upcoming
 
 ## Features
+ * FRESH-112 metasfresh web 
+   - integrate recentbackend related changes changes
 
 ## Fixes
+ * #366 Faulty unique constraint on M_PriceList
 
 # metasfresh 4.34.33 (2016-36)
 
