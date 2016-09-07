@@ -271,7 +271,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return _detailId;
 	}
 
-	private static final ArrayKey mkKey(GridFieldVO gridFieldVO)
+	private static final ArrayKey mkKey(final GridFieldVO gridFieldVO)
 	{
 		return Util.mkKey(gridFieldVO.getAD_Column_ID());
 	}
@@ -557,7 +557,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.addFilters(documentFilters())
 				.addElements(layoutElementsGridView());
-		
+
 		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
 		return layoutDetail;
 	}
@@ -1349,6 +1349,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private static final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
 	{
+		final int displayType = field.getDisplayType();
+		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
+
 		return DocumentQueryFilterDescriptor.builder()
 				.setId(field.getColumnName())
 				.setDisplayName(field.getHeaderTrls())
@@ -1357,7 +1360,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 						.setDisplayName(field.getHeaderTrls())
 						.setFieldName(field.getColumnName())
 						.setWidgetType(extractWidgetType(field))
-						.setRangeParameter(false)
+						.setRangeParameter(rangeParameter)
 						.build())
 				.build();
 	}

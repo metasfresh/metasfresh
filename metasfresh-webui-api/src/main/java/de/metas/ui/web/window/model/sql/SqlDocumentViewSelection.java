@@ -65,6 +65,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final String sql;
 	private final int size;
 
+	private transient String _toString;
+
 	private SqlDocumentViewSelection(final Builder builder)
 	{
 		super();
@@ -86,12 +88,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("viewId", querySelectionUUID)
-				.add("size", size)
-				.add("sql", sql)
-				.toString();
+		if (_toString == null)
+		{
+			_toString = MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("viewId", querySelectionUUID)
+					.add("size", size)
+					.add("sql", sql)
+					.toString();
+		}
+		return _toString;
 	}
 
 	@Override
@@ -176,10 +182,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 							recordId = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_Record_ID);
 							seqNo = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_SeqNo);
 						}
-						catch (Exception e)
+						catch (final Exception e)
 						{
 						}
-						
+
 						logger.debug("Skip missing record: Record_ID={}, SeqNo={} -- {}", recordId, seqNo, this);
 					}
 					return null;
@@ -215,7 +221,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return new SqlDocumentViewSelection(this);
 		}
 
-		public Builder setId(String id)
+		public Builder setId(final String id)
 		{
 			querySelectionUUID = id;
 			return this;
@@ -283,7 +289,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				sqlParams.addAll(queryBuilder.getSqlWhereParams());
 			}
 
-			this.rowsCount = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			rowsCount = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		}
 
 		private SqlDocumentEntityDataBindingDescriptor getDataBinding()

@@ -5,6 +5,8 @@ import java.util.List;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -79,4 +81,13 @@ public interface IWindowRestController
 			, String rowIdStr//
 			, String fieldName//
 	);
+
+	JSONDocumentViewResult createView(
+			int adWindowId //
+			, int firstRow //
+			, int pageLength //
+			, List<JSONDocumentQueryFilter> jsonFilters //
+	);
+
+	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength);
 }

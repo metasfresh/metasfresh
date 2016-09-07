@@ -25,6 +25,8 @@ import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
@@ -168,6 +170,20 @@ public class WindowRestControllerClient implements IWindowRestController
 		final JSONLookupValue[] jsonLookupValues = fromJson(json, JSONLookupValue[].class);
 		System.out.println("GOT lookup values:\n" + toJson(jsonLookupValues));
 		return Arrays.asList(jsonLookupValues);
+	}
+
+	@Override
+	public JSONDocumentViewResult createView(final int adWindowId, final int firstRow, final int pageLength, final List<JSONDocumentQueryFilter> jsonFilters)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public JSONDocumentViewResult browseView(final String viewId, final int firstRow, final int pageLength)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 
 	private <T> T fromJson(final String json, final Class<T> valueType)

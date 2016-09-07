@@ -24,7 +24,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentViewInfo;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -77,6 +77,8 @@ public class WindowRestController implements IWindowRestController
 	private static final String PARAM_RowId = "rowId";
 	private static final String PARAM_Field = "field";
 	private static final String PARAM_FieldsList = "fields";
+	private static final String PARAM_FirstRow = "firstRow";
+	private static final String PARAM_PageLength = "pageLength";
 	private static final String PARAM_Advanced = "advanced";
 	private static final String PARAM_Advanced_DefaultValue = "false";
 
@@ -348,10 +350,13 @@ public class WindowRestController implements IWindowRestController
 		return JSONLookupValue.ofLookupValuesList(lookupValues);
 	}
 
+	@Override
 	@RequestMapping(value = "/createView", method = RequestMethod.PUT)
-	public JSONDocumentViewInfo createView(
+	public JSONDocumentViewResult createView(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
+			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") final int firstRow //
+			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
+			, @RequestBody(required = false) final List<JSONDocumentQueryFilter> jsonFilters //
 	)
 	{
 		loginService.autologin();
@@ -367,19 +372,32 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		final IDocumentViewSelection view = documentViewsRepo.createView(query);
-		return JSONDocumentViewInfo.of(view);
+
+		//
+		// Fetch result if requested
+		if (pageLength > 0)
+		{
+			final List<IDocumentView> result = view.getPage(firstRow, pageLength);
+			return JSONDocumentViewResult.of(view, firstRow, pageLength, result);
+		}
+		else
+		{
+			return JSONDocumentViewResult.of(view);
+		}
+
 	}
 
+	@Override
 	@RequestMapping(value = "/browseView", method = RequestMethod.GET)
-	public List<JSONDocument> browseView(
+	public JSONDocumentViewResult browseView(
 			@RequestParam(name = "viewId", required = true) final String viewId//
-			, @RequestParam(name = "firstRow", required = true) final int firstRow //
-			, @RequestParam(name = "pageLength", required = true) final int pageLength //
+			, @RequestParam(name = PARAM_FirstRow, required = true) final int firstRow //
+			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 	)
 	{
 		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 		final List<IDocumentView> page = view.getPage(firstRow, pageLength);
-		return JSONDocument.ofDocumentViewList(page);
+		return JSONDocumentViewResult.of(view, firstRow, pageLength, page);
 	}
 
 	@RequestMapping(value = "/sideListData", method = RequestMethod.PUT)
