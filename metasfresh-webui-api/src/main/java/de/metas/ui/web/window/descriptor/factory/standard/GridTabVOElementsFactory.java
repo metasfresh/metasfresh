@@ -49,6 +49,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -268,7 +269,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final boolean specialFieldsCollectingEnabledOld = setSpecialFieldsCollectingEnabled(true);
 		try
 		{
-			
+
 			//
 			// UI Sections
 			final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
@@ -276,7 +277,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				layoutSectionBuilders.add(layoutSection(uiSection));
 			}
-	
+
 			return layoutSectionBuilders;
 		}
 		finally
@@ -513,7 +514,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		final GridTabVO detailTab = getGridTabVO();
 		logger.trace("Generating layout detail for {}", detailTab);
-
 
 		// If the detail is never displayed then don't add it to layout
 		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic();
@@ -1065,12 +1065,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		if (gridFieldVO.isVirtualColumn())
 		{
 			return ILogicExpression.TRUE;
 		}
-		
+
 		if (gridFieldVO.isKey())
 		{
 			return ILogicExpression.TRUE;
@@ -1078,7 +1078,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		// Case: DocumentNo special field not be readonly
 		final String columnName = gridFieldVO.getColumnName();
-		if(getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
+		if (getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
 		{
 			return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
 		}
@@ -1087,7 +1087,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			return ILogicExpression.TRUE;
 		}
-
 
 		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{
@@ -1165,9 +1164,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			return ILogicExpression.FALSE;
 		}
-		
+
 		// Case: DocumentNo special field shall always be mandatory
-		if(getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
+		if (getSpecialFieldsCollector().isDocumentNoCollectedAndConsumed(columnName))
 		{
 			return ILogicExpression.TRUE;
 		}
@@ -1315,11 +1314,15 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private static final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
 	{
 		return DocumentQueryFilterDescriptor.builder()
-				.setFieldName(field.getColumnName())
-				.setWidgetType(extractWidgetType(field))
+				.setId(field.getColumnName())
 				.setDisplayName(field.getHeaderTrls())
-				.setRequiresParameters(true)
-				.setRangeParameter(false)
+				.setFrequentUsed(false)
+				.addParameter(DocumentQueryFilterParamDescriptor.builder()
+						.setDisplayName(field.getHeaderTrls())
+						.setFieldName(field.getColumnName())
+						.setWidgetType(extractWidgetType(field))
+						.setRangeParameter(false)
+						.build())
 				.build();
 	}
 

@@ -1,13 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -34,28 +31,30 @@ import de.metas.i18n.ImmutableTranslatableString;
  * #L%
  */
 
-public final class DocumentQueryFilterDescriptor
+public class DocumentQueryFilterParamDescriptor
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
-
-	private final String id;
+	
+	private final String fieldName;
+	private final DocumentFieldWidgetType widgetType;
 	private final ITranslatableString displayNameTrls;
-	private final List<DocumentQueryFilterParamDescriptor> parameters;
-	private final boolean frequentUsed;
+	private final boolean rangeParameter;
 
-	private DocumentQueryFilterDescriptor(final Builder builder)
+	private DocumentQueryFilterParamDescriptor(final Builder builder)
 	{
 		super();
 
-		id = builder.id;
-		Check.assumeNotEmpty(id, "id is not empty");
+		fieldName = builder.fieldName;
+		Check.assumeNotNull(fieldName, "Parameter fieldName is not null");
+
+		widgetType = builder.widgetType;
+		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
 
 		displayNameTrls = ImmutableTranslatableString.ofMap(builder.displayNameTrls);
-		parameters = ImmutableList.copyOf(builder.parameters);
-		frequentUsed = builder.frequentUsed;
+		rangeParameter = builder.rangeParameter;
 	}
 
 	@Override
@@ -63,14 +62,20 @@ public final class DocumentQueryFilterDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("id", id)
-				.add("parameters", parameters)
+				.add("fieldName", fieldName)
+				.add("widgetType", widgetType)
+				.add("range", rangeParameter)
 				.toString();
 	}
 
-	public String getId()
+	public String getFieldName()
 	{
-		return id;
+		return fieldName;
+	}
+
+	public DocumentFieldWidgetType getWidgetType()
+	{
+		return widgetType;
 	}
 
 	public String getDisplayName(final String adLanguage)
@@ -78,36 +83,37 @@ public final class DocumentQueryFilterDescriptor
 		return displayNameTrls.translate(adLanguage);
 	}
 
-	public List<DocumentQueryFilterParamDescriptor> getParameters()
+	public boolean isRangeParameter()
 	{
-		return parameters;
-	}
-
-	public boolean isFrequentUsed()
-	{
-		return frequentUsed;
+		return rangeParameter;
 	}
 
 	public static final class Builder
 	{
-		private String id;
+		private String fieldName;
+		private DocumentFieldWidgetType widgetType;
 		private Map<String, String> displayNameTrls;
-		private final List<DocumentQueryFilterParamDescriptor> parameters = new ArrayList<>();
-		private boolean frequentUsed;
+		private boolean rangeParameter;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public DocumentQueryFilterDescriptor build()
+		public DocumentQueryFilterParamDescriptor build()
 		{
-			return new DocumentQueryFilterDescriptor(this);
+			return new DocumentQueryFilterParamDescriptor(this);
 		}
 
-		public Builder setId(final String id)
+		public Builder setFieldName(final String fieldName)
 		{
-			this.id = id;
+			this.fieldName = fieldName;
+			return this;
+		}
+
+		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
+		{
+			this.widgetType = widgetType;
 			return this;
 		}
 
@@ -117,16 +123,11 @@ public final class DocumentQueryFilterDescriptor
 			return this;
 		}
 
-		public Builder setFrequentUsed(final boolean frequentUsed)
+		public Builder setRangeParameter(final boolean rangeParameter)
 		{
-			this.frequentUsed = frequentUsed;
-			return this;
-		}
-
-		public Builder addParameter(final DocumentQueryFilterParamDescriptor parameter)
-		{
-			parameters.add(parameter);
+			this.rangeParameter = rangeParameter;
 			return this;
 		}
 	}
+
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -34,7 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
  */
 
 @SuppressWarnings("serial")
-public class JSONDocumentQueryFilterDescriptor implements Serializable
+public final class JSONDocumentQueryFilterDescriptor implements Serializable
 {
 	public static List<JSONDocumentQueryFilterDescriptor> ofList(final List<DocumentQueryFilterDescriptor> filters, final String adLanguage)
 	{
@@ -48,67 +49,57 @@ public class JSONDocumentQueryFilterDescriptor implements Serializable
 		return new JSONDocumentQueryFilterDescriptor(filter, adLanguage);
 	}
 
-
+	@JsonProperty("id")
+	private final String id;
 
 	@JsonProperty("caption")
 	private final String caption;
 
-	@JsonProperty("field")
-	private final String field;
-
-	@JsonProperty("widgetType")
-	private final JSONLayoutWidgetType widgetType;
-
 	@JsonProperty("frequent")
 	private final boolean frequentUsed;
 
-	@JsonProperty("parameter-required")
-	private boolean requiresParameters;
-
-	@JsonProperty("range")
-	private final boolean rangeParameter;
+	@JsonProperty("parameters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentQueryFilterParamDescriptor> parameters;
 
 	private JSONDocumentQueryFilterDescriptor(final DocumentQueryFilterDescriptor filter, final String adLanguage)
 	{
 		super();
+		id = filter.getId();
 		caption = filter.getDisplayName(adLanguage);
-		field = filter.getFieldName();
-		widgetType = JSONLayoutWidgetType.fromNullable(filter.getWidgetType());
 		frequentUsed = filter.isFrequentUsed();
-
-		requiresParameters = filter.isRequiresParameters();
-		rangeParameter = filter.isRangeParameter();
+		parameters = JSONDocumentQueryFilterParamDescriptor.ofList(filter.getParameters(), adLanguage);
 	}
 
 	@JsonCreator
 	private JSONDocumentQueryFilterDescriptor(
-			@JsonProperty("caption") final String caption //
-			, @JsonProperty("field") final String field //
-			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
+			@JsonProperty("id") final String id //
+			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("frequent") final boolean frequentUsed //
-			, @JsonProperty("parameter-required") boolean requiresParameters //
-			, @JsonProperty("range") final boolean range //
+			, @JsonProperty("parameters") final List<JSONDocumentQueryFilterParamDescriptor> parameters //
 	)
 	{
+		this.id = id;
 		this.caption = caption;
-		this.field = field;
-		this.widgetType = widgetType;
 		this.frequentUsed = frequentUsed;
-		this.requiresParameters = requiresParameters;
-		this.rangeParameter = range;
+		this.parameters = parameters;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", id)
 				.add("caption", caption)
-				.add("field", field)
-				.add("widgetType", widgetType)
 				.add("frequentUsed", frequentUsed)
-				.add("requiresParameters", requiresParameters)
-				.add("rangeParameter", rangeParameter)
+				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
+	}
+
+	public String getId()
+	{
+		return id;
 	}
 
 	public String getCaption()
@@ -116,23 +107,13 @@ public class JSONDocumentQueryFilterDescriptor implements Serializable
 		return caption;
 	}
 
-	public String getField()
+	public boolean isFrequentUsed()
 	{
-		return field;
+		return frequentUsed;
 	}
 
-	public JSONLayoutWidgetType getWidgetType()
+	public List<JSONDocumentQueryFilterParamDescriptor> getParameters()
 	{
-		return widgetType;
-	}
-
-	public boolean isRequiresParameters()
-	{
-		return requiresParameters;
-	}
-
-	public boolean isRangeParameter()
-	{
-		return rangeParameter;
+		return parameters;
 	}
 }
