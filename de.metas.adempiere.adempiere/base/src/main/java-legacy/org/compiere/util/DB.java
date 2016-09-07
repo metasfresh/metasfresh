@@ -2042,10 +2042,10 @@ public final class DB
 	 * @see #close(ResultSet)
 	 * @see #close(Statement)
 	 */
-	public static void close(ResultSet rs, Statement st)
+	public static void close(ResultSet rs, Statement pstmt)
 	{
 		close(rs);
-		close(st);
+		close(pstmt);
 	}
 
 	/**
