@@ -14,6 +14,9 @@ class TableContextMenu extends Component {
 
         dispatch(openModal("Advanced edit", type + "&advanced=true", tabId, selected[0]));
     }
+    handleDelete = () => {
+        console.log('deleted');
+    }
     render() {
         const {isDisplayed, x, y, blur, selected} = this.props;
         const style = {
@@ -33,6 +36,11 @@ class TableContextMenu extends Component {
                 {isSelectedOne && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
                     <i className="meta-icon-edit" /> Advanced edit
                 </div>}
+
+                <div className="context-menu-item" onClick={this.handleDelete}>
+                   <i className="meta-icon-edit" /> Delete
+                </div>
+
             </div>
         )
 

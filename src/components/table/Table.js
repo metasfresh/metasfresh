@@ -87,7 +87,6 @@ class Table extends Component {
                     let newId = actualId+1;
                     // this.state.selected = [Object.keys(rowData[tabid])[newId]];
                     if(!selectRange) {
-                        console.log('not range');
                         this.deselectAllProducts();
                     }
 
@@ -102,7 +101,6 @@ class Table extends Component {
                 break;
             case "ArrowUp":
                 e.preventDefault();
-                console.log("key up");
 
                 const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
 
@@ -110,7 +108,6 @@ class Table extends Component {
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        console.log('not range');
                         this.deselectAllProducts();
                     }
 
@@ -125,14 +122,12 @@ class Table extends Component {
                 break;
             case "ArrowLeft":
                 e.preventDefault();
-                console.log("key left");
                 if(document.activeElement.previousSibling){
                     document.activeElement.previousSibling.focus();
                 }
                 break;
             case "ArrowRight":
                 e.preventDefault();
-                console.log("key right");
                 if(document.activeElement.nextSibling){
                    document.activeElement.nextSibling.focus(); 
                 }
@@ -205,7 +200,6 @@ class Table extends Component {
         }
 
         
-
         e.preventDefault();
         this.setState({
             contextMenu: {
