@@ -11,6 +11,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.ui.web.debug.DebugRestController;
 import de.metas.ui.web.menu.MenuRestController;
+import de.metas.ui.web.session.UserSessionRestController;
 import de.metas.ui.web.window.controller.WindowRestController;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
@@ -50,7 +51,7 @@ public class SwaggerConfig
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
-				.apis(basePackages(WindowRestController.class, MenuRestController.class, DebugRestController.class))
+				.apis(basePackages(WindowRestController.class, MenuRestController.class, UserSessionRestController.class, DebugRestController.class))
 				.paths(PathSelectors.any())
 				.build();
 	}

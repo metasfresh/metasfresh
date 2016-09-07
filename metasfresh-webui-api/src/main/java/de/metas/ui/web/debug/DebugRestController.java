@@ -67,19 +67,6 @@ public class DebugRestController
 
 	}
 
-	@RequestMapping(value = "/language", method = RequestMethod.PUT)
-	public void setAD_Language(@RequestBody final String adLanguage)
-	{
-		final String adLanguageOld = userSession.setAD_Language(adLanguage);
-		logResourceValueChanged("AD_Language", adLanguage, adLanguageOld);
-	}
-
-	@RequestMapping(value = "/language", method = RequestMethod.GET)
-	public String getAD_Language()
-	{
-		return userSession.getAD_Language();
-	}
-
 	// NOTE: using String parameter because when using boolean parameter, we get following error in swagger-ui:
 	// swagger-ui.min.js:10 Uncaught TypeError: Cannot read property 'toLowerCase' of undefined
 	@RequestMapping(value = "/showColumnNamesForCaption", method = RequestMethod.PUT)

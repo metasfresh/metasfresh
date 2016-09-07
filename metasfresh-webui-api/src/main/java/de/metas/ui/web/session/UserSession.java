@@ -14,6 +14,7 @@ import org.compiere.util.Language;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -69,8 +70,18 @@ public class UserSession implements Serializable
 		userPreference = new UserPreference();
 		loggedIn = false;
 
-		// FIXME: get browser locale and only if not available get default!
-		locale = Locale.getDefault();
+		//
+		// Set initial language
+		try
+		{
+			final Locale locale = LocaleContextHolder.getLocale();
+			final Language language = Language.getLanguage(locale);
+			setLanguage(language);
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed setting the language, but moving on", e);
+		}
 
 		logger.trace("User session created: {}", this);
 	}
@@ -147,16 +158,24 @@ public class UserSession implements Serializable
 	 */
 	public String setAD_Language(final String adLanguage)
 	{
-		final Properties ctx = getCtx();
-		final String adLanguageOld = Env.getContext(ctx, Env.CTXNAME_AD_Language);
-
-		Check.assumeNotNull(ctx, "Parameter ctx is not null");
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
-		Env.verifyLanguage(lang);
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, lang.getAD_Language());
+		return setLanguage(lang);
+	}
 
+	private String setLanguage(final Language lang)
+	{
+		final Properties ctx = getCtx();
+		Check.assumeNotNull(ctx, "Parameter ctx is not null");
+
+		final String adLanguageOld = Env.getContext(ctx, Env.CTXNAME_AD_Language);
+
+		Env.verifyLanguage(lang);
+		final String adLanguageNew = lang.getAD_Language();
+		
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguageNew);
 		locale = lang.getLocale();
+		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
 
 		return adLanguageOld;
 	}
