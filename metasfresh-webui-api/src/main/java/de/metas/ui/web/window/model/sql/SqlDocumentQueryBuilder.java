@@ -18,6 +18,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryFilter;
+import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
 /*
  * #%L
@@ -238,7 +239,7 @@ class SqlDocumentQueryBuilder
 			{
 				sqlWhereClause.append("\n AND ");
 			}
-			sqlWhereClause.append(" /* filter */ ( ").append(sqlFilter).append(" )");
+			sqlWhereClause.append(" /* filter */ ( \n").append(sqlFilter).append("\n )");
 		}
 
 		//
@@ -249,10 +250,32 @@ class SqlDocumentQueryBuilder
 
 	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilter filter)
 	{
+		final StringBuilder sql = new StringBuilder();
+		
+		for (final DocumentQueryFilterParam filterParam : filter.getParameters())
+		{
+			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
+			if(Check.isEmpty(sqlFilterParam, true))
+			{
+				continue;
+			}
+			
+			if(sql.length() > 0)
+			{
+				sql.append("\n AND ");
+			}
+			sql.append("/* filter param */ (").append(sqlFilterParam).append(")");
+		}
+		
+		return sql.toString();
+	}
+	
+	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilterParam filterParam)
+	{
 		// FIXME: refactor and introduce DocumentQueryFilter Descriptor and SQL DataBinding
 		// TODO: improve SQL logic
 
-		final String fieldName = filter.getFieldName();
+		final String fieldName = filterParam.getFieldName();
 		final DocumentFieldDescriptor field = query.getEntityDescriptor().getField(fieldName);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.cast(field.getDataBinding());
 
@@ -260,8 +283,8 @@ class SqlDocumentQueryBuilder
 		final String sqlColumn = fieldBinding.getSqlColumnSql();
 		final String columnName = fieldBinding.getColumnName();
 		final Class<?> targetClass = poInfo.getColumnClass(columnName);
-		final Object sqlValue = SqlDocumentRepository.convertValueToPO(filter.getValue(), columnName, targetClass);
-		final Object sqlValueTo = SqlDocumentRepository.convertValueToPO(filter.getValueTo(), columnName, targetClass);
+		final Object sqlValue = SqlDocumentRepository.convertValueToPO(filterParam.getValue(), columnName, targetClass);
+		final Object sqlValueTo = SqlDocumentRepository.convertValueToPO(filterParam.getValueTo(), columnName, targetClass);
 
 		if (sqlValueTo == null)
 		{

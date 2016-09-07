@@ -1,10 +1,13 @@
 package de.metas.ui.web.window.model;
 
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -36,60 +39,43 @@ public final class DocumentQueryFilter
 		return new Builder();
 	}
 
-	private final String fieldName;
-	private final boolean range;
-	private final Object value;
-	private final Object valueTo;
+	private final String filterId;
+	private final List<DocumentQueryFilterParam> parameters;
 
 	private DocumentQueryFilter(final Builder builder)
 	{
 		super();
 
-		fieldName = builder.fieldName;
-		Check.assumeNotNull(fieldName, "Parameter fieldName is not null");
+		filterId = builder.filterId;
+		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
-		range = builder.range;
-		value = builder.value;
-		valueTo = builder.valueTo;
+		parameters = builder.parameters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.parameters);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("fieldName", fieldName)
-				.add("range", range)
-				.add("value", value)
-				.add("valueTo", valueTo)
+				.omitNullValues()
+				.add("filterId", filterId)
+				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
 	}
-
-	public String getFieldName()
+	
+	public String getFilterId()
 	{
-		return fieldName;
+		return filterId;
 	}
-
-	public boolean isRange()
+	
+	public List<DocumentQueryFilterParam> getParameters()
 	{
-		return range;
-	}
-
-	public Object getValue()
-	{
-		return value;
-	}
-
-	public Object getValueTo()
-	{
-		return valueTo;
+		return parameters;
 	}
 
 	public static final class Builder
 	{
-		private String fieldName;
-		private boolean range;
-		private Object value;
-		private Object valueTo;
+		private String filterId;
+		private List<DocumentQueryFilterParam> parameters;
 
 		private Builder()
 		{
@@ -101,27 +87,15 @@ public final class DocumentQueryFilter
 			return new DocumentQueryFilter(this);
 		}
 
-		public Builder setFieldName(final String fieldName)
+		public Builder setFilterId(final String filterId)
 		{
-			this.fieldName = fieldName;
+			this.filterId = filterId;
 			return this;
 		}
 
-		public Builder setRange(final boolean range)
+		public Builder setParameters(final List<DocumentQueryFilterParam> parameters)
 		{
-			this.range = range;
-			return this;
-		}
-
-		public Builder setValue(final Object value)
-		{
-			this.value = value;
-			return this;
-		}
-
-		public Builder setValueTo(final Object valueTo)
-		{
-			this.valueTo = valueTo;
+			this.parameters = parameters;
 			return this;
 		}
 	}

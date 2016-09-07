@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.model.DocumentQueryFilter;
+import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
 /*
  * #%L
@@ -32,53 +32,64 @@ import de.metas.ui.web.window.model.DocumentQueryFilter;
  * #L%
  */
 
-public class JSONDocumentQueryFilter
+public class JSONDocumentQueryFilterParam
 {
-	public static List<DocumentQueryFilter> unwrapList(final List<JSONDocumentQueryFilter> jsonFilters)
+	public static List<DocumentQueryFilterParam> unwrapList(final List<JSONDocumentQueryFilterParam> jsonFilterParams)
 	{
-		if (jsonFilters == null || jsonFilters.isEmpty())
+		if (jsonFilterParams == null || jsonFilterParams.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		return jsonFilters
+		return jsonFilterParams
 				.stream()
 				.map(jsonFilter -> unwrap(jsonFilter))
 				.filter(filter -> filter != null)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final DocumentQueryFilter unwrap(final JSONDocumentQueryFilter jsonFilter)
+	private static final DocumentQueryFilterParam unwrap(final JSONDocumentQueryFilterParam jsonFilterParam)
 	{
-		return DocumentQueryFilter.builder()
-				.setFilterId(jsonFilter.getFilterId())
-				.setParameters(JSONDocumentQueryFilterParam.unwrapList(jsonFilter.getParameters()))
+		return DocumentQueryFilterParam.builder()
+				.setFieldName(jsonFilterParam.getField())
+				.setValue(jsonFilterParam.getValue())
+				.setValueTo(jsonFilterParam.getValueTo())
 				.build();
 	}
 
-	@JsonProperty("filterId")
-	private final String filterId;
+	@JsonProperty("field")
+	private final String field;
 
-	@JsonProperty("parameters")
-	private final List<JSONDocumentQueryFilterParam> parameters;
+	@JsonProperty("value")
+	private final Object value;
+
+	@JsonProperty("valueTo")
+	private final Object valueTo;
 
 	@JsonCreator
-	private JSONDocumentQueryFilter(
-			@JsonProperty("filterId") final String filterId //
-			, @JsonProperty("parameters") final List<JSONDocumentQueryFilterParam> parameters //
+	public JSONDocumentQueryFilterParam(
+			@JsonProperty("field") final String field //
+			, @JsonProperty("value") final Object value //
+			, @JsonProperty("valueTo") final Object valueTo //
 	)
 	{
 		super();
-		this.filterId = filterId;
-		this.parameters = parameters;
+		this.field = field;
+		this.value = value;
+		this.valueTo = valueTo;
 	}
 
-	public String getFilterId()
+	public String getField()
 	{
-		return filterId;
+		return field;
 	}
 
-	public List<JSONDocumentQueryFilterParam> getParameters()
+	public Object getValue()
 	{
-		return parameters;
+		return value;
+	}
+
+	public Object getValueTo()
+	{
+		return valueTo;
 	}
 }
