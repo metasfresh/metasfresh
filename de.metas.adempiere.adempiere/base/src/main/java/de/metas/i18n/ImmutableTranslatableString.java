@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
@@ -70,7 +72,21 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	public static final ImmutableTranslatableString copyOf(final ITranslatableString trl)
 	{
 		Preconditions.checkNotNull(trl, "trl");
+		return copyOfNullable(trl);
+	}
 
+	/**
+	 * 
+	 * @param trl
+	 * @return {@link ImmutableTranslatableString} or {@link #EMPTY} if <code>trl</code> was null
+	 */
+	public static final ImmutableTranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
+	{
+		if(trl == null)
+		{
+			return ImmutableTranslatableString.EMPTY;
+		}
+		
 		if (trl instanceof ImmutableTranslatableString)
 		{
 			return (ImmutableTranslatableString)trl;
