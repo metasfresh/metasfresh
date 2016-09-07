@@ -1,4 +1,4 @@
-﻿DROP FUNCTION de_metas_inoutcandidate.reset_m_shipmentschedule_recompute();
+﻿DROP FUNCTION IF EXISTS de_metas_inoutcandidate.reset_m_shipmentschedule_recompute();
 CREATE OR REPLACE FUNCTION de_metas_inoutcandidate.Reset_M_ShipmentSchedule_Recompute(p_AD_PInstance_ID_max integer DEFAULT 0)
   RETURNS integer AS
 $BODY$
