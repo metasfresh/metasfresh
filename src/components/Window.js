@@ -25,13 +25,21 @@ class Window extends Component {
             <Tabs>
                 {
                     tabs.map((elem)=> {
-                        const {tabid, caption, elements} = elem;
+                        const {tabid, caption, elements, emptyResultText, emptyResultHint} = elem;
                         return (
                             <TabPane
                                 caption={caption}
                                 key={tabid}
                             >
-                                <Table rowData={rowData} cols={elements} tabid={tabid} type={type} docId={dataId} />
+                                <Table
+                                    rowData={rowData}
+                                    cols={elements}
+                                    tabid={tabid}
+                                    type={type}
+                                    docId={dataId}
+                                    emptyText={emptyResultText}
+                                    emptyHint={emptyResultHint}
+                                />
                             </TabPane>
                         )
                     })

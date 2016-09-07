@@ -176,11 +176,12 @@ class Table extends Component {
     }
 
     renderEmptyInfo = () => {
+        const {emptyText, emptyHint} = this.props;
         return (
             <div className="empty-info-text">
                 <div>
-                    <h5>There are no pricing rules assigned to this product.</h5>
-                    <p>You can define them in "Pricing systems"</p>
+                    <h5>{emptyText}</h5>
+                    <p>{emptyHint}</p>
                 </div>
             </div>
         )
@@ -189,6 +190,7 @@ class Table extends Component {
     render() {
         const {cols, type, docId, rowData, tabid} = this.props;
         const {x,y,contextMenu,selected} = this.state;
+
         return (
             <div className="row">
                 <div className="col-xs-12">
