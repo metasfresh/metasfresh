@@ -1041,8 +1041,3 @@ UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2016-09-07 15:59:20','Y
 ;
 
 
--- 07.09.2016 16:31
--- URL zum Konzept
-UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2016-09-07 16:31:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555042
-;
-
