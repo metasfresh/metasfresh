@@ -76,6 +76,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		
 		layoutType = builder.layoutType;
 		advancedField = builder.isAdvancedField();
+		
 		fields = ImmutableSet.copyOf(builder.buildFields());
 	}
 
@@ -124,6 +125,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	public LayoutType getLayoutType()
 	{
 		return layoutType;
+	}
+	
+	public LayoutAlign getGridAlign()
+	{
+		return widgetType == null ? null : widgetType.getGridAlign();
 	}
 
 	public boolean isAdvancedField()
@@ -251,12 +257,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
-		}
-
-		public Builder setLayoutType(final String layoutTypeStr)
-		{
-			layoutType = LayoutType.fromNullable(layoutTypeStr);
-			return this;
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)

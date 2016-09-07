@@ -47,6 +47,8 @@ public final class JSONFilteringOptions
 	{
 		return new Builder();
 	}
+	
+	public static final String DEBUG_ATTRNAME = "json-options";
 
 	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
 	public static final boolean SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue = true;

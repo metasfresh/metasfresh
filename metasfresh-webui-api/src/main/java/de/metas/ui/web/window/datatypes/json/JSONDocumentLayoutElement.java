@@ -75,6 +75,10 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
+	@JsonProperty("gridAlign")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONLayoutAlign gridAlign;
+
 	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
@@ -83,8 +87,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		super();
 		final String adLanguage = jsonFilteringOpts.getAD_Language();
-		
-		if(jsonFilteringOpts.isDebugShowColumnNamesForCaption())
+
+		if (jsonFilteringOpts.isDebugShowColumnNamesForCaption())
 		{
 			caption = element.getCaptionAsFieldNames();
 		}
@@ -92,27 +96,34 @@ public final class JSONDocumentLayoutElement implements Serializable
 		{
 			caption = element.getCaption(adLanguage);
 		}
-		
+
 		description = element.getDescription(adLanguage);
+
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
+		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
+
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonFilteringOpts);
 	}
 
 	@JsonCreator
 	public JSONDocumentLayoutElement(
-			@JsonProperty("caption") final String caption//
-			, @JsonProperty("description") final String description//
-			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType//
-			, @JsonProperty("type") final JSONLayoutType type//
-			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields//
+			@JsonProperty("caption") final String caption //
+			, @JsonProperty("description") final String description //
+			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
+			, @JsonProperty("type") final JSONLayoutType type //
+			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields //
+			, @JsonProperty("gridAlign") final JSONLayoutAlign gridAlign //
 	)
 	{
 		super();
 		this.caption = caption;
 		this.description = description;
+
 		this.widgetType = widgetType;
 		this.type = type;
+		this.gridAlign = gridAlign;
+
 		this.fields = fields == null ? ImmutableSet.of() : ImmutableSet.copyOf(fields);
 	}
 
@@ -125,6 +136,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.add("description", description)
 				.add("widgetType", widgetType)
 				.add("type", type)
+				.add("gridAlign", gridAlign)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
@@ -147,6 +159,11 @@ public final class JSONDocumentLayoutElement implements Serializable
 	public JSONLayoutType getType()
 	{
 		return type;
+	}
+
+	public JSONLayoutAlign getGridAlign()
+	{
+		return gridAlign;
 	}
 
 	public Set<JSONDocumentLayoutElementField> getFields()

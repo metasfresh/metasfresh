@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
@@ -32,12 +32,7 @@ public class JSONLayoutWidgetTypeTest
 	@Test
 	public void test_fromNullable_fullyCovered()
 	{
-		Assert.assertNull(JSONLayoutWidgetType.fromNullable((DocumentFieldWidgetType)null));
-
-		for (final DocumentFieldWidgetType widgetType : DocumentFieldWidgetType.values())
-		{
-			JSONLayoutWidgetType.fromNullable(widgetType);
-		}
+		EnumTestUtils.assertMappingFullyCovered(DocumentFieldWidgetType.values(), JSONLayoutWidgetType::fromNullable);
 	}
 
 }

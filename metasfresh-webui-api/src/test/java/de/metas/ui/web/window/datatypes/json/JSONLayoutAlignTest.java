@@ -1,9 +1,10 @@
-package de.metas.ui.web.menu.datatypes.json;
+package de.metas.ui.web.window.datatypes.json;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.test.util.EnumTestUtils;
+import de.metas.ui.web.window.descriptor.LayoutAlign;
 
 /*
  * #%L
@@ -27,12 +28,22 @@ import de.metas.ui.web.test.util.EnumTestUtils;
  * #L%
  */
 
-public class JSONMenuNodeTypeTest
+public class JSONLayoutAlignTest
 {
 	@Test
 	public void test_fromNullable_fullyCovered()
 	{
-		EnumTestUtils.assertMappingFullyCovered(MenuNodeType.values(), JSONMenuNodeType::fromNullable);
+		EnumTestUtils.assertMappingFullyCovered(LayoutAlign.values(), JSONLayoutAlign::fromNullable);
+	}
+
+	@Test
+	public void test_fromNullable()
+	{
+		Assert.assertNull(JSONLayoutAlign.fromNullable((LayoutAlign)null));
+		Assert.assertSame(JSONLayoutAlign.left, JSONLayoutAlign.fromNullable(LayoutAlign.Left));
+		Assert.assertSame(JSONLayoutAlign.center, JSONLayoutAlign.fromNullable(LayoutAlign.Center));
+		Assert.assertSame(JSONLayoutAlign.right, JSONLayoutAlign.fromNullable(LayoutAlign.Right));
+		Assert.assertSame(JSONLayoutAlign.justify, JSONLayoutAlign.fromNullable(LayoutAlign.Justify));
 	}
 
 }

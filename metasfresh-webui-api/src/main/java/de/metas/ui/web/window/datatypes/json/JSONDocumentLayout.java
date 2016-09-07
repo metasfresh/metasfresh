@@ -130,7 +130,7 @@ public final class JSONDocumentLayout implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties());
-			putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
+			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
 		}
 	}
 
@@ -159,7 +159,7 @@ public final class JSONDocumentLayout implements Serializable
 
 		if (WindowConstants.isProtocolDebugging())
 		{
-			putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
+			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
 		}
 	}
 
@@ -190,7 +190,7 @@ public final class JSONDocumentLayout implements Serializable
 
 		if (WindowConstants.isProtocolDebugging())
 		{
-			putDebugProperty("filtering-opts", jsonFilteringOpts.toString());
+			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
 		}
 	}
 

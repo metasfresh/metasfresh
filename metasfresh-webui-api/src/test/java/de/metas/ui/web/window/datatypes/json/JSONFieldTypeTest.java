@@ -3,6 +3,7 @@ package de.metas.ui.web.window.datatypes.json;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 
@@ -33,12 +34,7 @@ public class JSONFieldTypeTest
 	@Test
 	public void test_fromNullable_fullyCovered()
 	{
-		Assert.assertNull(JSONFieldType.fromNullable((FieldType)null));
-
-		for (final FieldType lookupSource : FieldType.values())
-		{
-			JSONFieldType.fromNullable(lookupSource);
-		}
+		EnumTestUtils.assertMappingFullyCovered(FieldType.values(), JSONFieldType::fromNullable);
 	}
 
 	@Test

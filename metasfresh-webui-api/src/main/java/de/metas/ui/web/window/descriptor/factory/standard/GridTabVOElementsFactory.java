@@ -511,9 +511,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
 	{
-		logger.trace("Generating layout detail");
-
 		final GridTabVO detailTab = getGridTabVO();
+		logger.trace("Generating layout detail for {}", detailTab);
+
 
 		// If the detail is never displayed then don't add it to layout
 		final ILogicExpression tabDisplayLogic = extractTabDisplayLogic();

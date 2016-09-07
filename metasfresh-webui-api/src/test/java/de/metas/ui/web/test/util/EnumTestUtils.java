@@ -1,9 +1,11 @@
-package de.metas.ui.web.menu.datatypes.json;
+package de.metas.ui.web.test.util;
 
-import org.junit.Test;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
 
-import de.metas.ui.web.menu.MenuNode.MenuNodeType;
-import de.metas.ui.web.test.util.EnumTestUtils;
+import org.junit.Assert;
+import org.junit.Ignore;
 
 /*
  * #%L
@@ -27,12 +29,24 @@ import de.metas.ui.web.test.util.EnumTestUtils;
  * #L%
  */
 
-public class JSONMenuNodeTypeTest
+@Ignore
+public class EnumTestUtils
 {
-	@Test
-	public void test_fromNullable_fullyCovered()
+	public static <JSONEnumType, EnumType> void assertMappingFullyCovered(final EnumType[] values, final Function<EnumType, JSONEnumType> toJson)
 	{
-		EnumTestUtils.assertMappingFullyCovered(MenuNodeType.values(), JSONMenuNodeType::fromNullable);
+		Assert.assertNull(toJson.apply(null));
+
+		final Set<JSONEnumType> jsonValuesAlreadyMatched = new HashSet<>();
+		for (final EnumType value : values)
+		{
+			final JSONEnumType jsonValue = toJson.apply(value);
+			Assert.assertNotNull("JSON shall not be null for " + value, jsonValue);
+
+			if (!jsonValuesAlreadyMatched.add(jsonValue))
+			{
+				Assert.fail("JSON value " + jsonValue + " was already matched");
+			}
+		}
 	}
 
 }

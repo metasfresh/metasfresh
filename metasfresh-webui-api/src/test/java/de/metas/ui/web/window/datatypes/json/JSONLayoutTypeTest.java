@@ -3,6 +3,7 @@ package de.metas.ui.web.window.datatypes.json;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.descriptor.LayoutType;
 
 /*
@@ -32,12 +33,7 @@ public class JSONLayoutTypeTest
 	@Test
 	public void test_fromNullable_fullyCovered()
 	{
-		Assert.assertNull(JSONLayoutType.fromNullable((LayoutType)null));
-
-		for (final LayoutType lookupSource : LayoutType.values())
-		{
-			JSONLayoutType.fromNullable(lookupSource);
-		}
+		EnumTestUtils.assertMappingFullyCovered(LayoutType.values(), JSONLayoutType::fromNullable);
 	}
 
 	@Test

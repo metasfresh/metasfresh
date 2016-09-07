@@ -3,6 +3,7 @@ package de.metas.ui.web.window.datatypes.json;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 
@@ -33,12 +34,7 @@ public class JSONLookupSourceTest
 	@Test
 	public void test_fromNullable_fullyCovered()
 	{
-		Assert.assertNull(JSONLookupSource.fromNullable((LookupSource)null));
-
-		for (LookupSource lookupSource : LookupSource.values())
-		{
-			JSONLookupSource.fromNullable(lookupSource);
-		}
+		EnumTestUtils.assertMappingFullyCovered(LookupSource.values(), JSONLookupSource::fromNullable);
 	}
 	
 	@Test
