@@ -15,26 +15,42 @@ import ActionButton from './widget/ActionButton';
 class Widget extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            cachedValue: null
+        }
     }
     handlePatch = (property, value) => {
         const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId} = this.props;
+        const {cachedValue} = this.state;
         let currRowId = rowId;
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
         }
 
-        //check if we should update store
-        //except button value
-        if(widgetType !== "Button" && !widgetData[0].value !== value){
-            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
+        //do patch only when value is not equal state
+        //or cache is set and it is not equal value
+        if(JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+
+            //check if we should update store
+            //except button value
+            if(widgetType !== "Button"){
+                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
+            }
+
+            dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
         }
-        return dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
+
+        this.setState(Object.assign({}, this.state, {
+            cachedValue: null
+        }));
 
         //callback
         if(onChange){
             onChange();
         }
+
     }
     //
     // This method may looks like a redundant for this one above,
@@ -51,6 +67,14 @@ class Widget extends Component {
 
         e.preventDefault();
         dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+    }
+
+    handleFocus = (e, value) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            cachedValue: value
+        }));
     }
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
         switch(widgetType){
@@ -152,6 +176,7 @@ class Widget extends Component {
                             value={data[0].value}
                             placeholder={fields[0].emptyText}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -170,6 +195,7 @@ class Widget extends Component {
                             value={data[0].value}
                             disabled={data[0].readonly}
                             placeholder={fields[0].emptyText}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -190,6 +216,7 @@ class Widget extends Component {
                             step="1"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -208,6 +235,7 @@ class Widget extends Component {
                             className="input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -228,6 +256,7 @@ class Widget extends Component {
                             step="1"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -248,6 +277,7 @@ class Widget extends Component {
                             step="1"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -266,6 +296,7 @@ class Widget extends Component {
                             className="input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            onFocus={(e) => this.handleFocus(e, e.target.value)}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -333,8 +364,7 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
-
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
@@ -358,11 +388,6 @@ Widget.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-Widget = connect(mapStateToProps)(Widget)
+Widget = connect()(Widget)
 
 export default Widget
