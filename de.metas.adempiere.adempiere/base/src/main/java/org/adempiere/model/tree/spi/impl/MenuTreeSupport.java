@@ -76,7 +76,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ " NULL AS " + COLUMNNAME_PrintColor + ","
 					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
 					+ " AD_Menu.InternalName "
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew + " "
 					+ sqlDeveloperMode
 					+ " FROM AD_Menu ");
 		}
