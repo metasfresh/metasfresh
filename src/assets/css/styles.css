@@ -16,6 +16,7 @@
 * - 400 - screen-freeze
 */
 
+
 * {
     margin:0;
 }
@@ -85,7 +86,7 @@ body {
     background-color: #F8FAFB;
 }
 .panel-distance {
-    margin-top: 2rem;
+    margin-top: 2.25rem;
 }
 .panel-spaced {
     padding: 1rem 1.25rem 1.25rem 1.25rem;

@@ -28,10 +28,6 @@ input {
     min-width: 50px;
 }
 
-.panel-primary .form-control-label {
-    margin-top:0;
-}
-
 .form-control-label {
     margin-top:.5rem;
     margin-bottom: .3rem;
@@ -173,6 +169,8 @@ input {
     height: 18px;
 	padding-left: 30px;
 	cursor: pointer;
+    margin-top: .5rem;
+    margin-bottom: 0;
 }
 
 .input-checkbox input {
@@ -414,7 +412,7 @@ input:checked + .input-slider:before {
 }
 
 .form-group {
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.1rem;
 }
 
 .form-control {
