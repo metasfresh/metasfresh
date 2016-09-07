@@ -51,6 +51,16 @@ export function addNewRow(item,tabid,rowid,scope) {
     }
 }
 
+export function deleteRow(item,tabid,rowid,scope) {
+    return {
+        type: types.DELETE_ROW,
+        item: item,
+        tabid: tabid,
+        rowid: rowid,
+        scope: scope
+    }
+}
+
 export function updateDataProperty(property, value, scope){
     return {
         type: types.UPDATE_DATA_PROPERTY,
@@ -329,6 +339,6 @@ export function deleteData(windowType, id, tabId, rowId) {
         '/window/delete?type=' + windowType +
         '&id=' + id +
         (tabId ? "&tabid=" + tabId : "") +
-        (rowId ? "&rowid=" + rowId : "")
+        (rowId ? "&rowId=" + rowId : "")
     );
 }

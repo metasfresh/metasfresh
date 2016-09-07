@@ -88,6 +88,17 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
+        case types.DELETE_ROW:
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {
+                            [action.rowid]: {$set: action.item}
+                        }
+                    }
+                }
+            })
+
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
                 [action.scope]: {
