@@ -277,7 +277,7 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue} = this.props;
+        const {rank, readonly, properties, defaultValue, placeholder} = this.props;
         const {propertiesCopy} = this.state;
         return (
             <div
@@ -294,7 +294,7 @@ class Lookup extends Component {
                             className="input-field font-weight-bold"
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
-                            placeholder="(none)"
+                            placeholder={placeholder}
                             disabled={readonly}
                         />
                     </div>

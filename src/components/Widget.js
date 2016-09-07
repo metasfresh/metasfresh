@@ -65,7 +65,7 @@ class Widget extends Component {
                             timeFormat={false}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: "(none)", disabled: data[0].readonly}}
+                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
@@ -83,7 +83,7 @@ class Widget extends Component {
                             timeFormat={true}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: "(none)", disabled: data[0].readonly}}
+                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
@@ -101,7 +101,7 @@ class Widget extends Component {
                             timeFormat={true}
                             dateFormat={false}
                             locale="de"
-                            inputProps={{placeholder: "(none)", disabled: data[0].readonly}}
+                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
                             onChange={(date) => this.handlePatch(fields[0].field, date)}
                         />
@@ -116,6 +116,7 @@ class Widget extends Component {
                         properties={fields}
                         windowType={windowType}
                         defaultValue={data}
+                        placeholder={fields[0].emptyText}
                         readonly={data[0].readonly}
                         mandatory={data[0].mandatory}
                         rank={type}
@@ -126,7 +127,7 @@ class Widget extends Component {
                 return (
                     <List
                         dataId={dataId}
-                        defaultValue="(none)"
+                        defaultValue={fields[0].emptyText}
                         selected={data[0].value}
                         properties={fields}
                         readonly={data[0].readonly}
@@ -149,6 +150,7 @@ class Widget extends Component {
                             type="text"
                             className="input-field"
                             value={data[0].value}
+                            placeholder={fields[0].emptyText}
                             disabled={data[0].readonly}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
@@ -167,6 +169,7 @@ class Widget extends Component {
                             className="input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
+                            placeholder={fields[0].emptyText}
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
@@ -331,7 +334,7 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
-        
+
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
