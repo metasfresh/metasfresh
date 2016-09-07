@@ -331,7 +331,7 @@ class Widget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, data, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
-
+        
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">

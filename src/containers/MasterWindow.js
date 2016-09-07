@@ -22,7 +22,8 @@ class MasterWindow extends Component {
         const {documentNoElement, docActionElement, type} = master.layout;
 
         const dataId = findRowByPropName(master.data, "ID").value;
-        const docNoData = findRowByPropName(master.data, "DocumentNo");
+        const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
+
         const docStatusData = {
             "status": findRowByPropName(master.data, "DocStatus"),
             "action": findRowByPropName(master.data, "DocAction"),
