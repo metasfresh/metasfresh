@@ -324,7 +324,7 @@ class Widget extends Component {
                 return (
                     <label
                         className={
-                            "input-switch" +
+                            "input-switch " +
                             (data[0].readonly ? "input-disabled " : "") +
                             (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                         }>
