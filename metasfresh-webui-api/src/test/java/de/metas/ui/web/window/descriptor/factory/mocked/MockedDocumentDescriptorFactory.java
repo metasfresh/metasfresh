@@ -20,6 +20,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
@@ -121,6 +122,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 						;
 
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
+				.setGridView(DocumentLayoutDetailDescriptor.builder())
 				.addSection(DocumentLayoutSectionDescriptor.builder()
 						.addColumn(DocumentLayoutColumnDescriptor.builder()
 								.addElementGroup(DocumentLayoutElementGroupDescriptor.builder()
