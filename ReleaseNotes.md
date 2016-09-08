@@ -10,13 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-37)
+# metasfresh 4.35.34 (2016-37)
 
 upcoming
 
 ## Features
  * FRESH-112 metasfresh web 
    - integrate recentbackend related changes changes
+ * #359 document Note not displayed on invoice #368
 
 ## Fixes
  * #366 Faulty unique constraint on M_PriceList
