@@ -14,6 +14,7 @@ import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.session.UserSession;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -93,7 +94,7 @@ public class MenuRestController
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
-			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue="false") final boolean includeLastNode //
+			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
 		loginService.autologin();
@@ -108,7 +109,7 @@ public class MenuRestController
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType //
 			, @RequestParam(name = PARAM_ElementId, required = true) final int elementId //
-			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue="false") final boolean includeLastNode //
+			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
 		loginService.autologin();
