@@ -232,6 +232,8 @@ input {
     display: inline-block;
     width: 44px;
     height: 22px;
+    margin-top: .5rem;
+    margin-bottom:0;
 }
 
 .input-switch input {
