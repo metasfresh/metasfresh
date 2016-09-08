@@ -53,11 +53,11 @@ export function addNewRow(item,tabid,rowid,scope) {
     }
 }
 
-export function deleteRow(tabid,rowid,scope) {
+export function deleteRows(tabid,rowsid,scope) {
     return {
-        type: types.DELETE_ROW,
+        type: types.DELETE_ROWS,
         tabid: tabid,
-        rowid: rowid,
+        rowsid: rowsid,
         scope: scope
     }
 }

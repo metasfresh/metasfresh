@@ -8,8 +8,6 @@ import {
 class Prompt extends Component {
     constructor(props) {
         super(props);
-
-        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
     }
 
     componentDidMount() {
@@ -20,15 +18,13 @@ class Prompt extends Component {
         // but we have to change scope of scrollbar
         document.body.style.overflow = "hidden";
     }
-    handleClose = () => {
-        this.props.dispatch(closeModal());
-
+    handleClose = () => {       
         document.body.style.overflow = "auto";
     }
     render() {
-        const {data, layout, indicator, modalTitle, tabId, rowId, dataId} = this.props;
+        const {isOpen, onCancelClick, onOkClick} = this.props;
         return (
-          <div className="screen-freeze screen-prompt-freeze">
+          !!isOpen && <div className="screen-freeze screen-prompt-freeze">
               <div className="panel panel-modal-primary panel-prompt">
                   <div className="panel-modal-header panel-prompt-header">
                       <span className="panel-modal-header-title">New CU-TU allocation</span>
@@ -39,10 +35,10 @@ class Prompt extends Component {
                   </div>
                   <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
                     <div className="prompt-button-wrapper">
-                      <span className="btn btn-meta-outline-secondary btn-distance-3 btn-sm" onClick={this.handleClose}>
+                      <span className="btn btn-meta-outline-secondary btn-distance-3 btn-sm" onClick={onCancelClick}>
                           Cancel
                       </span>
-                      <span className="btn btn-meta-primary btn-sm btn-submit" onClick={this.handleClose}>
+                      <span className="btn btn-meta-primary btn-sm btn-submit" onClick={onOkClick}>
                           Save
                       </span>
                     </div>
@@ -51,12 +47,13 @@ class Prompt extends Component {
               </div>
           </div>
         )
+
     }
 }
 
 Prompt.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    onCancelClick: PropTypes.func.isRequired,
+    onOkClick: PropTypes.func.isRequired
 };
-
 
 export default Prompt

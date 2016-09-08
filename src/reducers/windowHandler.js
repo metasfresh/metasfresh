@@ -111,17 +111,16 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
-        case types.DELETE_ROW:
+        case types.DELETE_ROWS:
           console.log('deleted locally');
-          return Object.assign({}, state, {
-              [action.scope]: Object.assign({}, state[action.scope], {
-                  data: state[action.scope].data.map(item =>
-                      item.field === action.item.field ?
-                          Object.assign({}, item, action.item) :
-                          item
-                  )
-              })
-        })
+          
+          for(var rowid of action.rowsid) {     
+            delete state[action.scope].rowData[action.tabid][rowid]
+          }
+         
+          return state;
+  
+    
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {

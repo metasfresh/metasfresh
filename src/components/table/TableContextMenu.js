@@ -5,7 +5,7 @@ import {
     openModal,
     openPrompt,
     deleteData,
-    deleteRow
+    deleteRows
 } from '../../actions/WindowActions';
 
 import Prompt from '../app/Prompt';
@@ -13,6 +13,11 @@ import Prompt from '../app/Prompt';
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            prompt: {
+                open: false
+            }
+       }
     }
     handleAdvancedEdit = () => {
         const {dispatch, tabId, type, selected} = this.props;
@@ -22,18 +27,41 @@ class TableContextMenu extends Component {
     handleDelete = () => {
         const {dispatch,  tabId, type, docId, selected} = this.props;
         console.log('deleted');
-
-        dispatch(openPrompt("Title", "Text" ));
+        
+        this.setState({prompt: {
+            open: true
+        }})
+        // dispatch(openPrompt("Title", "Text" ));
         // dispatch(deleteData(type, docId, tabId, selected[0]));
-        // dispatch(deleteRow(tabId, selected[0]), "master");
+      
     }
+
+    handlePromptCancelClick = () => {
+        alert("cancel clicked");
+        this.setState({prompt: {
+            open: false
+        }})
+    }
+
+    handlePromptOkClick= () => {
+       const {dispatch,  tabId, type, docId, selected} = this.props;
+        alert("ok clicked");
+        this.setState({prompt: {
+            open: false
+        }})
+        dispatch(deleteRows(tabId, selected, "master"));
+
+    }
+
+
     render() {
-        const {isDisplayed, x, y, blur, selected} = this.props;
+        const {isDisplayed, x, y, blur, selected, dispatch} = this.props;
         const style = {
             left: this.props.x,
             top: this.props.y,
             display: (isDisplayed ? "block" : "none")
         }
+        const {prompt} = this.state;
 
         const isSelectedOne = selected.length === 1;
         return (
@@ -51,16 +79,17 @@ class TableContextMenu extends Component {
                 <div className="context-menu-item" onClick={this.handleDelete}>
                    <i className="meta-icon-edit" /> Delete
                 </div>
-                <Prompt />
+               <Prompt 
+               isOpen={prompt.open}
+               onCancelClick={this.handlePromptCancelClick}
+               onOkClick={this.handlePromptOkClick}
+               />    
             </div>
-
-
-
-
         )
 
     }
 }
+
 
 TableContextMenu.propTypes = {
     dispatch: PropTypes.func.isRequired

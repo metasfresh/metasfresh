@@ -137,7 +137,7 @@ class Table extends Component {
     closeContextMenu = (event) => {
         this.setState(Object.assign({}, this.state, {
             contextMenu: Object.assign({}, this.state.contextMenu, {
-                open: true //false
+                open: false //false
             })
         }))
     }
