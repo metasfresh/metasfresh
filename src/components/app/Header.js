@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import update from 'react-addons-update';
 
 import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -26,25 +27,18 @@ class Header extends Component {
     }
 
     handleSubheaderOpen = () => {
-        if(this.state.isSubheaderShow){
-            this.setState({isSubheaderShow: false});
-        }else{
-            this.setState({isSubheaderShow: true});
-        }
+        this.setState(Object.assign({}, this.state, {isSubheaderShow: !this.state.isSubheaderShow}));
     }
     handleOrderListToggle = () => {
-        if(this.state.isOrderListShow){
-            this.setState({isOrderListShow: false});
-        }else{
-            this.setState({isOrderListShow: true});
-        }
+        this.setState(Object.assign({}, this.state, {isOrderListShow: !this.state.isOrderListShow}));
     }
     handleBackdropClick = () => {
-        this.setState({isSubheaderShow: false});
+        this.setState(Object.assign({}, this.state, {isSubheaderShow: false}));
     }
 
+
     render() {
-        const {docNoData, docNo, docStatus, docStatusData, windowType, dataId} = this.props;
+        const {docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb} = this.props;
         const {isSubheaderShow, isOrderListShow, indicator} = this.state;
 
         return (
@@ -62,19 +56,24 @@ class Header extends Component {
                                 </div>
 
                                 <span className="header-breadcrumb">
-                                    <a>Home</a>/ 
-                                    <a>Sales orders</a>
+                                    {breadcrumb.map((item, index) =>
+                                        <span key={index}>
+                                            {!!index && <span className="divider">/</span>}
+                                            <a href="">{item}</a>
+                                        </span>
+                                    )}
                                 </span>
 
-                                {docNo && <div className="input-icon-container header-input-id header-input-sm">
+
+                                {docNo && <div className="header-input-id header-input-sm">
                                     <Widget
                                         windowType={windowType}
                                         dataId={dataId}
                                         widgetData={[docNoData]}
                                         noLabel={true}
+                                        icon={true}
                                         {...docNo}
                                     />
-                                    <i className="meta-icon-edit input-icon-right"></i>
                                 </div>}
                             </div>
                             <div className="header-center">
@@ -115,13 +114,29 @@ class Header extends Component {
 
 
 Header.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    indicator: PropTypes.string.isRequired,
+    breadcrumb: PropTypes.array.isRequired
 };
 
 function mapStateToProps(state) {
-    const { indicator } = state.windowHandler;
+    const {windowHandler, menuHandler} = state;
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
+    const {
+        indicator
+    } = windowHandler || {
+        indicator: ""
+    }
+
     return {
-      indicator
+      indicator,
+      breadcrumb
     }
 }
 

@@ -35,11 +35,41 @@
     color: $brand-font-color-secondary;
     font-size: 0.875rem;
     margin-left: 15px;
+    max-width: calc(100% - 130px);
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    overflow: hidden;
 }
 
 .header-breadcrumb a {
     color: $brand-link-color;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+
+.header-breadcrumb .divider {
     margin: 0 .4rem;
+}
+
+
+.header-breadcrumb > * {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-breadcrumb > *:first-of-type{
+    flex: 1 1 40px;
+    font-weight: bold;
+}
+
+.header-input-id {
+    margin: 0 .5rem;
 }
 
 .header-super-faded {
@@ -48,13 +78,14 @@
 }
 
 .header-input-sm {
-    width:80px;
+    width:60px;
 }
 .header-input-sm input{
-    font-size: 0.9375rem;
+    font-size: 0.85rem;
 }
 .header-input-sm .input-icon-right {
-    font-size: 14px;
+    font-size: 0.85rem;
+    right:3px;
 }
 
 .header-input-sm .form-group {
@@ -63,10 +94,10 @@
 
 .header-input-sm .input-secondary,
 .header-input-sm .input-secondary input {
-    margin:0;
-    font-size:0.9375rem;
-    line-height:1;
-    padding:0;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0;
 }
 
 .subheader-container {
@@ -128,7 +159,7 @@
 
 .header-left-side,
 .header-right-side {
-    flex: 2 1 200px;
+    width: calc(50% - 75px);
     display: flex;
     flex-direction: row;
 }

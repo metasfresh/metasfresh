@@ -78,7 +78,7 @@ class Widget extends Component {
             cachedValue: value
         }));
     }
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon) => {
         switch(widgetType){
             case "Date":
                 return (
@@ -167,7 +167,7 @@ class Widget extends Component {
             case "Text":
                 return (
                     <div className={
-                        "input-block " +
+                        "input-block input-icon-container " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
@@ -182,6 +182,7 @@ class Widget extends Component {
                             onChange={(e) => this.handleChange(e, fields[0].field)}
                             onBlur={(e) => this.handlePatch(fields[0].field, e.target.value)}
                         />
+                        {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
                 )
             case "LongText":
@@ -366,15 +367,15 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId} = this.props;
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon} = this.props;
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
-                            <div className={(type === "primary") ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId)}
+                            <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon)}
                             </div>
                         </div>
                     </div>
