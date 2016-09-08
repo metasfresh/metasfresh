@@ -1,20 +1,3 @@
-/* 
- use: it takes an M_HU_Trx_Line and returns all HUs and transactions which come from splitting the HU from the given M_HU_Trx_Line. Note that it will return HU duplicates so you might want to select distinct if you only need HUs
- you can uncomment "RAISE NOTICE" to debug (but don't forget to comment them back when done)
- this function calls recursively "de.metas.handlingunits".recursive_hu_trace_sub function
- first it calls the function with the given parameter, and then with the set of results (rez) of the same function (if function returns 001 and 002, we call the function with [001, 002])
- to avoid infinite loop, we save each transaction in a variable (all_trx) and on each loop we check if the transaction was already called. This way we call the function once per transaction.
- the function will return all hus and transaction_ids from all_trx 
- 
- Summary
- Parameter: trxline = the transaction from the HU you want to start with
- Variables:	
-			last_trx = list of transactions that result from calling recursive_hu_trace_sub function. When for loop ends it becomes 0
-			rez =  It's used to call recursive_hu_trace_sub function. First is trxline parameter and then takes the value of last_trx before it becomes 0.
-			all_trx = list of all transactions returned by the recursive_hu_trace_sub function
-			v_sql = a query which is used to return all hus and transaction_ids for all_trx  
- */
-
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace(trxline integer);
 CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace(trxline integer) RETURNS TABLE
 (
@@ -55,8 +38,28 @@ CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace(trxline i
     RETURN query execute v_sql || array_to_string(all_trx,',') || ']::integer[]);' ;
 END;
 $$ LANGUAGE plpgsql;
+COMMENT ON "de.metas.handlingunits".recursive_hu_trace(integer) IS '
+-----
+Usage
+-----
+ use: it takes an M_HU_Trx_Line and returns all HUs and transactions which come from splitting the HU from the given M_HU_Trx_Line. Note that it will return HU duplicates so you might want to select distinct if you only need HUs
+ you can uncomment "RAISE NOTICE" to debug (but don''t forget to comment them back when done)
+ this function calls recursively "de.metas.handlingunits".recursive_hu_trace_sub function
+ first it calls the function with the given parameter, and then with the set of results (rez) of the same function (if function returns 001 and 002, we call the function with [001, 002])
+ to avoid infinite loop, we save each transaction in a variable (all_trx) and on each loop we check if the transaction was already called. This way we call the function once per transaction.
+ the function will return all hus and transaction_ids from all_trx 
+ 
+ Summary
+ Parameter: trxline = the transaction from the HU you want to start with
+ Variables:	
+			last_trx = list of transactions that result from calling recursive_hu_trace_sub function. When for loop ends it becomes 0
+			rez =  It''s used to call recursive_hu_trace_sub function. First is trxline parameter and then takes the value of last_trx before it becomes 0.
+			all_trx = list of all transactions returned by the recursive_hu_trace_sub function
+			v_sql = a query which is used to return all hus and transaction_ids for all_trx  
 
-/*
+--------
+Testcase
+--------
 Testcase to check the function. It also helps if we need to modify recursive_hu_trace or recursive_hu_trace_sub
 
 I did a purchase order with 10 IFCOx5. Went to receipt pos and moved the HUs in an empty warehouse (for visibility purpose). 
@@ -112,4 +115,5 @@ TU
 
 (note: here i put only the distinct HUs. They can appear more because of multiple transaction lines)
 
-*/
+See task https://github.com/metasfresh/metasfresh/issues/262
+';
