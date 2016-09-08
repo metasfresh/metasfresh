@@ -3,8 +3,12 @@ import { connect } from 'react-redux';
 
 import {
     openModal,
-    deleteData
+    openPrompt,
+    deleteData,
+    deleteRow
 } from '../../actions/WindowActions';
+
+import Prompt from '../app/Prompt';
 
 class TableContextMenu extends Component {
     constructor(props) {
@@ -19,7 +23,9 @@ class TableContextMenu extends Component {
         const {dispatch,  tabId, type, docId, selected} = this.props;
         console.log('deleted');
 
-        dispatch(deleteData(type, docId, tabId, selected[0]));
+        dispatch(openPrompt("Title", "Text" ));
+        // dispatch(deleteData(type, docId, tabId, selected[0]));
+        // dispatch(deleteRow(tabId, selected[0]), "master");
     }
     render() {
         const {isDisplayed, x, y, blur, selected} = this.props;
@@ -31,7 +37,8 @@ class TableContextMenu extends Component {
 
         const isSelectedOne = selected.length === 1;
         return (
-            !!isDisplayed && <div
+
+            !!isDisplayed &&  <div
                 className="context-menu context-menu-open panel-bordered panel-primary"
                 ref={(c) => c && c.focus()}
                 tabIndex="0" style={style}
@@ -44,8 +51,12 @@ class TableContextMenu extends Component {
                 <div className="context-menu-item" onClick={this.handleDelete}>
                    <i className="meta-icon-edit" /> Delete
                 </div>
-
+                <Prompt />
             </div>
+
+
+
+
         )
 
     }

@@ -141,6 +141,39 @@ body {
     margin-top: 1.5rem;
 }
 
+.panel-prompt {
+  width: 584px;
+  height: 347px;
+  box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
+  border: solid 0 $brand-border-color;
+}
+
+.panel-prompt-header {
+  box-shadow: none;
+  i {
+    cursor: pointer;
+  }
+}
+
+.panel-prompt-content {
+  height: calc(100% - 150px);
+  padding: 2rem;
+}
+
+.panel-prompt-footer {
+      border-top: 1px solid $brand-border-color;
+      border-bottom: none;
+}
+
+.panel-prompt-footer .btn-sm {
+  min-width: 74px;
+}
+
+.prompt-button-wrapper {
+  width: 100%;
+  text-align: right;
+}
+
 .table {
     margin-bottom: 0;
 }
@@ -547,6 +580,10 @@ body {
 
 .screen-freeze-behind {
     overflow: hidden;
+}
+
+.screen-prompt-freeze {
+  background-color: transparent;
 }
 
 .rotate {

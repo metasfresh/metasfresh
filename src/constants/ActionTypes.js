@@ -1,6 +1,8 @@
 export const NO_CONNECTION = 'NO_CONNECTION';
 export const OPEN_MODAL = 'OPEN_MODAL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
+export const OPEN_PROMPT = 'OPEN_PROMPT';
+export const CLOSE_PROMPT = 'CLOSE_PROMPT';
 
 // SCOPED ACTIONS
 export const INIT_DATA_SUCCESS = 'INIT_DATA_SUCCESS';
