@@ -119,7 +119,7 @@ public class MenuRestController
 		return JSONMenuNode.ofPath(path, includeLastNode);
 	}
 
-	@RequestMapping(value = "/elementPaths", method = RequestMethod.GET)
+	@RequestMapping(value = "/queryPaths", method = RequestMethod.GET)
 	public JSONMenuNode query(
 			@RequestParam(name = PARAM_NameQuery, required = true) final String nameQuery //
 	)
