@@ -1,4 +1,4 @@
-package de.metas.request.modelvalidator;
+package de.metas.request.model.validator;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;

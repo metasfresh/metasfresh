@@ -118,7 +118,7 @@ import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
-import de.metas.request.modelvalidator.R_Request;
+import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 
 /**
