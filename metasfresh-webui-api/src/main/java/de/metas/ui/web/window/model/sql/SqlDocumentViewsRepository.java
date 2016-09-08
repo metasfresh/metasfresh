@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -47,12 +46,10 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	@Override
 	public IDocumentViewSelection createView(final DocumentQuery query)
 	{
-		final String viewId = UUID.randomUUID().toString();
 		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder()
-				.setId(viewId)
 				.setQuery(query)
 				.build();
-		views.put(viewId, view);
+		views.put(view.getViewId(), view);
 		return view;
 	}
 

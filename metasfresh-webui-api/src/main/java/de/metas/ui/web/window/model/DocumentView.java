@@ -4,12 +4,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.util.Check;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
  * #%L
@@ -35,9 +36,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public class DocumentView implements IDocumentView
 {
-	public static final Builder builder(DocumentEntityDescriptor entityDescriptor)
+	public static final Builder builder(final int adWindowId)
 	{
-		return new Builder(entityDescriptor);
+		return new Builder(adWindowId);
 	}
 
 	private final DocumentPath documentPath;
@@ -102,15 +103,16 @@ public class DocumentView implements IDocumentView
 
 	public static final class Builder
 	{
-		private final DocumentEntityDescriptor entityDescriptor;
+		private final int adWindowId;
 		private String idFieldName;
 		private int documentId;
 		private final Map<String, Object> values = new LinkedHashMap<>();
 
-		private Builder(DocumentEntityDescriptor entityDescriptor)
+		private Builder(final int adWindowId)
 		{
 			super();
-			this.entityDescriptor = entityDescriptor;
+			Check.assume(adWindowId > 0, "adWindowId > 0 but it was {}", adWindowId);
+			this.adWindowId = adWindowId;
 		}
 
 		public DocumentView build()
@@ -142,7 +144,7 @@ public class DocumentView implements IDocumentView
 
 		public DocumentPath getDocumentPath()
 		{
-			return DocumentPath.rootDocumentPath(entityDescriptor.getAD_Window_ID(), documentId);
+			return DocumentPath.rootDocumentPath(adWindowId, documentId);
 		}
 
 		public Builder setIdFieldName(final String idFieldName)

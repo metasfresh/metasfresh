@@ -699,11 +699,13 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
+				.setFieldName(sqlColumnName)
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(sqlColumnName)
 				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
 				.setAD_Column_ID(gridFieldVO.getAD_Column_ID()) // legacy
+				.setValueClass(valueClass)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.setAD_Val_Rule_ID(AD_Val_Rule_ID)

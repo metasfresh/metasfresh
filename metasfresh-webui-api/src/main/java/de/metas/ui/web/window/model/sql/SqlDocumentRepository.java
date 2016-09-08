@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,7 +20,6 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -32,11 +29,11 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
@@ -185,139 +182,25 @@ public class SqlDocumentRepository implements DocumentsRepository
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setDocumentIdSupplier(() -> retrieveDocumentId(entityDescriptor.getIdField(), rs))
+				.setDocumentIdSupplier(() -> (Integer)retrieveDocumentFieldValue(entityDescriptor.getIdField(), rs))
 				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
 				.build();
 	}
 
-	private int retrieveDocumentId(final DocumentFieldDescriptor idFieldDescriptor, final ResultSet rs)
-	{
-		final Integer valueInt = (Integer)retrieveDocumentFieldValue(idFieldDescriptor, rs);
-		return valueInt;
-	}
-
-	/*
-	 * Based on org.compiere.model.GridTable.readData(ResultSet).
-	 */
-	static Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final ResultSet rs) throws DBException
+	private static Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final ResultSet rs) throws DBException
 	{
 		final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.cast(fieldDescriptor.getDataBinding());
-		final String columnName = fieldDataBinding.getSqlColumnName();
-		final Class<?> valueClass = fieldDescriptor.getValueClass();
+		final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
 
 		try
 		{
-			boolean decryptRequired = fieldDataBinding.isEncrypted();
-			final Object value;
-
-			if (fieldDataBinding.isUsingDisplayColumn())
-			{
-				final String displayName = rs.getString(fieldDataBinding.getDisplayColumnName());
-				if (fieldDataBinding.isNumericKey())
-				{
-					final int id = rs.getInt(columnName);
-					value = rs.wasNull() ? null : IntegerLookupValue.of(id, displayName);
-				}
-				else
-				{
-					final String key = rs.getString(columnName);
-					value = rs.wasNull() ? null : StringLookupValue.of(key, displayName);
-				}
-				decryptRequired = false;
-			}
-			else if (java.lang.String.class == valueClass)
-			{
-				value = rs.getString(columnName);
-			}
-			else if (java.lang.Integer.class == valueClass)
-			{
-				final int valueInt = rs.getInt(columnName);
-				value = rs.wasNull() ? null : valueInt;
-			}
-			else if (java.math.BigDecimal.class == valueClass)
-			{
-				value = rs.getBigDecimal(columnName);
-			}
-			else if (java.util.Date.class.isAssignableFrom(valueClass))
-			{
-				final Timestamp valueTS = rs.getTimestamp(columnName);
-				value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
-			}
-			// YesNo
-			else if (Boolean.class == valueClass)
-			{
-				String valueStr = rs.getString(columnName);
-				if (decryptRequired)
-				{
-					valueStr = decrypt(valueStr).toString();
-					decryptRequired = false;
-				}
-
-				value = DisplayType.toBoolean(valueStr);
-			}
-			// LOB
-			else if (byte[].class == valueClass)
-			{
-				final Object valueObj = rs.getObject(columnName);
-				final byte[] valueBytes;
-				if (rs.wasNull())
-				{
-					valueBytes = null;
-				}
-				else if (valueObj instanceof Clob)
-				{
-					final Clob lob = (Clob)valueObj;
-					final long length = lob.length();
-					valueBytes = lob.getSubString(1, (int)length).getBytes();
-				}
-				else if (valueObj instanceof Blob)
-				{
-					final Blob lob = (Blob)valueObj;
-					final long length = lob.length();
-					valueBytes = lob.getBytes(1, (int)length);
-				}
-				else if (valueObj instanceof String)
-				{
-					valueBytes = ((String)valueObj).getBytes();
-				}
-				else if (valueObj instanceof byte[])
-				{
-					valueBytes = (byte[])valueObj;
-				}
-				else
-				{
-					logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, fieldDataBinding);
-					valueBytes = null;
-				}
-				//
-				value = valueBytes;
-			}
-			else
-			{
-				value = rs.getString(columnName);
-			}
-
-			// Decrypt if needed
-			final Object valueDecrypted = decryptRequired ? decrypt(value) : value;
-
-			logger.trace("Retrived value for {}: {} ({})", fieldDataBinding, valueDecrypted, valueDecrypted == null ? "no class" : valueDecrypted.getClass());
-
-			return valueDecrypted;
+			return fieldValueLoader.retrieveFieldValue(rs);
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException("Failed retrieving the value for " + fieldDescriptor, e);
+			throw new DBException("Failed retrieving the value for " + fieldDescriptor + " using " + fieldValueLoader, e);
 		}
 	}
-
-	private static final Object decrypt(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		return SecureEngine.decrypt(value);
-	}	// decrypt
 
 	@Override
 	public void refresh(final Document document)

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -68,6 +69,10 @@ public final class JSONDocumentViewResult implements Serializable
 
 	@JsonProperty("viewId")
 	private final String viewId;
+
+	@JsonProperty("type")
+	private final int AD_Window_ID;
+
 	@JsonProperty("size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer size;
@@ -96,7 +101,8 @@ public final class JSONDocumentViewResult implements Serializable
 	)
 	{
 		super();
-		viewId = view.getId();
+		viewId = view.getViewId();
+		AD_Window_ID = view.getAD_Window_ID();
 
 		final int size = view.size();
 		this.size = size >= 0 ? size : null;
@@ -115,8 +121,10 @@ public final class JSONDocumentViewResult implements Serializable
 		}
 	}
 
-	public JSONDocumentViewResult( //
+	@JsonCreator
+	private JSONDocumentViewResult( //
 			@JsonProperty("viewId") final String viewId //
+			, @JsonProperty("type") final int adWindowId //
 			, @JsonProperty("size") final Integer size //
 			, @JsonProperty("result") final List<JSONDocument> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
@@ -125,6 +133,7 @@ public final class JSONDocumentViewResult implements Serializable
 	{
 		super();
 		this.viewId = viewId;
+		AD_Window_ID = adWindowId;
 		this.size = size;
 
 		this.firstRow = firstRow;
@@ -140,6 +149,7 @@ public final class JSONDocumentViewResult implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("viewId", viewId)
+				.add("AD_Window_ID", AD_Window_ID)
 				.add("size", size)
 				.add("firstRow", firstRow)
 				.add("pageLength", pageLength)
@@ -150,6 +160,11 @@ public final class JSONDocumentViewResult implements Serializable
 	public String getViewId()
 	{
 		return viewId;
+	}
+
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
 	}
 
 	public Integer getSize()

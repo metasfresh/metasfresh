@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -18,10 +19,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentViewFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentView;
 import de.metas.ui.web.window.model.IDocumentView;
@@ -58,12 +60,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private static final Logger logger = LogManager.getLogger(SqlDocumentViewSelection.class);
 
-	private final DocumentEntityDescriptor entityDescriptor;
-	private final List<DocumentFieldDescriptor> fieldDescriptors;
+	private final int adWindowId;
 
 	private final String querySelectionUUID;
 	private final String sql;
 	private final int size;
+	private final List<DocumentViewFieldValueLoader> fieldLoaders;
 
 	private transient String _toString;
 
@@ -71,16 +73,14 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	{
 		super();
 
-		entityDescriptor = builder.query.getEntityDescriptor();
-
-		fieldDescriptors = builder.query.getViewFields();
-		Check.assumeNotEmpty(fieldDescriptors, "fieldDescriptors is not empty");
+		adWindowId = builder.getAD_Window_ID();
 
 		querySelectionUUID = builder.querySelectionUUID;
 		Check.assumeNotEmpty(querySelectionUUID, "querySelectionUUID is not empty");
 
 		sql = builder.buildSql();
 		size = builder.rowsCount;
+		fieldLoaders = builder.createDocumentViewFieldValueLoaders();
 
 		logger.debug("View created: {}", this);
 	}
@@ -93,17 +93,25 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			_toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("viewId", querySelectionUUID)
+					.add("AD_Window_ID", adWindowId)
 					.add("size", size)
 					.add("sql", sql)
+					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
 					.toString();
 		}
 		return _toString;
 	}
 
 	@Override
-	public String getId()
+	public String getViewId()
 	{
 		return querySelectionUUID;
+	}
+
+	@Override
+	public int getAD_Window_ID()
+	{
+		return adWindowId;
 	}
 
 	@Override
@@ -120,7 +128,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public List<IDocumentView> getPage(final int firstRow, final int pageLength)
+	public List<IDocumentView> getPage(final int firstRow, final int pageLength)  throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 
@@ -133,13 +141,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt.setMaxRows(pageLength);
 			DB.setParameters(pstmt, sqlParams);
+
 			rs = pstmt.executeQuery();
 
 			final ImmutableList.Builder<IDocumentView> page = ImmutableList.builder();
 			while (rs.next())
 			{
-				final IDocumentView documentView = retriveDocumentView(rs);
+				final DocumentView.Builder documentViewBuilder = DocumentView.builder(adWindowId);
+				final IDocumentView documentView = loadDocumentView(documentViewBuilder, rs);
 				if (documentView == null)
 				{
 					continue;
@@ -150,9 +161,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 			return page.build();
 		}
-		catch (final SQLException e)
+		catch (final Exception e)
 		{
-			throw new DBException(e, sql, sqlParams);
+			throw DBException.wrapIfNeeded(e)
+					.setSqlIfAbsent(sql, sqlParams);
 		}
 		finally
 		{
@@ -160,45 +172,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		}
 	}
 
-	private IDocumentView retriveDocumentView(final ResultSet rs)
+	private IDocumentView loadDocumentView(final DocumentView.Builder documentViewBuilder, final ResultSet rs) throws SQLException
 	{
-		final DocumentView.Builder documentBuilder = DocumentView.builder(entityDescriptor);
-		for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
+		for (final DocumentViewFieldValueLoader fieldLoader : fieldLoaders)
 		{
-			final String fieldName = fieldDescriptor.getFieldName();
-			final Object fieldValue = SqlDocumentRepository.retrieveDocumentFieldValue(fieldDescriptor, rs);
-
-			if (fieldDescriptor.isKey())
+			final boolean loaded = fieldLoader.loadDocumentViewValue(documentViewBuilder, rs);
+			if (!loaded)
 			{
-				// If document is not present anymore in our view (i.e. the Key is null) then we shall skip it.
-				if (fieldValue == null)
-				{
-					if (logger.isDebugEnabled())
-					{
-						Integer recordId = null;
-						Integer seqNo = null;
-						try
-						{
-							recordId = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_Record_ID);
-							seqNo = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_SeqNo);
-						}
-						catch (final Exception e)
-						{
-						}
-
-						logger.debug("Skip missing record: Record_ID={}, SeqNo={} -- {}", recordId, seqNo, this);
-					}
-					return null;
-				}
-
-				documentBuilder.setIdFieldName(fieldName);
+				return null;
 			}
-
-			final Object jsonValue = Values.valueToJsonObject(fieldValue);
-			documentBuilder.putFieldValue(fieldName, jsonValue);
 		}
 
-		return documentBuilder.build();
+		return documentViewBuilder.build();
 	}
 
 	public static final class Builder
@@ -221,10 +206,33 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return new SqlDocumentViewSelection(this);
 		}
 
-		public Builder setId(final String id)
+		private ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders()
 		{
-			querySelectionUUID = id;
-			return this;
+			final List<DocumentFieldDescriptor> fieldDescriptors = query.getViewFields();
+			Check.assumeNotEmpty(fieldDescriptors, "fieldDescriptors is not empty");
+			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
+			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
+			{
+				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.cast(fieldDescriptor.getDataBinding());
+				final boolean keyColumn = fieldDataBinding.isKeyColumn();
+				final DocumentViewFieldValueLoader documentViewFieldLoader = fieldDataBinding.getDocumentViewFieldValueLoader();
+
+				if (keyColumn)
+				{
+					// If it's key column, add it fast, because in case the record is missing, we want to fail fast
+					documentViewFieldLoaders.add(0, documentViewFieldLoader);
+				}
+				else
+				{
+					documentViewFieldLoaders.add(documentViewFieldLoader);
+				}
+			}
+			return ImmutableList.copyOf(documentViewFieldLoaders);
+		}
+
+		private int getAD_Window_ID()
+		{
+			return query.getEntityDescriptor().getAD_Window_ID();
 		}
 
 		public Builder setQuery(final DocumentQuery query)
@@ -248,7 +256,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private void createSelection()
 		{
-			Check.assumeNotEmpty(querySelectionUUID, "querySelectionUUID is not empty");
+			querySelectionUUID = UUID.randomUUID().toString();
 
 			final SqlDocumentQueryBuilder queryBuilder = SqlDocumentQueryBuilder.of(query);
 
@@ -290,6 +298,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			}
 
 			rowsCount = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+
+			logger.trace("Created selection {}, rowsCount={} -- {} -- {}", querySelectionUUID, rowsCount, sql, sqlParams);
 		}
 
 		private SqlDocumentEntityDataBindingDescriptor getDataBinding()

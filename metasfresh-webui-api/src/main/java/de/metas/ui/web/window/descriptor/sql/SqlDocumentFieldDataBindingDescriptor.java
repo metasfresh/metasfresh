@@ -1,10 +1,19 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Collection;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
+import org.compiere.util.SecureEngine;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,7 +21,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.DocumentView;
 import de.metas.ui.web.window.model.LookupDataSource;
 import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
 
@@ -50,6 +64,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
+	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);
+
+	@JsonProperty("fieldName")
+	private final String fieldName;
+
 	@JsonProperty("sqlTableName")
 	private final String sqlTableName;
 	@JsonProperty("sqlTableAlias")
@@ -64,6 +83,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final boolean parentLinkColumn;
 	@JsonProperty("encrypted")
 	private final boolean encrypted;
+
+	@JsonProperty("valueClass")
+	private final Class<?> valueClass;
+	@JsonIgnore
+	private final DocumentFieldValueLoader documentFieldValueLoader;
+	@JsonIgnore
+	private transient DocumentViewFieldValueLoader _documentViewFieldValueLoader; // lazy
 
 	@JsonIgnore
 	private final SqlLookupDescriptor sqlLookupDescriptor;
@@ -99,6 +125,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
 		super();
+		fieldName = builder.fieldName;
+
 		sqlTableName = builder.sqlTableName;
 		sqlTableAlias = builder.sqlTableAlias;
 		sqlColumnName = builder.sqlColumnName;
@@ -107,24 +135,17 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		parentLinkColumn = builder.parentLinkColumn;
 		encrypted = builder.encrypted;
 
-		sqlLookupDescriptor = builder.getSqlLookupDescriptor();
+		valueClass = builder.valueClass;
+		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
 
-		//
-		// Display column
-		if (sqlLookupDescriptor != null)
-		{
-			usingDisplayColumn = true;
-			displayColumnName = sqlColumnName + "$Display";
-			displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlTableAlias + "." + sqlColumnName);
-			numericKey = sqlLookupDescriptor.isNumericKey();
-		}
-		else
-		{
-			usingDisplayColumn = false;
-			displayColumnName = null;
-			displayColumnSqlExpression = NullStringExpression.instance;
-			numericKey = null;
-		}
+		documentFieldValueLoader = builder.documentFieldValueLoader;
+		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
+
+		sqlLookupDescriptor = builder.sqlLookupDescriptor;
+		usingDisplayColumn = builder.usingDisplayColumn;
+		displayColumnName = builder.displayColumnName;
+		displayColumnSqlExpression = builder.displayColumnSqlExpression;
+		numericKey = builder.numericKey;
 
 		//
 		// ORDER BY
@@ -155,20 +176,23 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	@JsonCreator
 	private SqlDocumentFieldDataBindingDescriptor(
-			@JsonProperty("sqlTableName") final String sqlTableName //
+			@JsonProperty("fieldName") final String fieldName //
+			, @JsonProperty("sqlTableName") final String sqlTableName //
 			, @JsonProperty("sqlTableAlias") final String sqlTableAlias //
 			, @JsonProperty("sqlColumnName") final String sqlColumnName //
 			, @JsonProperty("sqlColumnSql") final String sqlColumnSql //
 			, @JsonProperty("keyColumn") final boolean keyColumn //
 			, @JsonProperty("parentLinkColumn") final boolean parentLinkColumn //
 			, @JsonProperty("encrypted") final boolean encrypted //
-			, @JsonProperty("adColumnId") final int AD_Column_ID //
+			, @JsonProperty("valueClass") final Class<?> valueClass //
 			, @JsonProperty("displayType") final int displayType //
+			, @JsonProperty("adColumnId") final int AD_Column_ID //
 			, @JsonProperty("AD_Reference_Value_ID") final int AD_Reference_Value_ID //
 			, @JsonProperty("AD_Val_Rule_ID") final int AD_Val_Rule_ID //
 	)
 	{
 		this(new Builder()
+				.setFieldName(fieldName)
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(sqlColumnName)
@@ -177,6 +201,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.setParentLinkColumn(parentLinkColumn)
 				.setEncrypted(encrypted)
 				.setAD_Column_ID(AD_Column_ID)
+				.setValueClass(valueClass)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.setAD_Val_Rule_ID(AD_Val_Rule_ID));
@@ -190,6 +215,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.add("sqlTableName", sqlTableName)
 				.add("sqlColumnName", sqlColumnName)
 				.toString();
+	}
+
+	public String getFieldName()
+	{
+		return fieldName;
 	}
 
 	public String getSqlTableName()
@@ -217,6 +247,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public String getSqlColumnSql()
 	{
 		return sqlColumnSql;
+	}
+
+	public Class<?> getValueClass()
+	{
+		return valueClass;
+	}
+
+	public DocumentFieldValueLoader getDocumentFieldValueLoader()
+	{
+		return documentFieldValueLoader;
 	}
 
 	@Override
@@ -320,13 +360,101 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return sqlOrderBy;
 	}
 
+	public DocumentViewFieldValueLoader getDocumentViewFieldValueLoader()
+	{
+		if (_documentViewFieldValueLoader == null)
+		{
+			_documentViewFieldValueLoader = createDocumentViewFieldValueLoader(getFieldName(), isKeyColumn(), getDocumentFieldValueLoader());
+		}
+		return _documentViewFieldValueLoader;
+	}
+
+	/**
+	 * NOTE to developer: keep this method static and provide only primitive or lambda parameters
+	 *
+	 * @param fieldName
+	 * @param keyColumn
+	 * @param fieldValueLoader
+	 * @return
+	 */
+	private static DocumentViewFieldValueLoader createDocumentViewFieldValueLoader(final String fieldName, final boolean keyColumn, final DocumentFieldValueLoader fieldValueLoader)
+	{
+		final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger;
+
+		if (keyColumn)
+		{
+			return (documentViewBuilder, rs) -> {
+				// If document is not present anymore in our view (i.e. the Key is null) then we shall skip it.
+				final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs);
+				if (fieldValue == null)
+				{
+					if (logger.isDebugEnabled())
+					{
+						Integer recordId = null;
+						Integer seqNo = null;
+						try
+						{
+							recordId = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_Record_ID);
+							seqNo = rs.getInt(SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_SeqNo);
+						}
+						catch (final Exception e)
+						{
+						}
+
+						logger.debug("Skip missing record: Record_ID={}, SeqNo={}", recordId, seqNo);
+					}
+					return false; // not loaded
+				}
+
+				documentViewBuilder.setIdFieldName(fieldName);
+
+				final Object jsonValue = Values.valueToJsonObject(fieldValue);
+				documentViewBuilder.putFieldValue(fieldName, jsonValue);
+
+				return true;  // ok, loaded
+			};
+		}
+
+		return (documentViewBuilder, rs) -> {
+			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs);
+			final Object jsonValue = Values.valueToJsonObject(fieldValue);
+			documentViewBuilder.putFieldValue(fieldName, jsonValue);
+			return true; // ok, loaded
+		};
+	}
+
+	/**
+	 * Retrieves a particular field from given {@link ResultSet}.
+	 */
+	@FunctionalInterface
+	public static interface DocumentFieldValueLoader
+	{
+		Object retrieveFieldValue(final ResultSet rs) throws SQLException;
+	}
+
+	/**
+	 * Retrieves a particular field from given {@link ResultSet} and loads it to given {@link DocumentView.Builder}.
+	 */
+	@FunctionalInterface
+	public static interface DocumentViewFieldValueLoader
+	{
+		/**
+		 * @param documentViewBuilder
+		 * @param rs
+		 * @return true if loaded; false if not loaded and document shall be skipped
+		 */
+		boolean loadDocumentViewValue(final DocumentView.Builder documentViewBuilder, ResultSet rs) throws SQLException;
+	}
+
 	public static final class Builder
 	{
+		private String fieldName;
 		private String sqlTableName;
 		private String sqlTableAlias;
 		private String sqlColumnName;
 		private String sqlColumnSql;
 
+		private Class<?> valueClass;
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
@@ -340,6 +468,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		// legacy
 		private Integer AD_Column_ID;
 
+		// Built values
+		private SqlLookupDescriptor sqlLookupDescriptor;
+		private boolean usingDisplayColumn;
+		private String displayColumnName;
+		private IStringExpression displayColumnSqlExpression;
+		private Boolean numericKey;
+		private DocumentFieldValueLoader documentFieldValueLoader;
+
 		private Builder()
 		{
 			super();
@@ -347,7 +483,193 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		public SqlDocumentFieldDataBindingDescriptor build()
 		{
+			Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
+
+			//
+			// Lookup descriptor
+			sqlLookupDescriptor = buildSqlLookupDescriptor();
+
+			//
+			// Display column
+			if (sqlLookupDescriptor != null)
+			{
+				usingDisplayColumn = true;
+				displayColumnName = sqlColumnName + "$Display";
+				displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlTableAlias + "." + sqlColumnName);
+				numericKey = sqlLookupDescriptor.isNumericKey();
+			}
+			else
+			{
+				usingDisplayColumn = false;
+				displayColumnName = null;
+				displayColumnSqlExpression = NullStringExpression.instance;
+				numericKey = null;
+			}
+
+			//
+			// Field value loader
+			documentFieldValueLoader = createDocumentFieldValueLoader(
+					sqlColumnName //
+					, usingDisplayColumn ? displayColumnName : null // displayColumnName
+					, valueClass //
+					, encrypted //
+					, numericKey //
+			);
+
+			//
 			return new SqlDocumentFieldDataBindingDescriptor(this);
+		}
+
+		/**
+		 *
+		 * NOTE to developer: make sure there is NO reference to fieldDescriptor or dataBinding or anything else in returned lambdas.
+		 * They shall be independent from descriptors.
+		 * That's the reason why it's a static method (to make sure we are no doing any mistakes).
+		 *
+		 * @param sqlColumnName
+		 * @param displayColumnName
+		 * @param valueClass
+		 * @param encrypted
+		 * @param numericKey
+		 * @return document field value loader
+		 */
+		private static final DocumentFieldValueLoader createDocumentFieldValueLoader(
+				final String sqlColumnName //
+				, final String displayColumnName //
+				, final Class<?> valueClass //
+				, final boolean encrypted //
+				, final Boolean numericKey //
+		)
+		{
+			final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger; // yes, we can share the static logger
+
+			if (!Check.isEmpty(displayColumnName))
+			{
+				if (numericKey)
+				{
+					return (rs) -> {
+						final String displayName = rs.getString(displayColumnName);
+						final int id = rs.getInt(sqlColumnName);
+						return rs.wasNull() ? null : IntegerLookupValue.of(id, displayName);
+					};
+				}
+				else
+				{
+					return (rs) -> {
+						final String displayName = rs.getString(displayColumnName);
+						final String key = rs.getString(sqlColumnName);
+						return rs.wasNull() ? null : StringLookupValue.of(key, displayName);
+					};
+				}
+			}
+			else if (java.lang.String.class == valueClass)
+			{
+				if (encrypted)
+				{
+					return (rs) -> decrypt(rs.getString(sqlColumnName));
+				}
+				else
+				{
+					return (rs) -> rs.getString(sqlColumnName);
+				}
+			}
+			else if (java.lang.Integer.class == valueClass)
+			{
+				return (rs) -> {
+					final int valueInt = rs.getInt(sqlColumnName);
+					final Integer value = rs.wasNull() ? null : valueInt;
+					return encrypted ? decrypt(value) : value;
+				};
+			}
+			else if (java.math.BigDecimal.class == valueClass)
+			{
+				return (rs) -> {
+					final BigDecimal value = rs.getBigDecimal(sqlColumnName);
+					return encrypted ? decrypt(value) : value;
+				};
+			}
+			else if (java.util.Date.class.isAssignableFrom(valueClass))
+			{
+				return (rs) -> {
+					final Timestamp valueTS = rs.getTimestamp(sqlColumnName);
+					final java.util.Date value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
+					return encrypted ? decrypt(value) : value;
+				};
+			}
+			// YesNo
+			else if (Boolean.class == valueClass)
+			{
+				return (rs) -> {
+					String valueStr = rs.getString(sqlColumnName);
+					if (encrypted)
+					{
+						valueStr = valueStr == null ? null : decrypt(valueStr).toString();
+					}
+
+					return DisplayType.toBoolean(valueStr);
+				};
+			}
+			// LOB
+			else if (byte[].class == valueClass)
+			{
+				return (rs) -> {
+					final Object valueObj = rs.getObject(sqlColumnName);
+					final byte[] valueBytes;
+					if (rs.wasNull())
+					{
+						valueBytes = null;
+					}
+					else if (valueObj instanceof Clob)
+					{
+						final Clob lob = (Clob)valueObj;
+						final long length = lob.length();
+						valueBytes = lob.getSubString(1, (int)length).getBytes();
+					}
+					else if (valueObj instanceof Blob)
+					{
+						final Blob lob = (Blob)valueObj;
+						final long length = lob.length();
+						valueBytes = lob.getBytes(1, (int)length);
+					}
+					else if (valueObj instanceof String)
+					{
+						valueBytes = ((String)valueObj).getBytes();
+					}
+					else if (valueObj instanceof byte[])
+					{
+						valueBytes = (byte[])valueObj;
+					}
+					else
+					{
+						logger.warn("Unknown LOB value '{}' for {}. Considering it null.", valueObj, sqlColumnName);
+						valueBytes = null;
+					}
+					//
+					return valueBytes;
+				};
+			}
+			else
+			{
+				return (rs) -> {
+					final String value = rs.getString(sqlColumnName);
+					return encrypted ? decrypt(value) : value;
+				};
+			}
+		}
+
+		private static final Object decrypt(final Object value)
+		{
+			if (value == null)
+			{
+				return null;
+			}
+			return SecureEngine.decrypt(value);
+		}
+
+		public Builder setFieldName(final String fieldName)
+		{
+			this.fieldName = fieldName;
+			return this;
 		}
 
 		public Builder setSqlTableName(final String sqlTableName)
@@ -380,11 +702,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		private SqlLookupDescriptor getSqlLookupDescriptor()
+		private SqlLookupDescriptor buildSqlLookupDescriptor()
 		{
 			if (DisplayType.isAnyLookup(displayType)
-					|| (DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
-					)
+					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
 				return SqlLookupDescriptor.builder()
 						.setColumnName(sqlColumnName)
@@ -394,6 +715,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 						.build();
 			}
 			return null;
+		}
+
+		public Builder setValueClass(final Class<?> valueClass)
+		{
+			this.valueClass = valueClass;
+			return this;
 		}
 
 		public Builder setDisplayType(final int displayType)
@@ -420,7 +747,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setParentLinkColumn(boolean parentLinkColumn)
+		public Builder setParentLinkColumn(final boolean parentLinkColumn)
 		{
 			this.parentLinkColumn = parentLinkColumn;
 			return this;
