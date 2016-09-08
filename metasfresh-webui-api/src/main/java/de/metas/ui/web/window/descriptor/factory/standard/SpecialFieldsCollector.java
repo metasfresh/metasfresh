@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,9 +42,11 @@ final class SpecialFieldsCollector
 {
 	private static final Logger logger = LogManager.getLogger(SpecialFieldsCollector.class);
 
-	private static final Set<String> COLUMNNAMES_DocumentNo = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name);
+	private static final Set<String> COLUMNNAMES_DocumentNos = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name);
+	private static final Set<String> COLUMNNAMES_DocumentSummary = ImmutableSet.of(WindowConstants.FIELDNAME_Name);
 	private static final Set<String> COLUMNNAMES = ImmutableSet.<String> builder()
-			.addAll(COLUMNNAMES_DocumentNo)
+			.addAll(COLUMNNAMES_DocumentNos)
+			.addAll(COLUMNNAMES_DocumentSummary)
 			.add(WindowConstants.FIELDNAME_DocStatus)
 			.add(WindowConstants.FIELDNAME_DocAction)
 			.build();
@@ -76,7 +77,7 @@ final class SpecialFieldsCollector
 
 	public DocumentLayoutElementDescriptor buildDocumentNoElementAndConsume()
 	{
-		for (final String fieldName : Arrays.asList(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name))
+		for (final String fieldName : COLUMNNAMES_DocumentNos)
 		{
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = existingFields.get(fieldName);
 			if (elementBuilder == null)
@@ -96,6 +97,44 @@ final class SpecialFieldsCollector
 			fieldNamesCollectedAndConsumed.add(fieldName);
 
 			return element;
+		}
+
+		return null;
+	}
+
+	public DocumentLayoutElementDescriptor buildDocumentSummaryElement()
+	{
+		// TODO: i think we shall introduce some kind of virtual fields which would be able to build the document summary
+
+		for (final String fieldName : COLUMNNAMES_DocumentSummary)
+		{
+			if (fieldNamesCollectedAndConsumed.contains(fieldName))
+			{
+				logger.debug("Skip considering {} for DocumentSummary because it was already consumed in this collector (DocumentNo?)", fieldName);
+				continue;
+			}
+			
+			final DocumentLayoutElementDescriptor.Builder elementBuilder = existingFields.get(fieldName);
+			if (elementBuilder == null)
+			{
+				continue;
+			}
+
+			final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = elementBuilder.getField(fieldName);
+			if (fieldBuilder == null)
+			{
+				// shall not happen
+				logger.warn("Field {} was not found in {}", fieldName, elementBuilder);
+				continue;
+			}
+
+			return DocumentLayoutElementDescriptor.builder()
+					.setCaption(null) // not relevant
+					.setDescription(null) // not relevant
+					.setLayoutTypeNone() // not relevant
+					.setWidgetType(elementBuilder.getWidgetType())
+					.addField(fieldBuilder.copy())
+					.build();
 		}
 
 		return null;
@@ -149,7 +188,7 @@ final class SpecialFieldsCollector
 
 	public boolean isDocumentNoCollectedAndConsumed(final String fieldName)
 	{
-		if (!COLUMNNAMES_DocumentNo.contains(fieldName))
+		if (!COLUMNNAMES_DocumentNos.contains(fieldName))
 		{
 			return false;
 		}

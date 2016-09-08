@@ -57,6 +57,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	/** Special element: DocumentNo */
 	private final DocumentLayoutElementDescriptor documentNoElement;
+	/** Special element: Document summary */
+	private final DocumentLayoutElementDescriptor documentSummaryElement;
 	/** Special element: DocStatus/DocAction */
 	private final DocumentLayoutElementDescriptor docActionElement;
 
@@ -81,6 +83,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 		super();
 		AD_Window_ID = builder.AD_Window_ID;
 		documentNoElement = builder.documentNoElement;
+		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
 		sections = ImmutableList.copyOf(builder.buildSections());
@@ -114,7 +117,12 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return documentNoElement;
 	}
-
+	
+	public DocumentLayoutElementDescriptor getDocumentSummaryElement()
+	{
+		return documentSummaryElement;
+	}
+	
 	public DocumentLayoutElementDescriptor getDocActionElement()
 	{
 		return docActionElement;
@@ -174,6 +182,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		private int AD_Window_ID;
 		private DocumentLayoutElementDescriptor documentNoElement;
+		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
@@ -263,6 +272,12 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public Builder setDocumentNoElement(final DocumentLayoutElementDescriptor documentNoElement)
 		{
 			this.documentNoElement = documentNoElement;
+			return this;
+		}
+		
+		public Builder setDocumentSummaryElement(DocumentLayoutElementDescriptor documentSummaryElement)
+		{
+			this.documentSummaryElement = documentSummaryElement;
 			return this;
 		}
 

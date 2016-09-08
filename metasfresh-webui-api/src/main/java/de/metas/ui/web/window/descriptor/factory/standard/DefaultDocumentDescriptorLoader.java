@@ -100,6 +100,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			final SpecialFieldsCollector specialFieldsCollector = mainTabFactory.getSpecialFieldsCollector();
 			layoutBuilder
 					.setDocumentNoElement(specialFieldsCollector.buildDocumentNoElementAndConsume())
+					.setDocumentSummaryElement(specialFieldsCollector.buildDocumentSummaryElement())
 					.setDocActionElement(specialFieldsCollector.buildDocActionElementAndConsume());
 
 			//

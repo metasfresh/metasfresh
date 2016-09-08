@@ -76,6 +76,10 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_NULL)
 	private final JSONDocumentLayoutElement documentNoElement;
 
+	@JsonProperty("documentSummaryElement")
+	@JsonInclude(Include.NON_NULL)
+	private final JSONDocumentLayoutElement documentSummaryElement;
+
 	@JsonProperty("docActionElement")
 	@JsonInclude(Include.NON_NULL)
 	private final JSONDocumentLayoutElement docActionElement;
@@ -103,26 +107,27 @@ public final class JSONDocumentLayout implements Serializable
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
-	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 		type = String.valueOf(layout.getAD_Window_ID());
 		tabid = null;
-		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonFilteringOpts);
-		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonFilteringOpts);
-		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonFilteringOpts);
+		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonOpts);
+		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
+		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
+		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonOpts);
 
-		if (jsonFilteringOpts.isShowAdvancedFields())
+		if (jsonOpts.isShowAdvancedFields())
 		{
 			tabs = ImmutableList.of();
 			putDebugProperty("tabs-info", "not showing tabs when showing advanced fields");
 		}
 		else
 		{
-			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonFilteringOpts);
+			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonOpts);
 		}
 
-		filters = JSONDocumentQueryFilterDescriptor.ofList(layout.getFilters(), jsonFilteringOpts.getAD_Language());
+		filters = JSONDocumentQueryFilterDescriptor.ofList(layout.getFilters(), jsonOpts.getAD_Language());
 
 		emptyResultText = null;
 		emptyResultHint = null;
@@ -130,7 +135,7 @@ public final class JSONDocumentLayout implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties());
-			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
+			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 		}
 	}
 
@@ -149,6 +154,7 @@ public final class JSONDocumentLayout implements Serializable
 		type = String.valueOf(adWindowId);
 		tabid = detailLayout.getDetailId();
 		documentNoElement = null;
+		documentSummaryElement = null;
 		docActionElement = null;
 		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonFilteringOpts);
 		tabs = ImmutableList.of();
@@ -174,12 +180,13 @@ public final class JSONDocumentLayout implements Serializable
 			final JSONFilteringOptions jsonFilteringOpts)
 	{
 		super();
-		
+
 		final String adLanguage = jsonFilteringOpts.getAD_Language();
-		
+
 		type = String.valueOf(adWindowId);
 		tabid = null;
 		documentNoElement = null;
+		documentSummaryElement = null;
 		docActionElement = null;
 		sections = JSONDocumentLayoutSection.ofSideListLayout(sideListLayout, jsonFilteringOpts);
 		tabs = ImmutableList.of();
@@ -199,6 +206,7 @@ public final class JSONDocumentLayout implements Serializable
 			@JsonProperty("type") final String type//
 			, @JsonProperty("tabid") final String tabId //
 			, @JsonProperty("documentNoElement") final JSONDocumentLayoutElement documentNoElement//
+			, @JsonProperty("documentSummaryElement") final JSONDocumentLayoutElement documentSummaryElement //
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
@@ -212,6 +220,7 @@ public final class JSONDocumentLayout implements Serializable
 		this.type = type;
 		tabid = Strings.emptyToNull(tabId);
 		this.documentNoElement = documentNoElement;
+		this.documentSummaryElement = documentSummaryElement;
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);
 		this.tabs = tabs == null ? ImmutableList.of() : ImmutableList.copyOf(tabs);
@@ -246,6 +255,11 @@ public final class JSONDocumentLayout implements Serializable
 	public JSONDocumentLayoutElement getDocumentNoElement()
 	{
 		return documentNoElement;
+	}
+
+	public JSONDocumentLayoutElement getDocumentSummaryElement()
+	{
+		return documentSummaryElement;
 	}
 
 	public JSONDocumentLayoutElement getDocActionElement()

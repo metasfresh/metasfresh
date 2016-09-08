@@ -59,7 +59,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	private final LookupSource lookupSource;
 	private final FieldType fieldType;
 	private final boolean publicField;
-	
+
 	private final ITranslatableString emptyText;
 
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
@@ -120,12 +120,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		return fieldType;
 	}
-	
+
 	public String getEmptyText(final String adLanguage)
 	{
 		return emptyText.translate(adLanguage);
 	}
-	
+
 	public boolean isPublicField()
 	{
 		return publicField;
@@ -150,6 +150,18 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.fieldName = fieldName;
 		}
 
+		private Builder(final Builder from)
+		{
+			this.internalName = from.internalName;
+			this.fieldName = from.fieldName;
+			this.lookupSource = from.lookupSource;
+			this.fieldType = from.fieldType;
+			this.emptyText = from.emptyText;
+			this.publicField = from.publicField;
+			this.consumed = false;
+
+		}
+
 		@Override
 		public String toString()
 		{
@@ -170,6 +182,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			logger.trace("Build {} for {}", result, this);
 			return result;
 		}
+		
+		public Builder copy()
+		{
+			return new Builder(this);
+		}
 
 		public Builder setInternalName(final String internalName)
 		{
@@ -187,12 +204,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			this.lookupSource = lookupSource;
 			return this;
 		}
-		
+
 		public LookupSource getLookupSource()
 		{
 			return lookupSource;
 		}
-		
+
 		public boolean isLookup()
 		{
 			return lookupSource != null;
@@ -225,7 +242,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		{
 			return consumed;
 		}
-		
+
 		public Builder setEmptyText(ITranslatableString emptyText)
 		{
 			this.emptyText = emptyText;
