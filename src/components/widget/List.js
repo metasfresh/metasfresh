@@ -11,13 +11,8 @@ class List extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: []
-        }
-    }
-    componentDidMount() {
-        const {selected} = this.props;
-        if(selected){
-            this.handleSelect(selected, true);
+            list: [],
+            loading: false
         }
     }
     handleBlur = (e) => {
@@ -26,9 +21,16 @@ class List extends Component {
     handleFocus = (e) => {
         e.preventDefault();
         const {properties, dispatch, dataId, rowId, tabId, windowType} = this.props;
-        this.setState({loading: true});
+
+        this.setState(Object.assign({}, this.state, {
+            loading: true
+        }));
+
         dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
-            this.setState({list: res.data, loading: false});
+            this.setState(Object.assign({}, this.state, {
+                list: res.data,
+                loading: false
+            }));
         });
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -52,7 +54,7 @@ class List extends Component {
         )
     }
     render() {
-        const {list, rank,readonly, value} = this.props;
+        const {list, rank,readonly, value,defaultValue, selected} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -67,7 +69,8 @@ class List extends Component {
                             type="text"
                             className="input-field font-weight-bold"
                             readOnly
-                            placeholder={this.props.defaultValue}
+                            placeholder={defaultValue}
+                            value={selected[Object.keys(selected)[0]]}
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
@@ -104,11 +107,6 @@ List.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-List = connect(mapStateToProps)(List)
+List = connect()(List)
 
 export default List

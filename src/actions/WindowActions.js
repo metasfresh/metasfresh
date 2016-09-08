@@ -3,6 +3,8 @@ import axios from 'axios';
 import config from '../config';
 import {push} from 'react-router-redux';
 
+import {getWindowBreadcrumb} from './MenuActions';
+
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -138,17 +140,25 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
         // to do not re-render widgets on init
         dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
+
                 // TODO: This is temporary solution - GITHUB ISSUE
                 if(docId === "NEW" && !isModal){
                     dispatch(push("/window/"+ windowType + "/" + response.data[0].id));
                 }
+
                 docId = response.data[0].id;
                 const preparedData = nullToEmptyStrings(response.data[0].fields);
 
-                dispatch(initDataSuccess(preparedData, getScope(isModal)))
+                dispatch(initDataSuccess(preparedData, getScope(isModal)));
+
                 if(isModal && rowId === "NEW"){
                     dispatch(mapDataToState([response.data[0]], false, "NEW"));
                 }
+
+                if(!isModal){
+                    dispatch(getWindowBreadcrumb(windowType));
+                }
+
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>

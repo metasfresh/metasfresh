@@ -125,6 +125,7 @@ body {
     height: calc(100% - 75px);
     width: 100%;
     overflow-y: auto;
+    color: $brand-font-color;
 }
 
 .panel-modal-header-title {
@@ -576,6 +577,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    color: #fff;
 }
 
 .screen-freeze-behind {
