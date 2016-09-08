@@ -59,7 +59,7 @@ class Header extends Component {
                                     {breadcrumb.map((item, index) =>
                                         <span key={index}>
                                             {!!index && <span className="divider">/</span>}
-                                            <a href="">{item}</a>
+                                            <a href="">{item.caption}</a>
                                         </span>
                                     )}
                                 </span>
