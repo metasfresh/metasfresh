@@ -10,7 +10,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 06.09.2016 14:03
 -- URL zum Konzept
-UPDATE AD_Column SET EntityType='de.metas.sp80',Updated=TO_TIMESTAMP('2016-09-06 14:03:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555039
+UPDATE AD_Column SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-06 14:03:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555039
 ;
 
 -- 06.09.2016 14:03
@@ -20,7 +20,7 @@ ALTER TABLE R_Request ADD DateDelivered TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 
 -- 06.09.2016 14:03
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555039,557234,0,402,0,TO_TIMESTAMP('2016-09-06 14:03:54','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem die Ware geliefert wurde',0,'de.metas.sp80',0,'Y','Y','Y','Y','N','N','N','N','N','Lieferdatum',360,360,0,1,1,TO_TIMESTAMP('2016-09-06 14:03:54','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555039,557234,0,402,0,TO_TIMESTAMP('2016-09-06 14:03:54','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem die Ware geliefert wurde',0,'de.metas.swat',0,'Y','Y','Y','Y','N','N','N','N','N','Lieferdatum',360,360,0,1,1,TO_TIMESTAMP('2016-09-06 14:03:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 06.09.2016 14:03
@@ -85,7 +85,7 @@ UPDATE AD_Column SET IsAutocomplete='Y',Updated=TO_TIMESTAMP('2016-09-06 14:08:4
 
 -- 06.09.2016 14:41
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543174,0,'IsMaterialReturned',TO_TIMESTAMP('2016-09-06 14:41:16','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.sp80','Y','Rücklieferung','Rücklieferung',TO_TIMESTAMP('2016-09-06 14:41:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543174,0,'IsMaterialReturned',TO_TIMESTAMP('2016-09-06 14:41:16','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','Rücklieferung','Rücklieferung',TO_TIMESTAMP('2016-09-06 14:41:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 06.09.2016 14:41
@@ -95,7 +95,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 06.09.2016 14:45
 -- URL zum Konzept
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540688,TO_TIMESTAMP('2016-09-06 14:45:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.sp80','Y','N','Tes_No_Partially',TO_TIMESTAMP('2016-09-06 14:45:45','YYYY-MM-DD HH24:MI:SS'),100,'L')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540688,TO_TIMESTAMP('2016-09-06 14:45:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','Tes_No_Partially',TO_TIMESTAMP('2016-09-06 14:45:45','YYYY-MM-DD HH24:MI:SS'),100,'L')
 ;
 
 -- 06.09.2016 14:45
@@ -105,7 +105,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 
 -- 06.09.2016 14:46
 -- URL zum Konzept
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541215,TO_TIMESTAMP('2016-09-06 14:46:31','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.sp80','Y','Ja',TO_TIMESTAMP('2016-09-06 14:46:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','Ja')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541215,TO_TIMESTAMP('2016-09-06 14:46:31','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','Ja',TO_TIMESTAMP('2016-09-06 14:46:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','Ja')
 ;
 
 -- 06.09.2016 14:46
@@ -115,7 +115,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- 06.09.2016 14:46
 -- URL zum Konzept
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541216,TO_TIMESTAMP('2016-09-06 14:46:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.sp80','Y','Nein',TO_TIMESTAMP('2016-09-06 14:46:45','YYYY-MM-DD HH24:MI:SS'),100,'N','Ja')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541216,TO_TIMESTAMP('2016-09-06 14:46:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','Nein',TO_TIMESTAMP('2016-09-06 14:46:45','YYYY-MM-DD HH24:MI:SS'),100,'N','Ja')
 ;
 
 -- 06.09.2016 14:46
@@ -130,7 +130,7 @@ UPDATE AD_Ref_List SET ValueName='Nein',Updated=TO_TIMESTAMP('2016-09-06 14:46:5
 
 -- 06.09.2016 14:47
 -- URL zum Konzept
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541217,TO_TIMESTAMP('2016-09-06 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'Partially','de.metas.sp80','Y','Teilweise',TO_TIMESTAMP('2016-09-06 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'P','Teilweise')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540688,541217,TO_TIMESTAMP('2016-09-06 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'Partially','de.metas.swat','Y','Teilweise',TO_TIMESTAMP('2016-09-06 14:47:23','YYYY-MM-DD HH24:MI:SS'),100,'P','Teilweise')
 ;
 
 -- 06.09.2016 14:47
@@ -150,7 +150,7 @@ UPDATE AD_Reference_Trl SET IsTranslated='N' WHERE AD_Reference_ID=540688
 
 -- 06.09.2016 14:47
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555040,543174,0,17,540688,417,'N','IsMaterialReturned',TO_TIMESTAMP('2016-09-06 14:47:48','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.sp80',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Rücklieferung',0,TO_TIMESTAMP('2016-09-06 14:47:48','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555040,543174,0,17,540688,417,'N','IsMaterialReturned',TO_TIMESTAMP('2016-09-06 14:47:48','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.swat',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Rücklieferung',0,TO_TIMESTAMP('2016-09-06 14:47:48','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 06.09.2016 14:47
@@ -180,7 +180,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=11490
 
 -- 06.09.2016 14:49
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555040,557235,0,402,0,TO_TIMESTAMP('2016-09-06 14:49:21','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.sp80',0,'Y','Y','Y','Y','N','N','N','N','N','Rücklieferung',110,110,0,1,1,TO_TIMESTAMP('2016-09-06 14:49:21','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555040,557235,0,402,0,TO_TIMESTAMP('2016-09-06 14:49:21','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.swat',0,'Y','Y','Y','Y','N','N','N','N','N','Rücklieferung',110,110,0,1,1,TO_TIMESTAMP('2016-09-06 14:49:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 06.09.2016 14:49
@@ -1094,5 +1094,50 @@ UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2016-09-07 17:33:50','
 -- 07.09.2016 17:35
 -- URL zum Konzept
 UPDATE AD_Field SET IsDisplayedGrid='Y',Updated=TO_TIMESTAMP('2016-09-07 17:35:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=11988
+;
+
+-- 08.09.2016 11:08
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:08:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555039
+;
+
+-- 08.09.2016 11:08
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555040
+;
+
+-- 08.09.2016 11:08
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:08:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555039
+;
+
+-- 08.09.2016 11:08
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555040
+;
+
+-- 08.09.2016 11:11
+-- URL zum Konzept
+UPDATE AD_Reference SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:11:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540688
+;
+
+-- 08.09.2016 11:11
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:11:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541216
+;
+
+-- 08.09.2016 11:11
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:11:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541217
+;
+
+-- 08.09.2016 11:11
+-- URL zum Konzept
+UPDATE AD_Ref_List SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:11:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541215
+;
+
+-- 08.09.2016 11:20
+-- URL zum Konzept
+UPDATE AD_Element SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:20:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543174
 ;
 
