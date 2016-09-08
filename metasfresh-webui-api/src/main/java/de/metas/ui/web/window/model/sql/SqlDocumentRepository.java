@@ -76,7 +76,6 @@ public class SqlDocumentRepository implements DocumentsRepository
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
 
 	private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
-	private static final IntSupplier DocumentIdSupplier_MissingId = () -> _nextMissingId.getAndDecrement();
 
 	/* package */ SqlDocumentRepository()
 	{
