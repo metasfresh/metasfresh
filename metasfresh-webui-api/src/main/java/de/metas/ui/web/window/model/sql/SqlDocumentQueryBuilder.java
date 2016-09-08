@@ -13,7 +13,6 @@ import com.google.common.base.Strings;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQuery;
@@ -64,7 +63,8 @@ class SqlDocumentQueryBuilder
 		super();
 		this.query = query;
 		adLanguage = query.getAD_Language(); 
-		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(query.getEntityDescriptor().getDataBinding());
+		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 	}
 
 	public String getSql(final List<Object> outSqlParams)
@@ -164,9 +164,6 @@ class SqlDocumentQueryBuilder
 
 	private void buildSqlWhereClause()
 	{
-		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
-		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-
 		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
@@ -276,8 +273,7 @@ class SqlDocumentQueryBuilder
 		// TODO: improve SQL logic
 
 		final String fieldName = filterParam.getFieldName();
-		final DocumentFieldDescriptor field = query.getEntityDescriptor().getField(fieldName);
-		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.cast(field.getDataBinding());
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 
 		final POInfo poInfo = entityBinding.getPOInfo();
 		final String sqlColumn = fieldBinding.getSqlColumnSql();

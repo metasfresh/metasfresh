@@ -2,8 +2,11 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -93,7 +96,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlOrderBy;
 
 	@JsonProperty("fields")
-	private final List<SqlDocumentFieldDataBindingDescriptor> fields;
+	private final Map<String, SqlDocumentFieldDataBindingDescriptor> fieldsByFieldName;
 
 	// legacy
 	@JsonProperty("AD_Table_ID")
@@ -112,7 +115,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
-		fields = ImmutableList.copyOf(builder.getFields());
+		fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 
 		sqlSelectAllFrom = builder.getSqlSelectAll();
 		sqlPagedSelectAllFrom = builder.getSqlPagedSelectAll();
@@ -154,7 +157,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.add("sqlKeyColumnName", sqlKeyColumnName)
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
 				.add("sqlOrderBy", sqlOrderBy)
-				.add("fields", fields.isEmpty() ? null : fields)
+				.add("fields", fieldsByFieldName.isEmpty() ? null : fieldsByFieldName.values())
 				.toString();
 	}
 
@@ -185,6 +188,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	@JsonIgnore
 	public POInfo getPOInfo()
 	{
+		// NOTE: don't cache it here because it might change dynamically and it would be so nice to support that case...
 		return POInfo.getPOInfo(sqlTableName);
 	}
 
@@ -218,9 +222,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlOrderBy;
 	}
 
-	public List<SqlDocumentFieldDataBindingDescriptor> getFields()
+	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{
-		return fields;
+		final SqlDocumentFieldDataBindingDescriptor field = fieldsByFieldName.get(fieldName);
+		if (field == null)
+		{
+			throw new IllegalArgumentException("No field found for fieldName=" + fieldName + " in " + this);
+		}
+		return field;
 	}
 
 	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
@@ -239,7 +248,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private TranslatableParameterizedString _sqlSelectAll; // will be built
 		private TranslatableParameterizedString _sqlPagedSelectAll; // will be built
 
-		private final List<SqlDocumentFieldDataBindingDescriptor> _fields = new ArrayList<>();
+		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlDocumentFieldDataBindingDescriptor _keyField;
 
 		// legacy
@@ -291,8 +300,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		 */
 		private void buildSqlSelects()
 		{
-			final List<SqlDocumentFieldDataBindingDescriptor> fields = getFields();
-
+			final Collection<SqlDocumentFieldDataBindingDescriptor> fields = getFieldsByFieldName().values();
 			if (fields.isEmpty())
 			{
 				throw new IllegalStateException("No SQL fields found");
@@ -478,8 +486,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 			//
 			// Build the ORDER BY from fields
-			final List<SqlDocumentFieldDataBindingDescriptor> fields = getFields();
-			final String sqlOrderByBuilt = fields.stream()
+			final String sqlOrderByBuilt = getFieldsByFieldName()
+					.values()
+					.stream()
 					.filter(field -> field.isOrderBy())
 					.sorted((field1, field2) -> field1.getOrderByPriority() - field2.getOrderByPriority())
 					.map(field -> field.getSqlOrderBy())
@@ -577,7 +586,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			Preconditions.checkNotNull(field, "field");
 
 			final SqlDocumentFieldDataBindingDescriptor sqlField = (SqlDocumentFieldDataBindingDescriptor)field;
-			_fields.add(sqlField);
+			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
 
 			if (sqlField.isKeyColumn())
 			{
@@ -599,9 +608,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		private List<SqlDocumentFieldDataBindingDescriptor> getFields()
+		private Map<String, SqlDocumentFieldDataBindingDescriptor> getFieldsByFieldName()
 		{
-			return _fields;
+			return _fieldsByFieldName;
 		}
 
 		private String getSqlKeyColumnName()

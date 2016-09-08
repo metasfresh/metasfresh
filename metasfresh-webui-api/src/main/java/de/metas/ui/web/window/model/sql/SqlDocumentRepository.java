@@ -343,28 +343,35 @@ public class SqlDocumentRepository implements DocumentsRepository
 		final POInfo poInfo = po.getPOInfo();
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
 
+		final int poColumnIndex = poInfo.getColumnIndex(columnName);
+		if(poColumnIndex < 0)
+		{
+			logger.trace("Skip setting PO's column because it's missing: {} -- PO={}", columnName, po);
+			return false;
+		}
+
 		//
 		// Virtual column => skip setting it
-		if (poInfo.isVirtualColumn(columnName))
+		if (poInfo.isVirtualColumn(poColumnIndex))
 		{
 			logger.trace("Skip setting PO's virtual column: {} -- PO={}", columnName, po);
 			return false; // no change
 		}
 		//
 		// ID
-		else if (poInfo.isKey(columnName))
+		else if (poInfo.isKey(poColumnIndex))
 		{
 			final int id = documentField.getValueAsInt(-1);
 			if (id >= 0)
 			{
-				final int idOld = po.get_ValueAsInt(columnName);
+				final int idOld = po.get_ValueAsInt(poColumnIndex);
 				if (id == idOld)
 				{
 					logger.trace("Skip setting PO's key column because it's the same as the old value: {} (old={}), PO={}", columnName, idOld, po);
 					return false; // no change
 				}
 
-				final boolean idSet = po.set_ValueNoCheck(columnName, id);
+				final boolean idSet = po.set_ValueNoCheck(poColumnIndex, id);
 				if (!idSet)
 				{
 					throw new AdempiereException("Failed setting ID=" + id + " to " + po);
@@ -392,8 +399,8 @@ public class SqlDocumentRepository implements DocumentsRepository
 		{
 			//
 			// Check if value was changed, compared with PO's current value
-			final Object poValue = po.get_Value(columnName);
-			final Class<?> poValueClass = poInfo.getColumnClass(columnName);
+			final Object poValue = po.get_Value(poColumnIndex);
+			final Class<?> poValueClass = poInfo.getColumnClass(poColumnIndex);
 			final Object fieldValueConv = convertValueToPO(documentField.getValue(), columnName, poValueClass);
 			if (DataTypes.equals(fieldValueConv, poValue))
 			{
@@ -423,7 +430,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 
 			//
 			// Try setting the value
-			final boolean valueSet = po.set_ValueOfColumnReturningBoolean(columnName, fieldValueConv);
+			final boolean valueSet = po.set_ValueReturningBoolean(poColumnIndex, fieldValueConv);
 			if (!valueSet)
 			{
 				logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
