@@ -297,7 +297,7 @@ public class DocumentCollection
 		public static final DocumentKey of(final Document document)
 		{
 			final int adWindowId = document.getEntityDescriptor().getAD_Window_ID();
-			final DocumentId documentId = DocumentId.of(document.getDocumentId());
+			final DocumentId documentId = document.getDocumentId();
 			return new DocumentKey(adWindowId, documentId);
 		}
 

@@ -165,7 +165,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 		final Document document = getDocumentsRepository().createNewDocument(entityDescriptor, parentDocument);
 
-		final DocumentId documentId = DocumentId.of(document.getDocumentId());
+		final DocumentId documentId = document.getDocumentId();
 		documents.put(documentId, document);
 
 		return document;
@@ -255,7 +255,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 			return null;
 		}
 
-		final Document documentOld = documents.put(DocumentId.of(document.getDocumentId()), document);
+		final Document documentOld = documents.put(document.getDocumentId(), document);
 		stale = false;
 		if (documentOld == null)
 		{
@@ -277,7 +277,12 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 
 		for (final Document document : documentsNew)
 		{
-			documents.put(DocumentId.of(document.getDocumentId()), document);
+			final DocumentId documentId = document.getDocumentId();
+			final Document documentExisting = documents.put(documentId, document);
+			if (documentExisting != null)
+			{
+				logger.warn("loadAll: Replacing for documentId={}: {} with {}", documentId, documentExisting, document);
+			}
 		}
 
 		stale = false;
@@ -348,7 +353,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 				documentsRepository.delete(document);
 			}
 
-			documents.remove(DocumentId.of(document.getDocumentId()));
+			documents.remove(document.getDocumentId());
 		}
 	}
 

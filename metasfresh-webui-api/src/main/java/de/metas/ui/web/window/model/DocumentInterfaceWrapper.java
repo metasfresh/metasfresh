@@ -550,7 +550,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		//
 		// Make sure the parent has the expected ID.
 		// In case the parentRecordId is null, we assume the parent is NEW and that's why it was not set.
-		if (parentRecordId != null && parentDocument.getDocumentId() != parentRecordId)
+		if (parentRecordId != null && parentDocument.getDocumentIdAsInt() != parentRecordId)
 		{
 			logger.warn("Failed fetching the parent link document because parent document does not have the expected ID. \n Document: {} \n Parent document: {} \n Expected parent ID: {}", document,
 					parentDocument, parentRecordId);
@@ -644,7 +644,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 	public static int getId(final Object model)
 	{
-		return getDocument(model).getDocumentId();
+		return getDocument(model).getDocumentIdAsInt();
 	}
 
 	public static boolean isNew(final Object model)

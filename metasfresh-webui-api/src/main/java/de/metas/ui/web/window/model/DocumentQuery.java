@@ -114,9 +114,9 @@ public final class DocumentQuery
 		return parentDocument;
 	}
 
-	public Object getParentLinkId()
+	public Integer getParentLinkIdAsInt()
 	{
-		return parentDocument == null ? null : parentDocument.getDocumentId();
+		return parentDocument == null ? null : parentDocument.getDocumentIdAsInt();
 	}
 
 	public boolean isParentLinkIdSet()

@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntSupplier;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
@@ -72,6 +74,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 public class SqlDocumentRepository implements DocumentsRepository
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
+
+	private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
+	private static final IntSupplier DocumentIdSupplier_MissingId = () -> _nextMissingId.getAndDecrement();
 
 	/* package */ SqlDocumentRepository()
 	{
@@ -178,11 +183,26 @@ public class SqlDocumentRepository implements DocumentsRepository
 
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs)
 	{
+		final IntSupplier documentIdSupplier;
+		final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
+		if(idField == null)
+		{
+			// FIXME: workaround to bypass the missing ID field for views
+			final int missingId = _nextMissingId.decrementAndGet();
+			documentIdSupplier = ()->{
+				return missingId;
+			};
+		}
+		else
+		{
+			documentIdSupplier = () -> (Integer)retrieveDocumentFieldValue(idField, rs);
+		}
+		
 		return Document.builder()
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setDocumentIdSupplier(() -> (Integer)retrieveDocumentFieldValue(entityDescriptor.getIdField(), rs))
+				.setDocumentIdSupplier(documentIdSupplier)
 				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
 				.build();
 	}
@@ -205,7 +225,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 	@Override
 	public void refresh(final Document document)
 	{
-		refresh(document, document.getDocumentId());
+		refresh(document, document.getDocumentIdAsInt());
 	}
 
 	private void refresh(final Document document, final int documentId)
@@ -315,7 +335,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 		else
 		{
 			final boolean checkCache = false;
-			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
+			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
 
 			if (po == null)
 			{
@@ -344,7 +364,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
 
 		final int poColumnIndex = poInfo.getColumnIndex(columnName);
-		if(poColumnIndex < 0)
+		if (poColumnIndex < 0)
 		{
 			logger.trace("Skip setting PO's column because it's missing: {} -- PO={}", columnName, po);
 			return false;

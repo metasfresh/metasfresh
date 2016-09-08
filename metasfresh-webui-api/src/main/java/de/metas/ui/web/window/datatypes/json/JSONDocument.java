@@ -26,7 +26,6 @@ import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.IDocumentView;
 import io.swagger.annotations.ApiModel;
 
@@ -72,11 +71,7 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 		// Add pseudo "ID" field first
-		final IDocumentFieldView idField = document.getIdFieldViewOrNull();
-		if (idField != null)
-		{
-			jsonFields.add(0, JSONDocumentField.idField(idField.getValueAsJsonObject()));
-		}
+		jsonFields.add(0, JSONDocumentField.idField(document.getDocumentIdAsJson()));
 
 		// Append the other fields
 		document.getFieldViews()

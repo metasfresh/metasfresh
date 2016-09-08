@@ -474,7 +474,7 @@ public final class Document
 			final Document parentDocument = document.getParentDocument();
 			if (parentDocument != null)
 			{
-				final int value = parentDocument.getDocumentId();
+				final int value = parentDocument.getDocumentIdAsInt();
 				return value;
 			}
 		}
@@ -676,23 +676,51 @@ public final class Document
 		return getFieldOrNull(fieldName);
 	}
 
-	public IDocumentFieldView getIdFieldViewOrNull()
+	public int getDocumentIdAsInt()
 	{
-		return idField;
-	}
-
-	public int getDocumentId()
-	{
-		if (idField == null)
+		// TODO handle NO ID field or composed PK
+		if(idField == null)
 		{
-			// TODO handle NO ID field or composed PK
-
-			return -1;
-			// logger.warn("No ID field found for {}. Returning {}", this, DocumentId.NEW_ID);
-			// return DocumentId.NEW_ID;
+			// Get it from document path.
+			// This will cover the case of missing ID which was somehow generated internally
+			if(getParentDocument() == null)
+			{
+				return getDocumentPath().getDocumentId().toInt();
+			}
+			else
+			{
+				return getDocumentPath().getSingleRowId().toInt();
+			}
 		}
-		return idField.getValueAsInt(-1);
+		final int idInt = idField.getValueAsInt(-1);
+		return idInt;
+		
 	}
+	public DocumentId getDocumentId()
+	{
+		// TODO handle NO ID field or composed PK
+		if(idField == null)
+		{
+			// Get it from document path.
+			// This will cover the case of missing ID which was somehow generated internally
+			if(getParentDocument() == null)
+			{
+				return getDocumentPath().getDocumentId();
+			}
+			else
+			{
+				return getDocumentPath().getSingleRowId();
+			}
+		}
+		final int idInt = idField.getValueAsInt(-1);
+		return DocumentId.of(idInt);
+	}
+	
+	public Object getDocumentIdAsJson()
+	{
+		return getDocumentIdAsInt();
+	}
+
 
 	public boolean isNew()
 	{
@@ -1250,7 +1278,7 @@ public final class Document
 		final Document parentDocument = getParentDocument();
 		if (parentLinkField != null && parentDocument != null)
 		{
-			setValue(parentLinkField, parentDocument.getDocumentId(), REASON_Value_ParentLinkUpdateOnSave);
+			setValue(parentLinkField, parentDocument.getDocumentIdAsInt(), REASON_Value_ParentLinkUpdateOnSave);
 		}
 
 		//

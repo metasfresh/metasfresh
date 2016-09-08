@@ -243,7 +243,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
 		final boolean checkCache = false;
 		@SuppressWarnings("unchecked")
-		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentId(), checkCache, ITrx.TRXNAME_ThreadInherited);
+		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
 		return po;
 	}
 }

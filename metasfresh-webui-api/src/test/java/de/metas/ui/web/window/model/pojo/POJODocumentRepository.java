@@ -183,7 +183,7 @@ public class POJODocumentRepository implements DocumentsRepository
 	@Override
 	public void refresh(final Document document)
 	{
-		refresh(document, document.getDocumentId());
+		refresh(document, document.getDocumentIdAsInt());
 	}
 
 	private void refresh(final Document document, final int documentId)
@@ -250,7 +250,7 @@ public class POJODocumentRepository implements DocumentsRepository
 		}
 		else
 		{
-			model = InterfaceWrapperHelper.create(document.getCtx(), document.getDocumentId(), modelClass, ITrx.TRXNAME_ThreadInherited);
+			model = InterfaceWrapperHelper.create(document.getCtx(), document.getDocumentIdAsInt(), modelClass, ITrx.TRXNAME_ThreadInherited);
 		}
 		Check.assumeNotNull(model, "model is not null");
 

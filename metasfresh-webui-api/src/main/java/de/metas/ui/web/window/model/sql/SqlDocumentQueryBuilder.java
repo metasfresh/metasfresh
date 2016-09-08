@@ -216,7 +216,7 @@ class SqlDocumentQueryBuilder
 				}
 				sqlWhereClause.append(" /* parent link */ ");
 				sqlWhereClause.append(sqlParentLinkColumnName).append("=?");
-				sqlParams.add(query.getParentLinkId());
+				sqlParams.add(query.getParentLinkIdAsInt());
 			}
 			else if (!query.isRecordIdSet())
 			{
