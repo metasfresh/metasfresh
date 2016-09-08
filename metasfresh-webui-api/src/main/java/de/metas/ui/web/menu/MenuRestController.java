@@ -48,6 +48,7 @@ public class MenuRestController
 	private static final String PARAM_Type = "type";
 	private static final String PARAM_ElementId = "elementId";
 	private static final String PARAM_NameQuery = "nameQuery";
+	private static final String PARAM_IncludeLastNode = "inclusive";
 
 	@Autowired
 	private LoginService loginService;
@@ -92,6 +93,7 @@ public class MenuRestController
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
+			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue="false") final boolean includeLastNode //
 	)
 	{
 		loginService.autologin();
@@ -99,13 +101,14 @@ public class MenuRestController
 		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
 
-		return JSONMenuNode.ofPath(path);
+		return JSONMenuNode.ofPath(path, includeLastNode);
 	}
 
 	@RequestMapping(value = "/elementPath", method = RequestMethod.GET)
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType //
 			, @RequestParam(name = PARAM_ElementId, required = true) final int elementId //
+			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue="false") final boolean includeLastNode //
 	)
 	{
 		loginService.autologin();
@@ -113,7 +116,7 @@ public class MenuRestController
 		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
 
-		return JSONMenuNode.ofPath(path);
+		return JSONMenuNode.ofPath(path, includeLastNode);
 	}
 
 	@RequestMapping(value = "/elementPaths", method = RequestMethod.GET)
