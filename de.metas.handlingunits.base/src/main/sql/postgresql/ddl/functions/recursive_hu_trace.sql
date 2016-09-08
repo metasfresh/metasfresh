@@ -38,7 +38,7 @@ CREATE OR REPLACE FUNCTION "de.metas.handlingunits".recursive_hu_trace(trxline i
     RETURN query execute v_sql || array_to_string(all_trx,',') || ']::integer[]);' ;
 END;
 $$ LANGUAGE plpgsql;
-COMMENT ON "de.metas.handlingunits".recursive_hu_trace(integer) IS '
+COMMENT ON FUNCTION "de.metas.handlingunits".recursive_hu_trace(integer) IS '
 -----
 Usage
 -----
