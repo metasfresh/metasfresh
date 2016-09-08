@@ -18,6 +18,8 @@ upcoming
  * FRESH-112 metasfresh web 
    - integrate recentbackend related changes changes
  * #359 document Note not displayed on invoice #368
+ * #262 sales and purchase tracking
+ * #354 Rearrange unloading fields in Sales Order Window
 
 ## Fixes
  * #366 Faulty unique constraint on M_PriceList
