@@ -356,7 +356,7 @@ public class WindowRestController implements IWindowRestController
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody(required = false) final List<JSONDocumentQueryFilter> jsonFilters //
+			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
 	)
 	{
 		loginService.autologin();
