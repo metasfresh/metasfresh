@@ -89,11 +89,11 @@ export default function windowHandler(state = initialState, action) {
             })
 
         case types.DELETE_ROW:
-          return Object.keys(state[action.scope].rowData[action.tabid]).map(row => {
-            if(row !== action.rowid) {
-              return row;
-            }
-          });
+        return Object.assign({}, state, {
+              [action.scope]: Object.assign({}, state[action.scope], {
+
+              })
+          })
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
