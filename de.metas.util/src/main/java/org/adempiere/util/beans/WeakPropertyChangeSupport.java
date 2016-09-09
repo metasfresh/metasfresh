@@ -61,6 +61,11 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 
 	private final boolean _weakDefault;
 
+	/**
+	 * this member is here only such that we have a minimum toString() for debugging (grrr, i want to punch PropertyChangeSupport into the face).
+	 */
+	private final WeakReference<Object> debugSourceBeanRef;
+
 	public WeakPropertyChangeSupport(final Object sourceBean)
 	{
 		this(sourceBean, false); // weakDefault=false
@@ -75,6 +80,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 	{
 		super(sourceBeanRef);
 		this._weakDefault = weakDefault;
+		this.debugSourceBeanRef = sourceBeanRef;
 	}
 
 	public final boolean isWeakDefault()
@@ -249,8 +255,8 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("_weakDefault", _weakDefault)
-				.add("superclass", super.toString())
+				.add("source", debugSourceBeanRef)
+				.add("listeners", getPropertyChangeListeners()) // i know there should be no method but only fields in toString(), but don't see how else to output this
 				.toString();
 	}
 }

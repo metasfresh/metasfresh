@@ -54,6 +54,7 @@ import javax.swing.text.JTextComponent;
 
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -438,7 +439,7 @@ import net.miginfocom.swing.MigLayout;
 	{
 		final String textOld = textComponent.getText();
 
-		logger.debug("ID={}, text={}, textOld={}, this={}", System.identityHashCode(this), text, textOld, this);
+		logger.trace("this-ID={}, Name={}, text={}, textOld={}, this={}", System.identityHashCode(this), getName(), text, textOld, this);
 
 		textComponent.setText(text);
 		firePropertyChanged(ITerminalTextField.PROPERTY_TextChanged, textOld, text);
@@ -712,7 +713,7 @@ import net.miginfocom.swing.MigLayout;
 	@Override
 	public String toString()
 	{
-		return "SwingTerminalTextField [panel=" + panel + ", textComponent=" + textComponent + ", keyboardButton=" + keyboardButton + ", textFieldActionListener=" + textFieldActionListener + ", textFieldFocusListener=" + textFieldFocusListener + ", textFieldKeyListener=" + textFieldKeyListener + ", textFieldValueChangedListener=" + textFieldValueChangedListener + ", textFieldMouseListener="
-				+ textFieldMouseListener + ", tabKeyAsFocusLostDispatcher=" + tabKeyAsFocusLostDispatcher + ", timer=" + timer + "]";
+		final boolean multiLine = false;
+		return ObjectUtils.toString(this, multiLine);
 	}
 }

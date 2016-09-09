@@ -13,15 +13,14 @@ package de.metas.adempiere.form.terminal;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -78,6 +77,10 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 			firePropertyChanged(propertyName, valueOld, valueNew);
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "CompositePropertiesPanelModel[ childModelsListener ]";};
+		// @formatter:on
 	};
 
 	public CompositePropertiesPanelModel(final ITerminalContext terminalContext)
@@ -402,7 +405,9 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			return childModel;
 		}
 
-		/** @return a new instance having all children re-indexed */
+		/**
+		 * @return a new instance having all children re-indexed
+		 */
 		public final IndexedChildren rebuild()
 		{
 			if (this == NULL)

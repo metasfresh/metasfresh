@@ -121,7 +121,7 @@ public abstract class AbstractPropertiesPanelModel implements IPropertiesPanelMo
 	/**
 	 * Fires {@link IPropertiesPanelModel#PROPERTY_ContentChanged} event.
 	 *
-	 * @param propertyName
+	 * @param debugPropertyName
 	 */
 	protected final void fireContentChanged()
 	{

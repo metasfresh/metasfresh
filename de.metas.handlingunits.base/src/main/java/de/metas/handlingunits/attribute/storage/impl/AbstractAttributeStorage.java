@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
@@ -48,6 +46,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -74,6 +73,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
@@ -158,7 +158,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 				.add("attributeValueListener", attributeValueListener)
 				.toString();
 	}
-	
+
 	protected void toString(final ToStringHelper stringHelper)
 	{
 		// nothing on this level
@@ -242,7 +242,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 						+ "\n Attribute Storage: " + this
 						+ "\n New attribute values: " + attributeValues);
 			}
-			
+
 			//logger.debug("Setting attribute values: {}", attributeValues, new Exception("trace"));
 
 			final IndexedAttributeValues indexedAttributeValues = IndexedAttributeValues.of(attributeValues);
@@ -666,7 +666,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// Avoid recursion in case value was already updated somewhere before this invocation
 		if (propagationContext.isValueUpdatedBefore())
 		{
-			logger.debug("ALREADY UPDATED: Skipping attribute value propagation for Value={}, {}, {}, {}",
+			logger.debug("ALREADY UPDATED: Skipping attribute value propagation for Value={}, Attribute={}, this={}, propagationContext={}",
 					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
 			return;
 		}
@@ -679,8 +679,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 				&& propagationContext.isUpdateStorageValue())
 		{
 			// Nothing changed, it's pointless to set it again and call the propagator
-			logger.debug("SAME VALUE: Skipping attribute value propagation for Value={}, {}, {}, {}",
-					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
+			logger.debug("SAME VALUE: Skipping attribute value propagation for Value={}, =Attribute{}, this={}, propagationContext={}",
+					value, propagationContext.getAttribute(), this, propagationContext );
 			return;
 		}
 
@@ -696,8 +696,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 			final IHUAttributePropagator propagator = propagationContext.getPropagator();
 
-			logger.debug("PROPAGATING: Setting Value={}, {}, {}, {}",
-					new Object[] { value, propagationContext.getAttribute(), this, propagationContext });
+			logger.debug("PROPAGATING with propagator={}: Setting Value={}, Attribute={}, this={}, propagationContext={}",
+					propagator, value, propagationContext.getAttribute(), this, propagationContext );
 			propagator.propagateValue(propagationContext, this, value);
 		}
 		finally
@@ -1120,7 +1120,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Fires {@link IAttributeStorageListener#onAttributeStorageDisposed(IAttributeStorage)} event.
-	 * 
+	 *
 	 * Please make sure you are calling this method BEFORE clearing the listeners.
 	 */
 	protected final void fireAttributeStorageDisposed()

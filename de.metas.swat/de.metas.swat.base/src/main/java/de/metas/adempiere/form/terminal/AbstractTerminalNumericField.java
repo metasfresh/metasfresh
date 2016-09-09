@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -142,7 +142,8 @@ public abstract class AbstractTerminalNumericField
 			final String name,
 			final int displayType,
 			final float fontSize,
-			final boolean withButtons, final boolean withLabel,
+			final boolean withButtons,
+			final boolean withLabel,
 			final String constr)
 	{
 		super(tc);
@@ -328,7 +329,7 @@ public abstract class AbstractTerminalNumericField
 	protected final void setFieldValue(final BigDecimal value, final boolean fireEvent)
 	{
 		final BigDecimal valueOld = this._valueOld; // backup for event
-		
+
 		//
 		// Fix value to set
 		final BigDecimal valueNew;
@@ -373,7 +374,7 @@ public abstract class AbstractTerminalNumericField
 			}
 		}
 	}
-	
+
 	private BigDecimal _valueOld = null;
 
 	public void incValue()
@@ -427,12 +428,12 @@ public abstract class AbstractTerminalNumericField
 	{
 		return withLabel;
 	}
-	
+
 	@Override
 	public void dispose()
 	{
 		super.dispose();
-		
+
 		if (bMinus != null)
 		{
 			bMinus.dispose();

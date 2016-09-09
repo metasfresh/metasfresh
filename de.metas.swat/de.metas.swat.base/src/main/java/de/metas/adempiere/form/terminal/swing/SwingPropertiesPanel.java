@@ -413,12 +413,11 @@ import de.metas.logging.LogManager;
 		{
 			final ITerminalNumericField editor = factory.createTerminalNumericField(propertyName, displayType,
 					SwingPropertiesPanel.DEFAULT_FONT_SIZE,
-					true,     // withButtons,
-					false,     // withLabel
+					true,       // withButtons,
+					false,       // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
-			editor.addListener(new PropertyChangeListener()
+				editor.addListener(new PropertyChangeListener()
 			{
-
 				@Override
 				public void propertyChange(final PropertyChangeEvent evt)
 				{
@@ -428,6 +427,9 @@ import de.metas.logging.LogManager;
 						setValueFromUI(propertyName, value, editor);
 					}
 				}
+				// @formatter:off
+				@Override public String toString() { return "SwingPropertiesPanel[<anonymous propertyChangeListener for property=" + propertyName + " and editor=" + editor+">]"; }
+				// @formatter:on
 			});
 
 			return editor;

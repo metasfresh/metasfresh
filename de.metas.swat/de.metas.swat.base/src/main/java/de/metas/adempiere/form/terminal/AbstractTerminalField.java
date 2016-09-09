@@ -45,6 +45,16 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	private final CompositeTerminalFieldConstraint<T> constraints = new CompositeTerminalFieldConstraint<T>();
 	private boolean disposed = false;
 
+	/**
+	 * @see {@link #setDebugPropertyNameOnce(String)}
+	 */
+	private String debugPropertyName;
+
+	/**
+	 *
+	 * @param terminalContext
+	 *
+	 */
 	public AbstractTerminalField(final ITerminalContext terminalContext)
 	{
 		super();
@@ -53,6 +63,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 		this.terminalContext = terminalContext;
 
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
+		this.debugPropertyName = "<unspecified>";
 	}
 
 	@Override
@@ -74,29 +85,34 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	@Override
 	public final void addListener(final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}: adding listener={}", getName(), listener);
 		listeners.addPropertyChangeListener(listener);
 	}
 
 	@Override
 	public final void addListener(final String propertyName, final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: adding listener={}", getName(), propertyName, listener);
 		listeners.addPropertyChangeListener(propertyName, listener);
 	}
 
 	@Override
 	public final void removeListener(final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}: removing listener={}", getName(), listener);
 		listeners.removePropertyChangeListener(listener);
 	}
 
 	@Override
 	public final void removeListener(final String propertyName, final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: removing listener={}", getName(), propertyName, listener);
 		listeners.removePropertyChangeListener(propertyName, listener);
 	}
 
 	protected final void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: firing on listeners={}", getName(), propertyName, listeners);
 		listeners.firePropertyChange(propertyName, oldValue, newValue);
 	}
 
@@ -271,6 +287,27 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	public boolean isValid()
 	{
 		return true;
+	}
+
+	/**
+	 * Allows the code which set up a field to also pass the property which the field is for. This should ease debugging.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public AbstractTerminalField<T> setDebugPropertyNameOnce(final String propertyName)
+	{
+		Check.errorIf(debugPropertyName != null,
+				"debugPropertyName shall be set only once! If was already set to {} and now someone tried to set it to {}; this={}",
+				debugPropertyName, propertyName, this);
+
+		debugPropertyName = propertyName;
+		return this;
+	}
+
+	public String getDebugPropertyName()
+	{
+		return debugPropertyName == null ? debugPropertyName : "<unspecified>";
 	}
 
 }

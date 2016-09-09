@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,7 +108,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		public void onAttributeStorageDisposed(final IAttributeStorage storage)
 		{
 			logger.debug("Reseting the properties model because attribute storage was disposed: {}", HUAttributeSetPropertiesModel.this);
-			
+
 			// Make sure it makes sense to reset current storage
 			final IAttributeStorage currentStorage = getIndexedAttributeStorage().getAttributeStorage();
 			if (currentStorage == null)
@@ -128,12 +128,16 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			// Actually reset current attribute storage and also fire events so the UI will know that it needs to reload.
 			setAttributeStorage(null);
 		};
+
+		//@formatter:off
+		@Override public String toString(){ return "HUAttributeSetPropertiesModel[<anonymous AttributeStorageListenerAdapter>]"; };
+		//@formatter:on
 	};
 
 	public HUAttributeSetPropertiesModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);
-		
+
 		logger.debug("New instance: {}", this);
 	}
 
@@ -161,7 +165,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			final IAttributeStorage attributeStorageOld = this._indexedAttributeStorage.getAttributeStorage();
 			this._indexedAttributeStorage = IndexedAttributeStorage.of(attributeStorage);
-			
+
 			logger.debug("Attribute storage old: {}", attributeStorageOld);
 			logger.debug("Attribute storage new: {}", attributeStorage);
 
@@ -194,9 +198,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 	/**
 	 * Gets underlying indexed attribute storage.
-	 * 
+	 *
 	 * IMPORTANT: make sure you have ONLY one call of this method, in each method you are using it!!!
-	 * 
+	 *
 	 * @return
 	 */
 	private IndexedAttributeStorage getIndexedAttributeStorage()
@@ -380,8 +384,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		// NOTE: if the model is disposed then the underlying indexedAttributeStorage would be "null", so it's safe to not check.
 		final IndexedAttributeStorage indexedAttributeStorage = getIndexedAttributeStorage();
-		
-		logger.debug("Setting {}={} on {} ({})", propertyName, value, indexedAttributeStorage, this);
+
+		logger.debug("Setting propertyName={} to value={} on indexedAttributeStorage={} (this={})", propertyName, value, indexedAttributeStorage, this);
 		indexedAttributeStorage.setPropertyValue(propertyName, value);
 	}
 
@@ -576,7 +580,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 	/**
 	 * Immutable {@link IAttributeStorage} wrapper which also contains indexed attributes and other additional informations.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -626,7 +630,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 				{
 					continue;
 				}
-				
+
 				final I_M_Attribute attribute = attributeValue.getM_Attribute();
 				final String propertyName = attribute.getValue();
 
@@ -644,7 +648,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			this.propertyName2AdditionalInputAction = ImmutableMap.copyOf(propertyName2AdditionalInputAction);
 			this.virtualHU = attributeStorage.isVirtual();
 		}
-		
+
 		@Override
 		public String toString()
 		{
