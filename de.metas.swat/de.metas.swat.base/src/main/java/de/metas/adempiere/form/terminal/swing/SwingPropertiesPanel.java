@@ -96,6 +96,10 @@ import de.metas.logging.LogManager;
 		{
 			onModelChanged(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "SwingPropertiesPanel[<anonymous modelListener>]"; };
+		// @formatter:on
 	};
 
 	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext)
@@ -384,8 +388,11 @@ import de.metas.logging.LogManager;
 								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
-							logger.debug("Set value={} to editor={} in UIAsyncPropertyChangeListener={}", value, editor, this);
-							editor.setValue(value, true); // fireEvent=true
+							logger.debug("Set value={} to editor={} ,editor.toString()={} in UIAsyncPropertyChangeListener={}", value, editor.getName(), editor, this);
+							//
+							// #370: trying to *not* set the field but the model. setting the field will also cause the model to be updated, but eventually from the model updating, the field will be updated a second time
+							// editor.setValue(value, true); // fireEvent=true
+							getModel().setPropertyValue(propertyName, value);
 						}
 					}); // addListener
 
