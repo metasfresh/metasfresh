@@ -1,8 +1,5 @@
 package de.metas.request.api;
 
-import java.util.Properties;
-import java.util.Set;
-
 import org.adempiere.util.ISingletonService;
 
 import de.metas.inout.model.I_M_InOutLine;
@@ -20,11 +17,11 @@ import de.metas.inout.model.I_M_InOutLine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,8 +29,10 @@ import de.metas.inout.model.I_M_InOutLine;
 public interface IRequestDAO extends ISingletonService
 {
 
+	/**
+	 * Create a new R_Request based on the info from the given inout line
+	 * 
+	 * @param line
+	 */
 	void createRequestFromInOutLine(I_M_InOutLine line);
-	
-	void createRequest(final Properties ctx, final Set<Integer> inOutLineIds, final String trxName);
-
 }

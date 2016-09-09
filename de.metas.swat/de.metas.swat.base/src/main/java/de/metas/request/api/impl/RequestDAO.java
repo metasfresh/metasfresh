@@ -1,21 +1,21 @@
 package de.metas.request.api.impl;
 
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_R_Request;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
 
 /*
  * #%L
@@ -41,6 +41,9 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
 
 public class RequestDAO implements IRequestDAO
 {
+	public static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
+	public static final String MSG_R_Request_From_InOut_Result = "R_Request_From_InOut_Result";
+
 	@Override
 	public void createRequestFromInOutLine(final I_M_InOutLine line)
 	{
@@ -57,19 +60,27 @@ public class RequestDAO implements IRequestDAO
 			return;
 		}
 
+		// Create a new request
 		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class, line);
 
+		// Must have the same org as the inout line
 		request.setAD_Org_ID(line.getAD_Org_ID());
 
+		final int inOutID = line.getM_InOut_ID();
+
 		// data from line
-		request.setM_InOut_ID(line.getM_InOut_ID());
+		request.setM_InOut_ID(inOutID);
 		request.setM_Product_ID(line.getM_Product_ID());
 		request.setQualityNote(line.getQualityNote());
 
 		// data from inout
 		final I_M_InOut inOut = line.getM_InOut();
 
+		request.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOut.class));
+		request.setRecord_ID(inOutID);
+
 		request.setC_BPartner_ID(inOut.getC_BPartner_ID());
+		request.setAD_User_ID(inOut.getAD_User_ID());
 		request.setDateDelivered(inOut.getMovementDate());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
@@ -85,24 +96,28 @@ public class RequestDAO implements IRequestDAO
 			request.setR_RequestType(requestTypeDAO.retrieveCustomerRequestType(ctx));
 		}
 
-		// TODO :ASK FOR MESSAGE
-		request.setSummary(line.getQualityNote());
+		// Default data
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		// TODO whi shall this be?
+		// summary from AD_Message
+		final String summary = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Summary);
+		request.setSummary(summary);
+
+		// result from AD_Message
+		final String result = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Result);
+		request.setResult(result);
+
+		// the sales rep will be the user in charge of the organization
 		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, line.getAD_Org_ID(), ITrx.TRXNAME_None);
 
 		if (userInCharge != null)
 		{
 			request.setSalesRep(userInCharge);
 		}
+
+		// configential type internal
+		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
+
 		InterfaceWrapperHelper.save(request);
 	}
-
-	@Override
-	public void createRequest(final Properties ctx, final Set<Integer> inOutLineIds, final String trxName)
-	{
-		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
-
-	}
-
 }
