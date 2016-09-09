@@ -26,6 +26,7 @@ input {
     background-color: transparent;
     color: $brand-font-color;
     min-width: 50px;
+    text-align: inherit;
 }
 
 .form-control-label {
@@ -385,6 +386,7 @@ input:checked + .input-slider:before {
 .input-icon-container {
     position: relative;
     display: inline-block;
+    padding-right: 2rem;
 }
 
 .input-icon-right{

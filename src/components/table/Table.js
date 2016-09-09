@@ -73,7 +73,7 @@ class Table extends Component {
 
         let nodeList = Array.prototype.slice.call( document.activeElement.parentElement.children);
         let idActive = nodeList.indexOf(document.activeElement);
-        
+
 
         switch(e.key) {
             case "ArrowDown":
@@ -89,8 +89,8 @@ class Table extends Component {
                     }
 
                     let t = this;
-                    setTimeout(function(){ 
-                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                    setTimeout(function(){
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]);
                         if(idActive > -1) {
                             document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idActive].focus();
                         }
@@ -110,8 +110,8 @@ class Table extends Component {
                     }
 
                     let t = this;
-                    setTimeout(function(){ 
-                        t.selectProduct(Object.keys(rowData[tabid])[newId]); 
+                    setTimeout(function(){
+                        t.selectProduct(Object.keys(rowData[tabid])[newId]);
                         if(idActive > -1) {
                             document.getElementsByClassName('row-selected')[0].children[idActive].focus();
                         }
@@ -127,11 +127,11 @@ class Table extends Component {
             case "ArrowRight":
                 e.preventDefault();
                 if(document.activeElement.nextSibling){
-                   document.activeElement.nextSibling.focus(); 
+                   document.activeElement.nextSibling.focus();
                 }
                 break;
         }
-      
+
     }
 
     closeContextMenu = (event) => {
@@ -191,13 +191,13 @@ class Table extends Component {
         } else if(selected.length === 1){
             this.deselectAllProducts();
             let t = this;
-            setTimeout(function(){ 
+            setTimeout(function(){
                 t.selectProduct(id);
             }, 1);
-            
+
         }
 
-        
+
         e.preventDefault();
         this.setState({
             contextMenu: {
