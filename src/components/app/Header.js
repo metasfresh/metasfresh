@@ -9,6 +9,7 @@ import Subheader from './SubHeader';
 import Widget from '../Widget';
 import OrderList from '../app/OrderList';
 import Indicator from './Indicator';
+import MenuOverlay from './MenuOverlay';
 
 
 import {
@@ -22,7 +23,8 @@ class Header extends Component {
         this.state = {
             isSubheaderShow: false,
             isOrderListShow: false,
-            indicator: 'saved'
+            indicator: 'saved',
+            menuOverlay: null
         }
     }
 
@@ -35,11 +37,52 @@ class Header extends Component {
     handleBackdropClick = () => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}));
     }
+    handleMenuOverlay = (e, nodeId) => {
+        e.preventDefault();
+        this.setState(Object.assign({}, this.state, {
+            menuOverlay: nodeId
+        }));
+    }
+
+    renderBreadcrumb = () => {
+        return (
+            <span className="header-breadcrumb header-breadcrumb-spaced">
+                {breadcrumb.map((item, index) =>
+                    <span key={index}>
+                        {!!index && <span className="divider">/</span>}
+                        <a
+                            className="header-breadcrumb-link"
+                            onClick={e => this.handleMenuOverlay(e, item.nodeId)}
+                        >
+                            {item.caption}
+                        </a>
+                        {menuOverlay === item.nodeId && <MenuOverlay nodeId={item.nodeId} />}
+                    </span>
+                )}
+                {docNo && <span className="divider">/</span>}
+
+                {docNo && <span className="header-input-id header-input-sm">
+                    <Widget
+                        windowType={windowType}
+                        dataId={dataId}
+                        widgetData={[docNoData]}
+                        noLabel={true}
+                        icon={true}
+                        {...docNo}
+                    />
+                </span>}
+
+                {docSummaryData && <div className="header-breadcrumb">
+                    <span>{docSummaryData.value}</span>
+                </div>}
+            </span>
+        )
+    }
 
 
     render() {
-        const {docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb} = this.props;
-        const {isSubheaderShow, isOrderListShow, indicator} = this.state;
+        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb} = this.props;
+        const {isSubheaderShow, isOrderListShow, indicator, menuOverlay} = this.state;
 
         return (
             <div>
@@ -55,26 +98,7 @@ class Header extends Component {
                                     <i className="meta-icon-more" />
                                 </div>
 
-                                <span className="header-breadcrumb">
-                                    {breadcrumb.map((item, index) =>
-                                        <span key={index}>
-                                            {!!index && <span className="divider">/</span>}
-                                            <a href="">{item.caption}</a>
-                                        </span>
-                                    )}
-                                </span>
-
-
-                                {docNo && <div className="header-input-id header-input-sm">
-                                    <Widget
-                                        windowType={windowType}
-                                        dataId={dataId}
-                                        widgetData={[docNoData]}
-                                        noLabel={true}
-                                        icon={true}
-                                        {...docNo}
-                                    />
-                                </div>}
+                                {this.renderBreadcrumb()}
                             </div>
                             <div className="header-center">
                                 <img src={logo} className="header-logo"/>

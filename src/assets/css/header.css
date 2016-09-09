@@ -34,7 +34,6 @@
 .header-breadcrumb {
     color: $brand-font-color-secondary;
     font-size: 0.875rem;
-    margin-left: 15px;
     width: auto;
     display: flex;
     justify-content: flex-start;
@@ -43,16 +42,24 @@
     overflow: hidden;
 }
 
+.header-breadcrumb-spaced {
+    margin-left: 1rem;
+}
+
 .header-breadcrumb a {
-    color: $brand-link-color;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
 }
 
+.header-breadcrumb-link{
+    color: $brand-link-color !important;
+}
+
 
 .header-breadcrumb .divider {
-    margin: 0 .4rem;
+    margin: 0 .2rem;
+    min-width: 5px;
 }
 
 
@@ -66,11 +73,10 @@
 .header-breadcrumb > *:first-of-type{
     font-weight: bold;
     min-width: 40px;
-
 }
 
 .header-input-id {
-    margin: 0 .5rem;
+    margin: 0 .3rem;
 }
 
 .header-super-faded {
@@ -80,6 +86,7 @@
 
 .header-input-sm {
     width:60px;
+    min-width: 60px;
 }
 .header-input-sm input{
     font-size: 0.85rem;
@@ -187,4 +194,50 @@
 
 .btn-header {
     border-color: $brand-border-color;
+}
+
+/* OVERLAY */
+
+
+.menu-overlay {
+    position: absolute;
+    margin-top: -1.55rem;
+    pointer-events: none;
+}
+
+.menu-overlay .menu-overlay-body {
+    padding: 1.8rem 1.2rem;
+    width: 250px;
+    min-height: 400px;
+    z-index:1;
+    margin-top:-1px;
+    pointer-events: all;
+}
+
+.menu-overlay-primary .menu-overlay-body {
+    background-color: $brand-bright-color;
+    border:1px solid $brand-border-color-2;
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+}
+
+.menu-overlay-caption {
+    display: inline-block;
+    position: relative;
+    z-index:25;
+    background-color: $brand-bright-color;
+    border:1px solid $brand-border-color-2;
+    border-bottom-width: 0;
+    padding: .2rem .68rem;
+}
+
+.menu-overlay-header {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: .875rem;
+}
+
+.menu-overlay-body a{
+    color: $brand-link-color;
+    display: block;
+    margin: .5rem 1rem;
 }
