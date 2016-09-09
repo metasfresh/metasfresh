@@ -54,7 +54,7 @@ class List extends Component {
         )
     }
     render() {
-        const {list, rank,readonly, value,defaultValue, selected} = this.props;
+        const {list, rank,readonly, value,defaultValue, selected, align} = this.props;
         return (
             <div
                 tabIndex="0"
