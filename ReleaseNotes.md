@@ -30,9 +30,11 @@ RC for this week
 
 ## Features
 * #297 Performance problems related to zoom-to
+  - Imroved User ecxperience, Massively reduced loading times for generic zoom-to links in icon-bar.
 * #249 Referenzliste in AttributeValue
-  - cleanup
+  - Getting rid of Reference List (System) in client side Attribute Values.
 * #347 change default docaction after complete
+  - After eliminating all close docactions in permissions now changing the next docaction in document Workflow.
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
