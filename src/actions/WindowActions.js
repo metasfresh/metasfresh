@@ -340,8 +340,6 @@ export function fieldToString(field) {
 
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
-    console.log('window action delete');
-
     return dispatch => axios.delete(
         config.API_URL +
         '/window/delete?type=' + windowType +
@@ -353,8 +351,9 @@ export function deleteData(windowType, id, tabId, rowId) {
 
 export function deleteLocal(tabid,rowsid,scope) {
     return (dispatch) => {
-      for (let rowid of rowsid) {
-        return dispatch(deleteRow(tabid,rowid,scope))
-      }
+        for (let rowid of rowsid) {
+            console.log(rowid)
+            dispatch(deleteRow(tabid,rowid,scope))
+        }
     }
 }
