@@ -187,7 +187,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		m_mTable.setDeleteable(m_vo.isDeleteable());
 		m_mTable.setGridTab(this); // metas-2009_0021_AP1_G140
 
-		calloutExecutor = new CalloutExecutor(vo.getCtx(), vo.getWindowNo());
+		calloutExecutor = CalloutExecutor.builder()
+				.setAD_Table_ID(m_vo.getAD_Table_ID())
+				.build();
 		// Load Tab
 		// initTab(false);
 	}	// GridTab

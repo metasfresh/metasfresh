@@ -22,18 +22,25 @@ package org.adempiere.ad.callout.api;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_ColumnCallout;
 
+import com.google.common.collect.ListMultimap;
+
 public interface IADColumnCalloutDAO extends ISingletonService
 {
-	List<I_AD_ColumnCallout> retrieveAllColumnCallouts(Properties ctx, int adColumnId);
+	/**
+	 * 
+	 * @param ctx
+	 * @param adTableId
+	 * @return AD_Column_ID to List of callout defs
+	 */
+	ListMultimap<Integer, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(Properties ctx, final int adTableId);
 
-	List<I_AD_ColumnCallout> retrieveActiveColumnCallouts(Properties ctx, int adColumnId);
+	List<I_AD_ColumnCallout> retrieveAllColumnCallouts(Properties ctx, int adColumnId);
 
 	int retrieveColumnCalloutLastSeqNo(Properties ctx, int adColumnId);
 }

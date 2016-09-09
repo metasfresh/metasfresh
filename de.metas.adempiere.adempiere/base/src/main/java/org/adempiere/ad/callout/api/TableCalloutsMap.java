@@ -1,0 +1,263 @@
+package org.adempiere.ad.callout.api;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.util.Check;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+
+import de.metas.logging.LogManager;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/**
+ * Convenient immutable AD_Column_ID to {@link ICalloutInstance} list.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Immutable
+public final class TableCalloutsMap
+{
+	public static final TableCalloutsMap of(final Map<Integer, List<ICalloutInstance>> calloutsByColumnId)
+	{
+		if (calloutsByColumnId == null || calloutsByColumnId.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		return builder()
+				.putAll(calloutsByColumnId)
+				.build();
+	}
+
+	public static final TableCalloutsMap of(final int adColumnId, final ICalloutInstance callout)
+	{
+		Check.assumeNotNull(callout, "Parameter callout is not null");
+		final ImmutableListMultimap<Integer, ICalloutInstance> map = ImmutableListMultimap.of(adColumnId, callout);
+		final ImmutableSet<ArrayKey> calloutKeys = ImmutableSet.of(mkKey(adColumnId, callout));
+		return new TableCalloutsMap(map, calloutKeys);
+	}
+
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static final TableCalloutsMap EMPTY = new TableCalloutsMap();
+
+	private static final Logger logger = LogManager.getLogger(TableCalloutsMap.class);
+
+	private final ImmutableSet<ArrayKey> calloutKeys;
+	private final ImmutableListMultimap<Integer, ICalloutInstance> calloutsByColumnId;
+
+	private TableCalloutsMap(final ImmutableListMultimap<Integer, ICalloutInstance> calloutsByColumnId, final ImmutableSet<ArrayKey> calloutKeys)
+	{
+		super();
+		this.calloutsByColumnId = calloutsByColumnId;
+		this.calloutKeys = calloutKeys;
+	}
+
+	private TableCalloutsMap()
+	{
+		super();
+		calloutsByColumnId = ImmutableListMultimap.of();
+		calloutKeys = ImmutableSet.of();
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.addValue(calloutsByColumnId.isEmpty() ? "EMPTY" : calloutsByColumnId)
+				.toString();
+	}
+
+	public boolean isEmpty()
+	{
+		return calloutsByColumnId.isEmpty();
+	}
+
+	public List<ICalloutInstance> getColumnCallouts(final int adColumnId)
+	{
+		return calloutsByColumnId.get(adColumnId);
+	}
+
+	public boolean hasColumnCallouts(final int adColumnId)
+	{
+		return calloutsByColumnId.containsKey(adColumnId);
+	}
+
+	public boolean hasColumnCallouts(final int adColumnId, final Set<String> calloutIdsBlacklist)
+	{
+		if (calloutIdsBlacklist.isEmpty())
+		{
+			return calloutsByColumnId.containsKey(adColumnId);
+		}
+
+		final ImmutableList<ICalloutInstance> callouts = calloutsByColumnId.get(adColumnId);
+		if (callouts.isEmpty())
+		{
+			return false;
+		}
+
+		final long count = callouts.stream()
+				.filter(callout -> !calloutIdsBlacklist.contains(callout.getId()))
+				.count();
+		return count > 0;
+	}
+
+	public TableCalloutsMap compose(final int adColumnId, final ICalloutInstance callout)
+	{
+		Check.assumeNotNull(callout, "Parameter callout is not null");
+		final ArrayKey calloutKey = mkKey(adColumnId, callout);
+		if (calloutKeys.contains(calloutKey))
+		{
+			logger.warn("Skip composing {} to {} because the callout key {} is already present in the map", callout, this, calloutKey);
+			return this;
+		}
+
+		final ImmutableListMultimap<Integer, ICalloutInstance> calloutsByColumnIdNew = ImmutableListMultimap.<Integer, ICalloutInstance> builder()
+				.putAll(calloutsByColumnId)
+				.put(adColumnId, callout)
+				.build();
+		final ImmutableSet<ArrayKey> calloutKeysNew = ImmutableSet.<ArrayKey> builder()
+				.addAll(calloutKeys)
+				.add(calloutKey)
+				.build();
+
+		return new TableCalloutsMap(calloutsByColumnIdNew, calloutKeysNew);
+	}
+
+	private static final ArrayKey mkKey(final int adColumnId, final ICalloutInstance callout)
+	{
+		return Util.mkKey(adColumnId, callout.getId());
+	}
+
+	public static final class Builder
+	{
+		private final ListMultimap<Integer, ICalloutInstance> calloutsByColumnId = ArrayListMultimap.create();
+		private final Set<ArrayKey> seenCalloutKeys = new HashSet<>();
+
+		private Builder()
+		{
+			super();
+		}
+
+		public TableCalloutsMap build()
+		{
+			if (calloutsByColumnId.isEmpty())
+			{
+				return EMPTY;
+			}
+
+			final ImmutableListMultimap<Integer, ICalloutInstance> map = ImmutableListMultimap.copyOf(calloutsByColumnId);
+			final ImmutableSet<ArrayKey> calloutsKeys = ImmutableSet.copyOf(seenCalloutKeys);
+			return new TableCalloutsMap(map, calloutsKeys);
+		}
+
+		public Builder put(final int adColumnId, final ICalloutInstance callout)
+		{
+			if (callout == null)
+			{
+				logger.warn("Skip adding callout for AD_Column_ID={} to map because it's null", adColumnId);
+				return this;
+			}
+
+			final ArrayKey calloutKey = mkKey(adColumnId, callout);
+			if (!seenCalloutKeys.add(calloutKey))
+			{
+				logger.warn("Skip adding callout {} with key '{}' to map because was already added", callout, calloutKey);
+				return this;
+			}
+
+			calloutsByColumnId.put(adColumnId, callout);
+			return this;
+		}
+
+		public Builder putAll(final ListMultimap<Integer, ICalloutInstance> calloutsByColumnId)
+		{
+			if (calloutsByColumnId == null || calloutsByColumnId.isEmpty())
+			{
+				return this;
+			}
+
+			for (final Entry<Integer, ICalloutInstance> entry : calloutsByColumnId.entries())
+			{
+				put(entry.getKey(), entry.getValue());
+			}
+			return this;
+		}
+
+		public Builder putAll(final Map<Integer, List<ICalloutInstance>> calloutsByColumnId)
+		{
+			if (calloutsByColumnId == null || calloutsByColumnId.isEmpty())
+			{
+				return this;
+			}
+
+			for (final Entry<Integer, List<ICalloutInstance>> entry : calloutsByColumnId.entrySet())
+			{
+				final List<ICalloutInstance> callouts = entry.getValue();
+				if (callouts == null || callouts.isEmpty())
+				{
+					continue;
+				}
+
+				final int adColumnId = entry.getKey();
+				for (final ICalloutInstance callout : callouts)
+				{
+					put(adColumnId, callout);
+				}
+			}
+
+			return this;
+		}
+
+		public Builder putAll(final TableCalloutsMap callouts)
+		{
+			if (callouts == null || callouts.isEmpty())
+			{
+				return this;
+			}
+
+			putAll(callouts.calloutsByColumnId);
+			return this;
+		}
+	}
+}

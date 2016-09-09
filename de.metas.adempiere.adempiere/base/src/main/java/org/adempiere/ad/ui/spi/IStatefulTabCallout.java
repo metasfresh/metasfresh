@@ -1,10 +1,12 @@
-package org.adempiere.ad.callout.api;
+package org.adempiere.ad.ui.spi;
+
+import org.adempiere.ad.callout.api.ICalloutRecord;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +24,12 @@ package org.adempiere.ad.callout.api;
  * #L%
  */
 
-
-import org.adempiere.util.ISingletonService;
-
-public interface ICalloutInstanceFactory extends ISingletonService
+public interface IStatefulTabCallout extends ITabCallout
 {
-	ICalloutInstance createFromString(String calloutStr);
+	/**
+	 * Called after {@link ICalloutRecord} was initialized.
+	 * 
+	 * @param calloutRecord
+	 */
+	void onInit(ICalloutRecord calloutRecord);
 }

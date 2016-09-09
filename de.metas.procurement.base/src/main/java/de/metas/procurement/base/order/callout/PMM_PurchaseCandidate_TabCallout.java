@@ -1,6 +1,7 @@
 package de.metas.procurement.base.order.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetFilterable;
@@ -37,7 +38,7 @@ import de.metas.procurement.base.order.facet.IPurchaseCandidateFacetCollectorFac
  * #L%
  */
 
-public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter
+public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter implements IStatefulTabCallout
 {
 	private FacetExecutor<I_PMM_PurchaseCandidate> gridTabFacetExecutor;
 

@@ -22,23 +22,54 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.junit.Ignore;
 
 @Ignore
-public class PlainCalloutField implements ICalloutField
+public class MockedCalloutField implements ICalloutField
 {
+	public static MockedCalloutField createNewField()
+	{
+		final String tableName = "MockedTableName" + nextTableIndex.getAndIncrement();
+		final String columnName = "MockedColumnName" + nextColumnIndex.getAndIncrement();
+		return createNewField(tableName, columnName);
+	}
+
+	private static final AtomicInteger nextTableIndex = new AtomicInteger(1);
+	private static final AtomicInteger nextColumnIndex = new AtomicInteger(1);
+
+	public static MockedCalloutField createNewField(final String tableName, final String columnName)
+	{
+		final int adTableId = MTable.getTable_ID(tableName);
+
+		final Properties ctx = Env.getCtx();
+		final I_AD_Column adColumn = InterfaceWrapperHelper.create(ctx, I_AD_Column.class, ITrx.TRXNAME_None);
+		adColumn.setAD_Table_ID(adTableId);
+		adColumn.setColumnName(columnName);
+		InterfaceWrapperHelper.save(adColumn);
+
+		final MockedCalloutField field = new MockedCalloutField();
+		field.setCtx(ctx);
+		field.setAD_Table_ID(adTableId);
+		field.setColumnName(columnName);
+		field.setAD_Column_ID(adColumn.getAD_Column_ID());
+		return field;
+	}
+
 	private Properties ctx = Env.getCtx();
 	private boolean triggerCalloutAllowed = true;
 	private int tableId = -1;
@@ -50,6 +81,11 @@ public class PlainCalloutField implements ICalloutField
 	private int windowNo = 0;
 	private int tabNo = 0;
 	private boolean recordCopyingMode = false;
+	
+	private MockedCalloutField()
+	{
+		super();
+	}
 
 	@Override
 	public boolean isTriggerCalloutAllowed()
@@ -68,7 +104,7 @@ public class PlainCalloutField implements ICalloutField
 	{
 		return tableId;
 	}
-	
+
 	@Override
 	public String getTableName()
 	{
@@ -180,14 +216,14 @@ public class PlainCalloutField implements ICalloutField
 	{
 		this.recordCopyingMode = recordCopyingMode;
 	}
-	
+
 	@Override
 	public boolean isRecordCopyingModeIncludingDetails()
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 	@Override
 	public ICalloutExecutor getCurrentCalloutExecutor()
 	{
@@ -199,7 +235,7 @@ public class PlainCalloutField implements ICalloutField
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public void fireDataStatusEEvent(ValueNamePair errorLog)
 	{

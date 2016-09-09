@@ -24,15 +24,19 @@ package org.adempiere.ad.callout.api.impl;
 
 
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutFactory;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.callout.api.ICalloutInstance;
+import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
+import org.adempiere.ad.callout.spi.IDefaultCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.CompositeCalloutProvider;
-import org.adempiere.ad.callout.spi.impl.DefaultCalloutProvider;
+import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.logging.LogManager;
 
 public class CalloutFactory implements ICalloutFactory
 {
@@ -42,10 +46,10 @@ public class CalloutFactory implements ICalloutFactory
 	public CalloutFactory()
 	{
 		// Register standard providers
-		providers.addCalloutProvider(new DefaultCalloutProvider());
+		registerCalloutProvider(Services.get(IDefaultCalloutProvider.class));
 
 		// NOTE: IProgramaticCalloutProvider will be registered just in time
-		// providers.addCalloutProvider(Services.get(IProgramaticCalloutProvider.class));
+		// registerCalloutProvider(Services.get(IProgramaticCalloutProvider.class));
 	}
 
 	@Override
@@ -58,15 +62,19 @@ public class CalloutFactory implements ICalloutFactory
 		}
 	}
 
-	@Override
-	public List<ICalloutProvider> getCalloutProviders()
+	/**
+	 *
+	 * @return registered providers
+	 */
+	@VisibleForTesting
+	final List<ICalloutProvider> getCalloutProvidersList()
 	{
 		return providers.getProviders();
 	}
-
+	
 	@Override
-	public List<ICalloutInstance> getCallouts(final ICalloutField field)
+	public TableCalloutsMap getCallouts(Properties ctx, int adTableId)
 	{
-		return providers.getCallouts(field);
+		return providers.getCallouts(ctx, adTableId);
 	}
 }

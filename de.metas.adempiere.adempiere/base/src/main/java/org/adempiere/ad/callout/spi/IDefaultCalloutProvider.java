@@ -1,10 +1,12 @@
-package org.adempiere.ad.callout.api.impl;
+package org.adempiere.ad.callout.spi;
+
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +24,13 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
-import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.adempiere.ad.callout.api.ICalloutInstanceFactory;
-import org.compiere.model.MRule;
-
-public class CalloutInstanceFactory implements ICalloutInstanceFactory
+/**
+ * Internal. Please don't use it!
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface IDefaultCalloutProvider extends ICalloutProvider, ISingletonService
 {
-	@Override
-	public ICalloutInstance createFromString(final String calloutStr)
-	{
-		if (calloutStr.toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
-		{
-			final String ruleValue = calloutStr.substring(MRule.SCRIPT_PREFIX.length());
-			return new RuleCalloutInstance(ruleValue);
-		}
-		else
-		{
-			return new DefaultCalloutInstance(calloutStr);
-		}
-	}
+	// NOTE: the only reason why we have this interface here is to have all @Cached methods wired.
 }
