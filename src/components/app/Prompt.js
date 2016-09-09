@@ -11,49 +11,51 @@ class Prompt extends Component {
     }
 
     componentDidMount() {
-        // Dirty solution, but use only if you need to
-        // there is no way to affect body
-        // because body is out of react app range
-        // and css dont affect parents
-        // but we have to change scope of scrollbar
-        document.body.style.overflow = "hidden";
     }
-    handleClose = () => {       
-        document.body.style.overflow = "auto";
+
+    renderCancelButton = () => {
+      return(
+        <span className="btn btn-meta-outline-secondary btn-distance-3 btn-sm" onClick={(e) => this.props.onCancelClick(e)}>
+            {this.props.buttons.cancel}
+        </span>
+      )
+    }
+    renderSubmitButton = () => {
+      return(
+        <span className="btn btn-meta-primary btn-sm btn-submit" onClick={(e) => this.props.onSubmitClick(e)}>
+            {this.props.buttons.submit}
+        </span>
+      )
     }
     render() {
-        const {isOpen, onCancelClick, onOkClick} = this.props;
+        const {isOpen, onCancelClick, onSubmitClick} = this.props;
+        const {cancel, submit} = this.props.buttons;
         return (
           !!isOpen && <div className="screen-freeze screen-prompt-freeze">
               <div className="panel panel-modal-primary panel-prompt">
                   <div className="panel-modal-header panel-prompt-header">
-                      <span className="panel-modal-header-title">New CU-TU allocation</span>
-                      <i className="meta-icon-close-1" onClick={this.handleClose}></i>
+                      <span className="panel-modal-header-title">{this.props.title}</span>
+                      <i className="meta-icon-close-1" onClick={(e) => this.props.onCancelClick(e)}></i>
                   </div>
                   <div className="panel-modal-content panel-prompt-content">
-                    <p>Are you sure?</p>
+                    <p>{this.props.text}</p>
                   </div>
                   <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
                     <div className="prompt-button-wrapper">
-                      <span className="btn btn-meta-outline-secondary btn-distance-3 btn-sm" onClick={onCancelClick}>
-                          Cancel
-                      </span>
-                      <span className="btn btn-meta-primary btn-sm btn-submit" onClick={onOkClick}>
-                          Save
-                      </span>
+                      {cancel ? this.renderCancelButton() : ""}
+                      {submit ? this.renderSubmitButton() : ""}
                     </div>
-
                   </div>
               </div>
           </div>
         )
-
     }
 }
 
 Prompt.propTypes = {
-    onCancelClick: PropTypes.func.isRequired,
-    onOkClick: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired
 };
+
+Prompt = connect()(Prompt)
 
 export default Prompt

@@ -1,11 +1,11 @@
 import React, { Component,PropTypes } from 'react';
 import { connect } from 'react-redux';
+import update from 'react-addons-update';
 
 import {
     openModal,
-    openPrompt,
     deleteData,
-    deleteRows
+    deleteLocal
 } from '../../actions/WindowActions';
 
 import Prompt from '../app/Prompt';
@@ -15,7 +15,13 @@ class TableContextMenu extends Component {
         super(props);
         this.state = {
             prompt: {
-                open: false
+                open: false,
+                title: "Delete",
+                text: "Are you sure?",
+                buttons: {
+                  submit: "Delete",
+                  cancel: "Cancel"
+                }
             }
        }
     }
@@ -27,30 +33,35 @@ class TableContextMenu extends Component {
     handleDelete = () => {
         const {dispatch,  tabId, type, docId, selected} = this.props;
         console.log('deleted');
-        
-        this.setState({prompt: {
-            open: true
-        }})
-        // dispatch(openPrompt("Title", "Text" ));
-        // dispatch(deleteData(type, docId, tabId, selected[0]));
-      
+
+        this.setState(update(this.state, {
+          prompt: {
+              open: {$set: true}
+          }
+        }))
     }
 
     handlePromptCancelClick = () => {
-        alert("cancel clicked");
-        this.setState({prompt: {
-            open: false
-        }})
+        this.setState(update(this.state, {
+          prompt: {
+              open: {$set: false}
+          }
+        }))
+
+        this.props.blur();
     }
 
-    handlePromptOkClick= () => {
+    handlePromptSubmitClick= () => {
        const {dispatch,  tabId, type, docId, selected} = this.props;
-        alert("ok clicked");
-        this.setState({prompt: {
-            open: false
-        }})
-        dispatch(deleteRows(tabId, selected, "master"));
+        this.setState(update(this.state, {
+          prompt: {
+              open: {$set: false}
+          }
+        }))
 
+        dispatch(deleteData(type, docId, tabId, selected));
+        dispatch(deleteLocal(tabId, selected, "master"));
+        this.props.blur();
     }
 
 
@@ -79,11 +90,14 @@ class TableContextMenu extends Component {
                 <div className="context-menu-item" onClick={this.handleDelete}>
                    <i className="meta-icon-edit" /> Delete
                 </div>
-               <Prompt 
-               isOpen={prompt.open}
-               onCancelClick={this.handlePromptCancelClick}
-               onOkClick={this.handlePromptOkClick}
-               />    
+               <Prompt
+                 isOpen={prompt.open}
+                 title={prompt.title}
+                 text={prompt.text}
+                 buttons={prompt.buttons}
+                 onCancelClick={this.handlePromptCancelClick}
+                 onSubmitClick={this.handlePromptSubmitClick}
+               />
             </div>
         )
 

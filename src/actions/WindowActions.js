@@ -53,11 +53,11 @@ export function addNewRow(item,tabid,rowid,scope) {
     }
 }
 
-export function deleteRows(tabid,rowsid,scope) {
+export function deleteRow(tabid,rowid,scope) {
     return {
-        type: types.DELETE_ROWS,
+        type: types.DELETE_ROW,
         tabid: tabid,
-        rowsid: rowsid,
+        rowid: rowid,
         scope: scope
     }
 }
@@ -103,20 +103,6 @@ export function closeModal(){
         type: types.CLOSE_MODAL
     }
 }
-
-export function openPrompt(title,text){
-    return {
-        type: types.OPEN_PROMPT,
-        title: title,
-        text: text
-    }
-}
-export function closePrompt(){
-    return {
-        type: types.CLOSE_PROMPT
-    }
-}
-
 
 // INDICATOR ACTIONS
 
@@ -363,4 +349,12 @@ export function deleteData(windowType, id, tabId, rowId) {
         (tabId ? "&tabid=" + tabId : "") +
         (rowId ? "&rowId=" + rowId : "")
     );
+}
+
+export function deleteLocal(tabid,rowsid,scope) {
+    return (dispatch) => {
+      for (let rowid of rowsid) {
+        return dispatch(deleteRow(tabid,rowid,scope))
+      }
+    }
 }

@@ -137,7 +137,7 @@ class Table extends Component {
     closeContextMenu = (event) => {
         this.setState(Object.assign({}, this.state, {
             contextMenu: Object.assign({}, this.state.contextMenu, {
-                open: false //false
+                open: false
             })
         }))
     }
@@ -196,7 +196,6 @@ class Table extends Component {
             }, 1);
 
         }
-
 
         e.preventDefault();
         this.setState({

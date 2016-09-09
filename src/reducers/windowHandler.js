@@ -13,11 +13,6 @@ const initialState = {
         rowData: {},
         modalTitle: ""
     },
-    prompt: {
-        visible: false,
-        title: "",
-        text: ""
-    },
     master: {
         layout: {},
         data: [],
@@ -58,24 +53,6 @@ export default function windowHandler(state = initialState, action) {
                 })
         })
 
-        case types.OPEN_PROMPT:
-            return Object.assign({}, state, {
-                prompt: Object.assign({}, state.prompt, {
-                    visible: true,
-                    title: action.title,
-                    text: action.text
-                })
-        })
-
-        case types.CLOSE_PROMPT:
-            return Object.assign({}, state, {
-                prompt: Object.assign({}, state.prompt, {
-                    visible: false,
-                    title: "",
-                    text: ""
-                })
-        })
-
         // SCOPED ACTIONS
 
         case types.INIT_LAYOUT_SUCCESS:
@@ -111,16 +88,12 @@ export default function windowHandler(state = initialState, action) {
                 }
             })
 
-        case types.DELETE_ROWS:
-          console.log('deleted locally');
-          
-          for(var rowid of action.rowsid) {     
-            delete state[action.scope].rowData[action.tabid][rowid]
-          }
-         
-          return state;
-  
-    
+        case types.DELETE_ROW:
+          return Object.keys(state[action.scope].rowData[action.tabid]).map(row => {
+            if(row.id !== action.id) {
+              return row;
+            }
+          });
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
