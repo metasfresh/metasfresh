@@ -89,11 +89,8 @@ export default function windowHandler(state = initialState, action) {
             })
 
         case types.DELETE_ROW:
-        return Object.assign({}, state, {
-              [action.scope]: Object.assign({}, state[action.scope], {
-
-              })
-          })
+         delete state[action.scope].rowData[action.tabid][action.rowid];
+         return state;
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
