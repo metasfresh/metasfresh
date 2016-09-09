@@ -419,7 +419,7 @@ public interface IQuery<T>
 	 * @param keyFunction key function used to provide the key used to split the returned records.
 	 * @return collection of record groups.
 	 */
-	<K, ET extends T> Collection<Collection<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> Collection<List<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
 
 	/**
 	 * Adds SQL query to be joined as UNION ALL/DISTINCT.
