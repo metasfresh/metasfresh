@@ -130,6 +130,10 @@ class Table extends Component {
                    document.activeElement.nextSibling.focus();
                 }
                 break;
+            case "Enter":
+                console.log('Enter clicked');
+                document.activeElement.fireEvent('oncontextmenu');
+                break;
         }
 
     }
