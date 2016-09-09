@@ -138,6 +138,11 @@ public class UserSession implements Serializable
 
 	public void setLoggedIn(final boolean loggedIn)
 	{
+		if(this.loggedIn == loggedIn)
+		{
+			return;
+		}
+		
 		if (loggedIn)
 		{
 			this.loggedIn = true;
