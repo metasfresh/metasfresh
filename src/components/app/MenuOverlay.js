@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 
 import { nodePathsRequest } from '../../actions/MenuActions';
 
@@ -19,6 +20,10 @@ class MenuOverlay extends Component {
             }))
         });
     }
+    handleClickOutside = (e) => {
+        const {onClickOutside} = this.props;
+        onClickOutside(e);
+    }
     render() {
         const {caption, children} = this.state;
         return (
@@ -37,6 +42,6 @@ MenuOverlay.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-MenuOverlay = connect()(MenuOverlay);
+MenuOverlay = connect()(onClickOutside(MenuOverlay));
 
 export default MenuOverlay

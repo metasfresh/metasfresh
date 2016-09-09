@@ -45,6 +45,8 @@ class Header extends Component {
     }
 
     renderBreadcrumb = () => {
+        const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId} = this.props;
+        const {menuOverlay} = this.state;
         return (
             <span className="header-breadcrumb header-breadcrumb-spaced">
                 {breadcrumb.map((item, index) =>
@@ -56,7 +58,13 @@ class Header extends Component {
                         >
                             {item.caption}
                         </a>
-                        {menuOverlay === item.nodeId && <MenuOverlay nodeId={item.nodeId} />}
+                        {menuOverlay === item.nodeId &&
+                            <MenuOverlay
+                                nodeId={item.nodeId}
+                                onClickOutside={e => this.handleMenuOverlay(e, "")}
+                                disableOnClickOutside={menuOverlay !== item.nodeId}
+                            />
+                        }
                     </span>
                 )}
                 {docNo && <span className="divider">/</span>}
