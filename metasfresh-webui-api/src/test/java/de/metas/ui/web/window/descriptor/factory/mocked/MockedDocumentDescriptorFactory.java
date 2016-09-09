@@ -60,9 +60,10 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
 	public static int AD_WINDOW_ID_SalesOrder = 143;
-	private static int AD_Tab__SalesOrder_Header = 186;
+	private static int AD_Tab_SalesOrder_Header = 186;
+	private static int AD_Table_C_Order = 259;
 	@SuppressWarnings("unused")
-	private static int AD_Tab__SalesOrder_OrderLines = 187;
+	private static int AD_Tab_SalesOrder_OrderLines = 187;
 
 	// public static void main(String[] args)
 	// {
@@ -98,8 +99,9 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 				.setAllowDeleteLogic(ILogicExpression.TRUE)
 				//
 				.setAD_Window_ID(AD_Window_ID)
-				.setAD_Tab_ID(AD_Tab__SalesOrder_Header)
+				.setAD_Tab_ID(AD_Tab_SalesOrder_Header)
 				.setTabNo(0)
+				.setAD_Table_ID(AD_Table_C_Order)
 				.setIsSOTrx(true)
 				//
 				.setDataBinding(POJODocumentEntityDataBindingDescriptor.ofClass(I_C_Order.class))
@@ -137,7 +139,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														.addField(DocumentLayoutElementFieldDescriptor.builder(I_C_Order.COLUMNNAME_DocumentNo)))))))
 														//
 														;
-		
+
 		layoutBuilder.setSideList(DocumentLayoutSideListDescriptor.builder().build());
 
 		return DocumentDescriptor.builder()

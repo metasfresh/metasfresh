@@ -37,9 +37,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 final class DocumentFieldAsCalloutField implements ICalloutField
 {
-	private final DocumentField documentField;
+	private final IDocumentField documentField;
 
-	/* package */ DocumentFieldAsCalloutField(final DocumentField documentField)
+	/* package */ DocumentFieldAsCalloutField(final IDocumentField documentField)
 	{
 		super();
 		this.documentField = documentField;

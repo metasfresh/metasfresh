@@ -128,6 +128,8 @@ class SqlDocumentQueryBuilder
 		{
 			sql.append("\n LIMIT ").append(pageLength);
 		}
+		
+		// TODO: apply role addAccessSQL
 
 		//
 		//

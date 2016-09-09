@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.GuavaCollectors;
 
@@ -89,6 +91,8 @@ public class DocumentEntityDescriptor
 	private final int AD_Window_ID;
 	@JsonProperty("AD_Tab_ID")
 	private final int AD_Tab_ID;
+	@JsonProperty("AD_Table_ID")
+	private final int AD_Table_ID;
 	@JsonProperty("tabNo")
 	private final int tabNo;
 	@JsonProperty("IsSOTrx")
@@ -96,6 +100,9 @@ public class DocumentEntityDescriptor
 
 	@JsonIgnore
 	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
+
+	@JsonIgnore
+	private final CalloutExecutor calloutExecutorFactory;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -120,11 +127,16 @@ public class DocumentEntityDescriptor
 		// legacy:
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
+		AD_Table_ID = Preconditions.checkNotNull(builder.AD_Table_ID, "AD_Table_ID shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 
 		//
 		id = String.valueOf(builder.AD_Tab_ID);
+		
+		calloutExecutorFactory = CalloutExecutor.builder()
+				.setAD_Table_ID(AD_Table_ID)
+				.build();
 	}
 
 	@JsonCreator
@@ -137,8 +149,10 @@ public class DocumentEntityDescriptor
 			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
 			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
 			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
+			// legacy:
 			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
 			, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
+			, @JsonProperty("AD_Table_ID") final int AD_Table_ID //
 			, @JsonProperty("tabNo") final int tabNo //
 			, @JsonProperty("isSOTrx") final boolean isSOTrx //
 	)
@@ -153,9 +167,11 @@ public class DocumentEntityDescriptor
 				.addFields(fields)
 				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
 				.setDataBinding(dataBinding)
+				// legacy:
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTabNo(tabNo)
+				.setAD_Table_ID(AD_Table_ID)
 				.setIsSOTrx(isSOTrx));
 	}
 
@@ -305,9 +321,21 @@ public class DocumentEntityDescriptor
 
 	// legacy
 	@JsonIgnore
+	public int getAD_Table_ID()
+	{
+		return AD_Table_ID;
+	}
+
+	// legacy
+	@JsonIgnore
 	public boolean isSOTrx()
 	{
 		return isSOTrx;
+	}
+
+	public ICalloutExecutor createCalloutExecutor()
+	{
+		return calloutExecutorFactory.newInstanceSharingMasterData();
 	}
 
 	public static final class Builder
@@ -331,7 +359,9 @@ public class DocumentEntityDescriptor
 		private Integer AD_Window_ID;
 		private Integer AD_Tab_ID;
 		private Integer tabNo;
+		private Integer AD_Table_ID;
 		private Boolean isSOTrx;
+
 
 		private Builder()
 		{
@@ -360,7 +390,7 @@ public class DocumentEntityDescriptor
 		public Builder setDetailId(final String detailId)
 		{
 			this.detailId = detailId;
-			this.detailIdSet = true;
+			detailIdSet = true;
 			return this;
 		}
 
@@ -463,13 +493,13 @@ public class DocumentEntityDescriptor
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptor dataBinding)
 		{
-			this._dataBindingOrBuilder = dataBinding;
+			_dataBindingOrBuilder = dataBinding;
 			return this;
 		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
 		{
-			this._dataBindingOrBuilder = dataBindingBuilder;
+			_dataBindingOrBuilder = dataBindingBuilder;
 			return this;
 		}
 
@@ -512,6 +542,12 @@ public class DocumentEntityDescriptor
 		public Builder setTabNo(final int tabNo)
 		{
 			this.tabNo = tabNo;
+			return this;
+		}
+
+		public Builder setAD_Table_ID(final int AD_Table_ID)
+		{
+			this.AD_Table_ID = AD_Table_ID;
 			return this;
 		}
 

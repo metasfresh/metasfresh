@@ -12,11 +12,9 @@ import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 /*
@@ -41,7 +39,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
  * #L%
  */
 
-/*package*/class DocumentField implements IDocumentFieldView
+/*package*/class DocumentField implements IDocumentField
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -110,39 +108,10 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return descriptor;
 	}
 
-	/* package */Document getDocument()
+	@Override
+	public Document getDocument()
 	{
 		return _document;
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return _document.getDocumentPath();
-	}
-
-	@Override
-	public String getFieldName()
-	{
-		return descriptor.getFieldName();
-	}
-
-	@Override
-	public boolean isKey()
-	{
-		return descriptor.isKey();
-	}
-
-	@Override
-	public boolean isVirtualField()
-	{
-		return descriptor.isVirtualField();
-	}
-
-	@Override
-	public boolean isCalculated()
-	{
-		return descriptor.isCalculated();
 	}
 
 	@Override
@@ -154,7 +123,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	/**
 	 * @param value
 	 */
-	/* package */ void setInitialValue(final Object value)
+	@Override
+	public void setInitialValue(final Object value)
 	{
 		final Object valueNew = convertToValueClass(value);
 		if (logger.isTraceEnabled())
@@ -183,7 +153,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		}
 	}
 
-	/* package */void setValue(final Object value)
+	@Override
+	public void setValue(final Object value)
 	{
 		final Object valueNew = convertToValueClass(value);
 		final Object valueOld = _value;
@@ -255,18 +226,13 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
-	public boolean isMandatory()
-	{
-		return _mandatory.booleanValue();
-	}
-
-	@Override
 	public LogicExpressionResult getMandatory()
 	{
 		return _mandatory;
 	}
 
-	/* package */ void setMandatory(final LogicExpressionResult mandatory)
+	@Override
+	public void setMandatory(final LogicExpressionResult mandatory)
 	{
 		if (mandatory == null)
 		{
@@ -275,17 +241,11 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
 		final LogicExpressionResult mandatoryOld = _mandatory;
 		_mandatory = mandatory;
-		
+
 		if (!mandatoryOld.equalsByValue(mandatory))
 		{
 			updateValid();
 		}
-	}
-
-	@Override
-	public boolean isReadonly()
-	{
-		return _readonly.booleanValue();
 	}
 
 	@Override
@@ -294,7 +254,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _readonly;
 	}
 
-	/* package */void setReadonly(final LogicExpressionResult readonly)
+	@Override
+	public void setReadonly(final LogicExpressionResult readonly)
 	{
 		if (readonly == null)
 		{
@@ -304,18 +265,13 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
-	public boolean isDisplayed()
-	{
-		return _displayed.booleanValue();
-	}
-
-	@Override
 	public LogicExpressionResult getDisplayed()
 	{
 		return _displayed;
 	}
 
-	/* package */void setDisplayed(final LogicExpressionResult displayed)
+	@Override
+	public void setDisplayed(final LogicExpressionResult displayed)
 	{
 		if (displayed == null)
 		{
@@ -325,24 +281,13 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
-	public boolean isPublicField()
-	{
-		return descriptor.hasCharacteristic(Characteristic.PublicField);
-	}
-
-	@Override
-	public boolean isAdvancedField()
-	{
-		return descriptor.hasCharacteristic(Characteristic.AdvancedField);
-	}
-
-	@Override
 	public boolean isLookupValuesStale()
 	{
 		return lookupDataSource != null && lookupDataSource.isStaled();
 	}
 
-	/* package */ boolean setLookupValuesStaled(final String triggeringFieldName)
+	@Override
+	public boolean setLookupValuesStaled(final String triggeringFieldName)
 	{
 		if (lookupDataSource == null)
 		{
@@ -351,12 +296,14 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return lookupDataSource.setStaled(triggeringFieldName);
 	}
 
+	@Override
 	public boolean isLookupWithNumericKey()
 	{
 		return lookupDataSource != null && lookupDataSource.isNumericKey();
 	}
 
-	/* package */List<LookupValue> getLookupValues(final Document document)
+	@Override
+	public List<LookupValue> getLookupValues(final Document document)
 	{
 		if (lookupDataSource == null)
 		{
@@ -365,7 +312,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return lookupDataSource.findEntities(document, LookupDataSource.DEFAULT_PageLength);
 	}
 
-	/* package */List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
+	@Override
+	public List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
 	{
 		if (lookupDataSource == null)
 		{
@@ -374,6 +322,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
 	}
 
+	@Override
 	public ICalloutField asCalloutField()
 	{
 		if (_calloutField == null)
@@ -383,7 +332,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return _calloutField;
 	}
 
-	final void updateValid()
+	@Override
+	public void updateValid()
 	{
 		final DocumentValidStatus validOld = _valid;
 		final DocumentValidStatus validNew = checkValid();
@@ -395,7 +345,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		}
 	}
 
-	final void updateValidIfStaled()
+	@Override
+	public void updateValidIfStaled()
 	{
 		if (!_valid.isStaled())
 		{
@@ -418,7 +369,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	/**
 	 * @return field's valid state; never return null
 	 */
-	/* package */DocumentValidStatus getValid()
+	@Override
+	public DocumentValidStatus getValid()
 	{
 		return _valid;
 	}
@@ -429,7 +381,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		return !DataTypes.equals(_value, _initialValue);
 	}
 
-	/* package */DocumentField copy(final Document document)
+	@Override
+	public DocumentField copy(final Document document)
 	{
 		return new DocumentField(this, document);
 	}

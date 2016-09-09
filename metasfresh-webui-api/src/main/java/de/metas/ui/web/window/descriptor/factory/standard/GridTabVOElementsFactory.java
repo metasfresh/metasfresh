@@ -601,6 +601,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 					.setAD_Window_ID(gridTabVO.getAD_Window_ID()) // legacy
 					.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 					.setTabNo(gridTabVO.getTabNo()) // legacy
+					.setAD_Table_ID(gridTabVO.getAD_Table_ID()) // legacy
 					.setIsSOTrx(isSOTrx()) // legacy
 					;
 		}

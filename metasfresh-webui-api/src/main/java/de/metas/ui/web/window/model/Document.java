@@ -12,7 +12,6 @@ import java.util.function.IntSupplier;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -110,15 +109,15 @@ public final class Document
 
 	//
 	// Callouts
-	private ITabCallout documentCallout = ITabCallout.NULL;
+	private ITabCallout documentCallout = ITabCallout.NULL; // will be set from builder, after document it's initialized
 	private final ICalloutExecutor fieldCalloutExecutor;
 	private DocumentAsCalloutRecord _calloutRecord; // lazy
 
 	//
 	// Fields
-	private final Map<String, DocumentField> fieldsByName;
+	private final Map<String, IDocumentField> fieldsByName;
 	private final IDocumentFieldView idField;
-	private final DocumentField parentLinkField;
+	private final IDocumentField parentLinkField;
 
 	//
 	// Parent & children
@@ -170,13 +169,13 @@ public final class Document
 		//
 		// Create document fields
 		{
-			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
+			final ImmutableMap.Builder<String, IDocumentField> fieldsBuilder = ImmutableMap.builder();
 			IDocumentFieldView idField = null;
-			DocumentField parentLinkField = null;
+			IDocumentField parentLinkField = null;
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String fieldName = fieldDescriptor.getFieldName();
-				final DocumentField field = new DocumentField(fieldDescriptor, this);
+				final IDocumentField field = new DocumentField(fieldDescriptor, this);
 				fieldsBuilder.put(fieldName, field);
 
 				if (fieldDescriptor.isKey())
@@ -211,7 +210,7 @@ public final class Document
 
 		//
 		// Initialize field callout executor
-		fieldCalloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -264,12 +263,12 @@ public final class Document
 		//
 		// Copy document fields
 		{
-			final ImmutableMap.Builder<String, DocumentField> fieldsBuilder = ImmutableMap.builder();
+			final ImmutableMap.Builder<String, IDocumentField> fieldsBuilder = ImmutableMap.builder();
 			IDocumentFieldView idField = null;
-			DocumentField parentLinkField = null;
-			for (final DocumentField fieldOrig : from.fieldsByName.values())
+			IDocumentField parentLinkField = null;
+			for (final IDocumentField fieldOrig : from.fieldsByName.values())
 			{
-				final DocumentField fieldCopy = fieldOrig.copy(this);
+				final IDocumentField fieldCopy = fieldOrig.copy(this);
 				final String fieldName = fieldCopy.getFieldName();
 				fieldsBuilder.put(fieldName, fieldCopy);
 
@@ -305,8 +304,7 @@ public final class Document
 		//
 		// Initialize callout executor
 		documentCallout = from.documentCallout;
-		// NOTE: we need a new instance of it because the "calloutExecutor" has state (i.e. active callouts list etc)
-		fieldCalloutExecutor = new CalloutExecutor(getCtx(), windowNo);
+		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -342,7 +340,7 @@ public final class Document
 		_initializing = true;
 		try
 		{
-			for (final DocumentField documentField : getFields())
+			for (final IDocumentField documentField : getFields())
 			{
 				initializeField(documentField, mode, initialValueSupplier);
 			}
@@ -373,7 +371,7 @@ public final class Document
 			else if (FieldInitializationMode.Refresh == mode)
 			{
 				documentCallout.onRefresh(asCalloutRecord());
-				
+
 				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector());
 				updateValidIfStaled();
 			}
@@ -392,7 +390,7 @@ public final class Document
 	 * @param mode initialization mode
 	 * @param initialValueSupplier initial value supplier
 	 */
-	private void initializeField(final DocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
+	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
 	{
 		boolean valueSet = false;
 		Object valueOld = null;
@@ -448,7 +446,7 @@ public final class Document
 		{
 			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
 			// NOTE: don't call callouts because this was not a user change.
-			
+
 			if (valueSet)
 			{
 				final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollector();
@@ -626,14 +624,14 @@ public final class Document
 		return parent;
 	}
 
-	private Collection<DocumentField> getFields()
+	private Collection<IDocumentField> getFields()
 	{
 		return fieldsByName.values();
 	}
 
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
-		final Collection<DocumentField> documentFields = fieldsByName.values();
+		final Collection<IDocumentField> documentFields = fieldsByName.values();
 		return ImmutableList.<IDocumentFieldView> copyOf(documentFields);
 	}
 
@@ -650,9 +648,9 @@ public final class Document
 	/**
 	 * @return field; never returns null
 	 */
-	private DocumentField getField(final String fieldName)
+	private IDocumentField getField(final String fieldName)
 	{
-		final DocumentField documentField = getFieldOrNull(fieldName);
+		final IDocumentField documentField = getFieldOrNull(fieldName);
 		if (documentField == null)
 		{
 			throw new DocumentFieldNotFoundException(this, fieldName);
@@ -665,9 +663,9 @@ public final class Document
 		return getField(fieldName);
 	}
 
-	private DocumentField getFieldOrNull(final String fieldName)
+	private IDocumentField getFieldOrNull(final String fieldName)
 	{
-		final DocumentField documentField = fieldsByName.get(fieldName);
+		final IDocumentField documentField = fieldsByName.get(fieldName);
 		return documentField;
 	}
 
@@ -679,11 +677,11 @@ public final class Document
 	public int getDocumentIdAsInt()
 	{
 		// TODO handle NO ID field or composed PK
-		if(idField == null)
+		if (idField == null)
 		{
 			// Get it from document path.
 			// This will cover the case of missing ID which was somehow generated internally
-			if(getParentDocument() == null)
+			if (getParentDocument() == null)
 			{
 				return getDocumentPath().getDocumentId().toInt();
 			}
@@ -694,16 +692,17 @@ public final class Document
 		}
 		final int idInt = idField.getValueAsInt(-1);
 		return idInt;
-		
+
 	}
+
 	public DocumentId getDocumentId()
 	{
 		// TODO handle NO ID field or composed PK
-		if(idField == null)
+		if (idField == null)
 		{
 			// Get it from document path.
 			// This will cover the case of missing ID which was somehow generated internally
-			if(getParentDocument() == null)
+			if (getParentDocument() == null)
 			{
 				return getDocumentPath().getDocumentId();
 			}
@@ -715,12 +714,11 @@ public final class Document
 		final int idInt = idField.getValueAsInt(-1);
 		return DocumentId.of(idInt);
 	}
-	
+
 	public Object getDocumentIdAsJson()
 	{
 		return getDocumentIdAsInt();
 	}
-
 
 	public boolean isNew()
 	{
@@ -779,7 +777,7 @@ public final class Document
 	 */
 	public void processValueChange(final String fieldName, final Object value, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
-		final DocumentField documentField = getField(fieldName);
+		final IDocumentField documentField = getField(fieldName);
 
 		if (documentField.isReadonly())
 		{
@@ -799,7 +797,7 @@ public final class Document
 	{
 		assertWritable();
 
-		final DocumentField docActionField = getField(WindowConstants.FIELDNAME_DocAction);
+		final IDocumentField docActionField = getField(WindowConstants.FIELDNAME_DocAction);
 
 		//
 		// Make sure it's saved
@@ -839,11 +837,11 @@ public final class Document
 
 	public void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
-		final DocumentField documentField = getField(fieldName);
+		final IDocumentField documentField = getField(fieldName);
 		setValue(documentField, value, reason);
 	}
 
-	private final void setValue(final DocumentField documentField, final Object value, final ReasonSupplier reason)
+	private final void setValue(final IDocumentField documentField, final Object value, final ReasonSupplier reason)
 	{
 		assertWritable();
 
@@ -872,7 +870,7 @@ public final class Document
 	{
 		logger.trace("Executing all callouts for {}", this);
 
-		for (final DocumentField documentField : getFields())
+		for (final IDocumentField documentField : getFields())
 		{
 			fieldCalloutExecutor.execute(documentField.asCalloutField());
 		}
@@ -888,7 +886,7 @@ public final class Document
 		logger.trace("Updating all dependencies for {}", this);
 
 		final String triggeringFieldName = null; // N/A
-		for (final DocumentField documentField : getFields())
+		for (final IDocumentField documentField : getFields())
 		{
 			for (final DependencyType triggeringDependencyType : DependencyType.values())
 			{
@@ -897,7 +895,7 @@ public final class Document
 		}
 	}
 
-	private final void updateFieldReadOnly(final DocumentField documentField)
+	private final void updateFieldReadOnly(final IDocumentField documentField)
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
@@ -913,7 +911,7 @@ public final class Document
 		}
 	}
 
-	private final void updateFieldMandatory(final DocumentField documentField)
+	private final void updateFieldMandatory(final IDocumentField documentField)
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
@@ -929,7 +927,7 @@ public final class Document
 		}
 	}
 
-	private final void updateFieldDisplayed(final DocumentField documentField)
+	private final void updateFieldDisplayed(final IDocumentField documentField)
 	{
 		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
 
@@ -952,7 +950,7 @@ public final class Document
 	{
 		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
 		dependencies.consumeForChangedFieldName(triggeringFieldName, (dependentFieldName, dependencyType) -> {
-			final DocumentField dependentField = getFieldOrNull(dependentFieldName);
+			final IDocumentField dependentField = getFieldOrNull(dependentFieldName);
 			if (dependentField == null)
 			{
 				// shall not happen
@@ -964,9 +962,9 @@ public final class Document
 			updateFieldFlag(dependentField, triggeringFieldName, dependencyType, fieldEventsCollector);
 			documentChangesCollector.collectFrom(fieldEventsCollector);
 
+			// TODO: i think we shall drop this part because there is NOTHING which could depend on changing a given field to readonly for example
 			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames(getDocumentPath()))
 			{
-				// TODO: i think we shall trigger only in case of Value changed event
 				updateFieldsWhichDependsOn(dependentFieldNameLvl2, documentChangesCollector);
 			}
 
@@ -983,7 +981,7 @@ public final class Document
 	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
 	private void updateFieldFlag(
-			final DocumentField documentField //
+			final IDocumentField documentField //
 			, final String triggeringFieldName //
 			, final DependencyType triggeringDependencyType //
 			, final IDocumentChangesCollector documentChangesCollector //
@@ -1028,10 +1026,10 @@ public final class Document
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}
-	
+
 	private void updateValidIfStaled()
 	{
-		for (final DocumentField field : getFields())
+		for (final IDocumentField field : getFields())
 		{
 			field.updateValid();
 		}
@@ -1188,7 +1186,7 @@ public final class Document
 	{
 		//
 		// Check document fields
-		for (final DocumentField documentField : getFields())
+		for (final IDocumentField documentField : getFields())
 		{
 			final DocumentValidStatus validState = documentField.getValid();
 			if (!validState.isValid())
@@ -1235,7 +1233,7 @@ public final class Document
 
 		//
 		// Check document fields
-		for (final DocumentField documentField : getFields())
+		for (final IDocumentField documentField : getFields())
 		{
 			if (documentField.hasChanges())
 			{
