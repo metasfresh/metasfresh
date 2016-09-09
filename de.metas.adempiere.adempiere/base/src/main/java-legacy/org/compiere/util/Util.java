@@ -811,6 +811,55 @@ public class Util
 	}
 
 	/**
+	 * Loads the class with <code>classname</code> and makes sure that it's implementing given <code>interfaceClazz</code>.
+	 * 
+	 * @param interfaceClazz
+	 * @param classname
+	 * @return loaded class
+	 * 
+	 * @see #setClassInstanceProvider(IClassInstanceProvider)
+	 */
+	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
+	{
+		Check.assumeNotNull(classname, "className is not null");
+		try
+		{
+			final Class<?> instanceClazz = classInstanceProvider.provideClass(classname);
+			
+			Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
+
+			@SuppressWarnings("unchecked")
+			final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
+			return instanceClassCasted;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + classname + "' implementing " + interfaceClazz, e);
+		}
+	}
+
+	/**
+	 * Creates a new instance of given <code>instanceClazz</code>.
+	 * Also it makes sure that it's implementing given <code>interfaceClass</code>.
+	 * 
+	 * @param interfaceClazz
+	 * @param instanceClazz
+	 * @return instance
+	 * @see #setClassInstanceProvider(IClassInstanceProvider)
+	 */
+	public static final <T> T newInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz)
+	{
+		try
+		{
+			return classInstanceProvider.provideInstance(interfaceClazz, instanceClazz);
+		}
+		catch (ReflectiveOperationException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
+		}
+	}
+
+	/**
 	 * Create an instance of given className.
 	 * <p>
 	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
@@ -844,7 +893,7 @@ public class Util
 		}
 		catch (ReflectiveOperationException e)
 		{
-			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+			throw new AdempiereException("Unable to instantiate '" + className + "' implementing " + interfaceClazz, e);
 		}
 	}
 
