@@ -31,9 +31,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.service.ICalendarBL;
-import de.metas.adempiere.service.impl.TriggerUIBL.ModelValidator;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 

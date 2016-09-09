@@ -27,8 +27,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User_Roles;
+import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.impl.TriggerUIBL.ModelValidator;
 import de.metas.commission.service.IUserRoleBL;
 
 @Validator(I_AD_User_Roles.class)
