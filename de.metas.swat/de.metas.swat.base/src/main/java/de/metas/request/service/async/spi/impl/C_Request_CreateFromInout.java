@@ -2,7 +2,6 @@ package de.metas.request.service.async.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -29,18 +28,18 @@ import de.metas.request.api.IRequestDAO;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 {
-	public static void createWorkpackage(final Properties ctx, final Set<Integer> inOutLineIds, final String trxName)
+	public static void createWorkpackage(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
 	{
 		if (inOutLineIds == null || inOutLineIds.isEmpty())
 		{
@@ -128,22 +127,21 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 		}
 	};
 
-	
 	@Override
 	public Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName)
 	{
 		// Services
-				final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-				final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 
-				final List<I_M_InOutLine> lines = queueDAO.retrieveItems(workPackage, I_M_InOutLine.class, localTrxName);
+		final List<I_M_InOutLine> lines = queueDAO.retrieveItems(workPackage, I_M_InOutLine.class, localTrxName);
 
-				for (final I_M_InOutLine line : lines)
-				{
-					requestDAO.createRequestFromInOutLine(line);
-				}
+		for (final I_M_InOutLine line : lines)
+		{
+			requestDAO.createRequestFromInOutLine(line);
+		}
 
-				return Result.SUCCESS;
+		return Result.SUCCESS;
 	}
 
 }
