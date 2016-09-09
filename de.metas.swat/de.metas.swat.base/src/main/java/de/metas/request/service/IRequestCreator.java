@@ -1,7 +1,7 @@
 package de.metas.request.service;
 
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 
@@ -18,11 +18,11 @@ import org.adempiere.util.ISingletonService;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,5 +30,12 @@ import org.adempiere.util.ISingletonService;
 public interface IRequestCreator extends ISingletonService
 {
 
-	void createRequest(final Properties ctx, final Set<Integer> inOutLineIds, final String trxName);
+	/**
+	 * Create an R_Request based on a list of M_InOutLine IDs
+	 * 
+	 * @param ctx
+	 * @param inOutLineIds
+	 * @param trxName
+	 */
+	void createRequest(final Properties ctx, final List<Integer> docLineIds, final String trxName);
 }

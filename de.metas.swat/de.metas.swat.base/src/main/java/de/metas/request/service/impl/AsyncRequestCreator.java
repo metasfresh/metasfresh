@@ -1,7 +1,7 @@
 package de.metas.request.service.impl;
 
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import de.metas.request.service.IRequestCreator;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
@@ -19,11 +19,11 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,10 +32,9 @@ public class AsyncRequestCreator implements IRequestCreator
 {
 
 	@Override
-	public void createRequest(final Properties ctx, final Set<Integer> inOutLineIds, final String trxName)
+	public void createRequest(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
 	{
 		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
-		
 	}
 
 }
