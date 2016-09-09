@@ -102,6 +102,10 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		{
 			onAttributeValueChanged(attributeValueContext, attributeValue, valueOld, valueNew);
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "AbstractAttributeStorage[<anonymous IAttributeValueListener>]"; };
+		// @formatter:on
 	};
 
 	/**
