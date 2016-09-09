@@ -89,8 +89,20 @@ export default function windowHandler(state = initialState, action) {
             })
 
         case types.DELETE_ROW:
-         delete state[action.scope].rowData[action.tabid][action.rowid];
-         return state;
+            return update(state, {
+                [action.scope]: {
+                    rowData: {
+                        [action.tabid]: {$set:
+                            Object.keys(state[action.scope].rowData[action.tabid])
+                                .filter(key => key !== action.rowid)
+                                .reduce((result, current) => {
+                                    result[current] = state[action.scope].rowData[action.tabid][current];
+                                    return result;
+                                }, {})
+                            }
+                    }
+                }
+            })
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {
