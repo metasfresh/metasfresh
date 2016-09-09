@@ -63,9 +63,10 @@
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
 		<snapshotRepository>
-			<id>metas-nexus-repo</id>
+			<id>metasfresh-nexus-repo</id>
 			<name>Maven metasfresh Snapshots Repository</name>
-			<url>http://dedep901:8081/nexus/content/repositories/metasfresh-snapshots/</url>
+			<!-- see ME-40 -->
+			<url>http://nexus.metasfresh.com:8281/repository/metasfresh-snapshots/</url>
 		</snapshotRepository>
 
 	</distributionManagement>
