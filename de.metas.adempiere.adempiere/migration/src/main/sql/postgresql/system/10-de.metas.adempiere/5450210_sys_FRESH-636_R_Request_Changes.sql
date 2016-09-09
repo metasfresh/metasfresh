@@ -1141,3 +1141,8 @@ UPDATE AD_Ref_List SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-
 UPDATE AD_Element SET EntityType='de.metas.swat',Updated=TO_TIMESTAMP('2016-09-08 11:20:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543174
 ;
 
+-- 09.09.2016 15:58
+-- URL zum Konzept
+UPDATE AD_Field SET DisplayLogic='@R_RequestType_InternalName/-1@ !''A_CustomerComplaint'' & @R_RequestType_InternalName/-1@ ! ''B_VendorComplaint''',Updated=TO_TIMESTAMP('2016-09-09 15:58:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557238
+;
+
