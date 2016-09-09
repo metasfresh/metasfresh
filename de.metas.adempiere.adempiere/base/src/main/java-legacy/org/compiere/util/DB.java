@@ -1253,7 +1253,9 @@ public final class DB
 	public static RowSet getRowSet(final String sql, final List<Object> sqlParams)
 	{
 		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
-		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, DB.getDatabase().convertStatement(sql));
+		final String sqlConverted = DB.getDatabase().convertStatement(sql);
+		final String trxName = ITrx.TRXNAME_None;
+		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, sqlConverted, trxName);
 		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
 		try
 		{

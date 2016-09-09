@@ -38,8 +38,7 @@ import org.compiere.util.CStatementVO;
 
 	private static final CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
-		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency);
-		vo.setTrxName(trxName);
+		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, trxName);
 		return vo;
 	}
 

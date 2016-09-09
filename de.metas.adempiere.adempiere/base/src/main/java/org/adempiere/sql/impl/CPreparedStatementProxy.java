@@ -75,8 +75,8 @@ import org.compiere.util.DB;
 			throw new DBNoConnectionException();
 		}
 
-		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, database.convertStatement(sql0));
-		vo.setTrxName(trxName);
+		final String sqlConverted = database.convertStatement(sql0);
+		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, sqlConverted, trxName);
 
 		return vo;
 	}

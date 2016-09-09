@@ -69,7 +69,7 @@ import org.compiere.util.Trx;
 		try
 		{
 			Connection conn = null;
-			final Trx trx = getTrx();
+			final Trx trx = getTrx(p_vo);
 			if (trx != null)
 			{
 				conn = trx.getConnection();
@@ -469,15 +469,15 @@ import org.compiere.util.Trx;
 		}
 	}
 
-	protected final Trx getTrx()
+	private static final Trx getTrx(final CStatementVO vo)
 	{
-		if (p_vo == null)
+		if (vo == null)
 		{
 			return null;
 		}
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = p_vo.getTrxName();
+		final String trxName = vo.getTrxName();
 		if (trxManager.isNull(trxName))
 		{
 			return (Trx)ITrx.TRX_None;
