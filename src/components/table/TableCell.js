@@ -23,6 +23,9 @@ class TableCell extends Component {
                 tabIndex="0"
                 ref={(c) => this.cell = c}
                 onDoubleClick={onDoubleClick}
+                className={
+                    (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "")
+                }
             >
                 {
                     isEdited ?
@@ -34,6 +37,7 @@ class TableCell extends Component {
                             rowId={rowId}
                             tabId={tabId}
                             noLabel={true}
+                            gridAlign={item.gridAlign}
                         />
                     :
                         fieldToString(widgetData.value)
