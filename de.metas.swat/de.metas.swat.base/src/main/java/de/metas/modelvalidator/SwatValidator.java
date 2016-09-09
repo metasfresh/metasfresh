@@ -119,6 +119,8 @@ import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
 import de.metas.request.model.validator.R_Request;
+import de.metas.request.service.IRequestCreator;
+import de.metas.request.service.impl.AsyncRequestCreator;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 
 /**
@@ -176,6 +178,9 @@ public class SwatValidator implements ModelValidator
 
 		// task FRESH-152: BPartner Stats Updater
 		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
+		
+		// task FRESH-636: Request Creator
+		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);
