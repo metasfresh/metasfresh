@@ -90,7 +90,7 @@ export default function windowHandler(state = initialState, action) {
 
         case types.DELETE_ROW:
           return Object.keys(state[action.scope].rowData[action.tabid]).map(row => {
-            if(row.id !== action.id) {
+            if(row !== action.rowid) {
               return row;
             }
           });
