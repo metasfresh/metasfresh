@@ -43,6 +43,17 @@ public interface I_R_Request extends org.compiere.model.I_R_Request
 	// @formatter:on
 	
 	// @formatter:off
+	public static final String COLUMNNAME_PerformanceType = "PerformanceType";
+		
+	public void setPerformanceType(String PerformanceType);
+	public String getPerformanceType();
+	
+	public static final String PerformanceType_DeliveryPerformance = "LP";
+	public static final String PerformanceType_QualityPerformance = "QP";
+	
+	// @formatter:on
+	
+	// @formatter:off
 	public static final String COLUMNNAME_QualityNote = "QualityNote";
 		
 	public void setQualityNote(String QualityNote);
