@@ -305,6 +305,7 @@ import de.metas.logging.LogManager;
 			}
 
 			final Object value = model.getPropertyValue(propertyName);
+			logger.debug("Setting property={} to value={} at editor={}", propertyName, value, editor);
 			editor.setValue(value);
 
 			final boolean editable = model.isEditable(propertyName);
@@ -363,6 +364,7 @@ import de.metas.logging.LogManager;
 						public Object runInBackground(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor)
 						{
 							final Object value = inputMethod.invoke();
+							logger.debug("inputMethod={} returned value={} in UIAsyncPropertyChangeListener={} in UIAsyncPropertyChangeListener={}", inputMethod, value, this);
 							return value;
 						};
 
@@ -382,10 +384,10 @@ import de.metas.logging.LogManager;
 								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
-
+							logger.debug("Set value={} to editor={} in UIAsyncPropertyChangeListener={}", value, editor, this);
 							editor.setValue(value, true); // fireEvent=true
 						}
-					});
+					}); // addListener
 
 			// NOTE: we are appending the input method buttons INSIDE the editor component
 			// mainly because we want the "constraintsEditor" to be applied to the whole editor+inputMethodButtons as a group.
@@ -411,8 +413,8 @@ import de.metas.logging.LogManager;
 		{
 			final ITerminalNumericField editor = factory.createTerminalNumericField(propertyName, displayType,
 					SwingPropertiesPanel.DEFAULT_FONT_SIZE,
-					true,   // withButtons,
-					false,   // withLabel
+					true,     // withButtons,
+					false,     // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
 			editor.addListener(new PropertyChangeListener()
 			{

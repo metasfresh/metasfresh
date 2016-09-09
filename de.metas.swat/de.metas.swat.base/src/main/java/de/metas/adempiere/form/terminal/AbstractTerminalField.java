@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
@@ -133,6 +132,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 		}
 		catch (Exception ex)
 		{
+			logger.info("About to show a warning because of exception: " + ex.getLocalizedMessage(), ex);
 			showWarningAndRequestFocus(ex);
 			return;
 		}
@@ -148,6 +148,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 			//
 			// Reset field value
 			// TODO: find a way to use a default value fallback / or fallback to the old value
+			logger.info("About to show a warning because of exception from setFieldValue(): " + ex.getLocalizedMessage(), ex);
 			setFieldValue(null, fireEvent);
 			showWarningAndRequestFocus(ex);
 		}
@@ -163,9 +164,9 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	 * Set field value. Use <code>fireEvent</code>, to decide whether to fire events in the implementing class or not.<br>
 	 * <br>
 	 * Do not worry about constraints, as they're already evaluated in {@link #setValue(Object)}.
-	 * 
+	 *
 	 * WARNING: never ever call this method directly, it's supposed to be called only by {@link #setValue(Object, boolean)}.
-	 * 
+	 *
 	 * @param value
 	 * @param fireEvent
 	 */
@@ -203,7 +204,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 
 	/**
 	 * Calls the terminalContext's {@link ITerminalFactory#showWarning(IComponent, String, String, Exception)}.
-	 * 
+	 *
 	 * @param ex
 	 */
 	protected final void showWarning(final Exception ex)
@@ -221,7 +222,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 
 	/**
 	 * Calls the terminalContext's {@link ITerminalFactory#showWarning(IComponent, String, String, Exception)} and requestFocus on the component.
-	 * 
+	 *
 	 * @param ex
 	 */
 	protected final void showWarningAndRequestFocus(final Exception ex)
@@ -254,7 +255,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 		disposed = true;
 		constraints.clear();
 		listeners.clear();
-		
+
 		logger.trace("Disposed terminal field: {}", this);
 	}
 

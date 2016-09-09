@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +43,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 /**
  * Class used to aggregate together {@link IPropertiesPanelModel}s and behave like on single {@link IPropertiesPanelModel}.
- * 
+ *
  * @author tsa
  *
  */
@@ -87,9 +87,9 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Sets if {@link IPropertiesPanelModel#commitEdit()} shall be called automatically when a child is removed from this composite.
-	 * 
+	 *
 	 * NOTE: child models won't be commited when disposing.
-	 * 
+	 *
 	 * @param saveChildrenOnRemove
 	 */
 	public void setSaveChildrenOnRemove(final boolean saveChildrenOnRemove)
@@ -99,7 +99,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Sets if we shall automatically dispose the child model when it's removed from this composite.
-	 * 
+	 *
 	 * @param disposeChildrenOnRemove
 	 */
 	public void setDisposeChildrenOnRemove(final boolean disposeChildrenOnRemove)
@@ -109,7 +109,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Replace all existing child models (if any) with given ones instead.
-	 * 
+	 *
 	 * @param childModels
 	 */
 	public void setChildModels(final Supplier<Collection<IPropertiesPanelModel>> childModelsSupplier)
@@ -201,11 +201,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Called before a child is removed.
-	 * 
+	 *
 	 * It is removing the listeners, commit the changes (if asked), dispose the child (if asked).
-	 * 
+	 *
 	 * Please keep in mind that after calling this method it might be that the child is disposed.
-	 * 
+	 *
 	 * @param childModel
 	 */
 	private final void onBeforeChildRemove(final IPropertiesPanelModel childModel)
@@ -322,7 +322,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Contains a collection of {@link IPropertiesPanelModel} children which is indexed by PropertyName.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -412,5 +412,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			return new IndexedChildren(this._childModels);
 		}
 
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CompositePropertiesPanelModel [_children=" + _children + ", _childrenLock=" + _childrenLock + ", saveChildrenOnRemove=" + saveChildrenOnRemove + ", disposeChildrenOnRemove=" + disposeChildrenOnRemove + ", childModelsListener=" + childModelsListener + "]";
 	}
 }

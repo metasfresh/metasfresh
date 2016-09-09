@@ -10,18 +10,17 @@ package org.adempiere.util.beans;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,6 +33,8 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * An {@link PropertyChangeSupport} which makes weak reference to source bean and which is able to register the listeners weakly.
@@ -55,8 +56,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 
 	protected static enum WeakListenerCreationScope
 	{
-		ForAdding,
-		ForRemoving,
+		ForAdding, ForRemoving,
 	};
 
 	private final boolean _weakDefault;
@@ -155,7 +155,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 
 	/**
 	 * Called when a {@link WeakPropertyChangeSupport} instance is created.
-	 * 
+	 *
 	 * @param listenerToWrap
 	 * @param weak
 	 * @param scope
@@ -225,8 +225,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 		if (DEBUG)
 		{
 			final List<String> skipPropertyNames = Arrays.asList(
-					"de.metas.handlingunits.client.terminal.editor.model.IHUKey#ChildrenChanged"
-					);
+					"de.metas.handlingunits.client.terminal.editor.model.IHUKey#ChildrenChanged");
 			if (skipPropertyNames.contains(event.getPropertyName()))
 			{
 				return;
@@ -249,6 +248,9 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("_weakDefault", _weakDefault)
+				.add("superclass", super.toString())
+				.toString();
 	}
 }
