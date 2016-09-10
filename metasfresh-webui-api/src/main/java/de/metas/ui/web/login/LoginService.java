@@ -9,8 +9,6 @@ import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 
@@ -44,30 +42,8 @@ public class LoginService
 
 	public void autologin()
 	{
-		// FIXME: debug logging
-		LogManager.setLoggerLevel(de.metas.ui.web.window.WindowConstants.logger, Level.INFO);
-		//
-		// Descriptor & factory
-		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor", Level.TRACE);
-		LogManager.setLoggerLevel("de.metas.ui.web.window.descriptor.factory", null);
-		//
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.Document.class, Level.TRACE);
-		LogManager.setLoggerLevel("de.metas.ui.web.window.model.DocumentField", Level.TRACE);
-		// LogManager.setLoggerLevel(de.metas.ui.web.window.model.DocumentFieldChange.class, Level.TRACE); // Document Changes Collector
-		LogManager.setLoggerLevel(de.metas.ui.web.window.controller.Execution.class, Level.TRACE);
 		WindowConstants.setProtocolDebugging(true);
-		LogManager.setLoggerLevel(de.metas.ui.web.window.model.sql.SqlDocumentRepository.class, null);
-		//
-		LogManager.setLoggerLevel(org.adempiere.ad.callout.api.impl.CalloutExecutor.class, Level.INFO);
-		//
-		// LogManager.setLoggerLevel("org.adempiere.ad.expression.api", Level.TRACE); // logic expressions debugging
-		//
-		// LogManager.dumpAllLevelsUpToRoot(de.metas.ui.web.window.WindowConstants.logger);
-		// LogManager.dumpAllLevelsUpToRoot(LogManager.getLogger(DocumentFieldChangedEventCollector.class));
-
-		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTree.class, Level.TRACE);
-		LogManager.setLoggerLevel(de.metas.ui.web.menu.MenuTreeLoader.class, Level.TRACE);
-
+		
 		// FIXME: only for testing
 		final Properties ctx = userSession.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
