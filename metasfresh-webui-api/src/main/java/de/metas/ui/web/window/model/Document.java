@@ -958,16 +958,7 @@ public final class Document
 				return;
 			}
 
-			final IDocumentChangesCollector fieldEventsCollector = DocumentChangesCollector.newInstance();
-			updateFieldFlag(dependentField, triggeringFieldName, dependencyType, fieldEventsCollector);
-			documentChangesCollector.collectFrom(fieldEventsCollector);
-
-			// TODO: i think we shall drop this part because there is NOTHING which could depend on changing a given field to readonly for example
-			for (final String dependentFieldNameLvl2 : fieldEventsCollector.getFieldNames(getDocumentPath()))
-			{
-				updateFieldsWhichDependsOn(dependentFieldNameLvl2, documentChangesCollector);
-			}
-
+			updateFieldFlag(dependentField, triggeringFieldName, dependencyType, documentChangesCollector);
 		});
 	}
 
