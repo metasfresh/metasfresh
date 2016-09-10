@@ -1,11 +1,14 @@
 package de.metas.ui.web.debug;
 
+import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
@@ -75,5 +78,19 @@ public class DebugRestController
 		final boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr);
 		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
 		logResourceValueChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
+	}
+
+	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
+	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
+	{
+		final IQueryStatisticsLogger statisticsLogger = Services.get(IQueryStatisticsLogger.class);
+		if (enabled)
+		{
+			statisticsLogger.enableWithSqlTracing();
+		}
+		else
+		{
+			statisticsLogger.disable();
+		}
 	}
 }
