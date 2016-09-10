@@ -32,7 +32,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
  * #L%
  */
 
-interface IDocumentField extends IDocumentFieldView
+/*package*/interface IDocumentField extends IDocumentFieldView
 {
 
 	@Override
@@ -82,9 +82,6 @@ interface IDocumentField extends IDocumentFieldView
 
 	@Override
 	Object getValue();
-
-	@Override
-	Object getValueAsJsonObject();
 
 	@Override
 	int getValueAsInt(int defaultValue);

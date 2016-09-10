@@ -73,7 +73,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	/** copy constructor */
-	private DocumentField(final DocumentField from, final Document document)
+	protected DocumentField(final DocumentField from, final Document document)
 	{
 		super();
 		descriptor = from.descriptor;
@@ -100,6 +100,12 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 				.add("readonly", _readonly)
 				.add("displayed", _displayed)
 				.toString();
+	}
+
+	@Override
+	public DocumentField copy(final Document document)
+	{
+		return new DocumentField(this, document);
 	}
 
 	@Override
@@ -379,11 +385,5 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	public boolean hasChanges()
 	{
 		return !DataTypes.equals(_value, _initialValue);
-	}
-
-	@Override
-	public DocumentField copy(final Document document)
-	{
-		return new DocumentField(this, document);
 	}
 }

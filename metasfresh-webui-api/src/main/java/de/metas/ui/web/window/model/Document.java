@@ -175,7 +175,7 @@ public final class Document
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String fieldName = fieldDescriptor.getFieldName();
-				final IDocumentField field = new DocumentField(fieldDescriptor, this);
+				final IDocumentField field = builder.buildField(fieldDescriptor, this);
 				fieldsBuilder.put(fieldName, field);
 
 				if (fieldDescriptor.isKey())
@@ -835,7 +835,7 @@ public final class Document
 		documentRepository.refresh(this);
 	}
 
-	public void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
+	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final IDocumentField documentField = getField(fieldName);
 		setValue(documentField, value, reason);
@@ -1372,6 +1372,11 @@ public final class Document
 			}
 
 			return document;
+		}
+		
+		private DocumentField buildField(final DocumentFieldDescriptor descriptor, final Document document)
+		{
+			return new DocumentField(descriptor, document);
 		}
 
 		public Builder setDocumentRepository(final DocumentsRepository documentRepository)
