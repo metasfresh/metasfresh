@@ -571,7 +571,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
 				.filter(uiElement -> uiElement.isDisplayedGrid())
 				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNoGrid() - uiElement2.getSeqNoGrid())
-				.map(uiElement -> layoutElement(uiElement))
+				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null);
 	}
 
@@ -1326,7 +1326,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
 				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNo_SideList() - uiElement2.getSeqNo_SideList())
-				.map(uiElement -> layoutElement(uiElement))
+				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
 

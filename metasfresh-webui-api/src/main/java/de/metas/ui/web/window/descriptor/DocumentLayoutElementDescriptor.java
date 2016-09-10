@@ -56,6 +56,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private final LayoutType layoutType;
+	private final boolean gridElement;
 	private final boolean advancedField;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
@@ -70,13 +71,15 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		internalName = builder.internalName;
 		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
 		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
-		
+
 		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
 		widgetType = builder.widgetType;
-		
+
 		layoutType = builder.layoutType;
+		gridElement = builder.gridElement;
+
 		advancedField = builder.isAdvancedField();
-		
+
 		fields = ImmutableSet.copyOf(builder.buildFields());
 	}
 
@@ -126,10 +129,13 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return layoutType;
 	}
-	
+
 	public LayoutAlign getGridAlign()
 	{
-		return widgetType == null ? null : widgetType.getGridAlign();
+		if (gridElement)
+			return widgetType == null ? null : widgetType.getGridAlign();
+		else
+			return null;
 	}
 
 	public boolean isAdvancedField()
@@ -158,6 +164,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private Map<String, String> descriptionTrls;
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
+		private boolean gridElement = false;
 		private boolean advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> fieldsBuilders = new LinkedHashMap<>();
 		private boolean consumed = false;
@@ -298,7 +305,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			}
 			return this;
 		}
-		
+
 		public Set<String> getFieldNames()
 		{
 			return fieldsBuilders.keySet();
@@ -308,12 +315,12 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return fieldsBuilders.get(fieldName);
 		}
-		
+
 		public DocumentLayoutElementFieldDescriptor.Builder getFirstField()
 		{
 			return fieldsBuilders.values().iterator().next();
 		}
-		
+
 		public int getFieldsCount()
 		{
 			return fieldsBuilders.size();
@@ -333,6 +340,12 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public boolean isConsumed()
 		{
 			return consumed;
+		}
+
+		public Builder setGridElement()
+		{
+			this.gridElement = true;
+			return this;
 		}
 	}
 }
