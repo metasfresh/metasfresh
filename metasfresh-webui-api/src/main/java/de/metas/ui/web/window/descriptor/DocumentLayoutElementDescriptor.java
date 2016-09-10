@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -55,6 +56,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final ITranslatableString description;
 
 	private final DocumentFieldWidgetType widgetType;
+	private Optional<Integer> precision;
+	
 	private final LayoutType layoutType;
 	private final boolean gridElement;
 	private final boolean advancedField;
@@ -62,6 +65,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
 	private String _captionAsFieldNames; // lazy
+
 	private static final Joiner JOINER_FieldNames = Joiner.on(" | ").skipNulls();
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
@@ -74,6 +78,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
 		widgetType = builder.widgetType;
+		precision = Optional.ofNullable(builder.getPrecision());
 
 		layoutType = builder.layoutType;
 		gridElement = builder.gridElement;
@@ -123,6 +128,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+	
+	public Optional<Integer> getPrecision()
+	{
+		return precision;
 	}
 
 	public LayoutType getLayoutType()
@@ -264,6 +274,24 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
+		}
+
+		private Integer getPrecision()
+		{
+			final DocumentFieldWidgetType widgetType = this.getWidgetType();
+			if (widgetType == null)
+			{
+				return null;
+			}
+			switch (widgetType)
+			{
+				case Integer:
+					return 0;
+				case Amount:
+					return 2;
+				default:
+					return null;
+			}
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)

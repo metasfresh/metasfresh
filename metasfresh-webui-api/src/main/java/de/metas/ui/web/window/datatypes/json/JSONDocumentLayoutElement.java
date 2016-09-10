@@ -70,6 +70,10 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
 
+	@JsonProperty("precision")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer precision;
+
 	/** Type: primary, secondary */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -100,6 +104,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
+		precision = element.getPrecision().orElse(null);
+
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 
@@ -111,6 +117,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 			@JsonProperty("caption") final String caption //
 			, @JsonProperty("description") final String description //
 			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
+			, @JsonProperty("precision") final Integer precision //
 			, @JsonProperty("type") final JSONLayoutType type //
 			, @JsonProperty("fields") final Set<JSONDocumentLayoutElementField> fields //
 			, @JsonProperty("gridAlign") final JSONLayoutAlign gridAlign //
@@ -121,6 +128,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 		this.description = description;
 
 		this.widgetType = widgetType;
+		this.precision = precision;
+		
 		this.type = type;
 		this.gridAlign = gridAlign;
 
