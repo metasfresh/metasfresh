@@ -82,7 +82,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			return;
 		}
 
-		final List<ICalloutInstance> callouts = tableCalloutsMap.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> callouts = tableCalloutsMap.getColumnCallouts(field.getColumnName());
 		if (callouts.isEmpty())
 		{
 			logger.trace("Skip executing callouts for {} because there are none", field);
@@ -181,7 +181,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			return false;
 		}
 
-		return tableCalloutsMap.hasColumnCallouts(field.getAD_Column_ID(), executionBlackListIds);
+		return tableCalloutsMap.hasColumnCallouts(field.getColumnName(), executionBlackListIds);
 	}
 
 	public ICalloutExecutor newInstanceSharingMasterData()

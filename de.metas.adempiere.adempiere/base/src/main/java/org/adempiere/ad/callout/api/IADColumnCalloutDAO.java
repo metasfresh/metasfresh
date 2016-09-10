@@ -36,9 +36,9 @@ public interface IADColumnCalloutDAO extends ISingletonService
 	 * 
 	 * @param ctx
 	 * @param adTableId
-	 * @return AD_Column_ID to List of callout defs
+	 * @return ColumnName to List of callout defs
 	 */
-	ListMultimap<Integer, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(Properties ctx, final int adTableId);
+	ListMultimap<String, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(Properties ctx, final int adTableId);
 
 	List<I_AD_ColumnCallout> retrieveAllColumnCallouts(Properties ctx, int adColumnId);
 

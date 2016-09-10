@@ -24,16 +24,16 @@ public class MockedCalloutFactory implements ICalloutFactory
 
 	public void regiterCallout(final ICalloutField field, final ICalloutInstance callout)
 	{
-		final int adColumnId = field.getAD_Column_ID();
+		final String columnName = field.getColumnName();
 
 		calloutsMap.compute(field.getAD_Table_ID(), (AD_Table_ID, existingTableCalloutsMap) -> {
 			if (existingTableCalloutsMap == null)
 			{
-				return TableCalloutsMap.of(adColumnId, callout);
+				return TableCalloutsMap.of(columnName, callout);
 			}
 			else
 			{
-				return existingTableCalloutsMap.compose(adColumnId, callout);
+				return existingTableCalloutsMap.compose(columnName, callout);
 			}
 		});
 	}

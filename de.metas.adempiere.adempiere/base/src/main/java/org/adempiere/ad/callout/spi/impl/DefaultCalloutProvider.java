@@ -37,7 +37,7 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 	public TableCalloutsMap getCallouts(final Properties ctx, final int adTableId)
 	{
 		final TableCalloutsMap.Builder tableCalloutsBuilder = TableCalloutsMap.builder();
-		for (final Entry<Integer, Supplier<ICalloutInstance>> entry : supplyCallouts(ctx, adTableId).entries())
+		for (final Entry<String, Supplier<ICalloutInstance>> entry : supplyCallouts(ctx, adTableId).entries())
 		{
 			final Supplier<ICalloutInstance> columnCalloutSupplier = entry.getValue();
 			try
@@ -48,8 +48,8 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 					continue;
 				}
 
-				final int adColumnId = entry.getKey();
-				tableCalloutsBuilder.put(adColumnId, callout);
+				final String columnName = entry.getKey();
+				tableCalloutsBuilder.put(columnName, callout);
 			}
 			catch (final Exception ex)
 			{
@@ -61,17 +61,17 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 	}
 
 	@Cached
-	public ImmutableListMultimap<Integer, Supplier<ICalloutInstance>> supplyCallouts(@CacheCtx final Properties ctx, final int adTableId)
+	public ImmutableListMultimap<String, Supplier<ICalloutInstance>> supplyCallouts(@CacheCtx final Properties ctx, final int adTableId)
 	{
-		final ListMultimap<Integer, I_AD_ColumnCallout> calloutsDef = Services.get(IADColumnCalloutDAO.class).retrieveAvailableCalloutsToRun(ctx, adTableId);
+		final ListMultimap<String, I_AD_ColumnCallout> calloutsDef = Services.get(IADColumnCalloutDAO.class).retrieveAvailableCalloutsToRun(ctx, adTableId);
 		if (calloutsDef == null || calloutsDef.isEmpty())
 		{
 			return ImmutableListMultimap.of();
 		}
 
-		final ImmutableListMultimap.Builder<Integer, Supplier<ICalloutInstance>> callouts = ImmutableListMultimap.builder();
+		final ImmutableListMultimap.Builder<String, Supplier<ICalloutInstance>> callouts = ImmutableListMultimap.builder();
 
-		for (final Entry<Integer, I_AD_ColumnCallout> entry : calloutsDef.entries())
+		for (final Entry<String, I_AD_ColumnCallout> entry : calloutsDef.entries())
 		{
 			final I_AD_ColumnCallout calloutDef = entry.getValue();
 			final Supplier<ICalloutInstance> calloutSupplier = supplyCalloutInstanceOrNull(calloutDef);
@@ -80,8 +80,8 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 				continue;
 			}
 
-			final int adColumnId = entry.getKey();
-			callouts.put(adColumnId, calloutSupplier);
+			final String columnName = entry.getKey();
+			callouts.put(columnName, calloutSupplier);
 		}
 
 		return callouts.build();

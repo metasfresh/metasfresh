@@ -59,7 +59,7 @@ public class ProgramaticCalloutProviderTest
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
 		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getAD_Table_ID())
-				.getColumnCallouts(field.getAD_Column_ID());
+				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.singletonList(calloutInstance),
 				calloutInstances);
@@ -75,7 +75,7 @@ public class ProgramaticCalloutProviderTest
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
 		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getAD_Table_ID())
-				.getColumnCallouts(field.getAD_Column_ID());
+				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.emptyList(),
 				calloutInstances);

@@ -14,7 +14,7 @@ public class X_AD_ColumnCallout extends org.compiere.model.PO implements I_AD_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1654882973L;
+	private static final long serialVersionUID = -764840173L;
 
     /** Standard Constructor */
     public X_AD_ColumnCallout (Properties ctx, int AD_ColumnCallout_ID, String trxName)
@@ -158,6 +158,24 @@ public class X_AD_ColumnCallout extends org.compiere.model.PO implements I_AD_Co
 	public java.lang.String getClassname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Classname);
+	}
+
+	/** Set Spaltenname.
+		@param ColumnName 
+		Name der Spalte in der Datenbank
+	  */
+	@Override
+	public void setColumnName (java.lang.String ColumnName)
+	{
+		throw new IllegalArgumentException ("ColumnName is virtual column");	}
+
+	/** Get Spaltenname.
+		@return Name der Spalte in der Datenbank
+	  */
+	@Override
+	public java.lang.String getColumnName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
 	}
 
 	/** Set Beschreibung.

@@ -173,6 +173,33 @@ public interface I_AD_ColumnCallout
     public static final String COLUMNNAME_Classname = "Classname";
 
 	/**
+	 * Set Spaltenname.
+	 * Name der Spalte in der Datenbank
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setColumnName (java.lang.String ColumnName);
+
+	/**
+	 * Get Spaltenname.
+	 * Name der Spalte in der Datenbank
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getColumnName();
+
+    /** Column definition for ColumnName */
+    public static final org.adempiere.model.ModelColumn<I_AD_ColumnCallout, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_AD_ColumnCallout, Object>(I_AD_ColumnCallout.class, "ColumnName", null);
+    /** Column name ColumnName */
+    public static final String COLUMNNAME_ColumnName = "ColumnName";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

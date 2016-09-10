@@ -24,7 +24,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 {
 	@Override
 	@Cached(cacheName = I_AD_ColumnCallout.Table_Name + "#By#" + I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
-	public ListMultimap<Integer, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(@CacheCtx final Properties ctx, final int adTableId)
+	public ListMultimap<String, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(@CacheCtx final Properties ctx, final int adTableId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Column.class, ctx, ITrx.TRXNAME_None)
@@ -50,7 +50,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 					return Check.isEmpty(entityType, true) || UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
 				})
 				// collect to: AD_Column_ID -> List of AD_ColumnCallouts
-				.collect(GuavaCollectors.toImmutableListMultimap(cc -> cc.getAD_Column_ID()));
+				.collect(GuavaCollectors.toImmutableListMultimap(cc -> cc.getColumnName()));
 	}
 
 	@Override

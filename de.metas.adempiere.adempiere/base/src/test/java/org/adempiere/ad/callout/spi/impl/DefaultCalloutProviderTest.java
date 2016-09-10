@@ -132,7 +132,7 @@ public class DefaultCalloutProviderTest
 		createAD_ColumnCallout(field, Callout4.class, Callout4.METHOD_method1);
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
-		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 6, calloutInstances.size());
 
 		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);
@@ -151,7 +151,7 @@ public class DefaultCalloutProviderTest
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
 		;
-		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
 	}
 
@@ -165,7 +165,7 @@ public class DefaultCalloutProviderTest
 		InterfaceWrapperHelper.save(cc1);
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
-		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
 	}
 
@@ -180,7 +180,7 @@ public class DefaultCalloutProviderTest
 		createAD_ColumnCallout(field, Callout4.class, Callout4.METHOD_method1);
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
-		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 3, calloutInstances.size());
 
 		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);
@@ -198,7 +198,7 @@ public class DefaultCalloutProviderTest
 		createAD_ColumnCallout(field, Callout2.class, Callout3.METHOD_method1);
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
-		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getAD_Column_ID());
+		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 2, calloutInstances.size());
 
 		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);

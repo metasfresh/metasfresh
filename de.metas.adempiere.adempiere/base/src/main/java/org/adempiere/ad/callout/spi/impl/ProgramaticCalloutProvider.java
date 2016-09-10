@@ -48,12 +48,6 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@: " + tableName);
 		}
 
-		final int adColumnId = adTableDAO.retrieveAD_Column_ID(adTableId, columnName);
-		if (adColumnId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @ColumnName@=" + tableName + "." + columnName);
-		}
-
 		//
 		// Add the new callout to our internal map
 		final AtomicBoolean registered = new AtomicBoolean(false);
@@ -61,11 +55,11 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 			if (currentTabCalloutsMap == null)
 			{
 				registered.set(true);
-				return TableCalloutsMap.of(adColumnId, callout);
+				return TableCalloutsMap.of(columnName, callout);
 			}
 			else
 			{
-				final TableCalloutsMap newTabCalloutsMap = currentTabCalloutsMap.compose(adColumnId, callout);
+				final TableCalloutsMap newTabCalloutsMap = currentTabCalloutsMap.compose(columnName, callout);
 				registered.set(newTabCalloutsMap != currentTabCalloutsMap);
 				return newTabCalloutsMap;
 			}
