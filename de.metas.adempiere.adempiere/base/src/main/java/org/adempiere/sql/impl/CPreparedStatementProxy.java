@@ -22,7 +22,6 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -56,10 +55,8 @@ import org.compiere.util.CPreparedStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
 
-/* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement> implements CPreparedStatement
+/* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement>implements CPreparedStatement
 {
-	// private static final transient Logger log = CLogMgt.getLogger(CPreparedStatementDelegate.class);
-
 	public CPreparedStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
 	{
 		super(createVO(resultSetType, resultSetConcurrency, sql0, trxName));
@@ -94,7 +91,7 @@ import org.compiere.util.DB;
 				vo.getResultSetConcurrency());
 		return pstmt;
 	}
-	
+
 	@Override
 	public final RowSet getRowSet()
 	{
@@ -104,14 +101,13 @@ import org.compiere.util.DB;
 		try
 		{
 			rs = pstmt.executeQuery();
-			rowSet = CCachedRowSet.getRowSet(rs);						
+			rowSet = CCachedRowSet.getRowSet(rs);
 		}
 		catch (Exception ex)
 		{
-			final CStatementVO vo = getVO();
-			final String sql = vo == null ? null : vo.getSql();
+			final String sql = getSql();
 			throw new DBException(ex, sql);
-		}		
+		}
 		finally
 		{
 			DB.close(rs);
@@ -119,7 +115,6 @@ import org.compiere.util.DB;
 		return rowSet;
 
 	}
-
 
 	@Override
 	public final ResultSet executeQuery() throws SQLException

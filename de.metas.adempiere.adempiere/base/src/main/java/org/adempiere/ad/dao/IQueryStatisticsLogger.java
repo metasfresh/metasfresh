@@ -22,7 +22,6 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-
 import java.util.Date;
 
 import org.adempiere.util.ISingletonService;
@@ -38,16 +37,16 @@ import org.adempiere.util.ISingletonService;
 public interface IQueryStatisticsLogger extends ISingletonService
 {
 	/**
-	 * Collect given <code>sql</code> query (that will be executed)
-	 * 
-	 * @param sql
-	 */
-	void collect(String sql);
-
-	/**
 	 * Enable statistics logging
 	 */
 	void enable();
+
+	/**
+	 * Enable statistics logging and also enable SQL tracing.
+	 * 
+	 * The executed SQLs will be printed to {@link System#err}.
+	 */
+	void enableWithSqlTracing();
 
 	/**
 	 * Disable statistics logging

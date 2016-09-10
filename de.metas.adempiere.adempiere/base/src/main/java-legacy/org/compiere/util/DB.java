@@ -93,7 +93,7 @@ public final class DB
 {
 	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
 
-	private static final IStatementsFactory statementsFactory = new StatementsFactory();
+	private static final IStatementsFactory statementsFactory = StatementsFactory.instance;
 
 	/**
 	 * Specifies what to do in case the SQL command fails.

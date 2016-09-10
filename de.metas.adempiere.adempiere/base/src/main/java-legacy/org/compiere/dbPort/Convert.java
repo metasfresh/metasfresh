@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.util.Services;
@@ -49,13 +48,6 @@ import de.metas.logging.LogManager;
  */
 public abstract class Convert
 {
-	/**
-	 * Query Statistics logger
-	 * 
-	 * NOTE: to minimize logging overhead, we are retrieving our service here, because we don't expect this service to change
-	 */
-	private static final IQueryStatisticsLogger QUERY_STATISTICS_LOGGER = Services.get(IQueryStatisticsLogger.class);
-
 	/** RegEx: insensitive and dot to include line end characters   */
 	public static final int         REGEX_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
 
@@ -293,11 +285,6 @@ public abstract class Convert
 	 */
 	public static void logMigrationScript(String oraStatement, String pgStatement)
 	{
-		if (QUERY_STATISTICS_LOGGER != null)
-		{
-			QUERY_STATISTICS_LOGGER.collect(pgStatement);
-		}
-
 		// Check AdempiereSys
 		// check property Log migration script
 		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
