@@ -95,7 +95,14 @@ public class Execution implements IAutoCloseable
 		}
 		finally
 		{
-			logger.debug("Executed {}({}) in {} - OK={}", name, callable, stopwatch, !error);
+			if(!error)
+			{
+				logger.debug("Executed {} in {} ({})", name, stopwatch, callable);
+			}
+			else
+			{
+				logger.warn("Failed executing {} (took {}) ({})", name, stopwatch, callable);
+			}
 		}
 	}
 
