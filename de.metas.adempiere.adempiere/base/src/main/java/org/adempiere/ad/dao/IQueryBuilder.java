@@ -237,8 +237,8 @@ public interface IQueryBuilder<T>
 	 * @param collectedType
 	 * @return
 	 */
-	<CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType>
-			IQueryBuilder<CollectedType> andCollect(ModelColumn<ParentModelType, CollectedBaseType> column, Class<CollectedType> collectedType);
+	<CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(ModelColumn<ParentModelType, CollectedBaseType> column,
+			Class<CollectedType> collectedType);
 
 	/**
 	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
@@ -253,11 +253,26 @@ public interface IQueryBuilder<T>
 	 *   .list()   // list inout lines
 	 * </pre>
 	 *
-	 * @param childTableColumn
-	 * @param childType
-	 * @return
+	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
+	 * @param childType child model to be used
+	 * @return query build for <code>ChildType</code>
 	 */
-	<ChildType, ExtChildType extends ChildType> IQueryBuilder<ExtChildType> andCollectChildren(ModelColumn<ChildType, ?> childTableColumn, Class<ExtChildType> childType);
+	<ChildType, ExtChildType extends ChildType> IQueryBuilder<ExtChildType> andCollectChildren(ModelColumn<ChildType, ?> linkColumnInChildTable, Class<ExtChildType> childType);
+
+	/**
+	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
+	 * .
+	 * 
+	 * This is a convenient version of {@link #andCollectChildren(ModelColumn, Class)} for the case when you don't have to retrieve an extended interface of the child type.
+	 * 
+	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
+	 * @return query build for <code>ChildType</code>
+	 */
+	default <ChildType> IQueryBuilder<ChildType> andCollectChildren(final ModelColumn<ChildType, ?> linkColumnInChildTable)
+	{
+		final Class<ChildType> childType = linkColumnInChildTable.getModelClass();
+		return andCollectChildren(linkColumnInChildTable, childType);
+	}
 
 	/**
 	 * Sets the join mode of this instance's internal composite filter.
