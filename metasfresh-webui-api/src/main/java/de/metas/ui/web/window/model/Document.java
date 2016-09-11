@@ -12,11 +12,10 @@ import java.util.function.IntSupplier;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -479,24 +478,32 @@ public final class Document
 
 		//
 		// Default value expression
-		final IStringExpression defaultValueExpression = fieldDescriptor.getDefaultValueExpression();
-		if (!NullStringExpression.isNull(defaultValueExpression))
+		final IExpression<?> defaultValueExpression = fieldDescriptor.getDefaultValueExpression().orElse(null);
+		if (defaultValueExpression != null)
 		{
-			// TODO: optimize: here instead of IStringExpression we would need some generic expression which parses to a given type.
-			String valueStr = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-			if (Check.isEmpty(valueStr, false))
+			final Object value = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
+
+			if (value != null
+					&& String.class.equals(defaultValueExpression.getValueClass())
+					&& Check.isEmpty(value.toString(), false))
 			{
-				valueStr = null;
+				// FIXME: figure out how we can get rid of this hardcoded corner case! ... not sure if is needed
+				logger.warn("Development hint: Converting default value empty string to null. Please check how can we avoid this case"
+						+ "\n FieldDescriptor: {}" //
+						+ "\n Document: {}" //
+						, fieldDescriptor, document);
+				return null;
 			}
 
-			return valueStr;
+			return value;
 		}
 
 		//
 		// Preference (user) - P|
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		{
-			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), false);
+			final boolean retrieveGlobalPreferences = false; // retrieve Window level preferences
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), retrieveGlobalPreferences);
 			if (!Check.isEmpty(valueStr, false))
 			{
 				return valueStr;
@@ -506,7 +513,8 @@ public final class Document
 		//
 		// Preference (System) - # $
 		{
-			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), true);
+			final boolean retrieveGlobalPreferences = true;
+			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), retrieveGlobalPreferences);
 			if (!Check.isEmpty(valueStr, false))
 			{
 				return valueStr;
@@ -515,7 +523,7 @@ public final class Document
 
 		//
 		// Fallback
-		return null;
+		return FieldInitialValueSupplier.NO_VALUE;
 	}
 
 	public Document copyWritable()
@@ -1364,7 +1372,7 @@ public final class Document
 
 			return document;
 		}
-		
+
 		private DocumentField buildField(final DocumentFieldDescriptor descriptor, final Document document)
 		{
 			return new DocumentField(descriptor, document);

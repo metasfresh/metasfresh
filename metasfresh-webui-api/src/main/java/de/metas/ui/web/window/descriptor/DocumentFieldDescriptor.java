@@ -5,11 +5,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
@@ -84,8 +85,9 @@ public final class DocumentFieldDescriptor implements Serializable
 	@JsonProperty("valueClass")
 	private final Class<?> valueClass;
 
-	@JsonProperty("defaultValueExpression")
-	private final IStringExpression defaultValueExpression;
+	// @JsonProperty("defaultValueExpression")
+	@JsonIgnore // FIXME: JSON serialization/deserialization of optional defaultValueExpression 
+	private final Optional<IExpression<?>> defaultValueExpression;
 
 	public static enum Characteristic
 	{
@@ -128,7 +130,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		valueClass = Preconditions.checkNotNull(builder.valueClass, "value class not null");
 
-		defaultValueExpression = builder.defaultValueExpression;
+		defaultValueExpression = Preconditions.checkNotNull(builder.defaultValueExpression, "defaultValueExpression not null");
 
 		characteristics = Sets.immutableEnumSet(builder.characteristics);
 		readonlyLogic = builder.readonlyLogic;
@@ -151,7 +153,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			, @JsonProperty("calculated") final boolean calculated //
 			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
 			, @JsonProperty("valueClass") final Class<?> valueClass //
-			, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
+			//, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
 			, @JsonProperty("characteristics") final Set<Characteristic> characteristics //
 			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
 			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
@@ -169,7 +171,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				.setCalculated(calculated)
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
-				.setDefaultValueExpression(defaultValueExpression)
+				// .setDefaultValueExpression(defaultValueExpression)
 				.addCharacteristics(characteristics)
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
@@ -231,7 +233,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		return valueClass;
 	}
 
-	public IStringExpression getDefaultValueExpression()
+	public Optional<IExpression<?>> getDefaultValueExpression()
 	{
 		return defaultValueExpression;
 	}
@@ -458,7 +460,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private DocumentFieldWidgetType widgetType;
 		public Class<?> valueClass;
 
-		private IStringExpression defaultValueExpression = IStringExpression.NULL;
+		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
 		private final Set<Characteristic> characteristics = new TreeSet<>();
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
@@ -546,7 +548,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setDefaultValueExpression(final IStringExpression defaultValueExpression)
+		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
 		{
 			assertNotBuilt();
 			this.defaultValueExpression = Preconditions.checkNotNull(defaultValueExpression);

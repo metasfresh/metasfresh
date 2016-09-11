@@ -12,9 +12,11 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -98,11 +100,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
 	/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
 	private static final ILogicExpression LOGICEXPRESSION_Processed;
-	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Yes;
-	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_No;
-	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_Zero;
-	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
-	private static final IStringExpression DEFAULT_VALUE_EXPRESSION_NextLineNo;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Yes;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_No;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Zero;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_NextLineNo;
 
 	static
 	{
@@ -110,11 +112,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
 		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
 
-		DEFAULT_VALUE_EXPRESSION_Yes = expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class);
-		DEFAULT_VALUE_EXPRESSION_No = expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class);
-		DEFAULT_VALUE_EXPRESSION_Zero = expressionFactory.compile("0", IStringExpression.class);
-		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class);
-		DEFAULT_VALUE_EXPRESSION_NextLineNo = expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IStringExpression.class);
+		DEFAULT_VALUE_EXPRESSION_Yes = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_Zero = Optional.of(expressionFactory.compile("0", IStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IStringExpression.class));
 	}
 
 	// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
@@ -665,7 +667,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final int AD_Val_Rule_ID;
 		final DocumentFieldWidgetType widgetType;
 		final Class<?> valueClass;
-		final IStringExpression defaultValueExpression;
+		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean publicField;
 		final ILogicExpression readonlyLogic;
 		final boolean alwaysUpdateable;
@@ -679,7 +681,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			AD_Val_Rule_ID = 0;
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = Integer.class;
-			defaultValueExpression = IStringExpression.NULL;
+			defaultValueExpression = Optional.empty();
 			publicField = false;
 			readonlyLogic = ILogicExpression.TRUE;
 			alwaysUpdateable = false;
@@ -1247,7 +1249,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private final Map<ArrayKey, ILogicExpression> _fieldDisplayLogic = new HashMap<>();
 
-	private IStringExpression extractDefaultValueExpression(final GridFieldVO gridFieldVO)
+	private Optional<IExpression<?>> extractDefaultValueExpression(final GridFieldVO gridFieldVO)
 	{
 		if (WindowConstants.FIELDNAME_Line.equals(gridFieldVO.getColumnName()))
 		{
@@ -1282,18 +1284,22 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				return DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 			}
 
-			return IStringExpression.NULL;
+			return Optional.empty();
 		}
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
 			final String sqlTemplate = defaultValueStr.substring(5).trim();
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
-			return SqlDefaultValueExpression.of(sqlTemplateStringExpression);
+			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression));
 		}
 		else
 		{
 			final IStringExpression defaultValueExpression = expressionFactory.compile(defaultValueStr, IStringExpression.class);
-			return defaultValueExpression;
+			if (NullStringExpression.isNull(defaultValueExpression))
+			{
+				return Optional.empty();
+			}
+			return Optional.of(defaultValueExpression);
 		}
 	}
 
