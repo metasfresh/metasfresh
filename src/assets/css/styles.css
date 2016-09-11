@@ -636,3 +636,26 @@ body {
 .indicator .error {
   color: $brand-font-color-danger;
 }
+
+table .input-field {
+    background: white;
+    height: 20px;
+    text-align: center;
+}
+
+table .input-secondary {
+    margin: 0;
+    border-bottom: 0;
+}
+
+table .input-secondary {
+    padding: 0;
+}
+
+table .form-group {
+    margin-bottom: 0;
+}
+
+table td {
+    text-align: center;    
+}

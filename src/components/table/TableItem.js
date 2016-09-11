@@ -20,6 +20,14 @@ class TableItem extends Component {
             edited: property
         })
     }
+    handleKey = (e, property) => {
+        if(e.key === "Enter") { 
+            this.handleEditProperty(e,property);
+        } else if(e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown" ) { 
+            this.handleEditProperty(e);
+        }
+    }
+
     renderCells = (cols, cells) => {
         const { type, docId, rowId, tabId } = this.props;
         const { edited } = this.state;
@@ -42,6 +50,7 @@ class TableItem extends Component {
                     onDoubleClick={(e) => this.handleEditProperty(e,property)}
                     onClickOutside={(e) => this.handleEditProperty(e)}
                     disableOnClickOutside={edited !== property}
+                    onKeyDown = {(e) => this.handleKey(e, property)}
                 />
             )
         })

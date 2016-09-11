@@ -130,10 +130,6 @@ class Table extends Component {
                    document.activeElement.nextSibling.focus();
                 }
                 break;
-            case "Enter":
-                console.log('Enter clicked');
-                document.activeElement.fireEvent('oncontextmenu');
-                break;
         }
 
     }
@@ -285,6 +281,7 @@ class Table extends Component {
                         type={type}
                         tabId={tabid}
                         selected={selected}
+                        deselect={() => this.deselectAllProducts()}
                     />
                     <div className="row">
                         <div className="col-xs-12">

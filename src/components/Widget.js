@@ -20,6 +20,8 @@ class Widget extends Component {
             cachedValue: null
         }
     }
+
+
     handlePatch = (property, value) => {
         const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId} = this.props;
         const {cachedValue} = this.state;
@@ -78,6 +80,12 @@ class Widget extends Component {
             cachedValue: value
         }));
     }
+
+    componentDidMount() {
+        // document.activeElement.getElementsByClassName('input-field')[0].focus();
+        
+    }
+
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon) => {
         switch(widgetType){
             case "Date":
