@@ -70,7 +70,12 @@ public interface IExpression<V>
 	 * @param ignoreUnparsable
 	 * @return
 	 */
-	V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable);
+	default V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
+	{
+		// backward compatibility
+		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
+		return evaluate(ctx, onVariableNotFound);
+	}
 
 	/**
 	 * Evaluates expression in given context.
@@ -83,8 +88,14 @@ public interface IExpression<V>
 	V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
 	/**
-	 * 
-	 * @return an evaluator instance which is able to evaluate this expression.
+	 * @param result
+	 * @return true if the given <code>result</code> shall be considered as "NO RESULT"
 	 */
-	IExpressionEvaluator<? extends IExpression<V>, V> getEvaluator();
+	boolean isNoResult(Object result);
+
+	/**
+	 * @return true if this expression is constant and always evaluated "NO RESULT"
+	 * @see #isNoResult(Object)
+	 */
+	boolean isNullExpression();
 }

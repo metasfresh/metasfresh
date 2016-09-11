@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
@@ -158,14 +157,6 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	}
 
 	@Override
-	public String evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
-	{
-		// backward compatibility
-		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
-		return evaluate(ctx, onVariableNotFound);
-	}
-
-	@Override
 	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
 		final IStringExpression expressionEffective;
@@ -186,12 +177,6 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	public List<Object> getExpressionChunks()
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IExpressionEvaluator<IStringExpression, String> getEvaluator()
-	{
-		return StringExpressionEvaluator.instance;
 	}
 
 	@Override

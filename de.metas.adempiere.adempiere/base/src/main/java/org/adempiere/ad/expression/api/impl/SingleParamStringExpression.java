@@ -3,11 +3,10 @@ package org.adempiere.ad.expression.api.impl;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.util.Check;
-import org.compiere.util.Evaluatee;
+import org.compiere.util.CtxName;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
@@ -34,18 +33,33 @@ import com.google.common.collect.ImmutableList;
  * #L%
  */
 
+/**
+ * Specialized {@link IStringExpression} which wraps one {@link CtxName} parameter.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
-class ConstantStringExpression implements IStringExpression
+/* package */final class SingleParameterStringExpression implements IStringExpression
 {
 	private final String expressionStr;
+	private final CtxName parameter;
+
+	private final List<String> parameters;
 	private final List<Object> expressionChunks;
 
-	/* package */ ConstantStringExpression(final String expressionStr)
+	/* package */ SingleParameterStringExpression(final String expressionStr, final CtxName parameter)
 	{
 		super();
+
 		Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 		this.expressionStr = expressionStr;
-		this.expressionChunks = ImmutableList.of((Object)expressionStr);
+
+		Check.assumeNotNull(parameter, "Parameter parameter is not null");
+		this.parameter = parameter;
+
+		parameters = ImmutableList.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
+		expressionChunks = ImmutableList.of(parameter);
 	}
 
 	@Override
@@ -57,7 +71,7 @@ class ConstantStringExpression implements IStringExpression
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(expressionStr);
+		return Objects.hash(parameter);
 	}
 
 	@Override
@@ -75,8 +89,8 @@ class ConstantStringExpression implements IStringExpression
 		{
 			return false;
 		}
-		final ConstantStringExpression other = (ConstantStringExpression)obj;
-		return Objects.equals(expressionStr, other.expressionStr);
+		final SingleParameterStringExpression other = (SingleParameterStringExpression)obj;
+		return Objects.equals(parameter, other.parameter);
 	}
 
 	@Override
@@ -88,36 +102,18 @@ class ConstantStringExpression implements IStringExpression
 	@Override
 	public String getFormatedExpressionString()
 	{
-		return expressionStr;
+		return expressionStr; // expressionStr is good enough in this case
 	}
 
 	@Override
 	public List<String> getParameters()
 	{
-		return ImmutableList.of();
+		return parameters;
 	}
 
 	@Override
 	public List<Object> getExpressionChunks()
 	{
 		return expressionChunks;
-	}
-
-	@Override
-	public String evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
-	{
-		return expressionStr;
-	}
-
-	@Override
-	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
-	{
-		return expressionStr;
-	}
-
-	@Override
-	public final IStringExpression resolvePartial(final Evaluatee ctx)
-	{
-		return this;
 	}
 }

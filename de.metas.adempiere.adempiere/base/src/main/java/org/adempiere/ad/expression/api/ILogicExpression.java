@@ -68,10 +68,12 @@ public interface ILogicExpression extends IExpression<Boolean>
 	List<String> getParameters();
 
 	@Override
-	ILogicExpressionEvaluator getEvaluator();
-
-	@Override
-	Boolean evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
+	default Boolean evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
+	{
+		// backward compatibility
+		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.ReturnNoResult : OnVariableNotFound.Fail;
+		return evaluate(ctx, onVariableNotFound);
+	}
 
 	/**
 	 * Evaluates given expression and returns {@link LogicExpressionResult}.
@@ -121,6 +123,20 @@ public interface ILogicExpression extends IExpression<Boolean>
 	default boolean isConstantFalse()
 	{
 		return isConstant() && constantValue() == false;
+	}
+
+	@Override
+	default boolean isNoResult(final Object result)
+	{
+		// because evaluation is throwing exception in case of failure, the only "no result" would be the NULL
+		return result == null;
+	}
+
+	@Override
+	default boolean isNullExpression()
+	{
+		// there is no such thing for logic expressions
+		return false;
 	}
 
 	/** Compose this logic expression with the given one, using logic AND and return it */

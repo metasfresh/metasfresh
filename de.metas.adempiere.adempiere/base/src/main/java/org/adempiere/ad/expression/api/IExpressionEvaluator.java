@@ -79,6 +79,4 @@ public interface IExpressionEvaluator<ET extends IExpression<V>, V>
 	 * @throws ExpressionEvaluationException in case evaluation failed.
 	 */
 	V evaluate(final Evaluatee ctx, final ET expression, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
-
-	boolean isNoResult(Object result);
 }
