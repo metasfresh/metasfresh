@@ -5,10 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
@@ -48,6 +46,8 @@ import de.metas.logging.LogManager;
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression implements IStringExpression
 {
+	// TODO: introduce valueType!!!
+	
 	public static final SqlDefaultValueExpression of(final IStringExpression stringExpression)
 	{
 		return new SqlDefaultValueExpression(stringExpression);
@@ -88,21 +88,13 @@ public final class SqlDefaultValueExpression implements IStringExpression
 	}
 
 	@Override
-	public String evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
-	{
-		// backward compatibility
-		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
-		return evaluate(ctx, onVariableNotFound);
-	}
-
-	@Override
 	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
 		final String sql = stringExpression.evaluate(ctx, onVariableNotFound);
 		if (Check.isEmpty(sql, true))
 		{
 			logger.warn("Expression " + stringExpression + " was evaluated to empty string. Returning empty string");
-			return StringExpressionEvaluator.EMPTY_RESULT;
+			return IStringExpression.EMPTY_RESULT;
 		}
 
 		PreparedStatement pstmt = null;
@@ -123,7 +115,7 @@ public final class SqlDefaultValueExpression implements IStringExpression
 					throw new ExpressionEvaluationException("Got no result for " + this + " (SQL: " + sql + ")");
 				}
 				logger.warn("Got no result for {} (SQL: {})", this, sql);
-				return StringExpressionEvaluator.EMPTY_RESULT;
+				return IStringExpression.EMPTY_RESULT;
 			}
 		}
 		catch (final SQLException e)
@@ -142,13 +134,6 @@ public final class SqlDefaultValueExpression implements IStringExpression
 		return stringExpression.getExpressionChunks();
 	}
 
-	@Override
-	public IExpressionEvaluator<IStringExpression, String> getEvaluator()
-	{
-		return StringExpressionEvaluator.instance;
-	}
-
-	
 	@Override
 	public final IStringExpression resolvePartial(final Evaluatee ctx)
 	{

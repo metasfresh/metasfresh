@@ -17,7 +17,10 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.ad.expression.api.impl.BigDecimalStringExpressionSupport.BigDecimalStringExpression;
+import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.BooleanStringExpression;
+import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
+import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -103,7 +106,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	private static final ILogicExpression LOGICEXPRESSION_Processed;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Yes;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_No;
-	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Zero;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal;
+	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_Zero_Integer;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 	private static final Optional<IExpression<?>> DEFAULT_VALUE_EXPRESSION_NextLineNo;
 
@@ -113,11 +117,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
 		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
 
-		DEFAULT_VALUE_EXPRESSION_Yes = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(true), IStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), IStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_Zero = Optional.of(expressionFactory.compile("0", IStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_Yes = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(true), BigDecimalStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), BigDecimalStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal = Optional.of(expressionFactory.compile("0", BigDecimalStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_Zero_Integer = Optional.of(expressionFactory.compile("0", IntegerStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IntegerStringExpression.class));
 	}
 
 	// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
@@ -469,7 +474,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			// Element Widget type
 			if (layoutElementBuilder.getWidgetType() == null)
 			{
-				layoutElementBuilder.setWidgetType(extractWidgetType(gridFieldVO));
+				layoutElementBuilder.setWidgetType(getWidgetType(gridFieldVO));
 			}
 
 			layoutElementBuilder.addField(layoutElementFieldBuilder);
@@ -694,8 +699,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			displayType = gridFieldVO.getDisplayType();
 			AD_Reference_Value_ID = gridFieldVO.getAD_Reference_Value_ID();
 			AD_Val_Rule_ID = gridFieldVO.getAD_Val_Rule_ID();
-			widgetType = extractWidgetType(gridFieldVO);
-			valueClass = extractValueClass(gridFieldVO);
+			widgetType = getWidgetType(gridFieldVO);
+			valueClass = getValueClass(gridFieldVO);
 			defaultValueExpression = extractDefaultValueExpression(gridFieldVO);
 			readonlyLogic = extractFieldReadonlyLogic(gridFieldVO);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
@@ -803,6 +808,13 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		return null;
 	}
+
+	private DocumentFieldWidgetType getWidgetType(final GridFieldVO gridFieldVO)
+	{
+		return _fieldWidgetTypes.computeIfAbsent(mkKey(gridFieldVO), key -> extractWidgetType(gridFieldVO));
+	}
+
+	private final Map<ArrayKey, DocumentFieldWidgetType> _fieldWidgetTypes = new HashMap<>();
 
 	private static DocumentFieldWidgetType extractWidgetType(final GridFieldVO gridFieldVO)
 	{
@@ -914,6 +926,13 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of " + gridFieldVO);
 		}
 	}
+
+	private Class<?> getValueClass(final GridFieldVO gridFieldVO)
+	{
+		return _fieldValueClasses.computeIfAbsent(mkKey(gridFieldVO), key -> extractValueClass(gridFieldVO));
+	}
+
+	private final Map<ArrayKey, Class<?>> _fieldValueClasses = new HashMap<>();
 
 	private static Class<?> extractValueClass(final GridFieldVO gridFieldVO)
 	{
@@ -1146,8 +1165,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		final ILogicExpression fieldReadonlyLogic = gridFieldVO.getReadOnlyLogic();
 
+		ILogicExpression readonlyLogic = fieldReadonlyLogic;
 		// FIXME: not sure if using tabReadonlyLogic here is OK, because the tab logic shall be applied to parent tab!
-		ILogicExpression readonlyLogic = tabReadonlyLogic.or(fieldReadonlyLogic);
+		if (!tabReadonlyLogic.isConstantFalse())
+		{
+			readonlyLogic = tabReadonlyLogic.or(fieldReadonlyLogic);
+		}
 
 		//
 		// Consider field readonly if the row is not active
@@ -1276,8 +1299,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				if (gridFieldVO.isMandatory())
 				{
+					if(DisplayType.Integer == displayType)
+					{
+						return DEFAULT_VALUE_EXPRESSION_Zero_Integer;
+					}
 					// e.g. C_OrderLine.QtyReserved
-					return DEFAULT_VALUE_EXPRESSION_Zero;
+					return DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal;
 				}
 			}
 			else if (DisplayType.PAttribute == displayType)
@@ -1295,13 +1322,47 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 		else
 		{
-			final IStringExpression defaultValueExpression = expressionFactory.compile(defaultValueStr, IStringExpression.class);
-			if (NullStringExpression.isNull(defaultValueExpression))
-			{
-				return Optional.empty();
-			}
-			return Optional.of(defaultValueExpression);
+			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
+			final DocumentFieldWidgetType widgetType = getWidgetType(gridFieldVO);
+			return buildExpression(defaultValueStr, fieldValueClass, widgetType);
 		}
+	}
+
+	private Optional<IExpression<?>> buildExpression(final String expressionStr, final Class<?> fieldValueClass, final DocumentFieldWidgetType widgetType)
+	{
+		final IExpression<?> expression;
+		if (Integer.class.equals(fieldValueClass))
+		{
+			expression = expressionFactory.compile(expressionStr, IntegerStringExpression.class);
+		}
+		else if (BigDecimal.class.equals(fieldValueClass))
+		{
+			expression = expressionFactory.compile(expressionStr, BigDecimalStringExpression.class);
+		}
+		else if (IntegerLookupValue.class.equals(fieldValueClass))
+		{
+			expression = expressionFactory.compile(expressionStr, IntegerStringExpression.class);
+		}
+		else if (java.util.Date.class.equals(fieldValueClass))
+		{
+			expression = expressionFactory.compile(expressionStr, DateStringExpression.class);
+		}
+		else if (Boolean.class.equals(fieldValueClass))
+		{
+			expression = expressionFactory.compile(expressionStr, BooleanStringExpression.class);
+		}
+		//
+		// Fallback
+		else
+		{
+			expression = expressionFactory.compile(expressionStr, IStringExpression.class);
+		}
+
+		if (expression.isNullExpression())
+		{
+			return Optional.empty();
+		}
+		return Optional.of(expression);
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridFieldVO gridFieldVO)
@@ -1367,7 +1428,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return _documentFilters;
 	}
 
-	private static final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
+	private final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
 	{
 		final int displayType = field.getDisplayType();
 		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
@@ -1379,7 +1440,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.addParameter(DocumentQueryFilterParamDescriptor.builder()
 						.setDisplayName(field.getHeaderTrls())
 						.setFieldName(field.getColumnName())
-						.setWidgetType(extractWidgetType(field))
+						.setWidgetType(getWidgetType(field))
 						.setRangeParameter(rangeParameter)
 						.build())
 				.build();

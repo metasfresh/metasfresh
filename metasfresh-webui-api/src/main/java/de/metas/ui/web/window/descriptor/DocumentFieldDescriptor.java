@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -61,6 +63,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private static final Logger logger = LogManager.getLogger(DocumentFieldDescriptor.class);
+
 	/** Internal field name (aka ColumnName) */
 	@JsonProperty("fieldName")
 	private final String fieldName;
@@ -86,7 +90,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Class<?> valueClass;
 
 	// @JsonProperty("defaultValueExpression")
-	@JsonIgnore // FIXME: JSON serialization/deserialization of optional defaultValueExpression 
+	@JsonIgnore       // FIXME: JSON serialization/deserialization of optional defaultValueExpression
 	private final Optional<IExpression<?>> defaultValueExpression;
 
 	public static enum Characteristic
@@ -153,13 +157,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			, @JsonProperty("calculated") final boolean calculated //
 			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
 			, @JsonProperty("valueClass") final Class<?> valueClass //
-			//, @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
-			, @JsonProperty("characteristics") final Set<Characteristic> characteristics //
-			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
-			, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
-			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
-			, @JsonProperty("mandatoryLogic") final ILogicExpression mandatoryLogic //
-			, @JsonProperty("data-binding") final DocumentFieldDataBindingDescriptor dataBinding //
+	// , @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
+	, @JsonProperty("characteristics") final Set<Characteristic> characteristics //
+	, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
+	, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
+	, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
+	, @JsonProperty("mandatoryLogic") final ILogicExpression mandatoryLogic //
+	, @JsonProperty("data-binding") final DocumentFieldDataBindingDescriptor dataBinding //
 	)
 	{
 		this(new Builder()
@@ -276,7 +280,29 @@ public final class DocumentFieldDescriptor implements Serializable
 		return dependencies;
 	}
 
+	/**
+	 * Converts given value to target class.
+	 * 
+	 * @param value value to be converted
+	 * @param targetType target type
+	 * @param lookupDataSource optional Lookup data source, if needed
+	 * @return converted value
+	 */
 	public <T> T convertToValueClass(final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
+	{
+		return convertToValueClass(fieldName, value, targetType, lookupDataSource);
+	}
+
+	/**
+	 * Converts given value to target class.
+	 * 
+	 * @param fieldName field name, needed only for logging purposes
+	 * @param value value to be converted
+	 * @param targetType target type
+	 * @param lookupDataSource optional Lookup data source, if needed
+	 * @return converted value
+	 */
+	private static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -297,6 +323,17 @@ public final class DocumentFieldDescriptor implements Serializable
 
 			if (targetType.isAssignableFrom(fromType))
 			{
+				if (!targetType.equals(fromType))
+				{
+					logger.warn("Possible optimization issue: target type is assignable from source type, but they are not the same class."
+							+ "\n In future we will disallow this case, so please check and fix it."
+							+ "\n Field name: " + fieldName
+							+ "\n Target type: " + targetType
+							+ "\n Source type: " + fromType
+							+ "\n Value: " + value
+							+ "\n LookupDataSource: " + lookupDataSource);
+				}
+				
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)value;
 				return valueConv;
@@ -379,7 +416,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueInt);
-						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -395,7 +432,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}
@@ -422,7 +459,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueStr);
-						final T valueConv = convertToValueClass(valueLookup, targetType, /* lookupDataSource */null);
+						final T valueConv = convertToValueClass(fieldName, valueLookup, targetType, /* lookupDataSource */null);
 						// TODO: what if valueConv was not found?
 						return valueConv;
 					}

@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.model;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -12,13 +16,13 @@ import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 
 /*
  * #%L
@@ -90,30 +94,100 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public String get_ValueAsString(final String variableName)
 	{
-		return getValueAsStringIfExists(variableName).orNull();
+		Object valueObj = getValueIfExists(variableName, String.class).orElse(null);
+		if (valueObj == null)
+		{
+			valueObj = getDefaultValue(variableName).orElse(null);
+		}
+
+		return valueObj == null ? null : convertToString(variableName, valueObj);
 	}
 
-	public Optional<String> getValueAsStringIfExists(final String variableName)
+	@Override
+	public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+	{
+		Object valueObj = getValueIfExists(variableName, Integer.class).orElse(null);
+		if (valueObj == null && defaultValue == null)
+		{
+			valueObj = getDefaultValue(variableName).orElse(null);
+		}
+
+		return valueObj == null ? defaultValue : convertToInteger(variableName, valueObj);
+	}
+
+	@Override
+	public Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue)
+	{
+		Object valueObj = getValueIfExists(variableName, Boolean.class).orElse(null);
+		if (valueObj == null && defaultValue == null)
+		{
+			valueObj = getDefaultValue(variableName).orElse(null);
+		}
+
+		return DisplayType.toBoolean(valueObj, defaultValue);
+	}
+
+	@Override
+	public java.util.Date get_ValueAsDate(final String variableName, final java.util.Date defaultValue)
+	{
+		Object valueObj = getValueIfExists(variableName, java.util.Date.class).orElse(null);
+		if (valueObj == null && defaultValue == null)
+		{
+			valueObj = getDefaultValue(variableName).orElse(null);
+		}
+
+		return valueObj == null ? defaultValue : convertToDate(variableName, valueObj);
+	}
+
+	private Date convertToDate(final String variableName, final Object valueObj)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+		else if (valueObj instanceof Date)
+		{
+			return (Date)valueObj;
+		}
+		else
+		{
+			return JSONDate.fromJson(valueObj.toString());
+		}
+	}
+
+	@Override
+	public BigDecimal get_ValueAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+	{
+		Object valueObj = getValueIfExists(variableName, BigDecimal.class).orElse(null);
+		if (valueObj == null && defaultValue == null)
+		{
+			valueObj = getDefaultValue(variableName).orElse(null);
+		}
+
+		return valueObj == null ? defaultValue : convertToBigDecimal(variableName, valueObj);
+	}
+
+	private Optional<Object> getValueIfExists(final String variableName, final Class<?> targetType)
 	{
 		if (variableName == null)
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName) && hasParent())
 		{
 			final String detailId = _document.getEntityDescriptor().getDetailId();
 			final int nextLineNo = _document.getParentDocument().getIncludedDocumentsCollection(detailId).getNextLineNo();
-			return Optional.of(String.valueOf(nextLineNo));
+			return Optional.of(nextLineNo);
 		}
 
 		//
 		// Check global context variable
 		{
-			final String valueStr = getGlobalContext(variableName);
-			if (valueStr != null)
+			final Object value = getGlobalContext(variableName, targetType);
+			if (value != null)
 			{
-				return Optional.of(valueStr);
+				return Optional.of(value);
 			}
 
 		}
@@ -123,7 +197,7 @@ public final class DocumentEvaluatee implements Evaluatee
 		final IDocumentFieldView documentField = getDocumentFieldOrNull(variableName);
 		if (documentField != null)
 		{
-			final String documentFieldValue = convertToString(documentField.getFieldName(), documentField.getValue());
+			final Object documentFieldValue = documentField.getValue();
 			if (documentFieldValue != null)
 			{
 				return Optional.of(documentFieldValue);
@@ -134,7 +208,7 @@ public final class DocumentEvaluatee implements Evaluatee
 		// Document's dynamic attribute
 		if (_document.hasDynAttribute(variableName))
 		{
-			final String value = convertToString(variableName, _document.getDynAttribute(variableName));
+			final Object value = _document.getDynAttribute(variableName);
 			if (value != null)
 			{
 				return Optional.of(value);
@@ -146,7 +220,7 @@ public final class DocumentEvaluatee implements Evaluatee
 		if (hasParent())
 		{
 			final DocumentEvaluatee parent = getParent();
-			final Optional<String> value = parent.getValueAsStringIfExists(variableName);
+			final Optional<Object> value = parent.getValueIfExists(variableName, targetType);
 			if (value.isPresent())
 			{
 				return value;
@@ -155,13 +229,22 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		//
 		// Fallback: Check again the documentField and assume some defaults
-		if (documentField != null)
+		if (!hasParent())
 		{
-			final Class<?> valueClass = documentField.getDescriptor().getValueClass();
-			if (StringLookupValue.class.equals(valueClass))
+			if (documentField != null)
 			{
-				// corner case: e.g. Field: C_Order.IncotermLocation's DisplayLogic=@Incoterm@!''
-				return Optional.of("");
+				final Class<?> valueClass = documentField.getDescriptor().getValueClass();
+				if (StringLookupValue.class.equals(valueClass))
+				{
+					// corner case: e.g. Field: C_Order.IncotermLocation's DisplayLogic=@Incoterm@!''
+					return Optional.of("");
+				}
+			}
+
+			final Optional<Object> defaultValue = getDefaultValue(variableName);
+			if (defaultValue.isPresent())
+			{
+				return defaultValue;
 			}
 		}
 
@@ -174,57 +257,75 @@ public final class DocumentEvaluatee implements Evaluatee
 					+ "\n Existing dyn attributes are: {}" //
 					, variableName, getAvailableFieldNames(), _document.getAvailableDynAttributes());
 		}
-		return Optional.absent();
+		return Optional.empty();
+	}
+
+	private final Optional<Object> getDefaultValue(final String variableName)
+	{
+		// FIXME: hardcoded default to avoid a lot of warnings
+		if (variableName.endsWith("_ID"))
+		{
+			return Optional.of(InterfaceWrapperHelper.getFirstValidIdByColumnName(variableName) - 1);
+		}
+
+		// TODO: find some defaults?
+		return Optional.empty();
 	}
 
 	/**
 	 *
 	 * @param variableName
+	 * @param targetType
 	 * @return value or <code>null</code> if does not apply
 	 */
-	private String getGlobalContext(final String variableName)
+	private Object getGlobalContext(final String variableName, final Class<?> targetType)
 	{
-		final String value;
-		if (CtxName.isExplicitGlobal(variableName))
-		{
-			value = Env.getContext(getCtx(), variableName);
-		}
-		else
+		if (!CtxName.isExplicitGlobal(variableName))
 		{
 			return null;
 		}
 
+		if (Integer.class.equals(targetType))
+		{
+			return Env.getContextAsInt(getCtx(), variableName);
+		}
+		else if (java.util.Date.class.equals(targetType)
+				|| Timestamp.class.equals(targetType))
+		{
+			return Env.getContextAsDate(getCtx(), variableName);
+		}
+		else if (Integer.class.equals(variableName)
+				|| int.class.equals(variableName))
+		{
+			return Env.getContextAsInt(getCtx(), variableName);
+		}
+		else if (Boolean.class.equals(variableName))
+		{
+			final String valueStr = Env.getContext(getCtx(), variableName);
+			return DisplayType.toBoolean(valueStr, null);
+		}
+
+		final String valueStr = Env.getContext(getCtx(), variableName);
+
 		//
 		// Use some default value
-		if (Check.isEmpty(value))
+		if (Check.isEmpty(valueStr))
 		{
 			// FIXME hardcoded. when we will do a proper login, this won't be necessary
 			if (variableName.startsWith("$Element_"))
 			{
-				return DisplayType.toBooleanString(false);
+				return Boolean.FALSE;
 			}
 		}
 
-		return value;
+		return valueStr;
 	}
 
 	/** Converts field value to {@link Evaluatee2} friendly string */
-	private String convertToString(final String variableName, final Object value)
+	private static String convertToString(final String variableName, final Object value)
 	{
 		if (value == null)
 		{
-			if (hasParent())
-			{
-				return null; // advice the caller to ask the parent
-			}
-
-			// FIXME: hardcoded default to avoid a lot of warnings
-			if (variableName.endsWith("_ID"))
-			{
-				return String.valueOf(InterfaceWrapperHelper.getFirstValidIdByColumnName(variableName) - 1);
-			}
-
-			// TODO: find some defaults?
 			return null;
 		}
 		else if (value instanceof Boolean)
@@ -249,4 +350,51 @@ public final class DocumentEvaluatee implements Evaluatee
 			return value.toString();
 		}
 	}
+
+	private static Integer convertToInteger(final String variableName, final Object valueObj)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+		else if (valueObj instanceof Integer)
+		{
+			return (Integer)valueObj;
+		}
+		else if (valueObj instanceof Number)
+		{
+			return ((Number)valueObj).intValue();
+		}
+		else
+		{
+			final String valueStr = valueObj.toString().trim();
+			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+			return Integer.parseInt(valueStr);
+		}
+	}
+
+	private static BigDecimal convertToBigDecimal(final String variableName, final Object valueObj)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+		else if (valueObj instanceof BigDecimal)
+		{
+			return (BigDecimal)valueObj;
+		}
+		else
+		{
+			final String valueStr = valueObj.toString().trim();
+			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+			return new BigDecimal(valueStr);
+		}
+	}
+
 }
