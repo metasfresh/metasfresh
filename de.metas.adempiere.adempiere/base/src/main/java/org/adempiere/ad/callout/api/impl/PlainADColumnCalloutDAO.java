@@ -1,8 +1,8 @@
 package org.adempiere.ad.callout.api.impl;
 
+import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_ColumnCallout;
-import org.junit.Assert;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ public class PlainADColumnCalloutDAO extends ADColumnCalloutDAO
 	@Override
 	protected String extractColumnName(final I_AD_ColumnCallout cc)
 	{
-		Assert.assertTrue("JUnit test mode enabled", Adempiere.isUnitTestMode());
+		Check.assume(Adempiere.isUnitTestMode(), "JUnit test mode enabled");
 		return cc.getAD_Column().getColumnName();
 	}
 }
