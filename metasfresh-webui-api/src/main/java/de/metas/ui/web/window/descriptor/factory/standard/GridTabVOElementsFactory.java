@@ -601,7 +601,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 					.setAD_Window_ID(gridTabVO.getAD_Window_ID()) // legacy
 					.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 					.setTabNo(gridTabVO.getTabNo()) // legacy
-					.setAD_Table_ID(gridTabVO.getAD_Table_ID()) // legacy
+					.setTableName(gridTabVO.getTableName()) // legacy
 					.setIsSOTrx(isSOTrx()) // legacy
 					;
 		}
@@ -617,7 +617,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			_documentEntryDataBinding = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(tab.getTableName())
 					.setSqlTableAliasFromDetailId(getDetailId())
-					.setAD_Table_ID(tab.getAD_Table_ID()) // legacy
 					.setSqlParentLinkColumnName(extractParentLinkColumnName())
 					.setSqlWhereClause(tab.getWhereClause())
 					.setSqlOrderBy(tab.getOrderByClause());
@@ -705,7 +704,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(sqlColumnName)
 				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
-				.setAD_Column_ID(gridFieldVO.getAD_Column_ID()) // legacy
 				.setValueClass(valueClass)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)

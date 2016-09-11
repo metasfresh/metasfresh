@@ -110,10 +110,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@JsonIgnore
 	private final String sqlOrderBy;
 
-	// legacy
-	@JsonProperty("adColumnId")
-	private final int adColumnId;
-
 	// required for JSON serialization/deserialization
 	@JsonProperty("displayType")
 	private final int displayType;
@@ -164,10 +160,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		}
 
 		//
-		// Legacy
-		adColumnId = builder.AD_Column_ID;
-
-		//
 		// required for JSON serialization/deserialization
 		displayType = builder.displayType;
 		AD_Reference_Value_ID = builder.AD_Reference_Value_ID;
@@ -186,7 +178,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			, @JsonProperty("encrypted") final boolean encrypted //
 			, @JsonProperty("valueClass") final Class<?> valueClass //
 			, @JsonProperty("displayType") final int displayType //
-			, @JsonProperty("adColumnId") final int AD_Column_ID //
 			, @JsonProperty("AD_Reference_Value_ID") final int AD_Reference_Value_ID //
 			, @JsonProperty("AD_Val_Rule_ID") final int AD_Val_Rule_ID //
 	)
@@ -200,7 +191,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.setKeyColumn(keyColumn)
 				.setParentLinkColumn(parentLinkColumn)
 				.setEncrypted(encrypted)
-				.setAD_Column_ID(AD_Column_ID)
 				.setValueClass(valueClass)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
@@ -257,13 +247,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public DocumentFieldValueLoader getDocumentFieldValueLoader()
 	{
 		return documentFieldValueLoader;
-	}
-
-	@Override
-	@JsonIgnore
-	public int getAD_Column_ID()
-	{
-		return adColumnId;
 	}
 
 	public boolean isKeyColumn()
@@ -464,9 +447,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private boolean orderByAscending;
 		private int orderByPriority;
-
-		// legacy
-		private Integer AD_Column_ID;
 
 		// Built values
 		private SqlLookupDescriptor sqlLookupDescriptor;
@@ -693,12 +673,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		public Builder setSqlColumnSql(final String sqlColumnSql)
 		{
 			this.sqlColumnSql = sqlColumnSql;
-			return this;
-		}
-
-		public Builder setAD_Column_ID(final int AD_Column_ID)
-		{
-			this.AD_Column_ID = AD_Column_ID;
 			return this;
 		}
 

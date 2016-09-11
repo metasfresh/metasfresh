@@ -33,8 +33,6 @@ public interface DocumentFieldDataBindingDescriptor
 {
 	String getColumnName();
 
-	int getAD_Column_ID();
-
 	Collection<String> getLookupValuesDependsOnFieldNames();
 
 	LookupDataSource createLookupDataSource();

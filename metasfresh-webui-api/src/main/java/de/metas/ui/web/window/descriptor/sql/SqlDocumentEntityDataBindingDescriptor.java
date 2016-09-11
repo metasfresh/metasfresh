@@ -98,10 +98,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	@JsonProperty("fields")
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> fieldsByFieldName;
 
-	// legacy
-	@JsonProperty("AD_Table_ID")
-	private final int AD_Table_ID;
-
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
 		super();
@@ -121,9 +117,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlPagedSelectAllFrom = builder.getSqlPagedSelectAll();
 		sqlWhereClause = builder.getSqlWhereClauseExpression();
 		sqlOrderBy = builder.buildSqlOrderBy();
-
-		// legacy
-		AD_Table_ID = builder.AD_Table_ID;
 	}
 
 	@JsonCreator
@@ -134,7 +127,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			, @JsonProperty("sqlWhereClause") final IStringExpression sqlWhereClause//
 			, @JsonProperty("sqlOrderBy") final String sqlOrderBy//
 			, @JsonProperty("fields") final List<SqlDocumentFieldDataBindingDescriptor> fields //
-			, @JsonProperty("AD_Table_ID") final int AD_Table_ID)
+	)
 	{
 		this(new Builder()
 				.setSqlTableName(sqlTableName)
@@ -144,7 +137,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.setSqlWhereClauseExpression(sqlWhereClause)
 				.setSqlOrderBy(sqlOrderBy)
 				.addFields(fields)
-				.setAD_Table_ID(AD_Table_ID));
+		//
+		);
 	}
 
 	@Override
@@ -176,13 +170,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public String getSqlTableAlias()
 	{
 		return sqlTableAlias;
-	}
-
-	@Override
-	@JsonIgnore
-	public int getAD_Table_ID()
-	{
-		return AD_Table_ID;
 	}
 
 	@JsonIgnore
@@ -250,9 +237,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlDocumentFieldDataBindingDescriptor _keyField;
-
-		// legacy
-		private Integer AD_Table_ID;
 
 		private Builder()
 		{
@@ -537,13 +521,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		public String getSqlTableAlias()
 		{
 			return _sqlTableAlias;
-		}
-
-		public Builder setAD_Table_ID(final int AD_Table_ID)
-		{
-			assertNotBuilt();
-			this.AD_Table_ID = AD_Table_ID;
-			return this;
 		}
 
 		public Builder setSqlParentLinkColumnName(final String sqlParentLinkColumnName)

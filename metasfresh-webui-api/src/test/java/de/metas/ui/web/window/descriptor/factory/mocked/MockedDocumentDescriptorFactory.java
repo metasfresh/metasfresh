@@ -61,7 +61,6 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 {
 	public static int AD_WINDOW_ID_SalesOrder = 143;
 	private static int AD_Tab_SalesOrder_Header = 186;
-	private static int AD_Table_C_Order = 259;
 	@SuppressWarnings("unused")
 	private static int AD_Tab_SalesOrder_OrderLines = 187;
 
@@ -101,7 +100,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab_SalesOrder_Header)
 				.setTabNo(0)
-				.setAD_Table_ID(AD_Table_C_Order)
+				.setTableName(I_C_Order.Table_Name)
 				.setIsSOTrx(true)
 				//
 				.setDataBinding(POJODocumentEntityDataBindingDescriptor.ofClass(I_C_Order.class))

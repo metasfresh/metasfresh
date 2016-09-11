@@ -86,18 +86,6 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	}
 
 	@Override
-	public int getAD_Table_ID()
-	{
-		return getDocument().getEntityDescriptor().getDataBinding().getAD_Table_ID();
-	}
-
-	@Override
-	public int getAD_Column_ID()
-	{
-		return documentField.getDescriptor().getDataBinding().getAD_Column_ID();
-	}
-
-	@Override
 	public String getColumnName()
 	{
 		return documentField.getFieldName();

@@ -91,8 +91,8 @@ public class DocumentEntityDescriptor
 	private final int AD_Window_ID;
 	@JsonProperty("AD_Tab_ID")
 	private final int AD_Tab_ID;
-	@JsonProperty("AD_Table_ID")
-	private final int AD_Table_ID;
+	@JsonProperty("tableName")
+	private final String tableName;
 	@JsonProperty("tabNo")
 	private final int tabNo;
 	@JsonProperty("IsSOTrx")
@@ -127,7 +127,7 @@ public class DocumentEntityDescriptor
 		// legacy:
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
-		AD_Table_ID = Preconditions.checkNotNull(builder.AD_Table_ID, "AD_Table_ID shall be set");
+		tableName = Preconditions.checkNotNull(builder.TableName, "TableName shall be set");
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 
@@ -135,7 +135,7 @@ public class DocumentEntityDescriptor
 		id = String.valueOf(builder.AD_Tab_ID);
 		
 		calloutExecutorFactory = CalloutExecutor.builder()
-				.setAD_Table_ID(AD_Table_ID)
+				.setTableName(tableName)
 				.build();
 	}
 
@@ -152,7 +152,7 @@ public class DocumentEntityDescriptor
 			// legacy:
 			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
 			, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
-			, @JsonProperty("AD_Table_ID") final int AD_Table_ID //
+			, @JsonProperty("tableName") final String tableName //
 			, @JsonProperty("tabNo") final int tabNo //
 			, @JsonProperty("isSOTrx") final boolean isSOTrx //
 	)
@@ -171,7 +171,7 @@ public class DocumentEntityDescriptor
 				.setAD_Window_ID(AD_Window_ID)
 				.setAD_Tab_ID(AD_Tab_ID)
 				.setTabNo(tabNo)
-				.setAD_Table_ID(AD_Table_ID)
+				.setTableName(tableName)
 				.setIsSOTrx(isSOTrx));
 	}
 
@@ -321,9 +321,9 @@ public class DocumentEntityDescriptor
 
 	// legacy
 	@JsonIgnore
-	public int getAD_Table_ID()
+	public String getTableName()
 	{
-		return AD_Table_ID;
+		return tableName;
 	}
 
 	// legacy
@@ -359,7 +359,7 @@ public class DocumentEntityDescriptor
 		private Integer AD_Window_ID;
 		private Integer AD_Tab_ID;
 		private Integer tabNo;
-		private Integer AD_Table_ID;
+		private String TableName;
 		private Boolean isSOTrx;
 
 
@@ -545,9 +545,9 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setAD_Table_ID(final int AD_Table_ID)
+		public Builder setTableName(String tableName)
 		{
-			this.AD_Table_ID = AD_Table_ID;
+			this.TableName = tableName;
 			return this;
 		}
 

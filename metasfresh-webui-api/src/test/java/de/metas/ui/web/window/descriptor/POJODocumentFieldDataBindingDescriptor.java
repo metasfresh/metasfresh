@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -39,26 +38,16 @@ public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldData
 
 	private final String columnName;
 	
-	private static final AtomicInteger nextAD_Column_ID = new AtomicInteger(1);
-	private int AD_Column_ID;
-	
 	private POJODocumentFieldDataBindingDescriptor(String columnName)
 	{
 		super();
 		this.columnName = columnName;
-		this.AD_Column_ID = nextAD_Column_ID.getAndIncrement();
 	}
 
 	@Override
 	public String getColumnName()
 	{
 		return columnName;
-	}
-
-	@Override
-	public int getAD_Column_ID()
-	{
-		return AD_Column_ID;
 	}
 
 	@Override
