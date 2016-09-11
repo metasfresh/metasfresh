@@ -54,7 +54,7 @@ class List extends Component {
         )
     }
     render() {
-        const {list, rank,readonly, value,defaultValue, selected} = this.props;
+        const {list, rank,readonly, value,defaultValue, selected, align} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -64,7 +64,10 @@ class List extends Component {
                 className={"input-dropdown-container"}
             >
                 <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary")}>
-                    <div className="input-editable input-dropdown-focused">
+                    <div className={
+                        "input-editable input-dropdown-focused " +
+                        (align ? "text-xs-" + align + " " : "")
+                    }>
                         <input
                             type="text"
                             className="input-field font-weight-bold"

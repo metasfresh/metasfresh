@@ -270,7 +270,7 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder} = this.props;
+        const {rank, readonly, properties, defaultValue, placeholder, align} = this.props;
         const {propertiesCopy} = this.state;
         return (
             <div
@@ -281,7 +281,10 @@ class Lookup extends Component {
                 className={"input-dropdown-container"}
             >
                 <div className={"input-dropdown input-block input-" + (rank ? rank : "primary")}>
-                    <div className="input-editable">
+                    <div className={
+                        "input-editable" +
+                        (align ? "text-xs-" + align + " " : "")
+                    }>
                         <input
                             type="text"
                             className="input-field font-weight-bold"

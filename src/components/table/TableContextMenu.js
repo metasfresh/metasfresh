@@ -32,7 +32,6 @@ class TableContextMenu extends Component {
     }
     handleDelete = () => {
         const {dispatch,  tabId, type, docId, selected} = this.props;
-        console.log('deleted');
 
         this.setState(update(this.state, {
           prompt: {
@@ -51,7 +50,8 @@ class TableContextMenu extends Component {
         this.props.blur();
     }
 
-    handlePromptSubmitClick= () => {
+
+    handlePromptSubmitClick = () => {
        const {dispatch,  tabId, type, docId, selected, deselect} = this.props;
         this.setState(update(this.state, {
           prompt: {
@@ -59,8 +59,11 @@ class TableContextMenu extends Component {
           }
         }))
 
-        dispatch(deleteData(type, docId, tabId, selected));
-        dispatch(deleteLocal(tabId, selected, "master"));
+        dispatch(deleteData(type, docId, tabId, selected)).then(
+            () => {
+                dispatch(deleteLocal(tabId, selected, "master"))
+            }
+        )
         this.props.blur();
 
 

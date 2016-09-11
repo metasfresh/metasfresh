@@ -86,13 +86,14 @@ class Widget extends Component {
         
     }
 
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         switch(widgetType){
             case "Date":
                 return (
                     <div className={"input-icon-container input-block " +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -111,6 +112,7 @@ class Widget extends Component {
                     <div className={"input-icon-container input-block " +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ")
                     }>
                         <Datetime
@@ -128,6 +130,7 @@ class Widget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -155,6 +158,7 @@ class Widget extends Component {
                         mandatory={data[0].mandatory}
                         rank={type}
                         onChange={this.handlePatch}
+                        align={align}
                     />
                 )
             case "List":
@@ -170,6 +174,7 @@ class Widget extends Component {
                         rowId={rowId}
                         tabId={tabId}
                         onChange={(option) => this.handlePatch(fields[0].field, option)}
+                        align={align}
                     />
                 )
             case "Text":
@@ -178,6 +183,7 @@ class Widget extends Component {
                         "input-block input-icon-container " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data[0].readonly ? "input-disabled " : "") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
                         <input
@@ -198,6 +204,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -217,6 +224,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -238,6 +246,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -257,6 +266,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -278,6 +288,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -299,6 +310,7 @@ class Widget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
@@ -317,7 +329,7 @@ class Widget extends Component {
                 return (
                     <label
                         className={
-                            "input-checkbox"
+                            "input-checkbox "
                         }>
                         <input
                             type="checkbox"
@@ -347,12 +359,21 @@ class Widget extends Component {
                 )
             case "Label":
                 return (
-                    <div className="tag tag-warning">{data[0].value}</div>
+                    <div
+                        className={
+                            "tag tag-warning " +
+                            (align ? "text-xs-" + align + " " : "")
+                        }
+                    >{data[0].value}</div>
                 )
             case "Button":
                 return (
                     <button
-                        className="btn btn-sm btn-meta-primary"
+
+                        className={
+                            "btn btn-sm btn-meta-primary " +
+                            (align ? "text-xs-" + align + " " : "")
+                        }
                         onClick={(e) => this.handlePatch(fields[0].field)}
                     >
                         {data[0].value[Object.keys(data[0].value)[0]]}
@@ -375,7 +396,7 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon} = this.props;
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign} = this.props;
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
@@ -383,7 +404,7 @@ class Widget extends Component {
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
                             <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon)}
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
                             </div>
                         </div>
                     </div>

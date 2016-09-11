@@ -19,7 +19,7 @@ class MasterWindow extends Component {
 
     render() {
         const {master, connectionError, modal} = this.props;
-        const {documentNoElement, docActionElement, type} = master.layout;
+        const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
 
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
@@ -29,6 +29,7 @@ class MasterWindow extends Component {
             "action": findRowByPropName(master.data, "DocAction"),
             "displayed": true
         };
+        const docSummaryData =  findRowByPropName(master.data, documentSummaryElement && documentSummaryElement.fields[0].field);
 
         return (
             <div>
@@ -37,6 +38,7 @@ class MasterWindow extends Component {
                     docStatusData = {docStatusData}
                     docNo = {documentNoElement}
                     docNoData = {docNoData}
+                    docSummaryData = {docSummaryData}
                     dataId={dataId}
                     windowType={type}
                 />
