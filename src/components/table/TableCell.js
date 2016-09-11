@@ -26,7 +26,10 @@ class TableCell extends Component {
                 onDoubleClick={onDoubleClick}
                 onKeyDown={onKeyDown}
                 className={
-                    (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "")
+                    (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
+                    (widgetData.readonly ? "cell-disabled " : "") +
+                    (widgetData.mandatory ? "cell-mandatory " : "") +
+                    (item.widgetType)
                 }
             >
                 {

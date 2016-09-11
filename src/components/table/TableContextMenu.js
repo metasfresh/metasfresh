@@ -66,19 +66,10 @@ class TableContextMenu extends Component {
         )
         this.props.blur();
 
-
-        // props: Object.assign({}, this.props, {
-        //     selected: []
-        // })
-        // console.log(this.props);
-        // deselect();
-        //
-
         setTimeout(function(){
             deselect();
-            
         }, 1);
-
+        
     }
 
 

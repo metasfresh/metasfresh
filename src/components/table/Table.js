@@ -55,13 +55,14 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             selected: []
         }))
-    }
+     }
 
 
     handleClickOutside = (event) => {
         if(this.state.selected.length > 0){
-            this.deselectAllProducts();
+            this.deselectAllProducts();     
         }
+
     }
 
     handleKeyDown = (e) => {

@@ -641,6 +641,7 @@ table .input-field {
     background: white;
     height: 20px;
     text-align: center;
+    font-weight: normal;
 }
 
 table .input-secondary {
@@ -656,6 +657,18 @@ table .form-group {
     margin-bottom: 0;
 }
 
-table td {
-    text-align: center;    
+table .input-disabled input, table input-mandatory input {
+    background: transparent;
+}
+
+.input-dropdown-focused input {
+    background-color: transparent;
+}
+
+.cell-disabled.Quantity:focus {
+    outline: 1px dashed #cbcbcb;
+}
+
+.cell-mandatory.Quantity:focus {
+    outline: 1px solid #a8daf8;
 }

@@ -352,7 +352,6 @@ export function deleteData(windowType, id, tabId, rowId) {
 export function deleteLocal(tabid,rowsid,scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {
-            console.log(rowid)
             dispatch(deleteRow(tabid,rowid,scope))
         }
     }
