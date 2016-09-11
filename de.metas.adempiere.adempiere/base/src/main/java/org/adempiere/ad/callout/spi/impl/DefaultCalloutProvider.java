@@ -34,10 +34,10 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 	private static final transient Logger logger = LogManager.getLogger(DefaultCalloutProvider.class);
 
 	@Override
-	public TableCalloutsMap getCallouts(final Properties ctx, final int adTableId)
+	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
 		final TableCalloutsMap.Builder tableCalloutsBuilder = TableCalloutsMap.builder();
-		for (final Entry<String, Supplier<ICalloutInstance>> entry : supplyCallouts(ctx, adTableId).entries())
+		for (final Entry<String, Supplier<ICalloutInstance>> entry : supplyCallouts(ctx, tableName).entries())
 		{
 			final Supplier<ICalloutInstance> columnCalloutSupplier = entry.getValue();
 			try
@@ -61,9 +61,9 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 	}
 
 	@Cached
-	public ImmutableListMultimap<String, Supplier<ICalloutInstance>> supplyCallouts(@CacheCtx final Properties ctx, final int adTableId)
+	public ImmutableListMultimap<String, Supplier<ICalloutInstance>> supplyCallouts(@CacheCtx final Properties ctx, final String tableName)
 	{
-		final ListMultimap<String, I_AD_ColumnCallout> calloutsDef = Services.get(IADColumnCalloutDAO.class).retrieveAvailableCalloutsToRun(ctx, adTableId);
+		final ListMultimap<String, I_AD_ColumnCallout> calloutsDef = Services.get(IADColumnCalloutDAO.class).retrieveAvailableCalloutsToRun(ctx, tableName);
 		if (calloutsDef == null || calloutsDef.isEmpty())
 		{
 			return ImmutableListMultimap.of();

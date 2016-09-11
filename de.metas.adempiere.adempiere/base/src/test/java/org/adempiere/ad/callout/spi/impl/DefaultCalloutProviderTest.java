@@ -10,12 +10,12 @@ package org.adempiere.ad.callout.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.api.impl.MethodNameCalloutInstance;
 import org.adempiere.ad.callout.api.impl.MockedCalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -63,23 +62,25 @@ public class DefaultCalloutProviderTest
 		}
 
 		public static final String METHOD_method1 = "method1";
+
 		public String method1(final ICalloutField calloutField)
 		{
-			return "";
+			return NO_ERROR;
 		}
-		
+
 		public static final String METHOD_method2 = "method2";
-		public String method2(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+
+		public String method2(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 		{
-			return "";
+			return NO_ERROR;
 		}
 
 		public static final String METHOD_method3 = "method3";
-		public String method3(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object valueOld)
-		{
-			return "";
-		}
 
+		public String method3(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value, final Object valueOld)
+		{
+			return NO_ERROR;
+		}
 	}
 
 	public static class Callout1 extends AbstractMockedCallout
@@ -105,7 +106,7 @@ public class DefaultCalloutProviderTest
 			super(true);
 		}
 	}
-	
+
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -123,25 +124,25 @@ public class DefaultCalloutProviderTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField();
 
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method1);
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method2);
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method3);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method2);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method3);
 		//
-		createAD_ColumnCallout(field, Callout2.class, Callout2.METHOD_method1);
-		createAD_ColumnCallout(field, Callout3.class, Callout3.METHOD_method1);
-		createAD_ColumnCallout(field, Callout4.class, Callout4.METHOD_method1);
+		field.createAD_ColumnCallout(Callout2.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout3.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout4.class, AbstractMockedCallout.METHOD_method1);
 
-		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
+		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 6, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(1), Callout1.class, Callout1.METHOD_method2);
-		assertLegacyCalloutInstance(calloutInstances.get(2), Callout1.class, Callout1.METHOD_method3);
+		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(1), Callout1.class, AbstractMockedCallout.METHOD_method2);
+		assertLegacyCalloutInstance(calloutInstances.get(2), Callout1.class, AbstractMockedCallout.METHOD_method3);
 		//
-		assertLegacyCalloutInstance(calloutInstances.get(3), Callout2.class, Callout2.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(4), Callout3.class, Callout3.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(5), Callout4.class, Callout4.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(3), Callout2.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(4), Callout3.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(5), Callout4.class, AbstractMockedCallout.METHOD_method1);
 	}
 
 	@Test
@@ -149,7 +150,7 @@ public class DefaultCalloutProviderTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField();
 
-		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
+		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		;
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
@@ -160,11 +161,11 @@ public class DefaultCalloutProviderTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField();
 
-		final I_AD_ColumnCallout cc1 = createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method1);
+		final I_AD_ColumnCallout cc1 = field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method1);
 		cc1.setIsActive(false);
 		InterfaceWrapperHelper.save(cc1);
 
-		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
+		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
 	}
@@ -174,18 +175,18 @@ public class DefaultCalloutProviderTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField();
 
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method1);
-		createAD_ColumnCallout(field, Callout2.class, Callout2.METHOD_method1);
-		createAD_ColumnCallout(field, Callout_FailOnInit.class, Callout_FailOnInit.METHOD_method1);
-		createAD_ColumnCallout(field, Callout4.class, Callout4.METHOD_method1);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout2.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout_FailOnInit.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout4.class, AbstractMockedCallout.METHOD_method1);
 
-		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
+		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 3, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, Callout2.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(2), Callout4.class, Callout4.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(2), Callout4.class, AbstractMockedCallout.METHOD_method1);
 	}
 
 	@Test
@@ -193,36 +194,18 @@ public class DefaultCalloutProviderTest
 	{
 		final MockedCalloutField field = MockedCalloutField.createNewField();
 
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method1);
-		createAD_ColumnCallout(field, Callout1.class, Callout1.METHOD_method1);
-		createAD_ColumnCallout(field, Callout2.class, Callout3.METHOD_method1);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout1.class, AbstractMockedCallout.METHOD_method1);
+		field.createAD_ColumnCallout(Callout2.class, AbstractMockedCallout.METHOD_method1);
 
-		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getAD_Table_ID());
+		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
+		testWatcher.putContext(tableCallouts);
+
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 2, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, Callout1.METHOD_method1);
-		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, Callout2.METHOD_method1);
-	}
-
-	private I_AD_ColumnCallout createAD_ColumnCallout(final ICalloutField field, final Class<?> calloutClass, final String methodName)
-	{
-		final String calloutClassName = calloutClass.getName() + "." + methodName;
-		return createAD_ColumnCallout(field, calloutClassName);
-	}
-
-	private I_AD_ColumnCallout createAD_ColumnCallout(final ICalloutField field, final String calloutClassName)
-	{
-		final int AD_Column_ID = field.getAD_Column_ID();
-		Assert.assertTrue("AD_Column_ID is set for " + field, AD_Column_ID > 0);
-
-		final I_AD_ColumnCallout cc = InterfaceWrapperHelper.create(field.getCtx(), I_AD_ColumnCallout.class, ITrx.TRXNAME_None);
-		cc.setAD_Column_ID(AD_Column_ID);
-		cc.setClassname(calloutClassName);
-		cc.setSeqNo(0);
-		cc.setIsActive(true);
-		InterfaceWrapperHelper.save(cc);
-		return cc;
+		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
 	}
 
 	private void assertLegacyCalloutInstance(final ICalloutInstance calloutInstance, final Class<?> calloutClass, final String methodName)

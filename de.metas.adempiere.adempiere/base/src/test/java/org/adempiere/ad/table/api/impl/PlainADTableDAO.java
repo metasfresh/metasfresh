@@ -54,24 +54,4 @@ public class PlainADTableDAO extends ADTableDAO
 
 		return adColumn;
 	}
-
-	@Override
-	public int retrieveAD_Column_ID(final int adTableId, final String columnName)
-	{
-		final int adColumnId = super.retrieveAD_Column_ID(adTableId, columnName);
-		if (adColumnId > 0)
-		{
-			return adColumnId;
-		}
-
-		//
-		// Automatically create the AD_Column if is missing... there are a couple of tests which are rellying on this feature
-		final IContextAware context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
-
-		final I_AD_Column adColumn = InterfaceWrapperHelper.newInstance(I_AD_Column.class, context);
-		adColumn.setAD_Table_ID(adTableId);
-		adColumn.setColumnName(columnName);
-		InterfaceWrapperHelper.save(adColumn);
-		return adColumn.getAD_Column_ID();
-	}
 }

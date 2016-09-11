@@ -71,10 +71,16 @@ public class CalloutFactory implements ICalloutFactory
 	{
 		return providers.getProviders();
 	}
+
+	@Override
+	public ICalloutProvider getProvider()
+	{
+		return providers;
+	}
 	
 	@Override
-	public TableCalloutsMap getCallouts(Properties ctx, int adTableId)
+	public TableCalloutsMap getCallouts(Properties ctx, final String tableName)
 	{
-		return providers.getCallouts(ctx, adTableId);
+		return providers.getCallouts(ctx, tableName);
 	}
 }

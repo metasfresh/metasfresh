@@ -13,7 +13,6 @@ import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -25,12 +24,12 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 {
 	private static final transient Logger logger = LogManager.getLogger(ProgramaticCalloutProvider.class);
 
-	private final Map<Integer, TableCalloutsMap> registeredCalloutsByTableId = new ConcurrentHashMap<>();
+	private final Map<String, TableCalloutsMap> registeredCalloutsByTableId = new ConcurrentHashMap<>();
 
 	@Override
-	public TableCalloutsMap getCallouts(final Properties ctx, final int adTableId)
+	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
-		final TableCalloutsMap callouts = registeredCalloutsByTableId.get(adTableId);
+		final TableCalloutsMap callouts = registeredCalloutsByTableId.get(tableName);
 		return callouts == null ? TableCalloutsMap.EMPTY : callouts;
 	}
 
@@ -41,17 +40,10 @@ public class ProgramaticCalloutProvider implements ICalloutProvider, IProgramati
 		Check.assumeNotNull(columnName, "ColumnName not null");
 		Check.assumeNotNull(callout, "callout not null");
 
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
-		if (adTableId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Table_ID@: " + tableName);
-		}
-
 		//
 		// Add the new callout to our internal map
 		final AtomicBoolean registered = new AtomicBoolean(false);
-		registeredCalloutsByTableId.compute(adTableId, (tableIdKey, currentTabCalloutsMap) -> {
+		registeredCalloutsByTableId.compute(tableName, (tableNameKey, currentTabCalloutsMap) -> {
 			if (currentTabCalloutsMap == null)
 			{
 				registered.set(true);

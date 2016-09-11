@@ -33,7 +33,7 @@ import org.junit.Test;
 
 public class CalloutExecutorTest
 {
-	private MockedCalloutFactory calloutFactory;
+	private MockedCalloutProvider calloutProvider;
 	private MockedCalloutField field;
 
 	@Before
@@ -43,7 +43,7 @@ public class CalloutExecutorTest
 
 		this.field = MockedCalloutField.createNewField();
 
-		calloutFactory = new MockedCalloutFactory();
+		calloutProvider = new MockedCalloutProvider();
 	}
 
 	@Test
@@ -129,15 +129,15 @@ public class CalloutExecutorTest
 	private CalloutExecutor newExecutor()
 	{
 		return CalloutExecutor.builder()
-				.setAD_Table_ID(field.getAD_Table_ID())
-				.setCalloutFactory(calloutFactory)
+				.setTableName(field.getTableName())
+				.setCalloutProvider(calloutProvider)
 				.build();
 	}
 
 	private MockedCallout createAndRegisterMockedCallout(final ICalloutField field)
 	{
 		final MockedCallout callout = new MockedCallout();
-		calloutFactory.regiterCallout(field, callout);
+		calloutProvider.regiterCallout(field, callout);
 		return callout;
 	}
 

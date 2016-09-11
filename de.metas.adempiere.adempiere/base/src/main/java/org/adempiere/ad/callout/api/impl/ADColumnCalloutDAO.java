@@ -14,6 +14,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
+import org.compiere.model.I_AD_Table;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ListMultimap;
@@ -24,14 +25,18 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 {
 	@Override
 	@Cached(cacheName = I_AD_ColumnCallout.Table_Name + "#By#" + I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
-	public ListMultimap<String, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(@CacheCtx final Properties ctx, final int adTableId)
+	public ListMultimap<String, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(@CacheCtx final Properties ctx, final String tableName)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName)
 				//
-				.andCollectChildren(I_AD_ColumnCallout.COLUMN_AD_Column_ID, I_AD_ColumnCallout.class)
+				.andCollectChildren(I_AD_Column.COLUMN_AD_Table_ID)
+				.addOnlyActiveRecordsFilter()
+				//
+				//
+				.andCollectChildren(I_AD_ColumnCallout.COLUMN_AD_Column_ID)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_AD_ColumnCallout.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
 				.addInArrayFilter(I_AD_ColumnCallout.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, Env.getAD_Org_ID(ctx))
@@ -50,7 +55,20 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 					return Check.isEmpty(entityType, true) || UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
 				})
 				// collect to: AD_Column_ID -> List of AD_ColumnCallouts
-				.collect(GuavaCollectors.toImmutableListMultimap(cc -> cc.getColumnName()));
+				.collect(GuavaCollectors.toImmutableListMultimap(cc -> extractColumnName(cc)));
+	}
+
+	/**
+	 * Gets the ColumnName from given {@link I_AD_ColumnCallout}.
+	 * 
+	 * The only reason why we have this here, is because the {@link I_AD_ColumnCallout#getColumnName()} is a SQL virtual column which is NOT supported in JUnit testing mode.
+	 * 
+	 * @param cc
+	 * @return ColumnName
+	 */
+	protected String extractColumnName(final I_AD_ColumnCallout cc)
+	{
+		return cc.getColumnName();
 	}
 
 	@Override

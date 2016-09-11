@@ -1041,7 +1041,6 @@ public class GridField
 	 *
 	 * @return column
 	 */
-	@Override
 	public int getAD_Column_ID()
 	{
 		return m_vo.getAD_Column_ID();
@@ -2125,7 +2124,6 @@ public class GridField
 		return m_vo.getCtx();
 	}
 
-	@Override
 	public int getAD_Table_ID()
 	{
 		return m_vo.getAD_Table_ID();

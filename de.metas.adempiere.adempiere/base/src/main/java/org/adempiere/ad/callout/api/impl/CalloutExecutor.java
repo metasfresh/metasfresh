@@ -15,6 +15,7 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
+import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
@@ -33,7 +34,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 	private static final Logger logger = LogManager.getLogger(CalloutExecutor.class);
 
-	private final int adTableId;
+	private final String tableName;
 	private final TableCalloutsMap tableCalloutsMap;
 	private final Set<String> executionBlackListIds;
 	
@@ -41,14 +42,14 @@ public final class CalloutExecutor implements ICalloutExecutor
 	private final Set<ICalloutInstance> activeCalloutInstances = new HashSet<>();
 
 	private CalloutExecutor(
-			final int adTableId,
+			final String tableName,
 			final TableCalloutsMap tableCalloutsMap,
 			final Set<String> executionBlackListIds)
 	{
 		super();
 
-		Check.assume(adTableId > 0, "adTableId > 0");
-		this.adTableId = adTableId;
+		Check.assumeNotEmpty(tableName, "tableName is not empty");
+		this.tableName = tableName;
 
 		Check.assumeNotNull(tableCalloutsMap, "Parameter tableCalloutsMap is not null");
 		this.tableCalloutsMap = tableCalloutsMap;
@@ -68,6 +69,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("tableName", tableName)
 				.add("activeCalloutInstances", activeCalloutInstances.isEmpty() ? null : activeCalloutInstances)
 				.add("backList", executionBlackListIds.isEmpty() ? null : executionBlackListIds)
 				.toString();
@@ -104,9 +106,9 @@ public final class CalloutExecutor implements ICalloutExecutor
 			return false;
 		}
 
-		if (field.getAD_Table_ID() != adTableId)
+		if (!tableName.equals(field.getTableName()))
 		{
-			logger.warn("Field {} is not handled by {} because it's AD_Table_ID does not match", field, this, new Exception("TRACE"));
+			logger.warn("Field {} is not handled by {} because it's TableName does not match", field, this, new Exception("TRACE"));
 			return false;
 		}
 
@@ -186,13 +188,13 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 	public ICalloutExecutor newInstanceSharingMasterData()
 	{
-		return new CalloutExecutor(adTableId, tableCalloutsMap, executionBlackListIds);
+		return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);
 	}
 
 	public static final class Builder
 	{
-		private int adTableId;
-		private ICalloutFactory _calloutFactory;
+		private String tableName;
+		private ICalloutProvider _calloutProvider;
 
 		private Builder()
 		{
@@ -201,38 +203,38 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 		public CalloutExecutor build()
 		{
-			final ICalloutFactory calloutFactory = getCalloutFactory();
+			final ICalloutProvider calloutFactory = getCalloutProvider();
 			final Properties ctx = Env.getCtx(); // FIXME: get rid of ctx!
-			final TableCalloutsMap tableCalloutsMap = calloutFactory.getCallouts(ctx, adTableId);
+			final TableCalloutsMap tableCalloutsMap = calloutFactory.getCallouts(ctx, tableName);
 			if (tableCalloutsMap == null)
 			{
-				throw new NullPointerException("Got null table callouts map from " + calloutFactory + " for AD_Table_ID=" + adTableId);
+				throw new NullPointerException("Got null table callouts map from " + calloutFactory + " for AD_Table_ID=" + tableName);
 			}
 			final Set<String> executionBlackListIds = null;
-			return new CalloutExecutor(adTableId, tableCalloutsMap, executionBlackListIds);
+			return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);
 		}
 
-		public Builder setAD_Table_ID(final int adTableId)
+		public Builder setTableName(final String tableName)
 		{
-			this.adTableId = adTableId;
+			this.tableName = tableName;
 			return this;
 		}
 
-		public Builder setCalloutFactory(final ICalloutFactory calloutFactory)
+		public Builder setCalloutProvider(final ICalloutProvider calloutProvider)
 		{
-			_calloutFactory = calloutFactory;
+			_calloutProvider = calloutProvider;
 			return this;
 		}
 
-		private ICalloutFactory getCalloutFactory()
+		private ICalloutProvider getCalloutProvider()
 		{
-			if (_calloutFactory == null)
+			if (_calloutProvider == null)
 			{
-				return Services.get(ICalloutFactory.class);
+				return Services.get(ICalloutFactory.class).getProvider();
 			}
 			else
 			{
-				return _calloutFactory;
+				return _calloutProvider;
 			}
 		}
 	}

@@ -28,15 +28,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.MTable;
+import org.compiere.model.I_AD_ColumnCallout;
+import org.compiere.model.I_AD_Table;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
+import org.junit.Assert;
 import org.junit.Ignore;
 
 @Ignore
@@ -54,20 +59,63 @@ public class MockedCalloutField implements ICalloutField
 
 	public static MockedCalloutField createNewField(final String tableName, final String columnName)
 	{
-		final int adTableId = MTable.getTable_ID(tableName);
-
 		final Properties ctx = Env.getCtx();
-		final I_AD_Column adColumn = InterfaceWrapperHelper.create(ctx, I_AD_Column.class, ITrx.TRXNAME_None);
-		adColumn.setAD_Table_ID(adTableId);
-		adColumn.setColumnName(columnName);
-		InterfaceWrapperHelper.save(adColumn);
+		final I_AD_Table adTable = getCreateAD_Table(ctx, tableName);
+		final int adTableId = adTable.getAD_Table_ID();
 
+		final int adColumnId = getCreateAD_Column_ID(ctx, adTableId, columnName);
+		
 		final MockedCalloutField field = new MockedCalloutField();
 		field.setCtx(ctx);
 		field.setAD_Table_ID(adTableId);
 		field.setColumnName(columnName);
-		field.setAD_Column_ID(adColumn.getAD_Column_ID());
+		field.setAD_Column_ID(adColumnId);
 		return field;
+	}
+	
+	private static final I_AD_Table getCreateAD_Table(final Properties ctx, final String tableName)
+	{
+		I_AD_Table adTable = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName)
+				.create()
+				.firstOnly(I_AD_Table.class);
+		if(adTable == null)
+		{
+			// Get the AD_Table_ID because it might be allocated even if there is NO AD_Table record!
+			final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
+			adTable = InterfaceWrapperHelper.create(ctx, I_AD_Table.class, ITrx.TRXNAME_None);
+			adTable.setTableName(tableName);
+			adTable.setName(tableName);
+			adTable.setAD_Table_ID(tableId);
+			InterfaceWrapperHelper.save(adTable);
+		}
+		return adTable;
+	}
+
+	private static final int getCreateAD_Column_ID(final Properties ctx, final int adTableId, final String columnName)
+	{
+		final int adColumnId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Column.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Column.COLUMN_ColumnName, columnName)
+				.create()
+				.firstIdOnly();
+		if(adColumnId > 0)
+		{
+			return adColumnId;
+		}
+
+		//
+		// Automatically create the AD_Column if is missing... there are a couple of tests which are rellying on this feature
+		final IContextAware context = new PlainContextAware(ctx, ITrx.TRXNAME_None);
+
+		final I_AD_Column adColumn = InterfaceWrapperHelper.newInstance(I_AD_Column.class, context);
+		adColumn.setAD_Table_ID(adTableId);
+		adColumn.setColumnName(columnName);
+		InterfaceWrapperHelper.save(adColumn);
+		return adColumn.getAD_Column_ID();
 	}
 
 	private Properties ctx = Env.getCtx();
@@ -81,7 +129,7 @@ public class MockedCalloutField implements ICalloutField
 	private int windowNo = 0;
 	private int tabNo = 0;
 	private boolean recordCopyingMode = false;
-	
+
 	private MockedCalloutField()
 	{
 		super();
@@ -99,7 +147,6 @@ public class MockedCalloutField implements ICalloutField
 		return ctx;
 	}
 
-	@Override
 	public int getAD_Table_ID()
 	{
 		return tableId;
@@ -112,7 +159,6 @@ public class MockedCalloutField implements ICalloutField
 		return adTableId <= 0 ? null : Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 	}
 
-	@Override
 	public int getAD_Column_ID()
 	{
 		return columnId;
@@ -136,7 +182,7 @@ public class MockedCalloutField implements ICalloutField
 		return columnName;
 	}
 
-	public void setCtx(final Properties ctx)
+	private void setCtx(final Properties ctx)
 	{
 		this.ctx = ctx;
 	}
@@ -146,17 +192,17 @@ public class MockedCalloutField implements ICalloutField
 		this.triggerCalloutAllowed = triggerCalloutAllowed;
 	}
 
-	public void setAD_Table_ID(final int tableId)
+	private void setAD_Table_ID(final int tableId)
 	{
 		this.tableId = tableId;
 	}
 
-	public void setAD_Column_ID(final int columnId)
+	private void setAD_Column_ID(final int columnId)
 	{
 		this.columnId = columnId;
 	}
 
-	public void setColumnName(final String columnName)
+	private void setColumnName(final String columnName)
 	{
 		this.columnName = columnName;
 	}
@@ -248,4 +294,25 @@ public class MockedCalloutField implements ICalloutField
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+	
+	public I_AD_ColumnCallout createAD_ColumnCallout(final Class<?> calloutClass, final String methodName)
+	{
+		final String calloutClassName = calloutClass.getName() + "." + methodName;
+		return createAD_ColumnCallout(calloutClassName);
+	}
+
+	public I_AD_ColumnCallout createAD_ColumnCallout(final String calloutClassName)
+	{
+		final int AD_Column_ID = getAD_Column_ID();
+		Assert.assertTrue("AD_Column_ID is set for " + this, AD_Column_ID > 0);
+
+		final I_AD_ColumnCallout cc = InterfaceWrapperHelper.create(getCtx(), I_AD_ColumnCallout.class, ITrx.TRXNAME_None);
+		cc.setAD_Column_ID(AD_Column_ID);
+		cc.setClassname(calloutClassName);
+		cc.setSeqNo(0);
+		cc.setIsActive(true);
+		InterfaceWrapperHelper.save(cc);
+		return cc;
+	}
+
 }

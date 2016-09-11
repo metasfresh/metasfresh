@@ -7,7 +7,9 @@ import org.adempiere.util.ISingletonService;
 
 public interface ICalloutFactory extends ISingletonService
 {
-	TableCalloutsMap getCallouts(final Properties ctx, final int adTableId);
+	ICalloutProvider getProvider();
+
+	TableCalloutsMap getCallouts(final Properties ctx, final String tableName);
 
 	/**
 	 * Registers the callout provider.
@@ -17,4 +19,5 @@ public interface ICalloutFactory extends ISingletonService
 	 * @param provider
 	 */
 	void registerCalloutProvider(ICalloutProvider provider);
+
 }

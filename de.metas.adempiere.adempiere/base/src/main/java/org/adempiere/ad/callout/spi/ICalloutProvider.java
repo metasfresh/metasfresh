@@ -7,5 +7,5 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 @FunctionalInterface
 public interface ICalloutProvider
 {
-	TableCalloutsMap getCallouts(final Properties ctx, final int adTableId);
+	TableCalloutsMap getCallouts(final Properties ctx, final String tableName);
 }

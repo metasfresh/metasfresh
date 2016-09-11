@@ -58,7 +58,7 @@ public class ProgramaticCalloutProviderTest
 		final MockedCalloutInstance calloutInstance = new MockedCalloutInstance();
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
-		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getAD_Table_ID())
+		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
 				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.singletonList(calloutInstance),
@@ -74,7 +74,7 @@ public class ProgramaticCalloutProviderTest
 		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
-		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getAD_Table_ID())
+		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
 				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.emptyList(),

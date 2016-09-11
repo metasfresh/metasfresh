@@ -96,17 +96,6 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public int retrieveAD_Column_ID(final int adTableId, final String columnName)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Column.COLUMN_ColumnName, columnName)
-				.create()
-				.firstIdOnly();
-	}
-
-	@Override
 	public String retrieveTableName(final int adTableId)
 	{
 		final Properties ctx = Env.getCtx();

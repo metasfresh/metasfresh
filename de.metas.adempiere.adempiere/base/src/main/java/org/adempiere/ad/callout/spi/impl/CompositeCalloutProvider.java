@@ -52,13 +52,13 @@ public class CompositeCalloutProvider implements ICalloutProvider
 	}
 
 	@Override
-	public TableCalloutsMap getCallouts(final Properties ctx, final int adTableId)
+	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
 		final TableCalloutsMap.Builder resultBuilder = TableCalloutsMap.builder();
 
 		for (final ICalloutProvider provider : providers)
 		{
-			final TableCalloutsMap callouts = provider.getCallouts(ctx, adTableId);
+			final TableCalloutsMap callouts = provider.getCallouts(ctx, tableName);
 			resultBuilder.putAll(callouts);
 		}
 
