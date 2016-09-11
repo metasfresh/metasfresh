@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
-import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
@@ -105,10 +104,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 			//
 			// Fields mapping & data binding
-			mainTabVO.getFields()
-					.stream()
-					.sorted(GridFieldVO.COMPARATOR_BySeqNo)
-					.forEach(gridFieldVO -> mainTabFactory.documentField(gridFieldVO));
+			mainTabFactory.documentFields();
 		}
 
 		//
@@ -120,10 +116,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 			//
 			// Fields mapping
-			detailTabVO.getFields()
-					.stream()
-					.sorted(GridFieldVO.COMPARATOR_BySeqNoGrid)
-					.forEach(gridFieldVO -> detailTabFactory.documentField(gridFieldVO));
+			detailTabFactory.documentFields();
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailTabFactory.documentEntity();
 			mainTabFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());

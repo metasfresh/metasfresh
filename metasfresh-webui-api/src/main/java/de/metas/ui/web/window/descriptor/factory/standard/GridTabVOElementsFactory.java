@@ -159,6 +159,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	//
 	// State: pre-build cached entities
 	private DocumentEntityDescriptor.Builder _documentEntityBuilder;
+	private final Map<String, DocumentFieldDescriptor.Builder> _documentFieldBuilders = new HashMap<>();
 	private SqlDocumentEntityDataBindingDescriptor.Builder _documentEntryDataBinding;
 	private final Set<String> publicFieldNames = new HashSet<>();
 	private final Set<String> advancedFieldNames = new HashSet<>();
@@ -625,9 +626,20 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		return _documentEntryDataBinding;
 	}
 
-	public DocumentFieldDescriptor.Builder documentField(
-			final GridFieldVO gridFieldVO //
-	)
+	public void documentFields()
+	{
+		getGridTabVO()
+				.getFields()
+				.stream()
+				.forEach(gridFieldVO -> documentField(gridFieldVO));
+	}
+
+	private DocumentFieldDescriptor.Builder documentField(final GridFieldVO gridFieldVO)
+	{
+		return _documentFieldBuilders.computeIfAbsent(gridFieldVO.getColumnName(), (columnName) -> createDocumentField(gridFieldVO));
+	}
+
+	public DocumentFieldDescriptor.Builder createDocumentField(final GridFieldVO gridFieldVO)
 	{
 		// From entry data-binding:
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindingsBuilder = documentEntryDataBinding();
