@@ -144,7 +144,7 @@ class Table extends Component {
     }
 
     handleClick = (e, id) => {
-        e.preventDefault();
+       // e.preventDefault();
 
         const {dispatch} = this.props;
         const {selected} = this.state;
@@ -225,6 +225,7 @@ class Table extends Component {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, tabId, rowId));
     }
+
     renderTableBody = () => {
         const {rowData, tabid, cols, type, docId} = this.props;
         const {selected} = this.state;
@@ -244,7 +245,7 @@ class Table extends Component {
                         type={type}
                         docId={docId}
                         isSelected={selected.indexOf(item[key].rowId) > -1}
-                        onClick={(e) => this.handleClick(e, item[key].rowId)}
+                        onMouseDown={(e) => this.handleClick(e, item[key].rowId)}
                         onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                     />
                 );
