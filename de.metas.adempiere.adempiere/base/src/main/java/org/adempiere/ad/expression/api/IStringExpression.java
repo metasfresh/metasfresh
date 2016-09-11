@@ -46,6 +46,12 @@ public interface IStringExpression extends IExpression<String>
 	 */
 	IStringExpression NULL = NullStringExpression.instance;
 
+	@Override
+	default Class<String> getValueClass()
+	{
+		return String.class;
+	}
+
 	/**
 	 * Gets internal string expression chunks. Don't use it directly, the API will use it only
 	 * 

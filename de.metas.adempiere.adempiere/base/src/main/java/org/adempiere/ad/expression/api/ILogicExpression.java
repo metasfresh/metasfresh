@@ -53,6 +53,12 @@ public interface ILogicExpression extends IExpression<Boolean>
 	List<String> LOGIC_OPERATORS = ImmutableList.of(LOGIC_OPERATOR_AND, LOGIC_OPERATOR_OR, LOGIC_OPERATOR_XOR);
 
 	@Override
+	default Class<Boolean> getValueClass()
+	{
+		return Boolean.class;
+	}
+
+	@Override
 	String getExpressionString();
 
 	@Override

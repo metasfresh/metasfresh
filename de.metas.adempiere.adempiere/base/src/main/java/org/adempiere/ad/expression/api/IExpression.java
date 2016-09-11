@@ -22,7 +22,6 @@ package org.adempiere.ad.expression.api;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -38,6 +37,11 @@ import org.compiere.util.Evaluatee;
  */
 public interface IExpression<V>
 {
+	/**
+	 * @return the type of evaluation result
+	 */
+	Class<V> getValueClass();
+
 	/**
 	 * Gets string representation of underlying expression. Usually this shall be EXACTLY the same as the string from where the expression was compiled
 	 * 
