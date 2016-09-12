@@ -67,7 +67,7 @@
 			<name>Maven metasfresh Snapshots Repository</name>
 			
 			<!-- see ME-40 -->
-			<url>http://repo.metasfresh.com:8281/repository/metasfresh-snapshots/</url>
+			<url>http://repo.metasfresh.com:8281/repository/mvn-metasfresh-snapshots/</url>
 		</snapshotRepository>
 
 	</distributionManagement>
