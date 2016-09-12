@@ -14,7 +14,7 @@ export function setBreadcrumb(breadcrumb){
 // THUNK ACTIONS
 
 export function nodePathsRequest(nodeId) {
-    return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=1');
+    return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2');
 }
 
 export function elementPathRequest(pathType, elementId) {
@@ -26,7 +26,7 @@ export function queryPathsRequest(query) {
 }
 
 export function rootRequest() {
-    return dispatch => axios.get(config.API_URL + '/menu/root?depth=2');
+    return dispatch => axios.get(config.API_URL + '/menu/root?depth=3');
 }
 
 export function getWindowBreadcrumb(id){

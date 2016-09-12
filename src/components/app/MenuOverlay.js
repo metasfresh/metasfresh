@@ -1,18 +1,22 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import MenuOverlayContainer from './MenuOverlayContainer';
+import MenuOverlayItem from './MenuOverlayItem';
 
 import {
     nodePathsRequest,
     queryPathsRequest
  } from '../../actions/MenuActions';
 
+
 class MenuOverlay extends Component {
     constructor(props){
         super(props);
         this.state = {
             queriedResults: [],
-            query: ""
+            query: "",
+            deepNode: null
         };
     }
     handleClickOutside = (e) => {
@@ -51,8 +55,40 @@ class MenuOverlay extends Component {
             queriedResults: []
         }));
     }
+    handleDeeper = (e, nodeId) => {
+        const {dispatch} = this.props;
+
+        e.preventDefault();
+
+
+        dispatch(nodePathsRequest(nodeId)).then(response => {
+            response.data.children.length > 4 ? response.data.children.length = 4 : null;
+            this.setState(Object.assign({}, this.state, {
+                deepNode: response.data
+            }))
+        })
+    }
+    handleClickBack = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            deepNode: null
+        }))
+    }
+
+    renderNaviagtion = (node) => {
+        return (
+            node.children.map((item,index) =>
+                <MenuOverlayContainer
+                    key={index}
+                    handleClickOnFolder={this.handleDeeper}
+                    {...item}
+                />
+            )
+        )
+    }
     render() {
-        const {queriedResults} = this.state;
+        const {queriedResults, deepNode} = this.state;
         const {nodeId, node} = this.props;
         const nodeData = node.children;
         return (
@@ -60,35 +96,46 @@ class MenuOverlay extends Component {
                 <div className="menu-overlay-caption">{nodeData.caption}</div>
                 <div className="menu-overlay-body">
                     {nodeId == 0 ?
-                        <div className="menu-overlay-root-body">
-                            <div className="menu-overlay-container">
-                                {nodeData.children.map((item,index) =>
-                                    <div className="menu-overlay-node-container" key={index}>
-                                        <p className="menu-overlay-header">{item.caption}</p>
-                                        {item.children.map((subitem, subindex) =>
-                                            <span className="menu-overlay-expanded-link" key={subindex}>{subitem.caption}</span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="menu-overlay-query">
-                                <div className="input-flex input-primary">
-                                    <i className="input-icon meta-icon-preview"/>
-                                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
-                                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                        //ROOT
+
+                        <div>
+                            {deepNode &&
+                                <div>
+                                    <span className="menu-overlay-link" onClick={e => this.handleClickBack(e)}>&lt; Back</span>
                                 </div>
-                                {queriedResults && queriedResults.map((result, index) =>
-                                    <span className="menu-overlay-expanded-link" key={index}>{result.caption}</span>
-                                )}
+                            }
+                            <div className="menu-overlay-root-body">
+
+                                <div className="menu-overlay-container">
+                                    {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
+                                </div>
+
+                                <div className="menu-overlay-query">
+
+                                    <div className="input-flex input-primary">
+                                        <i className="input-icon meta-icon-preview"/>
+                                        <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                                        {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                                    </div>
+
+                                    {queriedResults && queriedResults.map((result, index) =>
+                                        <MenuOverlayItem
+                                            key={index}
+                                            handleClickOnFolder={this.handleDeeper}
+                                            {...result}
+                                        />
+                                    )}
+                                </div>
                             </div>
                         </div> :
+                        //NOT ROOT
                         <div className="menu-overlay-node-container">
                             <p className="menu-overlay-header">{nodeData.caption}</p>
-                            {nodeData && nodeData.children.map((item, index) => <span className="menu-overlay-expanded-link" key={index}>{item.caption}</span>)}
+                            {nodeData && nodeData.children.map((item, index) =>
+                                <span className="menu-overlay-expanded-link" key={index}>{item.caption}</span>
+                            )}
                         </div>
                     }
-
-
                 </div>
             </div>
         )

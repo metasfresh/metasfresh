@@ -66,6 +66,11 @@
     text-overflow: ellipsis;
 }
 
+.header-breadcrumb > .menu-overlay-expand,
+.header-breadcrumb > .menu-overlay-link {
+    display: inline-block;
+}
+
 .header-breadcrumb > span:first-of-type > span{
     min-width: 40px;
     font-weight: bold;
@@ -283,7 +288,6 @@
 .menu-overlay-link,
 .menu-overlay-expand {
     color: $brand-link-color;
-    display: inline-block;
     cursor: pointer;
     border-bottom: 1px solid transparent;
 }
@@ -297,4 +301,5 @@
 
 .menu-overlay-expanded-link {
     color: $brand-link-color;
+    width: auto;
 }
