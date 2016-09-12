@@ -1,11 +1,14 @@
 package org.adempiere.ad.callout.api.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutFactory;
@@ -37,7 +40,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 	private final String tableName;
 	private final TableCalloutsMap tableCalloutsMap;
 	private final Set<String> executionBlackListIds;
-	
+
 	//
 	private final Set<ICalloutInstance> activeCalloutInstances = new HashSet<>();
 
@@ -94,6 +97,35 @@ public final class CalloutExecutor implements ICalloutExecutor
 		for (final ICalloutInstance callout : callouts)
 		{
 			execute(callout, field);
+		}
+	}
+
+	@Override
+	public void executeAll(final Function<String, ICalloutField> calloutFieldsSupplier)
+	{
+		for (final Map.Entry<String, Collection<ICalloutInstance>> columnNameAndCallouts : tableCalloutsMap.getColumnNamesAndCalloutsEntries())
+		{
+			//
+			// Get the callout field from supplier
+			final String columnName = columnNameAndCallouts.getKey();
+			final ICalloutField field = calloutFieldsSupplier.apply(columnName);
+			if (field == null)
+			{
+				logger.trace("Skip executing all callouts for {} because the supplied field was null", columnName);
+			}
+			if (!isEligibleForExecuting(field))
+			{
+				logger.trace("Skip executing callouts for {} because it's not eligible", field);
+				return;
+			}
+
+			//
+			// Execute all callouts for current callout field
+			final Collection<ICalloutInstance> callouts = columnNameAndCallouts.getValue();
+			for (final ICalloutInstance callout : callouts)
+			{
+				execute(callout, field);
+			}
 		}
 	}
 
@@ -230,12 +262,17 @@ public final class CalloutExecutor implements ICalloutExecutor
 		{
 			if (_calloutProvider == null)
 			{
-				return Services.get(ICalloutFactory.class).getProvider();
+				return getDefaultCalloutProvider();
 			}
 			else
 			{
 				return _calloutProvider;
 			}
+		}
+
+		public ICalloutProvider getDefaultCalloutProvider()
+		{
+			return Services.get(ICalloutFactory.class).getProvider();
 		}
 	}
 }

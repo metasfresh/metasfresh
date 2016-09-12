@@ -1,5 +1,6 @@
 package org.adempiere.ad.callout.api;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,11 @@ public final class TableCalloutsMap
 	public List<ICalloutInstance> getColumnCallouts(final String columnName)
 	{
 		return calloutsByColumn.get(columnName);
+	}
+
+	public Set<Entry<String, Collection<ICalloutInstance>>> getColumnNamesAndCalloutsEntries()
+	{
+		return calloutsByColumn.asMap().entrySet();
 	}
 
 	public boolean hasColumnCallouts(final String columnName)
