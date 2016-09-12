@@ -878,10 +878,15 @@ public final class Document
 	{
 		logger.trace("Executing all callouts for {}", this);
 
-		for (final IDocumentField documentField : getFields())
-		{
-			fieldCalloutExecutor.execute(documentField.asCalloutField());
-		}
+		fieldCalloutExecutor.executeAll((fieldName) -> {
+			final IDocumentField documentField = getFieldOrNull(fieldName);
+			if (documentField == null)
+			{
+				return null;
+			}
+
+			return documentField.asCalloutField();
+		});
 	}
 
 	/**
