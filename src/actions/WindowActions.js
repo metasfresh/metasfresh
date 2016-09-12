@@ -157,8 +157,8 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
 
-
                             res.data && res.data.map(row => {
+
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
                             dispatch(addRowData(tabTmp, getScope(isModal)));
@@ -352,7 +352,6 @@ export function deleteData(windowType, id, tabId, rowId) {
 export function deleteLocal(tabid,rowsid,scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {
-            console.log(rowid)
             dispatch(deleteRow(tabid,rowid,scope))
         }
     }

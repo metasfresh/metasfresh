@@ -25,12 +25,48 @@ export function queryPathsRequest(query) {
     return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query);
 }
 
-
+export function rootRequest() {
+    return dispatch => axios.get(config.API_URL + '/menu/root?depth=2');
+}
 
 export function getWindowBreadcrumb(id){
     return dispatch => {
         dispatch(elementPathRequest("window", id)).then(response => {
-            dispatch(setBreadcrumb(flatten(response.data).reverse()));
+            let pathData = flatten(response.data);
+
+            // promise to get all of the breadcrumb menu options
+            let breadcrumb = new Promise((resolve, reject) => {
+                let req = 0;
+
+                pathData.map(node => {
+
+                    if(node.nodeId != 0){
+                        //not root menu
+
+                        dispatch(nodePathsRequest(node.nodeId)).then(item => {
+                            item.data.children.length > 10 ? item.data.children.length = 10 : null;
+
+                            node.children = item.data;
+                            req++;
+                        })
+                    }else{
+                        //root menu
+
+                        dispatch(rootRequest()).then(root => {
+                            root.data.children.length > 4 ? root.data.children.length = 4 : null;
+                            root.data.children.map(item => {
+                                item.children.length > 4 ? item.children.length = 4 : null;
+                            })
+                            node.children = root.data;
+                            req++;
+                        })
+                    }
+                    if(req === pathData.length){
+                        resolve();
+                    }
+                })
+                dispatch(setBreadcrumb(pathData.reverse()));
+            })
         })
     }
 }
@@ -51,8 +87,7 @@ function flatten(node) {
     }
 
     result.push({
-        nodeId: node.nodeId,
-        caption: node.caption
+        nodeId: node.nodeId
     });
 
     return result;
