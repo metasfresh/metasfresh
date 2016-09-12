@@ -235,6 +235,10 @@ function mapDataToState(data, isModal, rowId){
     return dispatch => {
         data.map(item1 => {
 
+            console.log(item1.fields);
+            const preparedData = nullToEmptyStrings(item1.fields);
+            console.log(preparedData);
+
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
             }else{

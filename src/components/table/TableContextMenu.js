@@ -59,17 +59,21 @@ class TableContextMenu extends Component {
           }
         }))
 
-        dispatch(deleteData(type, docId, tabId, selected)).then(
-            () => {
+        // dispatch(deleteData(type, docId, tabId, selected)).then(
+        //     () => {
+        //         dispatch(deleteLocal(tabId, selected, "master"))
+        //     }
+        // )
+
+        dispatch(deleteData(type, docId, tabId, selected))
+            .then(response => {
                 dispatch(deleteLocal(tabId, selected, "master"))
-            }
-        )
+            }).then(response => {
+                deselect();
+            });
+
         this.props.blur();
 
-        setTimeout(function(){
-            deselect();
-        }, 1);
-        
     }
 
 
