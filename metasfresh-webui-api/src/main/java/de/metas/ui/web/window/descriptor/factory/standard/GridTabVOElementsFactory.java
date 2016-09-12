@@ -21,6 +21,7 @@ import org.adempiere.ad.expression.api.impl.BigDecimalStringExpressionSupport.Bi
 import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.BooleanStringExpression;
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
+import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -32,6 +33,7 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -67,6 +69,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 /*
  * #%L
@@ -100,6 +103,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	/** Column names where we shall use {@link DocumentFieldWidgetType#Switch} instead of {@link DocumentFieldWidgetType#YesNo} */
 	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(WindowConstants.FIELDNAME_IsActive); // FIXME: hardcoded
 
+	private static final String HARDCODED_DEFAUL_EXPRESSION_STRING_NULL = "@NULL@";
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
 	/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
@@ -636,7 +640,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	public void documentFields()
 	{
-		getGridTabVO()
+		final GridTabVO gridTabVO = getGridTabVO();
+		gridTabVO
 				.getFields()
 				.stream()
 				.forEach(gridFieldVO -> documentField(gridFieldVO));
@@ -767,6 +772,64 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		//
 		// Add Field's data binding to entity data binding
 		entityBindingsBuilder.addField(dataBinding);
+
+		return fieldBuilder;
+	}
+
+	private final DocumentFieldDescriptor.Builder documentField_InternalVirtual(
+			final String fieldName //
+			, final DocumentFieldWidgetType widgetType //
+			, final Class<?> valueClass //
+			, final boolean publicField, final IExpression<?> valueProvider //
+	)
+	{
+		final String detailId = getDetailId();
+
+		final ExpressionDocumentFieldCallout callout = ExpressionDocumentFieldCallout.of(fieldName, valueProvider);
+		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder()
+				.setFieldName(fieldName)
+				.setDetailId(detailId)
+				//
+				.setKey(false)
+				.setParentLink(false)
+				//
+				.setWidgetType(widgetType)
+				.setValueClass(valueClass)
+				.setVirtualField(true)
+				.setCalculated(true)
+				//
+				// Default value: use our expression
+				.setDefaultValueExpression(valueProvider)
+				//
+				// Characteristics: none, it's an internal field
+				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
+				//
+				// Logics:
+				.setReadonlyLogic(ILogicExpression.TRUE) // yes, always readonly for outside
+				.setAlwaysUpdateable(false)
+				.setMandatoryLogic(ILogicExpression.FALSE) // not mandatory
+				.setDisplayLogic(ILogicExpression.FALSE) // never display it
+				//
+				.setDataBinding(null) // no databinding !
+				//
+				.addCallout(callout);
+
+		//
+		// Add Field builder to document entity
+		documentEntity().addField(fieldBuilder);
+
+		//
+		// Add Field's data binding to entity data binding
+		// entityBindingsBuilder.addField(dataBinding); // no databinding!
+
+		collectSpecialField(DocumentLayoutElementDescriptor.builder()
+				.setWidgetType(widgetType)
+				.setInternalName(fieldName)
+				.setLayoutTypeNone()
+				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldName)
+						.setInternalName(fieldName)
+						.setPublicField(publicField)
+						.setEmptyText(HARDCODED_FIELD_EMPTY_TEXT)));
 
 		return fieldBuilder;
 	}
@@ -1281,6 +1344,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		final String defaultValueStr = gridFieldVO.getDefaultValue();
+
+		// If there is no default value expression, use some defaults
 		if (defaultValueStr == null || defaultValueStr.isEmpty())
 		{
 			final int displayType = gridFieldVO.getDisplayType();
@@ -1299,7 +1364,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				if (gridFieldVO.isMandatory())
 				{
-					if(DisplayType.Integer == displayType)
+					if (DisplayType.Integer == displayType)
 					{
 						return DEFAULT_VALUE_EXPRESSION_Zero_Integer;
 					}
@@ -1314,6 +1379,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 			return Optional.empty();
 		}
+		// If it's a SQL expression => compile it as SQL expression
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
 			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
@@ -1321,6 +1387,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
 			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression, fieldValueClass));
 		}
+		// Regular default value expression
 		else
 		{
 			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
@@ -1331,6 +1398,18 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private Optional<IExpression<?>> buildExpression(final String expressionStr, final Class<?> fieldValueClass, final DocumentFieldWidgetType widgetType)
 	{
+		// Hardcoded: NULL
+		if (HARDCODED_DEFAUL_EXPRESSION_STRING_NULL.equalsIgnoreCase(expressionStr))
+		{
+			return Optional.empty();
+		}
+
+		// Hardcoded: SysDate
+		if (SysDateDateExpression.EXPRESSION_STRING.equals(expressionStr))
+		{
+			return SysDateDateExpression.optionalInstance;
+		}
+
 		final IExpression<?> expression;
 		if (Integer.class.equals(fieldValueClass))
 		{

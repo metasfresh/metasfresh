@@ -97,6 +97,12 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			document = (Document)model;
 			useOldValuesDefault = false;
 		}
+		else if (model instanceof DocumentEvaluatee)
+		{
+			document = ((DocumentEvaluatee)model).getDocument();
+			useOldValuesDefault = false;
+		}
+		
 		if (document == null)
 		{
 			final DocumentInterfaceWrapper wrapper = getWrapper(model);
@@ -153,6 +159,11 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		if (model instanceof Document)
 		{
 			return (Document)model;
+		}
+
+		if (model instanceof DocumentEvaluatee)
+		{
+			return ((DocumentEvaluatee)model).getDocument();
 		}
 
 		final DocumentInterfaceWrapper wrapper = getWrapper(model);

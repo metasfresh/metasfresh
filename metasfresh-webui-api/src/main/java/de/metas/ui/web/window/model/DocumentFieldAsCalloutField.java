@@ -34,9 +34,14 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
-
 final class DocumentFieldAsCalloutField implements ICalloutField
 {
+	/* package */static IDocumentField unwrap(final ICalloutField calloutField)
+	{
+		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
+		return documentFieldAsCalloutField.documentField;
+	}
+
 	private final IDocumentField documentField;
 
 	/* package */ DocumentFieldAsCalloutField(final IDocumentField documentField)
@@ -52,12 +57,12 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 				.addValue(documentField)
 				.toString();
 	}
-	
+
 	private Document getDocument()
 	{
 		return documentField.getDocument();
 	}
-	
+
 	private DocumentFieldDescriptor getDescriptor()
 	{
 		return documentField.getDescriptor();

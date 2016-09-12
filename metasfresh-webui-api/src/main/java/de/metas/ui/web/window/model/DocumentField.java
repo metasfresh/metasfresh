@@ -14,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 
@@ -68,7 +69,10 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		super();
 		this.descriptor = descriptor;
 		_document = document;
-		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
+		
+		final DocumentFieldDataBindingDescriptor dataBinding = descriptor.getDataBinding().orElse(null);
+		lookupDataSource = dataBinding == null ? null : dataBinding.createLookupDataSource();
+		
 		_valid = DocumentValidStatus.inititalInvalid();
 	}
 

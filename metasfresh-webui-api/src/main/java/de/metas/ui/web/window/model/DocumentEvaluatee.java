@@ -81,6 +81,11 @@ public final class DocumentEvaluatee implements Evaluatee
 		return _document.getParentDocument() != null;
 	}
 
+	/* package */Document getDocument()
+	{
+		return _document;
+	}
+
 	private final IDocumentFieldView getDocumentFieldOrNull(final String name)
 	{
 		return _document.getFieldViewOrNull(name);

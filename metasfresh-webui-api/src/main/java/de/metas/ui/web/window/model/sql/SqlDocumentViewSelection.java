@@ -213,7 +213,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
 			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
 			{
-				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.cast(fieldDescriptor.getDataBinding());
+				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(fieldDescriptor.getDataBinding());
+				if(fieldDataBinding == null)
+				{
+					logger.warn("No SQL databinding provided for {}. Skip creating the field loader", fieldDescriptor);
+					continue;
+				}
+				
 				final boolean keyColumn = fieldDataBinding.isKeyColumn();
 				final DocumentViewFieldValueLoader documentViewFieldLoader = fieldDataBinding.getDocumentViewFieldValueLoader();
 

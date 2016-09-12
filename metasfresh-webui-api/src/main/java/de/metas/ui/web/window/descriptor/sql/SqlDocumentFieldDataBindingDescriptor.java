@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
@@ -59,9 +60,24 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return new Builder();
 	}
 
-	public static final SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	/**
+	 * @param optionalDescriptor
+	 * @return {@link SqlDocumentFieldDataBindingDescriptor} if given <code>optionalDescriptor</code> is present and it's of this type.
+	 */
+	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final Optional<DocumentFieldDataBindingDescriptor> optionalDescriptor)
 	{
-		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+		if (!optionalDescriptor.isPresent())
+		{
+			return null;
+		}
+
+		final DocumentFieldDataBindingDescriptor descriptor = optionalDescriptor.get();
+		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
+		{
+			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+		}
+
+		return null;
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);

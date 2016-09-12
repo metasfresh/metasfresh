@@ -10,8 +10,12 @@ import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
+import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
+import org.adempiere.ad.callout.spi.ICalloutProvider;
+import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,6 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
@@ -133,10 +138,8 @@ public class DocumentEntityDescriptor
 
 		//
 		id = String.valueOf(builder.AD_Tab_ID);
-		
-		calloutExecutorFactory = CalloutExecutor.builder()
-				.setTableName(tableName)
-				.build();
+
+		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 	}
 
 	@JsonCreator
@@ -149,12 +152,12 @@ public class DocumentEntityDescriptor
 			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
 			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
 			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
-			// legacy:
-			, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
-			, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
-			, @JsonProperty("tableName") final String tableName //
-			, @JsonProperty("tabNo") final int tabNo //
-			, @JsonProperty("isSOTrx") final boolean isSOTrx //
+	// legacy:
+	, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
+	, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
+	, @JsonProperty("tableName") final String tableName //
+	, @JsonProperty("tabNo") final int tabNo //
+	, @JsonProperty("isSOTrx") final boolean isSOTrx //
 	)
 	{
 		this(new Builder()
@@ -340,6 +343,8 @@ public class DocumentEntityDescriptor
 
 	public static final class Builder
 	{
+		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
+
 		private boolean _built = false;
 
 		private final List<Object> _fieldsOrBuilders = new ArrayList<>();
@@ -361,7 +366,6 @@ public class DocumentEntityDescriptor
 		private Integer tabNo;
 		private String TableName;
 		private Boolean isSOTrx;
-
 
 		private Builder()
 		{
@@ -573,6 +577,45 @@ public class DocumentEntityDescriptor
 		{
 			this.displayLogic = displayLogic;
 			return this;
+		}
+
+		private CalloutExecutor buildCalloutExecutorFactory(Collection<DocumentFieldDescriptor> fields)
+		{
+			final String tableName = this.TableName;
+			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder(); 
+			for (final DocumentFieldDescriptor field : fields)
+			{
+				final List<IDocumentFieldCallout> fieldCallouts = field.getCallouts();
+				if(fieldCallouts.isEmpty())
+				{
+					continue;
+				}
+
+				for (final IDocumentFieldCallout fieldCallout : fieldCallouts)
+				{
+					final List<String> dependsOnFieldNames = fieldCallout.getDependsOnFieldNames();
+					if(dependsOnFieldNames.isEmpty())
+					{
+						logger.warn("Callout {} has no dependencies. Skipped from adding to entity descriptor.\n Target: {} \n Source: {}", fieldCallout, this, field);
+						continue;
+					}
+					
+					for (final String dependsOnFieldName : dependsOnFieldNames)
+					{
+						entityCalloutProviderBuilder.addCallout(tableName, dependsOnFieldName, fieldCallout);
+					}
+				}
+			}
+
+			final CalloutExecutor.Builder calloutExecutorBuilder = CalloutExecutor.builder()
+					.setTableName(tableName);
+
+			final ICalloutProvider entityCalloutProvider = entityCalloutProviderBuilder.build();
+			final ICalloutProvider defaultCalloutProvider = calloutExecutorBuilder.getDefaultCalloutProvider();
+			final ICalloutProvider calloutProvider = CompositeCalloutProvider.compose(defaultCalloutProvider, entityCalloutProvider);
+			calloutExecutorBuilder.setCalloutProvider(calloutProvider);
+			
+			return calloutExecutorBuilder.build();
 		}
 	}
 }
