@@ -332,6 +332,9 @@ export function fieldToString(field) {
             case "object":
                 return field[Object.keys(field)[0]];
                 break;
+            case "boolean":
+                return field ? "Yes" : "No";
+                break;
             default:
                 return field;
         }

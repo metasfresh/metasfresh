@@ -7,7 +7,7 @@ class MenuOverlayContainer extends Component {
   }
 
   render() {
-      const {children, caption, handleClickOnFolder} = this.props;
+      const {children, caption, handleClickOnFolder,handleRedirect} = this.props;
       return (
           <div className="menu-overlay-node-container">
               <p className="menu-overlay-header">{caption}</p>
@@ -15,6 +15,7 @@ class MenuOverlayContainer extends Component {
                   <MenuOverlayItem
                       key={subindex}
                       handleClickOnFolder={handleClickOnFolder}
+                      handleRedirect={handleRedirect}
                       {...subitem}
                   />
               )}

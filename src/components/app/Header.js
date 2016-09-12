@@ -38,7 +38,7 @@ class Header extends Component {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}));
     }
     handleMenuOverlay = (e, nodeId) => {
-        e.preventDefault();
+        e && e.preventDefault();
         this.setState(Object.assign({}, this.state, {
             menuOverlay: nodeId
         }));
@@ -148,18 +148,12 @@ class Header extends Component {
 
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    indicator: PropTypes.string.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    indicator: PropTypes.string.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, menuHandler} = state;
+    const {windowHandler} = state;
 
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: {}
-    }
 
     const {
         indicator
@@ -168,8 +162,7 @@ function mapStateToProps(state) {
     }
 
     return {
-      indicator,
-      breadcrumb
+      indicator
     }
 }
 

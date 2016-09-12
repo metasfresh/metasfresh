@@ -18,7 +18,7 @@ class MasterWindow extends Component {
     }
 
     render() {
-        const {master, connectionError, modal} = this.props;
+        const {master, connectionError, modal, breadcrumb} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
 
         const dataId = findRowByPropName(master.data, "ID").value;
@@ -41,6 +41,7 @@ class MasterWindow extends Component {
                     docSummaryData = {docSummaryData}
                     dataId={dataId}
                     windowType={type}
+                    breadcrumb={breadcrumb}
                 />
                 {connectionError && <ErrorScreen />}
                 {modal.visible &&
@@ -71,11 +72,12 @@ MasterWindow.propTypes = {
     connectionError: PropTypes.bool.isRequired,
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
+    breadcrumb: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
-    const { windowHandler } = state;
+    const { windowHandler, menuHandler } = state;
     const {
         master,
         connectionError,
@@ -85,9 +87,18 @@ function mapStateToProps(state) {
         connectionError: false,
         modal: false
     }
+
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
     return {
         master,
         connectionError,
+        breadcrumb,
         modal
     }
 }

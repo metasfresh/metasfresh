@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
+import {push} from 'react-router-redux';
 
 import {
     nodePathsRequest,
@@ -75,13 +76,19 @@ class MenuOverlay extends Component {
             deepNode: null
         }))
     }
+    handleRedirect = (elementId) => {
+        const {dispatch} = this.props;
+        this.handleClickOutside();
+        dispatch(push("/window/" + elementId));
+    }
 
     renderNaviagtion = (node) => {
         return (
-            node.children.map((item,index) =>
+            node && node.children.map((item,index) =>
                 <MenuOverlayContainer
                     key={index}
                     handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
                     {...item}
                 />
             )
@@ -93,7 +100,7 @@ class MenuOverlay extends Component {
         const nodeData = node.children;
         return (
             <div className="menu-overlay menu-overlay-primary">
-                <div className="menu-overlay-caption">{nodeData.caption}</div>
+                <div className="menu-overlay-caption">{nodeData && nodeData.caption}</div>
                 <div className="menu-overlay-body">
                     {nodeId == 0 ?
                         //ROOT
@@ -130,7 +137,7 @@ class MenuOverlay extends Component {
                         </div> :
                         //NOT ROOT
                         <div className="menu-overlay-node-container">
-                            <p className="menu-overlay-header">{nodeData.caption}</p>
+                            <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
                             {nodeData && nodeData.children.map((item, index) =>
                                 <span className="menu-overlay-expanded-link" key={index}>{item.caption}</span>
                             )}
