@@ -1316,9 +1316,10 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
+			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
 			final String sqlTemplate = defaultValueStr.substring(5).trim();
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
-			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression));
+			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression, fieldValueClass));
 		}
 		else
 		{

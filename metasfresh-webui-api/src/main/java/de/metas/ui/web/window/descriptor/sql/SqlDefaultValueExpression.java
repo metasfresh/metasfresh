@@ -1,18 +1,23 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -20,6 +25,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
 /*
  * #%L
@@ -44,29 +51,91 @@ import de.metas.logging.LogManager;
  */
 
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
-public final class SqlDefaultValueExpression implements IStringExpression
+public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
 	// TODO: introduce valueType!!!
-	
-	public static final SqlDefaultValueExpression of(final IStringExpression stringExpression)
+
+	public static final <V> SqlDefaultValueExpression<?> of(final IStringExpression stringExpression, final Class<V> valueClass)
 	{
-		return new SqlDefaultValueExpression(stringExpression);
+		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
+
+		if (Integer.class.equals(valueClass)
+				|| IntegerLookupValue.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<Integer>(stringExpression, Integer.class, (rs) -> rs.getInt(1));
+		}
+		else if (BigDecimal.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<BigDecimal>(stringExpression, BigDecimal.class, (rs) -> rs.getBigDecimal(1));
+		}
+		else if (Boolean.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<Boolean>(stringExpression, Boolean.class, (rs) -> {
+				final String valueStr = rs.getString(1);
+				return DisplayType.toBoolean(valueStr, null);
+			});
+		}
+		else if (java.util.Date.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<java.util.Date>(stringExpression, java.util.Date.class, (rs) -> rs.getTimestamp(1));
+		}
+		else if (Timestamp.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<Timestamp>(stringExpression, Timestamp.class, (rs) -> rs.getTimestamp(1));
+		}
+		else if (String.class.equals(valueClass)
+				|| StringLookupValue.class.equals(valueClass))
+		{
+			return new SqlDefaultValueExpression<String>(stringExpression, String.class, (rs) -> rs.getString(1));
+		}
+
+		throw new ExpressionCompileException("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlDefaultValueExpression.class);
 
 	private final IStringExpression stringExpression;
+	private final Class<V> valueClass;
+	private final V noResultValue;
+	private final ValueLoader<V> valueRetriever;
 
-	private SqlDefaultValueExpression(final IStringExpression stringExpression)
+	@FunctionalInterface
+	private static interface ValueLoader<V>
+	{
+		V get(final ResultSet rs) throws SQLException;
+	}
+
+	private SqlDefaultValueExpression(final IStringExpression stringExpression, final Class<V> valueType, final ValueLoader<V> valueRetriever)
 	{
 		super();
 		this.stringExpression = Preconditions.checkNotNull(stringExpression);
+		this.valueClass = valueType;
+		this.noResultValue = null; // IStringExpression.EMPTY_RESULT
+		this.valueRetriever = valueRetriever;
 	}
 
 	@Override
 	public String toString()
 	{
 		return stringExpression.toString();
+	}
+
+	@Override
+	public Class<V> getValueClass()
+	{
+		return valueClass;
+	}
+
+	@Override
+	public boolean isNoResult(final Object result)
+	{
+		return result == null || result == noResultValue;
+	}
+
+	@Override
+	public boolean isNullExpression()
+	{
+		return false;
 	}
 
 	@Override
@@ -88,13 +157,13 @@ public final class SqlDefaultValueExpression implements IStringExpression
 	}
 
 	@Override
-	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
+	public V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
 		final String sql = stringExpression.evaluate(ctx, onVariableNotFound);
 		if (Check.isEmpty(sql, true))
 		{
-			logger.warn("Expression " + stringExpression + " was evaluated to empty string. Returning empty string");
-			return IStringExpression.EMPTY_RESULT;
+			logger.warn("Expression " + stringExpression + " was evaluated to empty string. Returning no result: {}", noResultValue);
+			return noResultValue;
 		}
 
 		PreparedStatement pstmt = null;
@@ -105,7 +174,7 @@ public final class SqlDefaultValueExpression implements IStringExpression
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final String value = rs.getString(1);
+				final V value = valueRetriever.get(rs);
 				return value;
 			}
 			else
@@ -115,7 +184,7 @@ public final class SqlDefaultValueExpression implements IStringExpression
 					throw new ExpressionEvaluationException("Got no result for " + this + " (SQL: " + sql + ")");
 				}
 				logger.warn("Got no result for {} (SQL: {})", this, sql);
-				return IStringExpression.EMPTY_RESULT;
+				return noResultValue;
 			}
 		}
 		catch (final SQLException e)
@@ -127,18 +196,4 @@ public final class SqlDefaultValueExpression implements IStringExpression
 			DB.close(rs, pstmt);
 		}
 	}
-
-	@Override
-	public List<Object> getExpressionChunks()
-	{
-		return stringExpression.getExpressionChunks();
-	}
-
-	@Override
-	public final IStringExpression resolvePartial(final Evaluatee ctx)
-	{
-		final IStringExpression stringExpressionNew = stringExpression.resolvePartial(ctx);
-		return new SqlDefaultValueExpression(stringExpressionNew);
-	}
-
 }
