@@ -49,7 +49,7 @@ class Header extends Component {
         const {menuOverlay} = this.state;
         return (
             <span className="header-breadcrumb">
-                {breadcrumb.map((item, index) =>
+                {breadcrumb && breadcrumb.map((item, index) =>
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
                         <span
