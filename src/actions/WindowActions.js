@@ -157,8 +157,8 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
 
-
                             res.data && res.data.map(row => {
+
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
                             dispatch(addRowData(tabTmp, getScope(isModal)));
