@@ -53,8 +53,6 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
-	// TODO: introduce valueType!!!
-
 	public static final <V> SqlDefaultValueExpression<?> of(final IStringExpression stringExpression, final Class<V> valueClass)
 	{
 		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
