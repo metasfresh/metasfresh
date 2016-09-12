@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -431,7 +429,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	{
 		logger.trace("Building layout element line for {}", uiElement);
 
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement, layoutElementGroupBuilder);
+		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
 		if (layoutElementBuilder == null)
 		{
 			logger.trace("Skip building layout element line because got null layout element", uiElement);
@@ -448,12 +446,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement)
 	{
-		final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = null;
-		return layoutElement(uiElement, layoutElementGroupBuilder);
-	}
-
-	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement, @Nullable final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
-	{
 		logger.trace("Building layout element for {}", uiElement);
 
 		if (!uiElement.isActive())
@@ -463,11 +455,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		}
 
 		LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
-		if (layoutType == null && layoutElementGroupBuilder != null)
-		{
-			final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
-			layoutType = isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
-		}
 
 		//
 		// UI main field
