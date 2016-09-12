@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
@@ -71,6 +72,27 @@ public final class TableCalloutsMap
 		final ImmutableListMultimap<String, ICalloutInstance> map = ImmutableListMultimap.of(columnName, callout);
 		final ImmutableSet<ArrayKey> calloutKeys = ImmutableSet.of(mkKey(columnName, callout));
 		return new TableCalloutsMap(map, calloutKeys);
+	}
+
+	/**
+	 * Composes given <code>tableCalloutMap</code> with given columnName and callout.
+	 * 
+	 * If the <code>tableCalloutMap</code> is null then a new {@link TableCalloutsMap} which contains the columnName and callout only will be returned.
+	 * 
+	 * @param tableCalloutMap
+	 * @param columnName
+	 * @param callout
+	 */
+	public static final TableCalloutsMap compose(@Nullable TableCalloutsMap tableCalloutMap, final String columnName, final ICalloutInstance callout)
+	{
+		if (tableCalloutMap == null)
+		{
+			return of(columnName, callout);
+		}
+		else
+		{
+			return tableCalloutMap.compose(columnName, callout);
+		}
 	}
 
 	public static final Builder builder()
