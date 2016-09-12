@@ -234,6 +234,10 @@
     margin-bottom: .5rem;
 }
 
+.menu-overlay-query .input-field {
+    margin-left: .3rem;
+}
+
 .menu-overlay-container {
     display: flex;
     flex-direction: row;

@@ -636,3 +636,8 @@ body {
 .indicator .error {
   color: $brand-font-color-danger;
 }
+
+
+.pointer {
+    cursor: pointer;
+}

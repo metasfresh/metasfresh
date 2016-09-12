@@ -11,7 +11,8 @@ class MenuOverlay extends Component {
     constructor(props){
         super(props);
         this.state = {
-            queriedResults: []
+            queriedResults: [],
+            query: ""
         };
     }
     handleClickOutside = (e) => {
@@ -21,13 +22,34 @@ class MenuOverlay extends Component {
     handleQuery = (e) => {
         const {dispatch} = this.props;
 
+
         e.preventDefault();
-        dispatch(queryPathsRequest(e.target.value)).then(response => {
-            response.data.children && response.data.children.length > 9 ? response.data.children.length = 9: null;
+        if(!!e.target.value){
             this.setState(Object.assign({}, this.state, {
-                queriedResults: response.data.children
+                query: e.target.value
+            }));
+
+            dispatch(queryPathsRequest(e.target.value)).then(response => {
+                response.data.children && response.data.children.length > 9 ? response.data.children.length = 9: null;
+
+                this.setState(Object.assign({}, this.state, {
+                    queriedResults: response.data.children
+                }))
+            });
+        }else{
+            this.setState(Object.assign({}, this.state, {
+                queriedResults: [],
+                query: ""
             }))
-        });
+        }
+    }
+    handleClear = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            query: "",
+            queriedResults: []
+        }));
     }
     render() {
         const {queriedResults} = this.state;
@@ -50,8 +72,10 @@ class MenuOverlay extends Component {
                                 )}
                             </div>
                             <div className="menu-overlay-query">
-                                <div className="input-block input-primary">
-                                    <input type="text" className="input-field" onChange={e => this.handleQuery(e) } />
+                                <div className="input-flex input-primary">
+                                    <i className="input-icon meta-icon-preview"/>
+                                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                 </div>
                                 {queriedResults && queriedResults.map((result, index) =>
                                     <span className="menu-overlay-expanded-link" key={index}>{result.caption}</span>
