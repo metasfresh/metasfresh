@@ -911,8 +911,6 @@ public final class Document
 
 	private void executeAllFieldCallouts()
 	{
-		logger.trace("Executing all callouts for {}", this);
-
 		fieldCalloutExecutor.executeAll((fieldName) -> {
 			final IDocumentField documentField = getFieldOrNull(fieldName);
 			if (documentField == null)
