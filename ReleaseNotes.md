@@ -30,17 +30,25 @@ RC for this week
 
 ## Features
 * #297 Performance problems related to zoom-to
+  - Improved user experience, massively reduced loading times for generic zoom-to links in icon-bar.
 * #249 Referenzliste in AttributeValue
-  - cleanup
+  - Getting rid of Reference List (System) in client side Attribute Values.
 * #347 change default docaction after complete
+  - After eliminating all close docactions in permissions now changing the next docaction in document Workflow.
 
 ## Fixes
 * #315 ReceiptSchedule.QtyToMove not properly updated on reopen
+  - Fixed a Bug that prevented the correct update of ReceiptSchedule.QtyToMove after reactivating the record.
 * #319 material tracking - deduplicate numbers in article statistics report
+  - Getting rid of duplicated statistic qmounts in material Tracking report.
 * #329 Revenue reports BPartner & Week show different amounts when HU Price
+  - Fixing an issue in Business Partner Revenue Weeek Report that appeared with Usage of Transportation Units with multiple Customer Units in shipments.
 * #340 Validation Rule in C_BPartner_Product for C_BPartner_ID wrong
+  - Minor Fix of the Validation Rule in C_BPartner_Product. Now also allowing Businesspartners on Client Level.
 * #351 translate order summary
+  - The Order summary is now covered by translation.
 * #335 Invoicing taking wrong Documenttype for Producer Invoice
+  - Issue solved when changing the Parms for Producer Invoiceing in Business Partner after already having created Invoice Candidates.
 
 # metasfresh 4.33.32 (2016-35)
 
