@@ -54,7 +54,10 @@ public interface IExpression<V>
 	 * 
 	 * @return
 	 */
-	String getFormatedExpressionString();
+	default String getFormatedExpressionString()
+	{
+		return getExpressionString();
+	}
 
 	/**
 	 * Gets the list of parameter names
@@ -83,7 +86,7 @@ public interface IExpression<V>
 	 * @param ctx
 	 * @param onVariableNotFound
 	 * @return evaluation result
-	 * @throws ExpressionEvaluationException if evaluation fails and we were adviced to throw exception
+	 * @throws ExpressionEvaluationException if evaluation fails and we were advised to throw exception
 	 */
 	V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
@@ -91,11 +94,17 @@ public interface IExpression<V>
 	 * @param result
 	 * @return true if the given <code>result</code> shall be considered as "NO RESULT"
 	 */
-	boolean isNoResult(Object result);
+	default boolean isNoResult(Object result)
+	{
+		return result == null;
+	}
 
 	/**
 	 * @return true if this expression is constant and always evaluated "NO RESULT"
 	 * @see #isNoResult(Object)
 	 */
-	boolean isNullExpression();
+	default boolean isNullExpression()
+	{
+		return false;
+	}
 }
