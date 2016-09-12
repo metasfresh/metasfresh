@@ -156,9 +156,8 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     tabTmp[tab.tabid] = {};
                     dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
-
-
                             res.data && res.data.map(row => {
+                                row.fields = nullToEmptyStrings(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
                             dispatch(addRowData(tabTmp, getScope(isModal)));
@@ -235,9 +234,7 @@ function mapDataToState(data, isModal, rowId){
     return dispatch => {
         data.map(item1 => {
 
-            console.log(item1.fields);
-            const preparedData = nullToEmptyStrings(item1.fields);
-            console.log(preparedData);
+            item1.fields = nullToEmptyStrings(item1.fields);
 
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))

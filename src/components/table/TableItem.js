@@ -21,9 +21,9 @@ class TableItem extends Component {
         })
     }
     handleKey = (e, property) => {
-        if(e.key === "Enter") { 
+        if(e.key === "Enter") {
             this.handleEditProperty(e,property);
-        } else if(e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown" ) { 
+        } else if(e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown" ) {
             this.handleEditProperty(e);
         }
     }
@@ -35,7 +35,7 @@ class TableItem extends Component {
         //iterate over layout settings
         return cols.map((item, index) => {
             const property = item.fields[0].field;
-            const widgetData = findRowByPropName(cells, property);
+            let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
 
             return (
                 <TableCell

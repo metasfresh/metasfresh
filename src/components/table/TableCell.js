@@ -13,12 +13,13 @@ class TableCell extends Component {
         //it is important to change focus before collapsing to
         //blur Widget field and patch data
         this.cell && this.cell.focus();
- 
+
         onClickOutside(e);
     }
 
     render() {
         const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown} = this.props;
+
         return (
             <td
                 tabIndex="0"
@@ -37,7 +38,7 @@ class TableCell extends Component {
                         <Widget
                             {...item}
                             dataId={docId}
-                            widgetData={[widgetData]}
+                            widgetData={widgetData}
                             windowType={type}
                             rowId={rowId}
                             tabId={tabId}
@@ -45,7 +46,7 @@ class TableCell extends Component {
                             gridAlign={item.gridAlign}
                         />
                     :
-                        fieldToString(widgetData.value)
+                        fieldToString(widgetData[0].value)
                 }
             </td>
         )
