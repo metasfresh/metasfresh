@@ -83,7 +83,7 @@ class Widget extends Component {
 
     componentDidMount() {
         // document.activeElement.getElementsByClassName('input-field')[0].focus();
-        
+
     }
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
