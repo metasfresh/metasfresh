@@ -306,6 +306,22 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				layoutSectionBuilders.add(layoutSection(uiSection));
 			}
 
+			//
+			// HARDCODED: C_Order's DocumentSummary
+			final GridTabVO gridTabVO = getGridTabVO();
+			if (I_C_Order.Table_Name.equals(gridTabVO.getTableName()))
+			{
+				// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
+				final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
+				documentField_InternalVirtual(
+						SpecialFieldsCollector.COLUMNNAME_DocumentSummary,   // fieldName
+						DocumentFieldWidgetType.Text,   // widgetType
+						String.class,   // valueType
+						true,    // publicField
+						valueProvider // valueProvider
+				);
+			}
+
 			return layoutSectionBuilders;
 		}
 		finally
