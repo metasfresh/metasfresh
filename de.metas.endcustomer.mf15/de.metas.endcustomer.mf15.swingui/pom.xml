@@ -178,6 +178,12 @@
 
 
 			<plugin>
+				<!--  
+				IMPORTANT: needs 32bit libs in order to run on linux! you can install them like this:
+				apt install libc6:i386
+				
+				Also see https://github.com/lukaszlenart/launch4j-maven-plugin/issues/4
+				-->
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
 				<version>1.7.8</version>
