@@ -60,15 +60,15 @@ public final class JSONMenuNode implements Serializable
 		return jsonChildNode;
 	}
 
-	public static JSONMenuNode of(final MenuNode node)
+	public static JSONMenuNode of(final MenuNode node, final int childrenLimit)
 	{
 		final int depth = Integer.MAX_VALUE;
-		return new JSONMenuNode(node, depth);
+		return new JSONMenuNode(node, depth, childrenLimit);
 	}
 
-	public static JSONMenuNode of(final MenuNode node, final int depth)
+	public static JSONMenuNode of(final MenuNode node, final int depth, final int childrenLimit)
 	{
-		return new JSONMenuNode(node, depth);
+		return new JSONMenuNode(node, depth, childrenLimit);
 	}
 
 	@JsonProperty("nodeId")
@@ -85,7 +85,7 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONMenuNode> children;
 
-	private JSONMenuNode(final MenuNode node, final int depth)
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit)
 	{
 		super();
 		nodeId = node.getId();
@@ -101,7 +101,8 @@ public final class JSONMenuNode implements Serializable
 		{
 			children = node.getChildren()
 					.stream()
-					.map(childNode -> new JSONMenuNode(childNode, depth - 1))
+					.limit(childrenLimit > 0 ? childrenLimit: Long.MAX_VALUE)
+					.map(childNode -> new JSONMenuNode(childNode, depth - 1, childrenLimit))
 					.collect(GuavaCollectors.toImmutableList());
 		}
 	}

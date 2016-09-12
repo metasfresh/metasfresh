@@ -50,6 +50,7 @@ public class MenuRestController
 	private static final String PARAM_ElementId = "elementId";
 	private static final String PARAM_NameQuery = "nameQuery";
 	private static final String PARAM_IncludeLastNode = "inclusive";
+	private static final String PARAM_ChildrenLimit = "childrenLimit";
 
 	@Autowired
 	private LoginService loginService;
@@ -68,27 +69,31 @@ public class MenuRestController
 
 	@RequestMapping(value = "/root", method = RequestMethod.GET)
 	public JSONMenuNode getRoot(
-			@RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth)
+			@RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
+	)
 	{
 		loginService.autologin();
 
 		final MenuNode node = getMenuTree()
 				.getRootNode();
 
-		return JSONMenuNode.of(node, depth);
+		return JSONMenuNode.of(node, depth, childrenLimit);
 	}
 
 	@RequestMapping(value = "/node", method = RequestMethod.GET)
 	public JSONMenuNode getNode(
 			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
-			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth)
+			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
+	)
 	{
 		loginService.autologin();
 
 		final MenuNode node = getMenuTree()
 				.getNodeById(nodeId);
 
-		return JSONMenuNode.of(node, depth);
+		return JSONMenuNode.of(node, depth, childrenLimit);
 	}
 
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
@@ -123,6 +128,7 @@ public class MenuRestController
 	@RequestMapping(value = "/queryPaths", method = RequestMethod.GET)
 	public JSONMenuNode query(
 			@RequestParam(name = PARAM_NameQuery, required = true) final String nameQuery //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
 	)
 	{
 		loginService.autologin();
@@ -135,7 +141,7 @@ public class MenuRestController
 			return null;
 		}
 
-		return JSONMenuNode.of(rootFiltered);
+		return JSONMenuNode.of(rootFiltered, childrenLimit);
 	}
 
 }
