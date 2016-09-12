@@ -282,7 +282,7 @@ class Lookup extends Component {
             >
                 <div className={"input-dropdown input-block input-" + (rank ? rank : "primary")}>
                     <div className={
-                        "input-editable" +
+                        "input-editable " +
                         (align ? "text-xs-" + align + " " : "")
                     }>
                         <input

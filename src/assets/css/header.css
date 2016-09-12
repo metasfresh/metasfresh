@@ -201,18 +201,49 @@
 
 .menu-overlay {
     position: absolute;
+    z-index:100;
     margin-top: -1.57rem;
     pointer-events: none;
 }
 
-.menu-overlay .menu-overlay-body {
-    padding: 1.8rem 1.2rem;
-    width: 250px;
+.menu-overlay-body {
+    padding: 1rem 1.2rem 1.8rem 1.2rem;
     min-height: 400px;
     z-index:1;
     margin-top:-1px;
     pointer-events: all;
 }
+
+.menu-overlay-root-body{
+    display: flex;
+}
+
+.menu-overlay-node-container {
+    width: 200px;
+
+}
+.menu-overlay-query {
+    width: 350px;
+
+    padding: 1rem 1.2rem;
+}
+
+.menu-overlay-query .input-primary {
+    padding: .1rem .50rem;
+    background-color: #fff;
+    margin-bottom: .5rem;
+}
+
+.menu-overlay-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    width: 450px;
+}
+
 
 .menu-overlay-primary .menu-overlay-body {
     background-color: $brand-bright-color;
@@ -235,12 +266,12 @@
     text-transform: uppercase;
     font-weight: bold;
     font-size: .875rem;
+    margin: 1rem 0;
 }
 
 .menu-overlay-expanded-link {
     display: block;
     margin: .5rem 1rem;
-    width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
 }
