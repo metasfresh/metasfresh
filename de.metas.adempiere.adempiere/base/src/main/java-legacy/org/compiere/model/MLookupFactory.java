@@ -537,11 +537,14 @@ public class MLookupFactory
 				sqlWhereClause = null;
 				sqlWhereClauseDynamic = whereClause.trim();
 
-				AdempiereException.logWarningIfDeveloperMode(s_log, () -> new AdempiereException("Please make sure AD_Ref_Table.WhereClause does not contain context variables."
-						+ "\n Those have very bad performances and are not optimized well."
-						+ "\n Consider using dynamic validation rules for that purpose."
-						+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
-						+ "\n tableRefInfo=" + tableRefInfo));
+				if (Services.get(IDeveloperModeBL.class).isEnabled())
+				{
+					s_log.warn("Please make sure AD_Ref_Table.WhereClause does not contain context variables."
+							+ "\n Those have very bad performances and are not optimized well."
+							+ "\n Consider using dynamic validation rules for that purpose."
+							+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
+							+ "\n tableRefInfo=" + tableRefInfo);
+				}
 			}
 			else
 			{
