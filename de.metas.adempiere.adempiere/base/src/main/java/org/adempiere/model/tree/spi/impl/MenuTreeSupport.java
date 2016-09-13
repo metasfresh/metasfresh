@@ -72,22 +72,34 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final boolean base = Env.isBaseLanguage(ctx, "AD_Menu");
 		if (base)
 		{
-			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID, AD_Menu.Name, AD_Menu.Description, AD_Menu.IsSummary, AD_Menu.Action, "
-					+ " NULL AS " + COLUMNNAME_PrintColor + ","
-					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
-					+ " AD_Menu.InternalName "
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew + " "
-					+ sqlDeveloperMode
+			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID"
+					+ ", AD_Menu.Name"
+					+ ", AD_Menu.Description"
+					+ ", AD_Menu.IsSummary"
+					+ ", AD_Menu.Action"
+					+ ", NULL AS " + COLUMNNAME_PrintColor
+					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
+					+ ", AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameNew
+					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu ");
 		}
 		else
 		{
-			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID,  t.Name,t.Description,AD_Menu.IsSummary,AD_Menu.Action, "
-					+ " NULL AS " + COLUMNNAME_PrintColor + ","
-					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
-					+ " AD_Menu.InternalName "
-					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew + " "
-					+ sqlDeveloperMode
+			sql.append("SELECT AD_Menu.AD_Menu_ID AS Node_ID"
+					+ ", t.Name"
+					+ ", t.Description"
+					+ ", AD_Menu.IsSummary"
+					+ ", AD_Menu.Action"
+					+ ", NULL AS " + COLUMNNAME_PrintColor
+					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
+					+ ", AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
+					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
+					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameNew
+					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu, AD_Menu_Trl t");
 		}
 		sql.append(" WHERE 1=1 ");
@@ -182,6 +194,8 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
 		final boolean isCreateNewRecord = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsCreateNew));
+		final String webuiNameBrowse = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse);
+		final String webuiNameNew = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNew);
 		
 		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
@@ -189,6 +203,8 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		info.setAD_Workflow_ID(AD_Workflow_ID);
 		info.setAD_Task_ID(AD_Task_ID);
 		info.setIsCreateNewRecord(isCreateNewRecord);
+		info.setWEBUI_NameBrowse(webuiNameBrowse);
+		info.setWEBUI_NameNew(webuiNameNew);
 
 		if (!isCheckRoleAccessWhileLoading())
 		{

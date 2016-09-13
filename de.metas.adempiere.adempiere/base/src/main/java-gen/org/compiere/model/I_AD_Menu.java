@@ -574,4 +574,50 @@ public interface I_AD_Menu
     public static final org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_User>(I_AD_Menu.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Browse name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameBrowse (java.lang.String WEBUI_NameBrowse);
+
+	/**
+	 * Get Browse name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameBrowse();
+
+    /** Column definition for WEBUI_NameBrowse */
+    public static final org.adempiere.model.ModelColumn<I_AD_Menu, Object> COLUMN_WEBUI_NameBrowse = new org.adempiere.model.ModelColumn<I_AD_Menu, Object>(I_AD_Menu.class, "WEBUI_NameBrowse", null);
+    /** Column name WEBUI_NameBrowse */
+    public static final String COLUMNNAME_WEBUI_NameBrowse = "WEBUI_NameBrowse";
+
+	/**
+	 * Set New record name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameNew (java.lang.String WEBUI_NameNew);
+
+	/**
+	 * Get New record name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameNew();
+
+    /** Column definition for WEBUI_NameNew */
+    public static final org.adempiere.model.ModelColumn<I_AD_Menu, Object> COLUMN_WEBUI_NameNew = new org.adempiere.model.ModelColumn<I_AD_Menu, Object>(I_AD_Menu.class, "WEBUI_NameNew", null);
+    /** Column name WEBUI_NameNew */
+    public static final String COLUMNNAME_WEBUI_NameNew = "WEBUI_NameNew";
 }
