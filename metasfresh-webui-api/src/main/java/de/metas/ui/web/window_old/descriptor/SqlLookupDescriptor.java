@@ -17,7 +17,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
@@ -74,7 +73,6 @@ public class SqlLookupDescriptor
 		super();
 		final Properties ctx = Env.getCtx();
 		final int Column_ID = 0;
-		final Language language = Env.getLanguage(ctx);
 		final boolean IsParent = false;
 		final int AD_Val_Rule_ID = -1; // TODO
 
@@ -89,12 +87,12 @@ public class SqlLookupDescriptor
 			final MLookupInfo lookupInfo;
 			if (valueType == PropertyDescriptorValueType.List)
 			{
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, DisplayType.List, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			else
 			{
 				final int displayType = ModelPropertyDescriptorValueTypeHelper.getSqlDisplayType(valueType);
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			
 			numericKey = lookupInfo.isNumericKey();

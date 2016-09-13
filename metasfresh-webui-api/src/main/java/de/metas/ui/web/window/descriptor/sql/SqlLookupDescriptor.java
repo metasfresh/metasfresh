@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -21,7 +20,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.Language;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -60,13 +58,13 @@ public final class SqlLookupDescriptor
 
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
 	public static final CtxName SQL_PARAM_ValidationRuleSql = CtxName.parse("SqlValidationRule");
-	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset");
-	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit");
+	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
+	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
 
-	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y";
-	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N"; // i.e. all
-	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive");
+	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
+	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
+	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive/N");
 	
 	public static final CtxName SQL_PARAM_AD_Language = MLookupInfo.CTXNAME_AD_Language;
 
@@ -189,9 +187,7 @@ public final class SqlLookupDescriptor
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
 
-			final Properties ctx = Env.getCtx(); // FIXME: get rid of "ctx"
 			final int Column_ID = 0;
-			final Language language = Env.getLanguage(ctx); // FIXME: get rid of Language here
 			final boolean IsParent = false;
 
 			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
@@ -203,7 +199,7 @@ public final class SqlLookupDescriptor
 			}
 			else
 			{
-				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 
 				numericKey = lookupInfo.isNumericKey();
 				setSqlExpressions(lookupInfo);
