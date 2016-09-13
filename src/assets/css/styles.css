@@ -750,3 +750,7 @@ table .rdtPicker table td, .rdtPicker table th {
     vertical-align: middle;
     padding: 0;
 }
+
+.pointer {
+    cursor: pointer;
+}

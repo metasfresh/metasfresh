@@ -156,7 +156,9 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     tabTmp[tab.tabid] = {};
                     dispatch(getData(windowType, docId, tab.tabid))
                         .then((res)=> {
+
                             res.data && res.data.map(row => {
+
                                 row.fields = nullToEmptyStrings(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
@@ -332,6 +334,9 @@ export function fieldToString(field) {
         switch(typeof field){
             case "object":
                 return field[Object.keys(field)[0]];
+                break;
+            case "boolean":
+                return field ? "Yes" : "No";
                 break;
             default:
                 return field;

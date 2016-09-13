@@ -38,7 +38,7 @@ class Header extends Component {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}));
     }
     handleMenuOverlay = (e, nodeId) => {
-        e.preventDefault();
+        e && e.preventDefault();
         this.setState(Object.assign({}, this.state, {
             menuOverlay: nodeId
         }));
@@ -48,19 +48,20 @@ class Header extends Component {
         const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId} = this.props;
         const {menuOverlay} = this.state;
         return (
-            <span className="header-breadcrumb header-breadcrumb-spaced">
-                {breadcrumb.map((item, index) =>
+            <span className="header-breadcrumb">
+                {breadcrumb && breadcrumb.map((item, index) =>
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
-                        <a
-                            className="header-breadcrumb-link"
+                        <span
+                            className="menu-overlay-expand"
                             onClick={e => this.handleMenuOverlay(e, item.nodeId)}
                         >
-                            {item.caption}
-                        </a>
+                            {item && item.children && item.children.caption}
+                        </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
                                 nodeId={item.nodeId}
+                                node={item}
                                 onClickOutside={e => this.handleMenuOverlay(e, "")}
                                 disableOnClickOutside={menuOverlay !== item.nodeId}
                             />
@@ -147,18 +148,12 @@ class Header extends Component {
 
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    indicator: PropTypes.string.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    indicator: PropTypes.string.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, menuHandler} = state;
+    const {windowHandler} = state;
 
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: {}
-    }
 
     const {
         indicator
@@ -167,8 +162,7 @@ function mapStateToProps(state) {
     }
 
     return {
-      indicator,
-      breadcrumb
+      indicator
     }
 }
 
