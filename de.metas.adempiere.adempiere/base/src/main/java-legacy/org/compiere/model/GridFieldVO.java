@@ -819,6 +819,7 @@ public class GridFieldVO implements Serializable
 		clone.MandatoryLogic = MandatoryLogic;
 		clone.MandatoryLogicExpr = MandatoryLogicExpr; // metas: 03093
 		clone.ObscureType = ObscureType;
+		clone.Included_Tab_ID = Included_Tab_ID;
 		clone.IncludedTabHeight = IncludedTabHeight; // metas-2009_0021_AP1_CR051
 		//	Lookup
 		clone.AD_Val_Rule_ID = AD_Val_Rule_ID; // metas: 03271
