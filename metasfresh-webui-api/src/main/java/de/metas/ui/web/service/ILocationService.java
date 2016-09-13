@@ -2,7 +2,7 @@ package de.metas.ui.web.service;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.ui.web.window.shared.datatype.LookupValue;
+import de.metas.ui.web.window_old.shared.datatype.LookupValue;
 
 /*
  * #%L

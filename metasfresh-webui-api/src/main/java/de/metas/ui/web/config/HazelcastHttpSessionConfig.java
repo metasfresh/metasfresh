@@ -2,12 +2,15 @@ package de.metas.ui.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.session.hazelcast.config.annotation.web.http.EnableHazelcastHttpSession;
 import org.springframework.session.hazelcast.config.annotation.web.http.HazelcastHttpSessionConfiguration;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+
+import de.metas.ui.web.WebRestApiApplication;
 
 /*
  * #%L
@@ -33,6 +36,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 @EnableHazelcastHttpSession
 @Configuration
+@Profile(WebRestApiApplication.PROFILE_NotTest)
 public class HazelcastHttpSessionConfig extends HazelcastHttpSessionConfiguration
 {
 	public HazelcastHttpSessionConfig()

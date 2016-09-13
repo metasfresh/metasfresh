@@ -1,5 +1,7 @@
 package de.metas.ui.web;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
@@ -18,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 
 import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 /*
  * #%L
@@ -44,10 +47,16 @@ import de.metas.ui.web.session.WebRestApiContextProvider;
 @SpringBootApplication
 public class WebRestApiApplication
 {
+	public static final String PROFILE_Test = "test";
+	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
+
 	public static void main(String[] args)
 	{
-		System.setProperty("PropertyFile", "./metasfresh.properties");
-		
+		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
+		{
+			System.setProperty("PropertyFile", "./metasfresh.properties");
+		}
+
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
@@ -57,15 +66,17 @@ public class WebRestApiApplication
 				.run(args);
 
 	}
-	
+
 	@Autowired
 	private ApplicationContext applicationContext;
-	
+
 	@Bean
 	public Adempiere adempiere()
 	{
 		Env.setContextProvider(new WebRestApiContextProvider());
-		
+
+		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
+
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.WEBUI);

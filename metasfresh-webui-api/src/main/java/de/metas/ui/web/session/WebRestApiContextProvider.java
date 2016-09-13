@@ -8,8 +8,12 @@ import org.adempiere.util.AbstractPropertiesProxy;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -34,8 +38,13 @@ import org.springframework.web.context.request.RequestContextHolder;
  */
 
 @SuppressWarnings("serial")
-public class WebRestApiContextProvider implements ContextProvider, Serializable
+public final class WebRestApiContextProvider implements ContextProvider, Serializable
 {
+	private static final Logger logger = LogManager.getLogger(WebRestApiContextProvider.class);
+
+	private static final String ATTRIBUTE_UserSessionCtx = WebRestApiContextProvider.class.getName() + ".UserSessionCtx";
+	private static final String CTXNAME_IsServerContext = "#IsWebuiServerContext";
+
 	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<Properties>();
 	private final AbstractPropertiesProxy ctxProxy = new AbstractPropertiesProxy()
 	{
@@ -48,9 +57,17 @@ public class WebRestApiContextProvider implements ContextProvider, Serializable
 		private static final long serialVersionUID = 0;
 	};
 
-	private final Properties serverCtx = new Properties();
+	private final Properties serverCtx;
 
-	private static final String ATTRIBUTE_UserSessionCtx = WebRestApiContextProvider.class.getName() + ".UserSessionCtx";
+	public WebRestApiContextProvider()
+	{
+		super();
+
+		//
+		// Create the server context
+		serverCtx = new Properties();
+		Env.setContext(serverCtx, CTXNAME_IsServerContext, true);
+	}
 
 	@Override
 	public void init()
@@ -66,25 +83,46 @@ public class WebRestApiContextProvider implements ContextProvider, Serializable
 
 	private final Properties getActualContext()
 	{
+		//
+		// IMPORTANT: this method will be called very often, so please make sure it's FAST!
+		//
+
+		//
+		// If there is currently a temporary context active, return it first
 		final Properties temporaryCtx = temporaryCtxHolder.get();
 		if (temporaryCtx != null)
 		{
+			logger.trace("Returning temporary context: {}", temporaryCtx);
 			return temporaryCtx;
 		}
 
+		//
+		// Get the context from current session
 		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 		if (requestAttributes != null)
 		{
 			Properties userSessionCtx = (Properties)requestAttributes.getAttribute(ATTRIBUTE_UserSessionCtx, RequestAttributes.SCOPE_SESSION);
 			if (userSessionCtx == null)
 			{
+				// Create user session context
 				userSessionCtx = new Properties();
+				Env.setContext(userSessionCtx, CTXNAME_IsServerContext, false);
+
 				requestAttributes.setAttribute(ATTRIBUTE_UserSessionCtx, userSessionCtx, RequestAttributes.SCOPE_SESSION);
+
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("Created user session context: sessionId={}, context={}", requestAttributes.getSessionId(), userSessionCtx);
+				}
 			}
 
+			logger.trace("Returning user session context: {}", temporaryCtx);
 			return userSessionCtx;
 		}
 
+		//
+		// If there was no current session it means we are running on server side, so return the server context
+		logger.trace("Returning server context: {}", temporaryCtx);
 		return serverCtx;
 	}
 
@@ -97,12 +135,15 @@ public class WebRestApiContextProvider implements ContextProvider, Serializable
 		// then it's better to do nothing because this could end in a StackOverflowException.
 		if (ctx == ctxProxy)
 		{
+			logger.trace("Not switching context because the given temporary context it's actually our context proxy: {}", ctx);
 			return NullAutoCloseable.instance;
 		}
 
 		final Properties previousTempCtx = temporaryCtxHolder.get();
 
 		temporaryCtxHolder.set(ctx);
+
+		logger.trace("Switched to temporary context. \n New temporary context: {} \n Previous temporary context: {}", ctx, previousTempCtx);
 
 		return new IAutoCloseable()
 		{
@@ -126,6 +167,8 @@ public class WebRestApiContextProvider implements ContextProvider, Serializable
 				}
 
 				closed = true;
+				
+				logger.trace("Switched back from temporary context");
 			}
 		};
 	}
@@ -135,5 +178,7 @@ public class WebRestApiContextProvider implements ContextProvider, Serializable
 	{
 		temporaryCtxHolder.remove();
 		serverCtx.clear();
+		
+		logger.debug("Reset done");
 	}
 }

@@ -1,0 +1,248 @@
+package de.metas.ui.web.window.model;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public final class DocumentChanges
+{
+	private final DocumentPath documentPath;
+	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
+	private DocumentValidStatus documentValidStatus = null;
+	private DocumentSaveStatus documentSaveStatus = null;
+
+	/* package */ DocumentChanges(final DocumentPath documentPath)
+	{
+		super();
+
+		Preconditions.checkNotNull(documentPath, "documentPath");
+		this.documentPath = documentPath;
+	}
+
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("documentPath", documentPath)
+				.add("fields", fieldChangesByName)
+				.toString();
+	}
+
+	public Set<String> getFieldNames()
+	{
+		return ImmutableSet.copyOf(fieldChangesByName.keySet());
+	}
+
+	public boolean isEmpty()
+	{
+		return fieldChangesByName.isEmpty()
+				&& documentValidStatus == null
+				&& documentSaveStatus == null;
+	}
+
+	private DocumentFieldChange fieldChangesOf(final IDocumentFieldView documentField)
+	{
+		// Make sure the field is about same document path
+		if (!documentPath.equals(documentField.getDocumentPath()))
+		{
+			throw new IllegalArgumentException("Field " + documentField + " does not have expected path: " + documentPath);
+		}
+
+		return fieldChangesByName.computeIfAbsent(documentField.getFieldName(), (fieldName) -> {
+			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField(), documentField.isAdvancedField());
+			if (WindowConstants.isProtocolDebugging())
+			{
+				event.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, documentField.toString());
+			}
+			return event;
+		});
+	}
+
+	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
+	{
+		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key, publicField, advancedField));
+	}
+
+	public List<DocumentFieldChange> getFieldChangesList()
+	{
+		return ImmutableList.copyOf(fieldChangesByName.values());
+	}
+
+	/* package */ void collectValueChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		fieldChangesOf(documentField).setValue(documentField.getValue(), reason);
+	}
+
+	/* package */ void collectReadonlyChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		fieldChangesOf(documentField).setReadonly(documentField.getReadonly(), reason);
+	}
+
+	/* package */ void collectMandatoryChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		fieldChangesOf(documentField).setMandatory(documentField.getMandatory(), reason);
+	}
+
+	/* package */ void collectDisplayedChanged(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		fieldChangesOf(documentField).setDisplayed(documentField.getDisplayed(), reason);
+	}
+
+	/* package */ void collectLookupValuesStaled(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		fieldChangesOf(documentField).setLookupValuesStale(true, reason);
+	}
+
+	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
+	{
+		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
+		{
+			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField());
+			toFieldChange.mergeFrom(fromFieldChange);
+		}
+
+		if (fromDocumentChanges.documentValidStatus != null)
+		{
+			collectDocumentValidStatusChanged(fromDocumentChanges.documentValidStatus);
+		}
+
+		if (fromDocumentChanges.documentSaveStatus != null)
+		{
+			collectDocumentSaveStatusChanged(fromDocumentChanges.documentSaveStatus);
+		}
+	}
+
+	/* package */boolean collectFrom(final Document document, final ReasonSupplier reason)
+	{
+		boolean collected = false;
+
+		for (final IDocumentFieldView documentField : document.getFieldViews())
+		{
+			if (collectFrom(documentField, reason))
+			{
+				collected = true;
+			}
+		}
+
+		return collected;
+	}
+
+	private boolean collectFrom(final IDocumentFieldView documentField, final ReasonSupplier reason)
+	{
+		final DocumentFieldChange toEvent = fieldChangesOf(documentField);
+
+		boolean collected = false;
+
+		//
+		// Value
+		if (!toEvent.isValueSet())
+		{
+			final Object value = documentField.getValue();
+			toEvent.setValue(value, reason);
+		}
+		else
+		{
+			final Object value = documentField.getValue();
+			final Object previousValue = toEvent.getValue();
+			if (!DataTypes.equals(value, previousValue))
+			{
+				final ReasonSupplier reasonNew = reason.addPreviousReason(toEvent.getValueReason(), previousValue == null ? "<NULL>" : previousValue);
+				toEvent.setValue(value, reasonNew);
+				collected = true;
+			}
+		}
+
+		//
+		// Readonly
+		final LogicExpressionResult readonly = documentField.getReadonly();
+		if (!readonly.equals(toEvent.getReadonly()))
+		{
+			final ReasonSupplier reasonNew = reason.add("readonly", readonly).addPreviousReason(toEvent.getReadonlyReason());
+			toEvent.setReadonly(readonly, reasonNew);
+			collected = true;
+		}
+
+		//
+		// Mandatory
+		final LogicExpressionResult mandatory = documentField.getMandatory();
+		if (!mandatory.equals(toEvent.getMandatory()))
+		{
+			final ReasonSupplier reasonNew = reason.add("mandatory", mandatory).addPreviousReason(toEvent.getMandatoryReason());
+			toEvent.setMandatory(mandatory, reasonNew);
+			collected = true;
+		}
+
+		//
+		// Displayed
+		final LogicExpressionResult displayed = documentField.getDisplayed();
+		if (!displayed.equals(toEvent.getDisplayed()))
+		{
+			final ReasonSupplier reasonNew = reason.add("displayed", displayed).addPreviousReason(toEvent.getDisplayedReason());
+			toEvent.setDisplayed(displayed, reasonNew);
+			collected = true;
+		}
+
+		return collected;
+	}
+
+	/* package */void collectDocumentValidStatusChanged(final DocumentValidStatus documentValidStatus)
+	{
+		this.documentValidStatus = documentValidStatus;
+	}
+
+	public DocumentValidStatus getDocumentValidStatus()
+	{
+		return documentValidStatus;
+	}
+
+	/* package */void collectDocumentSaveStatusChanged(final DocumentSaveStatus documentSaveStatus)
+	{
+		this.documentSaveStatus = documentSaveStatus;
+	}
+
+	public DocumentSaveStatus getDocumentSaveStatus()
+	{
+		return documentSaveStatus;
+	}
+
+}
