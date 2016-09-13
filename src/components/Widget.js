@@ -62,8 +62,14 @@ class Widget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal, relativeDocId} = this.props;
+        const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
         let currRowId = rowId;
+
+        if(precision){
+            if(precision < (e.target.value.split('.')[1] || []).length){
+                return;
+            }
+        }
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
