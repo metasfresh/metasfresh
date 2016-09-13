@@ -62,8 +62,12 @@ class Widget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal, relativeDocId} = this.props;
+        const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
         let currRowId = rowId;
+
+        if(!this.validatePrecision(e.target.value)){
+            return;
+        }
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
@@ -81,9 +85,19 @@ class Widget extends Component {
         }));
     }
 
-    componentDidMount() {
-        // document.activeElement.getElementsByClassName('input-field')[0].focus();
+    validatePrecision = (value) => {
+        const {widgetType} = this.props;
+        let {precision} = this.props;
 
+        if(widgetType === "Integer" || widgetType === "Quantity"){
+            precision = 0;
+        }
+
+        if(precision < (value.split('.')[1] || []).length){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {

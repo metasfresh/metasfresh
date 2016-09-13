@@ -13,20 +13,20 @@ export function setBreadcrumb(breadcrumb){
 
 // THUNK ACTIONS
 
-export function nodePathsRequest(nodeId) {
-    return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2');
+export function nodePathsRequest(nodeId, limit) {
+    return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function elementPathRequest(pathType, elementId) {
     return dispatch => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId);
 }
 
-export function queryPathsRequest(query) {
-    return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query);
+export function queryPathsRequest(query, limit) {
+    return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : ""));
 }
 
-export function rootRequest() {
-    return dispatch => axios.get(config.API_URL + '/menu/root?depth=3');
+export function rootRequest(limit) {
+    return dispatch => axios.get(config.API_URL + '/menu/root?depth=3' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function getWindowBreadcrumb(id){
@@ -43,8 +43,7 @@ export function getWindowBreadcrumb(id){
                     if(node.nodeId != 0){
                         //not root menu
 
-                        dispatch(nodePathsRequest(node.nodeId)).then(item => {
-                            item.data.children.length > 10 ? item.data.children.length = 10 : null;
+                        dispatch(nodePathsRequest(node.nodeId, 10)).then(item => {
 
                             node.children = item.data;
                             req++;
@@ -52,11 +51,7 @@ export function getWindowBreadcrumb(id){
                     }else{
                         //root menu
 
-                        dispatch(rootRequest()).then(root => {
-                            root.data.children.length > 4 ? root.data.children.length = 4 : null;
-                            root.data.children.map(item => {
-                                item.children.length > 4 ? item.children.length = 4 : null;
-                            })
+                        dispatch(rootRequest(4)).then(root => {
                             node.children = root.data;
                             req++;
                         })
@@ -75,7 +70,7 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-function flatten(node) {
+export function flatten(node) {
     let result = [];
 
     if(!!node.children){
@@ -87,7 +82,8 @@ function flatten(node) {
     }
 
     result.push({
-        nodeId: node.nodeId
+        nodeId: node.nodeId,
+        caption: node.caption
     });
 
     return result;

@@ -34,8 +34,7 @@ class MenuOverlay extends Component {
                 query: e.target.value
             }));
 
-            dispatch(queryPathsRequest(e.target.value)).then(response => {
-                response.data.children && response.data.children.length > 9 ? response.data.children.length = 9: null;
+            dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
 
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
@@ -62,8 +61,7 @@ class MenuOverlay extends Component {
         e.preventDefault();
 
 
-        dispatch(nodePathsRequest(nodeId)).then(response => {
-            response.data.children.length > 4 ? response.data.children.length = 4 : null;
+        dispatch(nodePathsRequest(nodeId,4)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))

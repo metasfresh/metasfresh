@@ -6,16 +6,22 @@ class MenuOverlayItem extends Component {
     }
     render() {
         const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect} = this.props;
+
         return (
-            <span
+            <div
                 className={
-                    "menu-overlay-expanded-link " +
-                    (children ? "menu-overlay-expand" : "menu-overlay-link")
+                    "menu-overlay-expanded-link "
                 }
-                onClick={e => children ? handleClickOnFolder(e, nodeId) : handleRedirect(elementId)}
             >
-                {caption}
-            </span>
+                <span
+                    className={
+                        (children ? "menu-overlay-expand" : "menu-overlay-link")
+                    }
+                    onClick={e => children ? handleClickOnFolder(e, nodeId) : handleRedirect(elementId)}
+                >
+                    {caption}
+                </span>
+            </div>
         )
     }
 }
