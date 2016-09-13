@@ -217,10 +217,12 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			for (final I_C_BP_BankAccount account : bankAccts)
 			{
+				// FRESH-606: Only continue if the bank account has a use set
 				if (account.getBPBankAcctUse() == null)
 				{
 					continue;
 				}
+				
 				final int accountID = account.getC_BP_BankAccount_ID();
 				if (accountID > 0)
 				{

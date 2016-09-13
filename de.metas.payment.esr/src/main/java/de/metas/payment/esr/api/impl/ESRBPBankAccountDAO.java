@@ -64,7 +64,6 @@ public class ESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy();
 
-		System.out.println("test");
 		final List<I_C_BP_BankAccount> esrAccounts = queryBuilder
 				.create()
 				.list();
