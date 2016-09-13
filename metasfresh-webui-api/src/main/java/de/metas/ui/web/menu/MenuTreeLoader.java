@@ -8,6 +8,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
@@ -123,17 +124,17 @@ public final class MenuTreeLoader
 		while (childModels.hasMoreElements())
 		{
 			final MTreeNode childModel = (MTreeNode)childModels.nextElement();
-			
+
 			final MenuNode childNode = createMenuNodeRecursivelly(childModel, depth + 1);
 			if (childNode == null)
 			{
 				continue;
 			}
-			
-			if(childModel.isCreateNewRecord())
+
+			if (childModel.isCreateNewRecord())
 			{
-				final MenuNode childNodeNewRecord = createNewRecordNode(childNode);
-				if(childNodeNewRecord != null)
+				final MenuNode childNodeNewRecord = createNewRecordNode(childNode, childModel.getWEBUI_NameNew());
+				if (childNodeNewRecord != null)
 				{
 					nodeBuilder.addChildToFirstsList(childNodeNewRecord);
 				}
@@ -147,9 +148,18 @@ public final class MenuTreeLoader
 
 	private MenuNode.Builder createMenuNodeBuilder(final MTreeNode nodeModel, final int depth)
 	{
+		final String captionBreadcrumb = nodeModel.getName();
+
+		String caption = nodeModel.getWEBUI_NameBrowse();
+		if (Check.isEmpty(caption, true))
+		{
+			caption = "Browse " + captionBreadcrumb;
+		}
+
 		final MenuNode.Builder builder = MenuNode.builder()
 				.setId(nodeModel.getNode_ID())
-				.setCaption(nodeModel.getName());
+				.setCaption(caption)
+				.setCaptionBreadcrumb(captionBreadcrumb);
 
 		final String action = nodeModel.getImageIndiactor();
 		if (nodeModel.isSummary())
@@ -181,16 +191,23 @@ public final class MenuTreeLoader
 		return builder;
 	}
 
-	private MenuNode createNewRecordNode(final MenuNode node)
+	private MenuNode createNewRecordNode(final MenuNode node, final String caption)
 	{
 		if (node.getType() != MenuNodeType.Window)
 		{
 			return null;
 		}
 
+		String captionEffective = caption;
+		if (Check.isEmpty(captionEffective, true))
+		{
+			captionEffective = "New " + caption;
+		}
+
 		return MenuNode.builder()
 				.setId(node.getId() + "-new")
-				.setCaption("New " + node.getCaption()) // TODO: trl
+				.setCaption(captionEffective)
+				.setCaptionBreadcrumb(node.getCaptionBreadcrumb())
 				.setType(MenuNodeType.NewRecord, node.getElementId())
 				.build();
 	}
@@ -224,6 +241,7 @@ public final class MenuTreeLoader
 		}
 		// metas: 03019: end
 
+		// FIXME: introduce UserRolePermissions.getMenu_Tree_ID()
 		int AD_Tree_ID = DB.getSQLValue(ITrx.TRXNAME_None,
 				"SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)"
 						+ "FROM AD_ClientInfo ci"
