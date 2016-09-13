@@ -327,7 +327,7 @@ export function getItemsByProperty(arr, prop, value) {
 
     return ret;
 }
-export function fieldToString(field) {
+export function fieldToString(field, type) {
     if(field === null){
         return "";
     }else{
@@ -337,6 +337,16 @@ export function fieldToString(field) {
                 break;
             case "boolean":
                 return field ? "Yes" : "No";
+                break;
+            case "string":
+
+                if(type === "Date" || type === "DateTime" || type === "Time"){
+                  let d = new Date(field);
+                  let date = d.toLocaleDateString();
+                  return date;
+                } else {
+                  return field;
+                }
                 break;
             default:
                 return field;

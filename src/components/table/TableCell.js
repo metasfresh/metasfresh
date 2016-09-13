@@ -46,7 +46,7 @@ class TableCell extends Component {
                             gridAlign={item.gridAlign}
                         />
                     :
-                        fieldToString(widgetData[0].value)
+                        fieldToString(widgetData[0].value, item.widgetType)
                 }
             </td>
         )
