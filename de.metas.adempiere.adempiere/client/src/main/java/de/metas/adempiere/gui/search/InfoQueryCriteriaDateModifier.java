@@ -37,7 +37,6 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -232,9 +231,8 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 		final IInfoSimple parent = getParent();
 		final Evaluatee evalCtx = Evaluatees.ofCtx(parent.getCtx(), parent.getWindowNo(), false); // onlyWindow=false
 		final IStringExpression defaultValueExpression = Services.get(IExpressionFactory.class).compile(defaultValueExpressionStr, IStringExpression.class);
-		final IExpressionEvaluator<IStringExpression, String> evaluator = defaultValueExpression.getEvaluator();
-		final String defaultValueStr = evaluator.evaluate(evalCtx, defaultValueExpression, OnVariableNotFound.ReturnNoResult);
-		if (evaluator.isNoResult(defaultValueStr))
+		final String defaultValueStr = defaultValueExpression.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);
+		if (defaultValueExpression.isNoResult(defaultValueStr))
 		{
 			// expression could not be evaluated
 			return;

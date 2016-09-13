@@ -1,6 +1,9 @@
 package org.adempiere.ad.expression.api;
 
 import java.util.Map;
+import java.util.Objects;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.compiere.util.CtxName;
 
@@ -42,28 +45,43 @@ import com.google.common.collect.ImmutableMap;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class LogicExpressionResult
+@Immutable
+public class LogicExpressionResult
 {
 	public static final LogicExpressionResult of(final Boolean value, final ILogicExpression expression, final Map<CtxName, String> parameters)
 	{
-		return new LogicExpressionResult(value, expression, parameters);
+		final String name = null;
+		return new LogicExpressionResult(name, value, expression, parameters);
 	}
 
-	public static final LogicExpressionResult FALSE = new LogicExpressionResult(false, ConstantLogicExpression.FALSE, null);
-	public static final LogicExpressionResult TRUE = new LogicExpressionResult(true, ConstantLogicExpression.TRUE, null);
+	public static final LogicExpressionResult ofConstantExpression(final ILogicExpression constantExpression)
+	{
+		final boolean value = constantExpression.constantValue();
+		return value ? TRUE : FALSE;
+	}
 
-	private final boolean value;
+	public static final LogicExpressionResult namedConstant(final String name, final boolean value)
+	{
+		return new NamedConstant(name, value);
+	}
+
+	public static final LogicExpressionResult FALSE = new Constant(false);
+	public static final LogicExpressionResult TRUE = new Constant(true);
+
+	protected final String name;
+	protected final boolean value;
 	private final ILogicExpression expression;
 	private final Map<CtxName, String> usedParameters;
 
 	private transient String _toString = null; // lazy
 
-	private LogicExpressionResult(final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
+	private LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
 	{
 		super();
+		this.name = name;
 		this.value = value == null ? false : value;
 		this.expression = expression;
-		this.usedParameters = usedParameters;
+		this.usedParameters = usedParameters == null || usedParameters.isEmpty() ? null : usedParameters;
 	}
 
 	@Override
@@ -71,9 +89,9 @@ public final class LogicExpressionResult
 	{
 		if (_toString == null)
 		{
-			_toString = MoreObjects.toStringHelper(this)
+			_toString = MoreObjects.toStringHelper(value ? "TRUE" : "FALSE")
 					.omitNullValues()
-					.add("value", value)
+					.add("name", name)
 					.add("expression", expression)
 					.add("usedParameters", usedParameters)
 					.toString();
@@ -81,12 +99,42 @@ public final class LogicExpressionResult
 		return _toString;
 	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(name, value, expression, usedParameters);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!LogicExpressionResult.class.isAssignableFrom(obj.getClass()))
+		{
+			return false;
+		}
+
+		final LogicExpressionResult other = (LogicExpressionResult)obj;
+		return Objects.equals(name, other.name)
+				&& Objects.equals(value, other.value)
+				&& Objects.equals(expression, other.expression)
+				&& Objects.equals(usedParameters, other.usedParameters);
+	}
+
 	/**
 	 * @param obj
 	 * @return true if the value of this result equals with the value of given result
 	 * @see #booleanValue()
 	 */
-	public boolean valueEquals(final LogicExpressionResult obj)
+	public boolean equalsByValue(final LogicExpressionResult obj)
 	{
 		if (this == obj)
 		{
@@ -97,6 +145,20 @@ public final class LogicExpressionResult
 			return false;
 		}
 		return value == obj.value;
+	}
+
+	public boolean equalsByNameAndValue(final LogicExpressionResult obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		return Objects.equals(name, obj.name)
+				&& value == obj.value;
 	}
 
 	public boolean booleanValue()
@@ -111,4 +173,42 @@ public final class LogicExpressionResult
 	{
 		return usedParameters == null ? ImmutableMap.of() : usedParameters;
 	}
+
+	private static final class Constant extends LogicExpressionResult
+	{
+		private Constant(final boolean value)
+		{
+			super(null, value, value ? ConstantLogicExpression.TRUE : ConstantLogicExpression.FALSE, null);
+		}
+
+		@Override
+		public String toString()
+		{
+			return value ? "TRUE" : "FALSE";
+		}
+	}
+
+	private static final class NamedConstant extends LogicExpressionResult
+	{
+		private transient String _toString = null; // lazy
+
+		private NamedConstant(final String name, final boolean value)
+		{
+			super(name, value, value ? ConstantLogicExpression.TRUE : ConstantLogicExpression.FALSE, null);
+		}
+
+		@Override
+		public String toString()
+		{
+			if (_toString == null)
+			{
+				_toString = MoreObjects.toStringHelper(value ? "TRUE" : "FALSE")
+						.omitNullValues()
+						.addValue(name)
+						.toString();
+			}
+			return _toString;
+		}
+	}
+
 }

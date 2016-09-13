@@ -47,7 +47,6 @@ import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -112,7 +111,6 @@ public class CallCenterModel
 		{
 			return m_bundlesLookup;
 		}
-		Language language = Env.getLanguage(m_ctx);
 		final String validationCode =
 			// All bundles that are not Done or Close
 			"R_Group."+BundleUtil.R_Group_CCM_Bundle_Status+" NOT IN ("
@@ -125,7 +123,6 @@ public class CallCenterModel
 			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
-					language,						// Language
 					c.getColumnName(),				// ColumnName
 					c.getAD_Reference_Value_ID(),	// AD_Reference_Value_ID,
 					false,							// IsParent,

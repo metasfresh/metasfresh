@@ -56,11 +56,11 @@ public class MUserDefField extends X_AD_UserDef_Field
 		
 		final String name = getName();
 		if (!Check.isEmpty(name) && name.length() > 1)
-			vo.Header = name;
+			vo.setHeader(name);
 		if (!Check.isEmpty(getDescription()))
-			vo.Description = getDescription();
+			vo.setDescription(getDescription());
 		if (!Check.isEmpty(getHelp()))
-			vo.Help = getHelp();
+			vo.setHelp(getHelp());
 		//
 		vo.setIsDisplayed(this.isDisplayed());
 		if (this.getIsReadOnly() != null)

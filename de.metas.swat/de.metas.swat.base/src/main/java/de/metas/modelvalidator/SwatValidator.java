@@ -101,7 +101,6 @@ import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.adempiere.modelvalidator.ProcessValidator;
 import de.metas.adempiere.report.jasper.client.JRClient;
-import de.metas.adempiere.service.ITriggerUIBL;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.inout.model.I_M_InOutLine;
@@ -196,7 +195,6 @@ public class SwatValidator implements ModelValidator
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
 
 		engine.addModelValidator(new AD_User(), client);
-		engine.addModelValidator(Services.get(ITriggerUIBL.class).createModelValidator(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
 		engine.addModelValidator(new CLocationValidator(), client); // us786
 		engine.addModelValidator(new C_CountryArea_Assign(), client);

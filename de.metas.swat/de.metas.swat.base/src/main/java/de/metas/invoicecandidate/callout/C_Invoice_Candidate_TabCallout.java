@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 
 /*
  * #%L
@@ -39,7 +40,7 @@ import org.compiere.model.GridTab;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
-public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter
+public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter implements IStatefulTabCallout
 {
 	private FacetExecutor<I_C_Invoice_Candidate> gridTabFacetExecutor;
 

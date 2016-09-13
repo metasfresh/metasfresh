@@ -82,12 +82,12 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -203,10 +203,9 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 	private void preInit() throws Exception
 	{
 		Properties ctx = getCtx();
-		Language language = Language.getLoginLanguage(); // Base Language
 		MLookup m_fieldProduct = MLookupFactory.get(ctx, m_WindowNo,
 				MColumn.getColumn_ID(MProduct.Table_Name, "M_Product_ID"),
-				DisplayType.Search, language, MProduct.COLUMNNAME_M_Product_ID, 0, false,
+				DisplayType.Search, MProduct.COLUMNNAME_M_Product_ID, 0, false,
 				" M_Product.IsSummary = 'N'");
 		fieldProduct = new VLookup ("M_Product_ID", false, false, true,  m_fieldProduct) {
 			private static final long serialVersionUID = 1L;

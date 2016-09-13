@@ -37,8 +37,6 @@ import org.adempiere.util.ISingletonService;
  */
 public interface IProgramaticCalloutProvider extends ICalloutProvider, ISingletonService
 {
-	boolean registerCallout(String tableName, String columnName, String methodNameFQ);
-
 	boolean registerCallout(String tableName, String columnName, ICalloutInstance callout);
 
 	boolean registerAnnotatedCallout(Object annotatedCalloutObj);

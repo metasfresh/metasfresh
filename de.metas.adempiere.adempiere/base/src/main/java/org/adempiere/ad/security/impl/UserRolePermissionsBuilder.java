@@ -46,8 +46,10 @@ import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -62,6 +64,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private I_AD_Role _role;
 	private Integer _userId;
 	private Integer _adClientId;
+	private I_AD_Client _adClient; // lazy
 	private TableAccessLevel userLevel;
 
 	//
@@ -134,7 +137,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 		if (miscPermissions == null)
 		{
-			miscPermissions = extractPermissions(getAD_Role());
+			miscPermissions = extractPermissions(getAD_Role(), getAD_Client());
 		}
 
 		if (constraints == null)
@@ -209,7 +212,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return new UserRolePermissions(this);
 	}
 
-	private static GenericPermissions extractPermissions(final I_AD_Role role)
+	private static GenericPermissions extractPermissions(final I_AD_Role role, final I_AD_Client adClient)
 	{
 		final GenericPermissions.Builder rolePermissions = GenericPermissions.builder();
 
@@ -223,6 +226,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		rolePermissions.addPermissionIfCondition(role.isChangeLog(), IUserRolePermissions.PERMISSION_ChangeLog);
 		rolePermissions.addPermissionIfCondition(role.isMenuAvailable(), IUserRolePermissions.PERMISSION_MenuAvailable);
 		rolePermissions.addPermissionIfCondition(role.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
+		rolePermissions.addPermissionIfCondition(role.isRoleAlwaysUseBetaFunctions() || adClient.isUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
@@ -336,6 +340,16 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 		// Fallback: use role's AD_Client_ID
 		return getAD_Role().getAD_Client_ID();
+	}
+	
+	private I_AD_Client getAD_Client()
+	{
+		if(_adClient == null)
+		{
+			final int adClientId = getAD_Client_ID();
+			_adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), adClientId);
+		}
+		return _adClient;
 	}
 
 	@Override

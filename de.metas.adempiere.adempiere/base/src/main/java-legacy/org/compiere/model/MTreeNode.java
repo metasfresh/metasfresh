@@ -827,6 +827,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private int AD_Form_ID = -1;
 	private int AD_Workflow_ID = -1;
 	private int AD_Task_ID = -1;
+	private boolean isCreateNewRecord = false;
 
 	public int getAD_Window_ID()
 	{
@@ -876,5 +877,15 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public void setAD_Task_ID(int aD_Task_ID)
 	{
 		AD_Task_ID = aD_Task_ID;
+	}
+
+	public void setIsCreateNewRecord(final boolean isCreateNewRecord)
+	{
+		this.isCreateNewRecord = isCreateNewRecord;
+	}
+	
+	public boolean isCreateNewRecord()
+	{
+		return isCreateNewRecord;
 	}
 }   // MTreeNode

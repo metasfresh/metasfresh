@@ -414,7 +414,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
-					Env.getLanguage(ctx),
 					MADBoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
 					0, // AD_Reference_Value_ID,
 					false, // IsParent,
