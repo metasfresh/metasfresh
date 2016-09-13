@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Widget from '../Widget';
 import onClickOutside from 'react-onclickoutside';
+import Moment from 'moment';
 
 class TableCell extends Component {
     constructor(props) {
@@ -30,7 +31,7 @@ class TableCell extends Component {
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
                       let d = new Date(field);
-                      let date = d.toLocaleDateString();
+                      let date = Moment(d).format('DD.MM.YYYY')
                       return date;
                     } else {
                       return field;
