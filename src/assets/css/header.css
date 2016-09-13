@@ -72,8 +72,9 @@
 }
 
 .header-breadcrumb > span:first-of-type > span{
-    min-width: 40px;
+    min-width: 45px;
     font-weight: bold;
+    display: inline-block;
 }
 
 .header-breadcrumb > *:first-of-type .menu-overlay-expand {
@@ -110,7 +111,7 @@
     margin: 0;
     font-size: 0.85rem;
     line-height: 1;
-    padding: 0;
+    padding: 0 10px 0 0;
 }
 
 .subheader-container {

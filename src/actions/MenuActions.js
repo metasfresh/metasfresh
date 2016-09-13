@@ -32,37 +32,43 @@ export function rootRequest(limit) {
 export function getWindowBreadcrumb(id){
     return dispatch => {
         dispatch(elementPathRequest("window", id)).then(response => {
+            let req = 0;
             let pathData = flatten(response.data);
 
             // promise to get all of the breadcrumb menu options
-            let breadcrumb = new Promise((resolve, reject) => {
-                let req = 0;
+            let breadcrumbProcess = new Promise((resolve, reject) => {
 
-                pathData.map(node => {
+                for(let i = 0; i < pathData.length; i++){
+                    const node = pathData[i];
 
-                    if(node.nodeId != 0){
+                    if(node.nodeId != "0"){
                         //not root menu
-
                         dispatch(nodePathsRequest(node.nodeId, 10)).then(item => {
-
                             node.children = item.data;
-                            req++;
+                            req += 1;
+
+                            if(req === pathData.length){
+                                resolve(pathData);
+                            }
                         })
                     }else{
                         //root menu
-
                         dispatch(rootRequest(4)).then(root => {
                             node.children = root.data;
-                            req++;
+                            req += 1;
+
+                            if(req === pathData.length){
+                                resolve(pathData);
+                            }
                         })
                     }
-                    if(req === pathData.length){
-                        resolve();
-                    }
-                })
-                dispatch(setBreadcrumb(pathData.reverse()));
-            })
-        })
+                }
+            });
+
+            return breadcrumbProcess;
+        }).then((item) => {
+            dispatch(setBreadcrumb(item.reverse()));
+        });
     }
 }
 
