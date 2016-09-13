@@ -13,7 +13,6 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.compiere.model.MLookupInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -233,14 +232,13 @@ public class SqlLookupDataSource implements LookupDataSource
 
 	private DataSourceValidationContext createEvaluationContext(final Document document, final String filter, final int sqlFetchOffset, final int sqlFetchLimit)
 	{
-		final DataSourceValidationContext validationCtx = new DataSourceValidationContext(document);
+		final DataSourceValidationContext validationCtx = new DataSourceValidationContext(sqlLookupDescriptor, document);
 
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive.getName(), SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
 		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
-		validationCtx.putValue(MLookupInfo.CTXNAME_AD_Language.getName(), Env.getAD_Language(Env.getCtx()));
-		
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_AD_Language.getName(), Env.getAD_Language(Env.getCtx()));
 
 		// SQL validation rule
 		{
@@ -258,7 +256,7 @@ public class SqlLookupDataSource implements LookupDataSource
 		return validationCtx;
 	}
 
-	private String convertFilterToSql(final String filter)
+	private static final String convertFilterToSql(final String filter)
 	{
 		if (filter == FILTER_Any)
 		{
@@ -278,34 +276,42 @@ public class SqlLookupDataSource implements LookupDataSource
 		return DB.TO_STRING(searchSql);
 	}
 
-	private final class DataSourceValidationContext implements IValidationContext
+	private static final class DataSourceValidationContext implements IValidationContext
 	{
+		private final int windowNo;
+		private final String tableName;
+		private final String contextTableName;
 		private final Document document;
+		
 		private final Map<String, Object> name2value = new HashMap<>();
 		private IValidationRule validationRule = NullValidationRule.instance;
 
-		private DataSourceValidationContext(final Document document)
+		private DataSourceValidationContext(final SqlLookupDescriptor sqlLookupDescriptor, final Document document)
 		{
 			super();
+			this.tableName = sqlLookupDescriptor.getSqlTableName();
+			this.windowNo = document.getWindowNo();
+			this.contextTableName = document.getEntityDescriptor().getDataBinding().getTableName();
 			this.document = document;
+			
 		}
 
 		@Override
 		public int getWindowNo()
 		{
-			return document.getWindowNo();
+			return windowNo;
 		}
 
 		@Override
 		public String getContextTableName()
 		{
-			return document.getEntityDescriptor().getDataBinding().getTableName();
+			return contextTableName;
 		}
 
 		@Override
 		public String getTableName()
 		{
-			return sqlLookupDescriptor.getSqlTableName();
+			return tableName;
 		}
 
 		@Override
@@ -338,7 +344,7 @@ public class SqlLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupDataSource copy()
+	public SqlLookupDataSource copy()
 	{
 		// TODO: atm this is immutable so we can return it right away. But pls change it when we will add caching here
 		return this;
