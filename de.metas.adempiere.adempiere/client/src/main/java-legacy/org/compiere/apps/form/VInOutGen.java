@@ -18,8 +18,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.apps.ADialog;
@@ -30,12 +28,15 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MRMA;
 import org.compiere.swing.CLabel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Generate Shipment (manual) view class
@@ -68,6 +69,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info("");
@@ -92,6 +94,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -134,6 +137,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	 *		Column_ID from C_Order
 	 *  @throws Exception if Lookups cannot be initialized
 	 */
+	@Override
 	public void dynInit() throws Exception
 	{
 		//	C_OrderLine.M_Warehouse_ID
@@ -144,7 +148,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 		setM_Warehouse_ID(fWarehouse.getValue());
 		//   Document Action Prepared/ Completed
 		MLookup docActionL = MLookupFactory.get(Env.getCtx(), m_WindowNo, 4324 /* M_InOut.DocStatus */, 
-				DisplayType.List, Env.getLanguage(Env.getCtx()), "DocAction", 135 /* _Document Action */,
+				DisplayType.List, "DocAction", 135 /* _Document Action */,
 				false, "AD_Ref_List.Value IN ('CO','PR')");
 		docAction = new VLookup("DocAction", true, false, true,docActionL);
 		docAction.addVetoableChangeListener(this);
@@ -162,6 +166,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 		panel.getStatusBar().setStatusLine(Msg.getMsg(Env.getCtx(), "InOutGenerateSel"));//@@
 	}	//	fillPicks
 	
+	@Override
 	public void executeQuery()
 	{
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();
@@ -172,6 +177,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (cmbDocType.equals(e.getSource()))
@@ -190,6 +196,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 		}
 	}	//	actionPerformed
 	
+	@Override
 	public void validate()
 	{
 		panel.saveSelection();
@@ -216,6 +223,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	 *	Vetoable Change Listener - requery
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange(PropertyChangeEvent e)
 	{
 		log.info(e.getPropertyName() + "=" + e.getNewValue());
@@ -232,6 +240,7 @@ public class VInOutGen extends InOutGen implements FormPanel, ActionListener, Ve
 	/**************************************************************************
 	 *	Generate Shipments
 	 */
+	@Override
 	public String generate()
 	{
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();

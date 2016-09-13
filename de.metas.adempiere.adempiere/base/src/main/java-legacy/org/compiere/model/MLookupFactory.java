@@ -19,7 +19,6 @@ package org.compiere.model;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
@@ -76,44 +75,34 @@ public class MLookupFactory
 
 	/**
 	 * Create MLookup
-	 *
-	 * @param ctx context for access
-	 * @param WindowNo window no
-	 * @param AD_Reference_ID display type
-	 * @param Column_ID AD_Column_ID or AD_Process_Para_ID
-	 * @param language report language
-	 * @param ColumnName key column name
-	 * @param AD_Reference_Value_ID AD_Reference (List, Table)
-	 * @param IsParent parent (prevents query to directly access value)
-	 * @param ValidationCode optional SQL validation
+	 * 
 	 * @throws AdempiereException if Lookup could not be created
-	 * @return MLookup
 	 */
 	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
-			Language language, String ColumnName, int AD_Reference_Value_ID,
+			String ColumnName, int AD_Reference_Value_ID,
 			boolean IsParent, String ValidationCode)
 
 	{
-		MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID,
-				language, ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID,
+				ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
 		if (info == null)
 			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(info, 0);
+		return new MLookup(ctx, info, 0);
 	}   // create
 
 	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
-			Language language, String ColumnName, int AD_Reference_Value_ID,
+			String ColumnName, int AD_Reference_Value_ID,
 			boolean IsParent, int AD_Val_Rule_ID)
 					throws AdempiereException
 	{
-		MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID,
-				language, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID,
+				ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 		if (info == null)
 			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(info, 0);
+		return new MLookup(ctx, info, 0);
 	}   // create
 
-	public static MLookupInfo getLookupInfo(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID)
+	public static MLookupInfo getLookupInfo(final int WindowNo, final int Column_ID, final int AD_Reference_ID)
 	{
 		final IColumnInfo columnInfo = Services.get(ILookupDAO.class).retrieveColumnInfo(Column_ID);
 		if (columnInfo == null)
@@ -121,11 +110,10 @@ public class MLookupFactory
 			return null;
 		}
 		//
-		final MLookupInfo info = getLookupInfo(ctx,
+		final MLookupInfo info = getLookupInfo(
 				WindowNo,
 				Column_ID,
 				AD_Reference_ID,
-				Env.getLanguage(ctx),
 				columnInfo.getColumnName(),
 				columnInfo.getAD_Reference_Value_ID(),
 				columnInfo.isParent(),
@@ -147,8 +135,8 @@ public class MLookupFactory
 	public static MLookup get(Properties ctx, int WindowNo, int TabNo, int Column_ID, int AD_Reference_ID)
 	{
 		//
-		MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID);
-		return new MLookup(info, TabNo);
+		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID);
+		return new MLookup(ctx, info, TabNo);
 	}   // get
 
 	/**************************************************************************
@@ -161,7 +149,6 @@ public class MLookupFactory
 	 * </pre>
 	 * 
 	 * @param ctx context for access
-	 * @param language report language
 	 * @param WindowNo window no
 	 * @param Column_ID AD_Column_ID or AD_Process_Para_ID
 	 * @param ColumnName key column name
@@ -172,20 +159,20 @@ public class MLookupFactory
 	 * @return lookup info structure
 	 * @Deprecated
 	 */
-	static public MLookupInfo getLookupInfo(Properties ctx, int WindowNo,
+	static public MLookupInfo getLookupInfo(int WindowNo,
 			int Column_ID, int AD_Reference_ID,
-			Language language, String ColumnName, int AD_Reference_Value_ID,
+			String ColumnName, int AD_Reference_Value_ID,
 			boolean IsParent, String ValidationCode)
 	{
-		final MLookupInfo info = getLookupInfo(ctx, WindowNo, Column_ID, AD_Reference_ID, language, ColumnName, AD_Reference_Value_ID, IsParent, -1);
+		final int adValRuleId = -1;
+		final MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
 		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 
-	static public MLookupInfo getLookupInfo(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID, Language language, String ColumnName, int AD_Reference_Value_ID, boolean IsParent,
-			int AD_Val_Rule_ID)
+	static public MLookupInfo getLookupInfo(int WindowNo, int Column_ID, int AD_Reference_ID, String ColumnName, int AD_Reference_Value_ID, boolean IsParent, int AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -200,7 +187,7 @@ public class MLookupFactory
 			final boolean isTableReference = Services.get(ILookupDAO.class).isTableReference(AD_Reference_Value_ID);
 			if (isTableReference)
 			{
-				info = getLookup_Table(ctx, WindowNo, AD_Reference_Value_ID);
+				info = getLookup_Table(WindowNo, AD_Reference_Value_ID);
 			}
 			else
 			{
@@ -210,12 +197,12 @@ public class MLookupFactory
 		// Table or Search with Reference_Value
 		else if ((AD_Reference_ID == DisplayType.Table || AD_Reference_ID == DisplayType.Search) && AD_Reference_Value_ID > 0)
 		{
-			info = getLookup_Table(ctx, WindowNo, AD_Reference_Value_ID);
+			info = getLookup_Table(WindowNo, AD_Reference_Value_ID);
 		}
 		// TableDir, Search, ID, ...
 		else
 		{
-			info = getLookup_TableDir(ctx, WindowNo, ColumnName);
+			info = getLookup_TableDir(WindowNo, ColumnName);
 		}
 		// do we have basic info?
 		if (info == null)
@@ -226,34 +213,13 @@ public class MLookupFactory
 
 		// remaining values
 		// NOTE: because some of the previous getters can retrieve a clone of a cached lookup info, here we need to set the actual values again
-		info.setCtx(ctx);
 		info.setWindowNo(WindowNo);
 		info.setAD_Column_ID(Column_ID);
 		info.setDisplayType(AD_Reference_ID);
 		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(ctx, info.getTableName(), AD_Val_Rule_ID));
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
-
-		// Variables in SQL WHERE
-		// NOTE(metas): there is no point to parse the where clause (even if just partially, for global variables) because it will be parsed anyway on valiadation time
-		//
-		// if (info.Query.indexOf('@') != -1)
-		// {
-		// final String newSQL = Env.parseContext(ctx,
-		// 0, // WindowNo
-		// info.Query,
-		// false, // onlyWindow=false only global
-		// true // ignoreUnparsable=true
-		// );
-		// if (newSQL.length() == 0)
-		// {
-		// s_log.error("SQL parse error: " + info.Query);
-		// return null;
-		// }
-		// info.Query = newSQL;
-		// s_log.debug("getLookupInfo, newSQL ="+newSQL); //jz
-		// }
 
 		// Direct Query - NO Validation/Security
 		info.setSqlQueryDirect(
@@ -265,14 +231,7 @@ public class MLookupFactory
 		// NOTE (metas): we are not adding the validation here because it will be added on load time (from IValidationRule)
 
 		// Add Security
-		if (!info.isSecurityDisabled())
-		{
-			final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
-			info.setSqlQuery(
-					userRolePermissions.addAccessSQL(info.getSqlQuery_BaseLang(), info.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO) //
-					, userRolePermissions.addAccessSQL(info.getSqlQuery_Trl(), info.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO) //
-			);
-		}
+		// NOTE (metas): not needed, atm MLookupInfo builds & cache them when needed
 
 		//
 		// s_log.trace("Query: " + info.Query);
@@ -309,7 +268,6 @@ public class MLookupFactory
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
 	 * 
-	 * @param language report language
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT NULL, Value, Name, IsActive FROM AD_Ref_List
 	 */
@@ -391,7 +349,7 @@ public class MLookupFactory
 	/**
 	 * Get Lookup SQL for List
 	 * 
-	 * @param language report Language
+	 * @param languageInfo report Language
 	 * @param AD_Reference_Value_ID reference value
 	 * @param linkColumnName link column name
 	 * @return SELECT Name FROM AD_Ref_List WHERE AD_Reference_ID=x AND Value=linkColumn
@@ -409,26 +367,23 @@ public class MLookupFactory
 		return sql;
 	}	// getLookup_ListEmbed
 
-	private static final ArrayKey createCacheKey(final Properties ctx, final ITableRefInfo tableRef)
+	private static final ArrayKey createCacheKey(final ITableRefInfo tableRef)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		return new ArrayKey(adClientId, tableRef);
+		return new ArrayKey(tableRef);
 	}
 
 	/***************************************************************************
 	 * Get Lookup SQL for Table Lookup
 	 *
 	 * @param ctx context for access and dynamic access
-	 * @param language report language
+	 * @param languageInfo report language
 	 * @param WindowNo window no
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT Key, NULL, Name, IsActive FROM Table - if KeyColumn end with _ID
 	 *         otherwise SELECT NULL, Key, Name, IsActive FROM Table
 	 */
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	static private MLookupInfo getLookup_Table(final Properties ctx
-	// , final Language language
-	, final int WindowNo, final int AD_Reference_Value_ID)
+	static private MLookupInfo getLookup_Table(final int WindowNo, final int AD_Reference_Value_ID)
 	{
 		final ITableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(AD_Reference_Value_ID);
 		if (tableRefInfo == null)
@@ -436,13 +391,13 @@ public class MLookupFactory
 			return null;
 		}
 
-		return getLookupInfo(ctx, WindowNo, tableRefInfo);
+		return getLookupInfo(WindowNo, tableRefInfo);
 	}	// getLookup_Table
 
 	/**
 	 * Get Embedded Lookup SQL for Table Lookup
 	 * 
-	 * @param language report language
+	 * @param languageInfo report language
 	 * @param BaseColumn base column name
 	 * @param BaseTable base table name
 	 * @param AD_Reference_Value_ID reference value
@@ -450,8 +405,7 @@ public class MLookupFactory
 	 */
 	static public String getLookup_TableEmbed(final LanguageInfo languageInfo, final String BaseColumn, final String BaseTable, final int AD_Reference_Value_ID)
 	{
-		final Properties ctx = Env.getCtx();
-		final MLookupInfo lookupInfo = getLookup_Table(ctx, Env.WINDOW_None, AD_Reference_Value_ID);
+		final MLookupInfo lookupInfo = getLookup_Table(Env.WINDOW_None, AD_Reference_Value_ID);
 		if (lookupInfo == null)
 		{
 			return "";
@@ -465,25 +419,18 @@ public class MLookupFactory
 	 * Get Lookup SQL for direct Table Lookup
 	 * 
 	 * @param ctx context for access
-	 * @param language report language
 	 * @param ColumnName column name
 	 * @return SELECT Key, NULL, Name, IsActive from Table (fully qualified)
 	 */
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	static private MLookupInfo getLookup_TableDir(final Properties ctx,
-			// final Language language,
-			final int WindowNo,
-			final String ColumnName)
+	static private MLookupInfo getLookup_TableDir(final int WindowNo, final String ColumnName)
 	{
 		final ITableRefInfo tableRef = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(ColumnName);
-		return getLookupInfo(ctx, WindowNo, tableRef);
+		return getLookupInfo(WindowNo, tableRef);
 	}
 
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway
-	private static MLookupInfo getLookupInfo(final Properties ctx,
-			// final Language language,
-			final int windowNo,
-			final ITableRefInfo tableRefInfo)
+	private static MLookupInfo getLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
 	{
 		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
 
@@ -491,10 +438,9 @@ public class MLookupFactory
 		final String KeyColumn = tableRefInfo.getKeyColumn();
 
 		final String keyColumnFQ = TableName + "." + KeyColumn;
-		// boolean isSOTrx = !"N".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 
 		// try cache
-		final ArrayKey cacheKey = createCacheKey(ctx, tableRefInfo);
+		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		if (s_cacheRefTable.containsKey(cacheKey))
 		{
 			return s_cacheRefTable.get(cacheKey).cloneIt();
@@ -585,33 +531,25 @@ public class MLookupFactory
 		final String sqlWhereClauseDynamic;
 		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
 		{
-			final String whereClauseInitial = tableRefInfo.getWhereClause();
-			String whereClauseParsed = whereClauseInitial;
-			if (whereClauseParsed.indexOf('@') != -1)
-			{
-				whereClauseParsed = Env.parseContext(ctx, windowNo, whereClauseParsed, false);
-			}
-
-			if (Check.isEmpty(whereClauseParsed, true))
+			final String whereClause = tableRefInfo.getWhereClause();
+			if (whereClause.indexOf('@') != -1)
 			{
 				sqlWhereClause = null;
-				sqlWhereClauseDynamic = whereClauseInitial.trim();
+				sqlWhereClauseDynamic = whereClause.trim();
 
-				if (s_log.isDebugEnabled())
-				{
-					final AdempiereException ex = new AdempiereException("Could not resolve: " + whereClauseInitial + ". "
-							+ "\n Considering it as dynamic where clause which will be processed together with validation rules."
-							+ "\n tableRefInfo=" + tableRefInfo);
-					s_log.debug("", ex);
-				}
+				AdempiereException.logWarningIfDeveloperMode(s_log, () -> new AdempiereException("Please make sure AD_Ref_Table.WhereClause does not contain context variables."
+						+ "\n Those have very bad performances and are not optimized well."
+						+ "\n Consider using dynamic validation rules for that purpose."
+						+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
+						+ "\n tableRefInfo=" + tableRefInfo));
 			}
 			else
 			{
-				if (whereClauseParsed.indexOf('.') == -1)
+				if (whereClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookup_Table - " + TableName + ": WHERE should be fully qualified: " + whereClauseInitial);
+					s_log.error("getLookupInfo: WHERE should be fully qualified: {} \n tableRefInfo={}", whereClause, tableRefInfo);
 				}
-				sqlWhereClause = whereClauseParsed;
+				sqlWhereClause = whereClause;
 				sqlWhereClauseDynamic = null;
 			}
 		}
@@ -789,11 +727,11 @@ public class MLookupFactory
 	/**
 	 * Get embedded SQL for TableDir Lookup
 	 *
-	 * @param language report language
+	 * @param languageInfo report language
 	 * @param ColumnName column name
 	 * @param BaseTable base table
 	 * @return SELECT Column FROM TableName WHERE BaseTable.ColumnName=TableName.ColumnName
-	 * @see #getLookup_TableDirEmbed(Language, String, String, String)
+	 * @see #getLookup_TableDirEmbed(LanguageInfo, String, String, String)
 	 */
 	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, String ColumnName, String BaseTable)
 	{
@@ -803,7 +741,7 @@ public class MLookupFactory
 	/**
 	 * Get embedded SQL for TableDir Lookup
 	 *
-	 * @param language report language
+	 * @param languageInfo report language
 	 * @param ColumnName column name
 	 * @param BaseTable base table
 	 * @param BaseColumn base column
@@ -811,9 +749,8 @@ public class MLookupFactory
 	 */
 	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, final String BaseTable, final String BaseColumn)
 	{
-		final Properties ctx = Env.getCtx();
 		final int windowNo = Env.WINDOW_None; // NOTE: for TableDir WindowNo, is not important
-		final MLookupInfo lookupInfo = getLookup_TableDir(ctx, windowNo, ColumnName);
+		final MLookupInfo lookupInfo = getLookup_TableDir(windowNo, ColumnName);
 		if (lookupInfo == null)
 		{
 			return "";
@@ -828,11 +765,8 @@ public class MLookupFactory
 	 * Unified lookup embedded sql method. Based on AD_Reference_ID and AD_Reference_Value_ID parameters
 	 * it will call corresponding getLookup_*Embed methods
 	 */
-	public static String getLookupEmbed(Properties ctx,
-			String BaseColumn, String BaseTable, int AD_Reference_ID, int AD_Reference_Value_ID)
+	public static String getLookupEmbed(final LanguageInfo languageInfo, String BaseColumn, String BaseTable, int AD_Reference_ID, int AD_Reference_Value_ID)
 	{
-		final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(ctx);
-
 		if (DisplayType.List == AD_Reference_ID)
 		{
 			String linkColumnName = BaseColumn;

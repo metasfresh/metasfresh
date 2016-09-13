@@ -58,7 +58,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MLookupCache;
 import org.compiere.model.MSession;
 import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
@@ -250,8 +249,6 @@ public final class Env
 	public static final int WINDOW_MAIN = 0;
 	/** WindowNo for Find */
 	public static final int WINDOW_FIND = 1110;
-	/** WinowNo for MLookup */
-	public static final int WINDOW_MLOOKUP = 1111;
 	/** WindowNo for PrintCustomize */
 	public static final int WINDOW_CUSTOMIZE = 1112;
 	/** WindowNo for PrintCustomize */
@@ -1545,9 +1542,6 @@ public final class Env
 		final String ctxWindowPrefix = WindowNo + "|";
 		removeContextForPrefix(ctx, ctxWindowPrefix);
 
-		// Clear Lookup Cache
-		MLookupCache.cacheReset(WindowNo);
-		// MLocator.cacheReset(WindowNo);
 		//
 		if (Ini.isClient())
 			removeWindow(WindowNo);

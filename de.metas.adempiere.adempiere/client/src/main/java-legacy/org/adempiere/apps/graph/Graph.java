@@ -34,6 +34,7 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
@@ -142,7 +143,7 @@ public class Graph extends CPanel implements ChartMouseListener
 		{
 			int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
 			MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_Value_ID);
-			MLookup mLookup = new MLookup(info, 0);
+			MLookup mLookup = new MLookup(Env.getCtx(), info, 0);
 			VLookup lookup = new VLookup("ChartType", false, false, true,
 					mLookup);
 			lookup.addVetoableChangeListener(new VetoableChangeListener() {

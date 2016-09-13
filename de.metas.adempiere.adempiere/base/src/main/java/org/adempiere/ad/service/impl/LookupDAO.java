@@ -58,7 +58,6 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -119,6 +118,8 @@ public class LookupDAO implements ILookupDAO
 
 	/* package */static class TableRefInfo implements ITableRefInfo
 	{
+		// NOTE to developer: make sure all the fields are primitives or immutable.
+		
 		@SuppressWarnings("unused")
 		private final String name; // used only for debugging
 		private final String TableName;
@@ -894,8 +895,7 @@ public class LookupDAO implements ILookupDAO
 
 		if (logger.isTraceEnabled())
 		{
-			Env.setContext(lookupInfo.getCtx(), Env.WINDOW_MLOOKUP, lookupInfo.getAD_Column_ID(), lookupInfo.getKeyColumnFQ(), sql);
-			logger.debug(lookupInfo.getKeyColumnFQ() + ": " + sql);
+			logger.trace(lookupInfo.getKeyColumnFQ() + ": " + sql);
 		}
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);

@@ -27,8 +27,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,8 +45,10 @@ import org.compiere.print.MPrintFont;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 public class POSKeyLayout extends KeyLayout
 {
@@ -146,7 +146,6 @@ public class POSKeyLayout extends KeyLayout
 							Env.WINDOW_None, // WindowNo
 							0, // Column_ID,
 							DisplayType.Table, // DisplayType
-							Env.getLanguage(getCtx()),
 							"ID", // ColumnName,
 							key.getAD_Reference_ID(), // AD_Reference_Value_ID,
 							false, // IsParent,

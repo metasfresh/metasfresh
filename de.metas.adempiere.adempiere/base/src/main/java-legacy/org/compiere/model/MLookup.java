@@ -160,9 +160,10 @@ public final class MLookup extends Lookup implements Serializable
 	 * @param info info
 	 * @param TabNo tab no
 	 */
-	public MLookup(final MLookupInfo info, final int TabNo)
+	public MLookup(final Properties ctx, final MLookupInfo info, final int TabNo)
 	{
 		super(info.getDisplayType(), info.getWindowNo());
+		this.ctx = ctx; 
 		m_info = info;
 
 		//
@@ -178,7 +179,7 @@ public final class MLookup extends Lookup implements Serializable
 				// final int currentRow = Env.getContextAsInt(parentCtx, getWindowNo(), TabNo, GridTab.CTX_CurrentRow, true);
 				// new GridRowCtx
 
-				return getLookupInfo().getCtx();
+				return getCtx();
 			}
 		};
 		m_evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(ctxDelegate, info.getWindowNo(), TabNo, info.getTableName()); // metas
@@ -193,20 +194,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return;
 		}
-
-		// // Don't load Parents/Keys
-		// if (m_info.isParent() || m_info.isKey())
-		// {
-		// m_hasInactive = true; // creates focus listener for dynamic loading
-		// return; // required when parent needs to be selected (e.g. price from product)
-		// }
-		//
-		// m_loader = new MLoader();
-		// if (TabNo != 0)
-		// m_loader.setPriority(Thread.NORM_PRIORITY - 1);
-		// m_loader.start();
-		// m_loader.run(); // test sync call
-	}	// MLookup
+	}
 
 	/** Inactive Marker Start */
 	public static final String INACTIVE_S = "~";
@@ -221,6 +209,7 @@ public final class MLookup extends Lookup implements Serializable
 	/** Indicator for Null */
 	private static Integer MINUS_ONE = new Integer(-1);
 
+	private Properties ctx;
 	/** The Lookup Info Value Object */
 	private MLookupInfo m_info;
 	private final IValidationContext m_evalCtx; // metas
@@ -229,6 +218,17 @@ public final class MLookup extends Lookup implements Serializable
 	private boolean m_refreshing = false;
 	/** Next Read for Parent */
 	private long m_nextRead = 0;
+	
+	private Properties getCtx()
+	{
+		return ctx;
+	}
+	
+	public void setCtx(final Properties ctx)
+	{
+		Check.assumeNotNull(ctx, "ctxNew not null");
+		this.ctx = ctx;
+	}
 
 	public boolean isHighVolume()
 	{
@@ -673,12 +673,6 @@ public final class MLookup extends Lookup implements Serializable
 		return validation == null ? "" : validation;
 	}   // getValidation
 
-	@Override
-	public boolean isImmutable()
-	{
-		return m_info.getValidationRule().isImmutable();
-	}
-
 	/**
 	 * Get Reference Value
 	 *
@@ -1074,14 +1068,6 @@ public final class MLookup extends Lookup implements Serializable
 	{
 		return m_info;
 	}
-
-	// metas: adding getter for lookup info
-	public final int getColumnId()
-	{
-		return m_info.getAD_Column_ID();
-	}
-
-	// metas end
 
 	@Override
 	public List<String> getParameters()

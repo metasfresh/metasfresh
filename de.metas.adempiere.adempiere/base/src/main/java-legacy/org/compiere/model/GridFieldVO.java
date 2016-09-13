@@ -701,10 +701,6 @@ public class GridFieldVO implements Serializable
 	public void setCtx (Properties newCtx)
 	{
 		ctx = newCtx;
-		if (lookupInfo != null)
-		{
-			lookupInfo.setCtx(newCtx);
-		}
 	}   //  setCtx
 
 	/**
@@ -777,19 +773,19 @@ public class GridFieldVO implements Serializable
 			{
 				if (this.lookupLoadFromColumn)
 				{
-					lookupInfo = MLookupFactory.getLookupInfo(Env.getCtx(), WindowNo, AD_Column_ID, displayType);
+					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, AD_Column_ID, displayType);
 				}
 				else
 				{
-					lookupInfo = MLookupFactory.getLookupInfo(ctx, WindowNo, AD_Column_ID, displayType,
-							Env.getLanguage(ctx), ColumnName, AD_Reference_Value_ID,
+					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, AD_Column_ID, displayType,
+							ColumnName, AD_Reference_Value_ID,
 							IsParent, AD_Val_Rule_ID); // metas: 03271
 				}
 				lookupInfo.InfoFactoryClass = this.InfoFactoryClass;
 			}
 			catch (Exception e)     //  Cannot create Lookup
 			{
-				logger.error("No LookupInfo for " + ColumnName, e);
+				logger.error("No LookupInfo for {}", ColumnName, e);
 				displayType = DisplayType.ID;
 				lookupInfo = null;
 			}

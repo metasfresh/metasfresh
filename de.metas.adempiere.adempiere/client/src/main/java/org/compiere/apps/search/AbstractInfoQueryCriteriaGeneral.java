@@ -39,7 +39,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CEditor;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -105,7 +104,6 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 						windowNo,
 						0, // Column_ID,
 						infoColumn.getAD_Reference_ID(),
-						Env.getLanguage(ctx),
 						columnName,
 						infoColumn.getAD_Reference_Value_ID(),
 						false, // IsParent

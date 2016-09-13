@@ -216,7 +216,7 @@ public class GridField
 			}
 			//
 			lookupInfo.setIsKey(isKey());
-			return new MLookup(vo.getLookupInfo(), vo.TabNo);
+			return new MLookup(getCtx(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
 		{
