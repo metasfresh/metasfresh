@@ -75,7 +75,7 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-function flatten(node) {
+export function flatten(node) {
     let result = [];
 
     if(!!node.children){
@@ -87,7 +87,8 @@ function flatten(node) {
     }
 
     result.push({
-        nodeId: node.nodeId
+        nodeId: node.nodeId,
+        caption: node.caption
     });
 
     return result;

@@ -10,6 +10,7 @@ import Modal from '../components/app/Modal';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 import ErrorScreen from '../components/app/ErrorScreen';
+import Widget from '../components/Widget';
 
 
 class MasterWindow extends Component {
