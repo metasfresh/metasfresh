@@ -3,6 +3,7 @@ package de.metas.i18n;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
@@ -55,7 +56,11 @@ public abstract class TranslatableParameterizedString
 	public static final TranslatableParameterizedString of(final CtxName adLanguageParamName, final String stringBaseLang, final String stringTrlPattern)
 	{
 		final String adLanguageParamNameStr = adLanguageParamName == null ? null : adLanguageParamName.toStringWithMarkers();
+		return of(adLanguageParamNameStr, stringBaseLang, stringTrlPattern);
+	}
 
+	public static final TranslatableParameterizedString of(final String adLanguageParamNameStr, final String stringBaseLang, final String stringTrlPattern)
+	{
 		if (adLanguageParamNameStr == null)
 		{
 			return constant(null, stringBaseLang, stringTrlPattern);
@@ -118,6 +123,19 @@ public abstract class TranslatableParameterizedString
 	 * @return translated string using given language
 	 */
 	public abstract String translate(String adLanguage);
+
+	/**
+	 * Transforms this object to a new instance by applying the mapping function to it's internal strings.
+	 * 
+	 * @param mappingFunction a function which converts the old string to a new string
+	 * @return a new instance or the same one in case the transformation didn't change the strings
+	 */
+	public TranslatableParameterizedString transform(final Function<String, String> mappingFunction)
+	{
+		final String stringBaseLangTransformed = mappingFunction.apply(getStringBaseLanguage());
+		final String stringTrlPatternTransformed = mappingFunction.apply(getStringTrlPattern());
+		return TranslatableParameterizedString.of(getAD_LanguageParamName(), stringBaseLangTransformed, stringTrlPatternTransformed);
+	}
 
 	private static final class EmptyTranslatableParameterizedString extends TranslatableParameterizedString
 	{
@@ -231,7 +249,7 @@ public abstract class TranslatableParameterizedString
 			{
 				return stringBaseLang;
 			}
-			
+
 			return stringTrlPattern.replace(adLanguageParamName, adLanguage);
 		}
 	}
@@ -343,6 +361,18 @@ public abstract class TranslatableParameterizedString
 		public String translate(final String adLanguage)
 		{
 			return string;
+		}
+
+		@Override
+		public NoTranslatableParameterizedString transform(final Function<String, String> mappingFunction)
+		{
+			final String stringTransformed = mappingFunction.apply(string);
+			if (Objects.equals(string, stringTransformed))
+			{
+				return this;
+			}
+
+			return new NoTranslatableParameterizedString(adLanguageParamName, stringTransformed);
 		}
 	}
 }
