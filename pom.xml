@@ -51,9 +51,9 @@
 			because whether an artifact is found should not depend on a specific user's 
 			settings.xml -->
 		<repository>
-			<id>metas-github-repo</id>
+			<id>metasfresh-nexus-repo</id>
 			<name>metasfresh repository on github</name>
-			<url>https://raw.githubusercontent.com/metasfresh/metasfresh-maven-repo/master/repository</url>
+			<url>https://repo.metasfresh.com/repository/mvn-public/</url>
 		</repository>
 	</repositories>
 
@@ -67,7 +67,7 @@
 			<name>Maven metasfresh Snapshots Repository</name>
 			
 			<!-- see ME-40 -->
-			<url>http://repo.metasfresh.com:8281/repository/mvn-metasfresh-snapshots/</url>
+			<url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</url>
 		</snapshotRepository>
 
 	</distributionManagement>
