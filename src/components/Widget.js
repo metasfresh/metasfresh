@@ -65,10 +65,8 @@ class Widget extends Component {
         const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
         let currRowId = rowId;
 
-        if(precision){
-            if(precision < (e.target.value.split('.')[1] || []).length){
-                return;
-            }
+        if(!this.validatePrecision(e.target.value)){
+            return;
         }
 
         if(rowId === "NEW"){
@@ -87,9 +85,19 @@ class Widget extends Component {
         }));
     }
 
-    componentDidMount() {
-        // document.activeElement.getElementsByClassName('input-field')[0].focus();
+    validatePrecision = (value) => {
+        let {precision} = this.props;
+        const {widgetType} = this.props;
 
+        if(widgetType === "Integer" || widgetType === "Quantity"){
+            precision = 0;
+        }
+
+        if(precision){
+            if(precision < (value.split('.')[1] || []).length){
+                return false;
+            }
+        }
     }
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
