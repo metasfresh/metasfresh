@@ -716,6 +716,10 @@ table .List .input-dropdown-item-title {
   margin: 0;
 }
 
+.input-disabled .meta-icon-calendar {
+  display: none;
+}
+
 table .input-secondary .input-icon-right {
   color: $brand-icon-color;
 }
