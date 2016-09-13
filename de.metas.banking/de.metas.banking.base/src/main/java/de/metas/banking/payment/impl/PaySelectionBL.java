@@ -217,6 +217,10 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			for (final I_C_BP_BankAccount account : bankAccts)
 			{
+				if (account.getBPBankAcctUse() == null)
+				{
+					continue;
+				}
 				final int accountID = account.getC_BP_BankAccount_ID();
 				if (accountID > 0)
 				{
