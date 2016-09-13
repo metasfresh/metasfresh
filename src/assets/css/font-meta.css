@@ -113,3 +113,9 @@
 .meta-icon-down-1:before {
   content: "\42";
 }
+.meta-icon-checkbox:before {
+  content: "\64";
+}
+.meta-icon-checkbox-1:before {
+  content: "\65";
+}

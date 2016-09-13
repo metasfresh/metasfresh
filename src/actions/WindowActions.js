@@ -327,32 +327,6 @@ export function getItemsByProperty(arr, prop, value) {
 
     return ret;
 }
-export function fieldToString(field, type) {
-    if(field === null){
-        return "";
-    }else{
-        switch(typeof field){
-            case "object":
-                return field[Object.keys(field)[0]];
-                break;
-            case "boolean":
-                return field ? "Yes" : "No";
-                break;
-            case "string":
-
-                if(type === "Date" || type === "DateTime" || type === "Time"){
-                  let d = new Date(field);
-                  let date = d.toLocaleDateString();
-                  return date;
-                } else {
-                  return field;
-                }
-                break;
-            default:
-                return field;
-        }
-    }
-}
 
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
