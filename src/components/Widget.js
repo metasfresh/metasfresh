@@ -86,17 +86,17 @@ class Widget extends Component {
     }
 
     validatePrecision = (value) => {
-        let {precision} = this.props;
         const {widgetType} = this.props;
+        let {precision} = this.props;
 
         if(widgetType === "Integer" || widgetType === "Quantity"){
             precision = 0;
         }
 
-        if(precision){
-            if(precision < (value.split('.')[1] || []).length){
-                return false;
-            }
+        if(precision < (value.split('.')[1] || []).length){
+            return false;
+        }else{
+            return true;
         }
     }
 
