@@ -287,6 +287,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			{
 				case Integer:
 					return 0;
+				case CostPrice:
 				case Amount:
 					return 2;
 				default:
