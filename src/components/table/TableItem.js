@@ -10,21 +10,38 @@ class TableItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            edited: ""
+            edited: "",
+            activeCell: ""
         };
     }
-    handleEditProperty = (e,property) => {
+    handleEditProperty = (e,property, callback) => {
         e.preventDefault();
-
         this.setState({
             edited: property
+        }, ()=>{
+          if(callback){
+            document.activeElement.getElementsByClassName('input-field')[0].focus();
+          }
         })
     }
     handleKey = (e, property) => {
-        if(e.key === "Enter") {
-            this.handleEditProperty(e,property);
-        } else if(e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown" ) {
+        const elem = document.activeElement;
+        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        const { edited, activeCell } = this.state;
+
+        if(elem.className !== "input-field") {
+          this.setState(Object.assign({}, this.state, {
+              activeCell: elem
+          }))
+        }
+
+        if(e.key === "Enter" && !edited) {
+            this.handleEditProperty(e,property, true);
+            changeListenOnFalse();
+        } else if (e.key === "Enter" && edited) {
             this.handleEditProperty(e);
+            changeListenOnTrue();
+            activeCell.focus();
         }
     }
 

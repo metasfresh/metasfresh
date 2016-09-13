@@ -19,12 +19,25 @@ class Table extends Component {
         super(props);
         this.state = {
             selected: [],
+            listenOnKeys: true,
             contextMenu: {
                 open: false,
                 x: 0,
                 y: 0
             }
         }
+    }
+
+    changeListenOnTrue = () => {
+        this.setState(Object.assign({}, this.state, {
+            listenOnKeys: true
+        }))
+    }
+
+    changeListenOnFalse = () => {
+        this.setState(Object.assign({}, this.state, {
+            listenOnKeys: false
+        }))
     }
 
     selectProduct = (id) => {
@@ -60,14 +73,14 @@ class Table extends Component {
 
     handleClickOutside = (event) => {
         if(this.state.selected.length > 0){
-            this.deselectAllProducts();     
+            this.deselectAllProducts();
         }
 
     }
 
     handleKeyDown = (e) => {
 
-        const {rowData, tabid} = this.props;
+        const {rowData, tabid, listenOnKeys} = this.props;
         const item = rowData[tabid];
         const {selected} = this.state;
         const selectRange = e.shiftKey;
@@ -247,6 +260,8 @@ class Table extends Component {
                         isSelected={selected.indexOf(item[key].rowId) > -1}
                         onMouseDown={(e) => this.handleClick(e, item[key].rowId)}
                         onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
+                        changeListenOnTrue={() => this.changeListenOnTrue()}
+                        changeListenOnFalse={() => this.changeListenOnFalse()}
                     />
                 );
             }
@@ -269,7 +284,7 @@ class Table extends Component {
 
     render() {
         const {cols, type, docId, rowData, tabid} = this.props;
-        const {x,y,contextMenu,selected} = this.state;
+        const {x,y,contextMenu,selected, listenOnKeys} = this.state;
 
         return (
             <div className="row">
@@ -295,7 +310,7 @@ class Table extends Component {
                     </div>
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped"  onKeyDown = {(e) => this.handleKeyDown(e)}>
+                        <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
