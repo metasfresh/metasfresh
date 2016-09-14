@@ -1,6 +1,7 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
 @import './datetime.css';
+@import './daterangepicker.css';
 @import './inputs.css';
 @import './font-meta.css';
 
@@ -133,6 +134,10 @@ body {
     font-size: 1.5rem;
     font-weight: 500;
     color: $brand-font-color;
+}
+
+.panel-inline > * {
+    display: inline-block;
 }
 
 
@@ -758,4 +763,8 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .pointer {
     cursor: pointer;
+}
+
+.document-list-header > *:not(last-child) {
+    margin-right: .5rem;
 }

@@ -7,6 +7,7 @@ class TableCell extends Component {
     constructor(props) {
         super(props);
     }
+
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
 
@@ -30,11 +31,11 @@ class TableCell extends Component {
                     break;
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
-                      let d = new Date(field);
-                      let date = Moment(d).format('DD.MM.YYYY')
-                      return date;
+                        let d = new Date(field);
+                        let date = Moment(d).format('DD.MM.YYYY')
+                        return date;
                     } else {
-                      return field;
+                        return field;
                     }
                     break;
                 default:

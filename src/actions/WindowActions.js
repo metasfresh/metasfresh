@@ -122,13 +122,16 @@ export function indicatorState(state){
  */
 export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false){
     return (dispatch) => {
+        if(docId == "new"){
+            docId = "NEW";
+        }
         // this chain is really important,
         // to do not re-render widgets on init
         dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
 
                 // TODO: This is temporary solution - GITHUB ISSUE
-                if(docId === "NEW" && !isModal){
+                if(docId == "NEW" && !isModal){
                     dispatch(push("/window/"+ windowType + "/" + response.data[0].id));
                 }
 
