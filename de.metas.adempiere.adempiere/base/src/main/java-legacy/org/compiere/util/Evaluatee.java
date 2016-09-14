@@ -38,7 +38,7 @@ public interface Evaluatee
 	 * @return value
 	 */
 	String get_ValueAsString(String variableName);
-
+	
 	/**
 	 * Get variable value as integer.
 	 *
@@ -158,6 +158,12 @@ public interface Evaluatee
 			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Date. Returning default value: {}", variableName, valueStr, defaultValue, e);
 			return defaultValue;
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	default <T> T get_ValueAsObject(String variableName)
+	{
+		return (T)get_ValueAsString(variableName);
 	}
 
 }	// Evaluatee
