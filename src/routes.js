@@ -4,6 +4,7 @@ import { Router, Route, IndexRoute, NoMatch } from 'react-router';
 import Main from './containers/Main.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
+import NavigationTree from './containers/NavigationTree.js';
 
 import {
     createWindow
@@ -20,6 +21,7 @@ export const getRoutes = (store) => {
                 onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType, nextState.params.docId))}
             />
             <Route path="login" component={NoMatch} />
+            <Route path="/sitemap" component={NavigationTree} />
             <Route path="*" component={NoMatch} />
         </Route>
     )

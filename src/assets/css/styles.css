@@ -759,3 +759,22 @@ table .rdtPicker table td, .rdtPicker table th {
 .pointer {
     cursor: pointer;
 }
+
+.map-tree-wrapper {
+  padding-top: 55px;
+}
+.map-tree-wrapper .subheader-container {
+  top: 55px;
+}
+
+.nav-tree-children {
+  padding-left: 20px;
+}
+
+.nav-tree-item {
+  padding-top: 10px;
+}
+
+.nav-tree-header {
+  font-weight: bold;
+}
