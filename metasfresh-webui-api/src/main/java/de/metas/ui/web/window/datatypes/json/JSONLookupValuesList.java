@@ -1,16 +1,21 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -39,18 +44,21 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONLookupValuesList implements Serializable
 {
-	public static final JSONLookupValuesList ofLookupValuesList(final List<LookupValue> lookupValues)
+	public static final JSONLookupValuesList ofLookupValuesList(final LookupValuesList lookupValues)
 	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
 			return EMPTY;
 		}
 
-		final ImmutableList<JSONLookupValue> values = lookupValues.stream()
+		final ImmutableList<JSONLookupValue> values = lookupValues.getValues()
+				.stream()
 				.map(JSONLookupValue::ofLookupValue)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONLookupValuesList(values);
+		final Map<String, String> otherProperties = lookupValues.getDebugProperties();
+
+		return new JSONLookupValuesList(values, otherProperties);
 	}
 
 	@JsonCreator
@@ -61,25 +69,39 @@ public class JSONLookupValuesList implements Serializable
 			return EMPTY;
 		}
 
-		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues));
+		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), ImmutableMap.of());
 	}
 
-	private static final JSONLookupValuesList EMPTY = new JSONLookupValuesList(ImmutableList.of());
+	private static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
 
 	@JsonProperty("values")
 	private final List<JSONLookupValue> values;
 
-	private JSONLookupValuesList(final ImmutableList<JSONLookupValue> values)
+	private LinkedHashMap<String, String> otherProperties;
+
+	private JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final Map<String, String> otherProperties)
 	{
 		super();
 		this.values = values;
+		if (otherProperties != null && !otherProperties.isEmpty())
+		{
+			this.otherProperties = new LinkedHashMap<>(otherProperties);
+		}
+	}
+
+	private JSONLookupValuesList()
+	{
+		super();
+		values = ImmutableList.of();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("values", values)
+				.add("properties", otherProperties.isEmpty() ? null : otherProperties)
 				.toString();
 	}
 
@@ -87,4 +109,21 @@ public class JSONLookupValuesList implements Serializable
 	{
 		return values;
 	}
+
+	@JsonAnyGetter
+	public Map<String, String> getOtherProperties()
+	{
+		return otherProperties == null ? ImmutableMap.of() : otherProperties;
+	}
+
+	@JsonAnySetter
+	public void putOtherProperty(final String name, final String jsonValue)
+	{
+		if (otherProperties == null)
+		{
+			otherProperties = new LinkedHashMap<>();
+		}
+		otherProperties.put(name, jsonValue);
+	}
+
 }

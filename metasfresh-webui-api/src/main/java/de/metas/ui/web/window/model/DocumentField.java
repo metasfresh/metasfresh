@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -12,7 +11,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -313,7 +312,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
-	public List<LookupValue> getLookupValues(final Document document)
+	public LookupValuesList getLookupValues(final Document document)
 	{
 		if (lookupDataSource == null)
 		{
@@ -323,7 +322,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	}
 
 	@Override
-	public List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
+	public LookupValuesList getLookupValuesForQuery(final Document document, final String query)
 	{
 		if (lookupDataSource == null)
 		{

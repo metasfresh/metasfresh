@@ -1,8 +1,7 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
  * #%L
@@ -31,9 +30,9 @@ public interface LookupDataSource
 	int FIRST_ROW = 0;
 	int DEFAULT_PageLength = 10;
 
-	List<LookupValue> findEntities(Document document, String filter, int firstRow, int pageLength);
+	LookupValuesList findEntities(Document document, String filter, int firstRow, int pageLength);
 
-	List<LookupValue> findEntities(Document document, int pageLength);
+	LookupValuesList findEntities(Document document, int pageLength);
 
 	LookupValue findById(Object id);
 

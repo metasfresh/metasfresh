@@ -20,7 +20,7 @@ import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
@@ -294,7 +294,7 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
+		final LookupValuesList lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
 		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}
 
@@ -318,7 +318,7 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
+		final LookupValuesList lookupValues = document.getFieldLookupValues(fieldName);
 
 		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}

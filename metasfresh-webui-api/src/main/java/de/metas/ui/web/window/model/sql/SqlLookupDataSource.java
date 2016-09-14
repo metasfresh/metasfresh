@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.sql;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,9 +24,11 @@ import org.slf4j.Logger;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.LookupDataSource;
@@ -95,7 +98,7 @@ public class SqlLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public List<LookupValue> findEntities(final Document document, final String filter, final int firstRow, final int pageLength)
+	public LookupValuesList findEntities(final Document document, final String filter, final int firstRow, final int pageLength)
 	{
 		if (!isValidFilter(filter))
 		{
@@ -115,14 +118,23 @@ public class SqlLookupDataSource implements LookupDataSource
 					.filter(evalCtx::acceptItem)
 					.map(namePair -> toLookupValue(namePair))
 					.collect(Collectors.toList());
+			
+			Map<String, String> debugProperties = null;
+			if(WindowConstants.isProtocolDebugging())
+			{
+				debugProperties = new LinkedHashMap<>();
+				debugProperties.put("debug-sql", sqlForFetching);
+				debugProperties.put("debug-used-params", evalCtx.getUsedParameters().toString());
+				debugProperties.put("debug-validationRule", evalCtx.getValidationRule().toString());
+			}
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
-			return values;
+			return LookupValuesList.of(values, debugProperties);
 		}
 	}
 
 	@Override
-	public List<LookupValue> findEntities(final Document document, final int pageLength)
+	public LookupValuesList findEntities(final Document document, final int pageLength)
 	{
 		return findEntities(document, FILTER_Any, FIRST_ROW, pageLength);
 	}
@@ -282,8 +294,9 @@ public class SqlLookupDataSource implements LookupDataSource
 		private final String tableName;
 		private final String contextTableName;
 		private final Document document;
-		
+
 		private final Map<String, Object> name2value = new HashMap<>();
+		private final Map<String, String> valueAsStringCache = new LinkedHashMap<>();
 		private IValidationRule validationRule = NullValidationRule.instance;
 
 		private DataSourceValidationContext(final SqlLookupDescriptor sqlLookupDescriptor, final Document document)
@@ -293,7 +306,7 @@ public class SqlLookupDataSource implements LookupDataSource
 			this.windowNo = document.getWindowNo();
 			this.contextTableName = document.getEntityDescriptor().getDataBinding().getTableName();
 			this.document = document;
-			
+
 		}
 
 		@Override
@@ -317,14 +330,21 @@ public class SqlLookupDataSource implements LookupDataSource
 		@Override
 		public String get_ValueAsString(final String variableName)
 		{
-			if (name2value.containsKey(variableName))
-			{
-				final Object valueObj = name2value.get(variableName);
-				return valueObj == null ? null : valueObj.toString();
-			}
+			return valueAsStringCache.computeIfAbsent(variableName, (theVariableName) -> {
+				if (name2value.containsKey(variableName))
+				{
+					final Object valueObj = name2value.get(variableName);
+					return valueObj == null ? null : valueObj.toString();
+				}
 
-			// Fallback to document evaluatee
-			return document.asEvaluatee().get_ValueAsString(variableName);
+				// Fallback to document evaluatee
+				return document.asEvaluatee().get_ValueAsString(variableName);
+			});
+		}
+		
+		public Map<String, String> getUsedParameters()
+		{
+			return valueAsStringCache;
 		}
 
 		public void putValue(final String variableName, final Object value)
@@ -335,6 +355,11 @@ public class SqlLookupDataSource implements LookupDataSource
 		public void setValidationRule(final IValidationRule validationRule)
 		{
 			this.validationRule = validationRule;
+		}
+		
+		public IValidationRule getValidationRule()
+		{
+			return validationRule;
 		}
 
 		public boolean acceptItem(final NamePair item)

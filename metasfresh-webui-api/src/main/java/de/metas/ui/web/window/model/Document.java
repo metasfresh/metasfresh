@@ -41,8 +41,8 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
@@ -1072,12 +1072,12 @@ public final class Document
 		}
 	}
 
-	public List<LookupValue> getFieldLookupValues(final String fieldName)
+	public LookupValuesList getFieldLookupValues(final String fieldName)
 	{
 		return getField(fieldName).getLookupValues(this);
 	}
 
-	public List<LookupValue> getFieldLookupValuesForQuery(final String fieldName, final String query)
+	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
 		return getField(fieldName).getLookupValuesForQuery(this, query);
 
