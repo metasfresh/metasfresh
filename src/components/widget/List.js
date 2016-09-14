@@ -28,7 +28,7 @@ class List extends Component {
 
         dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
             this.setState(Object.assign({}, this.state, {
-                list: res.data,
+                list: res.data.values,
                 loading: false
             }));
         });
@@ -36,13 +36,12 @@ class List extends Component {
     }
     handleChange = (e) => {
         e.preventDefault();
+
         this.handleBlur();
     }
-    handleSelect = (option, init = false) => {
-        this.inputSearch.value = option[Object.keys(option)[0]];
-        if(!init){
-            this.props.onChange(option);
-        }
+    handleSelect = (option) => {
+        const {onChange} = this.props;
+        onChange(option);
         this.handleBlur();
     }
     renderOptions = () => {
@@ -54,7 +53,7 @@ class List extends Component {
         )
     }
     render() {
-        const {list, rank,readonly, value,defaultValue, selected, align} = this.props;
+        const {list, rank,readonly, defaultValue, selected, align} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -73,7 +72,7 @@ class List extends Component {
                             className="input-field font-weight-bold"
                             readOnly
                             placeholder={defaultValue}
-                            value={selected[Object.keys(selected)[0]]}
+                            value={selected ? selected[Object.keys(selected)[0]] : ""}
                             onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
