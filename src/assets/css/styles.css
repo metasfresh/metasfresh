@@ -765,6 +765,25 @@ table .rdtPicker table td, .rdtPicker table th {
     cursor: pointer;
 }
 
+
 .document-list-header > *:not(last-child) {
     margin-right: .5rem;
+}
+.map-tree-wrapper {
+  padding-top: 55px;
+}
+.map-tree-wrapper .subheader-container {
+  top: 55px;
+}
+
+.nav-tree-children {
+  padding-left: 20px;
+}
+
+.nav-tree-item {
+  padding-top: 10px;
+}
+
+.nav-tree-header {
+  font-weight: bold;
 }

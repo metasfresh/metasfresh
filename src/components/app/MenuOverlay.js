@@ -20,6 +20,10 @@ class MenuOverlay extends Component {
             deepNode: null
         };
     }
+    browseWholeTree = () => {
+      const {dispatch} = this.props;
+      dispatch(push("/sitemap"));
+    }
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
         onClickOutside(e);
@@ -141,6 +145,9 @@ class MenuOverlay extends Component {
                             )}
                         </div>
                     }
+                    <div className="text-xs-right">
+                      <span className="menu-overlay-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
+                    </div>
                 </div>
             </div>
         )
