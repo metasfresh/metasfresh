@@ -880,7 +880,12 @@ public class TimeUtil
 	 * @return next day with 00:00
 	 */
 	// metas: changed dayTime type from Timestamp to Date
-	static public Timestamp trunc(Date dayTime, String trunc)
+	public static Timestamp trunc(final Date dayTime, final String trunc)
+	{
+		return new Timestamp(truncToMillis(dayTime, trunc));
+	}
+	
+	public static long truncToMillis(Date dayTime, final String trunc)
 	{
 		if (dayTime == null)
 			dayTime = new Timestamp(System.currentTimeMillis());
@@ -894,37 +899,37 @@ public class TimeUtil
 		// S - Second
 		if (TRUNC_SECOND.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.SECOND, 0);
 
 		// M - Minute
 		if (TRUNC_MINUTE.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.MINUTE, 0);
 
 		// H - Hour
 		if (TRUNC_HOUR.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		// D
 		if (trunc == null || trunc.equals(TRUNC_DAY))
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		// W
 		if (trunc.equals(TRUNC_WEEK))
 		{
 			cal.setFirstDayOfWeek(Calendar.MONDAY);
 			cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		// MM
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		if (trunc.equals(TRUNC_MONTH))
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		// Q
 		if (trunc.equals(TRUNC_QUARTER))
 		{
@@ -938,10 +943,10 @@ public class TimeUtil
 			else
 				mm = 10;
 			cal.set(Calendar.MONTH, mm);
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.DAY_OF_YEAR, 1);
-		return new Timestamp(cal.getTimeInMillis());
+		return cal.getTimeInMillis();
 	}	// trunc
 	
 	public static final Timestamp truncToDay(final Date dayTime)
