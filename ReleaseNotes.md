@@ -12,11 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.36.35 (2016-38)
 
-
-
-# metasfresh 4.35.34 (2016-37)
-
-this week's RC
+upcoming
 
 ## Features
  * #377 Implement executed SQLs tracing
@@ -43,6 +39,11 @@ this week's RC
  * #379 Included tab randomly not working in inout and invoice
  * #24 Breadcrumb Navigation Plural caption
  * #12 Data not shown in SubTab
+ * #311 Payment Selection Exception when not able to find bpartner account
+
+# metasfresh 4.35.34 (2016-37)
+
+this week's RC
 
 ## Features
  * FRESH-112 metasfresh web 
