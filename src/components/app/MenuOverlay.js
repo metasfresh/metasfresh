@@ -146,7 +146,7 @@ class MenuOverlay extends Component {
                         </div>
                     }
                     <div className="text-xs-right">
-                      <span className="menu-overlay-link" onClick={this.browseWholeTree()}>Browse whole tree >> </span>
+                      <span className="menu-overlay-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                     </div>
                 </div>
             </div>
