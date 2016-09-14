@@ -1192,12 +1192,6 @@ public final class Env
 //	{
 //		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
 //	}	// getAD_Role_ID
-	
-	public static UserRolePermissionsKey getUserRolePermissionsKey(final Properties ctx)
-	{
-		final String permissionsKey = Env.getContext(ctx, CTXNAME_PermissionsKey);
-		return UserRolePermissionsKey.fromString(permissionsKey);
-	}
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1207,7 +1201,7 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final UserRolePermissionsKey userRolePermissionsKey = getUserRolePermissionsKey(ctx);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
 	
