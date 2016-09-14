@@ -173,6 +173,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final int taxId = ol.getC_Tax_ID();
+		if(taxId <= 0)
+		{
+			ol.setTaxAmtInfo(BigDecimal.ZERO);
+			return;
+		}
+		
 		final boolean taxIncluded = isTaxIncluded(ol);
 		final BigDecimal lineAmout = ol.getLineNetAmt();
 		final int taxPrecision = getPrecision(ol);
@@ -465,7 +471,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
 		}
-		logger.info("LineNetAmt=" + lineNetAmt);
+		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
 
 	}

@@ -45,8 +45,8 @@ ORDER BY Created DESC
 ---
 
 -- Results-Summary (TLDR)
--- on sp80aditdb, we have 1348927 ICs
--- on sp80aditdb, with only the DBMS running (no metasfres-server) and only one client connected, the query takes
+-- on the DB, we have 1348927 ICs
+-- on the DB-server, with only the DBMS running (no metasfres-server) and only one client connected, the query takes
 -- more than *30 seconds* without "DLM"
 -- ->aprox *15 seconds* if we set up DLM indices etc and move 1094035 IC to DLM_Level 1, together with those records that are referenced by those ICs via SQL-column. 
 --   That leaves aprox 250'000 remaining in level 0. Note that on erpprod we calculate with aprox 60'000 ICs in dlm-level 0
@@ -71,7 +71,7 @@ ANALYZE VERBOSE M_ReceiptSchedule;
 
 
 -- flush OS caches and restart postgres; see http://stackoverflow.com/a/1223421/1012103
--- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
+-- root@DBMS:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
 
 -- do explain analyze buffer etc..
 -- "Sort  (cost=202367.29..202367.48 rows=79 width=2166) (actual time=207.712..208.143 rows=544 loops=1)"
@@ -90,7 +90,7 @@ SELECT dlm.add_table_to_dlm('M_ReceiptSchedule_Alloc');
 SELECT dlm.add_table_to_dlm('M_ReceiptSchedule');
 
 -- flush OS caches and restart postgres; see http://stackoverflow.com/a/1223421/1012103
--- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
+-- root@DBMS:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
 
 -- do explain analyze buffer etc..again
 -- pg-9.1: "Index Scan Backward using c_invoice_candidate_created on public.c_invoice_candidate_tbl      (cost=15.96..176.88 rows=1 width=1687) (actual time=0.445..268.927 rows=544 loops=1)"
@@ -133,7 +133,7 @@ ANALYZE VERBOSE M_ReceiptSchedule_Alloc_Tbl;
 ANALYZE VERBOSE M_ReceiptSchedule_Tbl;
 
 -- flush OS caches and restart postgres; see http://stackoverflow.com/a/1223421/1012103
--- root@sp80aditdb:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
+-- root@DBMS:~# service postgresql stop && sync && echo 3 > /proc/sys/vm/drop_caches && service postgresql start
 
 -- do explain analyze buffer etc..again
 -- "Index Scan Backward using c_invoice_candidate_create_dlm_partial on c_invoice_candidate_tbl  (cost=15.96..  176.51 rows= 1 width=2106) (actual time=146.663..1735.551 rows=534 loops=1)" <- pg-9.1 with partial indices

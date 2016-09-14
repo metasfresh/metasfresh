@@ -45,14 +45,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.db.IDBService;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -63,6 +61,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.MSubscriptionProgress;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
+import de.metas.logging.LogManager;
 
 public class SubscriptionDAO implements ISubscriptionDAO
 {
@@ -217,7 +216,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 			if (rs.next())
 			{
 				final int subscriptionId = rs.getInt(1);
-				return POWrapper.create(Env.getCtx(), subscriptionId, I_C_Flatrate_Conditions.class, trxName);
+				return InterfaceWrapperHelper.create(Env.getCtx(), subscriptionId, I_C_Flatrate_Conditions.class, trxName);
 			}
 			return null;
 
@@ -263,7 +262,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 				+ subscrControlId + " and SeqNo>"
 				+ predecessorSeqNo);
 
-		final I_C_SubscriptionProgress sdNew = POWrapper.create(ctx, I_C_SubscriptionProgress.class, trxName);
+		final I_C_SubscriptionProgress sdNew = InterfaceWrapperHelper.create(ctx, I_C_SubscriptionProgress.class, trxName);
 
 		sdNew.setC_Flatrate_Term_ID(subscrControlId);
 
@@ -277,7 +276,7 @@ public class SubscriptionDAO implements ISubscriptionDAO
 		sdNew.setDropShip_Location_ID(predecessor.getDropShip_Location_ID());
 		sdNew.setDropShip_User_ID(predecessor.getDropShip_User_ID());
 
-		POWrapper.save(sdNew);
+		InterfaceWrapperHelper.save(sdNew);
 
 		logger.info("Created new I_C_SubscriptionProgress " + sdNew);
 

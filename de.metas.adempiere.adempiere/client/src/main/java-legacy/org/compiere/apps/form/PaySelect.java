@@ -21,8 +21,6 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.minigrid.ColumnInfo;
@@ -33,16 +31,18 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.model.MPaySelection;
 import org.compiere.model.MPaySelectionLine;
 import org.compiere.model.X_C_Order;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -254,10 +254,10 @@ public class PaySelect
 		final ArrayList<ValueNamePair> data = new ArrayList<ValueNamePair>();
 
 		final int AD_Reference_ID = 195;  //  MLookupInfo.getAD_Reference_ID("All_Payment Rule");
-		final Language language = Env.getLanguage(Env.getCtx());
-		final MLookupInfo info = MLookupFactory.getLookup_List(language, AD_Reference_ID);
-		final String sql = info.Query.substring(0, info.Query.indexOf(" ORDER BY"))
-			+ info.Query.substring(info.Query.indexOf(" ORDER BY"));
+		final MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_ID);
+		final String query = info.getSqlQuery();
+		final String sql = query.substring(0, query.indexOf(" ORDER BY"))
+			+ query.substring(query.indexOf(" ORDER BY"));
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
@@ -471,6 +471,7 @@ public class PaySelect
 		 *
 		 * @return info
 		 */
+		@Override
 		public String toString()
 		{
 			return Name;

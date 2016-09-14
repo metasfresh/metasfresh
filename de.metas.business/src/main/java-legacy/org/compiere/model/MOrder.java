@@ -1061,20 +1061,25 @@ public class MOrder extends X_C_Order implements DocAction
 		if (getBill_Location_ID() == 0)
 			setBill_Location_ID(getC_BPartner_Location_ID());
 
+		//
 		// Default Price List
 		// metas: bpartner's pricing system (instead of price list)
-		Services.get(IOrderBL.class).setM_PricingSystem_ID(InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class));
-
-		// metas end
+		Services.get(IOrderBL.class).setM_PricingSystem_ID(this, false); // overridePricingSystem=false
+		
+		//
 		// Default Currency
-		if (getC_Currency_ID() == 0)
+		if (getC_Currency_ID() <= 0)
 		{
-			String sql = "SELECT C_Currency_ID FROM M_PriceList WHERE M_PriceList_ID=?";
-			int ii = DB.getSQLValue(null, sql, getM_PriceList_ID());
-			if (ii != 0)
-				setC_Currency_ID(ii);
+			final I_M_PriceList priceList = getM_PriceList();
+			final int currencyId = priceList == null ? -1 : priceList.getC_Currency_ID(); 
+			if (currencyId > 0)
+			{
+				setC_Currency_ID(currencyId);
+			}
 			else
+			{
 				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
+			}
 		}
 
 		// Default Sales Rep
@@ -1082,7 +1087,7 @@ public class MOrder extends X_C_Order implements DocAction
 		// This is not a mandatory field, so leave it like it is.
 
 		// Default Document Type
-		if (getC_DocTypeTarget_ID() == 0)
+		if (getC_DocTypeTarget_ID() <= 0)
 			setC_DocTypeTarget_ID(DocSubType_Standard);
 
 		// Default Payment Term
@@ -1548,20 +1553,21 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	// metas: make reserveStock visible from MOrderLine to allow un-reservation
 	// of stocks before delete.
-	public boolean reserveStock(MDocType dt, MOrderLine[] lines)
+	public boolean reserveStock(MDocType docType, MOrderLine[] lines)
 	{
-		if (dt == null)
+		if (docType == null)
 		{
-			dt = MDocType.get(getCtx(), getC_DocType_ID());
+			docType = MDocType.get(getCtx(), getC_DocType_ID());
 		}
 
 		// Binding
-		boolean binding = !dt.isProposal();
-
+		boolean binding = docType != null && !docType.isProposal();
+		final String docSubType = docType == null ? null : docType.getDocSubType(); 
+		
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
 				// Closing Binding Quotation
-				|| (MDocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType())
+				|| (MDocType.DOCSUBTYPE_Quotation.equals(docSubType)
 						&& DOCACTION_Close.equals(getDocAction())))  // || isDropShip() )
 		{
 
@@ -1573,8 +1579,8 @@ public class MOrder extends X_C_Order implements DocAction
 
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
-		if (MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())
-				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
+		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
+				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
 		{
 			header_M_Warehouse_ID = 0;		// don't enforce
 		}

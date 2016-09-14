@@ -1,5 +1,7 @@
 package org.compiere.util;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,8 +27,10 @@ package org.compiere.util;
 
 
 /**
- * Evaluator source
- * Extend Evaluatee interface with more methods
+ * Extend {@link Evaluatee} interface with more methods.
+ * 
+ * To create {@link Evaluatee2} instances, please use {@link Evaluatees}.
+
  * @author tsa
  *
  */
@@ -46,4 +50,29 @@ public interface Evaluatee2 extends Evaluatee
 	 *	@return value
 	 */
 	public String get_ValueOldAsString (String variableName);
+	
+	default Integer get_ValueOldAsInt(final String variableName, final Integer defaultValue)
+	{
+		final String valueStr = get_ValueOldAsString(variableName);
+		return Evaluatee.convertToInteger(variableName, valueStr, defaultValue);
+	}
+	
+	default Boolean get_ValueOldAsBoolean(final String variableName, final Boolean defaultValue)
+	{
+		final String valueStr = get_ValueOldAsString(variableName);
+		return DisplayType.toBoolean(valueStr, defaultValue);
+	}
+
+	default BigDecimal get_ValueOldAsBigDecimal(final String variableName, final BigDecimal defaultValue)
+	{
+		final String valueStr = get_ValueOldAsString(variableName);
+		return Evaluatee.convertToBigDecimal(variableName, valueStr, defaultValue);
+	}
+	
+	default java.util.Date get_ValueOldAsDate(final String variableName, final java.util.Date defaultValue)
+	{
+		final String valueStr = get_ValueOldAsString(variableName);
+		return Evaluatee.convertToDate(variableName, valueStr, defaultValue);
+	}
+
 }

@@ -156,4 +156,21 @@ public class InOutDAO implements IInOutDAO
 				.orderBy().addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
 
 	}
+	
+	@Override
+	public List<Integer> retrieveLinesWithQualityNote(final I_M_InOut inOut)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		final IQueryBuilder<de.metas.inout.model.I_M_InOutLine> queryBuilder = queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class, inOut)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addNotEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityNote, null)
+				.addNotEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityNote, "");
+		
+		return queryBuilder
+				.create()
+				.listIds();
+	}
 }

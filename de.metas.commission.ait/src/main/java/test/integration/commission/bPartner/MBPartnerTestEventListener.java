@@ -29,13 +29,12 @@ import static junit.framework.Assert.assertTrue;
 
 import java.util.List;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
-import test.integration.swat.bPartner.BPartnerTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.event.TestEvent;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
@@ -44,6 +43,7 @@ import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.modelvalidator.SponsorValidator;
 import de.metas.commission.service.ISponsorDAO;
+import test.integration.swat.bPartner.BPartnerTestDriver;
 
 public class MBPartnerTestEventListener
 {
@@ -91,7 +91,7 @@ public class MBPartnerTestEventListener
 	{
 		assertEquals(EventType.BPARTNER_CREATE_AFTER, evt.getEventType());
 
-		final I_C_BPartner newBPartner = POWrapper.create(evt.getObj(), I_C_BPartner.class);
+		final I_C_BPartner newBPartner = InterfaceWrapperHelper.create(evt.getObj(), I_C_BPartner.class);
 
 		// verify that 'newBPartner' has been created with the expected default C_Sponsor_Parent_ID
 		assertEquals(newBPartner + " has the wrong C_Sponsor_Parent_ID",

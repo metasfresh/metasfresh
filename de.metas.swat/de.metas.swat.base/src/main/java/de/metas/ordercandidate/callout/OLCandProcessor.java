@@ -26,7 +26,7 @@ package de.metas.ordercandidate.callout;
 import java.util.Properties;
 
 import org.adempiere.misc.service.IProcessPA;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
@@ -67,7 +67,7 @@ public class OLCandProcessor extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OLCandProcessor processor = GridTabWrapper.create(mTab, I_C_OLCandProcessor.class);
+		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.create(mTab, I_C_OLCandProcessor.class);
 
 		if (processor.getC_OLCandProcessor_ID() <= 0)
 		{
@@ -102,7 +102,7 @@ public class OLCandProcessor extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OLCandProcessor processor = GridTabWrapper.create(mTab, I_C_OLCandProcessor.class);
+		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.create(mTab, I_C_OLCandProcessor.class);
 		if (processor.getC_OLCandProcessor_ID() <= 0)
 		{
 			return "";

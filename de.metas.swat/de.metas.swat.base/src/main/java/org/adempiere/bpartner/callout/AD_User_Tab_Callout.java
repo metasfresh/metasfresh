@@ -1,5 +1,7 @@
 package org.adempiere.bpartner.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,9 +27,7 @@ package org.adempiere.bpartner.callout;
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 
 import de.metas.adempiere.model.I_AD_User;
 
@@ -37,21 +37,21 @@ public class AD_User_Tab_Callout extends TabCalloutAdapter
 	public static final String MSG_NoDefaultContactError = "NoDefaultContactError";
 
 	@Override
-	public void onNew(GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_AD_User user = InterfaceWrapperHelper.create(gridTab, I_AD_User.class);
+		final I_AD_User user = calloutRecord.getModel(I_AD_User.class);
 
 		final IBPartnerDAO partnerPA = Services.get(IBPartnerDAO.class);
 
 		// first row: the IsDefaultContact flag must be set on true
 		if (!partnerPA.existsDefaultContactInTable(user, null))
 		{
-			gridTab.setValue(I_AD_User.COLUMNNAME_IsDefaultContact, true);
+			user.setIsDefaultContact(true);
 		}
 		// any other row: the IsDefaultContact flag must be set on false
 		else
 		{
-			gridTab.setValue(I_AD_User.COLUMNNAME_IsDefaultContact, false);
+			user.setIsDefaultContact(false);
 		}
 	}
 }

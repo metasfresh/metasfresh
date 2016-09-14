@@ -18,284 +18,302 @@ package org.compiere.model;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
+
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.CCache;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
-import org.compiere.util.Env;
-
 /**
- *	Callout Engine.
- *	
- *  @author Jorg Janke
- *  @version $Id: CalloutEngine.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
- *  
- *  @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *  		<li>BF [ 2104021 ] CalloutEngine returns null if the exception has null message
+ * Callout Engine.
+ *
+ * @author Jorg Janke
+ * @version $Id: CalloutEngine.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
+ *
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>BF [ 2104021 ] CalloutEngine returns null if the exception has null message
  */
 public class CalloutEngine implements Callout
 {
 	/** No error return value. Use this when you are returning from a callout without error */
-	public static final String NO_ERROR = "";
-	
+	public static final String NO_ERROR = new String("");
+
 	/**
-	 *	Constructor
+	 * Constructor
 	 */
 	public CalloutEngine()
 	{
 		super();
 	}
 
-	/** Logger					*/
-	protected Logger		log = LogManager.getLogger(getClass());
-	private GridTab m_mTab;
-	private GridField m_mField;
+	private static final CCache<String, CalloutMethodExecutor> _calloutMethodExecutorsCache = new CCache<>("CalloutEngine.MethodExecutors", 100);
 
-	/**
-	 *	Start Callout.
-	 *  <p>
-	 *	Callout's are used for cross field validation and setting values in other fields
-	 *	when returning a non empty (error message) string, an exception is raised
-	 *  <p>
-	 *	When invoked, the Tab model has the new value!
-	 *
-	 *  @param ctx      Context
-	 *  @param methodName   Method name
-	 *  @param WindowNo current Window No
-	 *  @param mTab     Model Tab
-	 *  @param mField   Model Field
-	 *  @param value    The new value
-	 *  @param oldValue The old value
-	 *  @return Error message or ""
-	 */
+	/** Logger */
+	protected final transient Logger log = LogManager.getLogger(getClass());
+	private final ThreadLocal<ICalloutExecutor> currentCalloutExecutorHolder = new ThreadLocal<>();
+
 	@Override
-	public String start (Properties ctx, String methodName, int WindowNo,
-		GridTab mTab, GridField mField, Object value, Object oldValue)
+	public final void start(final String methodName, final ICalloutField calloutField)
 	{
-		if (methodName == null || methodName.length() == 0)
-			throw new IllegalArgumentException ("No Method Name");
-		
-		m_mTab = mTab;
-		m_mField = mField;
-		
-		//
-		String retValue = "";
-		StringBuffer msg = new StringBuffer(methodName).append(" - ")
-			.append(mField.getColumnName())
-			.append("=").append(value)
-			.append(" (old=").append(oldValue)
-			.append(") {active=").append(isCalloutActive()).append("}");
-		if (!isCalloutActive())
-			log.info(msg.toString());
-		
-		//	Find Method
-		Method method = getMethod(methodName);
-		if (method == null)
-			throw new IllegalArgumentException("Method not found: " + getClass().getName() + "." + methodName);
-		int argLength = method.getParameterTypes().length;
-		if (!(argLength == 5 || argLength == 6))
-			throw new IllegalArgumentException ("Method " + methodName 
-				+ " has invalid no of arguments: " + argLength);
+		final CalloutMethodExecutor methodExecutor = getCalloutMethodExecutor(getClass(), methodName);
+		final ICalloutExecutor currentCalloutExecutor = calloutField.getCurrentCalloutExecutor();
 
-		//	Call Method
+		// Call Method
 		try
 		{
-			Object[] args = null;
-			if (argLength == 6)
-				args = new Object[] {ctx, new Integer(WindowNo), mTab, mField, value, oldValue};
-			else
-				args = new Object[] {ctx, new Integer(WindowNo), mTab, mField, value}; 
-			retValue = (String)method.invoke(this, args);
-		}
-		catch (Exception e)
-		{
-			Throwable ex = e.getCause();	//	InvocationTargetException
-			if (ex == null)
-				ex = e;
-			log.error("start: " + methodName, ex);
-			retValue = ex.getLocalizedMessage();
-			if (retValue == null)
+			currentCalloutExecutorHolder.set(currentCalloutExecutor);
+
+			final String retValue = methodExecutor.execute(this, calloutField);
+
+			if (retValue != null && retValue.length() > 0)
 			{
-				retValue = ex.toString();
+				throw new CalloutExecutionException(retValue)
+						.setField(calloutField)
+						.setCalloutExecutor(currentCalloutExecutor);
 			}
+		}
+		catch (final CalloutExecutionException e)
+		{
+			throw e;
+		}
+		catch (final Exception e)
+		{
+			throw CalloutExecutionException.of(e)
+					.setField(calloutField)
+					.setCalloutExecutor(currentCalloutExecutor);
 		}
 		finally
 		{
-			m_mTab = null;
-			m_mField = null;
+			currentCalloutExecutorHolder.remove();
 		}
-		return retValue;
-	}	//	start
-	
+	}	// start
+
+	private static final GridField extractGridFieldOrNull(final ICalloutField calloutField)
+	{
+		if (calloutField instanceof GridField)
+		{
+			return (GridField)calloutField;
+		}
+		return null;
+	}
+
 	/**
-	 *	Conversion Rules.
-	 *	Convert a String
+	 * Conversion Rules.
+	 * Convert a String
 	 *
-	 *	@param methodName   method name
-	 *  @param value    the value
-	 *	@return converted String or Null if no method found
+	 * @param methodName method name
+	 * @param value the value
+	 * @return converted String or Null if no method found
 	 */
 	@Override
-	public String convert (String methodName, String value)
+	public final String convert(final String methodName, final String value)
 	{
-		if (methodName == null || methodName.length() == 0)
-			throw new IllegalArgumentException ("No Method Name");
-		//
-		String retValue = null;
-		StringBuffer msg = new StringBuffer(methodName).append(" - ").append(value);
-		log.info(msg.toString());
-		//
-		//	Find Method
-		Method method = getMethod(methodName);
-		if (method == null)
-			throw new IllegalArgumentException ("Method not found: " + methodName);
-		int argLength = method.getParameterTypes().length;
-		if (argLength != 1)
-			throw new IllegalArgumentException ("Method " + methodName 
-				+ " has invalid no of arguments: " + argLength);
+		log.info("convert: methodName={} - {}", methodName, value);
 
-		//	Call Method
+		//
+		// Find Method
+		final Method method = findMethod(getClass(), methodName);
+		final int argLength = method.getParameterTypes().length;
+		if (argLength != 1)
+		{
+			throw new IllegalArgumentException("Method " + methodName + " has invalid no of arguments: " + argLength);
+		}
+
+		// Call Method
 		try
 		{
-			Object[] args = new Object[] {value};
-			retValue = (String)method.invoke(this, args);
+			final Object result = method.invoke(this, value);
+			return result == null ? null : result.toString();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("convert: " + methodName, e);
 			e.printStackTrace(System.err);
+			return null;
 		}
-		return retValue;
-	}   //  convert
-	
+	}   // convert
+
 	/**
-	 * 	Get Method
-	 *	@param methodName method name
-	 *	@return method or null
+	 * Find Method
+	 *
+	 * @param methodName method name
+	 * @return method or null
 	 */
-	private Method getMethod (String methodName)
+	private static final Method findMethod(final Class<?> clazz, final String methodName)
 	{
-		Method[] allMethods = getClass().getMethods();
-		for (int i = 0; i < allMethods.length; i++)
+		if (methodName == null || methodName.isEmpty())
 		{
-			if (methodName.equals(allMethods[i].getName()))
-				return allMethods[i];
+			throw new IllegalArgumentException("No Method Name: '" + methodName + "'");
 		}
-		return null;
-	}	//	getMethod
+
+		for (final Method method : clazz.getMethods())
+		{
+			if (methodName.equals(method.getName()))
+			{
+				return method;
+			}
+		}
+
+		throw new IllegalArgumentException("Method not found: " + clazz.getName() + "." + methodName);
+	}
+
+	@FunctionalInterface
+	private static interface CalloutMethodExecutor
+	{
+		String execute(final CalloutEngine instance, final ICalloutField calloutField) throws Exception;
+	}
+
+	private final CalloutMethodExecutor getCalloutMethodExecutor(final Class<?> clazz, final String methodName)
+	{
+		final String key = clazz.getName() + "." + methodName;
+		return _calloutMethodExecutorsCache.getOrLoad(key, ()->createCalloutMethodExecutor(clazz, methodName));
+	}
+
+	private static final CalloutMethodExecutor createCalloutMethodExecutor(final Class<?> clazz, final String methodName)
+	{
+		final Method method = findMethod(clazz, methodName);
+		final int argLength = method.getParameterTypes().length;
+
+		if (argLength == 6)
+		{
+			return (instance, calloutField) -> {
+				final GridField mField = extractGridFieldOrNull(calloutField);
+				final GridTab mTab = mField == null ? null : mField.getGridTab();
+				return (String)method.invoke(instance, calloutField.getCtx(), calloutField.getWindowNo(), mTab, mField, calloutField.getValue(), calloutField.getOldValue());
+			};
+		}
+		else if (argLength == 5)
+		{
+			return (instance, calloutField) -> {
+				final GridField mField = extractGridFieldOrNull(calloutField);
+				final GridTab mTab = mField == null ? null : mField.getGridTab();
+				return (String)method.invoke(instance, calloutField.getCtx(), calloutField.getWindowNo(), mTab, mField, calloutField.getValue());
+			};
+		}
+		else if (argLength == 1)
+		{
+			return (instance, calloutField) -> {
+				return (String)method.invoke(instance, calloutField);
+			};
+		}
+		else
+		{
+			throw new IllegalArgumentException("Method " + methodName + " has invalid no of arguments: " + argLength);
+		}
+
+	}
 
 	/*************************************************************************/
-	
-	//private static boolean s_calloutActive = false;
-	
+
 	/**
-	 * 	Is the current callout being called in the middle of 
-     *  another callout doing her works.
-     *  Callout can use GridTab.getActiveCalloutInstance() method
-     *  to find out callout for which field is running.
-	 *	@return true if active
+	 * Is the current callout being called in the middle of
+	 * another callout doing her works.
+	 * Callout can use GridTab.getActiveCalloutInstance() method
+	 * to find out callout for which field is running.
+	 *
+	 * @return true if active
 	 */
-	protected boolean isCalloutActive()
+	protected final boolean isCalloutActive()
 	{
-		if (m_mTab == null)
+		final ICalloutExecutor currentCalloutExecutor = this.currentCalloutExecutorHolder.get();
+
+		if (currentCalloutExecutor == null)
 		{
 			return false;
 		}
-		
-		final int activeCalloutsCount = m_mTab.getCalloutExecutor().getActiveCalloutInstances().size();
+
+		final int activeCalloutsCount = currentCalloutExecutor.getActiveCalloutInstancesCount();
 		// greater than 1 instead of 0 to discount this callout instance
 		if (activeCalloutsCount <= 1)
 		{
 			return false;
 		}
-		
+
 		return true;
-	}	//	isCalloutActive
+	}	// isCalloutActive
 
 	/**
-	 * 	Set Callout (in)active.
-     *  Depreciated as the implementation is not thread safe and
-     *  fragile - break other callout if developer forget to call
-     *  setCalloutActive(false) after calling setCalloutActive(true).
-	 *  @deprecated
-	 *	@param active active
+	 * Set Account Date Value.
+	 * org.compiere.model.CalloutEngine.dateAcct
+	 *
+	 * @param ctx context
+	 * @param WindowNo window no
+	 * @param mTab tab
+	 * @param mField field
+	 * @param value value
+	 * @return null or error message
 	 */
-	@Deprecated
-	protected static void setCalloutActive (boolean active)
+	public String dateAcct(final ICalloutField field)
 	{
-		;
-	}	//	setCalloutActive
-	
-	/**
-	 *  Set Account Date Value.
-	 * 	org.compiere.model.CalloutEngine.dateAcct
-	 *	@param ctx context
-	 *	@param WindowNo window no
-	 *	@param mTab tab
-	 *	@param mField field
-	 *	@param value value
-	 *	@return null or error message
-	 */
-	public String dateAcct (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
-	{
-		if (isCalloutActive())		//	assuming it is resetting value
+		if (isCalloutActive())
+		{
 			return NO_ERROR;
-		if (value == null || !(value instanceof Timestamp))
+		}
+
+		final Object value = field.getValue();
+		if (value == null || !(value instanceof java.util.Date))
+		{
 			return NO_ERROR;
-		mTab.setValue("DateAcct", value);
+		}
+
+		final java.util.Date valueDate = (java.util.Date)value;
+
+		final Object model = field.getModel(Object.class);
+		InterfaceWrapperHelper.setValue(model, "DateAcct", TimeUtil.asTimestamp(valueDate));
+
 		return NO_ERROR;
-	}	//	dateAcct
+	}	// dateAcct
 
 	/**
-	 *	Rate - set Multiply Rate from Divide Rate and vice versa
-	 *	org.compiere.model.CalloutEngine.rate
-	 *	@param ctx context
-	 *	@param WindowNo window no
-	 *	@param mTab tab
-	 *	@param mField field
-	 *	@param value value
-	 *	@return null or error message
+	 * Rate - set Multiply Rate from Divide Rate and vice versa
+	 * org.compiere.model.CalloutEngine.rate
+	 *
+	 * @param ctx context
+	 * @param WindowNo window no
+	 * @param mTab tab
+	 * @param mField field
+	 * @param value value
+	 * @return null or error message
 	 */
 	@Deprecated
-	public String rate (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String rate(final ICalloutField field)
 	{
 		// NOTE: atm this method is used only by UOMConversions. When we will provide an implementation for that, we can get rid of this shit.
-		
-		if (isCalloutActive() || value == null)		//	assuming it is Conversion_Rate
+
+		final Object value = field.getValue();
+
+		if (isCalloutActive() || value == null)
+		{
 			return NO_ERROR;
+		}
 
-		BigDecimal rate1 = (BigDecimal)value;
-		BigDecimal rate2 = Env.ZERO;
-		BigDecimal one = new BigDecimal(1.0);
+		final BigDecimal rate1 = (BigDecimal)value;
+		BigDecimal rate2 = BigDecimal.ZERO;
+		final BigDecimal one = BigDecimal.ONE;
 
-		if (rate1.doubleValue() != 0.0)	//	no divide by zero
+		if (rate1.signum() != 0)
+		{
 			rate2 = one.divide(rate1, 12, BigDecimal.ROUND_HALF_UP);
-		//
-		if (mField.getColumnName().equals("MultiplyRate"))
-			mTab.setValue("DivideRate", rate2);
-		else
-			mTab.setValue("MultiplyRate", rate2);
-		log.info(mField.getColumnName() + "=" + rate1 + " => " + rate2);
-		return NO_ERROR;
-	}	//	rate
-	
-	/**
-	 * 
-	 * @return gridTab
-	 */
-	public GridTab getGridTab() 
-	{
-		return m_mTab;
-	}
-	
-	/**
-	 * 
-	 * @return gridField
-	 */
-	public GridField getGridField() 
-	{
-		return m_mField;
-	}
+		}
 
-}	//	CalloutEngine
+		//
+		final String columnName = field.getColumnName();
+		final Object model = field.getModel(Object.class);
+		if ("MultiplyRate".equals(columnName))
+		{
+			InterfaceWrapperHelper.setValue(model, "DivideRate", rate2);
+		}
+		else
+		{
+			InterfaceWrapperHelper.setValue(model, "MultiplyRate", rate2);
+		}
+		log.info("{} = {} => ", columnName, rate1, rate2);
+
+		return NO_ERROR;
+	}	// rate
+}	// CalloutEngine

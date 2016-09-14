@@ -25,12 +25,11 @@ package de.metas.handlingunits.callout;
 
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -45,11 +44,10 @@ import de.metas.handlingunits.order.api.IHUOrderBL;
 
 public class C_Order extends OrderFastInput
 {
-	public String UpdateQuickEntry(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String UpdateQuickEntry(final ICalloutField calloutField)
 	{
 		// Check: if is dirty/temporary value skip it
+		final Object value = calloutField.getValue();
 		if (value == null)
 		{
 			return NO_ERROR;
@@ -57,6 +55,8 @@ public class C_Order extends OrderFastInput
 
 		final String FLAGNAME = C_Order.class.getName() + "UpdatingQuickEntry";
 
+		final Properties ctx = calloutField.getCtx();
+		final int WindowNo = calloutField.getWindowNo();
 		if ("Y".equals(Env.getContext(ctx, WindowNo, FLAGNAME)))
 		{
 			return NO_ERROR;
@@ -66,7 +66,7 @@ public class C_Order extends OrderFastInput
 		try
 		{
 
-			final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+			final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 			final boolean hasTus = Services.get(IHUOrderBL.class).hasTUs(order);
 
@@ -74,7 +74,7 @@ public class C_Order extends OrderFastInput
 			// Otherwise, the fast input shall work as before ( just based on Product and Menge CU)
 			if (hasTus)
 			{
-				Services.get(IHUOrderBL.class).updateQtys(order, mField.getColumnName());
+				Services.get(IHUOrderBL.class).updateQtys(order, calloutField.getColumnName());
 			}
 			return CalloutEngine.NO_ERROR;
 
@@ -92,21 +92,19 @@ public class C_Order extends OrderFastInput
 	// evalProductQtyInput(ctx, WindowNo, mTab);
 	// }
 
-	public void onMengeCU(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value)
+	public void onMengeCU(final ICalloutField calloutField)
 	{
-		evalProductQtyInput(ctx, WindowNo, mTab);
+		evalProductQtyInput(calloutField);
 	}
 
-	public String onMProductChange(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value)
+	public String onMProductChange(final ICalloutField calloutField)
 	{
 		//
 		// services
 		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		Check.assumeNotNull(order, "Order cannot be null");
 
@@ -119,11 +117,9 @@ public class C_Order extends OrderFastInput
 			return CalloutEngine.NO_ERROR;
 		}
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
+		final I_M_Product product = InterfaceWrapperHelper.create(order.getM_Product(), I_M_Product.class);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, order.getM_Product_ID(), I_M_Product.class, trxName);
-
-		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(org.compiere.model.I_C_Order.Table_Name);
+		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_C_Order.Table_Name);
 		if (null != handler && order.getM_Product_ID() > 0)
 		{
 			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(order);

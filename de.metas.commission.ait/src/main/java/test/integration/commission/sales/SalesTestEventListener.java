@@ -30,10 +30,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -47,8 +44,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.Query;
 
-import test.integration.commission.helper.Helper;
-import test.integration.swat.sales.SalesTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.event.TestEvent;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
@@ -56,6 +51,9 @@ import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.process.WriteCommissionAccount;
 import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.prepayorder.service.IPrepayOrderBL;
+import junit.framework.Assert;
+import test.integration.commission.helper.Helper;
+import test.integration.swat.sales.SalesTestDriver;
 
 public class SalesTestEventListener
 {
@@ -74,8 +72,8 @@ public class SalesTestEventListener
 			eventTypes = EventType.ORDER_PREPAY_COMPLETE_AFTER)
 	public void prepayOrderCreated(final TestEvent evt)
 	{
-		final I_C_Order prepayOrder = POWrapper.create(evt.getObj(), I_C_Order.class);
-		final MOrder prepayOrderPO = POWrapper.getPO(prepayOrder);
+		final I_C_Order prepayOrder = InterfaceWrapperHelper.create(evt.getObj(), I_C_Order.class);
+		final MOrder prepayOrderPO = InterfaceWrapperHelper.getPO(prepayOrder);
 		Assert.assertNotNull("No PO found for " + prepayOrder, prepayOrderPO);
 
 		// Guard: asserting that all order lines have a positive LineNetAmt
@@ -101,8 +99,8 @@ public class SalesTestEventListener
 			eventTypes = EventType.ORDER_POS_REACTIVATE_AFTER)
 	public void posOrderReactivated(final TestEvent evt)
 	{
-		final I_C_Order order = POWrapper.create(evt.getObj(), I_C_Order.class);
-		final MOrder orderPO = POWrapper.getPO(order);
+		final I_C_Order order = InterfaceWrapperHelper.create(evt.getObj(), I_C_Order.class);
+		final MOrder orderPO = InterfaceWrapperHelper.getPO(order);
 		Assert.assertNotNull("No PO found for " + order, orderPO);
 
 		final List<IAdvComInstance> instances = getHelper(evt).retrieveInstances(orderPO);
@@ -123,7 +121,7 @@ public class SalesTestEventListener
 			eventTypes = EventType.ORDER_WITH_DIRECT_INVOICE_COMPLETE_AFTER)
 	public void posOrderCreated(final TestEvent evt)
 	{
-		final I_C_Order order = POWrapper.create(evt.getObj(), I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(evt.getObj(), I_C_Order.class);
 		final MOrder orderPO = (MOrder)InterfaceWrapperHelper.getPO(order);
 		Assert.assertNotNull("No PO found for " + order, orderPO);
 
@@ -146,14 +144,14 @@ public class SalesTestEventListener
 			eventTypes = EventType.INVOICE_UNPAID_REVERSE_AFTER)
 	public void invoiceUnpaidReversed(final TestEvent evt)
 	{
-		final I_C_Invoice invoice = POWrapper.create(evt.getObj(), I_C_Invoice.class);
-		final MInvoice invoicePO = POWrapper.getPO(invoice);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(evt.getObj(), I_C_Invoice.class);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		Assert.assertNotNull("No PO found for " + invoice, invoicePO);
 
 		for (final MInvoiceLine il : invoicePO.getLines(true))
 		{
 			final I_C_OrderLine orderLine = il.getC_OrderLine();
-			final MOrderLine orderLinePO = POWrapper.getPO(orderLine);
+			final MOrderLine orderLinePO = InterfaceWrapperHelper.getPO(orderLine);
 			Assert.assertNotNull("No PO found for " + orderLine, orderLinePO);
 
 			final List<IAdvComInstance> instances = Services.get(ICommissionInstanceDAO.class).retrieveAllFor(orderLinePO, null);
@@ -174,14 +172,14 @@ public class SalesTestEventListener
 			eventTypes = EventType.INVOICE_PAID_REVERSE_AFTER)
 	public void invoicePaidReversed(final TestEvent evt)
 	{
-		final I_C_Invoice invoice = POWrapper.create(evt.getObj(), I_C_Invoice.class);
-		final MInvoice invoicePO = POWrapper.getPO(invoice);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(evt.getObj(), I_C_Invoice.class);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		Assert.assertNotNull("No PO found for " + invoice, invoicePO);
 
 		for (final MInvoiceLine il : invoicePO.getLines(true))
 		{
 			final I_C_OrderLine orderLine = il.getC_OrderLine();
-			final MOrderLine orderLinePO = POWrapper.getPO(orderLine);
+			final MOrderLine orderLinePO = InterfaceWrapperHelper.getPO(orderLine);
 			Assert.assertNotNull("No PO found for " + orderLine, orderLinePO);
 
 			final List<IAdvComInstance> instances = Services.get(ICommissionInstanceDAO.class).retrieveAllFor(orderLinePO, null);
@@ -206,9 +204,9 @@ public class SalesTestEventListener
 			eventTypes = EventType.PAYMENT_ORDER_COMPLETE_AFTER)
 	public void orderPaymentCreated(final TestEvent evt)
 	{
-		final I_C_Payment payment = POWrapper.create(evt.getObj(), I_C_Payment.class);
-		final Properties ctx = POWrapper.getCtx(payment);
-		final String trxName = POWrapper.getTrxName(payment);
+		final I_C_Payment payment = InterfaceWrapperHelper.create(evt.getObj(), I_C_Payment.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
+		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 
 		final String wcAllocLine = I_C_AllocationLine.COLUMNNAME_C_Order_ID + "=?";
 		final List<I_C_AllocationLine> allocLines =
@@ -274,11 +272,11 @@ public class SalesTestEventListener
 			eventTypes = EventType.PAYMENT_INVOICE_CREATE_AFTER)
 	public void invoicePaymentCreated(final TestEvent evt)
 	{
-		final I_C_Payment payment = POWrapper.create(evt.getObj(), I_C_Payment.class);
+		final I_C_Payment payment = InterfaceWrapperHelper.create(evt.getObj(), I_C_Payment.class);
 
 		getHelper(evt).runProcess_WriteCommissionAccount();
-		final Properties ctx = POWrapper.getCtx(payment);
-		final String trxName = POWrapper.getTrxName(payment);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
+		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 
 		final String wcAllocLine = I_C_AllocationLine.COLUMNNAME_C_Order_ID + "=?";
 		final List<I_C_AllocationLine> allocLines =
@@ -294,13 +292,13 @@ public class SalesTestEventListener
 		}
 
 		final I_C_Invoice invoice = payment.getC_Invoice();
-		final MInvoice invoicePO = POWrapper.getPO(invoice);
+		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
 		Assert.assertNotNull("No PO found for " + invoice, invoicePO);
 
 		for (final MInvoiceLine il : invoicePO.getLines(true))
 		{
 			final I_C_OrderLine orderLine = il.getC_OrderLine();
-			final MOrderLine orderLinePO = POWrapper.getPO(orderLine);
+			final MOrderLine orderLinePO = InterfaceWrapperHelper.getPO(orderLine);
 			Assert.assertNotNull("No PO found for " + orderLine, orderLinePO);
 
 			final List<IAdvComInstance> instances = Services.get(ICommissionInstanceDAO.class).retrieveAllFor(orderLinePO, null);

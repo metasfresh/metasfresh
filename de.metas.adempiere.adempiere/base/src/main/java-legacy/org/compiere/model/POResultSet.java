@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 
 /**
@@ -103,7 +103,7 @@ public class POResultSet<T> implements Iterator<T>
 				final PO o = TableModelLoader.instance.getPO(ctx, tableName, resultSet, trxName);
 				if (clazz != null && !o.getClass().isAssignableFrom(clazz))
 				{
-					return POWrapper.create(o, clazz);
+					return InterfaceWrapperHelper.create(o, clazz);
 				}
 				else
 				{

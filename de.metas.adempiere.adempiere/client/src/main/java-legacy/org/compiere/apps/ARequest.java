@@ -20,15 +20,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
 import org.adempiere.images.Images;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCampaign;
@@ -44,11 +44,14 @@ import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -246,7 +249,7 @@ public class ARequest implements ActionListener
 			else if (m_AD_Table_ID == MCampaign.Table_ID)
 				tab.setValue("C_Campaign_ID", new Integer(m_Record_ID));
 			//
-			else if (m_AD_Table_ID == MRequest.Table_ID)
+			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_R_Request.class))
 				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, new Integer(m_Record_ID));
 			// FR [2842165] - Order Ref link from SO line creating new request
 			else if (m_AD_Table_ID == MOrderLine.Table_ID) {

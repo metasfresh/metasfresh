@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -64,7 +64,7 @@ public class C_Flatrate_Term_Change extends SvrProcess
 		}
 
 		
-		final I_C_Flatrate_Term currentTerm = POWrapper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
+		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
 		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate);
 

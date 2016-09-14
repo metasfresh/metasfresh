@@ -1,37 +1,16 @@
 package org.adempiere.ad.expression.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.CtxName;
-import org.compiere.util.Evaluatee;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Standard implementation of {@link IStringExpression}
@@ -39,22 +18,23 @@ import org.compiere.util.Evaluatee;
  * @author tsa
  * 
  */
-/* package */class StringExpression implements IStringExpression
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
+/* package */final class StringExpression implements IStringExpression
 {
 	private final String expressionStr;
 	private final List<Object> expressionChunks;
 
-	private final transient List<String> stringParams = new ArrayList<String>();
-	private final transient List<String> stringParamsRO = Collections.unmodifiableList(stringParams);
+	private final List<String> stringParams;
 
 	/* package */StringExpression(final String expressionStr, final List<Object> expressionChunks)
 	{
 		super();
 		this.expressionStr = expressionStr;
-		this.expressionChunks = expressionChunks;
+		this.expressionChunks = ImmutableList.copyOf(expressionChunks);
 
 		//
 		// Initialize stringParams list
+		final Set<String> stringParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
 		for (final Object chunk : expressionChunks)
 		{
 			if (chunk instanceof CtxName)
@@ -64,6 +44,7 @@ import org.compiere.util.Evaluatee;
 				stringParams.add(parameterName);
 			}
 		}
+		this.stringParams = ImmutableList.copyOf(stringParams);
 	}
 
 	@Override
@@ -75,30 +56,26 @@ import org.compiere.util.Evaluatee;
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((expressionStr == null) ? 0 : expressionStr.hashCode());
-		return result;
+		return Objects.hash(expressionStr);
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StringExpression other = (StringExpression)obj;
-		if (expressionStr == null)
 		{
-			if (other.expressionStr != null)
-				return false;
+			return true;
 		}
-		else if (!expressionStr.equals(other.expressionStr))
+		if (obj == null)
+		{
 			return false;
-		return true;
+		}
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+		final StringExpression other = (StringExpression)obj;
+		return Objects.equals(expressionStr, other.expressionStr);
 	}
 
 	@Override
@@ -134,34 +111,12 @@ import org.compiere.util.Evaluatee;
 	@Override
 	public List<String> getParameters()
 	{
-		return stringParamsRO;
+		return stringParams;
 	}
 
 	@Override
 	public List<Object> getExpressionChunks()
 	{
 		return expressionChunks;
-	}
-
-	@Override
-	public String evaluate(Evaluatee ctx, boolean ignoreUnparsable)
-	{
-		// backward compatibility
-		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
-		return evaluate(ctx, onVariableNotFound);
-	}
-
-	@Override
-	public String evaluate(Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
-	{
-		final IExpressionEvaluator<IStringExpression, String> evaluator = getEvaluator();
-		final String value = evaluator.evaluate(ctx, this, onVariableNotFound);
-		return value;
-	}
-
-	@Override
-	public final IExpressionEvaluator<IStringExpression, String> getEvaluator()
-	{
-		return StringExpressionEvaluator.instance;
 	}
 }

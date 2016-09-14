@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.db.IDatabaseBL;
@@ -41,7 +39,6 @@ import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MProductScalePrice;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -71,6 +68,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
@@ -79,6 +77,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 
@@ -231,6 +230,7 @@ public class ProductPA implements IProductPA
 	 * 
 	 * @throws IllegalArgumentException if <li>Parameter <code>text</code> is null</li> <li>there is no product with the given <code>productId</code></li>
 	 */
+	@Override
 	public Collection<MAttributeSetInstance> retrieveSerno(final int productId, final String text, final String trxName)
 	{
 		if (text == null)
@@ -281,6 +281,7 @@ public class ProductPA implements IProductPA
 		}
 	}
 
+	@Override
 	public MProductPO retrieveProductPO(final int productId,
 			final int bPartnerId, String trxName)
 	{
@@ -319,6 +320,7 @@ public class ProductPA implements IProductPA
 		}
 	}
 
+	@Override
 	public Collection<I_M_RequisitionLine> retrieveRequisitionlines(
 			int productId, int warehouseId, String trxName)
 	{
@@ -354,11 +356,13 @@ public class ProductPA implements IProductPA
 		}
 	}
 
+	@Override
 	public I_M_Requisition retrieveRequisition(int requisitionId, String trxName)
 	{
 		return new MRequisition(Env.getCtx(), requisitionId, trxName);
 	}
 
+	@Override
 	public Collection<I_M_RequisitionLine> retrieveRequisitionlines(
 			String docNo, String trxName)
 	{
@@ -393,6 +397,7 @@ public class ProductPA implements IProductPA
 		}
 	}
 
+	@Override
 	public Collection<I_M_Requisition> retrieveRequisitions(
 			final String docStatus, final String trxName)
 	{
@@ -427,6 +432,7 @@ public class ProductPA implements IProductPA
 		}
 	}
 
+	@Override
 	public I_M_Replenish retrieveReplenish(int productId, int warehouseId,
 			String trxName)
 	{
@@ -463,17 +469,20 @@ public class ProductPA implements IProductPA
 	/**
 	 * Invokes {@link MAttributeSet#MAttributeSet(java.util.Properties, int, String)}.
 	 */
+	@Override
 	public MAttributeSet retrieveAttributeSet(final int attributeSetId,
 			final String trxName)
 	{
 		return new MAttributeSet(Env.getCtx(), attributeSetId, trxName);
 	}
 
+	@Override
 	public I_M_PriceList retrievePriceList(int priceListId, String trxName)
 	{
-		return POWrapper.create(new MPriceList(Env.getCtx(), priceListId, trxName), I_M_PriceList.class);
+		return InterfaceWrapperHelper.create(new MPriceList(Env.getCtx(), priceListId, trxName), I_M_PriceList.class);
 	}
 
+	@Override
 	public BigDecimal retrievePriceStd(final int productId,
 			final int partnerId, final int priceListId, final BigDecimal qty,
 			final boolean soTrx)
@@ -493,6 +502,7 @@ public class ProductPA implements IProductPA
 		return priceStd;
 	}
 
+	@Override
 	@Cached
 	public MPriceList retrievePriceListBySibling(
 			@CacheCtx final Properties ctx,
@@ -500,7 +510,7 @@ public class ProductPA implements IProductPA
 			final int bPartnerLocationId,
 			@CacheTrx final String trxName)
 	{
-		final I_C_BPartner_Location bPartnerLocation = POWrapper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
+		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
 
 		final IDatabaseBL databaseBL = Services.get(IDatabaseBL.class);
 
@@ -543,7 +553,7 @@ public class ProductPA implements IProductPA
 
 		final Object[] params = { //
 		pricingSystemId, //
-				isSOPriceList ? "Y" : "N", //
+				isSOPriceList, //
 				bPartnerLocation.getC_Location_ID() //
 		};
 
@@ -566,6 +576,7 @@ public class ProductPA implements IProductPA
 		return InterfaceWrapperHelper.create(pl, I_M_PriceList.class);
 	}
 
+	@Override
 	public Collection<MProductPrice> retrieveProductPrices(
 			final int priceListVersionId, final String trxName)
 	{
@@ -593,6 +604,7 @@ public class ProductPA implements IProductPA
 	 * @param trxName
 	 * @return
 	 */
+	@Override
 	public I_M_ProductScalePrice createScalePrice(final String trxName)
 	{
 		return new MProductScalePrice(Env.getCtx(), 0, trxName);
@@ -620,6 +632,7 @@ public class ProductPA implements IProductPA
 	 * @param trxName
 	 * @return
 	 */
+	@Override
 	public I_M_ProductScalePrice retrieveOrCreateScalePrices(
 			final int productPriceId, final BigDecimal qty,
 			final boolean createNew, final String trxName)

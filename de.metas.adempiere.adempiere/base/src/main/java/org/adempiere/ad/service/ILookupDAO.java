@@ -22,10 +22,10 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.collections.BlindIterator;
 import org.compiere.model.ILookupDisplayColumn;
@@ -108,7 +108,7 @@ public interface ILookupDAO extends ISingletonService
 	 * @author tsa
 	 * 
 	 */
-	interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
+	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
 		 * 
@@ -145,13 +145,19 @@ public interface ILookupDAO extends ISingletonService
 	IColumnInfo retrieveColumnInfo(int adColumnId);
 
 	/**
-	 * Retrieve {@link ITableRefInfo} for given <code>AD_Reference_Value_ID</code>.
+	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
 	 * 
 	 * @param AD_Reference_Value_ID
 	 * @return table reference info
 	 */
 	ITableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
-	
+
+	/**
+	 * @param AD_Reference_Value_ID
+	 * @return true if given reference is a table reference
+	 */
+	boolean isTableReference(int AD_Reference_Value_ID);
+
 	ITableRefInfo retrieveTableDirectRefInfo(String columnName);
 
 	ILookupDisplayInfo retrieveLookupDisplayInfo(ITableRefInfo tableRefInfo);
@@ -163,9 +169,17 @@ public interface ILookupDAO extends ISingletonService
 	 * 
 	 * @param validationCtx
 	 * @param lookupInfo
-	 * @return
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo);
+
+	/**
+	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
+	 * 
+	 * @param validationCtx
+	 * @param lookupInfo
+	 * @param additionalValidationRule optional additional validation rule to be applied on top of lookupInfo's validation rule
+	 */
+	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo, IValidationRule additionalValidationRule);
 
 	/**
 	 * Directly retrieves a data element identified by <code>key</code>.

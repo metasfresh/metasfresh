@@ -101,12 +101,12 @@ public final class VPanelFormFieldBuilder
 				);
 		final GridFieldLayoutConstraints layoutConstraints = fieldVO.getLayoutConstraints();
 		
-		fieldVO.Header = getHeader();
+		fieldVO.setHeader(getHeader());
 		fieldVO.setIsFieldOnly(false);
 		fieldVO.IsEncryptedField = false;
 		fieldVO.setColumnName(getColumnName());
 		layoutConstraints.setSameLine(isSameLine());
-		fieldVO.IsMandatory = isMandatory();
+		fieldVO.setMandatory(isMandatory());
 		fieldVO.setAutocomplete(isAutocomplete());
 		fieldVO.setDisplayType(getDisplayType());
 		fieldVO.AD_Reference_Value_ID = 0; // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);

@@ -35,14 +35,13 @@ import java.util.Set;
 public interface IDocActionOptionsContext
 {
 	Properties getCtx();
+	
+	int getAD_Client_ID();
 
-	int getAD_Table_ID();
+	String getTableName();
 
-	int getRecord_ID();
-
+	/** @return current document status; never null */
 	String getDocStatus();
-
-	String getDocActionInitial();
 
 	String getDocActionToUse();
 
@@ -56,7 +55,7 @@ public interface IDocActionOptionsContext
 
 	boolean isSOTrx();
 
-	Set<String> getOptions();
+	Set<String> getDocActions();
 
-	void setOptions(Collection<String> options);
+	void setDocActions(Collection<String> options);
 }

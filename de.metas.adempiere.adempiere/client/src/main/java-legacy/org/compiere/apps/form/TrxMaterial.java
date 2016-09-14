@@ -14,8 +14,6 @@
 package org.compiere.apps.form;
 
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -30,10 +28,13 @@ import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Base class for Material Transactions Info form (Warenbewegungen - Übersicht)
@@ -82,7 +83,7 @@ public class TrxMaterial
 		Check.assumeNotNull(wVO, "wVO not null"); // shall not happen
 
 		m_mWindow = new GridWindow (wVO);
-		wVO.Tabs.get(0).IsSearchActive = false;
+		wVO.getTabs().get(0).IsSearchActive = false;
 		m_mTab = m_mWindow.getTab(0);
 		m_mWindow.initTab(0);
 

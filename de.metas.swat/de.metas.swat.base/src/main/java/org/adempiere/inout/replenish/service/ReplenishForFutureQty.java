@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.adempiere.misc.service.IPOService;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -42,8 +42,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_T_Replenish;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
 import de.metas.product.IStoragePA;
 
@@ -67,7 +67,7 @@ public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 		final int periodId = (Integer) poService.getValue(replenish,
 				CustomColNames.T_Replenish_C_Period_ID);
 
-		final I_C_Period period = POWrapper.create(Env.getCtx(), periodId, I_C_Period.class, trxName);
+		final I_C_Period period = InterfaceWrapperHelper.create(Env.getCtx(), periodId, I_C_Period.class, trxName);
 
 		final Timestamp startDate = period.getStartDate();
 		final Calendar replenishStartDate = new GregorianCalendar();

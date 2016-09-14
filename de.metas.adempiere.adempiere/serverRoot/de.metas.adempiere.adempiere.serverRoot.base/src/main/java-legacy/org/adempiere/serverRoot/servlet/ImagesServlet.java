@@ -82,6 +82,12 @@ public class ImagesServlet extends HttpServlet
 
 		final String imageName = extractImageName(request);
 		final byte[] pngData = getPNGImageByName(imageName, width);
+		
+		if(pngData == null || pngData.length == 0)
+		{
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "No image found for " + imageName);
+			return;
+		}
 
 		response.setHeader("Content-Type", "image/png");
 		response.setHeader("Content-Length", String.valueOf(pngData.length));

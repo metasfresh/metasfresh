@@ -16,7 +16,7 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2081784203L;
+	private static final long serialVersionUID = -131732838L;
 
     /** Standard Constructor */
     public X_C_InvoiceTax (Properties ctx, int C_InvoiceTax_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
       /** if (C_InvoiceTax_ID == 0)
         {
 			setC_Invoice_ID (0);
+			setC_InvoiceTax_ID (0);
 			setC_Tax_ID (0);
 			setIsPackagingTax (false);
 // N
@@ -84,6 +85,28 @@ public class X_C_InvoiceTax extends org.compiere.model.PO implements I_C_Invoice
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_InvoiceTax.
+		@param C_InvoiceTax_ID C_InvoiceTax	  */
+	@Override
+	public void setC_InvoiceTax_ID (int C_InvoiceTax_ID)
+	{
+		if (C_InvoiceTax_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceTax_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceTax_ID, Integer.valueOf(C_InvoiceTax_ID));
+	}
+
+	/** Get C_InvoiceTax.
+		@return C_InvoiceTax	  */
+	@Override
+	public int getC_InvoiceTax_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceTax_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

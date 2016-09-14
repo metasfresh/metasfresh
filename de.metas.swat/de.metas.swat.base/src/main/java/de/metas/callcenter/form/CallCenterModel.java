@@ -29,11 +29,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
@@ -49,9 +47,9 @@ import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
@@ -60,6 +58,7 @@ import de.metas.callcenter.model.I_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
 import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -112,7 +111,6 @@ public class CallCenterModel
 		{
 			return m_bundlesLookup;
 		}
-		Language language = Env.getLanguage(m_ctx);
 		final String validationCode =
 			// All bundles that are not Done or Close
 			"R_Group."+BundleUtil.R_Group_CCM_Bundle_Status+" NOT IN ("
@@ -125,7 +123,6 @@ public class CallCenterModel
 			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
-					language,						// Language
 					c.getColumnName(),				// ColumnName
 					c.getAD_Reference_Value_ID(),	// AD_Reference_Value_ID,
 					false,							// IsParent,
@@ -167,7 +164,7 @@ public class CallCenterModel
 	{
 		if (m_mTabOtherRequests != null)
 			return m_mTabOtherRequests;
-		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_Request.Table_ID, true);
+		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), InterfaceWrapperHelper.getTableId(I_R_Request.class), true);
 		return m_mTabOtherRequests;
 	}
 	
@@ -183,7 +180,7 @@ public class CallCenterModel
 	{
 		if (refresh)
 			m_mTab.dataRefresh();
-		I_RV_R_Group_Prospect contact = GridTabWrapper.create(m_mTab, I_RV_R_Group_Prospect.class);
+		I_RV_R_Group_Prospect contact = InterfaceWrapperHelper.create(m_mTab, I_RV_R_Group_Prospect.class);
 		return contact;
 	}
 	

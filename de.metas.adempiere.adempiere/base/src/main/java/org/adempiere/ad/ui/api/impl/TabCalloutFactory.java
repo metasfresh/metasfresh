@@ -1,69 +1,65 @@
 package org.adempiere.ad.ui.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.api.ITabCalloutDAO;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
-import org.compiere.model.StateChangeEvent;
-import org.compiere.model.StateChangeListener;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
+
+import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 
 public class TabCalloutFactory implements ITabCalloutFactory
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(TabCalloutFactory.class);
 
-	private final Map<String, LinkedHashSet<Class<? extends ITabCallout>>> tableName2tabCalloutClasses = new HashMap<>();
+	private final SetMultimap<String, Class<? extends ITabCallout>> tableName2tabCalloutClasses = LinkedHashMultimap.create();
 
-	/**
-	 * Retrieve NEW instances of all {@link ITabCallout}s registered for given {@link GridTab}.
-	 *
-	 * @param gridTab
-	 * @return
-	 */
-	public ITabCallout retrieveCallouts(final GridTab gridTab)
+	@Override
+	public ITabCallout createAndInitialize(final ICalloutRecord calloutRecord)
 	{
-		final Properties ctx = Env.getCtx();
-		final int adTabId = gridTab.getAD_Tab_ID();
+		try
+		{
+			final Properties ctx = Env.getCtx();
+			final int adTabId = calloutRecord.getAD_Tab_ID();
+			final String tableName = calloutRecord.getTableName();
+			final Function<ICalloutRecord, ITabCallout> factory = getTabCalloutsFactory(ctx, adTabId, tableName);
+			return factory.apply(calloutRecord);
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed creating & initializing tab callouts for {}. Returning null.", calloutRecord, e);
+			return ITabCallout.NULL;
+		}
+	}
 
-		final CompositeTabCallout tabCallouts = new CompositeTabCallout();
+	@Cached
+	Function<ICalloutRecord, ITabCallout> getTabCalloutsFactory(@CacheCtx final Properties ctx, final int adTabId, final String tableName)
+	{
+		final LinkedHashSet<Object> tabCalloutsList = new LinkedHashSet<>();
+		boolean haveStatefulCallouts = false;
 
 		final Set<String> classnamesConsidered = new HashSet<>();
 
@@ -101,8 +97,17 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			// Instantiate the tab callout class
 			try
 			{
-				final ITabCallout tabCallout = Util.getInstance(ITabCallout.class, classname);
-				tabCallouts.addTabCallout(tabCallout);
+				final Class<? extends ITabCallout> tabCalloutClass = Util.loadClass(ITabCallout.class, classname);
+				if (IStatefulTabCallout.class.isAssignableFrom(tabCalloutClass))
+				{
+					tabCalloutsList.add(tabCalloutClass);
+					haveStatefulCallouts = true;
+				}
+				else
+				{
+					final ITabCallout tabCalloutInstance = Util.newInstance(ITabCallout.class, tabCalloutClass);
+					tabCalloutsList.add(tabCalloutInstance);
+				}
 			}
 			catch (final Exception e)
 			{
@@ -112,7 +117,6 @@ public class TabCalloutFactory implements ITabCalloutFactory
 
 		//
 		// Retrieve and instantiate callouts which were programatically registered
-		final String tableName = gridTab.getTableName();
 		final Set<Class<? extends ITabCallout>> tableNameCalloutClasses = tableName2tabCalloutClasses.get(tableName);
 		if (!Check.isEmpty(tableNameCalloutClasses))
 		{
@@ -128,8 +132,16 @@ public class TabCalloutFactory implements ITabCalloutFactory
 				// Instantiate the tab callout class
 				try
 				{
-					final ITabCallout tabCallout = tabCalloutClass.newInstance();
-					tabCallouts.addTabCallout(tabCallout);
+					if (IStatefulTabCallout.class.isAssignableFrom(tabCalloutClass))
+					{
+						tabCalloutsList.add(tabCalloutClass);
+						haveStatefulCallouts = true;
+					}
+					else
+					{
+						final ITabCallout tabCalloutInstance = Util.newInstance(ITabCallout.class, tabCalloutClass);
+						tabCalloutsList.add(tabCalloutInstance);
+					}
 				}
 				catch (final Exception e)
 				{
@@ -138,80 +150,54 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			}
 		}
 
-		return tabCallouts;
-	}
-
-	@Override
-	public ITabCallout createAndInitialize(final GridTab gridTab)
-	{
-		try
+		if (haveStatefulCallouts)
 		{
-			final ITabCallout tabCallouts = retrieveCallouts(gridTab);
-
-			// Call callouts initializer
-			tabCallouts.onInit(gridTab);
-
-			// Bind StateChangeEvent to tab callouts
-			// It will cover almost all the tab callouts methods.
-			final TabCalloutStateChangeListener listener = new TabCalloutStateChangeListener(gridTab, tabCallouts);
-			gridTab.addStateChangeListener(listener);
-
-			return tabCallouts;
+			final Set<Object> tabCalloutsListCopy = ImmutableSet.copyOf(tabCalloutsList);
+			return (calloutRecord) -> copyAndInitialize(tabCalloutsListCopy, calloutRecord);
 		}
-		catch (final Exception e)
+		else
 		{
-			logger.warn("Error loading callouts for " + gridTab, e);
-			return ITabCallout.NULL;
+			final ITabCallout tabCallouts = copyAndInitialize(tabCalloutsList, (ICalloutRecord)null);
+			return (calloutRecord) -> tabCallouts;
 		}
 	}
 
-	/**
-	 * Listen on {@link GridTab}'s {@link StateChangeEvent}s and call the proper {@link ITabCallout} methods.
-	 */
-	private static class TabCalloutStateChangeListener implements StateChangeListener
+	private static ITabCallout copyAndInitialize(final Collection<Object> tabCalloutsList, @Nullable final ICalloutRecord calloutRecord)
 	{
-		private final GridTab gridTab;
-		private final ITabCallout callouts;
-
-		public TabCalloutStateChangeListener(final GridTab gridTab, final ITabCallout callouts)
+		final CompositeTabCallout.Builder tabCalloutsBuilder = CompositeTabCallout.builder();
+		for (final Object tabCalloutObj : tabCalloutsList)
 		{
-			Check.assume(gridTab != null, "gridTab not null");
-			this.gridTab = gridTab;
-
-			Check.assumeNotNull(callouts, "callouts not null");
-			this.callouts = callouts;
-		}
-
-		@Override
-		public void stateChange(final StateChangeEvent event)
-		{
-			final int eventType = event.getEventType();
-			switch (eventType)
+			if (tabCalloutObj instanceof Class)
 			{
-				case StateChangeEvent.DATA_REFRESH_ALL:
-					callouts.onRefreshAll(gridTab);
-					break;
-				case StateChangeEvent.DATA_REFRESH:
-					callouts.onRefresh(gridTab);
-					break;
-				case StateChangeEvent.DATA_NEW:
-					callouts.onNew(gridTab);
-					break;
-				case StateChangeEvent.DATA_DELETE:
-					callouts.onDelete(gridTab);
-					break;
-				case StateChangeEvent.DATA_SAVE:
-					callouts.onSave(gridTab);
-					break;
-				case StateChangeEvent.DATA_IGNORE:
-					callouts.onIgnore(gridTab);
-					break;
-				default:
-					// tolerate all other events, event if they are meaningless for us
-					// throw new AdempiereException("EventType " + eventType + " is not supported");
-					break;
+				try
+				{
+					final Class<?> tabCalloutClass = (Class<?>)tabCalloutObj;
+					final ITabCallout tabCalloutInstance = Util.newInstance(ITabCallout.class, tabCalloutClass);
+					
+					if(tabCalloutInstance instanceof IStatefulTabCallout)
+					{
+						((IStatefulTabCallout)tabCalloutInstance).onInit(calloutRecord);
+					}
+
+					tabCalloutsBuilder.addTabCallout(tabCalloutInstance);
+				}
+				catch (final Exception e)
+				{
+					logger.warn("Failed to initialize {}. Ignored.", tabCalloutObj, e);
+				}
+			}
+			else if (tabCalloutObj instanceof ITabCallout)
+			{
+				final ITabCallout tabCallout = (ITabCallout)tabCalloutObj;
+				tabCalloutsBuilder.addTabCallout(tabCallout);
+			}
+			else
+			{
+				logger.warn("Unknown callout type {}. Ignored.", tabCalloutObj);
 			}
 		}
+
+		return tabCalloutsBuilder.build();
 	}
 
 	@Override
@@ -219,14 +205,6 @@ public class TabCalloutFactory implements ITabCalloutFactory
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		Check.assumeNotNull(tabCalloutClass, "tabCalloutClass not null");
-
-		LinkedHashSet<Class<? extends ITabCallout>> tabCalloutClasses = tableName2tabCalloutClasses.get(tableName);
-		if (tabCalloutClasses == null)
-		{
-			tabCalloutClasses = new LinkedHashSet<>();
-			tableName2tabCalloutClasses.put(tableName, tabCalloutClasses);
-		}
-
-		tabCalloutClasses.add(tabCalloutClass);
+		tableName2tabCalloutClasses.put(tableName, tabCalloutClass);
 	}
 }

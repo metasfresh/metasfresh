@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -43,7 +43,7 @@ public class InvoiceCandidateAgg extends CalloutEngine
 			final GridField mField,
 			final Object value)
 	{
-		final I_C_Invoice_Candidate_Agg icAgg = GridTabWrapper.create(mTab, I_C_Invoice_Candidate_Agg.class);
+		final I_C_Invoice_Candidate_Agg icAgg = InterfaceWrapperHelper.create(mTab, I_C_Invoice_Candidate_Agg.class);
 		
 		Services.get(IAggregationBL.class).evalClassName(icAgg);
 		

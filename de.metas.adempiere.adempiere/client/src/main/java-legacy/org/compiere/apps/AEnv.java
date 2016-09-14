@@ -1058,23 +1058,24 @@ public final class AEnv
 		if (mWindowVO == null)
 		{
 			log.info("create local");
-			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID);
+			final boolean loadAllLanguages = false;
+			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
 		}   	// from Client
 
 		// Check (remote) context
-		if (!mWindowVO.ctx.equals(Env.getCtx()))
+		if (!mWindowVO.getCtx().equals(Env.getCtx()))
 		{
 			// Remote Context is called by value, not reference
 			// Add Window properties to context
-			final Enumeration<?> keyEnum = mWindowVO.ctx.keys();
+			final Enumeration<?> keyEnum = mWindowVO.getCtx().keys();
 			while (keyEnum.hasMoreElements())
 			{
 				final String key = (String)keyEnum.nextElement();
 				if (key.startsWith(WindowNo + "|"))
 				{
-					final String value = mWindowVO.ctx.getProperty(key);
+					final String value = mWindowVO.getCtx().getProperty(key);
 					Env.setContext(Env.getCtx(), key, value);
 				}
 			}

@@ -48,8 +48,6 @@ public interface IValidationRule
 	 */
 	boolean isImmutable();
 
-	boolean isValidationRequired(IValidationContext evalCtx);
-
 	/**
 	 * Returns a SQL where clause which is already parsed based on given context
 	 * 
@@ -60,11 +58,13 @@ public interface IValidationRule
 	String getPrefilterWhereClause(IValidationContext evalCtx);
 
 	/**
-	 * Returns a list of parameters on which this validation rule depends. Those parameters will be fetched from context on validation time.
+	 * Returns a list of parameters on which this validation rule depends.
+	 * 
+	 * It is assumed that the parameters list is static and not change over time.
 	 * 
 	 * @return list of parameter names
 	 */
-	List<String> getParameters(IValidationContext evalCtx);
+	List<String> getParameters();
 
 	/**
 	 * 

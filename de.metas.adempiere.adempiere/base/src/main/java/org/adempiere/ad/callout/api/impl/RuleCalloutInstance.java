@@ -1,5 +1,7 @@
 package org.adempiere.ad.callout.api.impl;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,22 +12,20 @@ package org.adempiere.ad.callout.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.function.Supplier;
 
 import javax.script.ScriptEngine;
 
@@ -37,26 +37,22 @@ import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MRule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-public class RuleCalloutInstance implements ICalloutInstance
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
+
+public final class RuleCalloutInstance implements ICalloutInstance
 {
-	private static final transient Logger logger = LogManager.getLogger(RuleCalloutInstance.class);
-
-	private final I_AD_Rule rule;
-
-	private final String id;
-
-	public RuleCalloutInstance(final String ruleValue)
+	public static final Supplier<ICalloutInstance> supplier(final String ruleValue)
 	{
-		super();
-
 		Check.assumeNotEmpty(ruleValue, "ruleValue not empty");
 
 		final Properties ctx = Env.getCtx();
@@ -76,8 +72,28 @@ public class RuleCalloutInstance implements ICalloutInstance
 			throw new CalloutInitException("Invalid callout rule type for " + rule + ". Only JSR223 is supported at the moment.");
 		}
 
-		this.id = getClass().getSimpleName() + "-" + ruleValue.trim();
-		this.rule = rule;
+		final String id = RuleCalloutInstance.class.getSimpleName() + "-" + ruleValue.trim();
+		final String script = rule.getScript();
+
+		final MRule rulePO = LegacyAdapters.convertToPO(rule);
+		final Supplier<ScriptEngine> scriptEngineSupplier = rulePO.supplyScriptEngine();
+
+		return () -> new RuleCalloutInstance(id, script, scriptEngineSupplier);
+	}
+
+	private static final transient Logger logger = LogManager.getLogger(RuleCalloutInstance.class);
+
+	private final String id;
+	private final String script;
+	private final Supplier<ScriptEngine> scriptEngineSupplier;
+
+	public RuleCalloutInstance(final String id, final String script, final Supplier<ScriptEngine> scriptEngineSupplier)
+	{
+		super();
+
+		this.id = id;
+		this.script = script;
+		this.scriptEngineSupplier = scriptEngineSupplier;
 	}
 
 	@Override
@@ -89,22 +105,19 @@ public class RuleCalloutInstance implements ICalloutInstance
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "["
-				+ "rule=" + rule
-				+ "]";
+		return MoreObjects.toStringHelper(this)
+				.add("id", id)
+				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return new HashcodeBuilder()
-				.append(id)
-				.append(rule)
-				.toHashcode();
+		return Objects.hash(id);
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -118,20 +131,19 @@ public class RuleCalloutInstance implements ICalloutInstance
 		}
 
 		return new EqualsBuilder()
-				.append(this.id, other.id)
-				.append(this.rule, other.rule)
+				.append(id, other.id)
 				.isEqual();
 	}
 
 	@Override
 	public void execute(final ICalloutExecutor executor, final ICalloutField field)
 	{
-		final Properties ctx = executor.getCtx();
-		final int windowNo = executor.getWindowNo();
+		final Properties ctx = field.getCtx();
+		final int windowNo = field.getWindowNo();
 		final Object value = field.getValue();
 		final Object valueOld = field.getOldValue();
 
-		final ScriptEngine engine = createScriptEngine();
+		final ScriptEngine engine = scriptEngineSupplier.get();
 
 		// Window context are W_
 		// Login context are G_
@@ -154,9 +166,10 @@ public class RuleCalloutInstance implements ICalloutInstance
 		String retValue;
 		try
 		{
-			retValue = engine.eval(rule.getScript()).toString();
+			final Object result = engine.eval(script);
+			retValue = result == null ? null : result.toString();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.error("Error while executing callout", e);
 			throw new CalloutExecutionException(this, "Error while executing callout: " + e.getLocalizedMessage(), e);
@@ -167,11 +180,4 @@ public class RuleCalloutInstance implements ICalloutInstance
 			throw new CalloutExecutionException(this, "Error while executing callout: " + retValue);
 		}
 	}
-
-	private ScriptEngine createScriptEngine()
-	{
-		final MRule rulePO = LegacyAdapters.convertToPO(rule);
-		return rulePO.getScriptEngine();
-	}
-
 }

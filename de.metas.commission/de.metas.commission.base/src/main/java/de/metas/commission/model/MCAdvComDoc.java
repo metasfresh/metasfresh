@@ -31,7 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -110,16 +110,16 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 
 	/**
 	 * 
-	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link POWrapper#getPO()} must return a {@link PO} for the given object.
+	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link InterfaceWrapperHelper#getPO()} must return a {@link PO} for the given object.
 	 * @return
 	 */
 	public static MCAdvComDoc retrieveForTrigger(final Object trigger)
 	{
-		final PO triggerPO = POWrapper.getPO(trigger);
-		Check.assume(triggerPO != null, trigger + " is expected to be a PO or a proxy created by POWrapper");
+		final PO triggerPO = InterfaceWrapperHelper.getPO(trigger);
+		Check.assume(triggerPO != null, trigger + " is expected to be a PO or a proxy created by InterfaceWrapperHelper");
 
-		final Properties ctx = POWrapper.getCtx(trigger);
-		final String trxName = POWrapper.getTrxName(trigger);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(trigger);
+		final String trxName = InterfaceWrapperHelper.getTrxName(trigger);
 
 		final String wc = I_C_AdvComDoc.COLUMNNAME_AD_Table_ID + "=? AND " + I_C_AdvComDoc.COLUMNNAME_Record_ID + "=?";
 
@@ -131,8 +131,8 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 
 	public static MCAdvComDoc retrieveForAllocLine(final I_C_AllocationLine allocLine)
 	{
-		final Properties ctx = POWrapper.getCtx(allocLine);
-		final String trxName = POWrapper.getTrxName(allocLine);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(allocLine);
+		final String trxName = InterfaceWrapperHelper.getTrxName(allocLine);
 
 		final String wc = I_C_AdvComDoc.COLUMNNAME_C_AllocationLine_ID + "=?";
 
@@ -146,7 +146,7 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 	/**
 	 * Note: we can't delete the record, because it is commission relevant
 	 * 
-	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link POWrapper#getPO()} must return a {@link PO} for the given object.
+	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link InterfaceWrapperHelper#getPO()} must return a {@link PO} for the given object.
 	 */
 	public static void deactivateIfExist(final Object trigger)
 	{
@@ -171,7 +171,7 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 	 * 
 	 * If no commission doc record exists yet for the given trigger and alloc line, then one is created.
 	 * 
-	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link POWrapper#getPO()} must return a {@link PO} for the given object.
+	 * @param trigger a commission trigger (currently this could be a C_Order or C_Invoice). Important: {@link InterfaceWrapperHelper#getPO()} must return a {@link PO} for the given object.
 	 * @param allocLine
 	 * @return the record that was create or updated or <code>null</code>.
 	 */
@@ -179,11 +179,11 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 	{
 		final MCAdvComDoc comDoc;
 
-		final PO triggerPO = POWrapper.getPO(trigger);
-		Check.assume(triggerPO != null, trigger + " is expected to be a PO or a proxy created by POWrapper");
+		final PO triggerPO = InterfaceWrapperHelper.getPO(trigger);
+		Check.assume(triggerPO != null, trigger + " is expected to be a PO or a proxy created by InterfaceWrapperHelper");
 
-		final Properties ctx = POWrapper.getCtx(trigger);
-		final String trxName = POWrapper.getTrxName(trigger);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(trigger);
+		final String trxName = InterfaceWrapperHelper.getTrxName(trigger);
 
 		final MCAdvComDoc comDocForAllocLine = retrieveForAllocLine(allocLine);
 		if (comDocForAllocLine != null)

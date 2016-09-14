@@ -28,8 +28,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
@@ -38,6 +36,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Asynchronous lookup data loader
@@ -116,8 +117,7 @@ import org.compiere.util.Util.ArrayKey;
 	{
 
 		final long startTime = System.currentTimeMillis();
-		MLookupCache.loadStart(lookupInfo);
-
+		
 		if (!data.isValid())
 		{
 			this.validationKey = null;
@@ -146,7 +146,7 @@ import org.compiere.util.Util.ArrayKey;
 			final int rows = values.size();
 			if (rows >= MLookup.MAX_ROWS)
 			{
-				final String errmsg = lookupInfo.KeyColumn + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
+				final String errmsg = lookupInfo.getKeyColumnFQ() + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
 						+ "\n Fetched Rows: " + rows
 						+ "\n Max rows allowed: " + MLookup.MAX_ROWS;
 				log.warn(errmsg);
@@ -183,8 +183,6 @@ import org.compiere.util.Util.ArrayKey;
 					+ " - ms=" + String.valueOf(System.currentTimeMillis() - m_startTime)
 					+ " (" + String.valueOf(System.currentTimeMillis() - startTime) + ")");
 		}
-
-		MLookupCache.loadEnd(lookupInfo, values);
 
 		return this;
 	}	// run

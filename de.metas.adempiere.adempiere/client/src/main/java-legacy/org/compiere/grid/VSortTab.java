@@ -36,12 +36,11 @@ import java.awt.event.MouseMotionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -53,24 +52,30 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.images.Images;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
+import org.compiere.model.GridTabVO;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Tab to maintain Order/Sequence
@@ -92,41 +97,46 @@ public class VSortTab extends CPanel implements APanelTab
 	private static final long serialVersionUID = -2133358506913610514L;
 
 	/**
-	 *	Tab Order Constructor
+	 * Tab Order Constructor
 	 *
-	 *  @param WindowNo Window No
-	 *  @param AD_Table_ID Table No
-	 *  @param AD_ColumnSortOrder_ID Sort Column
-	 *  @param AD_ColumnSortYesNo_ID YesNo Column
+	 * @param WindowNo Window No
+	 * @param gridTabVO
 	 */
-	public VSortTab(int WindowNo, int AD_Table_ID, int AD_ColumnSortOrder_ID, int AD_ColumnSortYesNo_ID)
+	public VSortTab(final int WindowNo, final GridTabVO gridTabVO, final int parentTabNo)
 	{
-		log.info("SortOrder=" + AD_ColumnSortOrder_ID + ", SortYesNo=" + AD_ColumnSortYesNo_ID);
+		super();
+		
 		m_WindowNo = WindowNo;
+		this.gridTabVO = gridTabVO;
+		this.parentTabNo = parentTabNo;
+		
+		setTabLevel(gridTabVO.getTabLevel());
 
 		try
 		{
 			jbInit();
-			dynInit (AD_Table_ID, AD_ColumnSortOrder_ID, AD_ColumnSortYesNo_ID);
+			dynInit();
 		}
 		catch(Exception e)
 		{
-			log.error("", e);
+			log.error("Failed initializing", e);
 		}
 	}	//	VSortTab
 
 	/**	Logger			*/
-	static Logger log = LogManager.getLogger(VSortTab.class);
-	private int			m_WindowNo;
-	private int			m_AD_Table_ID;
+	private static final transient Logger log = LogManager.getLogger(VSortTab.class);
+	private final int m_WindowNo;
+	private final GridTabVO gridTabVO;
+	private final int parentTabNo;
 	private String		m_TableName = null;
 	private String		m_ColumnSortName= null;
 	private String		m_ColumnYesNoName = null;
 	private String		m_KeyColumnName = null;
+	private String		m_LinkColumnName = null;
+	private String		m_ParentLinkColumnName = null;
 	private String		m_IdentifierSql = null;
 	private boolean		m_IdentifierTranslated = false;
 
-	private String		m_ParentColumnName = null;
 	private APanel		m_aPanel = null;
 
 	//	UI variables
@@ -191,106 +201,168 @@ public class VSortTab extends CPanel implements APanelTab
 	 *  @param AD_ColumnSortOrder_ID Sort Column
 	 *  @param AD_ColumnSortYesNo_ID YesNo Column
 	 */
-	private void dynInit (int AD_Table_ID, int AD_ColumnSortOrder_ID, int AD_ColumnSortYesNo_ID)
+	private void dynInit()
 	{
-		m_AD_Table_ID = AD_Table_ID;
+		final int AD_ColumnSortOrder_ID = gridTabVO.getAD_ColumnSortOrder_ID();
+		final int AD_ColumnSortYesNo_ID = gridTabVO.getAD_ColumnSortYesNo_ID();
+		final int link_Column_ID = gridTabVO.getAD_Column_ID();
+		
+		String defaultLinkColumnName = null;
+
 		int identifiersCount = 0;
-		StringBuffer identifierSql = new StringBuffer();
-		String sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, e.Name,"	//	1..4
-			+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "				//	4..8
-			+ "FROM AD_Table t, AD_Column c, AD_Element e "
-			+ "WHERE t.AD_Table_ID=?"						//	#1
-			+ " AND t.AD_Table_ID=c.AD_Table_ID"
-			+ " AND (c.AD_Column_ID=? OR AD_Column_ID=?"	//	#2..3
-			+ " OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
-			+ " AND c.AD_Element_ID=e.AD_Element_ID";
-		boolean trl = !Env.isBaseLanguage(Env.getCtx(), "AD_Element");
-		if (trl)
+		final StringBuilder identifierSql = new StringBuilder();
+		final List<Object> sqlParams = new ArrayList<>();
+		String sql;
+		
+		final boolean trl = !Env.isBaseLanguage(Env.getCtx(), "AD_Element");
+		if (!trl)
+		{
+			sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, e.Name,"	// 1..4
+					+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "				// 4..8
+					+ "FROM AD_Table t, AD_Column c, AD_Element e "
+					+ "WHERE t.AD_Table_ID=?"						// #1
+					+ " AND t.AD_Table_ID=c.AD_Table_ID"
+					+ " AND (c.AD_Column_ID=? OR AD_Column_ID=?"	// #2..3
+					+ " OR c.AD_Column_ID=?" // #4
+					+ " OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
+					+ " AND c.AD_Element_ID=e.AD_Element_ID";
+			sqlParams.add(gridTabVO.getAD_Table_ID());
+			sqlParams.add(AD_ColumnSortOrder_ID);
+			sqlParams.add(AD_ColumnSortYesNo_ID);
+			sqlParams.add(link_Column_ID);
+		}
+		else
+		{
 			sql = "SELECT t.TableName, c.AD_Column_ID, c.ColumnName, et.Name,"	//	1..4
 				+ "c.IsParent, c.IsKey, c.IsIdentifier, c.IsTranslated "		//	4..8
 				+ "FROM AD_Table t, AD_Column c, AD_Element_Trl et "
 				+ "WHERE t.AD_Table_ID=?"						//	#1
 				+ " AND t.AD_Table_ID=c.AD_Table_ID"
 				+ " AND (c.AD_Column_ID=? OR AD_Column_ID=?"	//	#2..3
+				+ " OR c.AD_Column_ID=?" // #4
 				+ "	OR c.IsParent='Y' OR c.IsKey='Y' OR c.IsIdentifier='Y')"
 				+ " AND c.AD_Element_ID=et.AD_Element_ID"
-				+ " AND et.AD_Language=?";						//	#4
+				+ " AND et.AD_Language=?";						//	#5
+			sqlParams.add(gridTabVO.getAD_Table_ID());
+			sqlParams.add(AD_ColumnSortOrder_ID);
+			sqlParams.add(AD_ColumnSortYesNo_ID);
+			sqlParams.add(link_Column_ID);
+			sqlParams.add(Env.getAD_Language(Env.getCtx()));
+		}
 		sql += " ORDER BY c.SeqNo";
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Table_ID);
-			pstmt.setInt(2, AD_ColumnSortOrder_ID);
-			pstmt.setInt(3, AD_ColumnSortYesNo_ID);
-			if (trl)
-				pstmt.setString(4, Env.getAD_Language(Env.getCtx()));
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
+			
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				m_TableName = rs.getString(1);
+				final int adColumnId = rs.getInt(2);
+				final String columnName = rs.getString(3);
+				final String name = rs.getString(4);
+				
 				//	Sort Column
-				if (AD_ColumnSortOrder_ID == rs.getInt(2))
+				if (AD_ColumnSortOrder_ID == adColumnId)
 				{
-					log.debug("Sort=" + rs.getString(1) + "." + rs.getString(3));
-					m_ColumnSortName = rs.getString(3);
-					yesLabel.setText(rs.getString(4));
+					log.debug("Sort={}.{}", m_TableName, columnName);
+					m_ColumnSortName = columnName;
+					yesLabel.setText(name);
 				}
 				//	Optional YesNo
-				else if (AD_ColumnSortYesNo_ID == rs.getInt(2))
+				else if (AD_ColumnSortYesNo_ID == adColumnId)
 				{
-					log.debug("YesNo=" + rs.getString(1) + "." + rs.getString(3));
-					m_ColumnYesNoName = rs.getString(3);
+					log.debug("YesNo={}.{}", m_TableName, columnName);
+					m_ColumnYesNoName = columnName;
 				}
+				//
 				//	Parent2
-				else if (rs.getString(5).equals("Y"))
+				else if (link_Column_ID == adColumnId)
 				{
-					log.debug("Parent=" + rs.getString(1) + "." + rs.getString(3));
-					m_ParentColumnName = rs.getString(3);
+					log.debug("Parent={}.{}", m_TableName, columnName);
+					m_LinkColumnName = columnName;
+				}
+				else if (DisplayType.toBoolean(rs.getString(5)))
+				{
+					log.debug("Default Parent={}.{}", m_TableName, columnName);
+					defaultLinkColumnName = columnName;
 				}
 				//	KeyColumn
-				else if (rs.getString(6).equals("Y"))
+				else if (DisplayType.toBoolean(rs.getString(6)))
 				{
-					log.debug("Key=" + rs.getString(1) + "." + rs.getString(3));
-					m_KeyColumnName = rs.getString(3);
+					log.debug("Key={}.{}", m_TableName, columnName);
+					m_KeyColumnName = columnName;
 				}
 				//	Identifier
-				else if (rs.getString(7).equals("Y"))
+				else if (DisplayType.toBoolean(rs.getString(7)))
 				{
-					log.debug("Identifier=" + rs.getString(1) + "." + rs.getString(3));
-					boolean isTranslated = trl && "Y".equals(rs.getString(8));
+					log.debug("Identifier={}.{}", m_TableName, columnName);
+					boolean isTranslated = trl && DisplayType.toBoolean(rs.getString(8));
 					if (identifierSql.length() > 0)
 						identifierSql.append(",");
-					identifierSql.append(isTranslated ? "tt." : "t.").append(rs.getString(3));
+					identifierSql.append(isTranslated ? "tt." : "t.").append(columnName).append("::varchar");
 					identifiersCount++;
-//					m_IdentifierColumnName = rs.getString(3);
 					if (isTranslated)
 						m_IdentifierTranslated = true;
 				}
 				else
-					log.debug("??NotUsed??=" + rs.getString(1) + "." + rs.getString(3));
+				{
+					log.debug("??NotUsed??={}.{}", m_TableName, columnName);
+				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			log.error(sql.toString(), e);
+			final DBException dbEx = new DBException(e, sql, sqlParams);
+			log.error("Failed loading sort tab", dbEx);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
+		
 		//
+		// Link column name
+		if(m_LinkColumnName == null)
+		{
+			m_LinkColumnName = defaultLinkColumnName;
+		}
+		if(Check.isEmpty(m_LinkColumnName, true))
+		{
+			log.warn("No LinkColumnName found for {}", gridTabVO);
+		}
+		
+		//
+		// Parent link column name
+		if(gridTabVO.getParent_Column_ID() > 0)
+		{
+			m_ParentLinkColumnName = Services.get(IADTableDAO.class).retrieveColumnName(gridTabVO.getParent_Column_ID());
+		}
+		else
+		{
+			m_ParentLinkColumnName = m_LinkColumnName;
+		}
+		if(Check.isEmpty(m_ParentLinkColumnName, true))
+		{
+			log.warn("No ParentLinkColumnName found for {}", gridTabVO);
+		}
+		
+		//
+		// Identifier
 		if (identifiersCount == 0)
 			m_IdentifierSql = "NULL";
 		else if (identifiersCount == 1)
 			m_IdentifierSql = identifierSql.toString();
 		else 
 			m_IdentifierSql = identifierSql.insert(0, "COALESCE(").append(")").toString();
+
 		//
 		noLabel.setText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Available"));
-		log.debug(m_ColumnSortName);
 	}	//	dynInit
 
 	/**
@@ -432,66 +504,68 @@ public class VSortTab extends CPanel implements APanelTab
 		noModel.removeAllElements();
 
 		boolean isReadWrite = true;
-		//	SELECT t.AD_Field_ID,t.Name,t.SeqNo,t.IsDisplayed FROM AD_Field t WHERE t.AD_Tab_ID=? ORDER BY 4 DESC,3,2
-		//	SELECT t.AD_PrintFormatItem_ID,t.Name,t.SeqNo,t.IsPrinted FROM AD_PrintFormatItem t WHERE t.AD_PrintFormat_ID=? ORDER BY 4 DESC,3,2
-		//	SELECT t.AD_PrintFormatItem_ID,t.Name,t.SortNo,t.IsOrderBy FROM AD_PrintFormatItem t WHERE t.AD_PrintFormat_ID=? ORDER BY 4 DESC,3,2
 		final StringBuilder sql = new StringBuilder();
 		//	Columns
-		sql.append("SELECT t.").append(m_KeyColumnName)				//	1
-		.append(",").append(m_IdentifierSql)						//	2
-		.append(",t.").append(m_ColumnSortName)				//	3
-		.append(", t.AD_Client_ID, t.AD_Org_ID");		// 4, 5
+		sql.append("SELECT ")
+			.append("\n t.").append(m_KeyColumnName)				//	1
+			.append("\n ,").append(m_IdentifierSql)						//	2
+			.append("\n ,t.").append(m_ColumnSortName)				//	3
+			.append("\n , t.AD_Client_ID, t.AD_Org_ID");		// 4, 5
 		if (m_ColumnYesNoName != null)
-			sql.append(",t.").append(m_ColumnYesNoName);			//	6
+			sql.append("\n ,t.").append(m_ColumnYesNoName);			//	6
 		// metas: begin
 		boolean hasColumnName = false;
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			if ("AD_Field".equals(m_TableName))
 		{
-			sql.append(", (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
+			sql.append("\n , (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
 				hasColumnName = true;
 			}
 			else if ("AD_Process_Para".equals(m_TableName))
 			{
-				sql.append(", t.ColumnName AS ColumnName");
+				sql.append("\n , t.ColumnName AS ColumnName");
 				hasColumnName = true;
 			}
 		}
 		// metas: end
 		//	Tables
-		sql.append(" FROM ").append(m_TableName).append( " t");
+		sql.append("\n FROM ").append(m_TableName).append( " t");
 		if (m_IdentifierTranslated)
 			sql.append(", ").append(m_TableName).append("_Trl tt");
 		//	Where
 		//FR [ 2826406 ]
-		if(m_ParentColumnName != null)
+		if(m_LinkColumnName != null)
 		{
-			sql.append(" WHERE t.").append(m_ParentColumnName).append("=?");
+			sql.append("\n WHERE t.").append(m_LinkColumnName).append("=?");
 		}
 		else
 		{
-			sql.append(" WHERE 1=?");
+			sql.append("\n WHERE 1=?");
 		}
 			
 		if (m_IdentifierTranslated)
-			sql.append(" AND t.").append(m_KeyColumnName).append("=tt.").append(m_KeyColumnName)
-			.append(" AND tt.AD_Language=?");
+		{
+			sql.append("\n AND t.").append(m_KeyColumnName).append("=tt.").append(m_KeyColumnName).append(" AND tt.AD_Language=?");
+		}
+		
 		//	Order
-		sql.append(" ORDER BY ");
+		sql.append("\n ORDER BY ");
 		if (m_ColumnYesNoName != null)
 			sql.append("6 DESC,");		//	t.IsDisplayed DESC
-		sql.append("3,2");				//	t.SeqNo, tt.Name 
+		sql.append("3,2");				//	t.SeqNo, tt.Name
+		
 		//FR [ 2826406 ]
-		int ID = 0;		
-		if(m_ParentColumnName != null)
+		final int parentId;		
+		if(m_ParentLinkColumnName != null)
 		{	
-			ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, m_ParentColumnName);
-			log.debug(sql.toString() + " - ID=" + ID);
+			parentId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, parentTabNo, m_ParentLinkColumnName);
+			log.debug("{}={} (WindowNo={}, TabNo={})", m_ParentLinkColumnName, parentId, m_WindowNo, parentTabNo);
 		}
 		else
 		{
-			ID = 1;
+			parentId = -1;
+			log.debug("Considering parentId={} because there is no parent link column", parentId);
 		}
 		
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
@@ -500,7 +574,7 @@ public class VSortTab extends CPanel implements APanelTab
 		try
 		{
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
-			pstmt.setInt(1, ID);
+			pstmt.setInt(1, parentId);
 			
 			if (m_IdentifierTranslated)
 			{
@@ -517,7 +591,9 @@ public class VSortTab extends CPanel implements APanelTab
 				int AD_Client_ID = rs.getInt(4);
 				int AD_Org_ID = rs.getInt(5);
 				if (m_ColumnYesNoName != null)
-					isYes = "Y".equals(rs.getString(6));
+				{
+					isYes = DisplayType.toBoolean(rs.getString(6));
+				}
 				
 				// metas: begin
 				if (hasColumnName)
@@ -817,7 +893,7 @@ public class VSortTab extends CPanel implements APanelTab
 			this.m_AD_Org_ID = AD_Org_ID;
 			this.m_sortNo = sortNo;
 			this.m_isYes = isYes;
-			this.m_updateable = Env.getUserRolePermissions().canUpdate(m_AD_Client_ID, m_AD_Org_ID, m_AD_Table_ID, m_key, false); 
+			this.m_updateable = Env.getUserRolePermissions().canUpdate(m_AD_Client_ID, m_AD_Org_ID, gridTabVO.getAD_Table_ID(), m_key, false); 
 		}
 		public int getKey() {
 			return m_key;

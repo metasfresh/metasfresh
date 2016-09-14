@@ -109,7 +109,7 @@ public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidati
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public List<String> getParameters()
 	{
 		return PARAMS;
 	}

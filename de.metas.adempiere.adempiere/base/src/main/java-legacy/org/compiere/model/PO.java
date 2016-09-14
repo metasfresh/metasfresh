@@ -47,6 +47,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -66,7 +67,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -261,6 +261,8 @@ public abstract class PO
 	protected transient final Logger log = LogManager.getLogger(getClass());
 	/** Static Logger					*/
 	private static final Logger s_log = LogManager.getLogger(PO.class);
+
+	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/** Context                 */
 	private Properties		p_ctx;
@@ -975,8 +977,10 @@ public abstract class PO
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + value + " - OldValue=" + oldValue + "; "
-						+ "Note: Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE).")
-						.throwOrLogSevere(throwException, log);
+						+ "Note to developer: to bypass this checking you can"
+						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)"
+						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
+								.throwOrLogSevere(throwException, log);
 			}
 			else
 			{
@@ -1038,15 +1042,15 @@ public abstract class PO
 				catch (NumberFormatException e)
 				{
 					log.error(ColumnName
-						+ " - Class invalid: " + value.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+						+ " - Class invalid(1): " + value.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 					return false;
 				}
 			else
 			{
 				log.error(ColumnName
-					+ " - Class invalid: " + value.getClass().toString()
-					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+					+ " - Class invalid(2): " + value.getClass().toString()
+					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 				return false;
 			}
 			//	Validate (Min/Max)
@@ -1109,7 +1113,9 @@ public abstract class PO
 		}
 		return set_ValueNoCheck(index, value);
 	}
-	private final boolean set_ValueNoCheck (final int index, final Object value)
+	
+	// metas: changed from private to public
+	public final boolean set_ValueNoCheck (final int index, final Object value)
 	{
 		//
 		// Load record if stale (01537)
@@ -1145,16 +1151,16 @@ public abstract class PO
 				catch (Exception e)
 				{
 					log.warn(get_ColumnName(index)
-							+ " - Class invalid: " + value.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+							+ " - Class invalid(3): " + value.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 					m_newValues[index] = null;
 				}
 			}
 			else
 			{
 				log.warn(get_ColumnName(index)
-					+ " - Class invalid: " + value.getClass().toString()
-					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value);
+					+ " - Class invalid(4): " + value.getClass().toString()
+					+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
 				m_newValues[index] = value;     //  correct
 			}
 
@@ -1214,43 +1220,49 @@ public abstract class PO
 	 * @param value
 	 *  @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumnReturningBoolean(String columnName, Object value)
+	public final boolean set_ValueOfColumnReturningBoolean(final String columnName, final Object value)
 	{
-		int AD_Column_ID = p_info.getAD_Column_ID(columnName);
-		if (AD_Column_ID > 0)
-			return set_ValueOfColumnReturningBoolean(AD_Column_ID, value);
-		else
+		final int columnIndex = p_info.getColumnIndex(columnName);
+		if(columnIndex < 0)
+		{
+			log.error("Not found - ColumnName={}", columnName);
 			return false;
+		}
+		
+		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
 	/**
-	 *  Set Value of Column
-	 *  @param AD_Column_ID column
-	 *  @param value value
+	 * Set Value of AD_Column_ID
+	 * 
+	 * @param AD_Column_ID column
+	 * @param value value
+	 * @returns boolean indicating success or failure
 	 */
-	public final void set_ValueOfColumn (int AD_Column_ID, Object value)
+	public final boolean set_ValueOfAD_Column_ID(final int AD_Column_ID, final Object value)
 	{
-		set_ValueOfColumnReturningBoolean (AD_Column_ID, value);
-	}   //  setValueOfColumn
+		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
+		if (columnIndex < 0)
+		{
+			log.error("Not found - AD_Column_ID={}", AD_Column_ID);
+			return false;
+		}
+		
+		return set_ValueReturningBoolean(columnIndex, value);
+	}
 
-
-	/**
-	 *  Set Value of Column
-	 *  @param AD_Column_ID column
-	 *  @param value value
-	 *  @returns boolean indicating success or failure
-	 */
-	public final boolean set_ValueOfColumnReturningBoolean (int AD_Column_ID, Object value)
+	public final boolean set_ValueReturningBoolean (final int columnIndex, final Object value)
 	{
-		int index = p_info.getColumnIndex(AD_Column_ID);
-		if (index < 0)
-			log.error("Not found - AD_Column_ID=" + AD_Column_ID);
-		String ColumnName = p_info.getColumnName(index);
-		if (ColumnName.equals("IsApproved"))
-			return set_ValueNoCheck(ColumnName, value);
+		final String columnName = p_info.getColumnName(columnIndex);
+		if (COLUMNNAME_IsApproved.equals(columnName))
+		{
+			return set_ValueNoCheck(columnIndex, value);
+		}
 		else
-			return set_Value (index, value);
-	}   //  setValueOfColumn
+		{
+			return set_Value(columnIndex, value);
+		}
+	}
 
 
 	/**
@@ -1798,7 +1810,7 @@ public abstract class PO
 		}
 		boolean success = true;
 
-		final String sql = "SELECT "+p_info.getColumnSQL(index)
+		final String sql = "SELECT "+p_info.getColumnSqlForSelect(index)
 			+" FROM "+p_info.getTableName()
 			+" WHERE "+get_WhereClause(false);
 		PreparedStatement pstmt = null;
@@ -2233,7 +2245,7 @@ public abstract class PO
 
 	protected final void setClientOrgFromModel(final Object model)
 	{
-		final PO po = POWrapper.getPO(model, false); // checkOtherWrapper=false
+		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		setClientOrg(po);
 	}
@@ -2436,7 +2448,7 @@ public abstract class PO
 
 		//
 		// FRESH-314: create a change log also if there is no AD_Session_ID; also store the AD_PInstance_ID
-		final MSession session = get_Session();
+		final I_AD_Session session = get_Session();
 		final int adSessionId = session != null ? session.getAD_Session_ID() : 0;
 		final int adPInstanceId = Env.getContextAsInt(getCtx(), Env.CTXNAME_AD_PInstance_ID);
 
@@ -2580,13 +2592,13 @@ public abstract class PO
 		{
 			return;
 		}
-		final MSession session = get_Session();
+		final I_AD_Session session = get_Session();
 		if (session == null)
 		{
 			return;
 		}
 
-		session.logMigration(this, p_info, actionType);
+		Services.get(IMigrationLogger.class).logMigration(session, this, p_info, actionType);
 	}
 
 	/*
@@ -3617,9 +3629,14 @@ public abstract class PO
 	 */
 	protected int saveNew_getID()
 	{
-		if (get_ID() < 999999) // 2Pack assigns official ID's when importing
-			return get_ID();
-		return 0;
+		// NOTE: we shall not enforce only IDs which are less than 999999, we shall take what we get.
+		// NOTE2: rest-webui is relying on this!
+//		if (get_ID() < 999999) // 2Pack assigns official ID's when importing
+//		return get_ID();
+//	return 0;
+
+		final int id = get_ID();
+		return id;
 	}	//	saveNew_getID
 
 
@@ -5029,14 +5046,15 @@ public abstract class PO
 	/**
 	 * Mark this PO as beeing created, updated or deleted by an manual user action (from window).
 	 */
-	protected final void set_ManualUserAction(int windowNo)
+	public final void set_ManualUserAction(final int windowNo)
 	{
-		// Make sure the PO is not in transaction
-		final ITrxManager trxManager = get_TrxManager();
-		if(!trxManager.isNull(get_TrxName()))
-		{
-			throw new AdempiereException("Marking a PO to be manual user action when that PO is in transaction is not allowed - " + this);
-		}
+		// NOTE: we don't need to enforce setting this flag only out-of-trx because it's not valid
+//		// Make sure the PO is not in transaction
+//		final ITrxManager trxManager = get_TrxManager();
+//		if(!trxManager.isNull(get_TrxName()))
+//		{
+//			throw new AdempiereException("Marking a PO to be manual user action when that PO is in transaction is not allowed - " + this);
+//		}
 
 		this.m_isManualUserAction = true;
 		this.m_windowNo = windowNo;
@@ -5064,7 +5082,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private final MSession get_Session()
+	private final I_AD_Session get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{

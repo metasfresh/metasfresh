@@ -29,17 +29,17 @@ import java.util.Properties;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 /**
@@ -68,7 +68,7 @@ public class PrepayCandidateProcessor implements ICandidateProcessor
 		{
 			for (final I_M_InOutLine ioLine : candidates.getLines(inOut))
 			{
-				final I_C_Order order = cachedObjects.retrieveAndCacheOrder(POWrapper.create(ioLine.getC_OrderLine(), I_C_OrderLine.class), trxName);
+				final I_C_Order order = cachedObjects.retrieveAndCacheOrder(InterfaceWrapperHelper.create(ioLine.getC_OrderLine(), I_C_OrderLine.class), trxName);
 
 				assert order.getC_Order_ID() > 0;
 

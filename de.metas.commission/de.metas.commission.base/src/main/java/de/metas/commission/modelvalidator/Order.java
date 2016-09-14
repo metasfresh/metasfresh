@@ -25,8 +25,8 @@ package de.metas.commission.modelvalidator;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
@@ -83,7 +83,7 @@ public class Order implements ModelValidator
 			final MOrder order = (MOrder)po;
 			for (final MOrderLine olPO : order.getLines())
 			{
-				final I_C_OrderLine ol = POWrapper.create(olPO, I_C_OrderLine.class);
+				final I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, I_C_OrderLine.class);
 				ol.setCommissionPoints(BigDecimal.ZERO);
 				ol.setCommissionPointsNet(BigDecimal.ZERO);
 				ol.setCommissionPointsSum(BigDecimal.ZERO);
@@ -114,7 +114,7 @@ public class Order implements ModelValidator
 						continue;
 					}
 
-					final I_C_OrderLine oline = POWrapper.create(ol, I_C_OrderLine.class);
+					final I_C_OrderLine oline = InterfaceWrapperHelper.create(ol, I_C_OrderLine.class);
 					final IOrderLineBL olinebl = Services.get(IOrderLineBL.class);
 
 					// Put order line on the ignore list to avoid the updateDiscounts method

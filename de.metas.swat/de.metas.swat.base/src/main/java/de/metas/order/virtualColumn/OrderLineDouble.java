@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.virtualColumn.IVirtualColumnCache;
 import org.adempiere.model.virtualColumn.IVirtualSpecificColumn;
 import org.adempiere.util.Services;
@@ -53,6 +53,7 @@ import de.metas.order.IOrderPA;
  */
 public class OrderLineDouble implements IVirtualSpecificColumn {
 
+	@Override
 	public void fillCache(final Collection<Integer> recordIds,
 			final IVirtualColumnCache cacheSupport, final String trxName,
 			final Map<String, Object> params) {
@@ -61,7 +62,7 @@ public class OrderLineDouble implements IVirtualSpecificColumn {
 
 		for (final int recordId : recordIds) {
 
-			final I_C_OrderLine thisLine = POWrapper.create(Env.getCtx(), recordId, I_C_OrderLine.class, trxName);
+			final I_C_OrderLine thisLine = InterfaceWrapperHelper.create(Env.getCtx(), recordId, I_C_OrderLine.class, trxName);
 
 			final List<I_C_OrderLine> lines = orderPA
 					.retrieveOrderLinesForProdAndLoc(
@@ -89,15 +90,18 @@ public class OrderLineDouble implements IVirtualSpecificColumn {
 		}
 	}
 
+	@Override
 	public String[] getColumnNames() {
 		return new String[] { C_OrderLine_C_ORDERLINE_DOUBLE_ID,
 				C_OrderLine_C_ORDER_DOUBLE_ID, C_OrderLine_DATEORDERED_DOUBLE };
 	}
 
+	@Override
 	public Object[] getDefaultValues() {
 		return new Object[] { null, null, null };
 	}
 
+	@Override
 	public String getTableName() {
 		return I_C_OrderLine.Table_Name;
 	}

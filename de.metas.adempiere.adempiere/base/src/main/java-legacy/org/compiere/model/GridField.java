@@ -31,7 +31,9 @@ import java.util.StringTokenizer;
 
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -40,9 +42,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -52,8 +52,11 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
@@ -213,7 +216,7 @@ public class GridField
 			}
 			//
 			lookupInfo.setIsKey(isKey());
-			return new MLookup(vo.getLookupInfo(), vo.TabNo);
+			return new MLookup(getCtx(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
 		{
@@ -969,20 +972,7 @@ public class GridField
 	 */
 	public String getColumnSQL(boolean withAS)
 	{
-		// metas
-		if (m_vo.ColumnClass != null)
-		{
-			return "NULL";
-		}
-		// metas end
-		if (m_vo.ColumnSQL != null && m_vo.ColumnSQL.length() > 0)
-		{
-			if (withAS)
-				return m_vo.ColumnSQL + " AS " + m_vo.getColumnName();
-			else
-				return m_vo.ColumnSQL;
-		}
-		return m_vo.getColumnName();
+		return m_vo.getColumnSQL(withAS);
 	}	// getColumnSQL
 
 	/**
@@ -992,10 +982,7 @@ public class GridField
 	 */
 	public boolean isVirtualColumn()
 	{
-		if ((m_vo.ColumnSQL != null && m_vo.ColumnSQL.length() > 0)
-				|| (m_vo.ColumnClass != null && !"".equals(m_vo.ColumnClass))) // metas: columns with a columnClass are also virtual
-			return true;
-		return false;
+		return m_vo.isVirtualColumn();
 	}	// isColumnVirtual
 
 	/**
@@ -1005,7 +992,7 @@ public class GridField
 	 */
 	public String getHeader()
 	{
-		return m_vo.Header;
+		return m_vo.getHeader();
 	}
 
 	/**
@@ -1025,7 +1012,7 @@ public class GridField
 	 */
 	public int getAD_Reference_Value_ID()
 	{
-		return m_vo.AD_Reference_Value_ID;
+		return m_vo.getAD_Reference_Value_ID();
 	}
 
 	/**
@@ -1044,7 +1031,7 @@ public class GridField
 	 * @return window no
 	 */
 	@Override
-	public final int getWindowNo()
+	public int getWindowNo()
 	{
 		return m_vo.WindowNo;
 	}
@@ -1054,7 +1041,6 @@ public class GridField
 	 *
 	 * @return column
 	 */
-	@Override
 	public int getAD_Column_ID()
 	{
 		return m_vo.getAD_Column_ID();
@@ -1230,7 +1216,7 @@ public class GridField
 	 */
 	public boolean isSelectionColumn()
 	{
-		return m_vo.IsSelectionColumn;
+		return m_vo.isSelectionColumn();
 	}
 
 	/**
@@ -1347,15 +1333,6 @@ public class GridField
 		return m_parentValue.booleanValue();
 	}	// isParentValue
 
-	// /**
-	// * Get Callout
-	// * @return callout
-	// */
-	// public String getCallout()
-	// {
-	// return m_vo.Callout;
-	// }
-
 	/**
 	 * Get AD_Process_ID
 	 *
@@ -1373,7 +1350,7 @@ public class GridField
 	 */
 	public String getDescription()
 	{
-		return m_vo.Description;
+		return m_vo.getDescription();
 	}
 
 	/**
@@ -1383,7 +1360,7 @@ public class GridField
 	 */
 	public String getHelp()
 	{
-		return m_vo.Help;
+		return m_vo.getHelp();
 	}
 
 	/**
@@ -1526,6 +1503,13 @@ public class GridField
 	{
 		return m_oldValue;
 	}   // getOldValue
+	
+	public boolean isValueChanged()
+	{
+		final Object valueOld = getOldValue();
+		final Object value = getValue();
+		return Objects.equal(value, valueOld);
+	}
 
 	/**
 	 * Set Error Value (the value, which cuased some Error)
@@ -1691,35 +1675,14 @@ public class GridField
 	 */
 	public static GridField[] createSearchFields(Properties ctx, int WindowNo, int TabNo, int AD_Tab_ID)
 	{
-		final List<GridFieldVO> listVO = new ArrayList<GridFieldVO>();
-		int AD_Window_ID = 0;
-		boolean readOnly = false;
-
-		String sql = GridFieldVO.getSQL(ctx);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, AD_Tab_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final GridFieldVO vo = GridFieldVO.create(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, rs);
-				// if (vo.lookupInfo != null) vo.lookupInfo.IsIgnoredValidationCodeFail = true; // metas: us1261
-				listVO.add(vo);
-			}
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+		final List<GridFieldVO> listVO = GridFieldVOsLoader.newInstance()
+				.setCtx(ctx)
+				.setWindowNo(WindowNo)
+				.setTabNo(TabNo)
+				.setAD_Window_ID(0)
+				.setAD_Tab_ID(AD_Tab_ID)
+				.setTabReadOnly(false)
+				.load();
 
 		//
 		final GridField[] retValue = new GridField[listVO.size()];
@@ -2119,7 +2082,7 @@ public class GridField
 		else
 		{
 			final boolean onlyWindow = true;
-			evaluationCtx = new EvaluateeCtx(rowCtx, getWindowNo(), onlyWindow);
+			evaluationCtx = Evaluatees.ofCtx(rowCtx, getWindowNo(), onlyWindow);
 		}
 
 		return evaluationCtx;
@@ -2161,21 +2124,36 @@ public class GridField
 		return m_vo.getCtx();
 	}
 
-	@Override
 	public int getAD_Table_ID()
 	{
 		return m_vo.getAD_Table_ID();
 	}
 
 	@Override
-	public <T> T getModel(Class<T> modelClass)
+	public String getTableName()
+	{
+		final int adTableId = getAD_Table_ID();
+		return adTableId <= 0 ? null : Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+	}
+	
+	@Override
+	public ICalloutExecutor getCurrentCalloutExecutor()
 	{
 		final GridTab gridTab = getGridTab();
-		Check.assumeNotNull(gridTab, "gridTab not null");
+		if (gridTab == null)
+		{
+			return null;
+		}
+		
+		return gridTab.getCalloutExecutor();
+	}
 
-		final T model = InterfaceWrapperHelper.create(gridTab, modelClass);
+	@Override
+	public <T> T getModel(final Class<T> modelClass)
+	{
+		final ICalloutRecord calloutRecord = getCalloutRecord();
+		final T model = calloutRecord.getModel(modelClass);
 		Check.assumeNotNull(model, "model not null");
-
 		return model;
 	}
 
@@ -2218,6 +2196,20 @@ public class GridField
 
 		return gridTab.isDataNewCopy();
 	}
+	
+	@Override
+	public boolean isRecordCopyingModeIncludingDetails()
+	{
+		final GridTab gridTab = getGridTab();
+
+		// If there was no GridTab set for this field, consider as we are not copying the record
+		if (gridTab == null)
+		{
+			return false;
+		}
+
+		return gridTab.getTableModel().isCopyWithDetails();
+	}
 
 	@Override
 	public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
@@ -2231,5 +2223,25 @@ public class GridField
 
 		gridTab.fireDataStatusEEvent(AD_Message, info, isError);
 	}
+	
+	@Override
+	public void fireDataStatusEEvent(final ValueNamePair errorLog)
+	{
+		final GridTab gridTab = getGridTab();
+		if(gridTab == null)
+		{
+			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: errorLog={}, info={}, isError={}", this, errorLog);
+			return;
+		}
+		
+		gridTab.fireDataStatusEEvent(errorLog);
+	}
 
+	@Override
+	public ICalloutRecord getCalloutRecord()
+	{
+		final GridTab gridTab = getGridTab();
+		Check.assumeNotNull(gridTab, "gridTab not null");
+		return gridTab;
+	}
 }

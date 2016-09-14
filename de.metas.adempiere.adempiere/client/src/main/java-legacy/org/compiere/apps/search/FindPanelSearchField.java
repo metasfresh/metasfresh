@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -26,12 +24,15 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Lookup;
 import org.compiere.swing.CLabel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Represents a field which can be searched in {@link FindPanel}.
@@ -104,7 +105,7 @@ final class FindPanelSearchField
 		Check.assumeNotNull(gridField, "gridField not null");
 
 		final GridFieldVO vo = gridField.getVO().copy();
-		vo.IsMandatory = false;
+		vo.setMandatory(false);
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 

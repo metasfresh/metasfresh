@@ -24,10 +24,8 @@ package org.adempiere.process.rpl.requesthandler.api.impl;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.exp.ExportHelper;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
@@ -40,7 +38,10 @@ import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
+
+import de.metas.logging.LogManager;
 
 public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 {
@@ -74,7 +75,7 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 		final I_EXP_Format formatToUse = result.getFormatToUse();
 		Util.assume(formatToUse != null, "formatToUse shall be set");
 		
-		final MEXPFormat formatToUsePO = (MEXPFormat)POWrapper.getPO(formatToUse, false);
+		final MEXPFormat formatToUsePO = (MEXPFormat)InterfaceWrapperHelper.getStrictPO(formatToUse);
 
 		final ExportHelper exportHelper = new ExportHelper(poToExport.getCtx(), formatToUse.getAD_Client_ID());
 

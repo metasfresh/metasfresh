@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -35,9 +35,8 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.commission.model.I_C_Sponsor_Cond;
@@ -45,6 +44,7 @@ import de.metas.commission.model.I_C_Sponsor_CondLine;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorCondition;
+import de.metas.logging.LogManager;
 
 public class SponsorCondValidator implements ModelValidator
 {
@@ -91,7 +91,7 @@ public class SponsorCondValidator implements ModelValidator
 	{
 		if (timing == ModelValidator.TIMING_BEFORE_PREPARE)
 		{
-			final I_C_Sponsor_Cond cond = POWrapper.create(po, I_C_Sponsor_Cond.class);
+			final I_C_Sponsor_Cond cond = InterfaceWrapperHelper.create(po, I_C_Sponsor_Cond.class);
 			final ISponsorCondition sponsorConditionBL = Services.get(ISponsorCondition.class);
 			final List<I_C_Sponsor_CondLine> condLines = sponsorConditionBL.retrieveLines(cond);
 
@@ -103,7 +103,7 @@ public class SponsorCondValidator implements ModelValidator
 
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE)
 		{
-			final I_C_Sponsor_Cond cond = POWrapper.create(po, I_C_Sponsor_Cond.class);
+			final I_C_Sponsor_Cond cond = InterfaceWrapperHelper.create(po, I_C_Sponsor_Cond.class);
 
 			final ISponsorCondition sponsorConditionBL = Services.get(ISponsorCondition.class);
 			final ISponsorBL sponsorBL = Services.get(ISponsorBL.class);

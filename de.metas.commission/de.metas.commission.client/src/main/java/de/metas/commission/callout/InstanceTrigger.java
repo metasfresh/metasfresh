@@ -27,8 +27,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
@@ -84,7 +83,7 @@ public class InstanceTrigger extends CalloutEngine
 
 		if (I_C_Order.Table_Name.equals(mTab.getTableName()))
 		{
-			final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+			final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
 			if (!order.isSOTrx())
 			{
 				return ""; // nothing to do
@@ -105,7 +104,7 @@ public class InstanceTrigger extends CalloutEngine
 		else
 		{
 			Check.assume(I_C_Invoice.Table_Name.equals(mTab.getTableName()), mTab + " is either C_Order or M_InOut or C_Invoice");
-			final I_C_Invoice invoice = GridTabWrapper.create(mTab, I_C_Invoice.class);
+			final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
 			if (!invoice.isSOTrx())
 			{
 				return ""; // nothing to do
@@ -131,7 +130,7 @@ public class InstanceTrigger extends CalloutEngine
 			return 0;
 		}
 
-		final I_C_BPartner bPartner = POWrapper.create(ctx, bPartnerId, I_C_BPartner.class, TRX_NAME);
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, I_C_BPartner.class, TRX_NAME);
 
 		final I_C_Sponsor sponsor = Services.get(ISponsorDAO.class).retrieveForBPartner(bPartner, false);
 		if (sponsor == null)

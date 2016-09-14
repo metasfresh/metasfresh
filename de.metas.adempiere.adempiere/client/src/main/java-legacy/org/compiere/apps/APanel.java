@@ -112,6 +112,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
@@ -953,9 +954,7 @@ public class APanel extends CPanel
 					// GridController
 					if (gTab.isSortTab())
 					{
-						final VSortTab st = new VSortTab(m_curWindowNo, gTab.getAD_Table_ID(), gTab.getAD_ColumnSortOrder_ID(), gTab.getAD_ColumnSortYesNo_ID());
-						st.setTabLevel(gTab.getTabLevel());
-						tabElement = st;
+						tabElement = new VSortTab(m_curWindowNo, gTab.getGridTabVO(), gTab.getParentTabNo());
 					}
 					else	// normal tab
 					{
@@ -2270,7 +2269,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.getLookup_TableDirEmbed(Env.getLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)
@@ -3178,7 +3177,8 @@ public class APanel extends CPanel
 			// Refresh data
 			if (pi.isRefreshAllAfterExecution())
 			{
-				m_curTab.dataRefreshAll();
+				final boolean retainCurrentRowIfAny = false;
+				m_curTab.dataRefreshAll(retainCurrentRowIfAny);
 			}
 			else
 			{

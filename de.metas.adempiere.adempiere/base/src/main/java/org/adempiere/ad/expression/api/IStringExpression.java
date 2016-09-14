@@ -10,41 +10,90 @@ package org.adempiere.ad.expression.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.expression.json.JsonStringExpressionDeserializer;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Util;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * String Expression
- * 
+ *
  * @author tsa
- * 
+ *
  */
+@JsonDeserialize(using = JsonStringExpressionDeserializer.class)
 public interface IStringExpression extends IExpression<String>
 {
+	String EMPTY_RESULT = new String(""); // NOTE: we get a new string instance because we will compare with it by identity
+
 	/**
 	 * Null String Expression Object
 	 */
 	IStringExpression NULL = NullStringExpression.instance;
 
+	@Override
+	default Class<String> getValueClass()
+	{
+		return String.class;
+	}
+
 	/**
 	 * Gets internal string expression chunks. Don't use it directly, the API will use it only
-	 * 
+	 *
 	 * @return
 	 */
 	List<Object> getExpressionChunks();
+	
+	@Override
+	default String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
+	{
+		final String value = StringExpressionEvaluator.instance.evaluate(ctx, this, onVariableNotFound);
+		return value;
+	}
 
 	@Override
-	IExpressionEvaluator<IStringExpression, String> getEvaluator();
+	default boolean isNoResult(final Object result)
+	{
+		return result == null
+				|| Util.same(result, EMPTY_RESULT);
+	}
+	
+	@Override
+	default boolean isNullExpression()
+	{
+		return false;
+	}
+
+	/**
+	 * Resolves all variables which available and returns a new string expression.
+	 *
+	 * @param ctx
+	 * @return string expression with all available variables resolved.
+	 * @throws ExpressionEvaluationException
+	 */
+	default IStringExpression resolvePartial(final Evaluatee ctx) throws ExpressionEvaluationException
+	{
+		final String expressionStr = evaluate(ctx, OnVariableNotFound.Preserve);
+		return StringExpressionCompiler.instance.compile(expressionStr);
+	}
+
 }

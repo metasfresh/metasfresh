@@ -131,12 +131,13 @@
 			<version>0.9.5</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.2-1003-jdbc4</version> 
-			<!-- 04750 the old version was buggy -->
+			<version>9.4.1209.jre7</version>
 		</dependency>
+
 
 		<!-- Scripting support -->
 

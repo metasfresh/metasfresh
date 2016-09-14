@@ -25,11 +25,12 @@ import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Base Class for MLookup, MLocator.
@@ -478,16 +479,6 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return "";
 	}   //  getValidation
-
-	/**
-	 * Checks if the lookup is immutable. An immutable lookup is a lookup which does not depend on any context variables
-	 * 
-	 * @return true if the lookup is immutable
-	 */
-	public boolean isImmutable()
-	{
-		return true;
-	}
 
 	/**
 	 *  Has Inactive records - default implementation

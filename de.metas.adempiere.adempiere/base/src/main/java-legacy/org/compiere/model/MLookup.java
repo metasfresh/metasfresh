@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -159,9 +160,10 @@ public final class MLookup extends Lookup implements Serializable
 	 * @param info info
 	 * @param TabNo tab no
 	 */
-	public MLookup(final MLookupInfo info, final int TabNo)
+	public MLookup(final Properties ctx, final MLookupInfo info, final int TabNo)
 	{
 		super(info.getDisplayType(), info.getWindowNo());
+		this.ctx = ctx; 
 		m_info = info;
 
 		//
@@ -177,7 +179,7 @@ public final class MLookup extends Lookup implements Serializable
 				// final int currentRow = Env.getContextAsInt(parentCtx, getWindowNo(), TabNo, GridTab.CTX_CurrentRow, true);
 				// new GridRowCtx
 
-				return getLookupInfo().getCtx();
+				return getCtx();
 			}
 		};
 		m_evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(ctxDelegate, info.getWindowNo(), TabNo, info.getTableName()); // metas
@@ -192,20 +194,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return;
 		}
-
-		// // Don't load Parents/Keys
-		// if (m_info.isParent() || m_info.isKey())
-		// {
-		// m_hasInactive = true; // creates focus listener for dynamic loading
-		// return; // required when parent needs to be selected (e.g. price from product)
-		// }
-		//
-		// m_loader = new MLoader();
-		// if (TabNo != 0)
-		// m_loader.setPriority(Thread.NORM_PRIORITY - 1);
-		// m_loader.start();
-		// m_loader.run(); // test sync call
-	}	// MLookup
+	}
 
 	/** Inactive Marker Start */
 	public static final String INACTIVE_S = "~";
@@ -220,6 +209,7 @@ public final class MLookup extends Lookup implements Serializable
 	/** Indicator for Null */
 	private static Integer MINUS_ONE = new Integer(-1);
 
+	private Properties ctx;
 	/** The Lookup Info Value Object */
 	private MLookupInfo m_info;
 	private final IValidationContext m_evalCtx; // metas
@@ -228,6 +218,17 @@ public final class MLookup extends Lookup implements Serializable
 	private boolean m_refreshing = false;
 	/** Next Read for Parent */
 	private long m_nextRead = 0;
+	
+	private Properties getCtx()
+	{
+		return ctx;
+	}
+	
+	public void setCtx(final Properties ctx)
+	{
+		Check.assumeNotNull(ctx, "ctxNew not null");
+		this.ctx = ctx;
+	}
 
 	public boolean isHighVolume()
 	{
@@ -672,12 +673,6 @@ public final class MLookup extends Lookup implements Serializable
 		return validation == null ? "" : validation;
 	}   // getValidation
 
-	@Override
-	public boolean isImmutable()
-	{
-		return m_info.getValidationRule().isImmutable();
-	}
-
 	/**
 	 * Get Reference Value
 	 *
@@ -685,7 +680,7 @@ public final class MLookup extends Lookup implements Serializable
 	 */
 	public int getAD_Reference_Value_ID()
 	{
-		return m_info.AD_Reference_Value_ID;
+		return m_info.getAD_Reference_Value_ID();
 	}   // getAD_Reference_Value_ID
 
 	/**
@@ -906,7 +901,7 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		// Need to check SO/PO
-		final boolean isSOTrx = DB.isSOTrx(m_info.TableName, query.getWhereClause(false));
+		final boolean isSOTrx = DB.isSOTrx(m_info.getTableName(), query.getWhereClause(false));
 		//
 		if (!isSOTrx)
 		{
@@ -927,7 +922,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return null;
 		}
-		return m_info.ZoomQuery;
+		return m_info.getZoomQuery();
 	}	// getZoom
 
 	/**
@@ -1043,7 +1038,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		if (IValidationContext.NULL != validationCtx)
 		{
-			for (final String parameterName : lookupInfo.getValidationRule().getParameters(validationCtx))
+			for (final String parameterName : lookupInfo.getValidationRule().getParameters())
 			{
 				final String parameterValue = validationCtx.get_ValueAsString(parameterName);
 				keys.add(parameterName);
@@ -1069,38 +1064,15 @@ public final class MLookup extends Lookup implements Serializable
 		return m_info != null && m_info.isAutoComplete();
 	}
 
-	public String getQuery()
-	{
-		return m_info.getQuery();
-	}
-
-	public String getQueryDirect()
-	{
-		return m_info.QueryDirect;
-	}
-
 	public MLookupInfo getLookupInfo()
 	{
 		return m_info;
 	}
 
-	// metas: adding getter for lookup info
-	public final int getColumnId()
-	{
-		return m_info.getAD_Column_ID();
-	}
-
-	// metas end
-
 	@Override
 	public List<String> getParameters()
 	{
-		return getParameters(getValidationContext());
-	}
-
-	public List<String> getParameters(IValidationContext validationCtx)
-	{
-		return m_info.getValidationRule().getParameters(validationCtx);
+		return m_info.getValidationRule().getParameters();
 	}
 
 	@Override

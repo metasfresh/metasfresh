@@ -1,5 +1,7 @@
 package de.metas.shipping.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -24,9 +26,7 @@ package de.metas.shipping.callout;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -34,9 +34,9 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 public class M_Shipper_Transportation_Tab_Callout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(gridTab, I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = calloutRecord.getModel(I_M_ShipperTransportation.class);
 
 		Services.get(IShipperTransportationBL.class).setC_DocType(shipperTransportation);
 	}

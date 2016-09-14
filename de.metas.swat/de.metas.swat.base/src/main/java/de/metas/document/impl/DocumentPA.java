@@ -36,7 +36,7 @@ import java.util.Properties;
 
 import org.adempiere.db.IDBService;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MDocType;
@@ -101,6 +101,7 @@ public final class DocumentPA implements IDocumentPA
 			+ "    AND i.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
 			+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
 
+	@Override
 	public String retrieveDocBaseType(final int docTypeId, final String trxName)
 	{
 
@@ -115,6 +116,7 @@ public final class DocumentPA implements IDocumentPA
 		return docType.getDocBaseType();
 	}
 
+	@Override
 	public int retriveDocTypeId(final Properties ctx, final int adOrgId, final String docBaseType)
 	{
 
@@ -138,6 +140,7 @@ public final class DocumentPA implements IDocumentPA
 						+ ", but there are " + docTypes.length + ": " + docTypes);
 	}
 
+	@Override
 	public int retriveDocTypeIdForDocSubtype(final Properties ctx, final String docBaseType, final String docSubType)
 	{
 
@@ -155,6 +158,7 @@ public final class DocumentPA implements IDocumentPA
 		throw new AdempiereException("@" + ERR_DocTypeNotSelected + "@");
 	}
 
+	@Override
 	public int updateDocumentAddresses(final int bPartnerLocationId,
 			final String trxName)
 	{
@@ -299,7 +303,7 @@ public final class DocumentPA implements IDocumentPA
 		}
 		dt.setIsSOTrx();
 
-		final I_C_DocType result = POWrapper.create(dt, I_C_DocType.class);
+		final I_C_DocType result = InterfaceWrapperHelper.create(dt, I_C_DocType.class);
 		result.setEntityType(entityType);
 
 		return result;

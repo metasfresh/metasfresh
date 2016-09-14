@@ -26,7 +26,7 @@ package de.metas.adempiere.modelvalidator;
 import java.math.BigDecimal;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
@@ -34,14 +34,14 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.adempiere.service.impl.InvoiceLineBL;
+import de.metas.logging.LogManager;
 
 public class InvoiceLine implements ModelValidator
 {
@@ -96,7 +96,7 @@ public class InvoiceLine implements ModelValidator
 		{
 
 			final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-			final I_C_InvoiceLine il = POWrapper.create(po, I_C_InvoiceLine.class);
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 
 			if (!il.isProcessed())
 			{
@@ -127,7 +127,7 @@ public class InvoiceLine implements ModelValidator
 		// 02362: begin
 		else if (type == TYPE_AFTER_CHANGE)
 		{
-			final I_C_InvoiceLine il = POWrapper.create(po, I_C_InvoiceLine.class);
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 			if (!il.isProcessed())
 			{
 				final BigDecimal PriceList = il.getPriceList();

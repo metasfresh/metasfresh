@@ -25,7 +25,7 @@ package de.metas.commission.modelvalidator;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -78,7 +78,7 @@ public class ProhibitInconsistentFacts implements ModelValidator
 			// nothing to do
 			return null;
 		}
-		final I_C_AdvCommissionFact fact = POWrapper.create(po, I_C_AdvCommissionFact.class);
+		final I_C_AdvCommissionFact fact = InterfaceWrapperHelper.create(po, I_C_AdvCommissionFact.class);
 
 		checkNotUpdatable(po);
 

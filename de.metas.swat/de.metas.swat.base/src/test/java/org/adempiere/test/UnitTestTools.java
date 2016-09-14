@@ -94,16 +94,13 @@ public class UnitTestTools
 		return mock;
 	}
 
-	public static <T> T mock(final Class<T> clazz, final String key,
-			final Map<String, Object> mocks)
+	public static <T> T mock(final Class<T> clazz, final String key, final Map<String, Object> mocks)
 	{
 
 		final T mock = createMock(clazz);
 
 		final Object oldVal = mocks.put(key, mock);
-		Assert.assertNull(
-				"Error in test setup: there is already a mock with key '" + key
-						+ "'", oldVal);
+		Assert.assertNull("Error in test setup: there is already a mock with key '" + key + "'", oldVal);
 
 		return mock;
 	}

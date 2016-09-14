@@ -35,6 +35,7 @@ import org.adempiere.ad.security.permissions.Permission;
 import org.adempiere.ad.security.permissions.ResourceAsPermission;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Optional;
 
@@ -55,6 +56,7 @@ public interface IUserRolePermissions
 	Permission PERMISSION_ChangeLog = ResourceAsPermission.ofName("IsChangeLog");
 	Permission PERMISSION_MenuAvailable = ResourceAsPermission.ofName("IsMenuAvailable");
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
+	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
 	//
 	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
 	Permission PERMISSION_InfoWindow_BPartner = InfoWindowPermission.ofInfoWindowKey("InfoBPartner");
@@ -135,7 +137,7 @@ public interface IUserRolePermissions
 	Boolean checkWindowAccess(int AD_Window_ID);
 	Boolean getWindowAccess(int AD_Window_ID);
 
-	int getActionAccess(IDocActionOptionsContext optionsCtx, int adClientId);
+	void applyActionAccess(IDocActionOptionsContext optionsCtx);
 
 	boolean canView(TableAccessLevel tableAcessLevel);
 
@@ -166,6 +168,7 @@ public interface IUserRolePermissions
 	//FRESH-560: Retrieve the org IDs also as a list
 	Set<Integer> getAD_Org_IDs_AsSet();
 
+	Set<KeyNamePair> getLoginClients();
 	Set<OrgResource> getLoginOrgs();
 
 	int getOrg_Tree_ID();

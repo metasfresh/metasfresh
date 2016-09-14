@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Services;
@@ -73,7 +74,32 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 
 		// default
-		return new AdempiereException(cause.getLocalizedMessage(), cause);
+		return new AdempiereException(extractMessage(cause), cause);
+	}
+
+	/**
+	 * Extracts throwable message.
+	 * 
+	 * @param throwable
+	 * @return message; never return null
+	 */
+	protected static final String extractMessage(final Throwable throwable)
+	{
+		// guard against NPE, shall not happen
+		if(throwable == null)
+		{
+			return "null";
+		}
+		
+		String message = throwable.getLocalizedMessage();
+		
+		// If throwable message is null or it's very short then it's better to use throwable.toString()
+		if(message == null || message.length() < 4)
+		{
+			message = throwable.toString();
+		}
+
+		return message;
 	}
 
 	/**
@@ -91,6 +117,10 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 
 		if (throwable instanceof ExecutionException)
+		{
+			return cause;
+		}
+		if (throwable instanceof com.google.common.util.concurrent.UncheckedExecutionException)
 		{
 			return cause;
 		}
@@ -343,6 +373,26 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 			return false;
 		}
 	}
+
+	/**
+	 * If developer mode is active, it logs a warning with given exception.
+	 * 
+	 * If the developer mode is not active, this method does nothing
+	 * 
+	 * @param logger
+	 * @param exceptionSupplier {@link AdempiereException} supplier
+	 */
+	public static final void logWarningIfDeveloperMode(final Logger logger, Supplier<? extends AdempiereException> exceptionSupplier)
+	{
+		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return;
+		}
+
+		final boolean throwIt = false;
+		final AdempiereException exception = exceptionSupplier.get();
+		exception.throwOrLog(throwIt, Level.WARN, logger);
+	}	
 
 	/**
 	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.
