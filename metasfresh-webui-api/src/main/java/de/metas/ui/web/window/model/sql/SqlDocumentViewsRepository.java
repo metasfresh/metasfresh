@@ -64,10 +64,15 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 		return view;
 	}
 
+	@Override
+	public void deleteView(final String viewId)
+	{
+		views.invalidate(viewId);
+	}
+
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final SqlDocumentViewSelection view = (SqlDocumentViewSelection)notification.getValue();
 		view.close();
 	}
-
 }

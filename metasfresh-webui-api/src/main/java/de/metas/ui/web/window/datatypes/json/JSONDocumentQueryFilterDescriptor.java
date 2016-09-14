@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 
@@ -39,6 +40,11 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 {
 	public static List<JSONDocumentQueryFilterDescriptor> ofList(final List<DocumentQueryFilterDescriptor> filters, final String adLanguage)
 	{
+		if(filters == null || filters.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		return filters.stream()
 				.map(filter -> of(filter, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());

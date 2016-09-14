@@ -25,9 +25,11 @@ import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 
 /*
  * #%L
@@ -69,24 +71,6 @@ public class WindowRestControllerClient implements IWindowRestController
 		final JSONDocumentLayout layout = fromJson(json, JSONDocumentLayout.class);
 		System.out.println("GOT layout:\n" + toJson(layout));
 		return layout;
-	}
-
-	@Override
-	public JSONDocumentLayout gridLayout(final int adWindowId)
-	{
-		final String json = httpGet("/gridLayout?type=" + adWindowId);
-		final JSONDocumentLayout layoutGrid = fromJson(json, JSONDocumentLayout.class);
-		System.out.println("GOT grid layout:\n" + toJson(layoutGrid));
-		return layoutGrid;
-	}
-
-	@Override
-	public JSONDocumentLayout sideListLayout(final int adWindowId)
-	{
-		final String json = httpGet("/sideListLayout?type=" + adWindowId);
-		final JSONDocumentLayout layoutSideList = fromJson(json, JSONDocumentLayout.class);
-		System.out.println("GOT side list layout:\n" + toJson(layoutSideList));
-		return layoutSideList;
 	}
 
 	@Override
@@ -173,7 +157,16 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentViewResult createView(final int adWindowId, final int firstRow, final int pageLength, final List<JSONDocumentQueryFilter> jsonFilters)
+	public JSONDocumentLayoutTab viewLayout(int adWindowId, JSONViewDataType viewDataType)
+	{
+		final String json = httpGet("/gridLayout?type=" + adWindowId + "&viewType=" + viewDataType);
+		final JSONDocumentLayoutTab viewLayout = fromJson(json, JSONDocumentLayoutTab.class);
+		System.out.println("GOT view layout:\n" + toJson(viewLayout));
+		return viewLayout;
+	}
+
+	@Override
+	public JSONDocumentViewResult createView(final int adWindowId, final JSONViewDataType viewDataType, final int firstRow, final int pageLength, final List<JSONDocumentQueryFilter> jsonFilters)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
@@ -181,6 +174,13 @@ public class WindowRestControllerClient implements IWindowRestController
 
 	@Override
 	public JSONDocumentViewResult browseView(final String viewId, final int firstRow, final int pageLength)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void deleteView(final String viewId)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
