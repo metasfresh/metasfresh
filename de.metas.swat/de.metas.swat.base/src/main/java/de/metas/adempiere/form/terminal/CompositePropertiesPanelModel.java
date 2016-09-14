@@ -42,6 +42,9 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 /**
  * Class used to aggregate together {@link IPropertiesPanelModel}s and behave like on single {@link IPropertiesPanelModel}.
+ * <p>
+ * Note that there is just one child model per property name.<br>
+ * E.g. when the method {@link #setPropertyValue(String, Object)} is called, then there is one child {@link IPropertiesPanel} instance for the given <code>propertyName</code>.
  *
  * @author tsa
  *
