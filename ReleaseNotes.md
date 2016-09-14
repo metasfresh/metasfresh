@@ -15,6 +15,9 @@ Here come the actual release notes:
 upcoming
 
 ## Features
+
+ * #369 request report
+ * #361 Request change for customer service
  * #377 Implement executed SQLs tracing
  * #338 Get rid of legacy NOT-EQUALS operators from logic expression
  * #333 All tables shall have a single column primary key
