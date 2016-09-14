@@ -1,17 +1,13 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -48,18 +44,6 @@ public final class JSONLookupValue implements Serializable
 	public static final JSONLookupValue of(final String key, final String value)
 	{
 		return new JSONLookupValue(ImmutableMap.of(key, value == null ? "" : value));
-	}
-
-	public static final List<JSONLookupValue> ofLookupValuesList(final List<LookupValue> lookupValues)
-	{
-		if (lookupValues == null || lookupValues.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return lookupValues.stream()
-				.map(JSONLookupValue::ofLookupValue)
-				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)

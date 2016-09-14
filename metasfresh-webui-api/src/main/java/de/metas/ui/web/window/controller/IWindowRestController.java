@@ -8,7 +8,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 
 /*
@@ -63,7 +63,7 @@ public interface IWindowRestController
 			, String rowIdStr//
 	);
 
-	List<JSONLookupValue> typeahead(
+	JSONLookupValuesList typeahead(
 			int adWindowId//
 			, String idStr//
 			, String detailId//
@@ -72,7 +72,7 @@ public interface IWindowRestController
 			, String query//
 	);
 
-	List<JSONLookupValue> dropdown(
+	JSONLookupValuesList dropdown(
 			int adWindowId//
 			, String idStr//
 			, String detailId//

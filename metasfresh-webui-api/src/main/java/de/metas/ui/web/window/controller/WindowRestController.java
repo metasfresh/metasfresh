@@ -28,7 +28,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -275,7 +275,7 @@ public class WindowRestController implements IWindowRestController
 
 	@Override
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
-	public List<JSONLookupValue> typeahead(
+	public JSONLookupValuesList typeahead(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
 			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
@@ -295,12 +295,12 @@ public class WindowRestController implements IWindowRestController
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
-		return JSONLookupValue.ofLookupValuesList(lookupValues);
+		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}
 
 	@Override
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
-	public List<JSONLookupValue> dropdown(
+	public JSONLookupValuesList dropdown(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
@@ -320,7 +320,7 @@ public class WindowRestController implements IWindowRestController
 		final Document document = documentCollection.getDocument(documentPath);
 		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
 
-		return JSONLookupValue.ofLookupValuesList(lookupValues);
+		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}
 
 	@Override

@@ -28,7 +28,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 
 /*
@@ -125,19 +125,19 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public List<JSONLookupValue> typeahead(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName, final String query)
+	public JSONLookupValuesList typeahead(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName, final String query)
 	{
 		final String httpPath = "/dropdown?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
 				+ "&field=" + fieldName //
 				+ "&query=" + query;
 
 		final String json = httpGet(httpPath);
-		final JSONLookupValue[] jsonLookupValues = fromJson(json, JSONLookupValue[].class);
+		final JSONLookupValuesList jsonLookupValues = fromJson(json, JSONLookupValuesList.class);
 		System.out.println("GOT lookup values:\n" + toJson(jsonLookupValues));
-		return Arrays.asList(jsonLookupValues);
+		return jsonLookupValues;
 	}
 
-	public List<JSONLookupValue> dropdown(final int adWindowId, final String idStr, final String fieldName)
+	public JSONLookupValuesList dropdown(final int adWindowId, final String idStr, final String fieldName)
 	{
 		final String detailId = null;
 		final String rowIdStr = null;
@@ -145,15 +145,15 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public List<JSONLookupValue> dropdown(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName)
+	public JSONLookupValuesList dropdown(final int adWindowId, final String idStr, final String detailId, final String rowIdStr, final String fieldName)
 	{
 		final String httpPath = "/dropdown?type=" + adWindowId + "&id=" + Strings.nullToEmpty(idStr) + "&tabid=" + Strings.nullToEmpty(detailId) + "&rowId=" + Strings.nullToEmpty(rowIdStr)
 				+ "&field=" + fieldName;
 
 		final String json = httpGet(httpPath);
-		final JSONLookupValue[] jsonLookupValues = fromJson(json, JSONLookupValue[].class);
+		final JSONLookupValuesList jsonLookupValues = fromJson(json, JSONLookupValuesList.class);
 		System.out.println("GOT lookup values:\n" + toJson(jsonLookupValues));
-		return Arrays.asList(jsonLookupValues);
+		return jsonLookupValues;
 	}
 
 	@Override
