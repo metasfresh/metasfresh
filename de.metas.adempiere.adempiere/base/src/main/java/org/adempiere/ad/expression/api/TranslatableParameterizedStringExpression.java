@@ -92,7 +92,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	private final String adLanguageParamName;
 	private final List<String> parameters;
 
-	public TranslatableParameterizedStringExpression(final String adLanguageParamName, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
+	private TranslatableParameterizedStringExpression(final String adLanguageParamName, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
 	{
 		super();
 
