@@ -10,18 +10,17 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -57,6 +56,10 @@ public class WeakList<T> extends AbstractList<T>
 		super();
 	}
 
+	/**
+	 *
+	 * @param weakDefault this constructor calls {@link #setWeakDefault(boolean)} with the given value.
+	 */
 	public WeakList(final boolean weakDefault)
 	{
 		this();
@@ -68,6 +71,11 @@ public class WeakList<T> extends AbstractList<T>
 		return weakDefault;
 	}
 
+	/**
+	 * if <code>true</code>, then the {@link #add(Object)} method will wrap a not-weak element into a {@link org.adempiere.util.lang.WeakReference} and then add that wrapper.
+	 *
+	 * @param weakDefault
+	 */
 	public void setWeakDefault(final boolean weakDefault)
 	{
 		this.weakDefault = weakDefault;
@@ -219,9 +227,8 @@ public class WeakList<T> extends AbstractList<T>
 	}
 
 	/**
-	 * Expunge stale entries from the list.
+	 * Remove entries from the list, that are <code>null</code> (because they were weak references that were garbage collected meanwhile).
 	 */
-
 	private void expungeStaleEntries()
 	{
 		lock.lock();
@@ -236,7 +243,7 @@ public class WeakList<T> extends AbstractList<T>
 	}
 
 	/**
-	 * Expunge stale entries. This method should only be called from inside a lock.
+	 * Called by {@link #expungeStaleEntries()}. This method should only be called from inside a lock.
 	 *
 	 */
 	@SuppressWarnings("unchecked")
@@ -328,7 +335,7 @@ public class WeakList<T> extends AbstractList<T>
 
 		/**
 		 * Always compare by identity.
-		 * 
+		 *
 		 * @return true if it's the same instance.
 		 */
 		@Override
