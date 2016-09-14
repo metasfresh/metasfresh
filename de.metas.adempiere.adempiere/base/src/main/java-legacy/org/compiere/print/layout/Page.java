@@ -141,7 +141,7 @@ public class Page
 	 */
 	public void paint (Graphics2D g2D, Rectangle bounds, boolean isView, boolean isCopy)
 	{
-		Env.put(m_ctx, CONTEXT_PAGE, m_pageInfo);
+		Env.setContext(m_ctx, CONTEXT_PAGE, m_pageInfo);
 	//	log.trace( "PrintContext", CONTEXT_PAGE + "=" + m_pageInfo);
 		//
 		StringBuffer sb = new StringBuffer();
@@ -180,7 +180,7 @@ public class Page
 		Point pageStart = new Point(bounds.getLocation());
 		for (int i = 0; i < m_elements.size(); i++)
 		{
-			PrintElement e = (PrintElement)m_elements.get(i);
+			PrintElement e = m_elements.get(i);
 			e.paint(g2D, m_pageNo, pageStart, m_ctx, isView);
 		}
 	}	//	paint
@@ -197,7 +197,7 @@ public class Page
 		MQuery retValue = null;
 		for (int i = 0; i < m_elements.size() && retValue == null; i++)
 		{
-			PrintElement element = (PrintElement)m_elements.get(i);
+			PrintElement element = m_elements.get(i);
 			retValue = element.getDrillDown (relativePoint, m_pageNo);
 		}
 		return retValue;
@@ -213,7 +213,7 @@ public class Page
 		MQuery retValue = null;
 		for (int i = 0; i < m_elements.size() && retValue == null; i++)
 		{
-			PrintElement element = (PrintElement)m_elements.get(i);
+			PrintElement element = m_elements.get(i);
 			retValue = element.getDrillAcross (relativePoint, m_pageNo);
 		}
 		return retValue;
@@ -241,6 +241,7 @@ public class Page
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("Page[");
