@@ -166,4 +166,8 @@ public interface Evaluatee
 		return (T)get_ValueAsString(variableName);
 	}
 
+	default Evaluatee andComposeWith(final Evaluatee other)
+	{
+		return Evaluatees.compose(this, other);
+	}
 }	// Evaluatee
