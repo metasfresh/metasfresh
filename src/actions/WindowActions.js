@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 
 import {getWindowBreadcrumb} from './MenuActions';
 
@@ -103,6 +103,12 @@ export function closeModal(){
         type: types.CLOSE_MODAL
     }
 }
+export function updateModal (rowId) {
+    return {
+        type: types.UPDATE_MODAL,
+        rowId: rowId
+    }
+}
 
 // INDICATOR ACTIONS
 
@@ -130,9 +136,8 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
         dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
 
-                // TODO: This is temporary solution - GITHUB ISSUE
                 if(docId == "NEW" && !isModal){
-                    dispatch(push("/window/"+ windowType + "/" + response.data[0].id));
+                    dispatch(replace("/window/"+ windowType + "/" + response.data[0].id));
                 }
 
                 docId = response.data[0].id;
@@ -141,13 +146,13 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 dispatch(initDataSuccess(preparedData, getScope(isModal)));
 
                 if(isModal && rowId === "NEW"){
-                    dispatch(mapDataToState([response.data[0]], false, "NEW"));
+                    dispatch(mapDataToState([response.data[0]], false, "NEW"))
+                    dispatch(updateModal(response.data[0].rowId));
                 }
 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>
@@ -161,7 +166,6 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                         .then((res)=> {
 
                             res.data && res.data.map(row => {
-
                                 row.fields = nullToEmptyStrings(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
@@ -236,7 +240,7 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 }
 
 function mapDataToState(data, isModal, rowId){
-    return dispatch => {
+    return (dispatch) => {
         data.map(item1 => {
 
             item1.fields = nullToEmptyStrings(item1.fields);

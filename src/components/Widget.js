@@ -28,6 +28,7 @@ class Widget extends Component {
         let currRowId = rowId;
         let ret = null;
 
+
         if(rowId === "NEW"){
             currRowId = relativeDocId;
         }
