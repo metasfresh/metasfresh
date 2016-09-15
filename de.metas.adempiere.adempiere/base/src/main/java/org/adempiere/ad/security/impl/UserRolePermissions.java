@@ -128,6 +128,8 @@ class UserRolePermissions implements IUserRolePermissions
 
 	/** Permission constraints */
 	private final Constraints constraints;
+	
+	private final int menu_AD_Tree_ID;
 
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
@@ -156,6 +158,8 @@ class UserRolePermissions implements IUserRolePermissions
 
 		this.miscPermissions = builder.getMiscPermissions();
 		this.constraints = builder.getConstraints();
+		
+		this.menu_AD_Tree_ID = builder.getMenu_Tree_ID();
 	}
 
 	@Override
@@ -167,6 +171,7 @@ class UserRolePermissions implements IUserRolePermissions
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setUserLevel(userLevel)
+				.setMenu_AD_Tree_ID(getMenu_Tree_ID())
 				//
 				.setOrgPermissions(orgPermissions)
 				.setTablePermissions(tablePermissions)
@@ -373,6 +378,12 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		//
 		return orgPermissions.isClientAccess(AD_Client_ID, rw);
+	}
+	
+	@Override
+	public int getMenu_Tree_ID()
+	{
+		return menu_AD_Tree_ID;
 	}
 
 	@Override
