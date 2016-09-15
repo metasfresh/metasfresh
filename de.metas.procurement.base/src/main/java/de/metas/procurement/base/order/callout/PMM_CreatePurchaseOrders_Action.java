@@ -33,11 +33,11 @@ import de.metas.procurement.base.order.async.PMM_GenerateOrders;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -139,7 +139,7 @@ public class PMM_CreatePurchaseOrders_Action extends ExecutableSideAction
 		//
 		// Inform the user
 		clientUI.info(windowNo,
-				"Updated", // AD_Message/title
+				"Updated",  // AD_Message/title
 				"#" + countProcessed // message
 		);
 	}
@@ -150,8 +150,16 @@ public class PMM_CreatePurchaseOrders_Action extends ExecutableSideAction
 				.addOnlyActiveRecordsFilter()
 				.filter(lockManager.getNotLockedFilter(I_PMM_PurchaseCandidate.class))
 				.addNotEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_QtyToOrder, BigDecimal.ZERO)
-		//
-		;
+				.orderBy()
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_AD_Org_ID)
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_M_Warehouse_ID)
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_C_BPartner_ID)
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised)
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_M_PricingSystem_ID)
+				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_C_Currency_ID)
+				.endOrderBy()
+				//
+				;
 	}
 
 	private final int process(final IQuery<I_PMM_PurchaseCandidate> query)
