@@ -21,7 +21,7 @@ class Subheader extends Component {
     render() {
         const { windowType } = this.props;
         return (
-            <div className={"subheader-container " + (this.props.open ? "subheader-open" : "")}>
+            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container">
                     <div className="row">
                         <div className="subheader-row">
