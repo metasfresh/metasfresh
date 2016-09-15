@@ -6,13 +6,36 @@ import Header from '../components/app/Header';
 import DatetimeRange from '../components/app/DatetimeRange';
 import Table from '../components/table/Table';
 
+import {
+    viewLayoutRequest,
+    createViewRequest,
+    browseViewRequest
+} from '../actions/AppActions';
+
 class DocList extends Component {
     constructor(props){
         super(props);
+
+        const {dispatch} = this.props;
+
+        this.state = {};
+
+        dispatch(viewLayoutRequest(143, "list")).then((response) => {
+            this.setState(Object.assign({}, this.state, {
+                layout: response.data,
+                filters: response.data.filters
+            }))
+        });
+        dispatch(createViewRequest(143, "list", 50, this.state.filters)).then((response) => {
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
+        });
     }
 
     render() {
         const {dispatch, windowType} = this.props;
+        const {layout} = this.state;
         return (
             <div>
                 <Header />
@@ -32,14 +55,15 @@ class DocList extends Component {
 
                     </div>
                     <div>
-                        {/*<Table
+                        {layout && <Table
                             rowData={[]}
-                            cols={[]}
+                            cols={layout.elements}
                             tabid={1}
                             type={windowType}
-                            emptyText={"asd"}
-                            emptyHint={"asd"}
-                        />*/}
+                            emptyText={layout.emptyResultText}
+                            emptyHint={layout.emptyResultHint}
+                            readonly={true}
+                        />}
                     </div>
                 </div>
             </div>

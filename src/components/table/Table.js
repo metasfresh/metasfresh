@@ -283,7 +283,7 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid} = this.props;
+        const {cols, type, docId, rowData, tabid, readonly} = this.props;
         const {x,y,contextMenu,selected, listenOnKeys} = this.state;
 
         return (
@@ -300,14 +300,14 @@ class Table extends Component {
                         selected={selected}
                         deselect={() => this.deselectAllProducts()}
                     />
-                    <div className="row">
+                    {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
                             <div className="pull-xs-right">
-                                <TableFilter />
+                                {/*<TableFilter />*/}
                             </div>
                         </div>
-                    </div>
+                    </div>}
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
                         <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>

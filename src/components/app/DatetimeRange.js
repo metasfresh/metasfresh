@@ -37,8 +37,8 @@ class DatetimeRange extends Component {
                 <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
                     <i className="meta-icon-calendar" />
                         {!!startDate && !!endDate ?
-                            Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
-                            "All dates available"
+                            " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
+                            " All dates available"
                         }
                 </button>
             </DateRangePicker>
