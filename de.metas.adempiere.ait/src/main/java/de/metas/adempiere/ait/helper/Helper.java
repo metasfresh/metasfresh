@@ -86,7 +86,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.ait.validator.BPOpenBalanceValidator;
@@ -111,8 +110,6 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.C_Invoice_Candidate_GenerateInvoice;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 
@@ -862,7 +859,7 @@ public class Helper implements IHelper
 
 		final I_C_BP_BankAccount ba = new Query(ctx, I_C_BP_BankAccount.Table_Name, null, null)
 				.setClient_ID()
-				.setOrderBy(I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
+				.setOrderBy(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
 				.first(I_C_BP_BankAccount.class);
 		Assert.assertNotNull("No default bank account found", ba);
 		return ba;
@@ -877,7 +874,7 @@ public class Helper implements IHelper
 		I_C_BP_BankAccount ba = new Query(ctx, I_C_BP_BankAccount.Table_Name, whereClause, null)
 				.setParameters(AD_Org_ID, C_Currency_ID)
 				.setClient_ID()
-				.setOrderBy(I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
+				.setOrderBy(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
 				.first(I_C_BP_BankAccount.class);
 		if (ba != null)
 		{
