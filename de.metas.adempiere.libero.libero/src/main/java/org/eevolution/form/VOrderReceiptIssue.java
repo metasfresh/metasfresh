@@ -116,7 +116,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBOMDAO;
@@ -128,9 +127,9 @@ import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.PPOrderBOMLineModel;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -215,6 +214,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	 * @param WindowNo window
 	 * @param frame frame
 	 */
+	@Override
 	public void init(int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -248,10 +248,9 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 
 		Properties ctx = Env.getCtx();
 
-		Language language = Language.getLoginLanguage(); // Base Language
 		MLookup orderL = MLookupFactory.get(ctx, m_WindowNo,
 				MColumn.getColumn_ID(MPPOrder.Table_Name, MPPOrder.COLUMNNAME_PP_Order_ID),
-				DisplayType.Search, language, "PP_Order_ID", 0, false,
+				DisplayType.Search, "PP_Order_ID", 0, false,
 				"PP_Order.DocStatus = '" + MPPOrder.DOCACTION_Complete + "'");
 
 		orderField = new VLookup("PP_Order_ID", false, false, true, orderL);
@@ -551,6 +550,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	/**
 	 * Called when events occur in the window
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		log.debug("Event:" + e.getSource());
@@ -964,6 +964,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		return linesNo;
 	}
 
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -971,6 +972,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		m_frame = null;
 	}
 
+	@Override
 	public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException
 	{
 		String name = e.getPropertyName();
@@ -1040,6 +1042,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		{
 			Services.get(ITrxManager.class).run(new TrxRunnable()
 			{
+				@Override
 				public void run(String trxName)
 				{
 					MPPOrder order = new MPPOrder(Env.getCtx(), getPP_Order_ID(), trxName);
@@ -1148,7 +1151,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 
 				if (value == null && isSelected)
 				{
-					M_AttributeSetInstance_ID = (Integer)key.getKey();
+					M_AttributeSetInstance_ID = key.getKey();
 					orderbomLine = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLine(order, product);
 					if (orderbomLine != null)
 					{
@@ -1157,7 +1160,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 				}
 				else if (value != null && isSelected)
 				{
-					PP_Order_BOMLine_ID = (Integer)key.getKey();
+					PP_Order_BOMLine_ID = key.getKey();
 					if (PP_Order_BOMLine_ID > 0)
 					{
 						orderbomLine = InterfaceWrapperHelper.create(order.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, order.get_TrxName());
@@ -1331,7 +1334,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 
 	protected Timestamp getMovementDate()
 	{
-		return (Timestamp)movementDateField.getValue();
+		return movementDateField.getValue();
 	}
 
 	protected BigDecimal getOrderedQty()
@@ -1546,31 +1549,38 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		return html.toString();
 	}
 
+	@Override
 	public void valueChanged(ListSelectionEvent e)
 	{
 	}
 
+	@Override
 	public void executeASync(org.compiere.process.ProcessInfo processInfo)
 	{
 	}
 
+	@Override
 	public boolean isUILocked()
 	{
 		return true;
 	}
 
+	@Override
 	public void lockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}
 
+	@Override
 	public void stateChanged(ChangeEvent e)
 	{
 	}
 
+	@Override
 	public void tableChanged(TableModelEvent e)
 	{
 	}
 
+	@Override
 	public void unlockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}

@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -92,7 +93,7 @@ public final class DB
 {
 	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
 
-	private static final IStatementsFactory statementsFactory = new StatementsFactory();
+	private static final IStatementsFactory statementsFactory = StatementsFactory.instance;
 
 	/**
 	 * Specifies what to do in case the SQL command fails.
@@ -1025,7 +1026,8 @@ public final class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
 			{
-				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params);
+				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params)
+						.setSqlIfAbsent(sql, params);
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: end
 
@@ -1035,7 +1037,8 @@ public final class DB
 				try
 				{
 					final Connection connection = cs.getConnection();
-					sqlException = new DBDeadLockDetectedException(sqlException, connection);
+					sqlException = new DBDeadLockDetectedException(sqlException, connection)
+							.setSqlIfAbsent(sql, params);
 				}
 				catch (final SQLException | DBException e1)
 				{
@@ -1052,7 +1055,8 @@ public final class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isForeignKeyViolation(sqlException))
 			{
-				sqlException = new DBForeignKeyConstraintException(sqlException);
+				sqlException = new DBForeignKeyConstraintException(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 
 			//
@@ -1068,13 +1072,15 @@ public final class DB
 			}
 			else if (onFail == OnFail.ThrowException)
 			{
-				throw DBException.wrapIfNeeded(sqlException);
+				throw DBException.wrapIfNeeded(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
-				throw DBException.wrapIfNeeded(sqlException);
+				throw DBException.wrapIfNeeded(sqlException)
+						.setSqlIfAbsent(sql, params);
 			}
 		}
 		finally
@@ -1247,7 +1253,9 @@ public final class DB
 	public static RowSet getRowSet(final String sql, final List<Object> sqlParams)
 	{
 		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
-		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, DB.getDatabase().convertStatement(sql));
+		final String sqlConverted = DB.getDatabase().convertStatement(sql);
+		final String trxName = ITrx.TRXNAME_None;
+		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, sqlConverted, trxName);
 		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
 		try
 		{
@@ -1889,11 +1897,17 @@ public final class DB
 	 * @see org.compiere.util.Env
 	 *
 	 * */
-	public static String TO_CHAR(String columnName, int displayType, String AD_Language)
+	public static String TO_CHAR(String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
-		if (columnName == null || AD_Language == null || columnName.length() == 0)
-			throw new IllegalArgumentException("Required parameter missing");
-		return getDatabase().TO_CHAR(columnName, displayType, AD_Language);
+		return getDatabase().TO_CHAR(columnName, displayType);
+	}   // TO_CHAR
+
+	/**
+	 * @see #TO_CHAR(String, int, String)
+	 */
+	public static String TO_CHAR(String columnName, final int displayType)
+	{
+		return getDatabase().TO_CHAR(columnName, displayType);
 	}   // TO_CHAR
 
 	/**
@@ -1908,11 +1922,11 @@ public final class DB
 	 * @return SQL code
 	 * @see AdempiereDatabase#TO_CHAR(String, int, String, String)
 	 */
-	public static String TO_CHAR(String columnName, int displayType, String AD_Language, final String formatPattern)
+	public static String TO_CHAR(String columnName, int displayType, @Nullable String AD_Language_NOTUSED, final String formatPattern)
 	{
-		if (columnName == null || AD_Language == null || columnName.length() == 0)
+		if (columnName == null || columnName.length() == 0)
 			throw new IllegalArgumentException("Required parameter missing");
-		return getDatabase().TO_CHAR(columnName, displayType, AD_Language, formatPattern);
+		return getDatabase().TO_CHAR(columnName, displayType, formatPattern);
 	}   // TO_CHAR
 
 	/**
@@ -2030,10 +2044,10 @@ public final class DB
 	 * @see #close(ResultSet)
 	 * @see #close(Statement)
 	 */
-	public static void close(ResultSet rs, Statement st)
+	public static void close(ResultSet rs, Statement pstmt)
 	{
 		close(rs);
-		close(st);
+		close(pstmt);
 	}
 
 	/**

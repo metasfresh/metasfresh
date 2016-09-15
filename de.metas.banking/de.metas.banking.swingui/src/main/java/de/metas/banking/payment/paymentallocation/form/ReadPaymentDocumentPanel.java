@@ -64,7 +64,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
@@ -178,14 +177,12 @@ class ReadPaymentDocumentPanel
 		// Load partner lookup column
 		final I_AD_Column bpartnerColumn = adTableDAO.retrieveColumn(I_C_BPartner.Table_Name, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 
-		final Language language = Env.getLanguage(ctx);
 		final String validationCode = I_C_BPartner.Table_Name + "." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = " + AD_Org_ID;
 		final Lookup bpartnerLookup = MLookupFactory.get(
 				Env.getCtx(),
 				WindowNo,
 				bpartnerColumn.getAD_Column_ID(),
 				DisplayType.Search,
-				language,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				138, // C_BPartner (trx)
 				false,

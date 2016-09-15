@@ -1563,7 +1563,6 @@ public class MOrder extends X_C_Order implements DocAction
 		// Binding
 		boolean binding = docType != null && !docType.isProposal();
 		final String docSubType = docType == null ? null : docType.getDocSubType(); 
-
 		
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())

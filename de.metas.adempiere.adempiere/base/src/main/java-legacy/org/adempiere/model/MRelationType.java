@@ -177,6 +177,8 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 			colIdx = this.get_ColumnIndex(COLUMNNAME_Role_Source);
 			keyValue = getRole_Source();
+			
+			
 		}
 		else
 		{
@@ -435,7 +437,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		String display = getDestinationRoleDisplay();
 		if (Check.isEmpty(display))
 		{
-			display = retrieveWindowName(source.getAD_Window_ID());
+			display = retrieveWindowName(windowId);
 		}
 		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
 

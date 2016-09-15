@@ -34,15 +34,16 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class MiniTableUtil
 {
@@ -94,22 +95,22 @@ public class MiniTableUtil
 		}
 		if (DisplayType.List == displayType)
 		{
-			Language language = Env.getLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_ListEmbed(language, referenceId, columnSQL);
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
+			String sql = MLookupFactory.getLookup_ListEmbed(languageInfo, referenceId, columnSQL);
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}
 		else if (DisplayType.isLookup(displayType) && referenceId <= 0)
 		{
-			Language language = Env.getLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_TableDirEmbed(language, columnName, tableName, columnSQL);
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
+			String sql = MLookupFactory.getLookup_TableDirEmbed(languageInfo, columnName, tableName, columnSQL);
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}
 		else if (DisplayType.isLookup(displayType) && referenceId > 0)
 		{
-			Language language = Env.getLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_TableEmbed(language, columnSQL, tableName, referenceId);
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
+			String sql = MLookupFactory.getLookup_TableEmbed(languageInfo, columnSQL, tableName, referenceId);
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}

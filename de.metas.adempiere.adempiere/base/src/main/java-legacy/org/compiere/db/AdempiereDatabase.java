@@ -180,7 +180,6 @@ public interface AdempiereDatabase
 	 *
 	 * @param columnName the column name in the SQL
 	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
 	 *
 	 * @return TRIM(TO_CHAR(columnName,'999G999G999G990D00','NLS_NUMERIC_CHARACTERS='',.'''))
 	 *         or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
@@ -188,7 +187,10 @@ public interface AdempiereDatabase
 	 * @see org.compiere.util.Env
 	 *
 	 **/
-	public String TO_CHAR(String columnName, int displayType, String AD_Language);
+	/**
+	 * @see #TO_CHAR(String, int, String)
+	 */
+	public String TO_CHAR(String columnName, int displayType);
 
 	/**
 	 * Create SQL for formatted Date, Number.
@@ -201,7 +203,7 @@ public interface AdempiereDatabase
 	 *
 	 * @return SQL code
 	 */
-	String TO_CHAR(String columnName, int displayType, String AD_Language, String formatPattern);
+	String TO_CHAR(String columnName, int displayType, String formatPattern);
 
 	/**
 	 * Return number as string for INSERT statements with correct precision

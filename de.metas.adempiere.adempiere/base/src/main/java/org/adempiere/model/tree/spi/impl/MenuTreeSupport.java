@@ -31,20 +31,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-
-import de.metas.adempiere.model.I_AD_Role;
 
 /**
  * @author tsa
@@ -75,8 +76,9 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ " NULL AS " + COLUMNNAME_PrintColor + ","
 					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
 					+ " AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew + " "
 					+ sqlDeveloperMode
-					+ " FROM AD_Menu ");
+					+ "\n FROM AD_Menu ");
 		}
 		else
 		{
@@ -84,8 +86,9 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ " NULL AS " + COLUMNNAME_PrintColor + ","
 					+ " AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID, "
 					+ " AD_Menu.InternalName "
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew + " "
 					+ sqlDeveloperMode
-					+ "FROM AD_Menu, AD_Menu_Trl t");
+					+ "\n FROM AD_Menu, AD_Menu_Trl t");
 		}
 		sql.append(" WHERE 1=1 ");
 		if (!base)
@@ -112,19 +115,18 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 
 		//
 		// Do not show Beta
-		final IClientDAO clientDAO = Services.get(IClientDAO.class);
-		final I_AD_Role role = Services.get(IRoleDAO.class).retrieveRole(ctx);
-		final boolean useBetaFunctions = clientDAO.retriveClient(ctx).isUseBetaFunctions() || role.isRoleAlwaysUseBetaFunctions();
+		final IUserRolePermissions userRolePermissions = tree.getUserRolePermissions();
+		final boolean useBetaFunctions = userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_UseBetaFunctions);
 		if (!useBetaFunctions)
 		{
 			// task 09088: the client doesn't "want" to use beta functions and the role doesn't override this, so we filter out features that are not marked as beta
-			windowSql.append("AND w.IsBetaFunctionality=?");
+			windowSql.append("AND w.").append(I_AD_Window.COLUMNNAME_IsBetaFunctionality).append("=?");
 			windowSqlParams.add(false);
-			processSql.append("AND p.IsBetaFunctionality=?");
+			processSql.append("AND p.").append(I_AD_Process.COLUMNNAME_IsBetaFunctionality).append("=?");
 			processSqlParams.add(false);
-			workflowSql.append("AND wf.IsBetaFunctionality=?");
+			workflowSql.append("AND wf.").append(I_AD_Workflow.COLUMNNAME_IsBetaFunctionality).append("=?");
 			workflowSqlParams.add(false);
-			formSql.append("AND f.IsBetaFunctionality=?");
+			formSql.append("AND f.").append(I_AD_Form.COLUMNNAME_IsBetaFunctionality).append("=?");
 			formSqlParams.add(false);
 		}
 
@@ -179,12 +181,14 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
+		final boolean isCreateNewRecord = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsCreateNew));
 		
 		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
 		info.setAD_Form_ID(AD_Form_ID);
 		info.setAD_Workflow_ID(AD_Workflow_ID);
 		info.setAD_Task_ID(AD_Task_ID);
+		info.setIsCreateNewRecord(isCreateNewRecord);
 
 		if (!isCheckRoleAccessWhileLoading())
 		{
@@ -193,7 +197,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 
 		//
 		// Check role access
-		final IUserRolePermissions role = Env.getUserRolePermissions(tree.getCtx());
+		final IUserRolePermissions role = tree.getUserRolePermissions();
 		Boolean access = null;
 		if (X_AD_Menu.ACTION_Window.equals(action))
 		{

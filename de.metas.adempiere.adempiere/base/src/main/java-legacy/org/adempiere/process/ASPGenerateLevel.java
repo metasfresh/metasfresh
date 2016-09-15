@@ -30,6 +30,7 @@
 package org.adempiere.process;
 
 import java.util.Enumeration;
+
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
@@ -116,7 +117,14 @@ public class ASPGenerateLevel extends SvrProcess
 		
 		I_AD_ClientInfo clientInfo = Services.get(IClientDAO.class).retrieveClientInfo(getCtx(), getAD_Client_ID());
 		int AD_Tree_ID = clientInfo.getAD_Tree_Menu_ID();
-		MTree thisTree = new MTree (getCtx(), AD_Tree_ID, true, true, true, get_TrxName());
+		final MTree thisTree = MTree.builder()
+				.setCtx(getCtx())
+				.setTrxName(getTrxName())
+				.setAD_Tree_ID(AD_Tree_ID)
+				.setEditable(true)
+				.setClientTree(true)
+				.setAllNodes(true)
+				.build();
 		MTreeNode node;
 		if (p_AD_Menu_ID > 0)
 			node = thisTree.getRoot().findNode(p_AD_Menu_ID);

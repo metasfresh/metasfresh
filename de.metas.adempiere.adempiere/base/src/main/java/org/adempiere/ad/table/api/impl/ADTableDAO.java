@@ -22,7 +22,6 @@ package org.adempiere.ad.table.api.impl;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
@@ -40,6 +39,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MTable;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 public class ADTableDAO implements IADTableDAO
@@ -90,16 +90,22 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	public String retrieveColumnName(final int adColumnId)
+	{
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?", adColumnId);
+	}
+
+	@Override
 	public String retrieveTableName(final int adTableId)
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		// guard against 0 AD_Table_ID
 		if (adTableId <= 0)
 		{
 			return null;
 		}
-		
+
 		@SuppressWarnings("deprecation")
 		final String tableName = MTable.getTableName(ctx, adTableId);
 
@@ -111,7 +117,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		// NOTE: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
 		// because there is business logic which depends on this
-		
+
 		@SuppressWarnings("deprecation")
 		// TODO move getTable_ID out of MTable
 		final int tableId = MTable.getTable_ID(tableName);
@@ -169,12 +175,12 @@ public class ADTableDAO implements IADTableDAO
 		// NOTE: atm we use MTable.get because that's the only place where we have the table cached.
 		// In future we shall replace it with something which is database independent.
 		final I_AD_Table adTable = MTable.get(ctx, tableName);
-		if(adTable == null)
+		if (adTable == null)
 		{
 			return "";
 		}
 		final I_AD_Window adWindow = adTable.getAD_Window();
-		if(adWindow == null)
+		if (adWindow == null)
 		{
 			return "";
 		}

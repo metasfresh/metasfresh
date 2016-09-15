@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.async;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,6 +88,12 @@ import de.metas.logging.LogManager;
 		luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 	}
 
+	/**
+	 * Creates a HU-"empty" instance that just references the given shipment schedule.
+	 * @param huContext
+	 * @param shipmentSchedule
+	 * @param qtyPicked
+	 */
 	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule shipmentSchedule, final BigDecimal qtyPicked)
 	{
 		super();
@@ -160,7 +166,7 @@ import de.metas.logging.LogManager;
 	private Object createAttributesAggregationKey()
 	{
 		logger.trace("Creating AttributesAggregationKey");
-		
+
 		final I_M_HU hu = getTopLevelHU();
 		if (hu == null)
 		{
@@ -178,7 +184,7 @@ import de.metas.logging.LogManager;
 				logger.trace("Skip attribute because UseInASI=false: {}", attributeValue);
 				continue;
 			}
-			
+
 			// Only consider attributes which were defined in the template (i.e. No PI),
 			// because only those attributes will be considered in ASI, so only those attributes will land there.
 			// e.g. SSCC18 which has UseInASI=true but it's not defined in template but in some LUs.
@@ -241,7 +247,7 @@ import de.metas.logging.LogManager;
 
 	/**
 	 * Gets the underlying LU or TU or VHU, depends on which is the first not null
-	 * 
+	 *
 	 * @return LU/TU/VHU
 	 */
 	private I_M_HU getTopLevelHU()

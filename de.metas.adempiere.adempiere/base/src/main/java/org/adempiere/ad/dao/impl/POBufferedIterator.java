@@ -94,7 +94,7 @@ import de.metas.logging.LogManager;
 	 * @param tableName
 	 * @return ORDER BY clause or ""
 	 */
-	private String buildOrderBy(final String tableName)
+	private static String buildOrderBy(final String tableName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 
