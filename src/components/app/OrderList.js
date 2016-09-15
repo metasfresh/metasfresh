@@ -20,7 +20,7 @@ class OrderList extends Component {
     render() {
         const {open} = this.props;
         return (
-            <div ref={(c)=>this.panel=c} className={"order-list-panel " + (open ? "order-list-panel-open":"")}>
+            <div ref={(c)=>this.panel=c} className={"order-list-panel overlay-shadow " + (open ? "order-list-panel-open":"")}>
                 <div className="order-list-panel-header">
 
                     <a href="#" className="btn-icon order-list-panel-icon pull-xs-left">
@@ -47,7 +47,7 @@ class OrderList extends Component {
                 </table>
                 </div>
             </div>
-            
+
         )
     }
 }

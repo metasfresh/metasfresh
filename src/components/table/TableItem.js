@@ -20,16 +20,21 @@ class TableItem extends Component {
             edited: property
         }, ()=>{
           if(callback){
-            document.activeElement.getElementsByClassName('input-field')[0].focus();
+            // e.target
+            let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+            if(elem){
+              elem.focus();
+            }
+
           }
         })
     }
     handleKey = (e, property) => {
         const elem = document.activeElement;
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-        const { edited, activeCell } = this.state;
+        const { edited, activeCell} = this.state;
 
-        if(elem.className !== "input-field") {
+        if(!elem.className.includes('js-input-field')) {
           this.setState(Object.assign({}, this.state, {
               activeCell: elem
           }))
@@ -46,7 +51,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId } = this.props;
+        const { type, docId, rowId, tabId,readonly } = this.props;
         const { edited } = this.state;
 
         //iterate over layout settings
@@ -61,6 +66,7 @@ class TableItem extends Component {
                     rowId={rowId}
                     tabId={tabId}
                     item={item}
+                    readonly={readonly}
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}

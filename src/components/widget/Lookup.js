@@ -79,7 +79,7 @@ class Lookup extends Component {
 
                                 this.setState(update(this.state, {
                                     properties: {
-                                        [item.field]: {$set: response.data}
+                                        [item.field]: {$set: response.data.values}
                                     }
                                 }), () => {
                                     batchArray.push('0');
@@ -176,7 +176,7 @@ class Lookup extends Component {
             dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
-                        list: response.data,
+                        list: response.data.values,
                         loading: false
                     }));
                 })
@@ -287,7 +287,7 @@ class Lookup extends Component {
                     }>
                         <input
                             type="text"
-                            className="input-field font-weight-bold"
+                            className="input-field js-input-field font-weight-bold"
                             onChange={this.handleChange}
                             onFocus={this.handleFocus}
                             ref={(c) => this.inputSearch = c}

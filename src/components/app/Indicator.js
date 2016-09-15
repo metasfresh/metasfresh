@@ -30,7 +30,7 @@ class Indicator extends Component {
     return (
       <div>
         <img src={saved} />
-        <small className="success">Saved</small>
+        <small className="success saved-animation">Saved</small>
       </div>
     )
   }

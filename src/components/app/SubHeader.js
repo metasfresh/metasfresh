@@ -21,12 +21,12 @@ class Subheader extends Component {
     render() {
         const { windowType } = this.props;
         return (
-            <div className={"subheader-container " + (this.props.open ? "subheader-open" : "")}>
+            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container">
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column">
-                                <div className="subheader-item" onClick={()=> this.redirect('/window/143')}>
+                                <div className="subheader-item" onClick={()=> this.redirect('/window/143/NEW')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
                                 <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>

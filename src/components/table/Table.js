@@ -197,6 +197,8 @@ class Table extends Component {
         // if(selected.length < 1) {
         //   this.selectProduct(id);
         // }
+
+
         const {selected} = this.state;
         const isAnySelected = selected.length > 0;
 
@@ -240,7 +242,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -262,6 +264,7 @@ class Table extends Component {
                         onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
+                        readonly={readonly}
                     />
                 );
             }
@@ -283,7 +286,7 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid} = this.props;
+        const {cols, type, docId, rowData, tabid, readonly} = this.props;
         const {x,y,contextMenu,selected, listenOnKeys} = this.state;
 
         return (
@@ -300,14 +303,14 @@ class Table extends Component {
                         selected={selected}
                         deselect={() => this.deselectAllProducts()}
                     />
-                    <div className="row">
+                    {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
                             <div className="pull-xs-right">
-                                <TableFilter />
+                                {/*<TableFilter />*/}
                             </div>
                         </div>
-                    </div>
+                    </div>}
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
                         <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>

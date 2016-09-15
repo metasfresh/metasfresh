@@ -386,7 +386,12 @@ input:checked + .input-slider:before {
 .input-icon-container {
     position: relative;
     display: inline-block;
-    padding-right: 2rem;
+    padding-right: 0.5rem;
+}
+
+
+.input-icon-container .meta-icon-calendar {
+  z-index: -1;
 }
 
 .input-icon-right{

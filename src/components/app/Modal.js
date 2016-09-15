@@ -13,6 +13,10 @@ class Modal extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+          scrolled: false
+        }
+
         const {dispatch, windowType, dataId, tabId, rowId} = this.props;
         dispatch(createWindow(windowType, dataId, tabId, rowId, true));
     }
@@ -24,9 +28,31 @@ class Modal extends Component {
         // and css dont affect parents
         // but we have to change scope of scrollbar
         document.body.style.overflow = "hidden";
+
+        document.querySelector('.js-panel-modal-content').addEventListener('scroll', this.handleScroll);
+    }
+    componentWillUnmount() {
+          document.querySelector('.js-panel-modal-content').removeEventListener('scroll', this.handleScroll);
+    }
+    handleScroll = (event) => {
+      console.log('fire scroll');
+
+      let scrollTop = event.srcElement.scrollTop;
+
+      if(scrollTop > 0) {
+        this.setState(Object.assign({}, this.state, {
+            scrolled: true
+        }))
+      } else {
+        this.setState(Object.assign({}, this.state, {
+            scrolled: false
+        }))
+      }
+
     }
     handleClose = () => {
         this.props.dispatch(closeModal());
+
 
         document.body.style.overflow = "auto";
     }
@@ -35,7 +61,7 @@ class Modal extends Component {
         return (
             <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
-                    <div className="panel-modal-header">
+                    <div className={"panel-modal-header " + (this.state.scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
@@ -44,7 +70,7 @@ class Modal extends Component {
                             <Indicator indicator={indicator} />
                         </div>
                     </div>
-                    <div className="panel-modal-content">
+                    <div className="panel-modal-content js-panel-modal-content">
                         <Window
                             data={data}
                             dataId={dataId}

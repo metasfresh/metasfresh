@@ -1,6 +1,7 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
 @import './datetime.css';
+@import './daterangepicker.css';
 @import './inputs.css';
 @import './font-meta.css';
 
@@ -114,11 +115,12 @@ body {
     height:75px;
     color: $brand-color-primary;
     border-bottom: 1px solid $brand-border-color;
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 2rem;
+    box-shadow: none;
+    transition: all 0.8s ease;
 }
 
 .panel-modal-content {
@@ -135,6 +137,10 @@ body {
     color: $brand-font-color;
 }
 
+.panel-inline > * {
+    display: inline-block;
+}
+
 
 .panel-title {
     margin-bottom: .625rem;
@@ -146,7 +152,6 @@ body {
 .panel-prompt {
   width: 584px;
   height: 347px;
-  box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
   border: solid 0 $brand-border-color;
 }
 
@@ -632,6 +637,12 @@ body {
 
 .indicator .success {
   color: $brand-success-color;
+  opacity: 1;
+  transition: all 1.5s ease;
+}
+
+.indicator .saved-animation {
+  opacity: 0;
 }
 
 .indicator .error {
@@ -760,6 +771,10 @@ table .rdtPicker table td, .rdtPicker table th {
     cursor: pointer;
 }
 
+
+.document-list-header > *:not(last-child) {
+    margin-right: .5rem;
+}
 .map-tree-wrapper {
   padding-top: 55px;
 }
@@ -777,4 +792,42 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .nav-tree-header {
   font-weight: bold;
+}
+
+.header-super-faded {
+  box-shadow: none;
+  transition: all 0.8s ease;
+}
+
+.header-shadow {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+}
+
+.overlay-shadow {
+  box-shadow: 0 0px 15px 0 rgba(165, 165, 165, 0.8);
+}
+
+.breadcrumbs-shadow {
+  box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+}
+
+.prompt-shadow {
+  box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
+}
+
+.table td {
+  min-width: 75px;
+}
+
+.table .td-lg {
+  min-width: 225px;
+}
+
+.table .td-md {
+  min-width: 140px;
+}
+
+.Lookup .input-icon {
+  height: 16px;
+  bottom: 0;
 }

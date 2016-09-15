@@ -28,7 +28,6 @@ axios.interceptors.response.use(function (response) {
     return Promise.reject(error);
 });
 
-
 export default class App extends Component {
     render() {
         return (

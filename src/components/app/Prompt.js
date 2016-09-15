@@ -32,7 +32,7 @@ class Prompt extends Component {
         const {cancel, submit} = this.props.buttons;
         return (
           !!isOpen && <div className="screen-freeze screen-prompt-freeze">
-              <div className="panel panel-modal-primary panel-prompt">
+              <div className="panel panel-modal-primary panel-prompt prompt-shadow">
                   <div className="panel-modal-header panel-prompt-header">
                       <span className="panel-modal-header-title">{this.props.title}</span>
                       <i className="meta-icon-close-1" onClick={(e) => this.props.onCancelClick(e)}></i>

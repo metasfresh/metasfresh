@@ -7,6 +7,7 @@ class TableCell extends Component {
     constructor(props) {
         super(props);
     }
+
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
 
@@ -30,11 +31,11 @@ class TableCell extends Component {
                     break;
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
-                      let d = new Date(field);
-                      let date = Moment(d).format('DD.MM.YYYY')
-                      return date;
+                        let d = new Date(field);
+                        let date = Moment(d).format('DD.MM.YYYY')
+                        return date;
                     } else {
-                      return field;
+                        return field;
                     }
                     break;
                 default:
@@ -44,17 +45,19 @@ class TableCell extends Component {
     }
 
     render() {
-        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown} = this.props;
+        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly} = this.props;
         return (
             <td
                 tabIndex="0"
                 ref={(c) => this.cell = c}
-                onDoubleClick={onDoubleClick}
+                onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
                 className={
                     (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
                     (widgetData.readonly ? "cell-disabled " : "") +
                     (widgetData.mandatory ? "cell-mandatory " : "") +
+                    (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
+                    (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType)
                 }
             >
