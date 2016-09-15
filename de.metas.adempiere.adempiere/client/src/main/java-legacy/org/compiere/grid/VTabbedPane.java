@@ -32,10 +32,11 @@ import org.compiere.apps.APanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
 import org.compiere.swing.CTabbedPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Tabbed Pane - either Workbench or Window Tab
@@ -238,13 +239,13 @@ public class VTabbedPane extends CTabbedPane
 	}
 
 	//hengsin, bug [ 1637763 ]
-	private boolean isDisplay(GridController gc)
+	private static boolean isDisplay(GridController gc)
 	{
 		final ILogicExpression displayLogic = gc.getDisplayLogic();
 		final boolean display = displayLogic.evaluate(gc, true); // ignoreUnparsable=true
 		if (!display)
 		{
-			log.info("Not displayed - " + displayLogic);
+			log.info("Not displayed: {}", displayLogic);
 			return false;
 		}
 		return true;
@@ -256,38 +257,55 @@ public class VTabbedPane extends CTabbedPane
 	 *	@param index index
 	 */
 	@Override
-	public void setSelectedIndex (int index)
+	public void setSelectedIndex (final int index)
 	{
-		Component newC = getComponentAt(index);
-		GridController newGC = null;
-		if (newC instanceof GridController)
-			newGC = (GridController)newC;
+		final Component newComp = getComponentAt(index);
+		final GridController newGC;
+		final Integer newTabLevel;
+		if (newComp instanceof GridController)
+		{
+			newGC = (GridController)newComp;
+			newTabLevel = ((GridController)newComp).getTabLevel();
+		}
+		else if (newComp instanceof VSortTab)
+		{
+			newGC = null;
+			newTabLevel = ((VSortTab)newComp).getTabLevel();
+		}
+		else
+		{
+			newGC = null;
+			newTabLevel = null;
+		}
+		
 		//	Display
 		if (newGC != null)
 		{
 			//hengsin, bug [ 1637763 ]
 			if(isDisplay(newGC) == false)
+			{
 				return;
+			}
 		}
 
 		//
-		int oldIndex = getSelectedIndex();
-		if (newGC != null && oldIndex >= 0 && index != oldIndex)
+		final int oldIndex = getSelectedIndex();
+		if (newTabLevel != null && oldIndex >= 0 && index != oldIndex)
 		{
-			Component oldC = getComponentAt(oldIndex);
+			final Component oldC = getComponentAt(oldIndex);
 			if (oldC != null && oldC instanceof GridController)
 			{
-				GridController oldGC = (GridController)oldC;
-				if (newGC.getTabLevel() > oldGC.getTabLevel()+1)
+				final GridController oldGC = (GridController)oldC;
+				if (newTabLevel > oldGC.getTabLevel()+1)
 				{
 					//  validate
 					//	Search for right tab
 					GridController rightGC = null;
 					boolean canJump = true;
-					int currentLevel = newGC.getTabLevel();
+					int currentLevel = newTabLevel;
 					for (int i = index-1; i >=0; i--)
 					{
-						Component rightC = getComponentAt(i);
+						final Component rightC = getComponentAt(i);
 						if (rightC instanceof GridController)
 						{
 							GridController gc = (GridController)rightC;
@@ -319,7 +337,9 @@ public class VTabbedPane extends CTabbedPane
 		//	Switch
 		super.setSelectedIndex (index);
 		if (newGC != null)
+		{
 			newGC.setMnemonics(true);
+		}
 	}	//	setSelectedIndex
 
 	/**

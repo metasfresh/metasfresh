@@ -38,5 +38,5 @@ public interface ICalloutInstance
 	 */
 	String getId();
 
-	void execute(ICalloutExecutor executor, ICalloutField field);
+	void execute(ICalloutExecutor executor, ICalloutField field) throws Exception;
 }

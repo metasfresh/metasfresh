@@ -29,8 +29,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.sql.DataSource;
 
@@ -46,11 +44,13 @@ import org.compiere.dbPort.Convert_PostgreSQL_Native;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
-import org.postgresql.Driver;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import de.metas.logging.LogManager;
 
 /**
  * PostgreSQL Database Port
@@ -85,11 +85,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static final Supplier<org.postgresql.Driver> driverSupplier = Suppliers.memoize(new Supplier<org.postgresql.Driver>()
 	{
 		@Override
-		public Driver get()
+		public org.postgresql.Driver get()
 		{
 			try
 			{
-				final Driver driver = new org.postgresql.Driver();
+				final org.postgresql.Driver driver = new org.postgresql.Driver();
 				DriverManager.registerDriver(driver);
 				DriverManager.setLoginTimeout(Database.CONNECTION_TIMEOUT);
 				return driver;
@@ -462,26 +462,16 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 		return dateString.toString();
 	}   // TO_DATE
-
-	/**
-	 * Create SQL for formatted Date, Number
-	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
-	 *
-	 * @return TRIM(TO_CHAR(columnName,'999G999G999G990D00','NLS_NUMERIC_CHARACTERS='',.'''))
-	 *         or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
-	 * @see org.compiere.util.DisplayType
-	 * @see org.compiere.util.Env
-	 *
-	 **/
+	
 	@Override
-	public String TO_CHAR(String columnName, int displayType, String AD_Language)
+	public String TO_CHAR(String columnName, int displayType)
 	{
+		Check.assumeNotEmpty(columnName, "columnName is not empty");
+		
 		final StringBuilder retValue = new StringBuilder("CAST (");
 		retValue.append(columnName);
 		retValue.append(" AS Text)");
+		return retValue.toString();
 
 		// Numbers
 		/*
@@ -503,33 +493,31 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		 * retValue.append(")");
 		 * //
 		 */
-		return retValue.toString();
 	}   // TO_CHAR
 
 	@Override
 	public String TO_CHAR(
 			final String columnName, 
 			final int displayType,
-			final String AD_Language, 
 			final String formatPattern)
 	{
 		if (Check.isEmpty(formatPattern, false))
 		{
-			return TO_CHAR(columnName, displayType, AD_Language);
+			return TO_CHAR(columnName, displayType);
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final String pgFormatPattern = convertDecimalPatternToPG(formatPattern);
 			if (pgFormatPattern == null)
 			{
-				return TO_CHAR(columnName, displayType, AD_Language);
+				return TO_CHAR(columnName, displayType);
 			}
 
-			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType, AD_Language);
+			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType);
 		}
 		else
 		{
-			return TO_CHAR(columnName, displayType, AD_Language);
+			return TO_CHAR(columnName, displayType);
 		}
 	}
 

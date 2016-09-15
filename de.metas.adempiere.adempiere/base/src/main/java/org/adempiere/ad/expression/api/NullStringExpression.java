@@ -3,7 +3,6 @@ package org.adempiere.ad.expression.api;
 import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
@@ -21,11 +20,6 @@ public final class NullStringExpression implements IStringExpression
 {
 	public static final NullStringExpression instance = new NullStringExpression();
 	
-	public static final boolean isNull(final IStringExpression expression)
-	{
-		return expression == null || expression == NullStringExpression.instance;
-	}
-
 	private NullStringExpression()
 	{
 		super();
@@ -58,18 +52,24 @@ public final class NullStringExpression implements IStringExpression
 	@Override
 	public String evaluate(Evaluatee ctx, boolean ignoreUnparsable)
 	{
-		return StringExpressionEvaluator.EMPTY_RESULT;
+		return EMPTY_RESULT;
 	}
 
 	@Override
 	public String evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
 	{
-		return StringExpressionEvaluator.EMPTY_RESULT;
+		return EMPTY_RESULT;
 	}
 
 	@Override
-	public final IExpressionEvaluator<IStringExpression, String> getEvaluator()
+	public final IStringExpression resolvePartial(final Evaluatee ctx)
 	{
-		return StringExpressionEvaluator.instance;
+		return this;
+	}
+	
+	@Override
+	public boolean isNullExpression()
+	{
+		return true;
 	}
 }

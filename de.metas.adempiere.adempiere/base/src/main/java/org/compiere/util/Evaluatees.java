@@ -341,7 +341,43 @@ public final class Evaluatees
 		{
 			return null;
 		}
-
 	}
+
+	public static final Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
+	{
+		return new ExcludingVariablesEvaluatee(evaluatee, excludeVariableName);
+	}
+	
+	private static final class ExcludingVariablesEvaluatee implements Evaluatee
+	{
+		private final Evaluatee parent;
+		private final String excludeVariableName;
+		
+		private ExcludingVariablesEvaluatee(final Evaluatee parent, final String excludeVariableName)
+		{
+			super();
+			this.parent = parent;
+			this.excludeVariableName = excludeVariableName;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("excludeVariableName", excludeVariableName)
+					.add("parent", parent)
+					.toString();
+		}
+		
+		@Override
+		public String get_ValueAsString(String variableName)
+		{
+			if(excludeVariableName.equals(variableName))
+			{
+				return null;
+			}
+			return parent.get_ValueAsString(variableName);
+		}
+	};
 
 }

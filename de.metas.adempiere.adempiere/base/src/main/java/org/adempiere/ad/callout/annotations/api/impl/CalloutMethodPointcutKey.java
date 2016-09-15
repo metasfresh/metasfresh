@@ -1,5 +1,7 @@
 package org.adempiere.ad.callout.annotations.api.impl;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,52 +12,55 @@ package org.adempiere.ad.callout.annotations.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.base.MoreObjects;
 
 /* package */final class CalloutMethodPointcutKey
 {
-	private final String columnName;
-	private final ArrayKey key;
+	public static final CalloutMethodPointcutKey of(final String columnName)
+	{
+		return new CalloutMethodPointcutKey(columnName);
+	}
 
-	CalloutMethodPointcutKey(String columnName)
+	private final String columnName;
+
+	private CalloutMethodPointcutKey(final String columnName)
 	{
 		super();
 
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
-
-		key = Util.mkKey(columnName);
 	}
 
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "[" + key + "]";
+		return MoreObjects.toStringHelper(this)
+				.add("columnName", columnName)
+				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return key.hashCode();
+		return Objects.hash(columnName);
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -72,7 +77,7 @@ import org.compiere.util.Util.ArrayKey;
 		}
 
 		final CalloutMethodPointcutKey other = (CalloutMethodPointcutKey)obj;
-		return key.equals(other.key);
+		return columnName.equals(other.columnName);
 	}
 
 	public String getColumnName()

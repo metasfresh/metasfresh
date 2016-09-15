@@ -1229,7 +1229,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			dbValue = new BigDecimal(value);
 		else
 			dbValue = value;
-		m_po.set_ValueOfColumn(getNode().getAD_Column_ID(), dbValue);
+		m_po.set_ValueOfAD_Column_ID(getNode().getAD_Column_ID(), dbValue);
 		m_po.save();
 		if (dbValue != null && !dbValue.equals(m_po.get_ValueOfColumn(getNode().getAD_Column_ID())))
 			throw new Exception("Persistent Object not updated - AD_Table_ID="

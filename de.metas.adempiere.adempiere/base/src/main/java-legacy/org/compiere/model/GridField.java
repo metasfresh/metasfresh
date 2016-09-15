@@ -216,7 +216,7 @@ public class GridField
 			}
 			//
 			lookupInfo.setIsKey(isKey());
-			return new MLookup(vo.getLookupInfo(), vo.TabNo);
+			return new MLookup(getCtx(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
 		{
@@ -1041,7 +1041,6 @@ public class GridField
 	 *
 	 * @return column
 	 */
-	@Override
 	public int getAD_Column_ID()
 	{
 		return m_vo.getAD_Column_ID();
@@ -1217,7 +1216,7 @@ public class GridField
 	 */
 	public boolean isSelectionColumn()
 	{
-		return m_vo.IsSelectionColumn;
+		return m_vo.isSelectionColumn();
 	}
 
 	/**
@@ -1351,7 +1350,7 @@ public class GridField
 	 */
 	public String getDescription()
 	{
-		return m_vo.Description;
+		return m_vo.getDescription();
 	}
 
 	/**
@@ -1361,7 +1360,7 @@ public class GridField
 	 */
 	public String getHelp()
 	{
-		return m_vo.Help;
+		return m_vo.getHelp();
 	}
 
 	/**
@@ -1676,35 +1675,14 @@ public class GridField
 	 */
 	public static GridField[] createSearchFields(Properties ctx, int WindowNo, int TabNo, int AD_Tab_ID)
 	{
-		final List<GridFieldVO> listVO = new ArrayList<GridFieldVO>();
-		int AD_Window_ID = 0;
-		boolean readOnly = false;
-
-		String sql = GridFieldVO.getSQL(ctx);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, AD_Tab_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final GridFieldVO vo = GridFieldVO.create(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, rs);
-				// if (vo.lookupInfo != null) vo.lookupInfo.IsIgnoredValidationCodeFail = true; // metas: us1261
-				listVO.add(vo);
-			}
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+		final List<GridFieldVO> listVO = GridFieldVOsLoader.newInstance()
+				.setCtx(ctx)
+				.setWindowNo(WindowNo)
+				.setTabNo(TabNo)
+				.setAD_Window_ID(0)
+				.setAD_Tab_ID(AD_Tab_ID)
+				.setTabReadOnly(false)
+				.load();
 
 		//
 		final GridField[] retValue = new GridField[listVO.size()];
@@ -2146,7 +2124,6 @@ public class GridField
 		return m_vo.getCtx();
 	}
 
-	@Override
 	public int getAD_Table_ID()
 	{
 		return m_vo.getAD_Table_ID();

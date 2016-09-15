@@ -94,7 +94,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationRule create(final Properties ctx, final String tableName, final int adValRuleId)
+	public IValidationRule create(final String tableName, final int adValRuleId)
 	{
 		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
 
@@ -102,7 +102,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		// Add primary validation rule
 		if(adValRuleId > 0)
 		{
-			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(ctx, adValRuleId);
+			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(adValRuleId);
 			final IValidationRule validationRule = create(tableName, valRule);
 			builder.addExploded(validationRule);
 		}

@@ -980,7 +980,6 @@ public final class POInfo implements Serializable
 					windowNo,
 					m_columns[columnIndex].AD_Column_ID,
 					m_columns[columnIndex].DisplayType,
-					Env.getLanguage(ctx),
 					m_columns[columnIndex].getColumnName(),
 					m_columns[columnIndex].AD_Reference_Value_ID,
 					m_columns[columnIndex].IsParent,

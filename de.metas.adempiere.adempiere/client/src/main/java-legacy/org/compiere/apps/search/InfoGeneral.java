@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 
@@ -42,6 +40,7 @@ import org.compiere.apps.ALayoutConstraint;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
@@ -435,7 +434,7 @@ public class InfoGeneral extends Info
 					final Language language = Env.getLanguage(Env.getCtx());
 					colSql = new StringBuilder("(")
 							.append(MLookupFactory.getLookup_TableDirEmbed(
-									language, // language
+									LanguageInfo.ofSpecificLanguage(language), // language
 									columnName, // ColumnName
 									getTableName(), // BaseTable
 									columnSql // BaseColumn
@@ -449,7 +448,7 @@ public class InfoGeneral extends Info
 					final Language language = Env.getLanguage(Env.getCtx());
 					colSql = new StringBuilder("(")
 							.append(MLookupFactory.getLookup_TableEmbed(
-									language, // language
+									LanguageInfo.ofSpecificLanguage(language), // language
 									columnSql, // BaseColumn,
 									getTableName(), // BaseTable,
 									AD_Reference_Value_ID // AD_Reference_Value_ID
