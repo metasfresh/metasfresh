@@ -56,6 +56,8 @@ class TableCell extends Component {
                     (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
                     (widgetData.readonly ? "cell-disabled " : "") +
                     (widgetData.mandatory ? "cell-mandatory " : "") +
+                    (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
+                    (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType)
                 }
             >

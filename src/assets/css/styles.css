@@ -814,3 +814,20 @@ table .rdtPicker table td, .rdtPicker table th {
 .prompt-shadow {
   box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
 }
+
+.table td {
+  min-width: 75px;
+}
+
+.table .td-lg {
+  min-width: 225px;
+}
+
+.table .td-md {
+  min-width: 140px;
+}
+
+.Lookup .input-icon {
+  height: 16px;
+  bottom: 0;
+}
