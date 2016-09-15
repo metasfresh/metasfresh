@@ -830,6 +830,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private boolean isCreateNewRecord = false;
 	private String webuiNameBrowse;
 	private String webuiNameNew;
+	private String webuiNameNewBreadcrumb;
 
 	public int getAD_Window_ID()
 	{
@@ -909,6 +910,16 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public String getWEBUI_NameNew() 
 	{
 		return webuiNameNew;
+	}
+
+	public void setWEBUI_NameNewBreadcrumb (final String webuiNameNewBreadcrumb)
+	{
+		this.webuiNameNewBreadcrumb = webuiNameNewBreadcrumb;
+	}
+
+	public String getWEBUI_NameNewBreadcrumb() 
+	{
+		return webuiNameNewBreadcrumb;
 	}
 
 

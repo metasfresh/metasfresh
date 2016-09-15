@@ -83,6 +83,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
 					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameNew
+					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb
 					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu ");
 		}
@@ -99,6 +100,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", AD_Menu."+I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNew + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameNew
+					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb
 					+ " " + sqlDeveloperMode
 					+ "\n FROM AD_Menu, AD_Menu_Trl t");
 		}
@@ -196,6 +198,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final boolean isCreateNewRecord = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsCreateNew));
 		final String webuiNameBrowse = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse);
 		final String webuiNameNew = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNew);
+		final String webuiNameNewBreadcrumb = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb);
 		
 		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
@@ -205,6 +208,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		info.setIsCreateNewRecord(isCreateNewRecord);
 		info.setWEBUI_NameBrowse(webuiNameBrowse);
 		info.setWEBUI_NameNew(webuiNameNew);
+		info.setWEBUI_NameNewBreadcrumb(webuiNameNewBreadcrumb);
 
 		if (!isCheckRoleAccessWhileLoading())
 		{

@@ -14,7 +14,7 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 951055645L;
+	private static final long serialVersionUID = -1841125837L;
 
     /** Standard Constructor */
     public X_AD_Menu (Properties ctx, int AD_Menu_ID, String trxName)
@@ -547,5 +547,21 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	public java.lang.String getWEBUI_NameNew () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNew);
+	}
+
+	/** Set New record name (breadcrumb).
+		@param WEBUI_NameNewBreadcrumb New record name (breadcrumb)	  */
+	@Override
+	public void setWEBUI_NameNewBreadcrumb (java.lang.String WEBUI_NameNewBreadcrumb)
+	{
+		set_Value (COLUMNNAME_WEBUI_NameNewBreadcrumb, WEBUI_NameNewBreadcrumb);
+	}
+
+	/** Get New record name (breadcrumb).
+		@return New record name (breadcrumb)	  */
+	@Override
+	public java.lang.String getWEBUI_NameNewBreadcrumb () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNewBreadcrumb);
 	}
 }

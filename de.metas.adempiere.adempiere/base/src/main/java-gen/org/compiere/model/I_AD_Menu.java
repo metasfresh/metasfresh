@@ -620,4 +620,27 @@ public interface I_AD_Menu
     public static final org.adempiere.model.ModelColumn<I_AD_Menu, Object> COLUMN_WEBUI_NameNew = new org.adempiere.model.ModelColumn<I_AD_Menu, Object>(I_AD_Menu.class, "WEBUI_NameNew", null);
     /** Column name WEBUI_NameNew */
     public static final String COLUMNNAME_WEBUI_NameNew = "WEBUI_NameNew";
+
+	/**
+	 * Set New record name (breadcrumb).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_NameNewBreadcrumb (java.lang.String WEBUI_NameNewBreadcrumb);
+
+	/**
+	 * Get New record name (breadcrumb).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_NameNewBreadcrumb();
+
+    /** Column definition for WEBUI_NameNewBreadcrumb */
+    public static final org.adempiere.model.ModelColumn<I_AD_Menu, Object> COLUMN_WEBUI_NameNewBreadcrumb = new org.adempiere.model.ModelColumn<I_AD_Menu, Object>(I_AD_Menu.class, "WEBUI_NameNewBreadcrumb", null);
+    /** Column name WEBUI_NameNewBreadcrumb */
+    public static final String COLUMNNAME_WEBUI_NameNewBreadcrumb = "WEBUI_NameNewBreadcrumb";
 }
