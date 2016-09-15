@@ -91,7 +91,7 @@ LEFT OUTER JOIN C_BPartner producerbp ON (t.TU_Attrs).SubProducerBPartner_Value 
 INNER JOIN M_HU_Storage lus ON TU_HU_ID = lus.M_HU_ID
 INNER JOIN M_Product p ON lus.M_product_ID = p.M_Product_ID
 LEFT OUTER JOIN M_Material_Tracking tr ON (t.TU_Attrs).materialtracking_value = tr.M_Material_Tracking_ID
-LEFT OUTER JOIN M_HU_PI_Item_Product hu_piip ON hu_piip.M_HU_PI_Item_Product_ID = (SELECT M_HU_PI_Item_Product_ID FROM M_HU WHERE M_HU_ID=TU_HU_ID)
+LEFT OUTER JOIN M_HU_PI_Item_Product hu_piip ON hu_piip.M_HU_PI_Item_Product_ID = (SELECT M_HU_PI_Item_Product_ID FROM M_HU WHERE M_HU_ID=TU_HU_ID) AND hu_piip.isActive = 'Y'
 
 
 $$

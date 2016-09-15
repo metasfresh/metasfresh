@@ -89,7 +89,7 @@ FROM
 				INNER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) ))
 					AND asgn.Record_ID = iol.M_InOutLine_ID
 				INNER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
-				INNER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID
+				INNER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
 			WHERE	pifb.name != 'VirtualPI'
 				AND  EXISTS (Select 1 from  M_InOutLine iol2 
 						INNER JOIN C_OrderLine ol ON iol2.C_OrderLine_ID = ol.C_OrderLine_ID 

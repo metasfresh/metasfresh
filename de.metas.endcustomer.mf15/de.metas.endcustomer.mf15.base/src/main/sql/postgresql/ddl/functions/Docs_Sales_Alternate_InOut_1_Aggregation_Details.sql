@@ -82,7 +82,7 @@ FROM
 				AND asgn.Record_ID = iol.M_InOutLine_ID
 			LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
 	) pi 	ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
-	LEFT OUTER JOIN M_HU_PI_Item_Product piip 	ON pi.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID
+	LEFT OUTER JOIN M_HU_PI_Item_Product piip 	ON pi.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID AND piip.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item pii 		ON piip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
 	-- Get Packing Material 
 	LEFT OUTER JOIN M_HU_PI_Item pmi 		ON pii.M_HU_PI_Version_ID = pmi.M_HU_PI_Version_ID AND pmi.ItemType= 'PM'
@@ -90,7 +90,7 @@ FROM
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
 	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
-	LEFT OUTER JOIN C_BPartner_Product bpp		ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID
+	LEFT OUTER JOIN C_BPartner_Product bpp		ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ic.Price_UOM_ID = uom.C_UOM_ID

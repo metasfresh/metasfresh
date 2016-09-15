@@ -69,7 +69,7 @@ FROM
 	LEFT OUTER JOIN C_BPartner_Location bpl ON lu.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID
 	INNER JOIN M_Product p ON lus.M_product_ID = p.M_Product_ID
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_product_ID = pt.M_Product_ID AND bp.AD_Language = pt.AD_Language
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID
+	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	JOIN (
 		SELECT 	lui.M_HU_ID, COALESCE(avg(tus.qty), 0) AS CU_per_TU, count(tu.M_HU_ID) AS TU_per_LU
 		FROM 	M_HU_Item lui

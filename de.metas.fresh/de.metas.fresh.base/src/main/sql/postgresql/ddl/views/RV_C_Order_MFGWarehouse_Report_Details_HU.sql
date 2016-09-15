@@ -33,7 +33,7 @@ FROM
 	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID
 
 	-- TAKE THE M_HU_PI_Item_Product_ID OF THE PACKING MATERIAL LINE
-	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON olpm.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID
+	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON olpm.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID
 	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID
 		AND pmi.ItemType= 'PM'
@@ -46,7 +46,7 @@ FROM
 
 	-- JUST IN CASE THERE IS A BPP FOR THE PACKING MATERIAL
 	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-		AND ppm.M_Product_ID = bpp.M_Product_ID
+		AND ppm.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 
 	LEFT OUTER JOIN M_Product_Category pc ON ppm.M_Product_Category_ID = pc.M_Product_Category_ID
 

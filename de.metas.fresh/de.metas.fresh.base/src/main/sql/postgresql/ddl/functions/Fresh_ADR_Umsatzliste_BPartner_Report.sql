@@ -74,7 +74,7 @@ SELECT
 			) um
 	join m_product p on p.name = um.p_name
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $6
-	left join C_BPartner_Product bpp  ON p.M_Product_ID = bpp.M_Product_ID and bpp.c_bpartner_id = $4
+	left join C_BPartner_Product bpp  ON p.M_Product_ID = bpp.M_Product_ID and bpp.c_bpartner_id = $4 AND bpp.isActive = 'Y'
 	group by  COALESCE(pt.name, p.name), bpp.productcategory 
 	
 $BODY$

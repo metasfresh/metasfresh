@@ -53,7 +53,7 @@ FROM
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID
 	INNER JOIN C_BPartner bp			ON o.C_BPartner_ID =  bp.C_BPartner_ID
 	LEFT OUTER JOIN C_BP_Group bpg 		ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
-	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID
+	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON ol.M_Product_ID = p.M_Product_ID
 	LEFT OUTER JOIN M_Product_Trl pt 		ON ol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
