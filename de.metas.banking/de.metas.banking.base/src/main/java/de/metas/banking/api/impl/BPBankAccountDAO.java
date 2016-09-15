@@ -33,7 +33,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_BankAccount;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
+
 
 public class BPBankAccountDAO implements IBPBankAccountDAO
 {
@@ -53,6 +54,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		final List<I_C_BP_BankAccount> bpBankAccounts = qb.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last) // DESC (Y, then N)
+				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
 				.list();
