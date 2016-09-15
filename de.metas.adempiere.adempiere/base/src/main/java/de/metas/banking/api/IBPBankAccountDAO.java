@@ -1,4 +1,4 @@
-package de.metas.adempiere.banking.api;
+package de.metas.banking.api;
 
 /*
  * #%L
