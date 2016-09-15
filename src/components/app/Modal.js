@@ -28,6 +28,7 @@ class Modal extends Component {
     handleClose = () => {
         this.props.dispatch(closeModal());
 
+
         document.body.style.overflow = "auto";
     }
     render() {

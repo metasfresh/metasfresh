@@ -40,6 +40,13 @@ export default function windowHandler(state = initialState, action) {
                 })
         })
 
+        case types.UPDATE_MODAL:
+            return Object.assign({}, state, {
+                modal: Object.assign({}, state.modal, {
+                    rowId: action.rowId
+                })
+        })
+
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
