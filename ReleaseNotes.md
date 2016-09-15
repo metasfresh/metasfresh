@@ -43,6 +43,7 @@ upcoming
  * #24 Breadcrumb Navigation Plural caption
  * #12 Data not shown in SubTab
  * #311 Payment Selection Exception when not able to find bpartner account
+ * #378 Bug in validation of field docsubtype
 
 # metasfresh 4.35.34 (2016-37)
 
