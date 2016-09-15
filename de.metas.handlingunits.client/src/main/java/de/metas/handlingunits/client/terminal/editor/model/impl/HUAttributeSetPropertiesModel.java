@@ -578,6 +578,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		attributeStorage.saveChangesIfNeeded();
 	}
 
+	@Override
+	public String toString()
+	{
+		return "HUAttributeSetPropertiesModel [_indexedAttributeStorage=" + _indexedAttributeStorage + ", _indexedAttributeStorageLock=" + _indexedAttributeStorageLock + ", readonly=" + readonly + ", attributesEditableOnlyIfVHU=" + attributesEditableOnlyIfVHU + ", attributeStorageListener=" + attributeStorageListener + "]";
+	}
+
 	/**
 	 * Immutable {@link IAttributeStorage} wrapper which also contains indexed attributes and other additional informations.
 	 *

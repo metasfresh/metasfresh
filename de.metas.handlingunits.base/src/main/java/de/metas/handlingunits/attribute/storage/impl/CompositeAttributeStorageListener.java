@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -27,7 +29,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
-import org.adempiere.util.WeakList;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -119,6 +120,12 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 		{
 			listener.onAttributeStorageDisposed(storage);
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CompositeAttributeStorageListener [listeners=" + listeners + "]";
 	}
 
 }

@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.context;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,12 +26,13 @@ package de.metas.adempiere.form.terminal.context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.WeakList;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.form.terminal.IDisposable;
+import de.metas.logging.LogManager;
 
 /* package */final class TerminalContextReferences implements ITerminalContextReferences
 {
@@ -89,7 +90,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 		// just because we want to give them the opportunity to dispose nicely
 		final List<IDisposable> disposables = new ArrayList<>(_disposableComponents);
 		Collections.reverse(disposables);
-		
+
 		int countDisposed = 0;
 		for (final IDisposable disposable : disposables)
 		{
@@ -98,7 +99,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 			{
 				continue;
 			}
-			
+
 			try
 			{
 				disposable.dispose();

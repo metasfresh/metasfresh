@@ -54,8 +54,10 @@ public class AttributeSetCalloutExecutor
 	 * @param valueOld
 	 */
 	public final void executeCallout(final IAttributeValueContext attributeValueContext,
-			final IAttributeSet attributeSet, final I_M_Attribute attribute,
-			final Object valueNew, final Object valueOld)
+			final IAttributeSet attributeSet,
+			final I_M_Attribute attribute,
+			final Object valueNew,
+			final Object valueOld)
 	{
 		// Get the M_Attribute from storage (to make sure we are using the same instance of it)
 		final I_M_Attribute attributeCurrent = attributeSet.getAttributeByIdIfExists(attribute.getM_Attribute_ID());
