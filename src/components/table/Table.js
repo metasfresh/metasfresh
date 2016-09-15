@@ -197,6 +197,8 @@ class Table extends Component {
         // if(selected.length < 1) {
         //   this.selectProduct(id);
         // }
+
+
         const {selected} = this.state;
         const isAnySelected = selected.length > 0;
 

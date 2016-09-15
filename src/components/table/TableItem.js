@@ -21,16 +21,20 @@ class TableItem extends Component {
         }, ()=>{
           if(callback){
             // e.target
-            document.activeElement.getElementsByClassName('js-input-field')[0].focus();
+            let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+            if(elem){
+              elem.focus();
+            }
+
           }
         })
     }
     handleKey = (e, property) => {
         const elem = document.activeElement;
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-        const { edited, activeCell } = this.state;
+        const { edited, activeCell} = this.state;
 
-        if(elem.className !== "js-input-field") {
+        if(!elem.className.includes('js-input-field')) {
           this.setState(Object.assign({}, this.state, {
               activeCell: elem
           }))

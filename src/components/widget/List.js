@@ -71,7 +71,7 @@ class List extends Component {
                     }>
                         <input
                             type="text"
-                            className="input-field font-weight-bold"
+                            className="input-field js-input-field font-weight-bold"
                             readOnly
                             placeholder={defaultValue}
                             value={selected ? selected[Object.keys(selected)[0]] : ""}
