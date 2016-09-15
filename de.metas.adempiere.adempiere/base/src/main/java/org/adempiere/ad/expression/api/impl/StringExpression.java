@@ -2,14 +2,12 @@ package org.adempiere.ad.expression.api.impl;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.CtxName;
-import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
@@ -58,30 +56,26 @@ import com.google.common.collect.ImmutableList;
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((expressionStr == null) ? 0 : expressionStr.hashCode());
-		return result;
+		return Objects.hash(expressionStr);
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StringExpression other = (StringExpression)obj;
-		if (expressionStr == null)
 		{
-			if (other.expressionStr != null)
-				return false;
+			return true;
 		}
-		else if (!expressionStr.equals(other.expressionStr))
+		if (obj == null)
+		{
 			return false;
-		return true;
+		}
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+		final StringExpression other = (StringExpression)obj;
+		return Objects.equals(expressionStr, other.expressionStr);
 	}
 
 	@Override
@@ -124,27 +118,5 @@ import com.google.common.collect.ImmutableList;
 	public List<Object> getExpressionChunks()
 	{
 		return expressionChunks;
-	}
-
-	@Override
-	public String evaluate(Evaluatee ctx, boolean ignoreUnparsable)
-	{
-		// backward compatibility
-		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
-		return evaluate(ctx, onVariableNotFound);
-	}
-
-	@Override
-	public String evaluate(Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
-	{
-		final IExpressionEvaluator<IStringExpression, String> evaluator = getEvaluator();
-		final String value = evaluator.evaluate(ctx, this, onVariableNotFound);
-		return value;
-	}
-
-	@Override
-	public final IExpressionEvaluator<IStringExpression, String> getEvaluator()
-	{
-		return StringExpressionEvaluator.instance;
 	}
 }

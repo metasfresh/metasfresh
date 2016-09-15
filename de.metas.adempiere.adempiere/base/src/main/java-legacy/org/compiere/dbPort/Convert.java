@@ -16,10 +16,6 @@
  *****************************************************************************/
 package org.compiere.dbPort;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +24,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.util.Services;
@@ -53,165 +48,16 @@ import de.metas.logging.LogManager;
  */
 public abstract class Convert
 {
-	/**
-	 * Query Statistics logger
-	 * 
-	 * NOTE: to minimize logging overhead, we are retrieving our service here, because we don't expect this service to change
-	 */
-	private static final IQueryStatisticsLogger QUERY_STATISTICS_LOGGER = Services.get(IQueryStatisticsLogger.class);
-
 	/** RegEx: insensitive and dot to include line end characters   */
 	public static final int         REGEX_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
 
-	/** Statement used                  */
-	protected Statement               m_stmt = null;
-
 	/** Last Conversion Error           */
 	protected String                  m_conversionError = null;
-	/** Last Execution Error            */
-	private Exception               m_exception = null;
-	/** Verbose Messages                */
-	private boolean                 m_verbose = true;
 
 	/**	Logger	*/
 	private static final transient Logger log = LogManager.getLogger(Convert.class);
 	
 	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
-	
-    /**
-	 *  Set Verbose
-	 *  @param verbose
-	 */
-	public final void setVerbose (boolean verbose)
-	{
-		m_verbose = verbose;
-	}   //  setVerbose
-
-	/**************************************************************************
-	 *  Execute SQL Statement (stops at first error).
-	 *  If an error occurred hadError() returns true.
-	 *  You can get details via getConversionError() or getException()
-	 *  @param sqlStatements
-	 *  @param conn connection
-	 *  @return true if success
-	 *  @throws IllegalStateException if no connection
-	 */
-	public final boolean execute (String sqlStatements, Connection conn)
-	{
-		if (conn == null)
-			throw new IllegalStateException ("Require connection");
-		//
-		final List<String> sqls = convert (sqlStatements);
-		m_exception = null;
-		if (m_conversionError != null || sqls == null || sqls.isEmpty())
-			return false;
-
-		boolean ok = true;
-		int i = 0;
-		String statement = null;
-		try
-		{
-			if (m_stmt == null)
-				m_stmt = conn.createStatement();
-			//
-			for (i = 0; ok && i < sqls.size(); i++)
-			{
-				statement = sqls.get(i);
-				if (statement.length() == 0)
-				{
-					if (m_verbose)
-						log.trace("Skipping empty (" + i + ")");
-				}
-				else
-				{
-					if (m_verbose)
-						log.info("Executing (" + i + ") <<" + statement + ">>");
-					else
-						log.info("Executing " + i);
-					try
-					{
-						m_stmt.clearWarnings();
-						int no = m_stmt.executeUpdate(statement);
-						SQLWarning warn = m_stmt.getWarnings();
-						if (warn != null)
-						{
-							if (m_verbose)
-								log.info("- " + warn);
-							else
-							{
-								log.info("Executing (" + i + ") <<" + statement + ">>");
-								log.info("- " + warn);
-							}
-						}
-						if (m_verbose)
-							log.debug("- ok " + no);
-					}
-					catch (SQLException ex)
-					{
-						//  Ignore Drop Errors
-						if (!statement.startsWith("DROP "))
-						{
-							ok = false;
-							m_exception = ex;
-						}
-						if (!m_verbose)
-							log.info("Executing (" + i + ") <<" + statement + ">>");
-						log.info("Error executing " + i + "/" + sqls.size() + " = " + ex);
-					}
-				}
-			}   //  for all statements
-		}
-		catch (SQLException e)
-		{
-			m_exception = e;
-			if (!m_verbose)
-				log.info("Executing (" + i + ") <<" + statement + ">>");
-			log.info("Error executing " + i + "/" + sqls.size() + " = " + e);
-			return false;
-		}
-		return ok;
-	}   //  execute
-
-	/**
-	 *  Return last execution exception
-	 *  @return execution exception
-	 */
-	public final Exception getException()
-	{
-		return m_exception;
-	}   //  getException
-
-	/**
-	 *  Returns true if a conversion or execution error had occurred.
-	 *  Get more details via getConversionError() or getException()
-	 *  @return true if error had occurred
-	 */
-	public final boolean hasError()
-	{
-		return (m_exception != null) | (m_conversionError != null);
-	}   //  hasError
-
-	/**
-	 *  Convert SQL Statement (stops at first error).
-	 *  Statements are delimited by /
-	 *  If an error occurred hadError() returns true.
-	 *  You can get details via getConversionError()
-	 *  @param sqlStatements
-	 *  @return converted statement as a string
-	 */
-	public final String convertAll (String sqlStatements)
-	{
-		final List<String> sqls = convert (sqlStatements);
-		final StringBuilder sb = new StringBuilder(sqlStatements.length() + 10);
-		for (final String sql : sqls)
-		{
-			//  line.separator
-			sb.append(sql).append("\n/\n");
-			if (m_verbose)
-				log.info("Statement: " + sql);
-		}
-		return sb.toString();
-	}   //  convertAll
 
 	/**
 	 *  Convert SQL Statement (stops at first error).
@@ -398,14 +244,15 @@ public abstract class Convert
 	 * @param sqlStatement
 	 * @return string
 	 */
-	protected final String convertWithConvertMap(String sqlStatement) {
+	protected final String convertWithConvertMap(String sqlStatement)
+	{
 		try 
 		{
 			sqlStatement = applyConvertMap(cleanUpStatement(sqlStatement));
 		}
-		catch (RuntimeException e) {
-			log.warn(e.getLocalizedMessage());
-			m_exception = e;
+		catch (RuntimeException e)
+		{
+			log.warn("Failed converting {}", sqlStatement, e);
 		}
 		
 		return sqlStatement;
@@ -438,11 +285,6 @@ public abstract class Convert
 	 */
 	public static void logMigrationScript(String oraStatement, String pgStatement)
 	{
-		if (QUERY_STATISTICS_LOGGER != null)
-		{
-			QUERY_STATISTICS_LOGGER.collect(pgStatement);
-		}
-
 		// Check AdempiereSys
 		// check property Log migration script
 		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);

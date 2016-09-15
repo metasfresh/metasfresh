@@ -24,6 +24,7 @@ package de.metas.banking.payment.modelvalidator;
 
 
 import java.util.Collection;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -37,10 +38,10 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.logging.LogManager;
 
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
@@ -73,7 +74,7 @@ public class C_AllocationHdr
 		// Retrieve all C_PaySelectionLines which are about invoices from our allocation and which are not already processed.
 		// The C_PaySelectionLines will be groupped by C_PaySelection_ID.
 		//@formatter:off
-		final Collection<Collection<I_C_PaySelectionLine>> paySelectionLinesGroups = Services.get(IQueryBL.class)
+		final Collection<List<I_C_PaySelectionLine>> paySelectionLinesGroups = Services.get(IQueryBL.class)
 				//
 				// Get all C_AllocationLines
 				.createQueryBuilder(I_C_AllocationLine.class, context)

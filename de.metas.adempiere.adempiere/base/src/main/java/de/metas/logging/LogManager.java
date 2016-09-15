@@ -502,6 +502,19 @@ public final class LogManager
 	}
 
 	/**
+	 * @see #dumpAllLevelsUpToRoot(Logger)
+	 */
+	public static void dumpAllLevelsUpToRoot(final Class<?> clazz)
+	{
+		final Logger logger = getLogger(clazz);
+		if (logger == null)
+		{
+			return;
+		}
+		dumpAllLevelsUpToRoot(logger);
+	}
+
+	/**
 	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
 	 *
 	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.

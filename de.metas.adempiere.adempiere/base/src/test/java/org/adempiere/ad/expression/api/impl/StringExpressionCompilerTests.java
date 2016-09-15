@@ -42,7 +42,7 @@ public class StringExpressionCompilerTests
 	@Before
 	public void init()
 	{
-		compiler = new StringExpressionCompiler();
+		compiler = StringExpressionCompiler.instance;
 	}
 
 	@Test

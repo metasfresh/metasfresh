@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
@@ -128,11 +127,5 @@ public final class ConstantLogicExpression implements ILogicExpression
 	public LogicExpressionResult evaluateToResult(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
 		return value ? LogicExpressionResult.TRUE : LogicExpressionResult.FALSE;
-	}
-
-	@Override
-	public final ILogicExpressionEvaluator getEvaluator()
-	{
-		return LogicExpressionEvaluator.instance;
 	}
 }

@@ -42,6 +42,7 @@ import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
 public interface IQuery<T>
@@ -94,6 +95,18 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
+	
+	/**
+	 * Same as {@link #list(Class)} but returns an {@link ImmutableList}.
+	 * 
+	 * @param clazz
+	 * @return {@link ImmutableList}
+	 * @throws DBException
+	 */
+	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
+	{
+		return ImmutableList.copyOf(list(clazz));
+	}
 
 	/**
 	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's ID.
@@ -406,7 +419,7 @@ public interface IQuery<T>
 	 * @param keyFunction key function used to provide the key used to split the returned records.
 	 * @return collection of record groups.
 	 */
-	<K, ET extends T> Collection<Collection<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> Collection<List<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
 
 	/**
 	 * Adds SQL query to be joined as UNION ALL/DISTINCT.

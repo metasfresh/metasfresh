@@ -61,7 +61,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.LegacyPackingItem;
@@ -91,23 +90,18 @@ public class PackagingBL implements IPackagingBL
 	@Override
 	public Lookup createPackgagingContainerLookup()
 	{
-		final Language language = Env.getLanguage(Env.getCtx());
-
 		final MColumn c = MTable.get(Env.getCtx(), Table_ID).getColumn(COLUMNNAME_M_PackagingContainer_ID);
 
-		return createLookup(language, c);
+		return createLookup(c);
 	}
 
 	@Override
 	public Lookup createShipperLookup()
 	{
-
-		final Language language = Env.getLanguage(Env.getCtx());
-
 		final MColumn c =
 				MTable.get(Env.getCtx(), I_M_Shipper.Table_ID).getColumn(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 
-		return createLookup(language, c);
+		return createLookup(c);
 	}
 	
 	@Override
@@ -372,7 +366,7 @@ public class PackagingBL implements IPackagingBL
 		return inOut;
 	}
 
-	private static Lookup createLookup(final Language language, final I_AD_Column c)
+	private static Lookup createLookup(final I_AD_Column c)
 	{
 		try
 		{
@@ -380,7 +374,6 @@ public class PackagingBL implements IPackagingBL
 					-1, // WindowNo
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
-					language, // Language
 					c.getColumnName(), // ColumnName
 					c.getAD_Reference_Value_ID(), // AD_Reference_Value_ID,
 					false, // IsParent,

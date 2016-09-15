@@ -28,7 +28,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
-import org.compiere.util.Util;
 
 /**
  * String expression evaluator
@@ -39,8 +38,6 @@ import org.compiere.util.Util;
 public class StringExpressionEvaluator implements IExpressionEvaluator<IStringExpression, String>
 {
 	public static final StringExpressionEvaluator instance = new StringExpressionEvaluator();
-
-	public static final String EMPTY_RESULT = "";
 
 	@Override
 	public String evaluate(final Evaluatee ctx, final IStringExpression expression, final OnVariableNotFound onVariableNotFound)
@@ -63,7 +60,7 @@ public class StringExpressionEvaluator implements IExpressionEvaluator<IStringEx
 
 					if (onVariableNotFound == OnVariableNotFound.ReturnNoResult) // i.e. !ignoreUnparsable
 					{
-						return EMPTY_RESULT;
+						return IStringExpression.EMPTY_RESULT;
 					}
 					else if (onVariableNotFound == OnVariableNotFound.Preserve)
 					{
@@ -94,12 +91,4 @@ public class StringExpressionEvaluator implements IExpressionEvaluator<IStringEx
 
 		return result.toString();
 	}
-
-	@Override
-	public boolean isNoResult(Object result)
-	{
-		return result == null
-				|| Util.same(result, EMPTY_RESULT);
-	}
-
 }

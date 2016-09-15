@@ -39,6 +39,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
@@ -164,10 +165,10 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	@Override
-	public <K, ET extends T> Collection<Collection<ET>> listAndSplit(final Class<ET> modelClass, final Function<ET, K> keyFunction)
+	public <K, ET extends T> Collection<List<ET>> listAndSplit(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final ListMultimap<K, ET> map = listMultimap(modelClass, keyFunction);
-		return map.asMap().values();
+		return Multimaps.asMap(map).values();
 	}
 
 	@Override

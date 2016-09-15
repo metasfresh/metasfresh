@@ -49,7 +49,10 @@ public interface Callout
 	 *	@param method   in notation User_Function
 	 *  @param value    the value
 	 *	@return converted String or Null if no method found
+	 *
+	 * @deprecated Only used in import formats; we need to introduce a dedicated interface for that
 	 */
+	@Deprecated
 	public String convert (String method, String value);
 
 }   //  callout

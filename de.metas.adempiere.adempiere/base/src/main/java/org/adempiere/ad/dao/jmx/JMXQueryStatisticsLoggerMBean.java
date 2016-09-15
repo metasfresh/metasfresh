@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.jmx;
  * #L%
  */
 
-
 import java.util.Date;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
@@ -36,6 +35,8 @@ import org.adempiere.ad.dao.IQueryStatisticsLogger;
 public interface JMXQueryStatisticsLoggerMBean
 {
 	void enable();
+
+	void enableWithSqlTracing();
 
 	void disable();
 

@@ -27,8 +27,6 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -50,8 +48,7 @@ import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import net.miginfocom.swing.MigLayout;
-
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VTreePanelUI;
@@ -66,9 +63,13 @@ import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Tree Panel displays trees. <br>
@@ -206,7 +207,13 @@ public final class VTreePanel extends CPanel
 		m_AD_Tree_ID = AD_Tree_ID;
 
 		// Get Tree
-		final MTree vTree = new MTree(Env.getCtx(), AD_Tree_ID, m_editable, true, null);
+		final MTree vTree = MTree.builder()
+				.setCtx(Env.getCtx())
+				.setTrxName(ITrx.TRXNAME_None)
+				.setAD_Tree_ID(AD_Tree_ID)
+				.setEditable(m_editable)
+				.setClientTree(true)
+				.build();
 		m_root = vTree.getRoot();
 		m_root.setName(Services.get(IMsgBL.class).getMsg(Env.getCtx(), vTree.getName())); // translate name of menu.
 		log.info("root={}", m_root);

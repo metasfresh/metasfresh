@@ -88,7 +88,7 @@ public class GridWindow implements Serializable
 	 */
 	public static GridWindow get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
 	{
-		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		log.debug("Window={}, AD_Window_ID={}", WindowNo, AD_Window_ID);
 		GridWindowVO mWindowVO = GridWindowVO.create (ctx, WindowNo, AD_Window_ID);
 		if (mWindowVO == null)
 			return null;
@@ -152,8 +152,6 @@ public class GridWindow implements Serializable
 	 */
 	private boolean loadTabData()
 	{
-		log.info("");
-
 		final List<GridTabVO> tabVOs = m_vo.getTabs();
 		if (tabVOs == null || tabVOs.isEmpty())
 		{
@@ -335,7 +333,7 @@ public class GridWindow implements Serializable
 	 */
 	public void query()
 	{
-		log.info("");
+		log.info("query");
 		GridTab tab = getTab(0);
 		tab.query(false, 0, GridTabMaxRows.NO_RESTRICTION);
 		if (tab.getRowCount() > 0)

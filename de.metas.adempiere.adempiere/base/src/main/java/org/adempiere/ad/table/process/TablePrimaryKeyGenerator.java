@@ -1,11 +1,13 @@
 package org.adempiere.ad.table.process;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -21,6 +23,7 @@ import org.compiere.process.TabCreateFields;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -52,9 +55,10 @@ class TablePrimaryKeyGenerator
 	// services
 	private static final Logger logger = LogManager.getLogger(TablePrimaryKeyGenerator.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final Properties ctx;
-	private int countOK = 0;
+	private Set<String> resultTableNames = new LinkedHashSet<>();
 
 	public TablePrimaryKeyGenerator(final Properties ctx)
 	{
@@ -66,10 +70,15 @@ class TablePrimaryKeyGenerator
 	{
 		if (adTable.isView())
 		{
-			throw new AdempiereException("Table is view: " + adTable.getTableName());
+			addLog("Skip {} because it's view", adTable.getTableName());
+			return;
 		}
 
-		assertNoColumnPK(adTable);
+		if(hasColumnPK(adTable))
+		{
+			addLog("Skip {} because it already has PK", adTable.getTableName());
+			return;
+		}
 		final I_AD_Column columnPK = createColumnPK(adTable);
 		createColumnPK_DDL(columnPK);
 
@@ -79,12 +88,36 @@ class TablePrimaryKeyGenerator
 		CacheMgt.get().reset(I_AD_Column.Table_Name);
 		CacheMgt.get().reset("POInfo");
 
-		countOK++;
+		resultTableNames.add(adTable.getTableName());
+	}
+
+	public void generateForTablesIfPossible(final Iterable<I_AD_Table> adTables)
+	{
+		for (final I_AD_Table adTable : adTables)
+		{
+			trxManager.run(new TrxRunnableAdapter()
+			{
+
+				@Override
+				public void run(final String localTrxName) throws Exception
+				{
+					generateForTable(adTable);
+				}
+
+				@Override
+				public boolean doCatch(final Throwable ex) throws Throwable
+				{
+					logger.warn("Failed generating PK for {}", adTable, ex);
+					addLog("@Error@ Generating for {}: {}", adTable.getTableName(), ex.getLocalizedMessage());
+					return ROLLBACK;
+				}
+			});
+		}
 	}
 
 	public String getSummary()
 	{
-		return "Generated primary keys for " + countOK + " tables.";
+		return "Generated primary keys for " + resultTableNames.size() + " table(s): " + resultTableNames;
 	}
 
 	public Properties getCtx()
@@ -97,18 +130,14 @@ class TablePrimaryKeyGenerator
 		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
 	}
 
-	private final void assertNoColumnPK(final I_AD_Table table)
+	private final boolean hasColumnPK(final I_AD_Table table)
 	{
-		final I_AD_Column existingColumnPK = queryBL
+		return queryBL
 				.createQueryBuilder(I_AD_Column.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
 				.create()
-				.firstOnly(I_AD_Column.class);
-		if (existingColumnPK != null)
-		{
-			throw new AdempiereException("Primary key column already exists for " + table.getTableName() + ": " + existingColumnPK.getColumnClass());
-		}
+				.match();
 	}
 
 	private final I_AD_Column createColumnPK(final I_AD_Table table)

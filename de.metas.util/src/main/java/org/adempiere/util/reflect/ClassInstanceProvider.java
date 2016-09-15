@@ -38,6 +38,7 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 	{
 	}
 
+	@Override
 	public Class<?> provideClass(final String className) throws ClassNotFoundException
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -49,11 +50,10 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 		return clazz;
 	}
 
+	@Override
 	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws InstantiationException, IllegalAccessException
 	{
-		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz),
-				"Class {} doesn't implement {}",
-				instanceClazz.getName(), interfaceClazz.getName());
+		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
 		return instanceClazz
 				.asSubclass(interfaceClazz)

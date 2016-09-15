@@ -31,9 +31,10 @@ import org.adempiere.ad.security.impl.TablesAccessInfo;
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
 import org.compiere.model.AccessSqlParser;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
 
 public class TableRecordPermissions extends AbstractPermissions<TableRecordPermission>
 {
@@ -143,13 +144,19 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 
 	public void addRecordDependentAccessSql(final StringBuilder retSQL, final AccessSqlParser asp, final String tableName, final boolean rw)
 	{
+		final Set<TableRecordPermission> dependentRecordPermissionsList = getDependentRecordPermissionsList();
+		if(dependentRecordPermissionsList.isEmpty())
+		{
+			return;
+		}
+		
 		final String mainSql = asp.getMainSql();
 
 		int AD_Table_ID = 0;
 		String whereColumnName = null;
-		final List<Integer> includes = new ArrayList<Integer>();
-		final List<Integer> excludes = new ArrayList<Integer>();
-		for (final TableRecordPermission recordDependentAccess : getDependentRecordPermissionsList())
+		final List<Integer> includes = new ArrayList<>();
+		final List<Integer> excludes = new ArrayList<>();
+		for (final TableRecordPermission recordDependentAccess : dependentRecordPermissionsList)
 		{
 			final String columnName = recordDependentAccess.getKeyColumnName(asp.getTableInfo(asp.getMainSqlIndex()));
 			if (columnName == null)
@@ -206,13 +213,9 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 			}
 			whereColumnName = getDependentRecordWhereColumn(mainSql, columnName);
 		}	// for all dependent records
+		
 		retSQL.append(getDependentAccess(whereColumnName, includes, excludes));
-
-		// //
-		// retSQL.append(orderBy);
-		// logger.trace(retSQL.toString());
-		// return retSQL.toString();
-	}	// addAccessSQL
+	}
 
 	/**
 	 * Get Dependent Access

@@ -414,13 +414,6 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		return s;
 	}
 
-	@Override
-	public boolean isNoResult(final Object result)
-	{
-		// because evaluation is throwing exception in case of failure, the only "no result" would be the NULL
-		return result == null;
-	}
-
 	private static final class ExpressionEvaluationContext
 	{
 		private final Evaluatee params;

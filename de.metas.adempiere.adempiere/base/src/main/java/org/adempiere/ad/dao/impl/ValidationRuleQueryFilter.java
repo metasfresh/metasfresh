@@ -94,7 +94,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 		final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
 		final IValidationContext evalCtx = validationRuleFactory.createValidationContext(ctx, windowNo, tabNo, tableName);
-		final IValidationRule valRule = validationRuleFactory.create(ctx, tableName, adValRuleId);
+		final IValidationRule valRule = validationRuleFactory.create(tableName, adValRuleId);
 		final String prefilterWhereClause = valRule.getPrefilterWhereClause(evalCtx);
 		return prefilterWhereClause;
 	}

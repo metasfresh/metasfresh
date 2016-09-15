@@ -1,10 +1,12 @@
-package org.adempiere.ad.callout.api;
+package org.adempiere.ad.ui.spi;
+
+import org.adempiere.ad.callout.api.ICalloutRecord;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,14 +24,12 @@ package org.adempiere.ad.callout.api;
  * #L%
  */
 
-
-/**
- * Callout
- * 
- * @author tsa
- * 
- */
-public interface ICallout
+public interface IStatefulTabCallout extends ITabCallout
 {
-	public void onFieldChanged(final ICalloutExecutor executor, final ICalloutField field) throws Exception;
+	/**
+	 * Called after {@link ICalloutRecord} was initialized.
+	 * 
+	 * @param calloutRecord
+	 */
+	void onInit(ICalloutRecord calloutRecord);
 }
