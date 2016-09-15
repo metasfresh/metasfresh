@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 
@@ -32,7 +33,9 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -516,6 +519,13 @@ public class SqlDocumentRepository implements DocumentsRepository
 			{
 				return Integer.parseInt((String)value);
 			}
+			else if (Map.class.isAssignableFrom(valueClass))
+			{
+				@SuppressWarnings("unchecked")
+				final Map<String, String> map = (Map<String, String>)value;
+				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
+				return lookupValue == null ? null : lookupValue.getIdAsInt();
+			}
 		}
 		else if (String.class.equals(targetClass))
 		{
@@ -526,6 +536,13 @@ public class SqlDocumentRepository implements DocumentsRepository
 			else if (LookupValue.class.isAssignableFrom(valueClass))
 			{
 				return ((LookupValue)value).getIdAsString();
+			}
+			else if (Map.class.isAssignableFrom(valueClass))
+			{
+				@SuppressWarnings("unchecked")
+				final Map<String, String> map = (Map<String, String>)value;
+				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+				return lookupValue == null ? null : lookupValue.getIdAsString();
 			}
 		}
 		else if (Timestamp.class.equals(targetClass))
