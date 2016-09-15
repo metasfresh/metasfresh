@@ -11,7 +11,7 @@ import {
     rootRequest
  } from '../actions/MenuActions';
 
-export default class NavigationTree extends Component {
+class NavigationTree extends Component {
     constructor(props){
         super(props);
         this.state = {

@@ -637,6 +637,12 @@ body {
 
 .indicator .success {
   color: $brand-success-color;
+  opacity: 1;
+  transition: all 1.5s ease;
+}
+
+.indicator .saved-animation {
+  opacity: 0;
 }
 
 .indicator .error {
