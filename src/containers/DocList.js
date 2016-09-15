@@ -34,82 +34,126 @@ class DocList extends Component {
                 }))
             })
         ).then(() => {
-            dispatch(browseViewRequest(this.state.data.viewId, this.state.page, 50)).then((response) => {
-                this.setState(Object.assign({}, this.state, {
-                    data: response.data
-                }))
-            });
+            this.getView();
+        });
+    }
+
+    getView = () => {
+        const {data,page} = this.state;
+        const {dispatch} = this.props;
+
+        dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
         });
     }
 
     handleChangePage = (index) => {
-        
+        const {data, page} = this.state;
+        let currentPage = page;
+        switch(index){
+            case "up":
+                currentPage * data.pageLength < data.size ? currentPage++ : null;
+                break;
+            case "down":
+                currentPage != 1 ? currentPage-- : null;
+                break;
+            default:
+                currentPage = index;
+        }
+
+        if(currentPage !== page){
+            this.setState(Object.assign({}, this.state, {
+                page: parseInt(currentPage)
+            }), ()=>{
+                this.getView();
+            });
+        }
     }
 
     render() {
         const {dispatch, windowType} = this.props;
-        const {layout,data} = this.state;
-        return (
-            <div>
-                <Header />
-                <div className="container header-sticky-distance">
-                    <div className="panel panel-primary panel-spaced panel-inline document-list-header">
-                        <button
-                            className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                            onClick={() => dispatch(push('/window/' + windowType + '/new'))}
-                        >
-                            <i className="meta-icon-add" /> New sales order
-                        </button>
-                        <span>Filters: </span>
-                        <DatetimeRange />
-                        <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
-                            <i className="meta-icon-preview" /> No search filters
-                        </button>
+        const {layout, data, page} = this.state;
+        if( layout && data) {
 
-                    </div>
-                    <div>
-                        {layout && data && <Table
-                            rowData={{1: data.result}}
-                            cols={layout.elements}
-                            tabid={1}
-                            type={windowType}
-                            emptyText={layout.emptyResultText}
-                            emptyHint={layout.emptyResultHint}
-                            readonly={true}
-                        />}
-                    </div>
-                    <div className="items-row">
-                        <div>
-                            <p>No items selected</p>
-                            <p>Select all on this page</p>
+            const pages = Math.ceil(data.size / data.pageLength);
+            const startPoint = pages - page <= 4 ? pages - 4 : page;
+            let pagination = [];
+            for(let i = startPoint; i <= startPoint + 4; i++){
+                pagination.push(
+                    <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => this.handleChangePage(i)}>
+                        <a className="page-link">{i}</a>
+                    </li>
+                );
+            }
+
+            return (
+                <div>
+                    <Header />
+                    <div className="container header-sticky-distance">
+                        <div className="panel panel-primary panel-spaced panel-inline document-list-header">
+                            <button
+                                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                                onClick={() => dispatch(push('/window/' + windowType + '/new'))}
+                            >
+                                <i className="meta-icon-add" /> New sales order
+                            </button>
+                            <span>Filters: </span>
+                            <DatetimeRange />
+                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
+                                <i className="meta-icon-preview" /> No search filters
+                            </button>
+
                         </div>
                         <div>
-                        <nav aria-label="Page navigation">
-                            <ul className="pagination">
-                                <li className="page-item">
-                                    <a className="page-link" href="#" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                    <span className="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                                <li className="page-item"><a className="page-link" href="#">1</a></li>
-                                <li className="page-item"><a className="page-link" href="#">2</a></li>
-                                <li className="page-item"><a className="page-link" href="#">3</a></li>
-                                <li className="page-item"><a className="page-link" href="#">4</a></li>
-                                <li className="page-item"><a className="page-link" href="#">5</a></li>
-                                <li className="page-item">
-                                <a className="page-link" href="#" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                    <span className="sr-only">Next</span>
-                                </a>
-                                </li>
-                            </ul>
-                        </nav>
+                            <Table
+                                rowData={{1: data.result}}
+                                cols={layout.elements}
+                                tabid={1}
+                                type={windowType}
+                                emptyText={layout.emptyResultText}
+                                emptyHint={layout.emptyResultHint}
+                                readonly={true}
+                            />
+                        </div>
+                        <div className="items-row">
+                            <div>
+                                <p>No items selected</p>
+                                <p>Select all on this page</p>
+                            </div>
+
+                            <div className="items-row">
+                                <div>No sorting</div>
+                                <div>Total items <b>{data.size}</b></div>
+                                <div>
+                                    <nav>
+                                        <ul className="pagination pointer">
+                                            <li className="page-item">
+                                                <a className="page-link" onClick={() => this.handleChangePage("down")}>
+                                                    <span>&laquo;</span>
+                                                </a>
+                                            </li>
+
+                                            {pagination}
+
+                                            <li className={"page-item "}>
+                                                <a className="page-link" onClick={() => this.handleChangePage("up")}>
+                                                    <span>&raquo;</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }else{
+            return false;
+        }
+
     }
 }
 
