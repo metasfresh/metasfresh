@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 
 import {getWindowBreadcrumb} from './MenuActions';
 
@@ -132,7 +132,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
                 // TODO: This is temporary solution - GITHUB ISSUE
                 if(docId == "NEW" && !isModal){
-                    dispatch(push("/window/"+ windowType + "/" + response.data[0].id));
+                    dispatch(replace("/window/"+ windowType + "/" + response.data[0].id));
                 }
 
                 docId = response.data[0].id;
@@ -161,7 +161,6 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                         .then((res)=> {
 
                             res.data && res.data.map(row => {
-
                                 row.fields = nullToEmptyStrings(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
