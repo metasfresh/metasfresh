@@ -103,7 +103,7 @@ class MenuOverlay extends Component {
         return (
             <div className="menu-overlay menu-overlay-primary">
                 <div className="menu-overlay-caption">{nodeData && nodeData.caption}</div>
-                <div className="menu-overlay-body">
+                <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
 

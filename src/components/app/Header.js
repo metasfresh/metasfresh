@@ -24,7 +24,8 @@ class Header extends Component {
             isSubheaderShow: false,
             isOrderListShow: false,
             indicator: 'saved',
-            menuOverlay: null
+            menuOverlay: null,
+            scrolled: false
         }
     }
 
@@ -42,6 +43,27 @@ class Header extends Component {
         this.setState(Object.assign({}, this.state, {
             menuOverlay: nodeId
         }));
+    }
+    componentDidMount() {
+        document.addEventListener('scroll', this.handleScroll);
+    }
+    componentWillUnmount() {
+        document.removeEventListener('scroll', this.handleScroll);
+    }
+    handleScroll = (event) => {
+      let scrollTop = event.srcElement.body.scrollTop;
+
+      if(scrollTop > 0) {
+        this.setState(Object.assign({}, this.state, {
+            scrolled: true
+        }))
+      } else {
+        this.setState(Object.assign({}, this.state, {
+            scrolled: false
+        }))
+      }
+
+
     }
 
     renderBreadcrumb = () => {
@@ -96,7 +118,7 @@ class Header extends Component {
         return (
             <div>
                 {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
-                <nav className="header header-super-faded">
+                <nav className={"header header-super-faded " + (this.state.scrolled ? "header-shadow": "")}>
                     <div className="container">
                         <div className="header-container">
                             <div className="header-left-side">
