@@ -147,7 +147,6 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>
