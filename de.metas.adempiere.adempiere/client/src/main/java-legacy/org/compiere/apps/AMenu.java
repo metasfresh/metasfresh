@@ -803,15 +803,13 @@ public final class AMenu extends CFrame
 
 	private static int retrieveMenuTreeId(final Properties ctx)
 	{
-		final int AD_Role_ID = Env.getAD_Role_ID(ctx);
-		int AD_Tree_ID = DB.getSQLValue(ITrx.TRXNAME_None,
-				"SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)"
-						+ "FROM AD_ClientInfo ci"
-						+ " INNER JOIN AD_Role r ON (ci.AD_Client_ID=r.AD_Client_ID) "
-						+ "WHERE AD_Role_ID=?", AD_Role_ID);
-		if (AD_Tree_ID <= 0)
-			AD_Tree_ID = 10;	// Menu
-		return AD_Tree_ID;
+		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
+		if (!userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_MenuAvailable))
+		{
+			return -1;
+		}
+		
+		return userRolePermissions.getMenu_Tree_ID();
 	}
 
 	public FormFrame startForm(final int AD_Form_ID)

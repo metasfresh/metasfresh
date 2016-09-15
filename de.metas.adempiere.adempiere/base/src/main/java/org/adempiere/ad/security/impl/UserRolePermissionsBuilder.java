@@ -567,7 +567,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
 		if(adClientMenuTreeId > 0)
 		{
-			return roleMenuTreeId;
+			return adClientMenuTreeId;
 		}
 
 		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
