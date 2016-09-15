@@ -538,18 +538,26 @@ public final class AMenu extends CFrame
 			Ini.saveProperties();
 		}
 		//
-		infoUpdater.stop = true;
-		try
+		final InfoUpdater infoUpdater = this.infoUpdater;
+		if(infoUpdater != null)
 		{
-			synchronized(infoUpdater)
+			infoUpdater.stop = true;
+			try
 			{
-				infoUpdater.notify();
+				synchronized(infoUpdater)
+				{
+					infoUpdater.notify();
+				}
 			}
-		}
-		finally
-		{
-			infoUpdaterThread = null;
-			infoUpdater = null;
+			catch(Exception e)
+			{
+				log.warn("Failed stopping {}. Ignored.", infoUpdater, e);
+			}
+			finally
+			{
+				infoUpdaterThread = null;
+				this.infoUpdater = null;
+			}
 		}
 
 		// Stop the notifications UI
