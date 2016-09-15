@@ -229,7 +229,7 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 
             setTimeout(function(){
                 dispatch(indicatorState('saved'));
-            }, 3500);
+            }, 800);
 
         })
     }
