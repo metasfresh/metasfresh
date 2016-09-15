@@ -45,10 +45,6 @@ public interface ICalloutField
 
 	String getTableName();
 
-	int getAD_Table_ID();
-
-	int getAD_Column_ID();
-
 	Object getValue();
 
 	Object getOldValue();

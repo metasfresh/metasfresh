@@ -1,10 +1,12 @@
-package org.adempiere.ad.callout.api.impl;
+package org.adempiere.ad.ui.spi;
+
+import org.adempiere.ad.callout.api.ICalloutRecord;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +24,12 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
-import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.adempiere.ad.callout.api.ICalloutInstanceFactory;
-import org.compiere.model.MRule;
-
-public class CalloutInstanceFactory implements ICalloutInstanceFactory
+public interface IStatefulTabCallout extends ITabCallout
 {
-	@Override
-	public ICalloutInstance createFromString(final String calloutStr)
-	{
-		if (calloutStr.toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
-		{
-			final String ruleValue = calloutStr.substring(MRule.SCRIPT_PREFIX.length());
-			return new RuleCalloutInstance(ruleValue);
-		}
-		else
-		{
-			return new DefaultCalloutInstance(calloutStr);
-		}
-	}
+	/**
+	 * Called after {@link ICalloutRecord} was initialized.
+	 * 
+	 * @param calloutRecord
+	 */
+	void onInit(ICalloutRecord calloutRecord);
 }

@@ -24,7 +24,6 @@ package org.adempiere.ad.validationRule;
 
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Val_Rule;
@@ -38,7 +37,7 @@ import org.compiere.model.I_AD_Val_Rule;
 public interface IValidationRuleDAO extends ISingletonService
 {
 
-	I_AD_Val_Rule retriveValRule(Properties ctx, int adValRuleId);
+	I_AD_Val_Rule retriveValRule(int adValRuleId);
 
 	/**
 	 * Retrieve child/included validation rules

@@ -4,13 +4,11 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.process.RunOutOfTrx;
 
@@ -45,37 +43,14 @@ import de.metas.process.RunOutOfTrx;
 public class AD_Table_CreatePK_AllMissing extends SvrProcess
 {
 	// services
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final TablePrimaryKeyGenerator generator = new TablePrimaryKeyGenerator(getCtx());
-
-		for (final I_AD_Table table : retrieveTablesWithMissingPK())
-		{
-			trxManager.run(new TrxRunnableAdapter()
-			{
-
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
-					generator.generateForTable(table);
-				}
-
-				@Override
-				public boolean doCatch(final Throwable ex) throws Throwable
-				{
-					log.warn("Failed generating PK for {}", table, ex);
-					addLog("@Error@ Generating for {}: {}", table.getTableName(), ex.getLocalizedMessage());
-					return ROLLBACK;
-				}
-			});
-		}
-
+		generator.generateForTablesIfPossible(retrieveTablesWithMissingPK());
 		return generator.getSummary();
 	}
 

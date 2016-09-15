@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComboBox;
 
@@ -44,18 +42,21 @@ import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Account Viewer State - maintains State information for the Account Viewer
@@ -325,8 +326,8 @@ class AcctViewerData
 	{
 		// SELECT (<embedded>) FROM tableName avd WHERE avd.<selectSQL>
 		StringBuffer sql = new StringBuffer("SELECT (");
-		Language language = Env.getLanguage(Env.getCtx());
-		sql.append(MLookupFactory.getLookup_TableDirEmbed(language, columnName, "avd"))
+		LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
+		sql.append(MLookupFactory.getLookup_TableDirEmbed(languageInfo, columnName, "avd"))
 				.append(") FROM ").append(tableName).append(" avd WHERE avd.").append(selectSQL);
 		String retValue = "<" + selectSQL + ">";
 

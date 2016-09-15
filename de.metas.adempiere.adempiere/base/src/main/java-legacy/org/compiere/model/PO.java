@@ -262,6 +262,8 @@ public abstract class PO
 	/** Static Logger					*/
 	private static final Logger s_log = LogManager.getLogger(PO.class);
 
+	private static final String COLUMNNAME_IsApproved = "IsApproved";
+
 	/** Context                 */
 	private Properties		p_ctx;
 	/** Model Info              */
@@ -1111,7 +1113,9 @@ public abstract class PO
 		}
 		return set_ValueNoCheck(index, value);
 	}
-	private final boolean set_ValueNoCheck (final int index, final Object value)
+	
+	// metas: changed from private to public
+	public final boolean set_ValueNoCheck (final int index, final Object value)
 	{
 		//
 		// Load record if stale (01537)
@@ -1216,43 +1220,49 @@ public abstract class PO
 	 * @param value
 	 *  @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumnReturningBoolean(String columnName, Object value)
+	public final boolean set_ValueOfColumnReturningBoolean(final String columnName, final Object value)
 	{
-		int AD_Column_ID = p_info.getAD_Column_ID(columnName);
-		if (AD_Column_ID > 0)
-			return set_ValueOfColumnReturningBoolean(AD_Column_ID, value);
-		else
+		final int columnIndex = p_info.getColumnIndex(columnName);
+		if(columnIndex < 0)
+		{
+			log.error("Not found - ColumnName={}", columnName);
 			return false;
+		}
+		
+		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
 	/**
-	 *  Set Value of Column
-	 *  @param AD_Column_ID column
-	 *  @param value value
+	 * Set Value of AD_Column_ID
+	 * 
+	 * @param AD_Column_ID column
+	 * @param value value
+	 * @returns boolean indicating success or failure
 	 */
-	public final void set_ValueOfColumn (int AD_Column_ID, Object value)
+	public final boolean set_ValueOfAD_Column_ID(final int AD_Column_ID, final Object value)
 	{
-		set_ValueOfColumnReturningBoolean (AD_Column_ID, value);
-	}   //  setValueOfColumn
+		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
+		if (columnIndex < 0)
+		{
+			log.error("Not found - AD_Column_ID={}", AD_Column_ID);
+			return false;
+		}
+		
+		return set_ValueReturningBoolean(columnIndex, value);
+	}
 
-
-	/**
-	 *  Set Value of Column
-	 *  @param AD_Column_ID column
-	 *  @param value value
-	 *  @returns boolean indicating success or failure
-	 */
-	public final boolean set_ValueOfColumnReturningBoolean (int AD_Column_ID, Object value)
+	public final boolean set_ValueReturningBoolean (final int columnIndex, final Object value)
 	{
-		int index = p_info.getColumnIndex(AD_Column_ID);
-		if (index < 0)
-			log.error("Not found - AD_Column_ID=" + AD_Column_ID);
-		String ColumnName = p_info.getColumnName(index);
-		if (ColumnName.equals("IsApproved"))
-			return set_ValueNoCheck(ColumnName, value);
+		final String columnName = p_info.getColumnName(columnIndex);
+		if (COLUMNNAME_IsApproved.equals(columnName))
+		{
+			return set_ValueNoCheck(columnIndex, value);
+		}
 		else
-			return set_Value (index, value);
-	}   //  setValueOfColumn
+		{
+			return set_Value(columnIndex, value);
+		}
+	}
 
 
 	/**

@@ -1,13 +1,19 @@
 package org.adempiere.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /*
@@ -54,6 +60,38 @@ public class GuavaCollectorsTest
 		final List<Integer> result = source.stream().collect(GuavaCollectors.toImmutableListExcludingDuplicates());
 
 		Assert.assertEquals(resultExpected, result);
+	}
+
+	@Test
+	public void test_toImmutableListExcludingDuplicates_With_KeyFunction_DuplicatesConsumer()
+	{
+		final List<IPair<Integer, String>> source = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one"), ImmutablePair.of(2, "two"), ImmutablePair.of(3, "three") //
+				, ImmutablePair.of(1, "one-again"), ImmutablePair.of(2, "two-again"), ImmutablePair.of(3, "three-again") //
+				, ImmutablePair.of(4, "four") //
+		);
+
+		final List<IPair<Integer, String>> resultExpected = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one"), ImmutablePair.of(2, "two"), ImmutablePair.of(3, "three") //
+				, ImmutablePair.of(4, "four") //
+		);
+
+		final List<IPair<Integer, String>> duplicatesExpected = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one-again"), ImmutablePair.of(2, "two-again"), ImmutablePair.of(3, "three-again") //
+		);
+
+		final List<IPair<Integer, String>> duplicatesActual = new ArrayList<>();
+		final Function<IPair<Integer, String>, Integer> keyFunction = item -> item.getLeft();
+		final BiConsumer<Integer, IPair<Integer, String>> duplicatesConsumer = (key, item) -> {
+			duplicatesActual.add(item);
+		};
+
+		ImmutableList<IPair<Integer, String>> resultActual = source
+				.stream()
+				.collect(GuavaCollectors.toImmutableListExcludingDuplicates(keyFunction, duplicatesConsumer));
+
+		Assert.assertEquals("Result", resultExpected, resultActual);
+		Assert.assertEquals("Duplicates", duplicatesExpected, duplicatesActual);
 	}
 
 	@Test

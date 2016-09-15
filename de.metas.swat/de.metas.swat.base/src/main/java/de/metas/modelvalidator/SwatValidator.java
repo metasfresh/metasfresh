@@ -16,11 +16,11 @@ package de.metas.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -101,7 +101,6 @@ import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.adempiere.modelvalidator.ProcessValidator;
 import de.metas.adempiere.report.jasper.client.JRClient;
-import de.metas.adempiere.service.ITriggerUIBL;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.inout.model.I_M_InOutLine;
@@ -118,6 +117,9 @@ import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute_Line;
 import de.metas.pricing.attributebased.spi.impl.AttributePlvCreationListener;
+import de.metas.request.model.validator.R_Request;
+import de.metas.request.service.IRequestCreator;
+import de.metas.request.service.impl.AsyncRequestCreator;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 
 /**
@@ -172,9 +174,12 @@ public class SwatValidator implements ModelValidator
 
 		//
 		// Services
-	
-		//task FRESH-152: BPartner Stats Updater
-		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());	
+
+		// task FRESH-152: BPartner Stats Updater
+		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
+		
+		// task FRESH-636: Request Creator
+		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);
@@ -196,7 +201,6 @@ public class SwatValidator implements ModelValidator
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
 
 		engine.addModelValidator(new AD_User(), client);
-		engine.addModelValidator(Services.get(ITriggerUIBL.class).createModelValidator(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
 		engine.addModelValidator(new CLocationValidator(), client); // us786
 		engine.addModelValidator(new C_CountryArea_Assign(), client);
@@ -220,8 +224,7 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
 
 		// task 09700
-		final IModelInterceptor counterDocHandlerInterceptor =
-				Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
+		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
 		engine.addModelValidator(counterDocHandlerInterceptor, null);
 
 		// pricing
@@ -231,6 +234,9 @@ public class SwatValidator implements ModelValidator
 			// task 07286: a replacement for the former jboss-aop aspect <code>de.metas.adempiere.aop.PriceListCreate</code>.
 			Services.get(IPriceListBL.class).addPlvCreationListener(new AttributePlvCreationListener());
 		}
+
+		// FRESH-636: Request
+		engine.addModelValidator(new R_Request(), client);
 
 		// AD_Tree UI support
 		{

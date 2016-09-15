@@ -18,20 +18,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MPaySelectionCheck;
 import org.compiere.model.MPaymentBatch;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -147,8 +147,7 @@ public class PayPrint {
 
 		// load PaymentRule for Bank
 		int AD_Reference_ID = 195;  //  MLookupInfo.getAD_Reference_ID("All_Payment Rule");
-		Language language = Language.getLanguage(Env.getAD_Language(Env.getCtx()));
-		MLookupInfo info = MLookupFactory.getLookup_List(language, AD_Reference_ID);
+		MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_ID);
 		final String query = info.getSqlQuery();
 		String sql = query.substring(0, query.indexOf(" ORDER BY"))
 			+ " AND " + info.getKeyColumnFQ()

@@ -1,10 +1,14 @@
-package org.adempiere.ad.callout.api;
+package de.metas.request.api;
+
+import org.adempiere.util.ISingletonService;
+
+import de.metas.inout.model.I_M_InOutLine;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,19 +17,22 @@ package org.adempiere.ad.callout.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.util.ISingletonService;
-
-public interface ICalloutInstanceFactory extends ISingletonService
+public interface IRequestDAO extends ISingletonService
 {
-	ICalloutInstance createFromString(String calloutStr);
+
+	/**
+	 * Create a new R_Request based on the info from the given inout line
+	 * 
+	 * @param line
+	 */
+	void createRequestFromInOutLine(I_M_InOutLine line);
 }

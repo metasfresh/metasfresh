@@ -67,7 +67,7 @@ public class StringExpressionEvaluatorTests
 		final boolean ignoreUnparsable = false;
 		final String expressionEvaluatedActual = expression1.evaluate(ctx, ignoreUnparsable);
 
-		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", StringExpressionEvaluator.EMPTY_RESULT, expressionEvaluatedActual);
+		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", IStringExpression.EMPTY_RESULT, expressionEvaluatedActual);
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class StringExpressionEvaluatorTests
 	{
 		ctx.put("M_Product_ID", "1234");
 		final String expressionEvaluatedActual = expression1.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
-		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", StringExpressionEvaluator.EMPTY_RESULT, expressionEvaluatedActual);
+		Assert.assertEquals("Empty string shall be returned because M_Warehouse_ID is missing", IStringExpression.EMPTY_RESULT, expressionEvaluatedActual);
 	}
 
 	@Test(expected = ExpressionEvaluationException.class)
@@ -120,7 +120,7 @@ public class StringExpressionEvaluatorTests
 
 	private void test_evaluate_OnVariableNotFound_ReturnNoResult(final String expressionStr)
 	{
-		final String expressionEvaluatedExpected = StringExpressionEvaluator.EMPTY_RESULT;
+		final String expressionEvaluatedExpected = IStringExpression.EMPTY_RESULT;
 		final IStringExpression expression = expressionFactory.compile(expressionStr, IStringExpression.class);
 		final String expressionEvaluated = expression.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
 		Assert.assertSame("Invalid evaluated expression for: " + expressionStr, expressionEvaluatedExpected, expressionEvaluated);

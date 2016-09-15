@@ -42,13 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.table.TableModel;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -71,6 +67,7 @@ import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.M_Element;
@@ -81,6 +78,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author cg
@@ -576,9 +575,10 @@ public class InfoSimple extends Info
 
 		if (DisplayType.isLookup(field.getAD_Reference_ID()))
 		{
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(ctx);
 			colClass = KeyNamePair.class;
 			idColSQL = field.getSelectClause();
-			final String displayColumnSQL = MLookupFactory.getLookupEmbed(ctx,
+			final String displayColumnSQL = MLookupFactory.getLookupEmbed(languageInfo,
 					colSQL, // BaseColumn
 					null, // BaseTable
 					field.getAD_Reference_ID(),

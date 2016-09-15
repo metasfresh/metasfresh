@@ -22,7 +22,6 @@ package org.adempiere.ad.expression.api;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -39,6 +38,11 @@ import org.compiere.util.Evaluatee;
 public interface IExpression<V>
 {
 	/**
+	 * @return the type of evaluation result
+	 */
+	Class<V> getValueClass();
+
+	/**
 	 * Gets string representation of underlying expression. Usually this shall be EXACTLY the same as the string from where the expression was compiled
 	 * 
 	 * @return string representation of underlying expression
@@ -50,7 +54,10 @@ public interface IExpression<V>
 	 * 
 	 * @return
 	 */
-	String getFormatedExpressionString();
+	default String getFormatedExpressionString()
+	{
+		return getExpressionString();
+	}
 
 	/**
 	 * Gets the list of parameter names
@@ -66,7 +73,12 @@ public interface IExpression<V>
 	 * @param ignoreUnparsable
 	 * @return
 	 */
-	V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable);
+	default V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
+	{
+		// backward compatibility
+		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
+		return evaluate(ctx, onVariableNotFound);
+	}
 
 	/**
 	 * Evaluates expression in given context.
@@ -74,13 +86,25 @@ public interface IExpression<V>
 	 * @param ctx
 	 * @param onVariableNotFound
 	 * @return evaluation result
-	 * @throws ExpressionEvaluationException if evaluation fails and we were adviced to throw exception
+	 * @throws ExpressionEvaluationException if evaluation fails and we were advised to throw exception
 	 */
 	V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
 	/**
-	 * 
-	 * @return an evaluator instance which is able to evaluate this expression.
+	 * @param result
+	 * @return true if the given <code>result</code> shall be considered as "NO RESULT"
 	 */
-	IExpressionEvaluator<? extends IExpression<V>, V> getEvaluator();
+	default boolean isNoResult(Object result)
+	{
+		return result == null;
+	}
+
+	/**
+	 * @return true if this expression is constant and always evaluated "NO RESULT"
+	 * @see #isNoResult(Object)
+	 */
+	default boolean isNullExpression()
+	{
+		return false;
+	}
 }

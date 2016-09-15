@@ -318,7 +318,7 @@ public class FieldRecordInfo extends CDialog
 			{
 				MLookup lookup = MLookupFactory.get (Env.getCtx(), 0,
 					AD_Column_ID, column.getAD_Reference_ID(),
-					Env.getLanguage(Env.getCtx()), column.getColumnName(),
+					column.getColumnName(),
 					column.getAD_Reference_Value_ID(),
 					column.isParent(), IValidationRule.AD_Val_Rule_ID_Null);
 				if (OldValue != null)

@@ -89,7 +89,6 @@ import org.compiere.swing.CTextPane;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.eevolution.exceptions.LiberoException;
@@ -97,6 +96,7 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -219,8 +219,7 @@ public class VOrderDistributionReceipt extends CPanel
 	 */
 	private void fillPicks() throws Exception
 	{
-		Language language = Language.getLoginLanguage();
-		MLookup orderL = 	MLookupFactory.get(Env.getCtx(), m_WindowNo, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) , DisplayType.Search , language , MDDOrder.COLUMNNAME_DD_Order_ID , 0 , false, "DocStatus='CO'");
+		MLookup orderL = 	MLookupFactory.get(Env.getCtx(), m_WindowNo, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) , DisplayType.Search , MDDOrder.COLUMNNAME_DD_Order_ID , 0 , false, "DocStatus='CO'");
 		fOrder = new VLookup (MDDOrder.COLUMNNAME_DD_Order_ID, true, false, true, orderL);
 		lOrder.setText(Msg.translate(Env.getCtx(), MDDOrder.COLUMNNAME_DD_Order_ID));
 		fOrder.addVetoableChangeListener(this);
