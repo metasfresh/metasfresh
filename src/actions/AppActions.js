@@ -24,7 +24,7 @@ export function viewLayoutRequest(windowType, type){
 export function browseViewRequest(viewId, page, pageLength){
     return (dispatch) => {
         const firstRow = pageLength * (page - 1);
-        return axios.get(config.API_URL + '/window/view?viewId=' + viewId + '&firstRow=' + firstRow + '&pageLength=' + pageLength)
+        return axios.get(config.API_URL + '/window/view/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength)
     }
 }
 

@@ -240,7 +240,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -262,6 +262,7 @@ class Table extends Component {
                         onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
+                        readonly={readonly}
                     />
                 );
             }

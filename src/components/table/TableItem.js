@@ -46,7 +46,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId } = this.props;
+        const { type, docId, rowId, tabId,readonly } = this.props;
         const { edited } = this.state;
 
         //iterate over layout settings
@@ -61,6 +61,7 @@ class TableItem extends Component {
                     rowId={rowId}
                     tabId={tabId}
                     item={item}
+                    readonly={readonly}
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}

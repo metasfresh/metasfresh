@@ -21,21 +21,28 @@ class DocList extends Component {
         this.state = {};
 
         dispatch(viewLayoutRequest(143, "list")).then((response) => {
-            this.setState(Object.assign({}, this.state, {
+            return this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
             }))
-        });
-        dispatch(createViewRequest(143, "list", 50, this.state.filters)).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }))
+        }).then(()=>
+            dispatch(createViewRequest(143, "list", 50, [])).then((response) => {
+                return this.setState(Object.assign({}, this.state, {
+                    data: response.data
+                }))
+            })
+        ).then(() => {
+            dispatch(browseViewRequest(this.state.data.viewId, 1, 20)).then((response) => {
+                this.setState(Object.assign({}, this.state, {
+                    data: response.data
+                }))
+            });
         });
     }
 
     render() {
         const {dispatch, windowType} = this.props;
-        const {layout} = this.state;
+        const {layout,data} = this.state;
         return (
             <div>
                 <Header />
@@ -55,8 +62,8 @@ class DocList extends Component {
 
                     </div>
                     <div>
-                        {layout && <Table
-                            rowData={[]}
+                        {layout && data && <Table
+                            rowData={{1: data.result}}
                             cols={layout.elements}
                             tabid={1}
                             type={windowType}
