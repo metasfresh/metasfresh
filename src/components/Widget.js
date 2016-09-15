@@ -203,7 +203,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="text"
-                            className="input-field"
+                            className="input-field js-input-field"
                             value={data[0].value}
                             placeholder={fields[0].emptyText}
                             disabled={data[0].readonly}
@@ -224,7 +224,7 @@ class Widget extends Component {
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
                     }>
                         <textarea
-                            className="input-field"
+                            className="input-field js-input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
                             placeholder={fields[0].emptyText}
@@ -245,7 +245,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="number"
-                            className="input-field"
+                            className="input-field js-input-field"
                             min="0"
                             step="1"
                             value={data[0].value}
@@ -267,7 +267,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="number"
-                            className="input-field"
+                            className="input-field js-input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => this.handleFocus(e, e.target.value)}
@@ -287,7 +287,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="number"
-                            className="input-field"
+                            className="input-field js-input-field"
                             min="0"
                             step="1"
                             value={data[0].value}
@@ -309,7 +309,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="number"
-                            className="input-field"
+                            className="input-field js-input-field"
                             min="0"
                             step="1"
                             value={data[0].value}
@@ -331,7 +331,7 @@ class Widget extends Component {
                     }>
                         <input
                             type="number"
-                            className="input-field"
+                            className="input-field js-input-field"
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => this.handleFocus(e, e.target.value)}

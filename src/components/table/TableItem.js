@@ -20,7 +20,8 @@ class TableItem extends Component {
             edited: property
         }, ()=>{
           if(callback){
-            document.activeElement.getElementsByClassName('input-field')[0].focus();
+            // e.target
+            document.activeElement.getElementsByClassName('js-input-field')[0].focus();
           }
         })
     }
@@ -29,7 +30,7 @@ class TableItem extends Component {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
         const { edited, activeCell } = this.state;
 
-        if(elem.className !== "input-field") {
+        if(elem.className !== "js-input-field") {
           this.setState(Object.assign({}, this.state, {
               activeCell: elem
           }))
