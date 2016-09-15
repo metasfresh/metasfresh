@@ -157,40 +157,43 @@ class Table extends Component {
     }
 
     handleClick = (e, id) => {
-       // e.preventDefault();
+       
+        if(e.button === 0){
+            const {dispatch} = this.props;
+            const {selected} = this.state;
+            const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
+            const selectRange = e.shiftKey;
+            const isSelected = selected.indexOf(id) > -1;
+            const isAnySelected = selected.length > 0;
+            const isMoreSelected = selected.length > 1;
 
-        const {dispatch} = this.props;
-        const {selected} = this.state;
-        const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
-        const selectRange = e.shiftKey;
-        const isSelected = selected.indexOf(id) > -1;
-        const isAnySelected = selected.length > 0;
-        const isMoreSelected = selected.length > 1;
-
-        if(selectMore){
-            if(isSelected){
-                this.deselectProduct(id);
-            }else{
-                this.selectProduct(id);
-            }
-        }else if(selectRange){
-            if(isAnySelected){
-                const idsToSelect = this.getProductRange(id);
-                this.selectRangeProduct(idsToSelect);
-            }else{
-                this.selectOneProduct(id);
-            }
-        }else{
-            if(isSelected){
-                if(isMoreSelected){
-                    this.selectOneProduct(id);
+            if(selectMore){
+                if(isSelected){
+                    this.deselectProduct(id);
                 }else{
-                    // this.deselectAllProducts();
+                    this.selectProduct(id);
+                }
+            }else if(selectRange){
+                if(isAnySelected){
+                    const idsToSelect = this.getProductRange(id);
+                    this.selectRangeProduct(idsToSelect);
+                }else{
+                    this.selectOneProduct(id);
                 }
             }else{
-                this.selectOneProduct(id);
+                if(isSelected){
+                    if(isMoreSelected){
+                        this.selectOneProduct(id);
+                    }else{
+                        // this.deselectAllProducts();
+                    }
+                }else{
+                    this.selectOneProduct(id);
+                }
             }
         }
+
+        
     }
     handleRightClick = (e, id) => {
         // const {selected} = this.state;

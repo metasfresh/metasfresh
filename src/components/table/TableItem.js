@@ -22,9 +22,12 @@ class TableItem extends Component {
           if(callback){
             // e.target
             let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+            let disabled = document.activeElement.querySelector('.input-disabled');
             if(elem){
               elem.focus();
             }
+
+           
 
           }
         })
