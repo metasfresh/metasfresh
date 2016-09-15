@@ -45,12 +45,12 @@ class TableCell extends Component {
     }
 
     render() {
-        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown} = this.props;
+        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly} = this.props;
         return (
             <td
                 tabIndex="0"
                 ref={(c) => this.cell = c}
-                onDoubleClick={onDoubleClick}
+                onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
                 className={
                     (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +

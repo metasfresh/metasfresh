@@ -18,24 +18,37 @@ class DocList extends Component {
 
         const {dispatch} = this.props;
 
-        this.state = {};
+        this.state = {
+            page: 1
+        };
 
         dispatch(viewLayoutRequest(143, "list")).then((response) => {
-            this.setState(Object.assign({}, this.state, {
+            return this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
             }))
+        }).then(()=>
+            dispatch(createViewRequest(143, "list", 50, [])).then((response) => {
+                return this.setState(Object.assign({}, this.state, {
+                    data: response.data
+                }))
+            })
+        ).then(() => {
+            dispatch(browseViewRequest(this.state.data.viewId, this.state.page, 50)).then((response) => {
+                this.setState(Object.assign({}, this.state, {
+                    data: response.data
+                }))
+            });
         });
-        dispatch(createViewRequest(143, "list", 50, this.state.filters)).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }))
-        });
+    }
+
+    handleChangePage = (index) => {
+        
     }
 
     render() {
         const {dispatch, windowType} = this.props;
-        const {layout} = this.state;
+        const {layout,data} = this.state;
         return (
             <div>
                 <Header />
@@ -55,8 +68,8 @@ class DocList extends Component {
 
                     </div>
                     <div>
-                        {layout && <Table
-                            rowData={[]}
+                        {layout && data && <Table
+                            rowData={{1: data.result}}
                             cols={layout.elements}
                             tabid={1}
                             type={windowType}
@@ -64,6 +77,35 @@ class DocList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                         />}
+                    </div>
+                    <div className="items-row">
+                        <div>
+                            <p>No items selected</p>
+                            <p>Select all on this page</p>
+                        </div>
+                        <div>
+                        <nav aria-label="Page navigation">
+                            <ul className="pagination">
+                                <li className="page-item">
+                                    <a className="page-link" href="#" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span className="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                <li className="page-item"><a className="page-link" href="#">1</a></li>
+                                <li className="page-item"><a className="page-link" href="#">2</a></li>
+                                <li className="page-item"><a className="page-link" href="#">3</a></li>
+                                <li className="page-item"><a className="page-link" href="#">4</a></li>
+                                <li className="page-item"><a className="page-link" href="#">5</a></li>
+                                <li className="page-item">
+                                <a className="page-link" href="#" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span className="sr-only">Next</span>
+                                </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        </div>
                     </div>
                 </div>
             </div>
