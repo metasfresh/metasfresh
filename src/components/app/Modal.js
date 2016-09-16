@@ -35,7 +35,6 @@ class Modal extends Component {
           document.querySelector('.js-panel-modal-content').removeEventListener('scroll', this.handleScroll);
     }
     handleScroll = (event) => {
-      console.log('fire scroll');
 
       let scrollTop = event.srcElement.scrollTop;
 

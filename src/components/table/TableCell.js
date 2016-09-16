@@ -54,8 +54,8 @@ class TableCell extends Component {
                 onKeyDown={onKeyDown}
                 className={
                     (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
-                    (widgetData.readonly ? "cell-disabled " : "") +
-                    (widgetData.mandatory ? "cell-mandatory " : "") +
+                    (widgetData[0].readonly ? "cell-disabled " : "") +
+                    (widgetData[0].mandatory ? "cell-mandatory " : "") +
                     (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType)
