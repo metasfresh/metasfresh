@@ -127,7 +127,7 @@ public class SqlLookupDescriptor
 			{
 				sqlWhereFinal.append("\n AND ");
 			}
-			final String displayColumnSql = lookupInfo.getDisplayColumnSQL();
+			final String displayColumnSql = lookupInfo.getDisplayColumnSqlAsString();
 			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
 		}
 
@@ -142,20 +142,20 @@ public class SqlLookupDescriptor
 		//
 		// Assemble the SQLs
 		String sqlForFetching = new StringBuilder()
-				.append(lookupInfo.getSelectSqlPart()) // SELECT ... FROM ...
+				.append(lookupInfo.getSelectSqlPartAsString()) // SELECT ... FROM ...
 				.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
 				.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
 				.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
 				.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
 				.toString();
 		String sqlForCounting = new StringBuilder()
-				.append("SELECT COUNT(1) FROM ").append(lookupInfo.getFromSqlPart()) // SELECT .. FROM ...
+				.append("SELECT COUNT(1) FROM ").append(lookupInfo.getFromSqlPartAsString()) // SELECT .. FROM ...
 				.append(" WHERE ").append(sqlWhereFinal) // WHERE
 				.toString();
 		;
 		final String sqlForFetchingDisplayNameById = new StringBuilder()
-				.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
-				.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
+				.append("SELECT ").append(lookupInfo.getDisplayColumnSqlAsString()) // SELECT
+				.append("\n FROM ").append(lookupInfo.getFromSqlPartAsString()) // FROM
 				.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
 				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the
 																															 // AD_Ref_List.AD_Reference_ID=....

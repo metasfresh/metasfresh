@@ -94,10 +94,10 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Class<?> valueClass;
 
 	// @JsonProperty("defaultValueExpression")
-	@JsonIgnore              // FIXME: JSON serialization/deserialization of optional defaultValueExpression
+	@JsonIgnore                 // FIXME: JSON serialization/deserialization of optional defaultValueExpression
 	private final Optional<IExpression<?>> defaultValueExpression;
 
-	@JsonIgnore              // FIXME: JSON serialization/deserialization of callouts
+	@JsonIgnore                 // FIXME: JSON serialization/deserialization of callouts
 	private final List<IDocumentFieldCallout> callouts;
 
 	public static enum Characteristic
@@ -484,10 +484,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
+			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
+					+ "\n LookupDataSource: " + lookupDataSource //
+					, e);
 		}
 
-		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType);
+		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
+				+ "\n LookupDataSource: " + lookupDataSource //
+		);
 	}
 
 	/* package */List<IDocumentFieldCallout> getCallouts()

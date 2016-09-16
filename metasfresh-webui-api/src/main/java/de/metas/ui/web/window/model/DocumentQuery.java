@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -12,6 +14,7 @@ import org.compiere.util.Evaluatees;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -54,12 +57,12 @@ public final class DocumentQuery
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int recordId;
 	private final Document parentDocument;
-	
+
 	private final List<DocumentQueryFilter> filters;
-	
+
 	private final int firstRow;
 	private final int pageLength;
-	
+
 	private final List<DocumentFieldDescriptor> viewFields;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
@@ -70,12 +73,12 @@ public final class DocumentQuery
 		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
-		
+
 		filters = builder.filters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.filters);
 
 		firstRow = builder.firstRow;
 		pageLength = builder.pageLength;
-		
+
 		viewFields = builder.viewFields == null ? ImmutableList.of() : ImmutableList.copyOf(builder.viewFields);
 	}
 
@@ -92,6 +95,11 @@ public final class DocumentQuery
 				.add("pageLength", pageLength > 0 ? pageLength : null)
 				.add("viewFields", viewFields.isEmpty() ? null : viewFields)
 				.toString();
+	}
+
+	private Properties getCtx()
+	{
+		return Env.getCtx();
 	}
 
 	public DocumentEntityDescriptor getEntityDescriptor()
@@ -135,21 +143,36 @@ public final class DocumentQuery
 
 	private Evaluatee createEvaluationContext()
 	{
+		final Evaluatee evalCtx = Evaluatees.ofMap(ImmutableMap.<String, String> builder()
+				.put(Env.CTXNAME_AD_Language, getAD_Language())
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKey())
+				.build());
+
+		final Evaluatee parentEvalCtx;
 		if (parentDocument != null)
 		{
-			return parentDocument.asEvaluatee();
+			parentEvalCtx = parentDocument.asEvaluatee();
+		}
+		else
+		{
+			final Properties ctx = getCtx();
+			final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
+			final boolean onlyWindow = false;
+			parentEvalCtx = Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
 		}
 
-		final Properties ctx = Env.getCtx();
-		final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
-		final boolean onlyWindow = false;
-		return Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
+		return Evaluatees.compose(evalCtx, parentEvalCtx);
 	}
-	
+
 	public String getAD_Language()
 	{
 		// TODO: introduce AD_Language as parameter
-		return Env.getAD_Language(Env.getCtx());
+		return Env.getAD_Language(getCtx());
+	}
+
+	public String getPermissionsKey()
+	{
+		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 
 	public List<DocumentQueryFilter> getFilters()
@@ -166,7 +189,7 @@ public final class DocumentQuery
 	{
 		return pageLength;
 	}
-	
+
 	public List<DocumentFieldDescriptor> getViewFields()
 	{
 		return viewFields;
@@ -204,12 +227,12 @@ public final class DocumentQuery
 			this.parentDocument = parentDocument;
 			return this;
 		}
-		
+
 		public Builder addFilter(final DocumentQueryFilter filter)
 		{
 			Check.assumeNotNull(filter, "Parameter filter is not null");
-			
-			if(filters == null)
+
+			if (filters == null)
 			{
 				filters = new ArrayList<>();
 			}
@@ -224,7 +247,7 @@ public final class DocumentQuery
 				return this;
 			}
 
-			if(filters == null)
+			if (filters == null)
 			{
 				filters = new ArrayList<>();
 			}
@@ -243,8 +266,8 @@ public final class DocumentQuery
 			this.pageLength = pageLength;
 			return this;
 		}
-		
-		public Builder setViewFields(List<DocumentFieldDescriptor> viewFields)
+
+		public Builder setViewFields(final List<DocumentFieldDescriptor> viewFields)
 		{
 			this.viewFields = viewFields;
 			return this;

@@ -3,22 +3,22 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_T_Query_Selection;
 import org.compiere.model.POInfo;
-import org.compiere.util.CtxName;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,7 +28,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 
@@ -85,13 +84,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlParentLinkColumnName;
 
 	@JsonIgnore
-	private final TranslatableParameterizedString sqlSelectAllFrom;
+	private final ICachedStringExpression sqlSelectAllFrom;
 
 	@JsonIgnore
-	private final TranslatableParameterizedString sqlPagedSelectAllFrom;
+	private final ICachedStringExpression sqlPagedSelectAllFrom;
 
 	@JsonProperty("sqlWhereClause")
-	private final IStringExpression sqlWhereClause;
+	private final ICachedStringExpression sqlWhereClause;
 	@JsonProperty("sqlOrderBy")
 	private final String sqlOrderBy;
 
@@ -113,9 +112,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 
-		sqlSelectAllFrom = builder.getSqlSelectAll();
-		sqlPagedSelectAllFrom = builder.getSqlPagedSelectAll();
-		sqlWhereClause = builder.getSqlWhereClauseExpression();
+		sqlSelectAllFrom = builder.getSqlSelectAll()
+				.caching();
+		sqlPagedSelectAllFrom = builder.getSqlPagedSelectAll()
+				.caching();
+		sqlWhereClause = builder.getSqlWhereClauseExpression()
+				.caching();
 		sqlOrderBy = builder.buildSqlOrderBy();
 	}
 
@@ -189,14 +191,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlParentLinkColumnName;
 	}
 
-	public String getSqlSelectAllFrom(final String adLanguage)
+	public IStringExpression getSqlSelectAllFrom()
 	{
-		return sqlSelectAllFrom.translate(adLanguage);
+		return sqlSelectAllFrom;
 	}
 
-	public String getSqlPagedSelectAllFrom(final String adLanguage)
+	public IStringExpression getSqlPagedSelectAllFrom()
 	{
-		return sqlPagedSelectAllFrom.translate(adLanguage);
+		return sqlPagedSelectAllFrom;
 	}
 
 	public IStringExpression getSqlWhereClause()
@@ -232,8 +234,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		//
 		private static final Joiner JOINER_SqlSelectFields = Joiner.on("\n, ");
-		private TranslatableParameterizedString _sqlSelectAll; // will be built
-		private TranslatableParameterizedString _sqlPagedSelectAll; // will be built
+		private IStringExpression _sqlSelectAll; // will be built
+		private IStringExpression _sqlPagedSelectAll; // will be built
 
 		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlDocumentFieldDataBindingDescriptor _keyField;
@@ -261,7 +263,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 		}
 
-		private TranslatableParameterizedString getSqlSelectAll()
+		private IStringExpression getSqlSelectAll()
 		{
 			if (_sqlSelectAll == null)
 			{
@@ -270,7 +272,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _sqlSelectAll;
 		}
 
-		private TranslatableParameterizedString getSqlPagedSelectAll()
+		private IStringExpression getSqlPagedSelectAll()
 		{
 			if (_sqlPagedSelectAll == null)
 			{
@@ -291,9 +293,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 
 			final List<String> sqlSelectValuesList = new ArrayList<>(fields.size());
-			final List<String> sqlSelectDisplayNamesList_BaseLang = new ArrayList<>();
-			final List<String> sqlSelectDisplayNamesList_Trl = new ArrayList<>();
-			final Set<String> adLanguageParamNames = new HashSet<>();
+			final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>(fields.size());
 			for (final SqlDocumentFieldDataBindingDescriptor sqlField : fields)
 			{
 				//
@@ -306,46 +306,18 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				if (sqlField.isUsingDisplayColumn())
 				{
 					final String displayColumnName = sqlField.getDisplayColumnName();
-					final IStringExpression displayColumnSqlExpression = sqlField.getDisplayColumnSqlExpression();
+					final IStringExpression displayColumnSqlExpression = IStringExpression.composer()
+							.append("(").append(sqlField.getDisplayColumnSqlExpression()).append(") AS ").append(displayColumnName)
+							.build();
 
-					{
-						final String adLanguageParamName = TranslatableParameterizedStringExpression.getAD_LanguageParamName(displayColumnSqlExpression);
-						if (!Check.isEmpty(adLanguageParamName))
-						{
-							adLanguageParamNames.add(adLanguageParamName);
-						}
-					}
-
-					{
-						final String displayColumnSql_BaseLang = TranslatableParameterizedStringExpression.getExpressionBaseLang(displayColumnSqlExpression).getExpressionString();
-						final String sqlSelectDisplayName_BaseLang = "(" + displayColumnSql_BaseLang + ") AS " + displayColumnName;
-						sqlSelectDisplayNamesList_BaseLang.add(sqlSelectDisplayName_BaseLang);
-					}
-
-					{
-						final String displayColumnSql_Trl = TranslatableParameterizedStringExpression.getExpressionTrl(displayColumnSqlExpression).getExpressionString();
-						final String sqlSelectDisplayName_Trl = "(" + displayColumnSql_Trl + ") AS " + displayColumnName;
-						sqlSelectDisplayNamesList_Trl.add(sqlSelectDisplayName_Trl);
-					}
+					sqlSelectDisplayNamesList.add(displayColumnSqlExpression);
 				}
 			}
 
 			//
-			//
-			final CtxName adLanguageParamName = buildAD_LanguageParamName(adLanguageParamNames);
 			final String sqlSelectValues = JOINER_SqlSelectFields.join(sqlSelectValuesList);
-			final String sqlSelectDisplayNames_BaseLang = JOINER_SqlSelectFields.join(sqlSelectDisplayNamesList_BaseLang);
-			final String sqlSelectDisplayNames_Trl = JOINER_SqlSelectFields.join(sqlSelectDisplayNamesList_Trl);
-			_sqlSelectAll = TranslatableParameterizedString.of(
-					adLanguageParamName // Language param
-					, buildSqlSelect(sqlSelectValues, sqlSelectDisplayNames_BaseLang) // Base Lang
-					, buildSqlSelect(sqlSelectValues, sqlSelectDisplayNames_Trl) // Trl
-			);
-			_sqlPagedSelectAll = TranslatableParameterizedString.of(
-					adLanguageParamName // Language param
-					, buildSqlPagedSelect(sqlSelectValues, sqlSelectDisplayNames_BaseLang) // Base Lang
-					, buildSqlPagedSelect(sqlSelectValues, sqlSelectDisplayNames_Trl) // Trl
-			);
+			_sqlSelectAll = buildSqlSelect(sqlSelectValues, sqlSelectDisplayNamesList);
+			_sqlPagedSelectAll = buildSqlPagedSelect(sqlSelectValues, sqlSelectDisplayNamesList);
 		}
 
 		private final String buildSqlSelectValue(final SqlDocumentFieldDataBindingDescriptor sqlField)
@@ -365,73 +337,67 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 		}
 
-		private final String buildSqlSelect(final String sqlSelectValues, final String sqlSelectDisplayNames)
+		private final IStringExpression buildSqlSelect(final String sqlSelectValues, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
 			final String sqlTableName = getSqlTableName();
 			final String sqlTableAlias = getSqlTableAlias();
 
-			if (!sqlSelectDisplayNames.isEmpty())
+			final IStringExpression sqlInnerExpr = IStringExpression.composer()
+					.append("SELECT ").append(sqlSelectValues)
+					.append(" FROM ").append(sqlTableName)
+					.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.build();
+
+			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
+					.append("SELECT ")
+					.append("\n").append(sqlTableAlias).append(".*"); // Value fields
+
+			// DisplayName fields
+			if (!sqlSelectDisplayNamesList.isEmpty())
 			{
-				return new StringBuilder()
-						.append("SELECT ")
-						.append("\n").append(sqlTableAlias).append(".*") // Value fields
-						.append(", \n").append(sqlSelectDisplayNames) // DisplayName fields
-						.append("\n FROM (SELECT ").append(sqlSelectValues).append(" FROM ").append(sqlTableName).append(") ").append(sqlTableAlias) // FROM
-						.toString();
+				sqlBuilder.append(", \n").appendAllJoining(", \n", sqlSelectDisplayNamesList);
 			}
-			else
-			{
-				return new StringBuilder()
-						.append("SELECT ")
-						.append("\n").append(sqlSelectValues)
-						.append("\n").append(" FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
-						.toString();
-			}
+
+			sqlBuilder.append("\n FROM (").append(sqlInnerExpr).append(") ").append(sqlTableAlias); // FROM
+
+			return sqlBuilder.build();
 		}
 
-		private final String buildSqlPagedSelect(final String sqlSelectValues, final String sqlSelectDisplayNames)
+		private final IStringExpression buildSqlPagedSelect(final String sqlSelectValues, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
 			final String sqlTableName = getSqlTableName();
 			final String sqlTableAlias = getSqlTableAlias();
 			final String sqlKeyColumnName = getSqlKeyColumnName();
 
-			if (!sqlSelectDisplayNames.isEmpty())
+			// NOTE: we don't need access SQL here because we assume the records were already filtered
+
+			if (!sqlSelectDisplayNamesList.isEmpty())
 			{
-				return "SELECT "
-						+ "\n" + sqlTableAlias + ".*" // Value fields
-						+ "\n , " + sqlSelectDisplayNames // DisplayName fields
-						+ "\n FROM ("
-						+ "\n   SELECT "
-						+ "\n   " + sqlSelectValues
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID
-						+ "\n   FROM " + I_T_Query_Selection.Table_Name + " sel"
-						+ "\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")"
-						+ "\n ) " + sqlTableAlias // FROM
-						;
+				return IStringExpression.composer()
+						.append("SELECT ")
+						.append("\n").append(sqlTableAlias).append(".*") // Value fields
+						.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList)// DisplayName fields
+						.append("\n FROM ("
+								+ "\n   SELECT "
+								+ "\n   " + sqlSelectValues
+								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo
+								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID
+								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID
+								+ "\n   FROM " + I_T_Query_Selection.Table_Name + " sel"
+								+ "\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")"
+								+ "\n ) " + sqlTableAlias) // FROM
+						.build();
 			}
 			else
 			{
-				return "SELECT "
+				return ConstantStringExpression.of("SELECT "
 						+ "\n " + sqlSelectValues
 						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo
 						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID
 						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID
 						+ "\n FROM " + I_T_Query_Selection.Table_Name + " sel"
-						+ "\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")";
+						+ "\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")");
 			}
-		}
-
-		private static final CtxName buildAD_LanguageParamName(final Set<String> adLanguageParamNames)
-		{
-			if (adLanguageParamNames.isEmpty())
-			{
-				return null;
-			}
-
-			final String adLanguageParamName = ListUtils.singleElement(adLanguageParamNames);
-			return CtxName.parse(adLanguageParamName);
 		}
 
 		private IStringExpression getSqlWhereClauseExpression()

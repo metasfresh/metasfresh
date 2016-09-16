@@ -2,16 +2,16 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Set;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -24,6 +24,7 @@ import org.compiere.util.Evaluatees;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 
@@ -65,8 +66,8 @@ public final class SqlLookupDescriptor
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
 	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive/N");
-	
-	public static final CtxName SQL_PARAM_AD_Language = MLookupInfo.CTXNAME_AD_Language;
+
+	public static final CtxName SQL_PARAM_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -75,9 +76,9 @@ public final class SqlLookupDescriptor
 
 	private final IValidationRule validationRule;
 	private final String sqlTableName;
-	private final IStringExpression sqlForFetchingExpression;
-	private final IStringExpression sqlForCountingExpression;
-	private final IStringExpression sqlForFetchingDisplayNameByIdExpression;
+	private final ICachedStringExpression sqlForFetchingExpression;
+	private final ICachedStringExpression sqlForCountingExpression;
+	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final int entityTypeIndex;
 
 	private SqlLookupDescriptor(final Builder builder)
@@ -129,17 +130,6 @@ public final class SqlLookupDescriptor
 		return sqlForFetchingDisplayNameByIdExpression.resolvePartial(ctx);
 	}
 
-	public String getSqlForFetchingDisplayNameById(final String adLanguage, final String sqlKeyColumn)
-	{
-		final Evaluatee ctx = Evaluatees.ofMap(ImmutableMap.<String, Object> builder()
-				.put(SQL_PARAM_KeyId.getName(), sqlKeyColumn)
-				.put(SQL_PARAM_ShowInactive.getName(), SQL_PARAM_VALUE_ShowInactive_Yes)
-				.put(SQL_PARAM_AD_Language.getName(), adLanguage)
-				.build());
-
-		return sqlForFetchingDisplayNameByIdExpression.evaluate(ctx, OnVariableNotFound.Fail);
-	}
-
 	public int getEntityTypeIndex()
 	{
 		return entityTypeIndex;
@@ -157,9 +147,6 @@ public final class SqlLookupDescriptor
 
 	public static final class Builder
 	{
-		// services
-		private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-
 		// Parameters
 		private String columnName;
 		private Integer displayType;
@@ -173,9 +160,9 @@ public final class SqlLookupDescriptor
 
 		private IValidationRule validationRule;
 		private String sqlTableName;
-		private IStringExpression sqlForFetchingExpression;
-		private IStringExpression sqlForCountingExpression;
-		private IStringExpression sqlForFetchingDisplayNameByIdExpression;
+		private ICachedStringExpression sqlForFetchingExpression;
+		private ICachedStringExpression sqlForCountingExpression;
+		private ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 		private int entityTypeIndex = -1;
 
 		private Builder()
@@ -223,8 +210,7 @@ public final class SqlLookupDescriptor
 		{
 			//
 			// WHERE
-			final String sqlWhereFinal_BaseLang = buildSqlWhere(lookupInfo, true);
-			final String sqlWhereFinal_Trl = buildSqlWhere(lookupInfo, false);
+			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo);
 
 			//
 			// ORDER BY
@@ -238,20 +224,12 @@ public final class SqlLookupDescriptor
 			// Set the SQLs
 			{
 				sqlTableName = lookupInfo.getTableName();
-
-				final String adLanguageParamName = SQL_PARAM_AD_Language.getName();
-				
-				final IStringExpression sqlForFetchingExpression_BaseLang = buildSqlForFetching(lookupInfo, true, sqlWhereFinal_BaseLang, lookup_SqlOrderBy);
-				final IStringExpression sqlForFetchingExpression_Trl = buildSqlForFetching(lookupInfo, false, sqlWhereFinal_Trl, lookup_SqlOrderBy);
-				sqlForFetchingExpression = TranslatableParameterizedStringExpression.of(adLanguageParamName, sqlForFetchingExpression_BaseLang, sqlForFetchingExpression_Trl);
-
-				final IStringExpression sqlForCountingExpression_BaseLang = buildSqlForCounting(lookupInfo, true, sqlWhereFinal_BaseLang);
-				final IStringExpression sqlForCountingExpression_Trl = buildSqlForCounting(lookupInfo, false, sqlWhereFinal_Trl);
-				sqlForCountingExpression = TranslatableParameterizedStringExpression.of(adLanguageParamName, sqlForCountingExpression_BaseLang, sqlForCountingExpression_Trl);
-
-				final IStringExpression sqlForFetchingDisplayNameByIdExpression_BaseLang = buildSqlForFetchingDisplayNameById(lookupInfo, true);
-				final IStringExpression sqlForFetchingDisplayNameByIdExpression_Trl = buildSqlForFetchingDisplayNameById(lookupInfo, false);
-				sqlForFetchingDisplayNameByIdExpression = TranslatableParameterizedStringExpression.of(adLanguageParamName, sqlForFetchingDisplayNameByIdExpression_BaseLang, sqlForFetchingDisplayNameByIdExpression_Trl);
+				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
+						.caching();
+				sqlForCountingExpression = buildSqlForCounting(lookupInfo, sqlWhereFinal)
+						.caching();
+				sqlForFetchingDisplayNameByIdExpression = buildSqlForFetchingDisplayNameById(lookupInfo)
+						.caching();
 
 				if (lookupInfo.isQueryHasEntityType())
 				{
@@ -265,7 +243,8 @@ public final class SqlLookupDescriptor
 			final String tableName = I_M_AttributeSetInstance.Table_Name;
 			final String keyColumnNameFQ = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 			final String displayColumnSql = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_Description;
-			final StringBuilder sqlSelectFrom = new StringBuilder("SELECT ")
+			final CompositeStringExpression.Builder sqlSelectFrom = IStringExpression.composer()
+					.append("SELECT ")
 					.append(" ").append(keyColumnNameFQ) // Key
 					.append(", NULL") // Value
 					.append(",").append(displayColumnSql) // DisplayName
@@ -281,14 +260,14 @@ public final class SqlLookupDescriptor
 				{
 					sqlWhereFinal.append("\n AND ");
 				}
-				sqlWhereFinal.append(" /* validation rule */ ").append("(").append(SQL_PARAM_ValidationRuleSql.toStringWithMarkers()).append(")");
+				sqlWhereFinal.append(" /* validation rule */ ").append("(").append(SQL_PARAM_ValidationRuleSql).append(")");
 
 				// Filter's WHERE
 				if (sqlWhereFinal.length() > 0)
 				{
 					sqlWhereFinal.append("\n AND ");
 				}
-				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
+				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql); // #1
 			}
 
 			//
@@ -301,139 +280,110 @@ public final class SqlLookupDescriptor
 
 			//
 			// Assemble the SQLs
-			String sqlForFetching = new StringBuilder()
+			final IStringExpression sqlForFetching = IStringExpression.composer()
 					.append(sqlSelectFrom) // SELECT ... FROM ...
 					.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
 					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
 					.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
 					.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
-					.toString();
-			String sqlForCounting = new StringBuilder()
+					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.build();
+			final IStringExpression sqlForCounting = IStringExpression.composer()
 					.append("SELECT COUNT(1) FROM ").append(tableName) // SELECT .. FROM ...
 					.append(" WHERE ").append(sqlWhereFinal) // WHERE
-					.toString();
+					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.build();
 			;
-			final String sqlForFetchingDisplayNameById = new StringBuilder()
+			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
 					.append("SELECT ").append(displayColumnSql) // SELECT
 					.append("\n FROM ").append(tableName) // FROM
-					.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
-					.toString();
-
-			//
-			// Apply security filters
-			final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions();
-			sqlForFetching = userRolePermissions.addAccessSQL(sqlForFetching, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			sqlForCounting = userRolePermissions.addAccessSQL(sqlForCounting, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+					.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SQL_PARAM_KeyId)
+					.build();
 
 			//
 			// Set the SQLs
 			{
 				sqlTableName = tableName;
-
-				final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-				sqlForFetchingExpression = expressionFactory.compile(sqlForFetching, IStringExpression.class);
-				sqlForCountingExpression = expressionFactory.compile(sqlForCounting, IStringExpression.class);
-				sqlForFetchingDisplayNameByIdExpression = expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+				sqlForFetchingExpression = sqlForFetching.caching();
+				sqlForCountingExpression = sqlForCounting.caching();
+				sqlForFetchingDisplayNameByIdExpression = sqlForFetchingDisplayNameById.caching();
 			}
 		}
 
-		private final String buildSqlWhere(final MLookupInfo lookupInfo, final boolean useBaseLanguage)
+		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo)
 		{
 			final String tableName = lookupInfo.getTableName();
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
-			final String displayColumnSql = useBaseLanguage ? lookupInfo.getDisplayColumnSQL_BaseLang() : lookupInfo.getDisplayColumnSQL_Trl();
-			
-			final StringBuilder sqlWhereFinal = new StringBuilder();
+			final TranslatableParameterizedString displayColumnSql = lookupInfo.getDisplayColumnSql();
+
+			final CompositeStringExpression.Builder sqlWhereFinal = IStringExpression.composer();
+
+			// Static lookup's WHERE
+			if (!Check.isEmpty(lookup_SqlWhere, true))
 			{
-				// Static lookup's WHERE
-				if (!Check.isEmpty(lookup_SqlWhere, true))
-				{
 
-					sqlWhereFinal.append(" /* lookup where clause */ ").append("(").append(lookup_SqlWhere).append(")");
-				}
-
-				// Validation Rule's WHERE
-				if (sqlWhereFinal.length() > 0)
-				{
-					sqlWhereFinal.append("\n AND ");
-				}
-				sqlWhereFinal.append(" /* validation rule */ ").append("(").append(SQL_PARAM_ValidationRuleSql.toStringWithMarkers()).append(")");
-
-				// Filter's WHERE
-				if (sqlWhereFinal.length() > 0)
-				{
-					sqlWhereFinal.append("\n AND ");
-				}
-				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
-
-				// IsActive WHERE
-				if (sqlWhereFinal.length() > 0)
-				{
-					sqlWhereFinal.append("\n AND ");
-				}
-				sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive.toStringWithMarkers()).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+				sqlWhereFinal.append(" /* lookup where clause */ ").append("(").append(lookup_SqlWhere).append(")");
 			}
 
-			return sqlWhereFinal.toString();
+			// Validation Rule's WHERE
+			sqlWhereFinal.appendIfNotEmpty("\n AND ");
+			sqlWhereFinal.append(" /* validation rule */ ").append("(\n").append(SQL_PARAM_ValidationRuleSql).append("\n)\n");
+
+			// Filter's WHERE
+			sqlWhereFinal.appendIfNotEmpty("\n AND ");
+			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql); // #1
+
+			// IsActive WHERE
+			sqlWhereFinal.appendIfNotEmpty("\n AND ");
+			sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive.toStringWithMarkers()).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+
+			return sqlWhereFinal.build();
 		}
-		
-		private final IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final boolean useBaseLanguage, final String sqlWhereFinal, final String lookup_SqlOrderBy)
+
+		private final IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
 		{
 			final String tableName = lookupInfo.getTableName();
-			final String selectSqlPart = useBaseLanguage ? lookupInfo.getSelectSqlPart_BaseLang() : lookupInfo.getSelectSqlPart_Trl();
-
-			String sqlForFetching = new StringBuilder()
-					.append(selectSqlPart) // SELECT ... FROM ...
-					.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
-					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
-					.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
-					.toString();
-
-			//
-			// Apply security filters
-			final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(); // FIXME: get rid of UserRolePermissions
-			sqlForFetching = userRolePermissions.addAccessSQL(sqlForFetching, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-
-			return expressionFactory.compile(sqlForFetching, IStringExpression.class);
+			return IStringExpression.composer()
+					.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
+					.append("\n WHERE \n").append(sqlWhere) // WHERE
+					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
+					.append("\n OFFSET ").append(SQL_PARAM_Offset) // OFFSET
+					.append("\n LIMIT ").append(SQL_PARAM_Limit) // LIMIT
+					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.build();
 		}
 
-		private final IStringExpression buildSqlForCounting(final MLookupInfo lookupInfo, final boolean useBaseLanguage, final String sqlWhereFinal)
+		private final IStringExpression buildSqlForCounting(final MLookupInfo lookupInfo, final IStringExpression sqlWhere)
 		{
 			final String tableName = lookupInfo.getTableName();
-			final String fromSqlPart = useBaseLanguage ? lookupInfo.getFromSqlPart_BaseLang() : lookupInfo.getFromSqlPart_Trl();
-
-			String sqlForCounting = new StringBuilder()
-					.append("SELECT COUNT(1) FROM ").append(fromSqlPart) // SELECT .. FROM ...
-					.append(" WHERE ").append(sqlWhereFinal) // WHERE
-					.toString();
-
-			//
-			// Apply security filters
-			final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(); // FIXME: get rid of UserRolePermissions
-			sqlForCounting = userRolePermissions.addAccessSQL(sqlForCounting, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-
-			return expressionFactory.compile(sqlForCounting, IStringExpression.class);
+			return IStringExpression.composer()
+					.append("SELECT COUNT(1) FROM ")
+					.append(lookupInfo.getFromSqlPart()) // SELECT .. FROM ...
+					.append(" WHERE ").append(sqlWhere) // WHERE
+					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.build();
 		}
 
-		private final IStringExpression buildSqlForFetchingDisplayNameById(final MLookupInfo lookupInfo, final boolean useBaseLanguage)
+		private final IStringExpression buildSqlForFetchingDisplayNameById(final MLookupInfo lookupInfo)
 		{
-			final String displayColumnSQL = useBaseLanguage ? lookupInfo.getDisplayColumnSQL_BaseLang() : lookupInfo.getDisplayColumnSQL_Trl();
-			final String fromSqlPart = useBaseLanguage ? lookupInfo.getFromSqlPart_BaseLang() : lookupInfo.getFromSqlPart_Trl();
+			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
+			// useBaseLanguage ? lookupInfo.getDisplayColumnSQL_BaseLang() : lookupInfo.getDisplayColumnSQL_Trl();
+			final IStringExpression fromSqlPart = TranslatableParameterizedStringExpression.of(lookupInfo.getFromSqlPart());
+			// useBaseLanguage ? lookupInfo.getFromSqlPart_BaseLang() : lookupInfo.getFromSqlPart_Trl();
 			final String keyColumnFQ = lookupInfo.getKeyColumnFQ();
 			final int displayType = lookupInfo.getDisplayType();
-			final String whereClauseSqlPart = lookupInfo.getWhereClauseSqlPart();
+			final String whereClauseSqlPart = lookupInfo.getWhereClauseSqlPart(); // assuming this is constant!
 
-			final String sqlForFetchingDisplayNameById = new StringBuilder()
-					.append("SELECT ").append(displayColumnSQL) // SELECT
+			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
+					.append("SELECT ").append(displayColumnSQL) // SELECT ...
 					.append("\n FROM ").append(fromSqlPart) // FROM
-					.append("\n WHERE ").append(keyColumnFQ).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
+					.append("\n WHERE ").append(keyColumnFQ).append("=").append(SQL_PARAM_KeyId)
 					.append(" ")
 					// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
 					.append(DisplayType.List == displayType || DisplayType.Button == displayType ? " AND " + whereClauseSqlPart : "")
-					.toString();
+					.build();
 
-			return expressionFactory.compile(sqlForFetchingDisplayNameById, IStringExpression.class);
+			return sqlForFetchingDisplayNameById;
 		}
 
 		public Builder setColumnName(final String columnName)

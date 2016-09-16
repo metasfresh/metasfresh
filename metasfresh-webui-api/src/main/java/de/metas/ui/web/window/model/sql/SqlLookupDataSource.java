@@ -4,24 +4,31 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
@@ -118,9 +125,9 @@ public class SqlLookupDataSource implements LookupDataSource
 					.filter(evalCtx::acceptItem)
 					.map(namePair -> toLookupValue(namePair))
 					.collect(Collectors.toList());
-			
+
 			Map<String, String> debugProperties = null;
-			if(WindowConstants.isProtocolDebugging())
+			if (WindowConstants.isProtocolDebugging())
 			{
 				debugProperties = new LinkedHashMap<>();
 				debugProperties.put("debug-sql", sqlForFetching);
@@ -180,8 +187,7 @@ public class SqlLookupDataSource implements LookupDataSource
 
 	private IntegerLookupValue findByIntegerId(final int id)
 	{
-		final String adLanguage = Env.getAD_Language(Env.getCtx());
-		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById(adLanguage, "?");
+		final String sql = getSqlForFetchingDisplayNameById();
 		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
 		if (displayName == null)
 		{
@@ -193,8 +199,7 @@ public class SqlLookupDataSource implements LookupDataSource
 
 	private StringLookupValue findByStringId(final String id)
 	{
-		final String adLanguage = Env.getAD_Language(Env.getCtx());
-		final String sql = sqlLookupDescriptor.getSqlForFetchingDisplayNameById(adLanguage, "?");
+		final String sql = getSqlForFetchingDisplayNameById();
 		final String displayName = DB.getSQLValueString(ITrx.TRXNAME_ThreadInherited, sql, id);
 		if (displayName == null)
 		{
@@ -202,6 +207,23 @@ public class SqlLookupDataSource implements LookupDataSource
 		}
 
 		return StringLookupValue.of(id, displayName);
+	}
+
+	public String getSqlForFetchingDisplayNameById()
+	{
+		final Properties ctx = Env.getCtx();
+		final String adLanguage = Env.getAD_Language(ctx);
+		final String sqlKeyColumn = "?";
+
+		final Evaluatee evalCtx = Evaluatees.ofMap(ImmutableMap.<String, Object> builder()
+				.put(SqlLookupDescriptor.SQL_PARAM_KeyId.getName(), sqlKeyColumn)
+				.put(SqlLookupDescriptor.SQL_PARAM_ShowInactive.getName(), SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_Yes)
+				.put(SqlLookupDescriptor.SQL_PARAM_AD_Language.getName(), adLanguage)
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), UserRolePermissionsKey.toPermissionsKeyString(ctx))
+				.build());
+
+		return sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression()
+				.evaluate(evalCtx, OnVariableNotFound.Fail);
 	}
 
 	private static final LookupValue toLookupValue(final NamePair namePair)
@@ -246,11 +268,13 @@ public class SqlLookupDataSource implements LookupDataSource
 	{
 		final DataSourceValidationContext validationCtx = new DataSourceValidationContext(sqlLookupDescriptor, document);
 
-		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_FilterSql.getName(), convertFilterToSql(filter));
-		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive.getName(), SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No);
-		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset.getName(), sqlFetchOffset);
-		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit.getName(), sqlFetchLimit);
-		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_AD_Language.getName(), Env.getAD_Language(Env.getCtx()));
+		final Properties ctx = Env.getCtx();
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_FilterSql, convertFilterToSql(filter));
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive, SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No);
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Offset, sqlFetchOffset);
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_Limit, sqlFetchLimit);
+		validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_AD_Language, Env.getAD_Language(ctx));
+		validationCtx.putValue(AccessSqlStringExpression.PARAM_UserRolePermissionsKey, UserRolePermissionsKey.toPermissionsKeyString(ctx));
 
 		// SQL validation rule
 		{
@@ -262,7 +286,7 @@ public class SqlLookupDataSource implements LookupDataSource
 			{
 				sqlValidationRule = "1=1";
 			}
-			validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ValidationRuleSql.getName(), sqlValidationRule);
+			validationCtx.putValue(SqlLookupDescriptor.SQL_PARAM_ValidationRuleSql, sqlValidationRule);
 		}
 
 		return validationCtx;
@@ -302,9 +326,9 @@ public class SqlLookupDataSource implements LookupDataSource
 		private DataSourceValidationContext(final SqlLookupDescriptor sqlLookupDescriptor, final Document document)
 		{
 			super();
-			this.tableName = sqlLookupDescriptor.getSqlTableName();
-			this.windowNo = document.getWindowNo();
-			this.contextTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+			tableName = sqlLookupDescriptor.getSqlTableName();
+			windowNo = document.getWindowNo();
+			contextTableName = document.getEntityDescriptor().getDataBinding().getTableName();
 			this.document = document;
 
 		}
@@ -341,22 +365,22 @@ public class SqlLookupDataSource implements LookupDataSource
 				return document.asEvaluatee().get_ValueAsString(variableName);
 			});
 		}
-		
+
 		public Map<String, String> getUsedParameters()
 		{
 			return valueAsStringCache;
 		}
 
-		public void putValue(final String variableName, final Object value)
+		public void putValue(final CtxName name, final Object value)
 		{
-			name2value.put(variableName, value);
+			name2value.put(name.getName(), value);
 		}
 
 		public void setValidationRule(final IValidationRule validationRule)
 		{
 			this.validationRule = validationRule;
 		}
-		
+
 		public IValidationRule getValidationRule()
 		{
 			return validationRule;
