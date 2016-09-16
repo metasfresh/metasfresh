@@ -116,6 +116,7 @@ class DocList extends Component {
                                 emptyHint={layout.emptyResultHint}
                                 readonly={true}
                                 keyProperty="id"
+                                onDoubleClick={(id) => {dispatch(push("/window/"+windowType+"/"+id))}}
                             />
                         </div>
                         <div className="items-row">

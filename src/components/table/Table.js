@@ -157,7 +157,7 @@ class Table extends Component {
     }
 
     handleClick = (e, id) => {
-       
+
         if(e.button === 0){
             const {dispatch} = this.props;
             const {selected} = this.state;
@@ -193,7 +193,7 @@ class Table extends Component {
             }
         }
 
-        
+
     }
     handleRightClick = (e, id) => {
         // const {selected} = this.state;
@@ -245,7 +245,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -253,18 +253,20 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
+                const index = keyProperty ? keyProperty : "rowId";
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
                         key={i}
-                        rowId={item[key].rowId}
+                        rowId={item[key][index]}
                         tabId={tabid}
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key][keyProperty ? keyProperty : "rowId"]) > -1}
-                        onMouseDown={(e) => this.handleClick(e, item[key][keyProperty ? keyProperty : "rowId"])}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key][keyProperty ? keyProperty : "rowId"])}
+                        isSelected={selected.indexOf(item[key][index]) > -1}
+                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
+                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
