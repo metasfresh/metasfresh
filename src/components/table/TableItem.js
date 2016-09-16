@@ -15,18 +15,28 @@ class TableItem extends Component {
         };
     }
     handleEditProperty = (e,property, callback) => {
-        e.preventDefault();
+        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        // let elem = e.target.getElementsByClassName('js-input-field')[0];
+        // e.preventDefault();
         this.setState({
             edited: property
         }, ()=>{
-            if(callback){
-                // e.target
-                let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
-                let disabled = document.activeElement.querySelector('.input-disabled');
-                if(elem){
-                    elem.focus();
-                }
+          if(callback){
+            let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+
+            if(elem){
+              elem.focus();
             }
+
+            let disabled = document.activeElement.querySelector('.input-disabled');
+            let readonly = document.activeElement.querySelector('.input-readonly');
+            if(disabled || readonly) {
+              changeListenOnTrue();
+              this.handleEditProperty(e);
+            } else {
+              changeListenOnFalse();
+            }
+          }
         })
     }
     handleKey = (e, property) => {
@@ -42,7 +52,6 @@ class TableItem extends Component {
 
         if(e.key === "Enter" && !edited) {
             this.handleEditProperty(e,property, true);
-            changeListenOnFalse();
         } else if (e.key === "Enter" && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
