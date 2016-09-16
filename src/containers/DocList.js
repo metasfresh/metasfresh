@@ -124,13 +124,12 @@ class DocList extends Component {
                         </div>
                         <div className="items-row">
                             <div>
-                                <p>No items selected</p>
-                                <p>Select all on this page</p>
+                                <div>No items selected</div>
+                                <div>Select all on this page</div>
                             </div>
 
                             <div className="items-row">
-                                <div>No sorting</div>
-                                <div>Total items <b>{data.size}</b></div>
+
                                 <div>
                                     <nav>
                                         <ul className="pagination pointer">
