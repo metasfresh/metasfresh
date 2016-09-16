@@ -122,14 +122,17 @@ class DocList extends Component {
                                 onDoubleClick={(id) => {dispatch(push("/window/"+windowType+"/"+id))}}
                             />
                         </div>
-                        <div className="items-row">
+                        <div className="pagination-row">
                             <div>
                                 <div>No items selected</div>
-                                <div>Select all on this page</div>
+                                <div className="pagination-link pointer">Select all on this page</div>
                             </div>
 
-                            <div className="items-row">
-
+                            <div className="items-row-2 pagination-part">
+                                <div>
+                                    <div>Sorting by <b>DocNo</b> (1163-1200)</div>
+                                    <div>Total items {data.size}</div>
+                                </div>
                                 <div>
                                     <nav>
                                         <ul className="pagination pointer">
@@ -165,26 +168,6 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const { windowHandler, menuHandler, routing } = state;
-    const {
-
-    } = windowHandler || {
-
-    }
-
-
-    const {
-
-    } = menuHandler || {
-
-    }
-
-    return {
-
-    }
-}
-
-DocList = connect(mapStateToProps)(DocList)
+DocList = connect()(DocList)
 
 export default DocList;
