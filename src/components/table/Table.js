@@ -40,10 +40,16 @@ class Table extends Component {
         }))
     }
 
-    selectProduct = (id) => {
+    selectProduct = (id, callback) => {
         this.setState(Object.assign({}, this.state, {
             selected: this.state.selected.concat([id])
-        }))
+        }),
+        ()=>{
+            if (callback) {
+                document.getElementsByClassName('row-selected')[0].children[callback].focus();
+                console.log(callback);
+            }
+        })
     }
 
     selectRangeProduct = (ids) => {
@@ -64,10 +70,15 @@ class Table extends Component {
         }))
     }
 
-    deselectAllProducts = () => {
+    deselectAllProducts = (callback, options, secondcallback) => {
         this.setState(Object.assign({}, this.state, {
             selected: []
-        }))
+        }),
+        ()=>{
+            if(typeof callback === "function"){
+                callback(options,secondcallback);
+            }
+        })
      }
 
 
@@ -120,16 +131,29 @@ class Table extends Component {
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        this.deselectAllProducts();
-                    }
-
-                    let t = this;
-                    setTimeout(function(){
-                        t.selectProduct(Object.keys(rowData[tabid])[newId]);
+                        let callback = null;
+                        if(idActive > -1) {
+                            // callback = document.getElementsByClassName('row-selected')[0].children[idActive].focus();
+                            callback = idActive;
+                        }
+                        this.deselectAllProducts(this.selectProduct, Object.keys(rowData[tabid])[newId], callback);
+                        // if(idActive > -1) {
+                        //     document.getElementsByClassName('row-selected')[0].children[idActive].focus();
+                        // }
+                    } else {
+                        this.selectProduct(Object.keys(rowData[tabid])[newId]);
                         if(idActive > -1) {
                             document.getElementsByClassName('row-selected')[0].children[idActive].focus();
                         }
-                    }, 1);
+                    }
+
+                    // let t = this;
+                    // setTimeout(function(){
+                    //     t.selectProduct(Object.keys(rowData[tabid])[newId]);
+                    //     if(idActive > -1) {
+                    //         document.getElementsByClassName('row-selected')[0].children[idActive].focus();
+                    //     }
+                    // }, 1);
                 }
                 break;
             case "ArrowLeft":
