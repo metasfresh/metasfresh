@@ -16,23 +16,27 @@ class DocList extends Component {
     constructor(props){
         super(props);
 
-        const {dispatch} = this.props;
+        const {dispatch, windowType} = this.props;
 
         this.state = {
-            page: 1
+            page: 1,
+            data: {},
+            layout: {},
+            filters: {}
         };
 
-        dispatch(viewLayoutRequest(143, "list")).then((response) => {
-            return this.setState(Object.assign({}, this.state, {
+        dispatch(viewLayoutRequest(windowType, "list")
+        ).then((response) =>
+            this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
             }))
-        }).then(()=>
-            dispatch(createViewRequest(143, "list", 50, [])).then((response) => {
-                return this.setState(Object.assign({}, this.state, {
-                    data: response.data
-                }))
-            })
+        ).then(()=>
+            dispatch(createViewRequest(windowType, "list", 20, []))
+        ).then((response) =>
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
         ).then(() => {
             this.getView();
         });
@@ -41,7 +45,6 @@ class DocList extends Component {
     getView = () => {
         const {data,page} = this.state;
         const {dispatch} = this.props;
-
         dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
@@ -119,15 +122,17 @@ class DocList extends Component {
                                 onDoubleClick={(id) => {dispatch(push("/window/"+windowType+"/"+id))}}
                             />
                         </div>
-                        <div className="items-row">
+                        <div className="pagination-row">
                             <div>
-                                <p>No items selected</p>
-                                <p>Select all on this page</p>
+                                <div>No items selected</div>
+                                <div className="pagination-link pointer">Select all on this page</div>
                             </div>
 
-                            <div className="items-row">
-                                <div>No sorting</div>
-                                <div>Total items <b>{data.size}</b></div>
+                            <div className="items-row-2 pagination-part">
+                                <div>
+                                    <div>Sorting by <b>DocNo</b> (1163-1200)</div>
+                                    <div>Total items {data.size}</div>
+                                </div>
                                 <div>
                                     <nav>
                                         <ul className="pagination pointer">
@@ -163,26 +168,6 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const { windowHandler, menuHandler, routing } = state;
-    const {
-
-    } = windowHandler || {
-
-    }
-
-
-    const {
-
-    } = menuHandler || {
-
-    }
-
-    return {
-
-    }
-}
-
-DocList = connect(mapStateToProps)(DocList)
+DocList = connect()(DocList)
 
 export default DocList;
