@@ -828,3 +828,30 @@ table .rdtPicker table td, .rdtPicker table th {
   height: 16px;
   bottom: 0;
 }
+
+.pagination {
+    margin-top:0;
+    margin-bottom:0;
+}
+
+.pagination-row {
+    margin: 1rem 0;
+    font-size: .7rem;
+
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-center;
+}
+
+.pagination-part {
+    text-align: right;
+}
+.pagination-part > *:not(:last-of-type) {
+    margin-right: 1rem;
+}
+
+.pagination-link {
+    text-decoration: underline;
+}

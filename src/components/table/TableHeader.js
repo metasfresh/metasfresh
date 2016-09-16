@@ -17,7 +17,7 @@ class TableHeader extends Component {
         }
     }
     renderCols = (cols) => {
-        return cols.map((item, index) =>
+        return cols && cols.map((item, index) =>
             <th
                 key={index}
                 className={

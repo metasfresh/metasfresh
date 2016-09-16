@@ -64,7 +64,7 @@ class TableItem extends Component {
         const { edited } = this.state;
 
         //iterate over layout settings
-        return cols.map((item, index) => {
+        return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
             let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
 
