@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -93,4 +94,11 @@ public class DebugRestController
 			statisticsLogger.disable();
 		}
 	}
+	
+	@RequestMapping(value = "/debugProtocol", method = RequestMethod.GET)
+	public void setDebugProtocol(@RequestParam("enabled") final boolean enabled)
+	{
+		WindowConstants.setProtocolDebugging(enabled);
+	}
+
 }

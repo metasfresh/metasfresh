@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.WindowConstants;
 
 /*
  * #%L
@@ -42,7 +41,7 @@ public class LoginService
 
 	public void autologin()
 	{
-		WindowConstants.setProtocolDebugging(true);
+		// WindowConstants.setProtocolDebugging(true);
 		
 		// FIXME: only for testing
 		final Properties ctx = userSession.getCtx();
