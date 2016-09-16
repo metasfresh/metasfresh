@@ -39,7 +39,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.logging.LogManager;
 
 /**

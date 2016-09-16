@@ -37,7 +37,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.X_C_BP_BankAccount;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -222,13 +222,18 @@ public class PaySelectionBL implements IPaySelectionBL
 				{
 					continue;
 				}
-				
+
 				final int accountID = account.getC_BP_BankAccount_ID();
 				if (accountID > 0)
 				{
 					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
 					{
-						secondaryAcct = accountID;
+						// in case a secondary act was already found, it should be not changed.
+						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
+						if (secondaryAcct == 0)
+						{
+							secondaryAcct = accountID;
+						}
 					}
 					else if (account.getBPBankAcctUse().equals(paymentRule))
 					{
