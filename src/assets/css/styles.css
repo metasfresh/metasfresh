@@ -120,7 +120,7 @@ body {
     align-items: center;
     padding: 0 2rem;
     box-shadow: none;
-    transition: all 0.8s ease;
+    transition: all 0.2s ease;
 }
 
 .panel-modal-content {
@@ -796,7 +796,7 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .header-super-faded {
   box-shadow: none;
-  transition: all 0.8s ease;
+  transition: all 0.2s ease;
 }
 
 .header-shadow {
