@@ -52,7 +52,7 @@ this week's RC
 ## Features
  * FRESH-112 metasfresh web 
    - Integrated recent backend related changes done for metasfresh REST API Implementation.
- * #359 document Note not displayed on invoice #368
+ * #359 document Note not displayed on invoice
    - Fixed the issue that c_doctype.documentnote was not shown properly on Jasper invoice documents.
  * #262 sales and purchase tracking
    - Implemenation of a large Sales and purchase Tracking Report inclusing possibility to export to excel.
