@@ -17,130 +17,137 @@
 package org.compiere.util;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
 /**
- *	Adempiere Statement Value Object
- *	
- *  @author Jorg Janke
- *  @version $Id: CStatementVO.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
+ * Adempiere Statement Value Object
+ *
+ * @author Jorg Janke
+ * @version $Id: CStatementVO.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
 public class CStatementVO implements Serializable
 {
-	/**
-	 * 	VO Constructor
-	 *  @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
-	 *  @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 */
-	public CStatementVO (int resultSetType, int resultSetConcurrency)
-	{
-		setResultSetType(resultSetType);
-		setResultSetConcurrency(resultSetConcurrency);
-	}	//	CStatementVO
+	private static final long serialVersionUID = -6778280012583949122L;
 
 	/**
-	 * 	VO Constructor
-	 *  @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
-	 *  @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * 	@param sql sql
+	 * VO Constructor
+	 *
+	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
 	 */
-	public CStatementVO (int resultSetType, int resultSetConcurrency, String sql)
+	public CStatementVO(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
-		this (resultSetType, resultSetConcurrency);
-		setSql(sql);
-	}	//	CStatementVO
+		super();
+		m_resultSetType = resultSetType;
+		m_resultSetConcurrency = resultSetConcurrency;
+		m_sql = null;
+		m_trxName = trxName;
+	}	// CStatementVO
 
-	/**	Serialization Info	**/
-	static final long serialVersionUID = -3393389471515956399L;
-	
-	/**	Type			*/
-	private int					m_resultSetType;
-	/** Concurrency		*/
-	private int 				m_resultSetConcurrency;
-	/** SQL Statement	*/
-	private String 				m_sql;
+	/**
+	 * VO Constructor
+	 *
+	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
+	 * @param sql sql
+	 */
+	public CStatementVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
+	{
+		super();
+		m_resultSetType = resultSetType;
+		m_resultSetConcurrency = resultSetConcurrency;
+		m_sql = sql;
+		m_trxName = trxName;
+	}	// CStatementVO
+
+	/** Type */
+	private final int m_resultSetType;
+	/** Concurrency */
+	private final int m_resultSetConcurrency;
+	/** SQL Statement */
+	private String m_sql;
 	/** Transaction Name **/
-	private String				m_trxName = null;	
+	private final String m_trxName;
+
 	/**
-	 * 	String representation
-	 * 	@return info
+	 * Debugging: collected SQL parameters for this statement
 	 */
+	private Map<Integer, Object> debugSqlParams;
+
+	/**
+	 * String representation
+	 *
+	 * @return info
+	 */
+	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("CStatementVO[");
-		sb.append("SQL="+getSql());
-		if (m_trxName != null)
-			sb.append(" TrxName=" + m_trxName);
-		sb.append("]");
-		return sb.toString();
-	}	//	toString
+		return MoreObjects.toStringHelper("SQL")
+				.omitNullValues()
+				.add("trxName", m_trxName)
+				.addValue(m_sql)
+				.toString();
+	}
 
 	/**
-	 * 	Get SQL
-	 * 	@return sql
+	 * Get SQL
+	 *
+	 * @return sql
 	 */
 	public final String getSql()
 	{
 		return m_sql;
-	}	//	getSql
+	}	// getSql
 
-	/**
-	 * 	Set SQL.
-	 * 	Replace ROWID with TRIM(ROWID) for remote SQL
-	 * 	to convert into String as ROWID is not serialized
-	 *	@param sql sql
-	 */
-	public final void setSql(String sql)
+	public void setSql(final String sql)
 	{
 		m_sql = sql;
-	}	//	setSql
+	}
 
 	/**
-	 * 	Get ResultSet Concurrency
-	 *	@return rs concurrency
+	 * Get ResultSet Concurrency
+	 *
+	 * @return rs concurrency
 	 */
 	public int getResultSetConcurrency()
 	{
 		return m_resultSetConcurrency;
 	}
+
 	/**
-	 * 	Get ResultSet Type
-	 *	@return rs type
+	 * Get ResultSet Type
+	 *
+	 * @return rs type
 	 */
 	public int getResultSetType()
 	{
 		return m_resultSetType;
 	}
-	/**
-	 * 	Set ResultSet Type
-	 *	@param resultSetType type
-	 */
-	public void setResultSetType(int resultSetType)
-	{
-		m_resultSetType = resultSetType;
-	}
-	/**
-	 * 	Set ResultSet Concurrency
-	 *	@param resultSetConcurrency concurrency
-	 */
-	public void setResultSetConcurrency(int resultSetConcurrency)
-	{
-		m_resultSetConcurrency = resultSetConcurrency;
-	}
-	
+
 	/**
 	 * @return transaction name
 	 */
-	public String getTrxName() 
+	public String getTrxName()
 	{
 		return m_trxName;
 	}
-	
-	/**
-	 * Set transaction name
-	 * @param trxName
-	 */
-	public void setTrxName(String trxName)
+
+	public final void setDebugSqlParam(final int parameterIndex, final Object parameterValue)
 	{
-		m_trxName = trxName;
+		if (debugSqlParams == null)
+		{
+			debugSqlParams = new TreeMap<>();
+		}
+		debugSqlParams.put(parameterIndex, parameterValue);
 	}
-}	//	CStatementVO
+
+	public final Map<Integer, Object> getDebugSqlParams()
+	{
+		final Map<Integer, Object> debugSqlParams = this.debugSqlParams;
+		return debugSqlParams == null ? ImmutableMap.of() : debugSqlParams;
+	}
+}	// CStatementVO

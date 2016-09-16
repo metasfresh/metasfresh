@@ -1,8 +1,8 @@
 package org.adempiere.ad.expression.api.impl;
 
 import java.util.List;
+import java.util.Objects;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
@@ -57,10 +57,7 @@ class ConstantStringExpression implements IStringExpression
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (expressionStr == null ? 0 : expressionStr.hashCode());
-		return result;
+		return Objects.hash(expressionStr);
 	}
 
 	@Override
@@ -79,18 +76,7 @@ class ConstantStringExpression implements IStringExpression
 			return false;
 		}
 		final ConstantStringExpression other = (ConstantStringExpression)obj;
-		if (expressionStr == null)
-		{
-			if (other.expressionStr != null)
-			{
-				return false;
-			}
-		}
-		else if (!expressionStr.equals(other.expressionStr))
-		{
-			return false;
-		}
-		return true;
+		return Objects.equals(expressionStr, other.expressionStr);
 	}
 
 	@Override
@@ -130,8 +116,8 @@ class ConstantStringExpression implements IStringExpression
 	}
 
 	@Override
-	public final IExpressionEvaluator<IStringExpression, String> getEvaluator()
+	public final IStringExpression resolvePartial(final Evaluatee ctx)
 	{
-		return StringExpressionEvaluator.instance;
+		return this;
 	}
 }

@@ -30,12 +30,9 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.Check;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
 
 @Immutable
 public final class CompositeTabCallout implements ITabCallout
@@ -44,9 +41,6 @@ public final class CompositeTabCallout implements ITabCallout
 	{
 		return new Builder();
 	}
-
-	// services
-	private static final Logger logger = LogManager.getLogger(CompositeTabCallout.class);
 
 	private final List<ITabCallout> tabCallouts;
 
@@ -62,12 +56,6 @@ public final class CompositeTabCallout implements ITabCallout
 		return MoreObjects.toStringHelper(this)
 				.addValue(tabCallouts)
 				.toString();
-	}
-
-	@Override
-	public void onInit(final ICalloutRecord calloutRecord)
-	{
-		throw new IllegalStateException("Composite " + this + " was already initialized");
 	}
 
 	@Override
@@ -135,57 +123,31 @@ public final class CompositeTabCallout implements ITabCallout
 
 	public static final class Builder
 	{
-		private boolean _built = false;
 		private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
-		private ICalloutRecord _calloutRecord = null;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public ITabCallout buildAndInitialize()
+		public ITabCallout build()
 		{
-			markAsBuilt();
-
 			if (tabCalloutsAll.isEmpty())
 			{
 				return ITabCallout.NULL;
 			}
-
-			final ICalloutRecord calloutRecord = getCalloutRecord();
-			final List<ITabCallout> tabCalloutsInitialized = new ArrayList<>();
-			for (final ITabCallout tabCallout : tabCalloutsAll)
+			else if (tabCalloutsAll.size() == 1)
 			{
-				try
-				{
-					tabCallout.onInit(calloutRecord);
-					tabCalloutsInitialized.add(tabCallout);
-				}
-				catch (final Exception e)
-				{
-					logger.error("Failed to initialize {}. Ignored.", tabCallout, e);
-				}
-			}
-
-			if (tabCalloutsInitialized.isEmpty())
-			{
-				return ITabCallout.NULL;
-			}
-			else if (tabCalloutsInitialized.size() == 1)
-			{
-				return tabCalloutsInitialized.get(0);
+				return tabCalloutsAll.get(0);
 			}
 			else
 			{
-				return new CompositeTabCallout(tabCalloutsInitialized);
+				return new CompositeTabCallout(tabCalloutsAll);
 			}
-
 		}
 
 		public Builder addTabCallout(final ITabCallout tabCallout)
 		{
-			assertNotBuilt();
 			Check.assumeNotNull(tabCallout, "tabCallout not null");
 
 			if (tabCalloutsAll.contains(tabCallout))
@@ -195,29 +157,6 @@ public final class CompositeTabCallout implements ITabCallout
 			tabCalloutsAll.add(tabCallout);
 
 			return this;
-		}
-
-		public Builder setCalloutRecord(final ICalloutRecord calloutRecord)
-		{
-			_calloutRecord = calloutRecord;
-			return this;
-		}
-
-		private ICalloutRecord getCalloutRecord()
-		{
-			Check.assumeNotNull(_calloutRecord, "Parameter calloutRecord is not null");
-			return _calloutRecord;
-		}
-
-		private final void assertNotBuilt()
-		{
-			Check.assume(!_built, "not already initialized");
-		}
-
-		private final void markAsBuilt()
-		{
-			assertNotBuilt();
-			_built = true;
 		}
 	}
 }

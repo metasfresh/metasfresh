@@ -33,14 +33,7 @@ import org.compiere.util.CStatementVO;
 {
 	public CStatementProxy(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
-		super(createVO(resultSetType, resultSetConcurrency, trxName));
-	}
-
-	private static final CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String trxName)
-	{
-		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency);
-		vo.setTrxName(trxName);
-		return vo;
+		super(new CStatementVO(resultSetType, resultSetConcurrency, trxName));
 	}
 
 	public CStatementProxy(final CStatementVO vo)

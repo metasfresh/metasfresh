@@ -57,7 +57,7 @@ public interface IExpressionEvaluator<ET extends IExpression<V>, V>
 		/**
 		 * Immediately return no result. This means:
 		 * <ul>
-		 * <li>in case of {@link IStringExpression} it will return empty string
+		 * <li>in case of {@link IStringExpression} it will return {@link IStringExpression#EMPTY_RESULT}
 		 * <li>in case of {@link ILogicExpression} it will return <code>false</code>
 		 * </ul>
 		 */
@@ -79,6 +79,4 @@ public interface IExpressionEvaluator<ET extends IExpression<V>, V>
 	 * @throws ExpressionEvaluationException in case evaluation failed.
 	 */
 	V evaluate(final Evaluatee ctx, final ET expression, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
-
-	boolean isNoResult(Object result);
 }

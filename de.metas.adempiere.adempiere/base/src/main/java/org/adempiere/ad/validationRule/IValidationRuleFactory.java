@@ -48,7 +48,7 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * @param adValRuleId
 	 * @return
 	 */
-	IValidationRule create(Properties ctx, String tableName, int adValRuleId);
+	IValidationRule create(String tableName, int adValRuleId);
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause

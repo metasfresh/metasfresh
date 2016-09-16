@@ -885,8 +885,8 @@ public class ImportHelper implements IImportHelper
 					|| DisplayType.Date == adReferenceId)
 			{
 				//
-				po.set_ValueOfColumn(line.getAD_Column_ID(), value);
-				log.info("Set value of column [" + columnName + "]=[" + value + "]");
+				final boolean ok = po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
+				log.info("Set value of column [{}]=[{}] (ok={})", columnName, value, ok);
 			}
 			else if (DisplayType.Integer == adReferenceId
 					|| DisplayType.isID(adReferenceId)
@@ -915,8 +915,8 @@ public class ImportHelper implements IImportHelper
 					final MColumn referencedCol = MColumn.get(ctx, refTable.getAD_Key());
 					if (DisplayType.isText(referencedCol.getAD_Reference_ID()))
 					{
-						po.set_ValueOfColumn(line.getAD_Column_ID(), value);
-						log.info("Set string value of column [" + columnName + "]=[" + value + "]");
+						final boolean ok = po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
+						log.info("Set string value of column [{}]=[{}] (ok={})", columnName, value, ok);
 						stringValueAlreadySet = true;
 					}
 				}
@@ -935,7 +935,7 @@ public class ImportHelper implements IImportHelper
 					}
 
 					log.info("About to set int value of column [" + columnName + "]=[" + value + "]");
-					po.set_ValueOfColumn(line.getAD_Column_ID(), value);
+					po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
 					log.info("Set int value of column [" + columnName + "]=[" + value + "]");
 				}
 
@@ -956,7 +956,7 @@ public class ImportHelper implements IImportHelper
 
 				log.info("About to set BigDecimal value of column [" + columnName + "]=[" + value + "]");
 
-				po.set_ValueOfColumn(line.getAD_Column_ID(), value);
+				po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
 
 				log.info("Set BigDecimal value of column [" + columnName + "]=[" + value + "]");
 			}
@@ -965,7 +965,7 @@ public class ImportHelper implements IImportHelper
 				if (clazz == Boolean.class)
 				{
 					final String v = handleYesNo(value);
-					po.set_ValueOfColumn(line.getAD_Column_ID(), v);
+					po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), v);
 				}
 			}
 			else
@@ -977,11 +977,11 @@ public class ImportHelper implements IImportHelper
 					if (clazz == Boolean.class)
 					{
 						final String v = handleYesNo(value);
-						po.set_ValueOfColumn(line.getAD_Column_ID(), v);
+						po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), v);
 					}
 					else
 					{
-						po.set_ValueOfColumn(line.getAD_Column_ID(), clazz.cast(value));
+						po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), clazz.cast(value));
 					}
 
 					log.info("Set value of column [" + columnName + "]=[" + value + "]");

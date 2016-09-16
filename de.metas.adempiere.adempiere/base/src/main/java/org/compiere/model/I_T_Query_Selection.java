@@ -1,10 +1,10 @@
-package de.metas.adempiere.banking.api;
+package org.compiere.model;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,23 +22,10 @@ package de.metas.adempiere.banking.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_BP_BankAccount;
-
-public interface IBPBankAccountDAO extends ISingletonService
+public interface I_T_Query_Selection
 {
-	/**
-	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
-	 * In case the currencyID is not set (<=0)  just retrieve all accounts of the bpartner
-	 * 
-	 * @param ctx
-	 * @param partner
-	 * @param currency
-	 * @return
-	 */
-	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID);
+	String Table_Name = "T_Query_Selection";
+	String COLUMNNAME_UUID = "UUID";
+	String COLUMNNAME_Record_ID = "Record_ID";
+	String COLUMNNAME_Line = "Line";
 }

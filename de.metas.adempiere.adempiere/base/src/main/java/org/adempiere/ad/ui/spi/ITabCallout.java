@@ -21,13 +21,6 @@ public interface ITabCallout
 {
 	ITabCallout NULL = NullTabCallout.instance;
 
-	/**
-	 * Called after {@link ICalloutRecord} was initialized.
-	 * 
-	 * @param calloutRecord
-	 */
-	void onInit(ICalloutRecord calloutRecord);
-
 	void onIgnore(ICalloutRecord calloutRecord);
 
 	void onNew(ICalloutRecord calloutRecord);

@@ -36,7 +36,7 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ExceptionHandledTabCallout implements ITabCallout
+public class ExceptionHandledTabCallout implements ITabCallout
 {
 	public static ITabCallout wrapIfNeeded(final ITabCallout tabCallout)
 	{
@@ -49,14 +49,19 @@ public final class ExceptionHandledTabCallout implements ITabCallout
 		{
 			return tabCallout;
 		}
+		
+		if(tabCallout instanceof IStatefulTabCallout)
+		{
+			return new StatefulExceptionHandledTabCallout((IStatefulTabCallout)tabCallout);
+		}
 
 		return new ExceptionHandledTabCallout(tabCallout);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ExceptionHandledTabCallout.class);
-	private final ITabCallout tabCallout;
+	protected final ITabCallout tabCallout;
 
-	public ExceptionHandledTabCallout(final ITabCallout tabCallout)
+	private ExceptionHandledTabCallout(final ITabCallout tabCallout)
 	{
 		super();
 		Preconditions.checkNotNull(tabCallout, "tabCallout shall not be null");
@@ -71,22 +76,9 @@ public final class ExceptionHandledTabCallout implements ITabCallout
 				.toString();
 	}
 
-	private final void handleException(final String methodName, final ICalloutRecord calloutRecord, final Exception e)
+	protected final void handleException(final String methodName, final ICalloutRecord calloutRecord, final Exception e)
 	{
 		logger.warn("{}'s {} failed but ignored for {}", tabCallout, methodName, calloutRecord, e);
-	}
-
-	@Override
-	public void onInit(final ICalloutRecord calloutRecord)
-	{
-		try
-		{
-			tabCallout.onInit(calloutRecord);
-		}
-		catch (final Exception e)
-		{
-			handleException("onInit", calloutRecord, e);
-		}
 	}
 
 	@Override
@@ -178,5 +170,27 @@ public final class ExceptionHandledTabCallout implements ITabCallout
 		{
 			handleException("onAfterQuery", calloutRecord, e);
 		}
+	}
+	
+	private static final class StatefulExceptionHandledTabCallout extends ExceptionHandledTabCallout implements IStatefulTabCallout
+	{
+		private StatefulExceptionHandledTabCallout(final IStatefulTabCallout tabCallout)
+		{
+			super(tabCallout);
+		}
+		
+		@Override
+		public void onInit(final ICalloutRecord calloutRecord)
+		{
+			try
+			{
+				((IStatefulTabCallout)tabCallout).onInit(calloutRecord);
+			}
+			catch (final Exception e)
+			{
+				handleException("onInit", calloutRecord, e);
+			}
+		}
+
 	}
 }

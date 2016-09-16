@@ -1,10 +1,12 @@
-package org.adempiere.ad.callout.api.impl;
+package de.metas.i18n;
+
+import java.util.Set;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +24,17 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
-import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.adempiere.ad.callout.api.ICalloutInstanceFactory;
-import org.compiere.model.MRule;
-
-public class CalloutInstanceFactory implements ICalloutInstanceFactory
+/**
+ * A string which can be translated to a given <code>AD_Language</code>.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface ITranslatableString
 {
-	@Override
-	public ICalloutInstance createFromString(final String calloutStr)
-	{
-		if (calloutStr.toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
-		{
-			final String ruleValue = calloutStr.substring(MRule.SCRIPT_PREFIX.length());
-			return new RuleCalloutInstance(ruleValue);
-		}
-		else
-		{
-			return new DefaultCalloutInstance(calloutStr);
-		}
-	}
+	public String translate(final String adLanguage);
+	
+	public String getDefaultValue();
+	
+	public Set<String> getAD_Languages();
 }

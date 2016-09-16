@@ -62,7 +62,6 @@ import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.MPrivateAccess;
@@ -76,6 +75,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
@@ -187,7 +187,12 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("name", name)
+				.add("AD_Role_ID", AD_Role_ID)
+				.add("AD_User_ID", AD_User_ID)
+				.add("AD_Client_ID", AD_Client_ID)
+				.toString();
 	}
 
 	@Override

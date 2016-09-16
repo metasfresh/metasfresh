@@ -24,7 +24,6 @@ import java.util.List;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -67,6 +66,8 @@ public interface IADWindowDAO extends ISingletonService
 	List<I_AD_UI_Section> retrieveUISections(final Properties ctx, final int AD_Tab_ID);
 
 	List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab);
+
+	boolean hasUISections(I_AD_Tab adTab);
 
 	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
 

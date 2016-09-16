@@ -18,6 +18,7 @@ package org.compiere.cm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.compiere.model.MCStage;
 import org.compiere.model.MContainer;
 import org.compiere.model.MMedia;
@@ -53,6 +54,7 @@ public class WebProjectDeploy extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -73,6 +75,7 @@ public class WebProjectDeploy extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt ()
 		throws Exception
 	{
@@ -95,7 +98,13 @@ public class WebProjectDeploy extends SvrProcess
 			m_map.put(new Integer(stages[i].getCM_CStage_ID()), stages[i]);
 		
 		//	Copy Stage Tree
-		MTree treeS = new MTree (getCtx(), m_project.getAD_TreeCMS_ID(), false, false, get_TrxName());
+		final MTree treeS = MTree.builder()
+				.setCtx(getCtx())
+				.setTrxName(getTrxName())
+				.setAD_Tree_ID(m_project.getAD_TreeCMS_ID())
+				.setEditable(false)
+				.setClientTree(false)
+				.build();
 		MTreeNode root = treeS.getRoot();
 		copyStage(root, "/");
 		
