@@ -711,9 +711,6 @@ table .input-dropdown {
   padding-right: .50rem;
 }
 
-.Lookup:focus {
-  outline: 1px solid black;
-}
 
 table .List .input-dropdown-list {
   top: 28px;

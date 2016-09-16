@@ -3,12 +3,16 @@
 /*
  *  MAIN PROPERTIES
  */
-*:focus,
+table *:focus,
 button:focus {
     outline-color: $brand-font-color;
     outline-width:1px;
     outline-offset:0px;
     outline-style: inset;
+}
+
+.table-read-only *:focus {
+    outline-width:0px;
 }
 
 textarea {

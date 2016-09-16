@@ -88,12 +88,13 @@ class TableItem extends Component {
         })
     }
     render() {
-        const {isSelected, fields, selectedProducts, onContextMenu, rowId, cols, onMouseDown} = this.props;
+        const {isSelected, fields, selectedProducts, onContextMenu, rowId, cols, onMouseDown, onDoubleClick} = this.props;
         return (
             <tr
                 onContextMenu = {onContextMenu}
                 onMouseDown ={onMouseDown}
                 className={isSelected ? "row-selected" : null}
+                onDoubleClick={onDoubleClick}
             >
                 {this.renderCells(cols, fields)}
             </tr>
