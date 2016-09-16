@@ -115,6 +115,7 @@ class DocList extends Component {
                                 emptyText={layout.emptyResultText}
                                 emptyHint={layout.emptyResultHint}
                                 readonly={true}
+                                keyProperty="id"
                             />
                         </div>
                         <div className="items-row">

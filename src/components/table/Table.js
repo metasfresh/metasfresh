@@ -245,7 +245,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -262,9 +262,9 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key].rowId) > -1}
-                        onMouseDown={(e) => this.handleClick(e, item[key].rowId)}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
+                        isSelected={selected.indexOf(item[key][keyProperty ? keyProperty : "rowId"]) > -1}
+                        onMouseDown={(e) => this.handleClick(e, item[key][keyProperty ? keyProperty : "rowId"])}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key][keyProperty ? keyProperty : "rowId"])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
@@ -316,7 +316,13 @@ class Table extends Component {
                     </div>}
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>
+                        <table
+                            className={
+                                "table table-bordered-vertically table-striped " +
+                                (readonly ? "table-read-only" : "")
+                            }
+                            onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
+                        >
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
