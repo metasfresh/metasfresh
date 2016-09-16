@@ -16,35 +16,37 @@ class DocList extends Component {
     constructor(props){
         super(props);
 
-        const {dispatch, windowType} = this.props;
-
         this.state = {
             page: 1,
             data: {},
             layout: {},
             filters: {}
-        };
+        }
+    }
 
-        dispatch(viewLayoutRequest(windowType, "list")
-        ).then((response) =>
+    componentDidMount = () => {
+        const {dispatch, windowType} = this.props;
+
+        dispatch(viewLayoutRequest(windowType, "list")).then(response => {
             this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
             }))
-        ).then(()=>
-            dispatch(createViewRequest(windowType, "list", 20, []))
-        ).then((response) =>
+        });
+
+        dispatch(createViewRequest(windowType, "list", 20, this.state.filters)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
-            }))
-        ).then(() => {
-            this.getView();
-        });
+            }), () => {
+                this.getView();
+            })
+        })
     }
 
     getView = () => {
         const {data,page} = this.state;
         const {dispatch} = this.props;
+
         dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
@@ -80,17 +82,6 @@ class DocList extends Component {
         const {layout, data, page} = this.state;
         if( layout && data) {
 
-            const pages = Math.ceil(data.size / data.pageLength);
-            const startPoint = pages - page <= 4 ? pages - 4 : page;
-            let pagination = [];
-            for(let i = startPoint; i <= startPoint + 4; i++){
-                pagination.push(
-                    <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => this.handleChangePage(i)}>
-                        <a className="page-link">{i}</a>
-                    </li>
-                );
-            }
-
             return (
                 <div>
                     <Header />
@@ -111,6 +102,7 @@ class DocList extends Component {
                         </div>
                         <div>
                             <Table
+                                ref={c => this.table = c && c.getWrappedInstance().refs.instance}
                                 rowData={{1: data.result}}
                                 cols={layout.elements}
                                 tabid={1}
@@ -120,39 +112,11 @@ class DocList extends Component {
                                 readonly={true}
                                 keyProperty="id"
                                 onDoubleClick={(id) => {dispatch(push("/window/"+windowType+"/"+id))}}
+                                size={data.size}
+                                pageLength={20}
+                                handleChangePage={this.handleChangePage}
+                                page={page}
                             />
-                        </div>
-                        <div className="pagination-row">
-                            <div>
-                                <div>No items selected</div>
-                                <div className="pagination-link pointer">Select all on this page</div>
-                            </div>
-
-                            <div className="items-row-2 pagination-part">
-                                <div>
-                                    <div>Sorting by <b>DocNo</b> (1163-1200)</div>
-                                    <div>Total items {data.size}</div>
-                                </div>
-                                <div>
-                                    <nav>
-                                        <ul className="pagination pointer">
-                                            <li className="page-item">
-                                                <a className="page-link" onClick={() => this.handleChangePage("down")}>
-                                                    <span>&laquo;</span>
-                                                </a>
-                                            </li>
-
-                                            {pagination}
-
-                                            <li className={"page-item "}>
-                                                <a className="page-link" onClick={() => this.handleChangePage("up")}>
-                                                    <span>&raquo;</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
