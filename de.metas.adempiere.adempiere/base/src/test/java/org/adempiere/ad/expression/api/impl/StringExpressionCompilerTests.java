@@ -112,10 +112,8 @@ public class StringExpressionCompilerTests
 	public void test_compileStringExpression_WithNoParameters()
 	{
 		final String expressionStr = "C_BPartner_Location.C_BPartner_ID=bp.C_BPartner_ID and no parameters";
-		final IStringExpression expression = compiler.compile(expressionStr);
+		final ConstantStringExpression expression = (ConstantStringExpression)compiler.compile(expressionStr);
 		Assert.assertEquals(expressionStr, expression.getFormatedExpressionString());
-		Assert.assertEquals("Expression '" + expression + "' shall have only one chunk", 1, expression.getExpressionChunks().size());
-		Assert.assertEquals("Expression's first chunk shall be the entire string", expressionStr, expression.getExpressionChunks().get(0));
 	}
 
 	@Test

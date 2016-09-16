@@ -407,7 +407,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		@Override
 		public V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 		{
-			final String resultStr = StringExpressionEvaluator.instance.evaluate(ctx, stringExpression, onVariableNotFound);
+			final String resultStr = stringExpression.evaluate(ctx, onVariableNotFound);
 			if (stringExpression.isNoResult(resultStr))
 			{
 				if (onVariableNotFound == OnVariableNotFound.ReturnNoResult)                            // i.e. !ignoreUnparsable

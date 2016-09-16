@@ -199,9 +199,9 @@ import de.metas.autocomplete.model.I_AD_Table;
 			}
 
 			// Full generated identifier search
-			if (!Check.isEmpty(lookupInfo.getDisplayColumnSQL(), true))
+			if (!Check.isEmpty(lookupInfo.getDisplayColumnSqlAsString(), true))
 			{
-				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSQL()) + ")"
+				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSqlAsString()) + ")"
 						+ " LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ")");
 				paramsTemplate.add(VLookupAutoCompleterValidationRule.SEARCHSQL_PLACEHOLDER);
 			}
@@ -278,7 +278,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 	{
 		final String searchSQL = getSearchStringSQL(searchInput, caretPosition);
 
-		final String sqlSelect = lookupInfo.getSelectSqlPart();
+		final String sqlSelect = lookupInfo.getSelectSqlPartAsString();
 		if (Check.isEmpty(sqlSelect, true))
 		{
 			log.warn("Empty SELECT SQL found for: " + lookupInfo);

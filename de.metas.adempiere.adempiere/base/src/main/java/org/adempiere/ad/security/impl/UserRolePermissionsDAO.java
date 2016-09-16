@@ -155,28 +155,22 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public IUserRolePermissions retrieveUserRolePermissions(final int adRoleId, final int adUserId, final int adClientId, final Date date)
 	{
-		// Make sure we are we are caching only on day level, else would make no sense,
-		// and performance penalty would be quite big
-		// (i.e. retrieve and load and aggregate the whole shit everything we need to check something in permissions)
-		final Date dateDay = UserRolePermissionsKey.normalizeDate(date);
-		if (date == null || date.getTime() != dateDay.getTime())
-		{
-			logger.warn("For performance purpose, make sure you providing a date which is truncated on day level: {}", date);
-		}
-
-		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateDay);
+		final long dateMillis = UserRolePermissionsKey.normalizeDate(date);
+		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateMillis);
 	}
 
 	@Override
 	public IUserRolePermissions retrieveUserRolePermissions(final UserRolePermissionsKey key)
 	{
 		Check.assumeNotNull(key, "Parameter key is not null");
-		return retrieveUserRolePermissionsCached(key.getAD_Role_ID(), key.getAD_User_ID(), key.getAD_Client_ID(), key.getDate());
+		return retrieveUserRolePermissionsCached(key.getAD_Role_ID(), key.getAD_User_ID(), key.getAD_Client_ID(), key.getDateMillis());
 	}
 
 	@Cached(cacheName = I_AD_Role.Table_Name + "#AggregatedRolePermissions", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public IUserRolePermissions retrieveUserRolePermissionsCached(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	public IUserRolePermissions retrieveUserRolePermissionsCached(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
+		final Date date = new Date(dateMillis);
+		
 		try
 		{
 			final IRolesTreeNode rootRole = Services.get(IRoleDAO.class).retrieveRolesTree(adRoleId, adUserId, date);

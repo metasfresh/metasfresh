@@ -1209,6 +1209,12 @@ public final class Env
 	{
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
 	}
+	
+	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+	}
 
 
 	public static void resetUserRolePermissions()

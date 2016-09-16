@@ -3,10 +3,13 @@ package org.adempiere.ad.expression.api.impl;
 import java.util.List;
 import java.util.Objects;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
@@ -46,7 +49,6 @@ import com.google.common.collect.ImmutableList;
 	private final CtxName parameter;
 
 	private final List<String> parameters;
-	private final List<Object> expressionChunks;
 
 	/* package */ SingleParameterStringExpression(final String expressionStr, final CtxName parameter)
 	{
@@ -59,7 +61,6 @@ import com.google.common.collect.ImmutableList;
 		this.parameter = parameter;
 
 		parameters = ImmutableList.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
-		expressionChunks = ImmutableList.of(parameter);
 	}
 
 	@Override
@@ -102,7 +103,7 @@ import com.google.common.collect.ImmutableList;
 	@Override
 	public String getFormatedExpressionString()
 	{
-		return expressionStr; // expressionStr is good enough in this case
+		return parameter.toStringWithMarkers();
 	}
 
 	@Override
@@ -112,8 +113,36 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public List<Object> getExpressionChunks()
+	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
-		return expressionChunks;
+		try
+		{
+			return StringExpressionsHelper.evaluateParam(parameter, ctx, onVariableNotFound);
+		}
+		catch (final Exception e)
+		{
+			throw ExpressionEvaluationException.wrapIfNeeded(e)
+					.addExpression(this);
+		}
+	}
+
+	@Override
+	public IStringExpression resolvePartial(final Evaluatee ctx) throws ExpressionEvaluationException
+	{
+		try
+		{
+			final String value = StringExpressionsHelper.evaluateParam(parameter, ctx, OnVariableNotFound.ReturnNoResult);
+			if (value == null || value == EMPTY_RESULT)
+			{
+				return this;
+			}
+
+			return ConstantStringExpression.of(value);
+		}
+		catch (final Exception e)
+		{
+			throw ExpressionEvaluationException.wrapIfNeeded(e)
+					.addExpression(this);
+		}
 	}
 }

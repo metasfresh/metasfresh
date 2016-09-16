@@ -444,9 +444,9 @@ public final class Evaluatees
 			{
 				return null;
 			}
-			
+
 			final Object valueObj = supplier.get();
-			
+
 			@SuppressWarnings("unchecked")
 			T valueConv = (T)valueObj;
 			return valueConv;
@@ -491,15 +491,22 @@ public final class Evaluatees
 			{
 				return null;
 			}
-			
+
 			final Object valueObj = supplier.get();
-			
+
 			@SuppressWarnings("unchecked")
 			T valueConv = (T)valueObj;
 			return valueConv;
 		}
 	}
 
+	/**
+	 * Wraps given <code>evaluatee</code> but it will return <code>null</code> for the <code>excludeVariableName</code>.
+	 * 
+	 * @param evaluatee
+	 * @param excludeVariableName
+	 * @return
+	 */
 	public static final Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
 	{
 		return new ExcludingVariablesEvaluatee(evaluatee, excludeVariableName);

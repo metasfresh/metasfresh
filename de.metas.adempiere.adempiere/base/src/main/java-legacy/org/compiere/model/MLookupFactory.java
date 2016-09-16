@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,6 +37,7 @@ import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.TranslatableParameterizedString;
@@ -434,18 +436,13 @@ public class MLookupFactory
 	{
 		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
 
-		final String TableName = tableRefInfo.getTableName();
-		final String KeyColumn = tableRefInfo.getKeyColumn();
-
-		final String keyColumnFQ = TableName + "." + KeyColumn;
-
-		// try cache
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
-		if (s_cacheRefTable.containsKey(cacheKey))
-		{
-			return s_cacheRefTable.get(cacheKey).cloneIt();
-		}
-
+		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, ()->buildLookupInfo(windowNo, tableRefInfo));
+		return lookupInfo == null ? null : lookupInfo.cloneIt();
+	}
+	
+	private static final MLookupInfo buildLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
+	{
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
 		if (lookupDisplayInfo == null)
 		{
@@ -461,27 +458,32 @@ public class MLookupFactory
 			return null;
 		}
 
+		final String TableName = tableRefInfo.getTableName();
+		final String KeyColumn = tableRefInfo.getKeyColumn();
+
+		final String keyColumnFQ = TableName + "." + KeyColumn;
+
 		//
 		// Display Column SQL
-		final StringBuilder displayColumnSQL_BaseLang = new StringBuilder().append("concat_ws('_'");
-		final StringBuilder displayColumnSQL_Trl = new StringBuilder().append("concat_ws('_'");
-
+		final List<String> displayColumnSqlList_BaseLang = new ArrayList<>(displayColumns.size());
+		final List<String> displayColumnSqlList_Trl = new ArrayList<>(displayColumns.size());
 		for (final ILookupDisplayColumn ldc : displayColumns)
 		{
-			final String ldc_displayColumnSQL_BaseLang = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_BASE_LANGAUGE);
-			if (!Check.isEmpty(ldc_displayColumnSQL_BaseLang, true))
+			final String ldc_displayColumnSql_BaseLang = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_BASE_LANGAUGE);
+			if (!Check.isEmpty(ldc_displayColumnSql_BaseLang, true))
 			{
-				displayColumnSQL_BaseLang.append(", ").append(ldc_displayColumnSQL_BaseLang);
+				displayColumnSqlList_BaseLang.add(ldc_displayColumnSql_BaseLang);
 			}
 
-			final String ldc_displayColumnSQL_Trl = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_TRANSLATION_LANGUAGE);
-			if (!Check.isEmpty(ldc_displayColumnSQL_Trl, true))
+			final String ldc_displayColumnSql_Trl = buildDisplayColumnSql(ldc, TableName, LanguageInfo.USE_TRANSLATION_LANGUAGE);
+			if (!Check.isEmpty(ldc_displayColumnSql_Trl, true))
 			{
-				displayColumnSQL_Trl.append(", ").append(ldc_displayColumnSQL_Trl);
+				displayColumnSqlList_Trl.add(ldc_displayColumnSql_Trl);
 			}
 		}
-		displayColumnSQL_BaseLang.append(")");
-		displayColumnSQL_Trl.append(")");
+		//
+		final String displayColumnSQL_BaseLang = joinDisplayColumnSqls(displayColumnSqlList_BaseLang, keyColumnFQ);
+		final String displayColumnSQL_Trl = joinDisplayColumnSqls(displayColumnSqlList_Trl, keyColumnFQ);
 
 		//
 		// FROM SQL
@@ -527,14 +529,14 @@ public class MLookupFactory
 		// Where Clause
 		//
 		// SQL Where Clause
-		final String sqlWhereClause;
+		final String sqlWhereClauseStatic;
 		final String sqlWhereClauseDynamic;
 		if (!Check.isEmpty(tableRefInfo.getWhereClause(), true))
 		{
 			final String whereClause = tableRefInfo.getWhereClause();
 			if (whereClause.indexOf('@') != -1)
 			{
-				sqlWhereClause = null;
+				sqlWhereClauseStatic = null;
 				sqlWhereClauseDynamic = whereClause.trim();
 
 				if (Services.get(IDeveloperModeBL.class).isEnabled())
@@ -552,23 +554,23 @@ public class MLookupFactory
 				{
 					s_log.error("getLookupInfo: WHERE should be fully qualified: {} \n tableRefInfo={}", whereClause, tableRefInfo);
 				}
-				sqlWhereClause = whereClause;
+				sqlWhereClauseStatic = whereClause;
 				sqlWhereClauseDynamic = null;
 			}
 		}
 		else
 		{
-			sqlWhereClause = null;
+			sqlWhereClauseStatic = null;
 			sqlWhereClauseDynamic = null;
 		}
 
 		//
 		// Zoom Query
 		final MQuery zoomQuery;
-		if (sqlWhereClause != null)
+		if (sqlWhereClauseStatic != null)
 		{
 			zoomQuery = new MQuery(TableName);
-			zoomQuery.addRestriction(sqlWhereClause);
+			zoomQuery.addRestriction(sqlWhereClauseStatic);
 		}
 		else
 		{
@@ -598,10 +600,10 @@ public class MLookupFactory
 		// Final SQL
 		final StringBuilder sqlQueryFinal_BaseLang = new StringBuilder(sqlSelect_BaseLang);
 		final StringBuilder sqlQueryFinal_Trl = new StringBuilder(sqlSelect_Trl);
-		if (!Check.isEmpty(sqlWhereClause, true))
+		if (!Check.isEmpty(sqlWhereClauseStatic, true))
 		{
-			sqlQueryFinal_BaseLang.append(" WHERE ").append(sqlWhereClause);
-			sqlQueryFinal_Trl.append(" WHERE ").append(sqlWhereClause);
+			sqlQueryFinal_BaseLang.append(" WHERE ").append(sqlWhereClauseStatic);
+			sqlQueryFinal_Trl.append(" WHERE ").append(sqlWhereClauseStatic);
 		}
 		sqlQueryFinal_BaseLang.append(" ORDER BY ").append(sqlOrderBy);
 		sqlQueryFinal_Trl.append(" ORDER BY ").append(sqlOrderBy);
@@ -639,16 +641,36 @@ public class MLookupFactory
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang.toString(), displayColumnSQL_Trl.toString());
 		lookupInfo.setSelectSqlPart(sqlSelect_BaseLang.toString(), sqlSelect_Trl.toString());
 		lookupInfo.setFromSqlPart(sqlFrom_BaseLang.toString(), sqlFrom_Trl.toString());
-		lookupInfo.setWhereClauseSqlPart(sqlWhereClause);
+		lookupInfo.setWhereClauseSqlPart(sqlWhereClauseStatic);
 		lookupInfo.setWhereClauseDynamicSqlPart(sqlWhereClauseDynamic);
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 
-		s_cacheRefTable.put(cacheKey, lookupInfo.cloneIt());
-
 		return lookupInfo;
-	}	// getLookupInfo
+	}
+	
+	private static String joinDisplayColumnSqls(final List<String> displayColumnSqlList, final String keyColumnFQ)
+	{
+		if (displayColumnSqlList.isEmpty())
+		{
+			final String result = "<" + keyColumnFQ + ">";
+			s_log.warn("No display columns found. Using: {}", result);
+			return result;
+		}
+		else if (displayColumnSqlList.size() == 1)
+		{
+			return displayColumnSqlList.get(0);
+		}
+		else
+		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append("concat_ws('_', ");
+			Joiner.on(", ").skipNulls().appendTo(sb, displayColumnSqlList);
+			sb.append(")");
+			return sb.toString();
+		}
+	}
 
 	private static String buildDisplayColumnSql(final ILookupDisplayColumn ldc, final String TableName, final LanguageInfo languageInfo)
 	{
