@@ -40,15 +40,17 @@ class Table extends Component {
         }))
     }
 
-    selectProduct = (id, callback) => {
+    selectProduct = (id, idFocused, idFocusedDown) => {
         this.setState(Object.assign({}, this.state, {
             selected: this.state.selected.concat([id])
-        }),
-        ()=>{
-            if (callback) {
-                document.getElementsByClassName('row-selected')[0].children[callback].focus();
-                console.log(callback);
+        }), ()=> {
+            if(idFocused){
+                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
             }
+            if(idFocusedDown){
+                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+            }
+
         })
     }
 
@@ -58,10 +60,19 @@ class Table extends Component {
         }))
     }
 
-    selectOneProduct = (id) => {
+    selectOneProduct = (id, idFocused, idFocusedDown) => {
         this.setState(Object.assign({}, this.state, {
             selected: [id]
-        }))
+        }), ()=> {
+            if(idFocused){
+                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+            }
+            if(idFocusedDown){
+                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+            }
+
+        })
+
     }
 
     deselectProduct = (id) => {
@@ -70,15 +81,10 @@ class Table extends Component {
         }))
     }
 
-    deselectAllProducts = (callback, options, secondcallback) => {
+    deselectAllProducts = () => {
         this.setState(Object.assign({}, this.state, {
             selected: []
-        }),
-        ()=>{
-            if(typeof callback === "function"){
-                callback(options,secondcallback);
-            }
-        })
+        }))
      }
 
 
@@ -99,6 +105,11 @@ class Table extends Component {
         let nodeList = Array.prototype.slice.call( document.activeElement.parentElement.children);
         let idActive = nodeList.indexOf(document.activeElement);
 
+        let idFocused = null;
+        if(idActive > -1) {
+            idFocused = idActive;
+        }
+
 
         switch(e.key) {
             case "ArrowDown":
@@ -109,17 +120,12 @@ class Table extends Component {
                 if(actualId < Object.keys(rowData[tabid]).length-1 ){
                     let newId = actualId+1;
                     // this.state.selected = [Object.keys(rowData[tabid])[newId]];
-                    if(!selectRange) {
-                        this.deselectAllProducts();
-                    }
 
-                    let t = this;
-                    setTimeout(function(){
-                        t.selectProduct(Object.keys(rowData[tabid])[newId]);
-                        if(idActive > -1) {
-                            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idActive].focus();
-                        }
-                    }, 1);
+                    if(!selectRange) {
+                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                    } else {
+                        this.selectProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                    }
                 }
                 break;
             case "ArrowUp":
@@ -131,29 +137,11 @@ class Table extends Component {
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        let callback = null;
-                        if(idActive > -1) {
-                            // callback = document.getElementsByClassName('row-selected')[0].children[idActive].focus();
-                            callback = idActive;
-                        }
-                        this.deselectAllProducts(this.selectProduct, Object.keys(rowData[tabid])[newId], callback);
-                        // if(idActive > -1) {
-                        //     document.getElementsByClassName('row-selected')[0].children[idActive].focus();
-                        // }
-                    } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId]);
-                        if(idActive > -1) {
-                            document.getElementsByClassName('row-selected')[0].children[idActive].focus();
-                        }
-                    }
+                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], idFocused);
 
-                    // let t = this;
-                    // setTimeout(function(){
-                    //     t.selectProduct(Object.keys(rowData[tabid])[newId]);
-                    //     if(idActive > -1) {
-                    //         document.getElementsByClassName('row-selected')[0].children[idActive].focus();
-                    //     }
-                    // }, 1);
+                    } else {
+                        this.selectProduct(Object.keys(rowData[tabid])[newId], idFocused);
+                    }
                 }
                 break;
             case "ArrowLeft":
@@ -269,7 +257,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -277,20 +265,18 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
-                const index = keyProperty ? keyProperty : "rowId";
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
                         key={i}
-                        rowId={item[key][index]}
+                        rowId={item[key].rowId}
                         tabId={tabid}
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key][index]) > -1}
-                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
-                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
+                        isSelected={selected.indexOf(item[key].rowId) > -1}
+                        onMouseDown={(e) => this.handleClick(e, item[key].rowId)}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
@@ -342,13 +328,7 @@ class Table extends Component {
                     </div>}
 
                     <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table
-                            className={
-                                "table table-bordered-vertically table-striped " +
-                                (readonly ? "table-read-only" : "")
-                            }
-                            onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
-                        >
+                        <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>
                             <thead>
                                 <TableHeader cols={cols} />
                             </thead>
