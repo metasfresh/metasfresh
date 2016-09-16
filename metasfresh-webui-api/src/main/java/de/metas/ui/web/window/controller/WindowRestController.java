@@ -137,7 +137,7 @@ public class WindowRestController implements IWindowRestController
 
 		if (Strings.isNullOrEmpty(detailId))
 		{
-			return JSONDocumentLayout.of(layout, jsonFilteringOpts);
+			return JSONDocumentLayout.ofHeaderLayout(layout, jsonFilteringOpts);
 		}
 		else
 		{

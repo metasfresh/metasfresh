@@ -92,6 +92,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
 			layoutBuilder.setGridView(mainTabFactory.layoutDetail());
+			layoutBuilder.setAdvancedView(mainTabFactory.layoutAdvancedView());
 			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
 			layoutBuilder.addFilters(mainTabFactory.documentFilters());
 

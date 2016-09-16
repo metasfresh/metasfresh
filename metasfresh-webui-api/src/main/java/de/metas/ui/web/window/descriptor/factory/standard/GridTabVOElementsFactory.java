@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
@@ -312,10 +314,10 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
 				final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
 				documentField_InternalVirtual(
-						SpecialFieldsCollector.COLUMNNAME_DocumentSummary,   // fieldName
-						DocumentFieldWidgetType.Text,   // widgetType
-						String.class,   // valueType
-						true,    // publicField
+						SpecialFieldsCollector.COLUMNNAME_DocumentSummary,             // fieldName
+						DocumentFieldWidgetType.Text,             // widgetType
+						String.class,             // valueType
+						true,              // publicField
 						valueProvider // valueProvider
 				);
 			}
@@ -454,7 +456,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 			return null;
 		}
 
-		LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
+		final LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
 
 		//
 		// UI main field
@@ -563,6 +565,16 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 			return null;
 		}
 
+		final List<I_AD_UI_Section> uiSections = getUISections();
+		final Stream<Builder> layoutElements = uiSections.stream()
+				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
+				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
+				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
+				.filter(uiElement -> uiElement.isDisplayedGrid())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
+				.map(uiElement -> layoutElement(uiElement).setGridElement())
+				.filter(uiElement -> uiElement != null);
+
 		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(getDetailId())
 				.setCaption(detailTab.getName())
@@ -572,23 +584,53 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.addFilters(documentFilters())
-				.addElements(layoutElementsGridView());
+				.addElements(layoutElements);
 
 		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
 		return layoutDetail;
 	}
 
-	private Stream<DocumentLayoutElementDescriptor.Builder> layoutElementsGridView()
+	/**
+	 * Build the layout for advanced view (for header documents).
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
+	 */
+	public DocumentLayoutDetailDescriptor.Builder layoutAdvancedView()
 	{
+		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
+		final GridTabVO gridTabVO = getGridTabVO();
+		logger.trace("Generating advanced view layout for {}", gridTabVO);
+
+		// If the detail is never displayed then don't add it to layout
+		final ILogicExpression tabDisplayLogic = getTabDisplayLogic();
+		if (tabDisplayLogic.isConstantFalse())
+		{
+			logger.trace("Skip adding advanced view layout because it's never displayed: {}, tabDisplayLogic={}", gridTabVO, tabDisplayLogic);
+			return null;
+		}
+
 		final List<I_AD_UI_Section> uiSections = getUISections();
-		return uiSections.stream()
+		final Stream<Builder> layoutElements = uiSections.stream()
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
 				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
-				.filter(uiElement -> uiElement.isDisplayedGrid())
-				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNoGrid() - uiElement2.getSeqNoGrid())
-				.map(uiElement -> layoutElement(uiElement).setGridElement())
+				.filter(uiElement -> uiElement.isDisplayed())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo))
+				.map(uiElement -> layoutElement(uiElement).setNotGridElement())
 				.filter(uiElement -> uiElement != null);
+
+		final DocumentLayoutDetailDescriptor.Builder advancedViewLayout = DocumentLayoutDetailDescriptor.builder()
+				.setDetailId(getDetailId())
+				.setCaption(gridTabVO.getName())
+				.setCaptionTrls(gridTabVO.getNameTrls())
+				.setDescription(gridTabVO.getDescription())
+				.setDescriptionTrls(gridTabVO.getDescriptionTrls())
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				// .addFilters(documentFilters()) // no filters are needed here
+				.addElements(layoutElements);
+
+		return advancedViewLayout;
 	}
 
 	public DocumentEntityDescriptor.Builder documentEntity()
@@ -1486,7 +1528,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
-				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNo_SideList() - uiElement2.getSeqNo_SideList())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);

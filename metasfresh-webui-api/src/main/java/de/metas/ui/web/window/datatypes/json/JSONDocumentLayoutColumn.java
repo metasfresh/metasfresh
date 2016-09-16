@@ -54,11 +54,15 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	{
 		return new JSONDocumentLayoutColumn(column, jsonFilteringOpts);
 	}
+	
+	static JSONDocumentLayoutColumn oneColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		return new JSONDocumentLayoutColumn(detailLayout, jsonFilteringOpts);
+	}
 
 	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
 	{
-		final JSONDocumentLayoutColumn column = new JSONDocumentLayoutColumn(detailLayout, jsonFilteringOpts);
-		return ImmutableList.of(column);
+		return ImmutableList.of(oneColumn(detailLayout, jsonFilteringOpts));
 	}
 
 	static List<JSONDocumentLayoutColumn> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
@@ -67,9 +71,17 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return ImmutableList.of(column);
 	}
 
+	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
+
 	@JsonProperty("elementGroups")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementGroup> elementGroups;
+	
+	private JSONDocumentLayoutColumn()
+	{
+		super();
+		this.elementGroups = ImmutableList.of();
+	}
 
 	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONFilteringOptions jsonFilteringOpts)
 	{

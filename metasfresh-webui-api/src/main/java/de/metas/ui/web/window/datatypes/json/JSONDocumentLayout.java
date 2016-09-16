@@ -46,7 +46,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {
-	public static final JSONDocumentLayout of(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return new JSONDocumentLayout(layout, jsonFilteringOpts);
 	}
@@ -55,12 +55,6 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return new JSONDocumentLayout(adWindowId, detailLayout, jsonFilteringOpts);
 	}
-
-//	public static final JSONDocumentLayout ofSideListLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters,
-//			final JSONFilteringOptions jsonFilteringOpts)
-//	{
-//		return new JSONDocumentLayout(adWindowId, sideListLayout, filters, jsonFilteringOpts);
-//	}
 
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
@@ -105,6 +99,12 @@ public final class JSONDocumentLayout implements Serializable
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
+	/**
+	 * Header layout constructor
+	 * 
+	 * @param layout
+	 * @param jsonOpts
+	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
 	{
 		super();
@@ -113,8 +113,19 @@ public final class JSONDocumentLayout implements Serializable
 		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonOpts);
 		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
-		sections = JSONDocumentLayoutSection.ofList(layout.getSections(), jsonOpts);
 
+		if (jsonOpts.isShowAdvancedFields())
+		{
+			final DocumentLayoutDetailDescriptor advancedViewLayout = layout.getAdvancedView();
+			sections = JSONDocumentLayoutSection.ofAdvancedView(advancedViewLayout, jsonOpts);
+		}
+		else
+		{
+			sections = JSONDocumentLayoutSection.ofSectionsList(layout.getSections(), jsonOpts);
+		}
+
+		//
+		// Included tabs
 		if (jsonOpts.isShowAdvancedFields())
 		{
 			tabs = ImmutableList.of();
@@ -166,38 +177,6 @@ public final class JSONDocumentLayout implements Serializable
 			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
 		}
 	}
-
-//	/**
-//	 * From side-list layout constructor.
-//	 *
-//	 * @param adWindowId
-//	 * @param sideListLayout
-//	 * @param jsonFilteringOpts
-//	 */
-//	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters,
-//			final JSONFilteringOptions jsonFilteringOpts)
-//	{
-//		super();
-//
-//		final String adLanguage = jsonFilteringOpts.getAD_Language();
-//
-//		type = String.valueOf(adWindowId);
-//		tabid = null;
-//		documentNoElement = null;
-//		documentSummaryElement = null;
-//		docActionElement = null;
-//		sections = JSONDocumentLayoutSection.ofSideListLayout(sideListLayout, jsonFilteringOpts);
-//		tabs = ImmutableList.of();
-//		this.filters = JSONDocumentQueryFilterDescriptor.ofList(filters, adLanguage);
-//
-//		emptyResultText = sideListLayout.getEmptyResultText(adLanguage);
-//		emptyResultHint = sideListLayout.getEmptyResultHint(adLanguage);
-//
-//		if (WindowConstants.isProtocolDebugging())
-//		{
-//			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
-//		}
-//	}
 
 	@JsonCreator
 	private JSONDocumentLayout(

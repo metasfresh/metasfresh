@@ -43,7 +43,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutSection implements Serializable
 {
-	static List<JSONDocumentLayoutSection> ofList(final List<DocumentLayoutSectionDescriptor> sections, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return sections.stream()
 				.map(section -> of(section, jsonFilteringOpts))
@@ -64,6 +64,23 @@ public final class JSONDocumentLayoutSection implements Serializable
 	static List<JSONDocumentLayoutSection> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(sideListLayout, jsonFilteringOpts);
+		return ImmutableList.of(section);
+	}
+
+	/**
+	 * Build the layout sections for advanced view.
+	 *
+	 * @param advancedViewLayout
+	 * @param jsonFilteringOpts
+	 *
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
+	 */
+	static List<JSONDocumentLayoutSection> ofAdvancedView(final DocumentLayoutDetailDescriptor advancedViewLayout, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(
+				JSONDocumentLayoutColumn.oneColumn(advancedViewLayout, jsonFilteringOpts) //
+		);
+
 		return ImmutableList.of(section);
 	}
 
@@ -106,6 +123,12 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		this.columns = columns == null ? ImmutableList.of() : ImmutableList.copyOf(columns);
+	}
+
+	private JSONDocumentLayoutSection(final JSONDocumentLayoutColumn... columns)
+	{
+		super();
+		this.columns = ImmutableList.copyOf(columns);
 	}
 
 	@Override

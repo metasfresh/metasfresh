@@ -57,7 +57,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private Optional<Integer> precision;
-	
+
 	private final LayoutType layoutType;
 	private final boolean gridElement;
 	private final boolean advancedField;
@@ -129,7 +129,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public Optional<Integer> getPrecision()
 	{
 		return precision;
@@ -371,10 +371,27 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return consumed;
 		}
 
+		/**
+		 * Flags this element as a "grid element".
+		 */
 		public Builder setGridElement()
 		{
 			this.gridElement = true;
 			return this;
 		}
+
+		/**
+		 * Reset the "grid element" flag.
+		 * 
+		 * NOTE: this is false by default, but the main purpose of this method is intention revealing.
+		 *
+		 * @see #setGridElement()
+		 */
+		public Builder setNotGridElement()
+		{
+			this.gridElement = false;
+			return this;
+		}
+
 	}
 }

@@ -100,7 +100,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	{
 		super();
 		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofDetailTab(detailLayout, jsonFilteringOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(detailLayout.getElements(), jsonFilteringOpts);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	{
 		super();
 		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofSideListLayout(sideListLayout, jsonFilteringOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(sideListLayout.getElements(), jsonFilteringOpts);
 	}
 
 	@Override
