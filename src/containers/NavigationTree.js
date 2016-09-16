@@ -8,7 +8,8 @@ import NavigationTreeItem from '../components/app/NavigationTreeItem';
 import {push} from 'react-router-redux';
 
 import {
-    rootRequest
+    rootRequest,
+    nodePathsRequest
  } from '../actions/MenuActions';
 
 class NavigationTree extends Component {
@@ -18,7 +19,8 @@ class NavigationTree extends Component {
             rootResults: {
               caption: "",
               children: []
-            }
+          },
+          deepNode: null
         };
     }
     renderTree = (res) => {
@@ -38,6 +40,7 @@ class NavigationTree extends Component {
                 <NavigationTreeItem
                     key={subindex}
                     handleRedirect={this.handleRedirect}
+                    handleClickOnFolder={this.handleDeeper}
                     {...subitem}
                 />
             )}
@@ -49,10 +52,31 @@ class NavigationTree extends Component {
         const {dispatch} = this.props;
         dispatch(push("/window/" + elementId));
     }
+    handleDeeper = (e, nodeId) => {
+        console.log('handleClickOnFolder');
+        const {dispatch} = this.props;
+
+        e.preventDefault();
+
+
+        dispatch(nodePathsRequest(nodeId,4)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                deepNode: response.data
+            }))
+        })
+    }
+    handleClickBack = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            deepNode: null
+        }))
+    }
+
     render() {
         const {master, connectionError, modal, breadcrumb} = this.props;
         const {nodeId, node} = this.props;
-        const {rootResults} = this.state;
+        const {rootResults, deepNode} = this.state;
 
         return (
           <div className="map-tree-wrapper">
@@ -62,9 +86,9 @@ class NavigationTree extends Component {
               {connectionError && <ErrorScreen />}
 
               <div className="container">
-                {this.renderTree(rootResults)}
-
-
+                <div className="row">
+                {this.renderTree(deepNode ? deepNode : rootResults)}
+                </div>
               </div>
 
           </div>

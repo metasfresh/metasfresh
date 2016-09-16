@@ -7,11 +7,11 @@ class NavigationTreeLastItem extends Component {
     render() {
         const {nodeId, elementId, caption, handleRedirect} = this.props;
         return (
-            <div className="nav-tree-children">
-                <span className="menu-overlay-link" onClick={e => handleRedirect(elementId)}>
-                    {caption}
-                </span>
-            </div>
+                <div className="nav-tree-children">
+                    <span className="menu-overlay-link" onClick={e => handleRedirect(elementId)}>
+                        {caption}
+                    </span>
+                </div>
         )
     }
 }

@@ -7,23 +7,26 @@ class NavigationTreeItem extends Component {
         super(props);
     }
     render() {
-        const {nodeId, elementId, caption, children, handleRedirect} = this.props;
+        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect} = this.props;
 
         return (
-            <div className="nav-tree-item">
-                <span className="nav-tree-header" >
-                    {caption}
+                <div className="col-md-4 col-lg-3">
+                    <div className="nav-tree-item">
+                        <span className="menu-overlay-header" >
+                            {caption}
+                        </span>
+                        {children && children.map((subitem, subindex) =>
+                            <MenuOverlayItem
+                                key={subindex}
+                                handleClickOnFolder={handleClickOnFolder}
+                                handleRedirect={handleRedirect}
+                                {...subitem}
+                            />
+                        )}
+                    </div>
+                </div>
 
-                </span>
-                {children && children.map((subitem, subindex) =>
-                    <NavigationTreeSubitem
-                        key={subindex}
-                        handleRedirect={handleRedirect}
-                        childArray={subitem.children}
-                        {...subitem}
-                    />
-                )}
-            </div>
+
         )
     }
 }
