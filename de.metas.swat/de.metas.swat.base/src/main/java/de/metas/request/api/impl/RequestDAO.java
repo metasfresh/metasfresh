@@ -42,7 +42,7 @@ import de.metas.request.model.I_R_Request;
 public class RequestDAO implements IRequestDAO
 {
 	public static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
-	public static final String MSG_R_Request_From_InOut_Result = "R_Request_From_InOut_Result";
+
 
 	@Override
 	public void createRequestFromInOutLine(final I_M_InOutLine line)
@@ -104,10 +104,6 @@ public class RequestDAO implements IRequestDAO
 		// summary from AD_Message
 		final String summary = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Summary);
 		request.setSummary(summary);
-
-		// result from AD_Message
-		final String result = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Result);
-		request.setResult(result);
 
 		// the sales rep will be the user in charge of the organization
 		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, orgID, ITrx.TRXNAME_None);
