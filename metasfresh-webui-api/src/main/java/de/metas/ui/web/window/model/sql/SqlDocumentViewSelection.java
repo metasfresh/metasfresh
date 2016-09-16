@@ -316,7 +316,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 								.append("\n, ").append(keyColumnNameFQ) // Record_ID
 								.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
 								.append("\n WHERE 1=1 ")
-								.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+								.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 				);
 				sqlParams.add(querySelectionUUID);
 			}
