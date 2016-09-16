@@ -51,13 +51,17 @@ this week's RC
 
 ## Features
  * FRESH-112 metasfresh web 
-   - integrate recentbackend related changes changes
- * #359 document Note not displayed on invoice #368
+   - Integrated recent backend related changes done for metasfresh REST API Implementation.
+ * #359 document Note not displayed on invoice
+   - Fixed the issue that c_doctype.documentnote was not shown properly on Jasper invoice documents.
  * #262 sales and purchase tracking
+   - Implemenation of a large Sales and purchase Tracking Report inclusing possibility to export to excel.
  * #354 Rearrange unloading fields in Sales Order Window
+   - Adjusted the validation- and display-rules in sales order window abould fields for unloading (Partner, Location).
 
 ## Fixes
  * #366 Faulty unique constraint on M_PriceList
+   - Fixed a wrong contraint in M_Pricelist, that prevented creating Product-BPartner-Price-Combination with BPartner recorded on client level.
 
 # metasfresh 4.34.33 (2016-36)
 
