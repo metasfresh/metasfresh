@@ -26,7 +26,7 @@ class TablePagination extends Component {
             <div>
                 <div className="pagination-row">
                     <div>
-                        <div>{selected.length > 0 ? selected.length + "items selected" : "No items selected"}</div>
+                        <div>{selected.length > 0 ? selected.length + " items selected" : "No items selected"}</div>
                         <div className="pagination-link pointer" onClick={handleSelectAll}>Select all on this page</div>
                     </div>
 

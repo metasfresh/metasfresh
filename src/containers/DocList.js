@@ -27,20 +27,22 @@ class DocList extends Component {
     componentDidMount = () => {
         const {dispatch, windowType} = this.props;
 
-        dispatch(viewLayoutRequest(windowType, "list")).then(response => {
+        dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
             this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
-            }))
+            }), () => {
+                dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
+                    this.setState(Object.assign({}, this.state, {
+                        data: response.data
+                    }), () => {
+                        this.getView();
+                    })
+                })
+            })
         });
 
-        dispatch(createViewRequest(windowType, "list", 20, this.state.filters)).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }), () => {
-                this.getView();
-            })
-        })
+
     }
 
     getView = () => {
@@ -91,7 +93,7 @@ class DocList extends Component {
                                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                                 onClick={() => dispatch(push('/window/' + windowType + '/new'))}
                             >
-                                <i className="meta-icon-add" /> New sales order
+                                <i className="meta-icon-add" /> New {layout.caption}
                             </button>
                             <span>Filters: </span>
                             <DatetimeRange />
