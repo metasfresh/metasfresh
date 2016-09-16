@@ -16,23 +16,27 @@ class DocList extends Component {
     constructor(props){
         super(props);
 
-        const {dispatch} = this.props;
+        const {dispatch, windowType} = this.props;
 
         this.state = {
-            page: 1
+            page: 1,
+            data: {},
+            layout: {},
+            filters: {}
         };
 
-        dispatch(viewLayoutRequest(143, "list")).then((response) => {
-            return this.setState(Object.assign({}, this.state, {
+        dispatch(viewLayoutRequest(windowType, "list")
+        ).then((response) =>
+            this.setState(Object.assign({}, this.state, {
                 layout: response.data,
                 filters: response.data.filters
             }))
-        }).then(()=>
-            dispatch(createViewRequest(143, "list", 50, [])).then((response) => {
-                return this.setState(Object.assign({}, this.state, {
-                    data: response.data
-                }))
-            })
+        ).then(()=>
+            dispatch(createViewRequest(windowType, "list", 20, []))
+        ).then((response) =>
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
         ).then(() => {
             this.getView();
         });
@@ -41,7 +45,6 @@ class DocList extends Component {
     getView = () => {
         const {data,page} = this.state;
         const {dispatch} = this.props;
-
         dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
