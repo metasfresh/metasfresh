@@ -18,26 +18,39 @@ class TableItem extends Component {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
         // let elem = e.target.getElementsByClassName('js-input-field')[0];
         // e.preventDefault();
-        this.setState({
-            edited: property
-        }, ()=>{
-          if(callback){
-            let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
 
-            if(elem){
-              elem.focus();
-            }
+        // let cellClass = document.activeElement.className;;
+        // console.log(cellDisabled);
+        if(document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
+            console.log('disabled!');
+        } else {
 
-            let disabled = document.activeElement.querySelector('.input-disabled');
-            let readonly = document.activeElement.querySelector('.input-readonly');
-            if(disabled || readonly) {
-              changeListenOnTrue();
-              this.handleEditProperty(e);
-            } else {
-              changeListenOnFalse();
+             this.setState({
+                edited: property
+            }, ()=>{
+            if(callback){
+                let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+
+                if(elem){
+                    elem.focus();
+                }
+
+                let disabled = document.activeElement.querySelector('.input-disabled');
+                let readonly = document.activeElement.querySelector('.input-readonly');
+                if(disabled || readonly) {
+                changeListenOnTrue();
+                this.handleEditProperty(e);
+                } else {
+                changeListenOnFalse();
+                }
             }
-          }
-        })
+            })
+
+
+
+        }
+
+       
     }
     handleKey = (e, property) => {
         const elem = document.activeElement;
@@ -79,7 +92,7 @@ class TableItem extends Component {
                     key={index}
                     widgetData={widgetData}
                     isEdited={edited === property}
-                    onDoubleClick={(e) => this.handleEditProperty(e,property)}
+                    onDoubleClick={(e) => this.handleEditProperty(e,property, true)}
                     onClickOutside={(e) => this.handleEditProperty(e)}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {(e) => this.handleKey(e, property)}

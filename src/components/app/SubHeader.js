@@ -19,9 +19,9 @@ class Subheader extends Component {
         this.props.dispatch(openModal("Advanced edit", windowType));
     }
     render() {
-        const { windowType } = this.props;
+        const { windowType, onClick } = this.props;
         return (
-            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
+            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")} onClick = {onClick}>
                 <div className="container">
                     <div className="row">
                         <div className="subheader-row">

@@ -226,14 +226,34 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
  */
 export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
-        dispatch(indicatorState('pending'));
+
+            let responsed = false;
+
+            dispatch(indicatorState('pending'));
+            let time = 0
+            let timeoutLoop = () => {
+                setTimeout(function(){
+                    time = 999;
+                    if(responsed){
+                        dispatch(indicatorState('saved'));
+                 
+                    } else {
+                        timeoutLoop();
+                    }
+                }, time);                
+            }    
+            timeoutLoop();
+
+        
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
+
+            responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
 
-            setTimeout(function(){
-                dispatch(indicatorState('saved'));
-            }, 1000);
+            // setTimeout(function(){
+            //     dispatch(indicatorState('saved'));
+            // }, 1000);
 
         })
     }

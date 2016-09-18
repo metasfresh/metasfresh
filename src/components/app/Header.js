@@ -35,14 +35,26 @@ class Header extends Component {
     handleOrderListToggle = () => {
         this.setState(Object.assign({}, this.state, {isOrderListShow: !this.state.isOrderListShow}));
     }
-    handleBackdropClick = () => {
-        this.setState(Object.assign({}, this.state, {isSubheaderShow: false}));
+    handleBackdropClick = (callback) => {
+        this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
     }
     handleMenuOverlay = (e, nodeId) => {
+        const {isSubheaderShow} = this.state;
         e && e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
-            menuOverlay: nodeId
-        }));
+
+        let toggelBreadcrumb = () => {
+            this.setState(Object.assign({}, this.state, {
+                menuOverlay: nodeId
+            }));
+        }
+        if(isSubheaderShow){
+            this.handleBackdropClick(toggelBreadcrumb);
+        }else{
+            toggelBreadcrumb();
+        }
+       
+        console.log(isSubheaderShow)
+      
     }
     componentDidMount() {
         document.addEventListener('scroll', this.handleScroll);
@@ -110,7 +122,6 @@ class Header extends Component {
         )
     }
 
-
     render() {
         const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb} = this.props;
         const {isSubheaderShow, isOrderListShow, indicator, menuOverlay} = this.state;
@@ -159,7 +170,7 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader open={isSubheaderShow} windowType={windowType} />
+                <Subheader open={isSubheaderShow} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
                 <OrderList open={isOrderListShow} />
 
             </div>
