@@ -8,6 +8,7 @@ import {
 } from '../../actions/WindowActions';
 
 import TableFilter from './TableFilter';
+import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
@@ -38,6 +39,18 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: false
         }))
+    }
+
+    selectAll = () => {
+        const {rowData, tabid, keyProperty} = this.props;
+        const property = keyProperty ? keyProperty : "rowId";
+        const toSelect = rowData[tabid].map((item, index) => item[property]);
+        this.selectRangeProduct(toSelect);
+    }
+
+    getSelectedItems = () => {
+        const {selected} = this.state;
+        return selected;
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
@@ -301,47 +314,67 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid, readonly} = this.props;
-        const {x,y,contextMenu,selected, listenOnKeys} = this.state;
+        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page} = this.props;
+        const {x, y, contextMenu, selected, listenOnKeys} = this.state;
 
         return (
-            <div className="row">
-                <div className="col-xs-12">
-                    <TableContextMenu
-                        x={contextMenu.x}
-                        y={contextMenu.y}
-                        isDisplayed={contextMenu.open}
-                        blur={() => this.closeContextMenu()}
-                        docId={docId}
-                        type={type}
-                        tabId={tabid}
-                        selected={selected}
-                        deselect={() => this.deselectAllProducts()}
-                    />
-                    {!readonly && <div className="row">
-                        <div className="col-xs-12">
-                            <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
-                            <div className="pull-xs-right">
-                                {/*<TableFilter />*/}
+            <div>
+                <div className="row">
+                    <div className="col-xs-12">
+                        <TableContextMenu
+                            x={contextMenu.x}
+                            y={contextMenu.y}
+                            isDisplayed={contextMenu.open}
+                            blur={() => this.closeContextMenu()}
+                            docId={docId}
+                            type={type}
+                            tabId={tabid}
+                            selected={selected}
+                            deselect={() => this.deselectAllProducts()}
+                        />
+                        {!readonly && <div className="row">
+                            <div className="col-xs-12">
+                                <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
+                                <div className="pull-xs-right">
+                                    {/*<TableFilter />*/}
+                                </div>
                             </div>
+                        </div>}
+
+                        <div className="panel panel-primary panel-bordered panel-bordered-force">
+                            <table
+                                className={
+                                    "table table-bordered-vertically table-striped " +
+                                    (readonly ? "table-read-only" : "")
+                                }
+                                onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
+                            >
+                                <thead>
+                                    <TableHeader cols={cols} />
+                                </thead>
+                                <tbody>
+                                    {this.renderTableBody()}
+                                </tbody>
+                                <tfoot>
+                                </tfoot>
+                            </table>
+
+                            {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                         </div>
-                    </div>}
-
-                    <div className="panel panel-primary panel-bordered panel-bordered-force">
-                        <table className="table table-bordered-vertically table-striped"  onKeyDown = { listenOnKeys ? (e) => this.handleKeyDown(e) : ''}>
-                            <thead>
-                                <TableHeader cols={cols} />
-                            </thead>
-                            <tbody>
-                                {this.renderTableBody()}
-                            </tbody>
-                            <tfoot>
-                            </tfoot>
-                        </table>
-
-                        {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
                 </div>
+                {page && pageLength && <div className="row">
+                    <div className="col-xs-12">
+                        <TablePagination
+                            handleChangePage={handleChangePage}
+                            handleSelectAll={this.selectAll}
+                            pageLength={pageLength}
+                            size={size}
+                            selected={selected}
+                            page={page}
+                        />
+                    </div>
+                </div>}
             </div>
         )
     }
@@ -351,6 +384,6 @@ Table.propTypes = {
     dispatch: PropTypes.func.isRequired
 }
 
-Table = connect()(onClickOutside(Table))
+Table = connect(false, false, false, { withRef: true })(onClickOutside(Table))
 
 export default Table
