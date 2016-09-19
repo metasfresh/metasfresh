@@ -143,11 +143,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
-	boolean isLookupWithNumericKey();
+	LookupValuesList getLookupValues();
 
-	LookupValuesList getLookupValues(Document document);
-
-	LookupValuesList getLookupValuesForQuery(Document document, String query);
+	LookupValuesList getLookupValuesForQuery(String query);
 
 	ICalloutField asCalloutField();
 

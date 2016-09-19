@@ -1,7 +1,5 @@
 package de.metas.ui.web.window_old.descriptor;
 
-import java.util.Properties;
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -71,8 +69,6 @@ public class SqlLookupDescriptor
 	private SqlLookupDescriptor(final PropertyDescriptorValueType valueType, final String columnName, final int AD_Reference_Value_ID)
 	{
 		super();
-		final Properties ctx = Env.getCtx();
-		final int Column_ID = 0;
 		final boolean IsParent = false;
 		final int AD_Val_Rule_ID = -1; // TODO
 
@@ -87,12 +83,12 @@ public class SqlLookupDescriptor
 			final MLookupInfo lookupInfo;
 			if (valueType == PropertyDescriptorValueType.List)
 			{
-				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, DisplayType.List, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, DisplayType.List, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			else
 			{
 				final int displayType = ModelPropertyDescriptorValueTypeHelper.getSqlDisplayType(valueType);
-				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			
 			numericKey = lookupInfo.isNumericKey();

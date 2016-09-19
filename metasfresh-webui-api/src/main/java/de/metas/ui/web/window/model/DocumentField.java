@@ -47,6 +47,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private final DocumentFieldDescriptor descriptor;
 	private final Document _document;
 	private final LookupDataSource lookupDataSource;
+	private boolean lookupValuesStaled = true;
 
 	private transient ICalloutField _calloutField; // lazy
 
@@ -293,7 +294,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean isLookupValuesStale()
 	{
-		return lookupDataSource != null && lookupDataSource.isStaled();
+		if(lookupDataSource == null)
+		{
+			return false;
+		}
+		return lookupValuesStaled;
 	}
 
 	@Override
@@ -303,33 +308,38 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		{
 			return false;
 		}
-		return lookupDataSource.setStaled(triggeringFieldName);
+		
+		lookupValuesStaled = true;
+		logger.trace("Marked {} as staled (triggeringFieldName={})", this, triggeringFieldName);
+		
+		return true;
 	}
 
 	@Override
-	public boolean isLookupWithNumericKey()
-	{
-		return lookupDataSource != null && lookupDataSource.isNumericKey();
-	}
-
-	@Override
-	public LookupValuesList getLookupValues(final Document document)
+	public LookupValuesList getLookupValues()
 	{
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document.asEvaluatee(), LookupDataSource.DEFAULT_PageLength);
+		
+		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final LookupValuesList values = lookupDataSource.findEntities(ctx, LookupDataSource.DEFAULT_PageLength);
+		lookupValuesStaled = false;
+		return values;
 	}
 
 	@Override
-	public LookupValuesList getLookupValuesForQuery(final Document document, final String query)
+	public LookupValuesList getLookupValuesForQuery(final String query)
 	{
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document.asEvaluatee(), query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final LookupValuesList values = lookupDataSource.findEntities(ctx, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+		lookupValuesStaled = false;
+		return values;
 	}
 
 	@Override

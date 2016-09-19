@@ -9,14 +9,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
@@ -48,8 +46,6 @@ public class InMemoryLookupDataSource implements LookupDataSource
 	{
 		return new InMemoryLookupDataSource(fetcher);
 	}
-
-	private static final Logger logger = LogManager.getLogger(InMemoryLookupDataSource.class);
 
 	private final LookupDataSourceFetcher fetcher;
 
@@ -141,34 +137,6 @@ public class InMemoryLookupDataSource implements LookupDataSource
 		}
 
 		return partition.getById(idNormalized);
-	}
-
-	@Override
-	public boolean isNumericKey()
-	{
-		return fetcher.isNumericKey();
-	}
-
-	@Override
-	public boolean setStaled(final String triggeringFieldName)
-	{
-		logger.trace("Marking {} as staled (triggeringFieldName={})", this, triggeringFieldName);
-
-		cacheByPartition.asMap()
-				.keySet()
-				.stream()
-				.filter(evalCtx -> evalCtx.has_Variable(triggeringFieldName))
-				.forEach((evalCtx) -> cacheByPartition.invalidate(evalCtx));
-
-		// TODO implement staled logic
-		return true;
-	}
-
-	@Override
-	public boolean isStaled()
-	{
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override

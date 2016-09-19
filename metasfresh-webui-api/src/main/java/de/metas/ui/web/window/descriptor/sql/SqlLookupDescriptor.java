@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
@@ -8,8 +9,8 @@ import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
-import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
@@ -21,11 +22,14 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
+import groovy.transform.Immutable;
 
 /*
  * #%L
@@ -49,7 +53,8 @@ import de.metas.ui.web.window.model.sql.DocActionValidationRule;
  * #L%
  */
 
-public final class SqlLookupDescriptor
+@Immutable
+public final class SqlLookupDescriptor implements LookupDescriptor
 {
 	public static final Builder builder()
 	{
@@ -70,20 +75,19 @@ public final class SqlLookupDescriptor
 
 	private static final int WINDOWNO_Dummy = 99999;
 
-	private final boolean numericKey;
-	private final Set<String> dependsOnFieldNames;
-
 	private final String sqlTableName;
 	private final ICachedStringExpression sqlForFetchingExpression;
 	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final int entityTypeIndex;
 	private final INamePairPredicate postQueryPredicate;
 
+	private final boolean highVolume;
+	private final boolean numericKey;
+	private final Set<String> dependsOnFieldNames;
+
 	private SqlLookupDescriptor(final Builder builder)
 	{
 		super();
-		numericKey = builder.numericKey;
-		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 
 		sqlTableName = builder.sqlTableName;
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
@@ -91,8 +95,66 @@ public final class SqlLookupDescriptor
 		entityTypeIndex = builder.entityTypeIndex;
 
 		final IValidationRule validationRule = builder.validationRule;
-		this.postQueryPredicate = validationRule.getPostQueryFilter();
+		postQueryPredicate = validationRule.getPostQueryFilter();
 		Check.assumeNotNull(postQueryPredicate, "Parameter postQueryPredicate is not null");
+
+		numericKey = builder.numericKey;
+		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
+		highVolume = builder.isHighVolume();
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("tableName", sqlTableName)
+				.add("highVolume", highVolume)
+				.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(
+				sqlTableName,
+				sqlForFetchingExpression,
+				sqlForFetchingDisplayNameByIdExpression,
+				entityTypeIndex,
+				postQueryPredicate,
+				//
+				highVolume,
+				numericKey
+		// dependsOnFieldNames // not needed because it's computed
+		);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+
+		if (!getClass().equals(obj.getClass()))
+		{
+			return false;
+		}
+
+		final SqlLookupDescriptor other = (SqlLookupDescriptor)obj;
+		return Objects.equals(sqlTableName, other.sqlTableName)
+				&& Objects.equals(sqlForFetchingExpression, other.sqlForFetchingExpression)
+				&& Objects.equals(sqlForFetchingDisplayNameByIdExpression, other.sqlForFetchingDisplayNameByIdExpression)
+				&& entityTypeIndex == other.entityTypeIndex
+				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
+				&& highVolume == other.highVolume
+				&& numericKey == other.numericKey
+				// && Objects.equals(dependsOnFieldNames, other.dependsOnFieldNames) // not needed because it's computed
+				;
 	}
 
 	public boolean isNumericKey()
@@ -138,6 +200,11 @@ public final class SqlLookupDescriptor
 		return postQueryPredicate;
 	}
 
+	public boolean isHighVolume()
+	{
+		return highVolume;
+	}
+
 	public static final class Builder
 	{
 		// Parameters
@@ -166,7 +233,6 @@ public final class SqlLookupDescriptor
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
 
-			final int Column_ID = 0;
 			final boolean IsParent = false;
 
 			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
@@ -178,7 +244,7 @@ public final class SqlLookupDescriptor
 			}
 			else
 			{
-				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, Column_ID, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 
 				numericKey = lookupInfo.isNumericKey();
 				setSqlExpressions(lookupInfo);
@@ -384,6 +450,11 @@ public final class SqlLookupDescriptor
 		{
 			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 			return this;
+		}
+
+		private boolean isHighVolume()
+		{
+			return DisplayType.TableDir != displayType && DisplayType.Table != displayType && DisplayType.List != displayType && DisplayType.Button != displayType;
 		}
 	}
 }

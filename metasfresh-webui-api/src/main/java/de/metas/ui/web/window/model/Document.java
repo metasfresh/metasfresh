@@ -1074,12 +1074,12 @@ public final class Document
 
 	public LookupValuesList getFieldLookupValues(final String fieldName)
 	{
-		return getField(fieldName).getLookupValues(this);
+		return getField(fieldName).getLookupValues();
 	}
 
 	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
-		return getField(fieldName).getLookupValuesForQuery(this, query);
+		return getField(fieldName).getLookupValuesForQuery(query);
 
 	}
 

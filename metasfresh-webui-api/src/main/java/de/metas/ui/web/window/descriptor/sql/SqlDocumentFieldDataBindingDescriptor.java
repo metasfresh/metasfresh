@@ -28,10 +28,8 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentView;
-import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
-import de.metas.ui.web.window.model.lookup.InMemoryLookupDataSource;
-import de.metas.ui.web.window.model.lookup.LocallyCachedLookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
 /*
  * #%L
@@ -282,11 +280,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return encrypted;
 	}
 
-	public SqlLookupDescriptor getSqlLookupDescriptor()
-	{
-		return sqlLookupDescriptor;
-	}
-
 	public boolean isUsingDisplayColumn()
 	{
 		return usingDisplayColumn;
@@ -314,21 +307,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return null;
 		}
+		
+		return LookupDataSourceFactory.instance.getLookupDataSource(sqlLookupDescriptor);
 
-		// TODO: implement more specialized SqlLookupDataSources.
-		// * a high volume, generic one (i.e. SqlLookupDataSource)
-		// * in case there is no validation rule or the validation rule is immutable we could have an implementation which would cache the results
-
-		final GenericSqlLookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(sqlLookupDescriptor);
-
-		if ((DisplayType.TableDir == displayType || DisplayType.Table == displayType || DisplayType.List == displayType || DisplayType.Button == displayType)
-				&& sqlLookupDescriptor.getSqlForFetchingExpression().getParameters().isEmpty()
-				&& sqlLookupDescriptor.getPostQueryPredicate().getParameters().isEmpty())
-		{
-			return InMemoryLookupDataSource.of(fetcher);
-		}
-
-		return LocallyCachedLookupDataSource.of(fetcher);
 	}
 
 	@JsonIgnore

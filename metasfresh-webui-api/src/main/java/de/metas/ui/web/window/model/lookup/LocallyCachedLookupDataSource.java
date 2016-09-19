@@ -1,19 +1,16 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
@@ -45,8 +42,6 @@ public class LocallyCachedLookupDataSource implements LookupDataSource
 	{
 		return new LocallyCachedLookupDataSource(fetcher);
 	}
-
-	private static final Logger logger = LogManager.getLogger(LocallyCachedLookupDataSource.class);
 
 	private final transient LoadingCache<LookupDataSourceContext, LookupValuesList> cacheByPartition = CacheBuilder.newBuilder().build(new CacheLoader<LookupDataSourceContext, LookupValuesList>()
 	{
@@ -81,55 +76,6 @@ public class LocallyCachedLookupDataSource implements LookupDataSource
 		return MoreObjects.toStringHelper(this)
 				.addValue(fetcher)
 				.toString();
-	}
-
-	@Override
-	public boolean isNumericKey()
-	{
-		return fetcher.isNumericKey();
-	}
-
-	@Override
-	public boolean setStaled(final String triggeringFieldName)
-	{
-		logger.trace("Marking {} as staled (triggeringFieldName={})", this, triggeringFieldName);
-
-		cacheByPartition.asMap()
-				.keySet()
-				.stream()
-				.filter(evalCtx -> evalCtx.has_Variable(triggeringFieldName))
-				.forEach((evalCtx) -> cacheByPartition.invalidate(evalCtx));
-
-		// TODO implement staled logic
-		return true;
-	}
-
-	public void invalidateById(final Object idObj)
-	{
-		final Object idNormalized = LookupValue.normalizeId(idObj, fetcher.isNumericKey());
-		if (idNormalized == null)
-		{
-			return;
-		}
-
-		//
-		// We shall invalidating all partitions (and not only those which contain given key),
-		// because it might be that some of them will contain the new ID on re-query
-		cacheByPartition.invalidateAll();
-
-		cacheById.asMap()
-				.entrySet()
-				.stream()
-				.filter(evalCtxAndValues -> Objects.equals(idNormalized, evalCtxAndValues.getValue().getId()))
-				.map(evalCtxAndValues -> evalCtxAndValues.getKey())
-				.forEach((evalCtx) -> cacheById.invalidate(evalCtx));
-	}
-
-	@Override
-	public boolean isStaled()
-	{
-		// TODO implement staled logic
-		return false;
 	}
 
 	@Override
