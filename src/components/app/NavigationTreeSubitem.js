@@ -24,7 +24,6 @@ class NavigationTreeSubitem extends Component {
                 )}
 
                 </div>
-
             </div>
         )
     }
