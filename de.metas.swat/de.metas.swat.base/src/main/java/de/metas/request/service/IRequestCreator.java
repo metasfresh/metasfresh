@@ -31,11 +31,21 @@ public interface IRequestCreator extends ISingletonService
 {
 
 	/**
-	 * Create an R_Request based on a list of M_InOutLine IDs
+	 * Create an R_Request based on a list of document lines
+	 * Currently, they are created only from inout lines. Extend functionality when needed!
+	 * 
+	 * These requests will contain information taken from the lines and from their inout headers:
+	 * <li>inout
+	 * <li>product
+	 * <li>partner
+	 * <li>dateDelivered
+	 * <li>qualityNotice
+	 * <li>org
+	 * <li>linked salesrep of the org, etc.
 	 * 
 	 * @param ctx
 	 * @param inOutLineIds
 	 * @param trxName
 	 */
-	void createRequest(final Properties ctx, final List<Integer> docLineIds, final String trxName);
+	void createRequests(final Properties ctx, final List<Integer> docLineIds, final String trxName);
 }
