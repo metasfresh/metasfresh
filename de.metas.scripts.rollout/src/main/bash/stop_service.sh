@@ -5,4 +5,6 @@
 # The important thing is that our https://github.com/metasfresh/metasfresh-scripts/blob/master/infrastructure/cd/bootstrap_local.sh script can call it.
 #
 
-service metasfresh_server stop
+. ./tools.sh
+stop_metasfresh
+

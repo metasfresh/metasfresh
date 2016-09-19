@@ -195,7 +195,13 @@ start_metasfresh()
 	if [ ${SKIP_START_STOP:-false} == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		service metasfresh_server start
+				# jira issue ME-46
+                if [ "$(cat /proc/1/comm)" == "systemd" ]; then
+                        sudo /bin/systemctl start metasfresh_server.service
+                else
+                        service metasfresh_server start
+                fi
+
 	fi
 
 	trace start_metasfresh END
@@ -208,7 +214,12 @@ stop_metasfresh()
 	if [ ${SKIP_START_STOP:-false} == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		service metasfresh_server stop
+				# jira issue ME-46
+                if [ "$(cat /proc/1/comm)" == "systemd" ]; then
+                        sudo /bin/systemctl stop metasfresh_server.service
+                else
+                        service metasfresh_server stop
+                fi
 	fi
 		
 	trace stop_metasfresh END
