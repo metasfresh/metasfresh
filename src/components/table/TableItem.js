@@ -18,14 +18,8 @@ class TableItem extends Component {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
         // let elem = e.target.getElementsByClassName('js-input-field')[0];
         // e.preventDefault();
-
-        // let cellClass = document.activeElement.className;;
-        // console.log(cellDisabled);
-        if(document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
-            console.log('disabled!');
-        } else {
-
-             this.setState({
+        if(!document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
+            this.setState({
                 edited: property
             }, ()=>{
             if(callback){
@@ -45,10 +39,7 @@ class TableItem extends Component {
                 }
             }
             })
-
-
-
-        }
+        } 
 
        
     }
