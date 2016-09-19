@@ -5,12 +5,25 @@ class NavigationTreeLastItem extends Component {
         super(props);
     }
     render() {
-        const {nodeId, elementId, caption, handleRedirect} = this.props;
+        const {nodeId, elementId, caption, handleRedirect, childArray} = this.props;
         return (
                 <div className="nav-tree-children">
                     <span className="menu-overlay-link" onClick={e => handleRedirect(elementId)}>
                         {caption}
                     </span>
+
+                    <div>
+                        {childArray && childArray.map((subitem, subindex) =>
+                        <NavigationTreeLastItem
+                            key={subindex}
+                            handleRedirect={handleRedirect}
+                            childArray={subitem.children}
+                            {...subitem}
+                        />
+                        )}
+
+                    </div>
+
                 </div>
         )
     }

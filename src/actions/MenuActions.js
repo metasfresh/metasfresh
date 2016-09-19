@@ -26,7 +26,7 @@ export function queryPathsRequest(query, limit) {
 }
 
 export function rootRequest(limit) {
-    return dispatch => axios.get(config.API_URL + '/menu/root?depth=3' + (limit ? '&childrenLimit=' + limit : ""));
+    return dispatch => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function getWindowBreadcrumb(id){
