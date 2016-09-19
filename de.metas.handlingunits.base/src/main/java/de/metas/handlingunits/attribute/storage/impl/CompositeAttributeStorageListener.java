@@ -15,15 +15,14 @@ import java.util.ArrayList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -36,9 +35,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 
 /**
  *
- * NOTE: listeners will be added weakly
- *
- * @author tsa
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CompositeAttributeStorageListener implements IAttributeStorageListener
@@ -47,8 +44,7 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 
 	public CompositeAttributeStorageListener()
 	{
-		super();
-		listeners = new WeakList<IAttributeStorageListener>(true); // weakDefault=true
+		listeners = new ArrayList<IAttributeStorageListener>();
 	}
 
 	/**
@@ -116,7 +112,11 @@ public class CompositeAttributeStorageListener implements IAttributeStorageListe
 	@Override
 	public void onAttributeStorageDisposed(IAttributeStorage storage)
 	{
-		for (final IAttributeStorageListener listener : listeners)
+		// if a listener gets notified about this event, it might well remove itself from this composite.
+		// In order to prevent a ConcurrentModificationException, we iterate a copy
+		final ArrayList<IAttributeStorageListener> listenersToIterate = new ArrayList<IAttributeStorageListener>(listeners);
+
+		for (final IAttributeStorageListener listener : listenersToIterate)
 		{
 			listener.onAttributeStorageDisposed(storage);
 		}

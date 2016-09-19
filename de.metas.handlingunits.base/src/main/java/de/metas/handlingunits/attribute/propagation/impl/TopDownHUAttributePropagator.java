@@ -111,7 +111,8 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 
 		//
 		// Fetch ALL Child attributes
-		final Collection<IAttributeStorage> childrenAttributeSetsAll = attributeSet.getChildAttributeStorages();
+		final boolean loadIfNeeded = true;
+		final Collection<IAttributeStorage> childrenAttributeSetsAll = attributeSet.getChildAttributeStorages(loadIfNeeded);
 
 		//
 		// Check which of our child attributes are aware of propagation and build a list with them

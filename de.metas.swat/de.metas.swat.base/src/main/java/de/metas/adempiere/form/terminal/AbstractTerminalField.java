@@ -57,13 +57,13 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	 */
 	public AbstractTerminalField(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
 		this.debugPropertyName = "<unspecified>";
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -268,14 +268,14 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		disposed = true;
 		constraints.clear();
-		listeners.clear();
 
 		logger.trace("Disposed terminal field: {}", this);
+		disposed = true;
 	}
 
-	protected final boolean isDisposed()
+	@Override
+	public final boolean isDisposed()
 	{
 		return disposed;
 	}

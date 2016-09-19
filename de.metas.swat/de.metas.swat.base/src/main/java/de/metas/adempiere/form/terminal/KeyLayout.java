@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Font;
@@ -82,8 +81,6 @@ public abstract class KeyLayout implements IKeyLayout
 
 	public KeyLayout(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		tc = terminalContext;
 
@@ -107,6 +104,9 @@ public abstract class KeyLayout implements IKeyLayout
 			return;
 		}
 
+		// disposing keys keys is handled via TerminalContext
+		// DisposableHelper.disposeAll(keys);
+
 		// Remove keys
 		setKeysNoFire(null);
 
@@ -122,19 +122,20 @@ public abstract class KeyLayout implements IKeyLayout
 			_listeners.clear();
 		}
 
-		if (selectionModel != null)
-		{
-			selectionModel.dispose();
-		}
-
 		basePanel = null;
 
 		_disposed = true;
 	};
 
+	@Override
+	public boolean isDisposed()
+	{
+		return _disposed;
+	}
+
 	private final void assertNotDisposed()
 	{
-		if (_disposed)
+		if (isDisposed())
 		{
 			throw new IllegalStateException("Already disposed: " + this);
 		}
@@ -173,6 +174,10 @@ public abstract class KeyLayout implements IKeyLayout
 			if (!_disposed)
 			{
 				keys = createKeys();
+				for (ITerminalKey key : keys)
+				{
+					getTerminalContext().addToDisposableComponents(key);
+				}
 			}
 
 			if (keys == null)
@@ -260,8 +265,7 @@ public abstract class KeyLayout implements IKeyLayout
 		{
 			for (final PropertyChangeListener listener : listeners)
 			{
-				final PropertyChangeListener listenerWeak = WeakPropertyChangeSupport.asWeak(listener);
-				key.addListener(listenerWeak);
+				key.addListener(listener);
 			}
 		}
 	}
@@ -337,8 +341,17 @@ public abstract class KeyLayout implements IKeyLayout
 			return false;
 		}
 
+		// disposing anything is not this method's job!
+		// the keys might be used in other parts of the component.
+		// DisposableHelper.disposeAll(keys);
+
 		// Remove listeners from old keys
 		removeCurrentListeners(keys);
+
+		// don't dispose the old keys! that they might not be used anymore in this KeyLayout (btw, we don't know that; they might be also included in keysNew)
+		// does not mean they aren't used at all. They might still be used elsewhere.
+		// So, instead use TerminalContext-References
+		// DisposableHelper.disposeAll(keys);
 
 		// Set new keys
 		if (keysNew == null)
@@ -439,7 +452,8 @@ public abstract class KeyLayout implements IKeyLayout
 	}
 
 	/**
-	 * Create {@link ITerminalKey}s.
+	 * Create {@link ITerminalKey}s. The keys created by this method are added to the terminal context using {@link ITerminalContext#addToDisposableComponents(IDisposable)}.
+	 * Therefore, implementors don't need to retain a reference to their created keys and don not to take care of disposing them.
 	 *
 	 * @return list of terminal keys
 	 */
@@ -469,26 +483,25 @@ public abstract class KeyLayout implements IKeyLayout
 
 		_listeners.removePropertyChangeListener(listener); // make sure we are not adding it twice
 
-		final PropertyChangeListener listenerWeak = WeakPropertyChangeSupport.asWeak(listener);
-		_listeners.addPropertyChangeListener(listenerWeak);
+		_listeners.addPropertyChangeListener(listener);
 
 		for (final ITerminalKey key : getKeys())
 		{
-			key.addListener(listenerWeak);
+			key.addListener(listener);
 		}
 	}
 
 	@Override
 	public final void removeListener(final PropertyChangeListener listener)
 	{
-		// If listener is null, we have nothing to do. 
-		if(listener == null)
+		// If listener is null, we have nothing to do.
+		if (listener == null)
 		{
 			return;
 		}
-		
+
 		_listeners.removePropertyChangeListener(listener);
-		
+
 		// Get only the current keys.
 		// We are not using #getKeys() because that method will create the keys if they not already created,
 		// and in our case this is not desirable because:
@@ -686,7 +699,7 @@ public abstract class KeyLayout implements IKeyLayout
 		final ITerminalKey selectedKey = getKeyById(keyId);
 		setSelectedKey(selectedKey);
 	}
-	
+
 	@Override
 	public void selectFirstKeyIfAny()
 	{
@@ -695,7 +708,7 @@ public abstract class KeyLayout implements IKeyLayout
 		{
 			return;
 		}
-		
+
 		final ITerminalKey firstKey = keys.get(0);
 		setSelectedKey(firstKey);
 	}

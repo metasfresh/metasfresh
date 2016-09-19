@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -45,6 +44,12 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
 
+/**
+ * Null implementation. Has no children, not attributes, is never disposed nor virtual.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class NullAttributeStorage implements IAttributeStorage
 {
 	public static final IAttributeStorage instance = new NullAttributeStorage();
@@ -77,8 +82,11 @@ public final class NullAttributeStorage implements IAttributeStorage
 		return NullAttributeStorage.instance;
 	}
 
+	/**
+	 * Always returns the empty list.
+	 */
 	@Override
-	public Collection<IAttributeStorage> getChildAttributeStorages()
+	public Collection<IAttributeStorage> getChildAttributeStorages(final boolean loadIfNeeded_IGNORED)
 	{
 		return Collections.emptyList();
 	}
@@ -333,6 +341,9 @@ public final class NullAttributeStorage implements IAttributeStorage
 		return BigDecimal.ZERO;
 	}
 
+	/**
+	 * @return <code>false</code>.
+	 */
 	@Override
 	public boolean isVirtual()
 	{
@@ -345,9 +356,17 @@ public final class NullAttributeStorage implements IAttributeStorage
 		throw new AttributeNotFoundException(attribute, this);
 	}
 
-	/** @return true, i.e. never disposed */
+	/**
+	 * @return true, i.e. never disposed
+	 */
 	@Override
 	public boolean assertNotDisposed()
+	{
+		return true; // not disposed
+	}
+
+	@Override
+	public boolean assertNotDisposedTree()
 	{
 		return true; // not disposed
 	}

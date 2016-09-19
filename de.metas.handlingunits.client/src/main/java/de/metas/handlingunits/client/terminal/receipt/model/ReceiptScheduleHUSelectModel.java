@@ -13,12 +13,12 @@ package de.metas.handlingunits.client.terminal.receipt.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
@@ -59,6 +60,7 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -265,29 +267,38 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-		{
 
-			@Override
-			public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-			{
-				final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
-
-				//
-				// Ask user to edit the configuration
-				final LUTUConfigurationEditorModel lutuConfigurationModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
-				if (!editorCallback.editLUTUConfiguration(lutuConfigurationModel))
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager
+				.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
 				{
-					// User cancelled => do nothing
-					return null;
-				}
+					@Override
+					public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
+					{
+						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
-				//
-				// Update the LU/TU configuration on which we are working using what user picked
-				lutuConfigurationModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-				return lutuConfiguration;
-			}
-		});
+						//
+						// Ask user to edit the configuration
+						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+						{
+							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+
+							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
+							{
+								return null;// User cancelled => do nothing
+							}
+
+							//
+							// Update the LU/TU configuration on which we are working using what user picked
+							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+						}
+						catch (Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
+
+						return lutuConfiguration;
+					}
+				});
 
 		//
 		// No configuration => user cancelled => don't open editor
@@ -517,9 +528,9 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			{
 				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
 				ProcessCtl.process(
-						null,  // ASyncProcess parent
+						null,     // ASyncProcess parent
 						terminalContext.getWindowNo(),
-						null,  // IProcessParameter
+						null,     // IProcessParameter
 						pi,
 						localTrx);
 			}
@@ -566,7 +577,12 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	public void dispose()
 	{
 		super.dispose();
-
 		DisposableHelper.disposeAll(purchaseOrderKeyLayout);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "ReceiptScheduleHUSelectModel [purchaseOrderKeyLayout=" + purchaseOrderKeyLayout + ", rowsFilter=" + rowsFilter + "]";
 	}
 }

@@ -10,22 +10,22 @@ package de.metas.handlingunits.client.terminal.editor.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextService;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.attribute.IWeightable;
@@ -37,6 +37,12 @@ import de.metas.handlingunits.document.IHUDocumentLineFinder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
+/**
+ * Use {@link ITerminalContext#getService(Class)} to get an instance.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IHUKeyFactory extends ITerminalContextService
 {
 	IHUStorageFactory getStorageFactory();
@@ -51,7 +57,7 @@ public interface IHUKeyFactory extends ITerminalContextService
 	void clearCache();
 
 	/**
-	 * Just creates the root key.
+	 * Creates the root key, which does not represent a particular HU.
 	 *
 	 * @return root key
 	 */

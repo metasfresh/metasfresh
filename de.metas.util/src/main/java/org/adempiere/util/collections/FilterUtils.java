@@ -10,12 +10,12 @@ package org.adempiere.util.collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ * @deprecated now that we finally have java8, please use its stream/filter API instead. see e.g. <code>de.metas.handlingunits.client.terminal.select.api.impl.ReceiptScheduleFiltering.retrieveTableRows()</code> for an example
+ */
+@Deprecated
 public final class FilterUtils
 {
 	private FilterUtils()
@@ -40,7 +46,7 @@ public final class FilterUtils
 	/**
 	 * @param list
 	 * @param condition
-	 * @return sub-list containing values filtered by condition
+	 * @return sub-list containing values where the given <code>condition</code> returned <code>true</code>
 	 */
 	public static <T> List<T> filter(final List<T> list, final Predicate<T> condition)
 	{

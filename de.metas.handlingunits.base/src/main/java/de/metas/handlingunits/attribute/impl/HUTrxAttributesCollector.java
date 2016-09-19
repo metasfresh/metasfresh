@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +30,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -53,7 +53,7 @@ import de.metas.logging.LogManager;
  * Listens on {@link IAttributeStorage}s changes and logs the change.
  *
  * The current changes can be fetched by {@link #getAndClearTransactions()} and then the hu transaction processor will create actual transactions for them.
- * 
+ *
  * NOTE: this implementation is NOT thread-safe, but we assume it's used only locally and in one processing thread.
  *
  * @author tsa
@@ -72,7 +72,7 @@ import de.metas.logging.LogManager;
 	 */
 	private List<IHUTransactionAttribute> transactions = null;
 
-	/* package */HUTrxAttributesCollector()
+	/* package */ HUTrxAttributesCollector()
 	{
 		super();
 	}
@@ -83,17 +83,20 @@ import de.metas.logging.LogManager;
 		return ObjectUtils.toString(this);
 	}
 
+	/**
+	 * Warns the user that there it could be an internal error if this object is about to be garbage collected,
+	 * and we still have collected transactions.
+	 */
 	@Override
 	protected void finalize() throws Throwable
 	{
-		//
-		// Warn the user that there it could be an internal error if this object is about to be garbage collected,
-		// and we still have collected transactions.
 		if (transactions != null && !transactions.isEmpty())
 		{
-			logger.warn("Possible development error on " + HUTrxAttributesCollector.class
-					+ "\n There are still collected " + transactions.size() + "transactions."
-					+ "\n Disposed flag: " + _disposed);
+			new AdempiereException(
+					"Possible development error on " + HUTrxAttributesCollector.class
+							+ "\n There are still collected " + transactions.size() + "transactions."
+							+ "\n Disposed flag: " + _disposed)
+									.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	};
 

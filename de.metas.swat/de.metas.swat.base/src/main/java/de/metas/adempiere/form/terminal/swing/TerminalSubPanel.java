@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,11 +46,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * Terminal Sub Panel Base Class.
- * 
+ *
  * @author Teo Sarca
  * @author Comunidad de Desarrollo OpenXpertya *Basado en Codigo Original Modificado, Revisado y Optimizado de:
  *         *Copyright (c) Jorg Janke
- * 
+ *
  */
 public abstract class TerminalSubPanel
 		implements ITerminalPanel, ActionListener
@@ -63,10 +63,14 @@ public abstract class TerminalSubPanel
 		p_basePanel = basePanel;
 		panel = getTerminalFactory().createContainer();
 		init();
+
+		getTerminalContext().addToDisposableComponents(this);
 	}
 
 	protected ITerminalBasePanel p_basePanel;
 	protected Properties p_ctx = Env.getCtx();
+
+	private boolean disposed = false;
 
 	/** Button Width = 50 */
 	private static final int WIDTH = 50;
@@ -85,11 +89,18 @@ public abstract class TerminalSubPanel
 	protected abstract void init();
 
 	/**
-	 * Dispose - Free Resources
+	 * Does nothing, only sets our internal disposed flag.
 	 */
 	@Override
 	public void dispose()
 	{
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 	public ITerminalBasePanel getTerminalBasePanel()
@@ -104,7 +115,7 @@ public abstract class TerminalSubPanel
 
 	/**
 	 * Create Action Button
-	 * 
+	 *
 	 * @param action
 	 *            action
 	 * @return button
@@ -135,7 +146,7 @@ public abstract class TerminalSubPanel
 
 	/**
 	 * Create Standard Button
-	 * 
+	 *
 	 * @param text
 	 *            text
 	 * @return button

@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Font;
 
@@ -31,6 +30,12 @@ import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 
+/**
+ * Whatever is created by an implementor will be added to the terminal context's disposable components.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface ITerminalFactory
 {
 	String TITLE_INTERNAL_ERROR = "InternalError";
@@ -166,7 +171,28 @@ public interface ITerminalFactory
 	 */
 	ITerminalNumericField createTerminalNumericField(String name, int displayType, float fontSize, boolean withButtons, boolean withLabel, String constraints);
 
+	/**
+	 * Calls {@link #createModalDialog(IComponent, String, IComponent, boolean)} with <code>maintainOwnContextReferences==true</code>.
+	 *
+	 * @param parent
+	 * @param title
+	 * @param content
+	 * @return
+	 */
 	ITerminalDialog createModalDialog(IComponent parent, String title, IComponent content);
+
+	/**
+	 *
+	 * @param parent
+	 * @param title
+	 * @param content
+	 * @param maintainOwnContextReferences
+	 *            if <code>true</code>, then create a new set of references from this point, to be able to destroy them when the dialog closes.
+	 *            In this way we can avoid memory leaks right from this Dialog and from components, listeners etc that were created will using this dialog.
+	 *            Calls with <code>false</code> if there is a model that will be used with the dialog and that already has its own contextRefs.
+	 * @return
+	 */
+	ITerminalDialog createModalDialog(IComponent parent, String title, IComponent content, boolean maintainOwnContextReferences);
 
 	IPropertiesPanel createPropertiesPanel();
 

@@ -428,33 +428,4 @@ public abstract class AbstractTerminalNumericField
 	{
 		return withLabel;
 	}
-
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-
-		if (bMinus != null)
-		{
-			bMinus.dispose();
-			bMinus = null;
-		}
-		if (bPlus != null)
-		{
-			bPlus.dispose();
-			bPlus = null;
-		}
-		if(fNumber != null)
-		{
-			fNumber.removeListener(numberChangeListener);
-			fNumber.dispose();
-			fNumber = null;
-		}
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
-	}
-
 }

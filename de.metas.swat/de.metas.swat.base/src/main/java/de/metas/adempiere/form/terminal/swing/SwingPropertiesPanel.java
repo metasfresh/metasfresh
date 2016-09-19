@@ -82,7 +82,7 @@ import de.metas.logging.LogManager;
 	private IPropertiesPanelModel model;
 
 	private IContainer panel;
-	private ITerminalScrollPane scroll;
+	private final ITerminalScrollPane scroll;
 
 	private final Map<String, ITerminalField<?>> propertyName2editors = new HashMap<>();
 
@@ -121,6 +121,8 @@ import de.metas.logging.LogManager;
 		scroll.setVerticalScrollBarPolicy(ScrollPolicy.WHEN_NEEDED);
 
 		scroll.setBorderEnabled(false); // hide borders
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void onModelChanged(final String eventName, final Object valueOld, final Object valueNew)
@@ -557,6 +559,8 @@ import de.metas.logging.LogManager;
 
 	private boolean _fireValueChangedOnFocusedLost = true;
 
+	private boolean disposed = false;
+
 	@Override
 	public final void disableFireValueChangedOnFocusLost()
 	{
@@ -645,17 +649,13 @@ import de.metas.logging.LogManager;
 	{
 		setModel(null); // will also reset depending fields
 
-		if (scroll != null)
-		{
-			scroll.dispose();
-			scroll = null;
-		}
+		disposed = true;
+	}
 
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	@Override

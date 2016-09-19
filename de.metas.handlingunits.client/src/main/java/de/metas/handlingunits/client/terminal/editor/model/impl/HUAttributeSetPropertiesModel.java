@@ -285,10 +285,11 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			{
 				final IInputMethod<?> method = new IInputMethod<Object>()
 				{
+					final private String buttonText = commonPrefix + deviceName.charAt(commonPrefix.length());
+
 					@Override
 					public AppsAction getAppsAction()
 					{
-						final String buttonText = commonPrefix + deviceName.charAt(commonPrefix.length());
 						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
 						return AppsAction.builder()
 								.setAction(buttonText)
@@ -299,13 +300,17 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 					@Override
 					public Object invoke()
 					{
-						logger.debug("Device: {}; Request: {}", deviceToAddInputMethodFor, request);
+						logger.debug("This: {}, Device: {}; Request: {}", this, deviceToAddInputMethodFor, request);
 
 						final ISingleValueResponse response = deviceToAddInputMethodFor.accessDevice(request);
 						logger.debug("Device {}; Response: {}", deviceToAddInputMethodFor, response);
 
 						return response.getSingleValue();
 					}
+
+					// @formatter:off
+					@Override public String toString() { return "IInputMethod[buttonText=" + buttonText + "]"; }
+					// @formatter:on
 				};
 				inputMethods.add(method);
 			}
@@ -586,6 +591,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 	/**
 	 * Immutable {@link IAttributeStorage} wrapper which also contains indexed attributes and other additional informations.
+	 * <p>
+	 * By "indexed attributes", we mean the ability to work with the storage in terms of attribute-property names (at the core that's usually <code>M_Attribute.Value</code>).
 	 *
 	 * @author tsa
 	 *
@@ -603,10 +610,15 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return new IndexedAttributeStorage(attributeStorage);
 		}
 
+		/**
+		 * The actual wrapped attributes.
+		 */
 		private final IAttributeStorage attributeStorage;
+
 		private final ImmutableList<String> propertyNames;
 		private final Map<String, I_M_Attribute> propertyName2attribute;
 		private final Map<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction; // task 04966
+
 		/** true if attribute set's underlying HU is a virtual HU */
 		private final boolean virtualHU;
 
@@ -733,6 +745,5 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			return virtualHU;
 		}
-
 	}
 }

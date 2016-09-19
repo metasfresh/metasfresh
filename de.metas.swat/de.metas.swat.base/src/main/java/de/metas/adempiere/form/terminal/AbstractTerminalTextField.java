@@ -282,12 +282,6 @@ public abstract class AbstractTerminalTextField
 
 		factories.clear();
 		keyLayout = null;
-
-		if (activeKeyboard != null)
-		{
-			activeKeyboard.dispose();
-			activeKeyboard = null;
-		}
 	}
 
 	protected float getFontSize()

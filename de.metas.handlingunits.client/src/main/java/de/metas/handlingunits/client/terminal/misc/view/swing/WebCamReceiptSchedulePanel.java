@@ -13,12 +13,12 @@ package de.metas.handlingunits.client.terminal.misc.view.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.github.sarxos.webcam.WebcamPanel;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -51,6 +50,9 @@ public class WebCamReceiptSchedulePanel
 	private final IContainer panel;
 	private final WebcamPanel webCamPanel;
 	private final ITerminalFactory factory;
+
+	private boolean disposed = false;
+
 	public static final String MSG_ErrorSavingPicture = "de.metas.handlingunits.client.WebcamReceiptSchedule.ErrorSavingPicture";
 
 	public WebCamReceiptSchedulePanel(final WebCamReceiptScheduleModel model)
@@ -72,6 +74,8 @@ public class WebCamReceiptSchedulePanel
 		}
 
 		initLayout();
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void initLayout()
@@ -114,17 +118,18 @@ public class WebCamReceiptSchedulePanel
 	@Override
 	public void dispose()
 	{
-		if (model != null)
-		{
-			model.dispose();
-		}
-
 		if (webCamPanel != null)
 		{
 			// TODO: remove the WebCam listener
 			webCamPanel.stop();
 			webCamPanel.removeAll();
 		}
-		DisposableHelper.disposeAll(model, panel);
+		disposed  = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 }

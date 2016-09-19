@@ -10,12 +10,12 @@ package de.metas.fresh.picking.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,9 +57,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 /**
  * UI panel which starts from a given initial {@link DistributeQtyToNewHUsRequest}, allows the user to edit it and at the end provides the final {@link DistributeQtyToNewHUsResult}.
- * 
+ *
  * To create a new instance, use {@link #builder()}.
- * 
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08754_Kommissionierung_Erweiterung_Verteilung_%28103380135151%29
  */
@@ -94,9 +94,10 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 	private final IPropertiesPanel propertiesPanel;
 	private final AtomicBoolean modelSyncRunning = new AtomicBoolean(false);
 
+	private boolean disposed = false;
+
 	private DistributeQtyToNewHUsReadPanel(final Builder builder)
 	{
-		super();
 		_terminalContext = builder.getTerminalContext();
 
 		// Model
@@ -145,6 +146,8 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 		propertiesPanel = builder.getTerminalFactory().createPropertiesPanel();
 		propertiesPanel.setVerticalScrollBarPolicy(ScrollPolicy.NEVER);
 		propertiesPanel.setModel(propertiesModel);
+
+		_terminalContext.addToDisposableComponents(this);
 	}
 
 	public DistributeQtyToNewHUsResult getResult()
@@ -322,7 +325,7 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 
 	/**
 	 * Creates the request based on current user input.
-	 * 
+	 *
 	 * @return
 	 */
 	private final DistributeQtyToNewHUsRequest createRequest()
@@ -338,7 +341,7 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 
 	/**
 	 * Calculates the result based on current user input.
-	 * 
+	 *
 	 * @return
 	 */
 	private final DistributeQtyToNewHUsResult createResult()
@@ -362,7 +365,13 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 	@Override
 	public void dispose()
 	{
-		propertiesPanel.dispose();
+		disposed  = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	@Override
@@ -445,7 +454,7 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 
 	/**
 	 * Checks if the Qty/HU from PI Item Product shall be enforced.
-	 * 
+	 *
 	 * @param request
 	 * @return true if capacity stall be enforced.
 	 */
@@ -489,7 +498,7 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 		/**
 		 * Show the dialog to user, wait for his input and return the result.
 		 * If user had canceled the UI dialog, null will be returned.
-		 * 
+		 *
 		 * @return result or <code>null</code> if user canceled
 		 */
 		public final DistributeQtyToNewHUsResult getResultOrNull()

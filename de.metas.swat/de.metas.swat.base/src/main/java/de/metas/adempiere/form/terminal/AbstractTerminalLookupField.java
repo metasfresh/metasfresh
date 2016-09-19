@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,16 +29,16 @@ package de.metas.adempiere.form.terminal;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -54,7 +54,7 @@ public abstract class AbstractTerminalLookupField
 		None, Validated, Error
 	};
 
-	private ITerminalTextField textField;
+	private final ITerminalTextField textField;
 	private ITerminalLookup lookup;
 
 	private KeyNamePair value;
@@ -210,7 +210,7 @@ public abstract class AbstractTerminalLookupField
 
 	/**
 	 * Not implemented with <code>fireEvent</code>
-	 * 
+	 *
 	 * @see {@link #setFieldValue(Object)}
 	 */
 	@Override
@@ -374,10 +374,7 @@ public abstract class AbstractTerminalLookupField
 	public void dispose()
 	{
 		super.dispose();
-
-		textField.dispose();
-
-		lookup = null;
+		lookup = null; // don't dispose it; we didn't create it
 	}
 
 	@Override

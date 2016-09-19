@@ -173,7 +173,8 @@ public class BottomUpHUAttributePropagator extends AbstractHUAttributePropagator
 		Object parentValueNew = parentValueInitial;
 
 		// Run through all current level attribute sets (including the one from parameters) and aggregate each to the current value
-		final Collection<IAttributeStorage> sameLevelAttributeSets = parentAttributeSet.getChildAttributeStorages();
+		final boolean loadIfNeeded = true;
+		final Collection<IAttributeStorage> sameLevelAttributeSets = parentAttributeSet.getChildAttributeStorages(loadIfNeeded);
 		for (final IAttributeStorage levelAttributeSet : sameLevelAttributeSets)
 		{
 			//

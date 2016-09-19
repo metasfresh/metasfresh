@@ -33,7 +33,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.util.collections.IteratorUtils;
 
 /**
- * List that can contain weak elements
+ * List that supports weakly referenced elements.
+ * It can automatically wrap and given item into a {@link org.adempiere.util.lang.WeakReference} before adding it, see {@link #setWeakDefault(boolean)}.
+ * <p>
+ * It will also check if a (weak) item was already disposed before attempting to access it.
  *
  * @author Teo Sarca
  */

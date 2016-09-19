@@ -38,15 +38,15 @@ import com.google.common.base.MoreObjects;
 
 /**
  * An {@link PropertyChangeSupport} which makes weak reference to source bean and which is able to register the listeners weakly.
+ * <p>
+ * This means that both a registered listener and source bean can be reclaimed and removed by the garbage collector without the need to explicitly unregister them.
  *
  * @author tsa
+ * @see WeakReference
  *
  */
 public class WeakPropertyChangeSupport extends PropertyChangeSupport
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 309861519819203221L;
 
 	/**
@@ -62,7 +62,7 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 	private final boolean _weakDefault;
 
 	/**
-	 * this member is here only such that we have a minimum toString() for debugging (grrr, i want to punch PropertyChangeSupport into the face).
+	 * This member is here only such that we have a minimum toString() for debugging, since our super class <code>PropertyChangeSupport</code> makes it hard to take a look at the source bean.
 	 */
 	private final WeakReference<Object> debugSourceBeanRef;
 
@@ -71,6 +71,11 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 		this(sourceBean, false); // weakDefault=false
 	}
 
+	/**
+	 *
+	 * @param sourceBean
+	 * @param weakDefault
+	 */
 	public WeakPropertyChangeSupport(final Object sourceBean, final boolean weakDefault)
 	{
 		this(new WeakReference<>(sourceBean), weakDefault);
@@ -88,6 +93,11 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 		return _weakDefault;
 	}
 
+	/**
+	 * Make sure that all listeners are removed from this instance.
+	 *
+	 * @throws IllegalStateException if the method failed to remove them all.
+	 */
 	public void clear()
 	{
 		final PropertyChangeListener[] listeners = getPropertyChangeListeners();
@@ -101,7 +111,6 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 			super.removePropertyChangeListener(listener);
 		}
 
-		//
 		// Make sure everything was removed
 		final PropertyChangeListener[] listeners2 = getPropertyChangeListeners();
 		if (listeners2 != null && listeners2.length > 0)
@@ -183,14 +192,6 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 		super.addPropertyChangeListener(weakListener);
 	}
 
-	public static final PropertyChangeListener asWeak(final PropertyChangeListener listener)
-	{
-		// Check.assumeNotNull(listener, "listener not null");
-		// final boolean weak = true;
-		// return createWeakPropertyChangeListener(listener, weak);
-		return listener; // TODO: delete it
-	}
-
 	@Override
 	public final void addPropertyChangeListener(final String propertyName, final PropertyChangeListener listener)
 	{
@@ -255,7 +256,8 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("source", debugSourceBeanRef)
+				// it's dangerous to output the source, because sometimes the source also holds a reference to this listener, and if it also has this listener in its toString(), then we get a StackOverflow
+				// .add("source (weakly referenced)", debugSourceBeanRef.get()) // debugSourceBeanRef can't be null, otherwise the constructor would have failed
 				.add("listeners", getPropertyChangeListeners()) // i know there should be no method but only fields in toString(), but don't see how else to output this
 				.toString();
 	}
