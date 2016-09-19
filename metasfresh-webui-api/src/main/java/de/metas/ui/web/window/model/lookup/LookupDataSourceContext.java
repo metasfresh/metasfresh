@@ -13,8 +13,8 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
-import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
@@ -217,11 +217,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 			//
 			// Collect all values required for given query
-			collectContextValues(requiredParameters);
+			// failIfNotFound=true
+			collectContextValues(requiredParameters, true);
 			
 			//
 			// Collect all values required by the post-query predicate
-			collectContextValues(postQueryPredicate.getParameters());
+			// failIfNotFound=false because it might be that NOT all postQueryPredicate's parameters are mandatory!
+			collectContextValues(postQueryPredicate.getParameters(), false);
 
 			//
 			// Build the effective context
@@ -300,7 +302,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private Builder collectContextValues(final Collection<String> parameters)
+		private Builder collectContextValues(final Collection<String> parameters, final boolean failIfNotFound)
 		{
 			if (parameters == null || parameters.isEmpty())
 			{
@@ -309,22 +311,34 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 			for (final String parameterName : parameters)
 			{
-				collectContextValue(parameterName);
+				collectContextValue(parameterName, failIfNotFound);
 			}
 
 			return this;
 		}
 
-		private void collectContextValue(final String variableName)
+		private void collectContextValue(final String variableName, final boolean failIfNotFound)
 		{
 			if (valuesCollected.containsKey(variableName))
 			{
 				return;
 			}
-			valuesCollected.put(variableName, findContextValue(variableName));
+			
+			final Object value = findContextValueOrNull(variableName);
+			if(value == null)
+			{
+				if(failIfNotFound)
+				{
+					throw new ExpressionEvaluationException("@NotFound@: " + variableName);
+				}
+			}
+			else
+			{
+				valuesCollected.put(variableName, value);
+			}
 		}
 
-		private final String findContextValue(final String variableName)
+		private final Object findContextValueOrNull(final String variableName)
 		{
 			//
 			// Check given parameters
@@ -333,7 +347,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				final Object valueObj = name2value.get(variableName);
 				if (valueObj != null)
 				{
-					return valueObj.toString();
+					return valueObj;
 				}
 			}
 
@@ -341,7 +355,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			// Fallback to document evaluatee
 			if (parentEvaluatee != null)
 			{
-				final String value = parentEvaluatee.get_ValueAsString(variableName);
+				final Object value = parentEvaluatee.get_ValueAsObject(variableName);
 				if (value != null)
 				{
 					return value;
@@ -350,7 +364,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 			//
 			// Value not found
-			throw new ExpressionEvaluationException("@NotFound@: " + variableName);
+			return null;
 		}
 	}
 }
