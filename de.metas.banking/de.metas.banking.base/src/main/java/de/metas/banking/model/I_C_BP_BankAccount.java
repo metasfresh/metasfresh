@@ -1,14 +1,8 @@
-package de.metas.request.service.impl;
-
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.request.service.IRequestCreator;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
+package de.metas.banking.model;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -28,14 +22,12 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
  * #L%
  */
 
-public class AsyncRequestCreator implements IRequestCreator
+public interface I_C_BP_BankAccount extends de.metas.interfaces.I_C_BP_BankAccount
 {
-
-	@Override
-	public void createRequests(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
-	{
-		// Schedule the async request creation based on the given inoutline ids
-		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
-	}
+	// @formatter:off
+	String COLUMNNAME_IsDefault = "IsDefault";
+	void setIsDefault(boolean IsDefault);
+	boolean isDefault();
+	// @formatter:on
 
 }
