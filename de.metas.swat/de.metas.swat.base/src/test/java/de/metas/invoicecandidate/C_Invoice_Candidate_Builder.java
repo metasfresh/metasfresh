@@ -10,18 +10,17 @@ package de.metas.invoicecandidate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -33,11 +32,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -75,6 +76,9 @@ public class C_Invoice_Candidate_Builder
 	private Timestamp dateAcct;
 	private BigDecimal qualityDiscountPercent_Override;
 
+	private int M_PriceList_Version_ID;
+	private int M_PricingSystem_ID;
+
 	public C_Invoice_Candidate_Builder(final AbstractICTestSupport test)
 	{
 		super();
@@ -106,7 +110,6 @@ public class C_Invoice_Candidate_Builder
 				billPartner.setPO_Invoice_Aggregation(test.defaultHeaderAggregation_NotConsolidated);
 				billPartner.setSO_Invoice_Aggregation(test.defaultHeaderAggregation_NotConsolidated);
 			}
-
 			InterfaceWrapperHelper.save(billPartner);
 		}
 
@@ -144,7 +147,10 @@ public class C_Invoice_Candidate_Builder
 		ic.setPriceEntered(BigDecimal.valueOf(priceEntered));
 		ic.setPriceEntered_Override(priceEntered_Override);
 		// ic.setAllowConsolidateInvoice(allowConsolidateInvoice);
+
+		Check.errorIf(isSOTrx == null, "this builder={} needs isSOTrx to be set before it is able to build an IC", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);
+
 		ic.setBill_Location(test.bpLoc);
 		ic.setIsError(false); // just to avoid "refreshing changed models" exception from POJOWrapper
 		ic.setProcessed(false); // just to avoid failing filters on Processed=N
@@ -153,6 +159,28 @@ public class C_Invoice_Candidate_Builder
 		// 07442: activity and tax
 
 		ic.setPOReference(poReference);
+
+		ic.setDateOrdered(TimeUtil.addDays(test.plvDate, 1)); // make sure that the system can find out PLVs
+
+		{
+			// set M_PricingSystem and M_PriceList_Version info
+			if (M_PricingSystem_ID > 0)
+			{
+				ic.setM_PricingSystem_ID(M_PricingSystem_ID);
+			}
+			else
+			{
+				ic.setM_PricingSystem(isSOTrx ? test.pricingSystem_SO : test.pricingSystem_PO);
+			}
+			if (M_PriceList_Version_ID > 0)
+			{
+				ic.setM_PriceList_Version_ID(M_PriceList_Version_ID);
+			}
+			else
+			{
+				ic.setM_PriceList_Version(isSOTrx ? test.priceListVersion_SO : test.priceListVersion_PO);
+			}
+		}
 
 		if (!isManual)
 		{
@@ -247,6 +275,37 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
+	/**
+	 * Specify the new IC's M_PricingSystem_ID.
+	 * If not set,
+	 * then either {@link AbstractICTestSupport#pricingSystem_PO} or {@link AbstractICTestSupport#pricingSystem_SO} are used,
+	 * depending on {@link #isSOTrx}.
+	 *
+	 * @param M_PricingSystem_ID
+	 * @return
+	 */
+	public C_Invoice_Candidate_Builder setM_PricingSystem_ID(final int M_PricingSystem_ID)
+	{
+		this.M_PricingSystem_ID = M_PricingSystem_ID;
+		return this;
+	}
+
+	/**
+	 * Specify the new IC's M_PriceList_Version_ID.
+	 * If not set, then either {@link AbstractICTestSupport#priceListVersion_PO} or {@link AbstractICTestSupport#priceListVersion_SO} are used,
+	 * depending on {@link #isSOTrx}.
+	 * <p>
+	 * Hint: when setting a customer PLV, make sure to use a date not after {@link AbstractICTestSupport#plvDate}, because currently, in {@link #build()}, we orientate the new IC's <code>DateOrdered</code> on the PLV-date.
+	 *
+	 * @param M_PriceList_Version_ID
+	 * @return
+	 */
+	public C_Invoice_Candidate_Builder setM_PriceList_Version_ID(final int M_PriceList_Version_ID)
+	{
+		this.M_PriceList_Version_ID = M_PriceList_Version_ID;
+		return this;
+	}
+
 	public C_Invoice_Candidate_Builder setQty(final int qty)
 	{
 		return setQty(BigDecimal.valueOf(qty));
@@ -278,7 +337,7 @@ public class C_Invoice_Candidate_Builder
 
 	/**
 	 * Configures the IC's BPartner to use/not use an consolitated header aggregation.
-	 * 
+	 *
 	 * @param allowConsolidateInvoice
 	 */
 	public C_Invoice_Candidate_Builder setAllowConsolidateInvoiceOnBPartner(final boolean allowConsolidateInvoice)

@@ -30,7 +30,18 @@ public interface IRequestDAO extends ISingletonService
 {
 
 	/**
-	 * Create a new R_Request based on the info from the given inout line
+	 * Create a new R_Request based on the given inout line.
+	 * This request will contain information taken from the line and from its inout header:
+	 * <li>inout
+	 * <li>product
+	 * <li>partner
+	 * <li>dateDelivered
+	 * <li>qualityNotice
+	 * <li>org
+	 * <li>linked salesrep of the org, etc.
+	 * 
+	 * Note that the quantities are not relevant in the requests. Therefore, the qualityDiscountPercent is not even set in the request.
+	 * We can have requests with no quality notices, in case the base inout line was created with qualityDiscountPercent but with no quality notice.
 	 * 
 	 * @param line
 	 */
