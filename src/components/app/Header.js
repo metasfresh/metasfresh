@@ -35,11 +35,14 @@ class Header extends Component {
     handleOrderListToggle = () => {
         this.setState(Object.assign({}, this.state, {isOrderListShow: !this.state.isOrderListShow}));
     }
+    handleCloseOrderList= (callback) => {
+        this.setState(Object.assign({}, this.state, {isOrderListShow: false}), callback);
+    }
     handleBackdropClick = (callback) => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
     }
     handleMenuOverlay = (e, nodeId) => {
-        const {isSubheaderShow} = this.state;
+        const {isSubheaderShow, isOrderListShow} = this.state;
         e && e.preventDefault();
 
         let toggelBreadcrumb = () => {
@@ -49,11 +52,11 @@ class Header extends Component {
         }
         if(isSubheaderShow){
             this.handleBackdropClick(toggelBreadcrumb);
+        }else if(isOrderListShow){
+            this.handleCloseOrderList(toggelBreadcrumb);
         }else{
             toggelBreadcrumb();
         }
-       
-        console.log(isSubheaderShow)
       
     }
     componentDidMount() {
@@ -128,13 +131,14 @@ class Header extends Component {
 
         return (
             <div>
-                {(isSubheaderShow || isOrderListShow) ? <div className="backdrop" onClick={this.handleBackdropClick}></div> : null}
+                {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
+                {(isOrderListShow) ? <div className="backdrop" onClick={e => this.handleCloseOrderList(false)}></div> : null}
                 <nav className={"header header-super-faded " + (this.state.scrolled ? "header-shadow": "")}>
                     <div className="container">
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={this.handleSubheaderOpen}
+                                    onClick={e => this.handleCloseOrderList(this.handleSubheaderOpen)}
                                     className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default btn-subheader-open btn-header-open" : "btn-meta-primary")}
                                 >
                                     <i className="meta-icon-more" />
@@ -161,7 +165,7 @@ class Header extends Component {
 
                                 <div
                                     className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
-                                    onClick={this.handleOrderListToggle}
+                                    onClick={e => this.handleBackdropClick(this.handleOrderListToggle)}
                                 >
                                     {isOrderListShow ? <i className="meta-icon-close-1" />: <i className="meta-icon-list" />}
                                 </div>

@@ -21,11 +21,11 @@ class Subheader extends Component {
     render() {
         const { windowType, onClick } = this.props;
         return (
-            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")} onClick = {onClick}>
+            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container">
                     <div className="row">
                         <div className="subheader-row">
-                            <div className=" subheader-column">
+                            <div className=" subheader-column" onClick = {onClick}>
                                 <div className="subheader-item" onClick={()=> this.redirect('/window/143/NEW')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>
