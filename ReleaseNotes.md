@@ -15,6 +15,7 @@ Here come the actual release notes:
 upcoming
 
 ## Features
+ * #367 Invoice candidates invoicing Pricelist not found
  * ME-46 Support Ubuntu 16.04 server with metasfresh server installer
  * #369 request report
  * #361 Request change for customer service
