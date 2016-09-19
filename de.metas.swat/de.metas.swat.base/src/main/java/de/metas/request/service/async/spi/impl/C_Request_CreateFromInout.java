@@ -39,10 +39,18 @@ import de.metas.request.api.IRequestDAO;
 
 public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 {
+	/**
+	 * Schedule the request creation based on the given inoutline ids
+	 * 
+	 * @param ctx
+	 * @param inOutLineIds
+	 * @param trxName
+	 */
 	public static void createWorkpackage(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
 	{
 		if (inOutLineIds == null || inOutLineIds.isEmpty())
 		{
+			// no lines to process
 			return;
 		}
 
@@ -50,25 +58,34 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 		{
 			if (inOutLineId == null || inOutLineId <= 0)
 			{
+				// should not happen
 				continue;
 			}
 
-			SCHEDULER.schedule(InOutLineWithQualityNotice.of(ctx, inOutLineId, trxName));
+			// Schedule the request creation based on the given inoutline ids
+			SCHEDULER.schedule(InOutLineWithQualityIssues.of(ctx, inOutLineId, trxName));
 		}
 	}
 
-	private static final class InOutLineWithQualityNotice
+	/**
+	 * Class to keep information about the inout lines with quality issues (Quality Discount Percent).
+	 * This model will be used ion the
+	 * 
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 */
+	private static final class InOutLineWithQualityIssues
 	{
-		public static InOutLineWithQualityNotice of(Properties ctx, int inOutLineId, String trxName)
+		public static InOutLineWithQualityIssues of(Properties ctx, int inOutLineId, String trxName)
 		{
-			return new InOutLineWithQualityNotice(ctx, inOutLineId, trxName);
+			return new InOutLineWithQualityIssues(ctx, inOutLineId, trxName);
 		}
 
 		private final Properties ctx;
 		private final String trxName;
 		private final int inOutLineId;
 
-		private InOutLineWithQualityNotice(Properties ctx, int inOutLineId, String trxName)
+		private InOutLineWithQualityIssues(Properties ctx, int inOutLineId, String trxName)
 		{
 			super();
 			this.ctx = ctx;
@@ -100,28 +117,28 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 		}
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityNotice> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityNotice>(C_Request_CreateFromInout.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues>(C_Request_CreateFromInout.class)
 	{
 		@Override
-		protected boolean isEligibleForScheduling(final InOutLineWithQualityNotice model)
+		protected boolean isEligibleForScheduling(final InOutLineWithQualityIssues model)
 		{
 			return model != null && model.getM_InOutLine_ID() > 0;
 		};
 
 		@Override
-		protected Properties extractCtxFromItem(final InOutLineWithQualityNotice item)
+		protected Properties extractCtxFromItem(final InOutLineWithQualityIssues item)
 		{
 			return item.getCtx();
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(final InOutLineWithQualityNotice item)
+		protected String extractTrxNameFromItem(final InOutLineWithQualityIssues item)
 		{
 			return item.getTrxName();
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final Collector collector, final InOutLineWithQualityNotice item)
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final InOutLineWithQualityIssues item)
 		{
 			return new TableRecordReference(I_M_InOutLine.Table_Name, item.getM_InOutLine_ID());
 		}
@@ -134,8 +151,10 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 
+		// retrieve the items (inout lines) that were enqueued and put them in a list
 		final List<I_M_InOutLine> lines = queueDAO.retrieveItems(workPackage, I_M_InOutLine.class, localTrxName);
 
+		// for each line that was enqueued, create a R_Request containing the information from the inout line and inout
 		for (final I_M_InOutLine line : lines)
 		{
 			requestDAO.createRequestFromInOutLine(line);
