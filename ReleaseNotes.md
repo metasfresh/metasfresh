@@ -33,6 +33,7 @@ upcoming
  * #7 provide "grid-align" for layout elements
 
 ## Fixes
+ * #380 duplicate lines in inout
  * #348 Sort tabs shall consider Link column and parent link column if set
  * #330 Process's RefreshAllAfterExecution does not work when the record was moved
  * #327 Got NPE when completing a drafted order
