@@ -93,7 +93,7 @@ class Header extends Component {
                             className="menu-overlay-expand"
                             onClick={e => this.handleMenuOverlay(e, item.nodeId)}
                         >
-                            {item && item.children && item.children.caption}
+                            {item && item.children && item.children.captionBreadcrumb}
                         </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
