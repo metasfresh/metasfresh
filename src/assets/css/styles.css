@@ -830,7 +830,7 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .table .td-md {
-  min-width: 140px;
+  min-width: 144px;
 }
 
 .Lookup .input-icon {
@@ -863,4 +863,14 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .pagination-link {
     text-decoration: underline;
+}
+
+.meta-icon-checkbox {
+    color: $checkbox-unchecked;
+}
+
+.table .YesNo i {
+    height: 14px;
+    margin-top: 4px;
+    display: inline-block;
 }

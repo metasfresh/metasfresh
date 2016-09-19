@@ -178,6 +178,11 @@ input {
     margin-bottom: 0;
 }
 
+.table .input-checkbox {
+    margin-top: 4px;
+    height: 15px;
+}
+
 .input-checkbox input {
 	position: absolute;
 	z-index: -1;
