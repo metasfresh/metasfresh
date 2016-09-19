@@ -22,11 +22,18 @@ import com.google.common.collect.ImmutableSet;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/04416_Possibility_to_define_Warehouses_which_are_joined_to_certain_Business_Processes_%282013062010000051%29
  */
-public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidationRule
+public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidationRule
 {
+	public static final transient FilterWarehouseByDocTypeValidationRule instance = new FilterWarehouseByDocTypeValidationRule();
+	
 	private static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 	private static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	private static final Set<String> PARAMS = ImmutableSet.of(COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocTypeTarget_ID);
+	
+	private FilterWarehouseByDocTypeValidationRule()
+	{
+		super();
+	}
 
 	@Override
 	public boolean accept(IValidationContext evalCtx, NamePair item)

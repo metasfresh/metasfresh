@@ -17,7 +17,7 @@ import de.metas.logging.LogManager;
 public abstract class AbstractJavaValidationRule implements IValidationRule, INamePairPredicate
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
-
+	
 	/**
 	 * A Java Validation rule shall never provide a pre-filter where clause.
 	 * (design decision)
@@ -29,7 +29,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 	}
 	
 	@Override
-	public Set<String> getAllParameters()
+	public final Set<String> getAllParameters()
 	{
 		return getPostQueryFilter().getParameters();
 	}

@@ -107,6 +107,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 		}
 
 		final CachedStringExpression other = (CachedStringExpression)obj;
+		// NOTE: we are not comparing the cache
 		return expression.equals(other.expression);
 	}
 

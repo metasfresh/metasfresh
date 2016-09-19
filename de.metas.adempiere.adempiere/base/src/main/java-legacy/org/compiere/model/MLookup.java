@@ -163,10 +163,11 @@ public final class MLookup extends Lookup implements Serializable
 	 * @param info info
 	 * @param TabNo tab no
 	 */
-	public MLookup(final Properties ctx, final MLookupInfo info, final int TabNo)
+	public MLookup(final Properties ctx, final int adColumnId, final MLookupInfo info, final int TabNo)
 	{
 		super(info.getDisplayType(), info.getWindowNo());
-		this.ctx = ctx; 
+		this.ctx = ctx;
+		this.adColumnId = adColumnId <= 0 ? -1 : adColumnId;
 		m_info = info;
 
 		//
@@ -213,6 +214,7 @@ public final class MLookup extends Lookup implements Serializable
 	private static Integer MINUS_ONE = new Integer(-1);
 
 	private Properties ctx;
+	private final int adColumnId;
 	/** The Lookup Info Value Object */
 	private MLookupInfo m_info;
 	private final IValidationContext m_evalCtx; // metas
@@ -558,7 +560,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String toString()
 	{
-		return "MLookup[" + m_info.getKeyColumn() + ",Column_ID=" + m_info.getAD_Column_ID()
+		return "MLookup[" + m_info.getKeyColumn()
 				+ ",Size=" + size()
 				// // metas: check only the flag and do not call isValidated() method because that method tries to parse the validation code
 				// // which is time consuming when we try to render the grid because java.awt.Container.mixOnShowing() tries to log it
@@ -580,15 +582,18 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return true;
 		}
-
-		if (obj instanceof MLookup)
+		if(obj == null)
 		{
-			final MLookup ll = (MLookup)obj;
-			if (ll.m_info.getAD_Column_ID() == this.m_info.getAD_Column_ID())
-				return true;
+			return false;
 		}
-		return false;
-	}	// equals
+		if(!(obj instanceof MLookup))
+		{
+			return false;
+		}
+
+		final MLookup other = (MLookup)obj;
+		return adColumnId == other.adColumnId;
+	}
 
 	/**
 	 * Return Size

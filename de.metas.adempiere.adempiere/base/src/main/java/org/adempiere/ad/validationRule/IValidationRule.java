@@ -6,6 +6,8 @@ import org.adempiere.ad.expression.api.IStringExpression;
 
 /**
  * Lookup Validation Rule Model
+ * 
+ * NOTE to developer: all implementations shall be <b>stateless</b>.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29

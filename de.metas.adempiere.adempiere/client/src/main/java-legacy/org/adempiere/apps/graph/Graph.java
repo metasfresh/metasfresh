@@ -141,9 +141,10 @@ public class Graph extends CPanel implements ChartMouseListener
 
 		if (m_userSelection)
 		{
-			int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
+			final int adColumnId = -1;
+			final int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
 			MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_Value_ID);
-			MLookup mLookup = new MLookup(Env.getCtx(), info, 0);
+			MLookup mLookup = new MLookup(Env.getCtx(), adColumnId, info, Env.TAB_None);
 			VLookup lookup = new VLookup("ChartType", false, false, true,
 					mLookup);
 			lookup.addVetoableChangeListener(new VetoableChangeListener() {

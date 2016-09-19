@@ -122,8 +122,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/** WindowNo */
 	private int WindowNo;
 
-	/** AD_Column_Info or AD_Process_Para */
-	private int Column_ID;
 	/** AD_Reference_ID */
 	private int DisplayType;
 	/** Real AD_Reference_ID */
@@ -501,16 +499,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	void setIsParent(final boolean isParent)
 	{
 		this.IsParent = isParent;
-	}
-
-	public int getAD_Column_ID()
-	{
-		return this.Column_ID;
-	}
-
-	void setAD_Column_ID(int column_ID)
-	{
-		this.Column_ID = column_ID;
 	}
 
 	void setAutoComplete(boolean autoComplete)

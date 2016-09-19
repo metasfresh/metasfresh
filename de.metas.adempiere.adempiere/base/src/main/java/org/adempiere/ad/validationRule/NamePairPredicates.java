@@ -1,6 +1,7 @@
 package org.adempiere.ad.validationRule;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
@@ -33,7 +34,7 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Static utility methods for {@link INamePairPredicate}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -73,7 +74,7 @@ public final class NamePairPredicates
 	private static final class ComposedNamePairPredicate implements INamePairPredicate
 	{
 		private final Set<INamePairPredicate> predicates;
-		private Set<String> _parameters = null; // lazy
+		private transient Set<String> _parameters = null; // lazy
 
 		private ComposedNamePairPredicate(final Set<INamePairPredicate> predicates)
 		{
@@ -88,6 +89,32 @@ public final class NamePairPredicates
 			return MoreObjects.toStringHelper("composite")
 					.addValue(predicates)
 					.toString();
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(predicates);
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			if (obj == null)
+			{
+				return false;
+			}
+			if (!getClass().equals(obj.getClass()))
+			{
+				return false;
+			}
+
+			final ComposedNamePairPredicate other = (ComposedNamePairPredicate)obj;
+			return predicates.equals(other.predicates);
 		}
 
 		@Override

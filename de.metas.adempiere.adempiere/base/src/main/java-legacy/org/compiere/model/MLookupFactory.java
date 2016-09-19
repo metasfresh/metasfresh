@@ -85,11 +85,10 @@ public class MLookupFactory
 			boolean IsParent, String ValidationCode)
 
 	{
-		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID,
-				ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
 		if (info == null)
 			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(ctx, info, 0);
+		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
 
 	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
@@ -97,11 +96,10 @@ public class MLookupFactory
 			boolean IsParent, int AD_Val_Rule_ID)
 					throws AdempiereException
 	{
-		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID,
-				ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 		if (info == null)
 			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(ctx, info, 0);
+		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
 
 	public static MLookupInfo getLookupInfo(final int WindowNo, final int Column_ID, final int AD_Reference_ID)
@@ -114,7 +112,6 @@ public class MLookupFactory
 		//
 		final MLookupInfo info = getLookupInfo(
 				WindowNo,
-				Column_ID,
 				AD_Reference_ID,
 				columnInfo.getColumnName(),
 				columnInfo.getAD_Reference_Value_ID(),
@@ -138,7 +135,7 @@ public class MLookupFactory
 	{
 		//
 		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID);
-		return new MLookup(ctx, info, TabNo);
+		return new MLookup(ctx, Column_ID, info, TabNo);
 	}   // get
 
 	/**************************************************************************
@@ -152,7 +149,6 @@ public class MLookupFactory
 	 * 
 	 * @param ctx context for access
 	 * @param WindowNo window no
-	 * @param Column_ID AD_Column_ID or AD_Process_Para_ID
 	 * @param ColumnName key column name
 	 * @param AD_Reference_ID display type
 	 * @param AD_Reference_Value_ID AD_Reference (List, Table)
@@ -162,19 +158,19 @@ public class MLookupFactory
 	 * @Deprecated
 	 */
 	static public MLookupInfo getLookupInfo(int WindowNo,
-			int Column_ID, int AD_Reference_ID,
+			int AD_Reference_ID,
 			String ColumnName, int AD_Reference_Value_ID,
 			boolean IsParent, String ValidationCode)
 	{
 		final int adValRuleId = -1;
-		final MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
+		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
 		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 
-	static public MLookupInfo getLookupInfo(int WindowNo, int Column_ID, int AD_Reference_ID, String ColumnName, int AD_Reference_Value_ID, boolean IsParent, int AD_Val_Rule_ID)
+	static public MLookupInfo getLookupInfo(int WindowNo, int AD_Reference_ID, String ColumnName, int AD_Reference_Value_ID, boolean IsParent, int AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -209,14 +205,13 @@ public class MLookupFactory
 		// do we have basic info?
 		if (info == null)
 		{
-			s_log.error("No SQL - " + ColumnName);
+			s_log.error("No SQL - {}", ColumnName);
 			return null;
 		}
 
 		// remaining values
 		// NOTE: because some of the previous getters can retrieve a clone of a cached lookup info, here we need to set the actual values again
 		info.setWindowNo(WindowNo);
-		info.setAD_Column_ID(Column_ID);
 		info.setDisplayType(AD_Reference_ID);
 		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
