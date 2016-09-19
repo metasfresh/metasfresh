@@ -13,11 +13,11 @@ package org.adempiere.ad.trx.processor.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
@@ -37,7 +36,7 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-/* package*/class TrxItemExecutorBuilder<IT, RT> implements ITrxItemExecutorBuilder<IT, RT>
+/* package */class TrxItemExecutorBuilder<IT, RT> implements ITrxItemExecutorBuilder<IT, RT>
 {
 	// services
 	private final transient TrxItemProcessorExecutorService executorService;
@@ -49,10 +48,13 @@ import org.adempiere.util.Services;
 	private String _trxName = null;
 
 	private ITrxItemProcessor<IT, RT> _processor;
-	private ITrxItemExceptionHandler _exceptionHandler = FailTrxItemExceptionHandler.instance;
-	private Boolean _useTrxSavepoints;
-	
+	private ITrxItemExceptionHandler _exceptionHandler = ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler;
+
+	private boolean _useTrxSavepoints =  ITrxItemProcessorExecutor.DEFAULT_UseTrxSavepoints;
+
 	private Integer itemsPerBatch = null;
+
+	private OnItemErrorPolicy _onItemErrorPolicy = ITrxItemProcessorExecutor.DEFAULT_OnItemErrorPolicy; // #302
 
 	public TrxItemExecutorBuilder(final TrxItemProcessorExecutorService executorService)
 	{
@@ -83,12 +85,11 @@ import org.adempiere.util.Services;
 		final ITrxItemChunkProcessor<IT, RT> processor = createProcessor();
 
 		// Create and configure the executor
-		final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<IT, RT>(processorCtx, processor);
-		executor.setExceptionHandler(getExceptionHandler());
-		if(_useTrxSavepoints != null)
-		{
-			executor.setUseTrxSavepoints(_useTrxSavepoints);
-		}
+		final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<IT, RT>(processorCtx,
+				processor,
+				getExceptionHandler(),
+				_onItemErrorPolicy,
+				_useTrxSavepoints);
 
 		return executor;
 	}
@@ -96,12 +97,12 @@ import org.adempiere.util.Services;
 	private final ITrxItemChunkProcessor<IT, RT> createProcessor()
 	{
 		ITrxItemProcessor<IT, RT> processor = getProcessor();
-		
+
 		if (itemsPerBatch != null)
 		{
 			processor = FixedBatchTrxItemProcessor.of(processor, itemsPerBatch);
 		}
-		
+
 		return TrxItemProcessor2TrxItemChunkProcessorWrapper.wrapIfNeeded(processor);
 	}
 
@@ -170,6 +171,13 @@ import org.adempiere.util.Services;
 	}
 
 	@Override
+	public ITrxItemExecutorBuilder<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy)
+	{
+		this._onItemErrorPolicy = onItemErrorPolicy;
+		return this;
+	}
+
+	@Override
 	public ITrxItemExecutorBuilder<IT, RT> setItemsPerBatch(final int itemsPerBatch)
 	{
 		if (itemsPerBatch == Integer.MAX_VALUE)
@@ -182,12 +190,11 @@ import org.adempiere.util.Services;
 		}
 		return this;
 	}
-	
+
 	@Override
 	public ITrxItemExecutorBuilder<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints)
 	{
 		this._useTrxSavepoints = useTrxSavepoints;
 		return this;
 	}
-
 }

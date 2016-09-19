@@ -3,10 +3,10 @@ package org.adempiere.ad.trx.processor.api.impl;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.AssertionFailedError;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -15,6 +15,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
+
+import junit.framework.AssertionFailedError;
 
 /*
  * #%L
@@ -40,7 +42,7 @@ import org.junit.Assert;
 
 /**
  * Executes a given {@link ITrxItemChunkProcessor} and asserts expectations.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT>
@@ -51,7 +53,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private ITrxItemChunkProcessor<IT, RT> _processor;
 	private boolean _runInTrx = false;
-	private Boolean useTrxSavepoints = null;
+	private boolean useTrxSavepoints = ITrxItemProcessorExecutor.DEFAULT_UseTrxSavepoints;
 	//
 	private List<IT> _items;
 	private RT expectedResult;
@@ -96,12 +98,12 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 				// Create the executor
 				final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<>(
 						processorCtx, // processing context
-						processor // processor
+						processor, // processor
+						ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler,
+						ITrxItemExecutorBuilder.OnItemErrorPolicy.CancelChunkAndRollBack,
+						useTrxSavepoints
 				);
-				if (useTrxSavepoints != null)
-				{
-					executor.setUseTrxSavepoints(useTrxSavepoints);
-				}
+
 
 				//
 				// Run the executor and gather the result
