@@ -1,4 +1,4 @@
-package de.metas.adempiere.banking.api;
+package de.metas.banking.api;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.adempiere.banking.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -29,11 +28,19 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_BankAccount;
 
+/**
+ * 
+ * This interface must be moved in de.metas.banking after we get rid of org.compiere.model.MPaySelectionCheck !
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IBPBankAccountDAO extends ISingletonService
 {
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
-	 * In case the currencyID is not set (<=0)  just retrieve all accounts of the bpartner
+	 * In case the currencyID is not set (<=0) just retrieve all accounts of the bpartner
+	 * The bank accounts will be ordered by their IsDefault values, with true first.
 	 * 
 	 * @param ctx
 	 * @param partner

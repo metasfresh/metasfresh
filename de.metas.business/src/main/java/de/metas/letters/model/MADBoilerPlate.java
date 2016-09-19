@@ -335,7 +335,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		else if (parent_table_id == MCampaign.Table_ID)
 			rq.setC_Campaign_ID(parent_record_id);
 		//
-		else if (parent_table_id == MRequest.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_R_Request.class))
 			rq.setR_RequestRelated_ID(parent_record_id);
 		// FR [2842165] - Order Ref link from SO line creating new request
 		else if (parent_table_id == MOrderLine.Table_ID)

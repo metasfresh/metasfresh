@@ -38,9 +38,9 @@ import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.logging.LogManager;
 
 /**
  * This is mainly a copy and paste of the former jboss-aop aspect <code>de.metas.banking.aop.PaySelectionCheckAsp</code>. The purpuse of that aspect was:
@@ -104,18 +104,25 @@ public class C_PaySelectionCheck
 		final List<I_C_BP_BankAccount> accounts = Services.get(IBPBankAccountDAO.class).retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
 		for (final I_C_BP_BankAccount ba : accounts)
 		{
-			if ("P".equals(ba.getBPBankAcctUse()))
+			final String bpBankAcctUse = ba.getBPBankAcctUse();
+			
+			if(bpBankAcctUse == null)
+			{
+				continue;
+			}
+			
+			if ("P".equals(bpBankAcctUse))
 			{
 				// found the account we were actually looking for
 				baToUse = ba;
 				break;
 
 			}
-			else if ("T".equals(ba.getBPBankAcctUse()))
+			else if ("T".equals(bpBankAcctUse))
 			{
 				baRemittance = ba;
 			}
-			else if ("B".equals(ba.getBPBankAcctUse()))
+			else if ("B".equals(bpBankAcctUse))
 			{
 				baAll = ba;
 			}

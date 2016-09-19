@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +56,8 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 
 /**
- * 
- * 
+ *
+ *
  * TODO there is duplicated code from <code>de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer</code>. Please deduplicate it when there is time. my favorite solution would be to
  * create a "locking item-chump-processor" to do all the magic.
  *
@@ -256,7 +256,7 @@ import de.metas.lock.api.LockOwner;
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
 		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, isIgnoreInvoiceSchedule(), loggable))
 		{
-			// NOTE: we are not logging any reason because the menthod already logged the reson if any.
+			// NOTE: we are not logging any reason because the method already logged the reason if any.
 			return false;
 		}
 
@@ -325,7 +325,7 @@ import de.metas.lock.api.LockOwner;
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final int adPInstanceId)
 	{
 		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
-		
+
 		return new Iterable<I_C_Invoice_Candidate>()
 		{
 			@Override

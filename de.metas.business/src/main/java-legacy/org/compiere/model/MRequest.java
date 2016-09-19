@@ -26,15 +26,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -106,7 +107,7 @@ public class MRequest extends X_R_Request
 		super (ctx, R_Request_ID, trxName);
 		if (R_Request_ID == 0)
 		{
-			setDueType (DUETYPE_Due);
+			setDueType (DUETYPE_Faellig);
 		//  setSalesRep_ID (0);
 		//	setDocumentNo (null);
 			setConfidentialType (CONFIDENTIALTYPE_PublicInformation);	// A
@@ -232,11 +233,11 @@ public class MRequest extends X_R_Request
 		Timestamp overdue = TimeUtil.addDays(due, getRequestType().getDueDateTolerance());
 		Timestamp now = new Timestamp (System.currentTimeMillis());
 		//
-		String DueType = DUETYPE_Due;
+		String DueType = DUETYPE_Faellig;
 		if (now.before(due))
-			DueType = DUETYPE_Scheduled;
+			DueType = DUETYPE_Geplant;
 		else if (now.after(overdue))
-			DueType = DUETYPE_Overdue;
+			DueType = DUETYPE_Ueberfaellig;
 		super.setDueType(DueType);
 	}	//	setDueType
 
@@ -452,7 +453,7 @@ public class MRequest extends X_R_Request
 	 */
 	public boolean isOverdue()
 	{
-		return DUETYPE_Overdue.equals(getDueType());
+		return DUETYPE_Ueberfaellig.equals(getDueType());
 	}	//	isOverdue
 
 	/**
@@ -461,7 +462,7 @@ public class MRequest extends X_R_Request
 	 */
 	public boolean isDue()
 	{
-		return DUETYPE_Due.equals(getDueType());
+		return DUETYPE_Faellig.equals(getDueType());
 	}	//	isDue
 
 	/**
@@ -1242,9 +1243,15 @@ public class MRequest extends X_R_Request
 					|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(NotificationType))
 				{
 					int AD_Message_ID = 834;
-					MNote note = new MNote(getCtx(), AD_Message_ID, AD_User_ID,
-						X_R_Request.Table_ID, getR_Request_ID(), 
-						subject, message.toString(), get_TrxName());
+					MNote note = new MNote(
+							getCtx(), 
+							AD_Message_ID, 
+							AD_User_ID,
+							InterfaceWrapperHelper.getTableId(I_R_Request.class), 
+							getR_Request_ID(), 
+							subject, 
+							message.toString(), 
+							get_TrxName());
 					if (note.save())
 						notices++;
 				}

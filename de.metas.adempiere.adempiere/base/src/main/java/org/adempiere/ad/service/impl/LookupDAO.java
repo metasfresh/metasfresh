@@ -960,12 +960,11 @@ public class LookupDAO implements ILookupDAO
 		if (posOrder != -1)
 			sql = sql.substring(0, posOrder)
 					+ (hasWhere ? " AND " : " WHERE ")
-					+ validation
+					+ " ( " + validation + " ) "
 					+ sql.substring(posOrder);
 		else
 			sql += (hasWhere ? " AND " : " WHERE ")
-
-			+ validation;
+					+ " ( " + validation + " ) ";
 
 		return sql;
 	}

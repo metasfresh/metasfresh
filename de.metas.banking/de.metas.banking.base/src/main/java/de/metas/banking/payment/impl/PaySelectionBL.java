@@ -37,7 +37,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.X_C_BP_BankAccount;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -190,7 +190,9 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		if (psl.getC_Invoice_ID() <= 0)
+		final I_C_Invoice invoice = pslExt.getC_Invoice();
+
+		if (invoice == null)
 		{
 			return; // nothing to do yet, but as C_PaySelectionLine.C_Invoice_ID is mandatory, we only need to make sure this method is eventually called from a model interceptor
 		}
@@ -199,15 +201,34 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pslExt);
 
-		final int partnerID = pslExt.getC_Invoice().getC_BPartner_ID();
+		final int partnerID = invoice.getC_BPartner_ID();
 		pslExt.setC_BPartner_ID(partnerID);
-
-		final String paymentRule = pslExt.getPaymentRule();
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
 		final int currencyID = pslExt.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
 
+		final boolean isSalesInvoice = invoice.isSOTrx();
+
+		final boolean isCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
+
+		final String accteptedBankAccountUsage;
+
+		if ((isSalesInvoice && !isCreditMemo) ||
+				(!isSalesInvoice && isCreditMemo))
+		{
+			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo 
+			// OR it is a Credit memo with isSoTrx = 'N' 
+			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
+		}
+
+		else 
+		{
+			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'Y' 
+			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
+		}
+	
 		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
 
 		if (!bankAccts.isEmpty())
@@ -217,14 +238,30 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			for (final I_C_BP_BankAccount account : bankAccts)
 			{
+				// FRESH-606: Only continue if the bank account has a use set
+				if (account.getBPBankAcctUse() == null)
+				{
+					continue;
+				}
+
 				final int accountID = account.getC_BP_BankAccount_ID();
 				if (accountID > 0)
 				{
 					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
 					{
-						secondaryAcct = accountID;
+						// in case a secondary act was already found, it should be not changed.
+						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
+						if (secondaryAcct == 0)
+						{
+							secondaryAcct = accountID;
+						}
 					}
-					else if (account.getBPBankAcctUse().equals(paymentRule))
+					else if (accteptedBankAccountUsage == null)
+					{
+						continue;
+					}
+
+					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
 					{
 						primaryAcct = accountID;
 						break;
@@ -245,12 +282,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		final boolean trimWhitespaces = true;
 		if (Check.isEmpty(pslExt.getReference(), trimWhitespaces))
 		{
-			final I_C_Invoice invoice = pslExt.getC_Invoice();
-			if (invoice == null)
-			{
-				return;
-			}
-
 			final String invoicePOReference = invoice.getPOReference();
 			if (Check.isEmpty(invoicePOReference, trimWhitespaces))
 			{
