@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,9 +46,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
- * 
+ *
  * Tests from {@link I_C_Invoice_Candidate}s to {@link IInvoiceHeader}s.
- * 
+ *
  * @author ts
  *
  */
@@ -78,12 +78,12 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		updateInvalidCandidates();
 		refreshInvoiceCandidates(invoiceCandidates);
-		
+
 		step_updateInvoiceCandidates(invoiceCandidates, inOutLines);
-		
+
 		updateInvalidCandidates();
 		refreshInvoiceCandidates(invoiceCandidates);
-				
+
 		step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
 		final AggregationEngine engine = new AggregationEngine();
@@ -110,7 +110,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 	/**
 	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterwards, the ICs will be updated/revalidated once again.
-	 * 
+	 *
 	 * @param invoiceCandidates
 	 * @param inOutLines
 	 */
@@ -121,7 +121,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 	/**
 	 * PErform guard tests before the actual call to the aggregation engine under test is made.
-	 * 
+	 *
 	 * @param invoiceCandidates
 	 * @param inOutLines
 	 */
@@ -133,7 +133,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * Helper method, to be called from the {@link #step_validate_after_aggregation(List, List, List)} methods of our subclasses. <br>
 	 * Validate the IC<->IL qty allocation, This is relevant because aggregate.getAllocatedQty() is used to create the C_Invoice_Line_allocation records which in turn are used to compute the invoice
 	 * candidate's QtyInvoiced value. And this QtyInvoiced decides if and when the IC is flagged as processed (fully invoiced).
-	 * 
+	 *
 	 * @param ic
 	 * @param invoice
 	 * @param invoiceLine
