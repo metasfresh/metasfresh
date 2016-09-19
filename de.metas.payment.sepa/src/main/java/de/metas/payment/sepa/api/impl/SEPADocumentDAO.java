@@ -54,7 +54,7 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 
 		return new Query(ctx, I_C_BP_BankAccount.Table_Name, whereClause, trxName)
 				.setParameters(params)
-				.setOrderBy(I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
+				.setOrderBy(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
 				.setOnlyActiveRecords(true)
 				.first(I_C_BP_BankAccount.class);
 	}
