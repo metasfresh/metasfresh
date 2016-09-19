@@ -9,7 +9,9 @@ class ActionButton extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            list: []
+            list: {
+                values: []
+            }
         }
     }
     handleDropdownBlur = () => {
@@ -51,7 +53,7 @@ class ActionButton extends Component {
         }
     }
     renderStatusList = (list) => {
-        return list.map((item, index) => {
+        return list.values.map((item, index) => {
             const key = Object.keys(item)[0];
             return <li
                 key={index}

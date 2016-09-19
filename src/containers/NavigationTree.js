@@ -23,15 +23,23 @@ class NavigationTree extends Component {
           deepNode: null
         };
     }
+
+    componentDidMount(){
+        this.getData();
+    }
+
+    getData = () => {
+        const {dispatch} = this.props;
+        dispatch(rootRequest()).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                rootResults: response.data
+            }))
+        });
+    }
+
     renderTree = (res) => {
       const {dispatch} = this.props;
       const {rootResults} = this.state;
-
-      dispatch(rootRequest()).then(response => {
-        this.setState(Object.assign({}, this.state, {
-            rootResults: response.data
-        }))
-      });
 
       return(
         <div>

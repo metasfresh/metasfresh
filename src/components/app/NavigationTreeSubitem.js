@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import NavigationTreeLastItem from './NavigationTreeLastItem';
 
 class NavigationTreeSubitem extends Component {
     constructor(props){
@@ -15,7 +14,7 @@ class NavigationTreeSubitem extends Component {
                 </span>
                 <div>
                 {childArray && childArray.map((subitem, subindex) =>
-                  <NavigationTreeLastItem
+                  <NavigationTreeSubitem
                       key={subindex}
                       handleRedirect={handleRedirect}
                       childArray={subitem.children}
