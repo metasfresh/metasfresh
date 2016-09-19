@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
 import org.compiere.util.NamePair;
@@ -141,6 +142,7 @@ import de.metas.logging.LogManager;
 		hasInactiveValues = false;
 		allLoaded = true;
 
+		final INamePairPredicate postQueryFilter = lookupInfo.getValidationRule().getPostQueryFilter();
 		for (NamePair item = data.next(); item != null; item = data.next())
 		{
 			final int rows = values.size();
@@ -165,7 +167,7 @@ import de.metas.logging.LogManager;
 				hasInactiveValues = true;
 			}
 
-			if (!lookupInfo.getValidationRule().accept(validationCtx, item))
+			if (!postQueryFilter.accept(validationCtx, item))
 			{
 				continue;
 			}

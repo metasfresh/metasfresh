@@ -1,13 +1,13 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * NULL {@link IStringExpression}
@@ -38,9 +38,9 @@ public final class NullStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 
 	@Override

@@ -1,31 +1,7 @@
 package org.adempiere.warehouse.validationrule;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
@@ -39,6 +15,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
  * 
  * @author tsa
@@ -48,13 +26,7 @@ public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidati
 {
 	private static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 	private static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
-	private static final List<String> PARAMS = Arrays.asList(COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocTypeTarget_ID);
-
-	@Override
-	public boolean isImmutable()
-	{
-		return false;
-	}
+	private static final Set<String> PARAMS = ImmutableSet.of(COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocTypeTarget_ID);
 
 	@Override
 	public boolean accept(IValidationContext evalCtx, NamePair item)
@@ -109,7 +81,7 @@ public class FilterWarehouseByDocTypeValidationRule extends AbstractJavaValidati
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return PARAMS;
 	}

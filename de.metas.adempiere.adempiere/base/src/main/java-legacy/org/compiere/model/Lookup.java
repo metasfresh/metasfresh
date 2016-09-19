@@ -18,17 +18,20 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 
@@ -479,6 +482,11 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return "";
 	}   //  getValidation
+	
+	public boolean hasValidation()
+	{
+		return !Check.isEmpty(getValidation(), true);
+	}
 
 	/**
 	 *  Has Inactive records - default implementation
@@ -594,9 +602,9 @@ public abstract class Lookup extends AbstractListModel
 	 * 
 	 * @return list of parameter names
 	 */
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableSet.of();
 	}
 
 	/**

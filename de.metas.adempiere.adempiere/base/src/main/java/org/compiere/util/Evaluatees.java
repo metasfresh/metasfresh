@@ -2,8 +2,10 @@ package org.compiere.util;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -12,6 +14,7 @@ import org.adempiere.util.Check;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /*
  * #%L
@@ -66,6 +69,11 @@ public final class Evaluatees
 	public static final Evaluatee2 ofMap(final Map<String, ? extends Object> map)
 	{
 		return new MapEvaluatee(map);
+	}
+	
+	public static final MapEvaluateeBuilder mapBuilder()
+	{
+		return new MapEvaluateeBuilder();
 	}
 
 	public static final Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
@@ -203,6 +211,50 @@ public final class Evaluatees
 			return null;
 		}
 	}
+	
+	public static final class MapEvaluateeBuilder
+	{
+		private LinkedHashMap<String, Object> map;
+		
+		private MapEvaluateeBuilder()
+		{
+			super();
+		}
+		
+		public Evaluatee build()
+		{
+			if(map == null || map.isEmpty())
+			{
+				return EMPTY;
+			}
+			else if(map.size() == 1)
+			{
+				final Entry<String, Object> entry = map.entrySet().iterator().next();
+				return new SingletonEvaluatee(entry.getKey(), entry.getValue());
+			}
+			else
+			{
+				return new MapEvaluatee(ImmutableMap.copyOf(map));
+			}
+		}
+		
+		public MapEvaluateeBuilder put(final String variableName, final Object value)
+		{
+			if(map == null)
+			{
+				map = new LinkedHashMap<>();
+			}
+			map.put(variableName, value);
+			return this;
+		}
+		
+		public MapEvaluateeBuilder put(CtxName name, final Object value)
+		{
+			put(name.getName(), value);
+			return this;
+		}
+	}
+
 
 	/**
 	 * Wraps a given {@link Properties} context to {@link Evaluatee}

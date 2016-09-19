@@ -1,7 +1,5 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +15,7 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 
@@ -62,11 +60,11 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	public static final IStringExpression of(final TranslatableParameterizedString translatableString)
 	{
-		if(translatableString == TranslatableParameterizedString.EMPTY)
+		if (translatableString == TranslatableParameterizedString.EMPTY)
 		{
 			return NullStringExpression.instance;
 		}
-		
+
 		final CtxName adLanguageParam = CtxName.parseWithMarkers(translatableString.getAD_LanguageParamName());
 		return of(adLanguageParam, translatableString.getStringBaseLanguage(), translatableString.getStringTrlPattern());
 	}
@@ -78,7 +76,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 			// => we have no translation, just a constant string expression
 			return ConstantStringExpression.of(expressionBaseLang);
 		}
-		
+
 		// NOTE: we need to compile the expressions because we don't know if they are constant or not
 		final IStringExpression aexpressionBaseLang = StringExpressionCompiler.instance.compile(expressionBaseLang);
 		final IStringExpression aexpressionTrl = StringExpressionCompiler.instance.compile(expressionTrl);
@@ -125,7 +123,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	private final IStringExpression expressionBaseLang;
 	private final IStringExpression expressionTrl;
 	private final CtxName adLanguageParam;
-	private final List<String> parameters;
+	private final Set<String> parameters;
 
 	private TranslatableParameterizedStringExpression(final CtxName adLanguageParam, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
 	{
@@ -142,21 +140,21 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 		//
 		// Expression parameters: all parameters from both expressions, plus the AD_Language parameter
-		final Set<String> parameters = new LinkedHashSet<>();
-		parameters.addAll(expressionBaseLang.getParameters());
-		parameters.addAll(expressionTrl.getParameters());
-		parameters.add(adLanguageParam.getName());
-
-		this.parameters = ImmutableList.copyOf(parameters);
+		this.parameters = ImmutableSet.<String>builder()
+				.addAll(expressionBaseLang.getParameters())
+				.addAll(expressionTrl.getParameters())
+				.add(adLanguageParam.getName())
+				.build();
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("baseLang", expressionBaseLang)
-				.add("trl", expressionTrl)
-				.add("adLanguageParam", adLanguageParam)
+		// NOTE: we display only the base language expression
+		// because we want to have a quick human readable string representation,
+		// mainly when this expression is part of a composite
+		return MoreObjects.toStringHelper("TRL")
+				.addValue(expressionBaseLang)
 				.toString();
 	}
 
@@ -215,7 +213,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return parameters;
 	}

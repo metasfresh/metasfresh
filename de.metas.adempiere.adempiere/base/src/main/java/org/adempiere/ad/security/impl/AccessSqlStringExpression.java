@@ -1,7 +1,7 @@
 package org.adempiere.ad.security.impl;
 
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -19,7 +19,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -83,7 +83,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 	private final boolean fullyQualified;
 	private final boolean rw;
 
-	private final List<String> parameters;
+	private final Set<String> parameters;
 
 	private AccessSqlStringExpression(final IStringExpression sqlExpression, final String tableNameIn, final boolean fullyQualified, final boolean rw)
 	{
@@ -100,7 +100,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 		final LinkedHashSet<String> parameters = new LinkedHashSet<>();
 		parameters.add(PARAM_UserRolePermissionsKey.getName());
 		parameters.addAll(sqlExpression.getParameters());
-		this.parameters = ImmutableList.copyOf(parameters);
+		this.parameters = ImmutableSet.copyOf(parameters);
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return parameters;
 	}

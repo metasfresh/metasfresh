@@ -25,12 +25,15 @@ package org.compiere.grid.ed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.compiere.util.NamePair;
+import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.util.Services;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
 {
@@ -38,7 +41,7 @@ import com.google.common.collect.ImmutableList;
 
 	public static final Object SEARCHSQL_PLACEHOLDER = new String("***SEARCH SQL PLACEHOLDER***");
 
-	private final String whereClause;
+	private final IStringExpression whereClause;
 	private final List<Object> paramsTemplate;
 	private final boolean immutable;
 
@@ -46,7 +49,7 @@ import com.google.common.collect.ImmutableList;
 	{
 		super();
 
-		this.whereClause = whereClause;
+		this.whereClause = Services.get(IExpressionFactory.class).compile(whereClause, IStringExpression.class);
 		this.paramsTemplate = paramsTemplate;
 		this.immutable = !paramsTemplate.contains(SEARCHSQL_PLACEHOLDER);
 	}
@@ -58,15 +61,15 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public IStringExpression getPrefilterWhereClause()
 	{
 		return whereClause;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getAllParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 	
 	public List<Object> getParameterValues(final String searchSQL)
@@ -86,16 +89,10 @@ import com.google.common.collect.ImmutableList;
 		}
 		return params;
 	}
-
+	
 	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public INamePairPredicate getPostQueryFilter()
 	{
-		return true;
-	}
-
-	@Override
-	public NamePair getValidValue(Object currentValue)
-	{
-		return null;
+		return INamePairPredicate.NULL;
 	}
 }

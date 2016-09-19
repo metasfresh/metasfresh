@@ -1,8 +1,8 @@
 package org.adempiere.ad.expression.api.impl;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -10,7 +10,7 @@ import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -71,9 +71,9 @@ public class SysDateDateExpression implements IExpression<java.util.Date>
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 
 	@Override

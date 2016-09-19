@@ -1,7 +1,7 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -12,7 +12,7 @@ import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableList;
 	private final String expressionStr;
 	private final CtxName parameter;
 
-	private final List<String> parameters;
+	private final Set<String> parameters;
 
 	/* package */ SingleParameterStringExpression(final String expressionStr, final CtxName parameter)
 	{
@@ -60,7 +60,7 @@ import com.google.common.collect.ImmutableList;
 		Check.assumeNotNull(parameter, "Parameter parameter is not null");
 		this.parameter = parameter;
 
-		parameters = ImmutableList.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
+		parameters = ImmutableSet.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
 	}
 
 	@Override
@@ -107,7 +107,7 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return parameters;
 	}

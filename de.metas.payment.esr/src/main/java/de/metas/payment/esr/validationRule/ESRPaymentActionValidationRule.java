@@ -28,6 +28,7 @@ package de.metas.payment.esr.validationRule;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
@@ -37,7 +38,7 @@ import org.adempiere.util.StringUtils;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
@@ -48,17 +49,10 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
  */
 public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 {
-	private static final ImmutableList<String> PARAMETERS = ImmutableList.of(
+	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(
 			I_ESR_ImportLine.COLUMNNAME_ESR_Invoice_Openamt,
 			I_ESR_ImportLine.COLUMNNAME_C_Payment_ID,
 			I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID);
-
-	@Override
-	public boolean isImmutable()
-	{
-		// This validation depends on context, so it's not immutable at ALL!
-		return false;
-	}
 
 	@Override
 	public boolean accept(final IValidationContext evalCtx, final NamePair item)
@@ -151,7 +145,7 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

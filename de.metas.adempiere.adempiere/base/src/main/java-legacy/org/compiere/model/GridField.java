@@ -285,12 +285,12 @@ public class GridField
 		}
 
 		// if there is a validation string, the lookup is unstable
-		if (lookup.getValidation().length() == 0)
+		if(!lookup.hasValidation())
 		{
 			return true;
 		}
+		
 		//
-		log.debug("(" + m_vo.getColumnName() + ")");
 		lookup.refresh();
 		return lookup.isValidated();
 	}   // refreshLookup

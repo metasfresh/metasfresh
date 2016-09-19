@@ -13,6 +13,7 @@ import org.compiere.util.CtxName;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
@@ -33,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 
 	private final Boolean constantValue;
 
-	private ImmutableList<String> _parameters;
+	private ImmutableSet<String> _parameters;
 
 	private final String expressionStr;
 	private Integer _hashcode; // lazy
@@ -170,13 +171,13 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		if (_parameters == null)
 		{
 			if (isConstant())
 			{
-				_parameters = ImmutableList.of();
+				_parameters = ImmutableSet.of();
 			}
 			else
 			{
@@ -189,7 +190,7 @@ import com.google.common.collect.ImmutableList;
 				{
 					result.add(((CtxName)operand2).getName());
 				}
-				_parameters = ImmutableList.copyOf(result);
+				_parameters = ImmutableSet.copyOf(result);
 			}
 		}
 		return _parameters;

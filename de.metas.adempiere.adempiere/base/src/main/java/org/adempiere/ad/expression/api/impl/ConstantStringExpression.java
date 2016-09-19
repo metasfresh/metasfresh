@@ -1,7 +1,7 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -11,8 +11,8 @@ import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -112,9 +112,9 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 
 	@Override

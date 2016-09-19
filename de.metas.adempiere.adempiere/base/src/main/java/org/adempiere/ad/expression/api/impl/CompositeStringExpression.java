@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.core.joran.conditional.Condition;
@@ -83,7 +85,7 @@ public final class CompositeStringExpression implements IStringExpression
 
 	private transient String _expressionStr;
 	private transient String _formatedExpressionString;
-	private transient List<String> _parameters;
+	private transient Set<String> _parameters;
 
 	private CompositeStringExpression(final Collection<IStringExpression> expressions)
 	{
@@ -94,9 +96,14 @@ public final class CompositeStringExpression implements IStringExpression
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(Joiner.on("\n").join(expressions))
-				.toString();
+		final ToStringHelper builder = MoreObjects.toStringHelper("Composite");
+		if (!expressions.isEmpty())
+		{
+			final String separator = "\n* ";
+			builder.addValue(separator + Joiner.on(separator).join(expressions));
+		}
+
+		return builder.toString();
 	}
 
 	@Override
@@ -195,13 +202,13 @@ public final class CompositeStringExpression implements IStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		if (_parameters == null)
 		{
 			_parameters = expressions.stream()
 					.flatMap(expression -> expression.getParameters().stream())
-					.collect(GuavaCollectors.toImmutableListExcludingDuplicates());
+					.collect(GuavaCollectors.toImmutableSet());
 		}
 		return _parameters;
 	}

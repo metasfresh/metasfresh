@@ -31,6 +31,12 @@ import de.metas.logging.LogManager;
  */
 public interface Evaluatee
 {
+	@SuppressWarnings("unchecked")
+	default <T> T get_ValueAsObject(String variableName)
+	{
+		return (T)get_ValueAsString(variableName);
+	}
+
 	/**
 	 * Get Variable Value
 	 *
@@ -38,7 +44,7 @@ public interface Evaluatee
 	 * @return value
 	 */
 	String get_ValueAsString(String variableName);
-	
+
 	/**
 	 * Get variable value as integer.
 	 *
@@ -60,7 +66,7 @@ public interface Evaluatee
 	/**
 	 * @return default value or null; never throws exception
 	 */
-	static Integer convertToInteger(final String variableName, String valueStr, final Integer defaultValue)
+	/* private */static Integer convertToInteger(final String variableName, String valueStr, final Integer defaultValue)
 	{
 		if (Env.isPropertyValueNull(variableName, valueStr))
 		{
@@ -111,7 +117,7 @@ public interface Evaluatee
 	/**
 	 * @return default value or null; never throws exception
 	 */
-	static BigDecimal convertToBigDecimal(final String variableName, String valueStr, final BigDecimal defaultValue)
+	/* private */static BigDecimal convertToBigDecimal(final String variableName, String valueStr, final BigDecimal defaultValue)
 	{
 		if (Env.isPropertyValueNull(variableName, valueStr))
 		{
@@ -141,7 +147,7 @@ public interface Evaluatee
 		return convertToDate(variableName, valueStr, defaultValue);
 	}
 
-	static java.util.Date convertToDate(final String variableName, final String valueStr, final java.util.Date defaultValue)
+	/* private */static java.util.Date convertToDate(final String variableName, final String valueStr, final java.util.Date defaultValue)
 	{
 		if (valueStr == null || valueStr.isEmpty())
 		{
@@ -158,12 +164,6 @@ public interface Evaluatee
 			LogManager.getLogger(Evaluatee.class).warn("Failed converting {}={} to Date. Returning default value: {}", variableName, valueStr, defaultValue, e);
 			return defaultValue;
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	default <T> T get_ValueAsObject(String variableName)
-	{
-		return (T)get_ValueAsString(variableName);
 	}
 
 	default Evaluatee andComposeWith(final Evaluatee other)

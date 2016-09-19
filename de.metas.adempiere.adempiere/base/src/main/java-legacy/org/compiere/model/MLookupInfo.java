@@ -347,7 +347,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	/**
-	 * @return SQL WHERE part (without WHERE keyword); this SQL is NOT including the {@link #getValidationRule()} code
+	 * @return static SQL WHERE part (without WHERE keyword); this SQL is NOT including the {@link #getValidationRule()} code
 	 */
 	public String getWhereClauseSqlPart()
 	{

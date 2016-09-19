@@ -2,6 +2,7 @@ package org.adempiere.ad.expression.api.impl;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpression;
@@ -12,7 +13,7 @@ import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -168,9 +169,9 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public List<String> getParameters()
+		public Set<String> getParameters()
 		{
-			return ImmutableList.of();
+			return ImmutableSet.of();
 		}
 
 		@Override
@@ -252,9 +253,9 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public List<String> getParameters()
+		public Set<String> getParameters()
 		{
-			return ImmutableList.of();
+			return ImmutableSet.of();
 		}
 
 		@Override
@@ -275,7 +276,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		private final String expressionStr;
 
 		protected final CtxName parameter;
-		private final List<String> _parametersList;
+		private final Set<String> _parametersList;
 
 		/* package */ SingleParameterExpressionTemplate(final ExpressionContext context, final Compiler<V, ET> compiler, final String expressionStr, final CtxName parameter)
 		{
@@ -286,7 +287,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 
 			Check.assumeNotNull(parameter, "Parameter parameter is not null");
 			this.parameter = parameter;
-			_parametersList = ImmutableList.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
+			_parametersList = ImmutableSet.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
 		}
 
 		@Override
@@ -334,7 +335,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public List<String> getParameters()
+		public Set<String> getParameters()
 		{
 			return _parametersList;
 		}
@@ -399,7 +400,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public List<String> getParameters()
+		public Set<String> getParameters()
 		{
 			return stringExpression.getParameters();
 		}

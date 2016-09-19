@@ -1,9 +1,10 @@
 package org.adempiere.ad.expression.api.impl;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
@@ -122,7 +123,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return expression.getParameters();
 	}
@@ -190,7 +191,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 
 	private static final class EffectiveValuesEvaluatee implements Evaluatee2
 	{
-		public static final EffectiveValuesEvaluatee extractFrom(final List<String> parameters, final Evaluatee ctx, final boolean failIfNotFound)
+		public static final EffectiveValuesEvaluatee extractFrom(final Collection<String> parameters, final Evaluatee ctx, final boolean failIfNotFound)
 		{
 			if (parameters == null || parameters.isEmpty())
 			{

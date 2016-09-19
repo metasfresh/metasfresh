@@ -18,6 +18,7 @@ import org.compiere.util.Evaluatee;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Standard implementation of {@link IStringExpression}
@@ -29,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 /* package */final class StringExpression implements IStringExpression
 {
 	private final List<Object> expressionChunks;
-	private final List<String> parametersAsStringList;
+	private final Set<String> parametersAsStringList;
 
 	// Precomputed values
 	private String _expressionStr;
@@ -53,7 +54,7 @@ import com.google.common.collect.ImmutableList;
 				stringParams.add(parameterName);
 			}
 		}
-		parametersAsStringList = ImmutableList.copyOf(stringParams);
+		parametersAsStringList = ImmutableSet.copyOf(stringParams);
 	}
 
 	@Override
@@ -128,7 +129,7 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return parametersAsStringList;
 	}

@@ -1,6 +1,6 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.CachedStringExpression;
@@ -49,7 +49,7 @@ public interface IStringExpression extends IExpression<String>
 	}
 
 	@Override
-	List<String> getParameters();
+	Set<String> getParameters();
 
 	@Override
 	default boolean isNoResult(final Object result)
