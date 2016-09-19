@@ -46,10 +46,10 @@ upcoming
  * #12 Data not shown in SubTab
  * #311 Payment Selection Exception when not able to find bpartner account
  * #378 Bug in validation of field docsubtype
+ * #262 sales and purchase tracking
+   - minor tweaks and fixes   
 
 # metasfresh 4.35.34 (2016-37)
-
-this week's RC
 
 ## Features
  * FRESH-112 metasfresh web 
