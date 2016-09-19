@@ -36,6 +36,7 @@ class NavigationTree extends Component {
       return(
         <div>
             <p className="menu-overlay-header">{rootResults.caption}</p>
+            <div className="column-wrapper">
             {rootResults.children && rootResults.children.map((subitem, subindex) =>
                 <NavigationTreeItem
                     key={subindex}
@@ -44,6 +45,7 @@ class NavigationTree extends Component {
                     {...subitem}
                 />
             )}
+            </div>
         </div>
       )
 
@@ -87,7 +89,7 @@ class NavigationTree extends Component {
 
               <div className="container">
                 <div className="row">
-                {this.renderTree(deepNode ? deepNode : rootResults)}
+                {this.renderTree(rootResults)}
                 </div>
               </div>
 

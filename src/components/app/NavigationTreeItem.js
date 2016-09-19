@@ -10,22 +10,22 @@ class NavigationTreeItem extends Component {
         const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect} = this.props;
 
         return (
-                <div className="col-md-4 col-lg-3">
+                <div className="col-lg-12">     
                     <div className="nav-tree-item">
-                        <span className="menu-overlay-header" >
+                        <span className="nav-tree-header" >
                             {caption}
+
                         </span>
                         {children && children.map((subitem, subindex) =>
-                            <MenuOverlayItem
+                            <NavigationTreeSubitem
                                 key={subindex}
-                                handleClickOnFolder={handleClickOnFolder}
                                 handleRedirect={handleRedirect}
+                                childArray={subitem.children}
                                 {...subitem}
                             />
                         )}
                     </div>
                 </div>
-
 
         )
     }

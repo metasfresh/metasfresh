@@ -794,6 +794,7 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .nav-tree-item {
   padding-top: 10px;
+  display: inline-block;
 }
 
 .nav-tree-header {
@@ -873,4 +874,8 @@ table .rdtPicker table td, .rdtPicker table th {
     height: 14px;
     margin-top: 4px;
     display: inline-block;
+}
+
+.column-wrapper {
+    column-count: 2;
 }
