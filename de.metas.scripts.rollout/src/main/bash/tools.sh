@@ -1,6 +1,7 @@
 #!bin/bash
 #
 # Contains useful methods.
+# IMPORTANT: tools.sh requires bash, so if you source it anywhere, make sure that the script which sources it also uses bash
 #
 
 check_file_exists()
@@ -192,7 +193,7 @@ start_metasfresh()
 {
 	trace start_metasfresh BEGIN
 
-	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+	if [ "${SKIP_START_STOP:-false}" == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
 				# jira issue ME-46
@@ -211,7 +212,7 @@ stop_metasfresh()
 {
 	trace stop_metasfresh BEGIN
 
-	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+	if [ "${SKIP_START_STOP:-false}" == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
 				# jira issue ME-46
