@@ -168,7 +168,7 @@ public class C_Invoice_Candidate_Builder
 			{
 				ic.setM_PricingSystem_ID(M_PricingSystem_ID);
 			}
-			else if (isSOTrx != null)
+			else
 			{
 				ic.setM_PricingSystem(isSOTrx ? test.pricingSystem_SO : test.pricingSystem_PO);
 			}
@@ -176,7 +176,7 @@ public class C_Invoice_Candidate_Builder
 			{
 				ic.setM_PriceList_Version_ID(M_PriceList_Version_ID);
 			}
-			else if (isSOTrx != null)
+			else
 			{
 				ic.setM_PriceList_Version(isSOTrx ? test.priceListVersion_SO : test.priceListVersion_PO);
 			}
