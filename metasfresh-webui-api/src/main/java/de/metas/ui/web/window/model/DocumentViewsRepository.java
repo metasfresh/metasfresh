@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.List;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,10 +26,11 @@ package de.metas.ui.web.window.model;
 
 public interface DocumentViewsRepository
 {
+	IDocumentViewSelection getView(String viewId);
 
 	IDocumentViewSelection createView(DocumentQuery query);
 
-	IDocumentViewSelection getView(String viewId);
-	
 	void deleteView(String viewId);
+
+	List<IDocumentViewSelection> getViews();
 }

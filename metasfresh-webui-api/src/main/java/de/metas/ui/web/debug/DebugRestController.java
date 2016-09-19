@@ -1,10 +1,14 @@
 package de.metas.ui.web.debug;
 
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,8 +19,10 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentViewsRepository;
 
 /*
  * #%L
@@ -54,6 +60,10 @@ public class DebugRestController
 
 	@Autowired
 	private MenuTreeRepository menuTreeRepo;
+
+	@Autowired
+	@Lazy
+	private DocumentViewsRepository documentViewsRepo;
 
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
@@ -94,11 +104,20 @@ public class DebugRestController
 			statisticsLogger.disable();
 		}
 	}
-	
+
 	@RequestMapping(value = "/debugProtocol", method = RequestMethod.GET)
 	public void setDebugProtocol(@RequestParam("enabled") final boolean enabled)
 	{
 		WindowConstants.setProtocolDebugging(enabled);
+	}
+
+	@RequestMapping(value = "/views/list", method = RequestMethod.GET)
+	public List<JSONDocumentViewResult> getViewsList()
+	{
+		return documentViewsRepo.getViews()
+				.stream()
+				.map(JSONDocumentViewResult::of)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 }
