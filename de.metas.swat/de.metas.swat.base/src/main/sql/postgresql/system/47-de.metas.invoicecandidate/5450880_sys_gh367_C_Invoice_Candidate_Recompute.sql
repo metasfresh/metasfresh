@@ -1,4 +1,4 @@
-
+﻿
 --
 -- make sure that ICs that match the scenario of our corner case get their M_PriceList_Version_ID updated.
 --
