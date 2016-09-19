@@ -214,23 +214,21 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final String accteptedBankAccountUsage;
 
-		if (isCreditMemo)
+		if ((isSalesInvoice && !isCreditMemo) ||
+				(!isSalesInvoice && isCreditMemo))
 		{
-			accteptedBankAccountUsage = null;
-		}
-
-		else if (isSalesInvoice)
-		{
-			// allow a direct debit account if there is an invoice with SOTrx='Y', unless it's a credit memo
+			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo 
+			// OR it is a Credit memo with isSoTrx = 'N' 
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
 		}
 
-		else
+		else 
 		{
-			// allow a direct deposit account if there is an invoice with SOTrx='N', unless it's a credit memo
+			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'Y' 
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
 		}
-
+	
 		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
 
 		if (!bankAccts.isEmpty())
