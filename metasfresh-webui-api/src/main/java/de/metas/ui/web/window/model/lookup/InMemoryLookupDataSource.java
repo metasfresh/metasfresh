@@ -139,13 +139,6 @@ public class InMemoryLookupDataSource implements LookupDataSource
 		return partition.getById(idNormalized);
 	}
 
-	@Override
-	public LookupDataSource copy()
-	{
-		// TODO Auto-generated method stub
-		return this;
-	}
-
 	private static final class FilterPredicate implements Predicate<LookupValue>
 	{
 		public static final Predicate<LookupValue> of(final String filter)

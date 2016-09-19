@@ -83,7 +83,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		super();
 		descriptor = from.descriptor;
 		_document = document;
-		lookupDataSource = from.lookupDataSource == null ? null : from.lookupDataSource.copy();
+		lookupDataSource = from.lookupDataSource;
 		_calloutField = null; // don't copy it
 		_initialValue = from._initialValue;
 		_value = from._value;

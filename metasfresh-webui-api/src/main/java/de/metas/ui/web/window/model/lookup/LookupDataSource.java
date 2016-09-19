@@ -37,6 +37,4 @@ public interface LookupDataSource
 	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
 
 	LookupValue findById(Object id);
-
-	LookupDataSource copy();
 }
