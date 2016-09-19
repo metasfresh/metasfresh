@@ -32,8 +32,9 @@ public class AsyncRequestCreator implements IRequestCreator
 {
 
 	@Override
-	public void createRequest(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
+	public void createRequests(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
 	{
+		// Schedule the async request creation based on the given inoutline ids
 		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
 	}
 

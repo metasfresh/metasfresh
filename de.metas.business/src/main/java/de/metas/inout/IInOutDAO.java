@@ -75,10 +75,10 @@ public interface IInOutDAO extends ISingletonService
 	IQueryBuilder<I_M_InOutLine> retrieveAllReferencingLinesBuilder(I_M_InOutLine packingMaterialLine);
 
 	/**
-	 * Returns all the M_InOutLine IDs of the given inout that have quality notes.
+	 * Returns all the M_InOutLine IDs of the given inout that have quality issues ( QualityDiscountPercent > 0).
 	 * 
 	 * @param inOut
 	 * @return
 	 */
-	List<Integer> retrieveLinesWithQualityNote(I_M_InOut inOut);
+	List<Integer> retrieveLinesWithQualityIssues(I_M_InOut inOut);
 }

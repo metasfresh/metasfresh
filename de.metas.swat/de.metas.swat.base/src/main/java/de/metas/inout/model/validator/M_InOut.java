@@ -131,12 +131,19 @@ public class M_InOut
 		materialBalanceDetailDAO.removeInOutFromBalance(inout);
 	}
 
+	/**
+	 * After an inout is completed, check if it contains lines with quality discount percent.
+	 * In case it does, create a request for each line that has a discount percent and fill it with the information from the line and the inout.
+	 * 
+	 * @param inOut
+	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void onComplete_QualityNotes(final I_M_InOut inOut)
+	public void onComplete_QualityIssues(final I_M_InOut inOut)
 	{
-		final List<Integer> linesWithQualityNote = Services.get(IInOutDAO.class).retrieveLinesWithQualityNote(inOut);
+		// retrieve all lines with issues (quality discount percent)
+		final List<Integer> linesWithQualityIssues = Services.get(IInOutDAO.class).retrieveLinesWithQualityIssues(inOut);
 
-		if (linesWithQualityNote.isEmpty())
+		if (linesWithQualityIssues.isEmpty())
 		{
 			// nothing to do
 			return;
@@ -145,7 +152,9 @@ public class M_InOut
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
 		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
 
-		Services.get(IRequestCreator.class).createRequest(ctx, linesWithQualityNote, trxName);
+		// In case there are lines with issues, trigger the request creation for them.
+		// Note: The request creation will be done async
+		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
 	}
 
 }
