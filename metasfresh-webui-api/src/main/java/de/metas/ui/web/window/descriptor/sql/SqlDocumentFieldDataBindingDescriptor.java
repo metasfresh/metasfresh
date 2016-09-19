@@ -28,8 +28,10 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentView;
-import de.metas.ui.web.window.model.LookupDataSource;
-import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
+import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.InMemoryLookupDataSource;
+import de.metas.ui.web.window.model.lookup.LocallyCachedLookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
  * #%L
@@ -317,7 +319,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		// * a high volume, generic one (i.e. SqlLookupDataSource)
 		// * in case there is no validation rule or the validation rule is immutable we could have an implementation which would cache the results
 
-		return SqlLookupDataSource.of(sqlLookupDescriptor);
+		final GenericSqlLookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(sqlLookupDescriptor);
+
+		if ((DisplayType.TableDir == displayType || DisplayType.Table == displayType || DisplayType.List == displayType || DisplayType.Button == displayType)
+				&& sqlLookupDescriptor.getSqlForFetchingExpression().getParameters().isEmpty()
+				&& sqlLookupDescriptor.getPostQueryPredicate().getParameters().isEmpty())
+		{
+			return InMemoryLookupDataSource.of(fetcher);
+		}
+
+		return LocallyCachedLookupDataSource.of(fetcher);
 	}
 
 	@JsonIgnore

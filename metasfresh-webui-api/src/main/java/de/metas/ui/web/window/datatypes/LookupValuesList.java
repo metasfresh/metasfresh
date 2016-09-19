@@ -1,11 +1,12 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -33,7 +34,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /**
  * A list of {@link JSONLookupValue} with some more debug properties attached.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -44,13 +45,13 @@ public final class LookupValuesList
 		return new LookupValuesList(values, debugProperties);
 	}
 
-	private final List<LookupValue> values;
+	private final Map<Object, LookupValue> values;
 	private final transient ImmutableMap<String, String> debugProperties;
 
 	private LookupValuesList(final List<LookupValue> values, final Map<String, String> debugProperties)
 	{
 		super();
-		this.values = values == null || values.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(values);
+		this.values = values == null || values.isEmpty() ? ImmutableMap.of() : Maps.uniqueIndex(values, value -> value.getId());
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
 
@@ -96,13 +97,23 @@ public final class LookupValuesList
 		return values.isEmpty() && debugProperties.isEmpty();
 	}
 
-	public List<LookupValue> getValues()
+	public Collection<LookupValue> getValues()
 	{
-		return values;
+		return values.values();
 	}
 
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
+	}
+
+	public boolean containsId(final Object id)
+	{
+		return values.containsKey(id);
+	}
+	
+	public LookupValue getById(final Object id)
+	{
+		return values.get(id);
 	}
 }

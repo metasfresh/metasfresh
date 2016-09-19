@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -42,7 +42,7 @@ public interface IDocumentFieldCallout extends ICalloutInstance
 	/**
 	 * @return list of field names for which this callout shall be triggered.
 	 */
-	List<String> getDependsOnFieldNames();
+	Set<String> getDependsOnFieldNames();
 
 	@Override
 	void execute(ICalloutExecutor executor, ICalloutField field) throws Exception;

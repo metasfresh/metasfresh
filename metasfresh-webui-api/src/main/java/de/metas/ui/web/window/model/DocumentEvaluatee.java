@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
@@ -184,6 +185,11 @@ public final class DocumentEvaluatee implements Evaluatee
 			final String detailId = _document.getEntityDescriptor().getDetailId();
 			final int nextLineNo = _document.getParentDocument().getIncludedDocumentsCollection(detailId).getNextLineNo();
 			return Optional.of(nextLineNo);
+		}
+		
+		if(IValidationContext.PARAMETER_ContextTableName.equals(variableName))
+		{
+			return Optional.of(_document.getEntityDescriptor().getDataBinding().getTableName());
 		}
 
 		//

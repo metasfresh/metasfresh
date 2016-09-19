@@ -28,6 +28,44 @@ import com.google.common.base.MoreObjects;
 
 public abstract class LookupValue
 {
+	public static final Object normalizeId(final Object idObj, final boolean numericKey)
+	{
+		if (idObj == null)
+		{
+			return null;
+		}
+
+		if (numericKey)
+		{
+			if (idObj instanceof Number)
+			{
+				final int idInt = ((Number)idObj).intValue();
+				if (idInt < 0)
+				{
+					return null;
+				}
+				return idInt;
+			}
+
+			final String idStr = idObj.toString().trim();
+			if (idStr.isEmpty())
+			{
+				return null;
+			}
+
+			final int idInt = Integer.parseInt(idObj.toString());
+			if (idInt < 0)
+			{
+				return null;
+			}
+			return idInt;
+		}
+		else
+		{
+			return idObj.toString();
+		}
+	}
+
 	protected final Object id;
 	protected final String displayName;
 

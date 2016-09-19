@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -86,7 +86,7 @@ public final class ExpressionDocumentFieldCallout implements IDocumentFieldCallo
 	}
 
 	@Override
-	public List<String> getDependsOnFieldNames()
+	public Set<String> getDependsOnFieldNames()
 	{
 		return expression.getParameters();
 	}

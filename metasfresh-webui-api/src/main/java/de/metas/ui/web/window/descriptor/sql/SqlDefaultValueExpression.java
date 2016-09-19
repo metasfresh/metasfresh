@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -149,7 +149,7 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return stringExpression.getParameters();
 	}

@@ -1,17 +1,18 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.DefaultDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
@@ -50,24 +51,19 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 {
 	public static final transient DocActionValidationRule instance = new DocActionValidationRule();
 
-	private static final List<String> PARAMETERS = ImmutableList.<String> builder()
+	private static final Set<String> PARAMETERS = ImmutableSet.<String> builder()
 			.add(WindowConstants.FIELDNAME_DocStatus)
 			.add(WindowConstants.FIELDNAME_C_DocType_ID)
 			.add(WindowConstants.FIELDNAME_C_DocTypeTarget_ID)
 			.add(WindowConstants.FIELDNAME_IsSOTrx)
 			.add(WindowConstants.FIELDNAME_Processing)
 			.add(WindowConstants.FIELDNAME_OrderType)
+			.add(IValidationContext.PARAMETER_ContextTableName)
 			.build();
 
 	private DocActionValidationRule()
 	{
 		super();
-	}
-
-	@Override
-	public boolean isImmutable()
-	{
-		return false;
 	}
 
 	@Override
@@ -88,7 +84,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	{
 		final Properties ctx = Env.getCtx();
 		final IDocActionOptionsContext optionsCtx = DefaultDocActionOptionsContext.builder(ctx)
-				.setTableName(evalCtx.getContextTableName())
+				.setTableName(extractContextTableName(evalCtx))
 				.setDocStatus(extractDocStatus(evalCtx))
 				.setC_DocType_ID(extractC_DocType_ID(evalCtx))
 				.setProcessing(extractProcessing(evalCtx))
@@ -99,6 +95,17 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 
 		final Set<String> availableDocActions = optionsCtx.getDocActions();
 		return availableDocActions;
+	}
+
+	private static String extractContextTableName(final IValidationContext evalCtx)
+	{
+		final String contextTableName = evalCtx.get_ValueAsString(IValidationContext.PARAMETER_ContextTableName);
+		if (Check.isEmpty(contextTableName))
+		{
+			throw new AdempiereException("Failed getting " + IValidationContext.PARAMETER_ContextTableName + " from " + evalCtx);
+		}
+		
+		return contextTableName;
 	}
 
 	private static String extractDocStatus(final IValidationContext evalCtx)
@@ -140,7 +147,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

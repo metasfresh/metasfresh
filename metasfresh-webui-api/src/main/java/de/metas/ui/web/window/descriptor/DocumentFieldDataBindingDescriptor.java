@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import de.metas.ui.web.window.model.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
  * #%L

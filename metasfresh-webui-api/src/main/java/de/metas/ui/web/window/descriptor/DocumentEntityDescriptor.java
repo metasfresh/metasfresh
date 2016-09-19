@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -593,7 +594,7 @@ public class DocumentEntityDescriptor
 
 				for (final IDocumentFieldCallout fieldCallout : fieldCallouts)
 				{
-					final List<String> dependsOnFieldNames = fieldCallout.getDependsOnFieldNames();
+					final Set<String> dependsOnFieldNames = fieldCallout.getDependsOnFieldNames();
 					if(dependsOnFieldNames.isEmpty())
 					{
 						logger.warn("Callout {} has no dependencies. Skipped from adding to entity descriptor.\n Target: {} \n Source: {}", fieldCallout, this, field);

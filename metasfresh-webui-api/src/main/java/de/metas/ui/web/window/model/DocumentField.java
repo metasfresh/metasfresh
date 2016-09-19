@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
  * #%L
@@ -318,7 +319,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document, LookupDataSource.DEFAULT_PageLength);
+		return lookupDataSource.findEntities(document.asEvaluatee(), LookupDataSource.DEFAULT_PageLength);
 	}
 
 	@Override
@@ -328,7 +329,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+		return lookupDataSource.findEntities(document.asEvaluatee(), query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
 	}
 
 	@Override

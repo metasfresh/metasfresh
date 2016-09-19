@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -15,7 +15,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -43,7 +43,7 @@ public final class HARDCODED_OrderDocumentSummaryExpression implements IExpressi
 {
 	public static final transient HARDCODED_OrderDocumentSummaryExpression instance = new HARDCODED_OrderDocumentSummaryExpression();
 	
-	private static final List<String> PARAMETERS = ImmutableList.of(
+	private static final Set<String> PARAMETERS = ImmutableSet.of(
 			I_C_Order.COLUMNNAME_DocumentNo,
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
 			I_C_Order.COLUMNNAME_DateOrdered,
@@ -68,7 +68,7 @@ public final class HARDCODED_OrderDocumentSummaryExpression implements IExpressi
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

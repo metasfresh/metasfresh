@@ -1,6 +1,7 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.model.lookup;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
@@ -25,28 +26,17 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-public interface LookupDataSource
+public interface LookupDataSourceFetcher
 {
-	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
-
-	LookupValuesList findEntities(Document document, String filter, int firstRow, int pageLength);
-
-	LookupValuesList findEntities(Document document, int pageLength);
-
-	LookupValue findById(Object id);
+	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
 
 	boolean isNumericKey();
 
-	/**
-	 * Set this data source as staled.
-	 *
-	 * @param triggeringFieldName field name which triggered this request (optional)
-	 * @return true if this lookup source was marked as staled
-	 */
-	boolean setStaled(final String triggeringFieldName);
+	LookupDataSourceContext.Builder newContextForFetchingById(Object id);
 
-	boolean isStaled();
+	LookupValue retrieveLookupValueById(LookupDataSourceContext evalCtx);
 
-	LookupDataSource copy();
+	LookupDataSourceContext.Builder newContextForFetchingList();
+
+	LookupValuesList retrieveEntities(LookupDataSourceContext evalCtx);
 }
