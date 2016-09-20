@@ -270,7 +270,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -278,6 +278,7 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
+                const index = keyProperty ? keyProperty : "rowId";
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
@@ -287,9 +288,10 @@ class Table extends Component {
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key].rowId) > -1}
-                        onMouseDown={(e) => this.handleClick(e, item[key].rowId)}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key].rowId)}
+                        isSelected={selected.indexOf(item[key][index]) > -1}
+                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
+                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
