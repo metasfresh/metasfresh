@@ -87,6 +87,8 @@ public final class CompositeStringExpression implements IStringExpression
 	private transient String _formatedExpressionString;
 	private transient Set<String> _parameters;
 
+	private Integer _hashCode;
+
 	private CompositeStringExpression(final Collection<IStringExpression> expressions)
 	{
 		super();
@@ -109,7 +111,11 @@ public final class CompositeStringExpression implements IStringExpression
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(expressions);
+		if (_hashCode == null)
+		{
+			_hashCode = Objects.hash(expressions);
+		}
+		return _hashCode;
 	}
 
 	@Override
