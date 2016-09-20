@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
@@ -69,8 +70,12 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	// Configuration parameters
 	private final ITrxItemProcessorContext processorCtx;
 	private final ITrxItemChunkProcessor<IT, RT> processor;
-	private ITrxItemExceptionHandler exceptionHandler = DEFAULT_ExceptionHandler;
-	private boolean useTrxSavepoints = true; // default: true - backward compatibility
+
+	private final OnItemErrorPolicy onItemErrorPolicy; // issue #302
+
+	private ITrxItemExceptionHandler exceptionHandler; // non-final for historical reasons
+
+	private boolean useTrxSavepoints; // non-final for historical reasons
 
 	//
 	// State
@@ -86,7 +91,12 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	private ITrxSavepoint chunkTrxSavepoint;
 	private ITrxItemProcessorContext chunkCtx;
 
-	TrxItemChunkProcessorExecutor(final ITrxItemProcessorContext processorCtx, final ITrxItemChunkProcessor<IT, RT> processor)
+	TrxItemChunkProcessorExecutor(
+			final ITrxItemProcessorContext processorCtx,
+			final ITrxItemChunkProcessor<IT, RT> processor,
+			final ITrxItemExceptionHandler exceptionHandler,
+			final OnItemErrorPolicy onItemErrorPolicy,
+			final boolean useTrxSavePoints)
 	{
 		super();
 
@@ -95,6 +105,10 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		Check.assumeNotNull(processor, "processor not null");
 		this.processor = processor;
+
+		this.exceptionHandler = exceptionHandler;
+		this.onItemErrorPolicy = onItemErrorPolicy;
+		this.useTrxSavepoints = useTrxSavePoints;
 	}
 
 	@Override
@@ -148,9 +162,12 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			// Close last chunk if any
 			if (chunkOpen)
 			{
-				if (chunkHasErrors)
+				if (chunkHasErrors
+						&& (onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndRollBack
+								|| onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndCommit))
 				{
-					cancelChunk();
+					final boolean processItemFailed = true;
+					cancelChunk(processItemFailed);
 				}
 				else
 				{
@@ -190,20 +207,25 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 	private void processItem(final IT item)
 	{
-		if (chunkHasErrors)
+		//
+		// error handling
+		if (chunkHasErrors
+				// at least one item in this chunk was processed with an error
+				&& (onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndRollBack
+						|| onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndCommit))
 		{
 			Check.assume(chunkOpen, "When we have a chunk item with errors, chunk shall be opened");
 
 			if (processor.isSameChunk(item))
 			{
 				// the item is part of current chunk which has errors.
-				// we are skipping this item (and all other items of this chunk).
+				// we are skipping this item (and all other items of this chunk). I.e. we skip forward to the last item, and then call cancelChunk(true)
 				return;
 			}
 			else
 			{
-				// the item is NOT part of current chunk. So we cancel the current chunk and will process the item in a new chunk.
-				cancelChunk();
+				// the current item is NOT part of current chunk. So we cancel the current chunk and will process the current item in a new chunk.
+				cancelChunk(true); // processItemFailed = true;
 			}
 		}
 
@@ -305,7 +327,9 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		if (!completed)
 		{
 			logger.info("Processor failed to complete current chunk => cancel chunk");
-			cancelChunk();
+
+			final boolean processItemFailed = false; // it's the completion that failed, not processeItem
+			cancelChunk(processItemFailed);
 			return;
 		}
 
@@ -340,8 +364,11 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	 * Invokes {@link ITrxItemChunkProcessor#cancelChunk()} to cancel the current chunk.
 	 *
 	 * If something went wrong this method will throw an exception right away, exception which will stop entire batch processing.
+	 *
+	 * @param processItemFailed if <code>true</code>, then do what our current {@link #onItemErrorPolicy} value indicates.
+	 *            If <code>false</code>, then just roll back the trx.
 	 */
-	private void cancelChunk()
+	private void cancelChunk(boolean processItemFailed)
 	{
 		try
 		{
@@ -363,8 +390,27 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		{
 			chunkOpen = false;
 			chunkHasErrors = false;
-
-			rollbackChunkTrx();
+			if (processItemFailed)
+			{
+				// cancelChunk was called because processing an item failed
+				switch (onItemErrorPolicy)
+				{
+					case CancelChunkAndRollBack:
+						rollbackChunkTrx();
+						break;
+					case CancelChunkAndCommit:
+						commitChunkTrx();
+						break;
+					default:
+						Check.errorIf(true, "Unexpected onItemErrorPolicy={}, this={}", onItemErrorPolicy, this);
+						break;
+				}
+			}
+			else
+			{
+				// cancelChunk was called for some other reason. Just roll back because that's what we always did in such a case
+				rollbackChunkTrx();
+			}
 		}
 	}
 
@@ -483,7 +529,15 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		chunkTrx = null;
 
-		// NOTE: no need to restore/reset thread transaction because "execute" method will retore it anyways at the end
+		// NOTE: no need to restore/reset thread transaction because the "execute" method will restore it anyways at the end
 		// trxManager.setThreadInheritedTrxName(null);
 	}
+
+	@Override
+	public String toString()
+	{
+		return "TrxItemChunkProcessorExecutor [processor=" + processor + ", exceptionHandler=" + exceptionHandler + ", onItemErrorPolicy=" + onItemErrorPolicy + ", useTrxSavepoints=" + useTrxSavepoints + ", chunkOpen=" + chunkOpen + ", chunkHasErrors=" + chunkHasErrors + ", chunkTrx=" + chunkTrx + ", chunkTrxIsLocal=" + chunkTrxIsLocal + ", chunkTrxSavepoint=" + chunkTrxSavepoint
+				+ ", processorCtx=" + processorCtx + ", chunkCtx=" + chunkCtx + ", trxManager=" + trxManager + ", trxConstraintsBL=" + trxConstraintsBL + "]";
+	}
+
 }
