@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,6 +49,8 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 	private KeyNamePair user;
 	private boolean logged = false;
 	private boolean isExit = false;
+
+	private boolean disposed = false;
 
 	private class PasswordListener implements PropertyChangeListener
 	{
@@ -113,7 +115,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 	{
 		initComponents();
 		initLayout();
-		
+
 		//
 		// If there is only one user, then select it
 		final List<ITerminalKey> userKeys = usersPanel.getKeyLayout().getKeys();
@@ -131,7 +133,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		int AD_Reference_ID = usersPOSKey.getAD_Reference_ID();
 		int AD_Val_Rule_ID = usersPOSKey.getAD_Val_Rule_ID();
 		//
-		TableRefKeyLayout keylayout = new TableRefKeyLayout(getTerminalContext(), AD_Reference_ID, AD_Val_Rule_ID); 
+		TableRefKeyLayout keylayout = new TableRefKeyLayout(getTerminalContext(), AD_Reference_ID, AD_Val_Rule_ID);
 		usersPanel = getTerminalFactory().createTerminalKeyPanel(keylayout, new UsersKeyListener());
 		usersPanel.setAllowKeySelection(true);
 
@@ -207,7 +209,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 	public void dispose()
 	{
 		disposeUI();
-		
+
 		DisposableHelper.disposeAll(
 				usersPanel,
 				passwordField, passwordLabel,
@@ -215,6 +217,14 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 				);
 		user = null;
 		parent = null;
+
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed  ;
 	}
 
 	protected abstract void disposeUI();

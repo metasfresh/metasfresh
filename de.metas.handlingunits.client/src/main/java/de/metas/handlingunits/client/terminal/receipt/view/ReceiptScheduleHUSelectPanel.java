@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.receipt.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -357,10 +357,8 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	}
 
 	@Override
-	protected void doProcessSelectedLines()
+	protected void doProcessSelectedLines(final ReceiptScheduleHUSelectModel model)
 	{
-		final ReceiptScheduleHUSelectModel model = getModel();
-
 		model.doProcessSelectedLines(new HUEditorCallbackAdapter<HUEditorModel>()
 		{
 			@Override
@@ -380,8 +378,12 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	private boolean editLUTUConfiguration(final LUTUConfigurationEditorModel lutuConfigurationModel)
 	{
 		final LUTUConfigurationEditorPanel lutuPanel = new LUTUConfigurationEditorPanel(lutuConfigurationModel);
+
+		// we already have our own terminal context ref that was created when 'lutuConfigurationModel' was created
+		final boolean maintainOwnContextReferences = false;
+
 		final ITerminalDialog editorDialog = getTerminalFactory()
-				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel); // TODO ts: Hardcoded ?!?
+				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
 
 		// Activate editor dialog and wait until user closes the window
 		editorDialog.activate();
@@ -391,9 +393,6 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		{
 			return false;
 		}
-
-		// TODO: save LUTU config back to receipt schedule
-
 		return true;
 	}
 

@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.table;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +35,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 {
 	private List<ITerminalTableModelListener> listeners;
 
+	private boolean disposed = false;
+
 	public CompositeTerminalTableModelListener(final ITerminalContext terminalContext)
 	{
 		super();
@@ -48,12 +50,19 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		clear();
 		listeners = null;
+		disposed  = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 	public boolean addTerminalTableModelListener(final ITerminalTableModelListener listener)
 	{
 		Check.assumeNotNull(listeners, "not already destroyed");
-		
+
 		Check.assumeNotNull(listener, "listener not null");
 		if (listeners.contains(listener))
 		{
@@ -71,7 +80,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			// already destroyed
 			return false;
 		}
-		
+
 		Check.assumeNotNull(listener, "listener not null");
 		return listeners.remove(listener);
 	}

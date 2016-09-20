@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,25 +13,22 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.LayoutManager;
 import java.lang.ref.WeakReference;
 
 import javax.swing.JPanel;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.util.Check;
 import org.jdesktop.swingx.JXPanel;
@@ -40,10 +37,11 @@ import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author tsa
- * 
+ *
  */
 /* package */class SwingTerminalContainer implements IContainer
 {
@@ -56,6 +54,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private final JPanel panel;
 
+	private boolean disposed = false;
+
 	protected SwingTerminalContainer(final SwingTerminalFactory terminalFactory)
 	{
 		this(terminalFactory, "fill, ins 0 0");
@@ -65,7 +65,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		this(terminalFactory,
 				layoutConstraints,
-				(String)null, // colConstraints,
+				(String)null,  // colConstraints,
 				(String)null // rowConstraints
 		);
 	}
@@ -94,6 +94,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 		Check.assumeNotNull(panel, "panel not null");
 		this.panel = panel;
+
+		terminalFactory.getTerminalContext().addToDisposableComponents(this);
 	}
 
 	private static final JPanel createPanelComponent()
@@ -167,5 +169,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	public void dispose()
 	{
 		removeAll();
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 }
