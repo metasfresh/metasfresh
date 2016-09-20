@@ -1,6 +1,7 @@
 package org.adempiere.ad.security.impl;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
@@ -107,11 +108,41 @@ public final class AccessSqlStringExpression implements IStringExpression
 	public String toString()
 	{
 		return MoreObjects.toStringHelper("AccessSql")
-				.add("tableName", tableNameIn)
-				.add("FQ", fullyQualified)
-				.add("RW", rw)
-				.add("sql", sqlExpression)
+				.omitNullValues()
+				.addValue(tableNameIn)
+				.addValue(fullyQualified ? "FQ" : null)
+				.addValue(rw ? "RW" : null)
+				.addValue(sqlExpression)
 				.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(tableNameIn, fullyQualified, rw, sqlExpression);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (!getClass().equals(obj.getClass()))
+		{
+			return false;
+		}
+
+		final AccessSqlStringExpression other = (AccessSqlStringExpression)obj;
+		return tableNameIn.equals(other.tableNameIn)
+				&& fullyQualified == other.fullyQualified
+				&& rw == other.rw
+				&& sqlExpression.equals(other.sqlExpression);
 	}
 
 	@Override
