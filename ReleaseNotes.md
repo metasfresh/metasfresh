@@ -17,6 +17,7 @@ upcoming
 ## Features
 
 ## Fixes
+ * #409 MRP Product Info might leave back stale entries after fast changes
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
 
 # metasfresh 4.36.35 (2016-38)
