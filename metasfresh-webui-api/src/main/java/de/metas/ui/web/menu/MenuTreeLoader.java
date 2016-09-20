@@ -8,11 +8,11 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -123,17 +123,17 @@ public final class MenuTreeLoader
 		while (childModels.hasMoreElements())
 		{
 			final MTreeNode childModel = (MTreeNode)childModels.nextElement();
-			
+
 			final MenuNode childNode = createMenuNodeRecursivelly(childModel, depth + 1);
 			if (childNode == null)
 			{
 				continue;
 			}
-			
-			if(childModel.isCreateNewRecord())
+
+			if (childModel.isCreateNewRecord())
 			{
-				final MenuNode childNodeNewRecord = createNewRecordNode(childNode);
-				if(childNodeNewRecord != null)
+				final MenuNode childNodeNewRecord = createNewRecordNode(childNode, childModel.getWEBUI_NameNew(), childModel.getWEBUI_NameNewBreadcrumb());
+				if (childNodeNewRecord != null)
 				{
 					nodeBuilder.addChildToFirstsList(childNodeNewRecord);
 				}
@@ -147,9 +147,18 @@ public final class MenuTreeLoader
 
 	private MenuNode.Builder createMenuNodeBuilder(final MTreeNode nodeModel, final int depth)
 	{
+		final String captionBreadcrumb = nodeModel.getName(); // shall not be empty
+
+		String caption = nodeModel.getWEBUI_NameBrowse();
+		if (Check.isEmpty(caption, true))
+		{
+			caption = "Browse " + captionBreadcrumb;
+		}
+
 		final MenuNode.Builder builder = MenuNode.builder()
 				.setId(nodeModel.getNode_ID())
-				.setCaption(nodeModel.getName());
+				.setCaption(caption)
+				.setCaptionBreadcrumb(captionBreadcrumb);
 
 		final String action = nodeModel.getImageIndiactor();
 		if (nodeModel.isSummary())
@@ -181,23 +190,40 @@ public final class MenuTreeLoader
 		return builder;
 	}
 
-	private MenuNode createNewRecordNode(final MenuNode node)
+	private MenuNode createNewRecordNode(final MenuNode node, final String caption, String captionBreadcrumb)
 	{
 		if (node.getType() != MenuNodeType.Window)
 		{
 			return null;
 		}
 
+		//
+		// Caption (in menu)
+		String captionEffective = caption;
+		if (Check.isEmpty(captionEffective, true))
+		{
+			captionEffective = "New " + node.getCaption();
+		}
+
+		//
+		// Caption (breadcrumb)
+		String captionBreadcrumbEffective = captionBreadcrumb;
+		if (Check.isEmpty(captionBreadcrumbEffective, true))
+		{
+			captionBreadcrumbEffective = node.getCaptionBreadcrumb();
+		}
+
 		return MenuNode.builder()
 				.setId(node.getId() + "-new")
-				.setCaption("New " + node.getCaption()) // TODO: trl
+				.setCaption(captionEffective)
+				.setCaptionBreadcrumb(captionBreadcrumbEffective)
 				.setType(MenuNodeType.NewRecord, node.getElementId())
 				.build();
 	}
 
 	private MTreeNode retrieveRootNodeModel()
 	{
-		final int adTreeId = retrieveAD_Tree_ID();
+		final int adTreeId = getMenuTree_ID();
 		if (adTreeId < 0)
 		{
 			throw new AdempiereException("Menu tree not found");
@@ -214,26 +240,14 @@ public final class MenuTreeLoader
 		return rootNodeModel;
 	}
 
-	private int retrieveAD_Tree_ID()
+	private int getMenuTree_ID()
 	{
-		// metas: 03019: begin
 		final IUserRolePermissions userRolePermissions = getUserRolePermissions();
 		if (!userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_MenuAvailable))
 		{
 			return -1;
 		}
-		// metas: 03019: end
-
-		int AD_Tree_ID = DB.getSQLValue(ITrx.TRXNAME_None,
-				"SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)"
-						+ "FROM AD_ClientInfo ci"
-						+ " INNER JOIN AD_Role r ON (ci.AD_Client_ID=r.AD_Client_ID) "
-						+ "WHERE AD_Role_ID=?",
-				userRolePermissions.getAD_Role_ID());
-		if (AD_Tree_ID <= 0)
-		{
-			AD_Tree_ID = 10; // Menu // FIXME: hardcoded
-		}
-		return AD_Tree_ID;
+		
+		return userRolePermissions.getMenu_Tree_ID();
 	}
 }

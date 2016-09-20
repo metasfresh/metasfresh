@@ -1,7 +1,5 @@
 package de.metas.ui.web.window_old.descriptor;
 
-import java.util.Properties;
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -17,7 +15,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.ui.web.window_old.model.ModelPropertyDescriptorValueTypeHelper;
@@ -72,9 +69,6 @@ public class SqlLookupDescriptor
 	private SqlLookupDescriptor(final PropertyDescriptorValueType valueType, final String columnName, final int AD_Reference_Value_ID)
 	{
 		super();
-		final Properties ctx = Env.getCtx();
-		final int Column_ID = 0;
-		final Language language = Env.getLanguage(ctx);
 		final boolean IsParent = false;
 		final int AD_Val_Rule_ID = -1; // TODO
 
@@ -89,12 +83,12 @@ public class SqlLookupDescriptor
 			final MLookupInfo lookupInfo;
 			if (valueType == PropertyDescriptorValueType.List)
 			{
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, DisplayType.List, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, DisplayType.List, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			else
 			{
 				final int displayType = ModelPropertyDescriptorValueTypeHelper.getSqlDisplayType(valueType);
-				lookupInfo = MLookupFactory.getLookupInfo(ctx, WINDOWNO_Dummy, Column_ID, displayType, language, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 			}
 			
 			numericKey = lookupInfo.isNumericKey();
@@ -129,7 +123,7 @@ public class SqlLookupDescriptor
 			{
 				sqlWhereFinal.append("\n AND ");
 			}
-			final String displayColumnSql = lookupInfo.getDisplayColumnSQL();
+			final String displayColumnSql = lookupInfo.getDisplayColumnSqlAsString();
 			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql.toStringWithMarkers()); // #1
 		}
 
@@ -144,20 +138,20 @@ public class SqlLookupDescriptor
 		//
 		// Assemble the SQLs
 		String sqlForFetching = new StringBuilder()
-				.append(lookupInfo.getSelectSqlPart()) // SELECT ... FROM ...
+				.append(lookupInfo.getSelectSqlPartAsString()) // SELECT ... FROM ...
 				.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
 				.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
 				.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
 				.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
 				.toString();
 		String sqlForCounting = new StringBuilder()
-				.append("SELECT COUNT(1) FROM ").append(lookupInfo.getFromSqlPart()) // SELECT .. FROM ...
+				.append("SELECT COUNT(1) FROM ").append(lookupInfo.getFromSqlPartAsString()) // SELECT .. FROM ...
 				.append(" WHERE ").append(sqlWhereFinal) // WHERE
 				.toString();
 		;
 		final String sqlForFetchingDisplayNameById = new StringBuilder()
-				.append("SELECT ").append(lookupInfo.getDisplayColumnSQL()) // SELECT
-				.append("\n FROM ").append(lookupInfo.getFromSqlPart()) // FROM
+				.append("SELECT ").append(lookupInfo.getDisplayColumnSqlAsString()) // SELECT
+				.append("\n FROM ").append(lookupInfo.getFromSqlPartAsString()) // FROM
 				.append("\n WHERE ").append(lookupInfo.getKeyColumnFQ()).append("=").append(SQL_PARAM_KeyId.toStringWithMarkers())
 				.append(DisplayType.List == lookupInfo.getDisplayType() ? " AND " + lookupInfo.getWhereClauseSqlPart() : "") // FIXME: make it better: this is actually adding the
 																															 // AD_Ref_List.AD_Reference_ID=....

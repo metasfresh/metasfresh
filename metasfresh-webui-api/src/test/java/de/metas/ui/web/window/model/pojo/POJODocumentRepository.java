@@ -29,6 +29,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.POJODocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.Document.FieldValueSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -173,7 +174,12 @@ public class POJODocumentRepository implements DocumentsRepository
 
 	private Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final Object fromModel)
 	{
-		final DocumentFieldDataBindingDescriptor fieldDataBinding = fieldDescriptor.getDataBinding();
+		final DocumentFieldDataBindingDescriptor fieldDataBinding = fieldDescriptor.getDataBinding().orElse(null);
+		if (fieldDataBinding == null)
+		{
+			logger.warn("No databinding provided for {}. Skip retrieving the value", fieldDescriptor);
+			return FieldValueSupplier.NO_VALUE;
+		}
 		final String columnName = fieldDataBinding.getColumnName();
 
 		final Object value = InterfaceWrapperHelper.getValueOrNull(fromModel, columnName);
@@ -262,7 +268,13 @@ public class POJODocumentRepository implements DocumentsRepository
 
 	private void setModelValue(final Object model, final IDocumentFieldView documentField)
 	{
-		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
+		final DocumentFieldDataBindingDescriptor dataBinding = documentField.getDescriptor().getDataBinding().orElse(null);
+		if (dataBinding == null)
+		{
+			logger.trace("Skip setting model's column because it has no databinding: {}", documentField);
+		}
+
+		final String columnName = dataBinding.getColumnName();
 
 		if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(columnName))
 		{

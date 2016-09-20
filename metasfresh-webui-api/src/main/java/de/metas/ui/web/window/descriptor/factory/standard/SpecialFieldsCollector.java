@@ -43,7 +43,10 @@ final class SpecialFieldsCollector
 	private static final Logger logger = LogManager.getLogger(SpecialFieldsCollector.class);
 
 	private static final Set<String> COLUMNNAMES_DocumentNos = ImmutableSet.of(WindowConstants.FIELDNAME_DocumentNo, WindowConstants.FIELDNAME_Value, WindowConstants.FIELDNAME_Name);
-	private static final Set<String> COLUMNNAMES_DocumentSummary = ImmutableSet.of(WindowConstants.FIELDNAME_Name);
+	
+	public static final String COLUMNNAME_DocumentSummary = "V$DocumentSummary";
+	private static final Set<String> COLUMNNAMES_DocumentSummary = ImmutableSet.of(COLUMNNAME_DocumentSummary, WindowConstants.FIELDNAME_Name);
+	
 	private static final Set<String> COLUMNNAMES = ImmutableSet.<String> builder()
 			.addAll(COLUMNNAMES_DocumentNos)
 			.addAll(COLUMNNAMES_DocumentSummary)

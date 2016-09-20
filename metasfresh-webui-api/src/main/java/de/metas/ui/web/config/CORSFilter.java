@@ -69,7 +69,7 @@ public class CORSFilter implements Filter
 			httpResponse.setHeader("Access-Control-Allow-Origin", accessControlAllowOrigin);
 			logger.trace("Set Access-Control-Allow-Origin={} (request's Origin={})", accessControlAllowOrigin, origin);
 			
-			httpResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PATCH");
+			httpResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PATCH, PUT");
 			httpResponse.setHeader("Access-Control-Max-Age", "3600");
 
 			// adding one more allowed header as requested by @damianprzygodzki to fix the error

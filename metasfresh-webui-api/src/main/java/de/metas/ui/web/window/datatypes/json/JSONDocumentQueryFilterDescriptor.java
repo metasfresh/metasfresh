@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 
@@ -39,6 +40,11 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 {
 	public static List<JSONDocumentQueryFilterDescriptor> ofList(final List<DocumentQueryFilterDescriptor> filters, final String adLanguage)
 	{
+		if (filters == null || filters.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return filters.stream()
 				.map(filter -> of(filter, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
@@ -49,8 +55,8 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 		return new JSONDocumentQueryFilterDescriptor(filter, adLanguage);
 	}
 
-	@JsonProperty("id")
-	private final String id;
+	@JsonProperty("filterId")
+	private final String filterId;
 
 	@JsonProperty("caption")
 	private final String caption;
@@ -65,7 +71,7 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 	private JSONDocumentQueryFilterDescriptor(final DocumentQueryFilterDescriptor filter, final String adLanguage)
 	{
 		super();
-		id = filter.getId();
+		filterId = filter.getId();
 		caption = filter.getDisplayName(adLanguage);
 		frequentUsed = filter.isFrequentUsed();
 		parameters = JSONDocumentQueryFilterParamDescriptor.ofList(filter.getParameters(), adLanguage);
@@ -73,13 +79,13 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 
 	@JsonCreator
 	private JSONDocumentQueryFilterDescriptor(
-			@JsonProperty("id") final String id //
+			@JsonProperty("filterId") final String filterId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("frequent") final boolean frequentUsed //
 			, @JsonProperty("parameters") final List<JSONDocumentQueryFilterParamDescriptor> parameters //
 	)
 	{
-		this.id = id;
+		this.filterId = filterId;
 		this.caption = caption;
 		this.frequentUsed = frequentUsed;
 		this.parameters = parameters;
@@ -90,16 +96,16 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("id", id)
+				.add("filterId", filterId)
 				.add("caption", caption)
 				.add("frequentUsed", frequentUsed)
 				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
 	}
 
-	public String getId()
+	public String getFilterId()
 	{
-		return id;
+		return filterId;
 	}
 
 	public String getCaption()

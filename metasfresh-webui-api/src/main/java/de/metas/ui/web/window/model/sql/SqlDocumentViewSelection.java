@@ -7,16 +7,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_T_Query_Selection;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -128,7 +137,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public List<IDocumentView> getPage(final int firstRow, final int pageLength)  throws DBException
+	public List<IDocumentView> getPage(final int firstRow, final int pageLength) throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 
@@ -213,7 +222,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
 			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
 			{
-				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.cast(fieldDescriptor.getDataBinding());
+				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(fieldDescriptor.getDataBinding());
+				if (fieldDataBinding == null)
+				{
+					logger.warn("No SQL databinding provided for {}. Skip creating the field loader", fieldDescriptor);
+					continue;
+				}
+
 				final boolean keyColumn = fieldDataBinding.isKeyColumn();
 				final DocumentViewFieldValueLoader documentViewFieldLoader = fieldDataBinding.getDocumentViewFieldValueLoader();
 
@@ -244,8 +259,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private String buildSql()
 		{
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = getDataBinding();
-			final String adLanguage = query.getAD_Language();
-			final String sqlPagedSelectFrom = dataBinding.getSqlPagedSelectAllFrom(adLanguage);
+			Evaluatee evalCtx = Evaluatees.ofMap(ImmutableMap.<String, String> builder()
+					.put(Env.CTXNAME_AD_Language, query.getAD_Language())
+					.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), query.getPermissionsKey())
+					.build());
+			final String sqlPagedSelectFrom = dataBinding
+					.getSqlPagedSelectAllFrom()
+					.evaluate(evalCtx, OnVariableNotFound.Fail);
 
 			return sqlPagedSelectFrom
 					+ "\n WHERE " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_UUID + "=?"
@@ -258,7 +278,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			querySelectionUUID = UUID.randomUUID().toString();
 
-			final SqlDocumentQueryBuilder queryBuilder = SqlDocumentQueryBuilder.of(query);
+			final SqlDocumentQueryBuilder helper = SqlDocumentQueryBuilder.of(query);
 
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = getDataBinding();
 			final String sqlTableName = dataBinding.getSqlTableName();
@@ -268,36 +288,54 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			{
 				throw new DBException("No key column found in " + dataBinding);
 			}
-			final String orderBy = queryBuilder.getSqlOrderBy();
-
-			final StringBuilder sqlRowNumber = new StringBuilder("row_number() OVER (");
-			if (!Check.isEmpty(orderBy, true))
-			{
-				sqlRowNumber.append("ORDER BY ").append(orderBy);
-			}
-			sqlRowNumber.append(")");
 
 			final List<Object> sqlParams = new ArrayList<>();
-			final StringBuilder sql = new StringBuilder();
-			sql.append("INSERT INTO " + I_T_Query_Selection.Table_Name + " ("
-					+ " " + I_T_Query_Selection.COLUMNNAME_UUID
-					+ ", " + I_T_Query_Selection.COLUMNNAME_Line
-					+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID
-					+ ")")
-					.append(" SELECT ")
-					.append(DB.TO_STRING(querySelectionUUID)) // UUID
-					.append(", ").append(sqlRowNumber) // Line
-					.append(", ").append(keyColumnNameFQ) // Record_ID
-					.append(" FROM ").append(sqlTableName).append(" ").append(sqlTableAlias);
+			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
+					.append("INSERT INTO " + I_T_Query_Selection.Table_Name + " ("
+							+ " " + I_T_Query_Selection.COLUMNNAME_UUID
+							+ ", " + I_T_Query_Selection.COLUMNNAME_Line
+							+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID
+							+ ")");
 
-			final String sqlWhereClause = queryBuilder.getSqlWhere();
-			if (!Check.isEmpty(sqlWhereClause, true))
+			//
+			// SELECT ... FROM ... WHERE 1=1
 			{
-				sql.append(" WHERE ").append(sqlWhereClause);
-				sqlParams.addAll(queryBuilder.getSqlWhereParams());
+				final String orderBy = helper.getSqlOrderBy();
+				final StringBuilder sqlRowNumber = new StringBuilder("row_number() OVER (");
+				if (!Check.isEmpty(orderBy, true))
+				{
+					sqlRowNumber.append("ORDER BY ").append(orderBy);
+				}
+				sqlRowNumber.append(")");
+
+				sqlBuilder.append(
+						IStringExpression.composer()
+								.append("\n SELECT ")
+								.append("\n  ?") // UUID
+								.append("\n, ").append(sqlRowNumber) // Line
+								.append("\n, ").append(keyColumnNameFQ) // Record_ID
+								.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
+								.append("\n WHERE 1=1 ")
+								.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+				);
+				sqlParams.add(querySelectionUUID);
 			}
 
-			rowsCount = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			//
+			// WHERE clause
+			final IStringExpression sqlWhereClause = helper.getSqlWhere();
+			if (!sqlWhereClause.isNullExpression())
+			{
+				sqlBuilder.append(" AND (").append(sqlWhereClause).append(")");
+				sqlParams.addAll(helper.getSqlWhereParams());
+			}
+
+			final Evaluatee ctx = helper.getEvaluationContext();
+			final String sql = sqlBuilder
+					.build()
+					.evaluate(ctx, OnVariableNotFound.Fail);
+
+			rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 
 			logger.trace("Created selection {}, rowsCount={} -- {} -- {}", querySelectionUUID, rowsCount, sql, sqlParams);
 		}

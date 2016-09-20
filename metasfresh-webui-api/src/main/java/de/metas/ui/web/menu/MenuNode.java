@@ -64,6 +64,7 @@ public final class MenuNode
 
 	private final String id;
 	private final String caption;
+	private final String captionBreadcrumb;
 	private final MenuNodeType type;
 	private final int elementId;
 	private final List<MenuNode> children;
@@ -79,6 +80,7 @@ public final class MenuNode
 		id = builder.id;
 
 		caption = builder.caption;
+		captionBreadcrumb = builder.captionBreadcrumb;
 		type = builder.type;
 		elementId = builder.elementId;
 
@@ -95,6 +97,7 @@ public final class MenuNode
 		super();
 		id = node.id;
 		caption = node.caption;
+		captionBreadcrumb = node.captionBreadcrumb;
 		type = node.type;
 		elementId = node.elementId;
 
@@ -155,6 +158,11 @@ public final class MenuNode
 	public String getCaption()
 	{
 		return caption;
+	}
+	
+	public String getCaptionBreadcrumb()
+	{
+		return captionBreadcrumb;
 	}
 
 	public MenuNode getParent()
@@ -228,6 +236,7 @@ public final class MenuNode
 		private String id;
 
 		private String caption;
+		private String captionBreadcrumb;
 		private MenuNodeType type;
 		private int elementId;
 		private final List<MenuNode> childrenFirst = new ArrayList<>();
@@ -258,6 +267,12 @@ public final class MenuNode
 		public Builder setCaption(final String caption)
 		{
 			this.caption = caption;
+			return this;
+		}
+		
+		public Builder setCaptionBreadcrumb(String captionBreadcrumb)
+		{
+			this.captionBreadcrumb = captionBreadcrumb;
 			return this;
 		}
 

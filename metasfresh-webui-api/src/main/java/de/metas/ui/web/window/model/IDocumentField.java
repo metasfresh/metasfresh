@@ -1,12 +1,10 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
@@ -145,11 +143,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
-	boolean isLookupWithNumericKey();
+	LookupValuesList getLookupValues();
 
-	List<LookupValue> getLookupValues(Document document);
-
-	List<LookupValue> getLookupValuesForQuery(Document document, String query);
+	LookupValuesList getLookupValuesForQuery(String query);
 
 	ICalloutField asCalloutField();
 

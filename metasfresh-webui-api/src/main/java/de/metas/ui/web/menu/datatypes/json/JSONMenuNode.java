@@ -46,7 +46,7 @@ public final class JSONMenuNode implements Serializable
 		}
 
 		int lastIndex = path.size() - 1;
-		if(!includeLastNode)
+		if (!includeLastNode)
 		{
 			lastIndex--;
 		}
@@ -60,21 +60,23 @@ public final class JSONMenuNode implements Serializable
 		return jsonChildNode;
 	}
 
-	public static JSONMenuNode of(final MenuNode node)
+	public static JSONMenuNode of(final MenuNode node, final int childrenLimit)
 	{
 		final int depth = Integer.MAX_VALUE;
-		return new JSONMenuNode(node, depth);
+		return new JSONMenuNode(node, depth, childrenLimit);
 	}
 
-	public static JSONMenuNode of(final MenuNode node, final int depth)
+	public static JSONMenuNode of(final MenuNode node, final int depth, final int childrenLimit)
 	{
-		return new JSONMenuNode(node, depth);
+		return new JSONMenuNode(node, depth, childrenLimit);
 	}
 
 	@JsonProperty("nodeId")
 	private final String nodeId;
 	@JsonProperty("caption")
 	private final String caption;
+	@JsonProperty("captionBreadcrumb")
+	private final String captionBreadcrumb;
 	@JsonProperty("type")
 	private final JSONMenuNodeType type;
 	@JsonProperty("elementId")
@@ -85,11 +87,12 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONMenuNode> children;
 
-	private JSONMenuNode(final MenuNode node, final int depth)
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit)
 	{
 		super();
 		nodeId = node.getId();
 		caption = node.getCaption();
+		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = normalizeElementId(node.getElementId());
 
@@ -101,7 +104,8 @@ public final class JSONMenuNode implements Serializable
 		{
 			children = node.getChildren()
 					.stream()
-					.map(childNode -> new JSONMenuNode(childNode, depth - 1))
+					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
+					.map(childNode -> new JSONMenuNode(childNode, depth - 1, childrenLimit))
 					.collect(GuavaCollectors.toImmutableList());
 		}
 	}
@@ -117,6 +121,7 @@ public final class JSONMenuNode implements Serializable
 		super();
 		nodeId = node.getId();
 		caption = node.getCaption();
+		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = normalizeElementId(node.getElementId());
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
@@ -131,6 +136,7 @@ public final class JSONMenuNode implements Serializable
 	private JSONMenuNode(
 			@JsonProperty("nodeId") final String nodeId //
 			, @JsonProperty("caption") final String caption //
+			, @JsonProperty("captionBreadcrumb") final String captionBreadcrumb //
 			, @JsonProperty("type") final JSONMenuNodeType type //
 			, @JsonProperty("elementId") final Integer elementId //
 			, @JsonProperty("children") final List<JSONMenuNode> children //
@@ -139,6 +145,7 @@ public final class JSONMenuNode implements Serializable
 		super();
 		this.nodeId = nodeId;
 		this.caption = caption;
+		this.captionBreadcrumb = captionBreadcrumb;
 		this.type = type;
 		this.elementId = elementId;
 		this.children = children == null ? ImmutableList.of() : ImmutableList.copyOf(children);
@@ -150,6 +157,7 @@ public final class JSONMenuNode implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.add("nodeId", nodeId)
 				.add("caption", caption)
+				.add("captionBreadcrumb", captionBreadcrumb)
 				.add("type", type)
 				.add("elementId", elementId)
 				.toString();
@@ -163,6 +171,11 @@ public final class JSONMenuNode implements Serializable
 	public String getCaption()
 	{
 		return caption;
+	}
+
+	public String getCaptionBreadcrumb()
+	{
+		return captionBreadcrumb;
 	}
 
 	public JSONMenuNodeType getType()

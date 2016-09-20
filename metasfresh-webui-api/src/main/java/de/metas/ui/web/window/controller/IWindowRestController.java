@@ -5,9 +5,11 @@ import java.util.List;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 
 /*
  * #%L
@@ -36,10 +38,6 @@ public interface IWindowRestController
 
 	JSONDocumentLayout layout(int adWindowId, String detailId, boolean advanced);
 
-	JSONDocumentLayout gridLayout(int adWindowId);
-
-	JSONDocumentLayout sideListLayout(int adWindowId);
-
 	List<JSONDocument> data(
 			int adWindowId //
 			, String idStr //
@@ -65,7 +63,7 @@ public interface IWindowRestController
 			, String rowIdStr//
 	);
 
-	List<JSONLookupValue> typeahead(
+	JSONLookupValuesList typeahead(
 			int adWindowId//
 			, String idStr//
 			, String detailId//
@@ -74,7 +72,7 @@ public interface IWindowRestController
 			, String query//
 	);
 
-	List<JSONLookupValue> dropdown(
+	JSONLookupValuesList dropdown(
 			int adWindowId//
 			, String idStr//
 			, String detailId//
@@ -82,12 +80,17 @@ public interface IWindowRestController
 			, String fieldName//
 	);
 
+	JSONDocumentLayoutTab viewLayout(int adWindowId,final JSONViewDataType viewDataType);
+
 	JSONDocumentViewResult createView(
 			int adWindowId //
+			, final JSONViewDataType viewDataType //
 			, int firstRow //
 			, int pageLength //
 			, List<JSONDocumentQueryFilter> jsonFilters //
 	);
 
 	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength);
+
+	void deleteView(String viewId);
 }

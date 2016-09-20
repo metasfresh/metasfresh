@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 
@@ -16,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -31,12 +33,16 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.Document.FieldValueSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -184,40 +190,59 @@ public class SqlDocumentRepository implements DocumentsRepository
 	{
 		final IntSupplier documentIdSupplier;
 		final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
-		if(idField == null)
+		final ResultSetFieldValueSupplier fieldValueSupplier = new ResultSetFieldValueSupplier(rs);
+		if (idField == null)
 		{
 			// FIXME: workaround to bypass the missing ID field for views
 			final int missingId = _nextMissingId.decrementAndGet();
-			documentIdSupplier = ()->{
-				return missingId;
-			};
+			documentIdSupplier = () -> missingId;
 		}
 		else
 		{
-			documentIdSupplier = () -> (Integer)retrieveDocumentFieldValue(idField, rs);
+			documentIdSupplier = () -> (Integer)fieldValueSupplier.getValue(idField);
 		}
-		
+
 		return Document.builder()
 				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setDocumentIdSupplier(documentIdSupplier)
-				.initializeAsExistingRecord((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rs))
+				.initializeAsExistingRecord(fieldValueSupplier)
 				.build();
 	}
 
-	private static Object retrieveDocumentFieldValue(final DocumentFieldDescriptor fieldDescriptor, final ResultSet rs) throws DBException
+	private static final class ResultSetFieldValueSupplier implements FieldValueSupplier
 	{
-		final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.cast(fieldDescriptor.getDataBinding());
-		final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
+		private final ResultSet rs;
 
-		try
+		public ResultSetFieldValueSupplier(final ResultSet rs)
 		{
-			return fieldValueLoader.retrieveFieldValue(rs);
+			super();
+			Check.assumeNotNull(rs, "Parameter rs is not null");
+			this.rs = rs;
 		}
-		catch (final SQLException e)
+
+		@Override
+		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
 		{
-			throw new DBException("Failed retrieving the value for " + fieldDescriptor + " using " + fieldValueLoader, e);
+			final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(fieldDescriptor.getDataBinding());
+
+			// If there is no SQL databinding, we cannot provide a value
+			if (fieldDataBinding == null)
+			{
+				return NO_VALUE;
+			}
+
+			final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
+
+			try
+			{
+				return fieldValueLoader.retrieveFieldValue(rs);
+			}
+			catch (final SQLException e)
+			{
+				throw new DBException("Failed retrieving the value for " + fieldDescriptor + " using " + fieldValueLoader, e);
+			}
 		}
 	}
 
@@ -246,8 +271,8 @@ public class SqlDocumentRepository implements DocumentsRepository
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final ResultSet rsFinal = rs;
-				document.refresh((fieldDescriptor) -> retrieveDocumentFieldValue(fieldDescriptor, rsFinal));
+				final ResultSetFieldValueSupplier fieldValueSupplier = new ResultSetFieldValueSupplier(rs);
+				document.refresh(fieldValueSupplier);
 			}
 			else
 			{
@@ -359,8 +384,15 @@ public class SqlDocumentRepository implements DocumentsRepository
 	 */
 	private boolean setPOValue(final PO po, final IDocumentFieldView documentField)
 	{
+		final DocumentFieldDataBindingDescriptor dataBinding = documentField.getDescriptor().getDataBinding().orElse(null);
+		if (dataBinding == null)
+		{
+			logger.trace("Skip setting PO's column because it has no databinding: {}", documentField);
+			return false;
+		}
+
 		final POInfo poInfo = po.getPOInfo();
-		final String columnName = documentField.getDescriptor().getDataBinding().getColumnName();
+		final String columnName = dataBinding.getColumnName();
 
 		final int poColumnIndex = poInfo.getColumnIndex(columnName);
 		if (poColumnIndex < 0)
@@ -487,6 +519,13 @@ public class SqlDocumentRepository implements DocumentsRepository
 			{
 				return Integer.parseInt((String)value);
 			}
+			else if (Map.class.isAssignableFrom(valueClass))
+			{
+				@SuppressWarnings("unchecked")
+				final Map<String, String> map = (Map<String, String>)value;
+				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
+				return lookupValue == null ? null : lookupValue.getIdAsInt();
+			}
 		}
 		else if (String.class.equals(targetClass))
 		{
@@ -497,6 +536,13 @@ public class SqlDocumentRepository implements DocumentsRepository
 			else if (LookupValue.class.isAssignableFrom(valueClass))
 			{
 				return ((LookupValue)value).getIdAsString();
+			}
+			else if (Map.class.isAssignableFrom(valueClass))
+			{
+				@SuppressWarnings("unchecked")
+				final Map<String, String> map = (Map<String, String>)value;
+				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+				return lookupValue == null ? null : lookupValue.getIdAsString();
 			}
 		}
 		else if (Timestamp.class.equals(targetClass))

@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model.sql;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
@@ -44,6 +46,12 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 			.build();
 
 	@Override
+	public List<IDocumentViewSelection> getViews()
+	{
+		return ImmutableList.copyOf(views.asMap().values());
+	}
+
+	@Override
 	public IDocumentViewSelection createView(final DocumentQuery query)
 	{
 		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder()
@@ -64,10 +72,15 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 		return view;
 	}
 
+	@Override
+	public void deleteView(final String viewId)
+	{
+		views.invalidate(viewId);
+	}
+
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final SqlDocumentViewSelection view = (SqlDocumentViewSelection)notification.getValue();
 		view.close();
 	}
-
 }

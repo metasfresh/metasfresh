@@ -65,7 +65,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/** Single row layout: header sections */
 	private final List<DocumentLayoutSectionDescriptor> sections;
 	private final DocumentLayoutDetailDescriptor gridView;
-	
+	private final DocumentLayoutDetailDescriptor advancedView;
+
 	/** Single row layout: included tabs */
 	private final Map<String, DocumentLayoutDetailDescriptor> details;
 
@@ -88,6 +89,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		sections = ImmutableList.copyOf(builder.buildSections());
 		gridView = builder.gridView.build();
+		advancedView = builder.advancedView.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideList = builder.getSideList();
 		filters = builder.getFilters();
@@ -103,6 +105,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 				.add("AD_Window_ID", AD_Window_ID)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("gridView", gridView)
+				.add("advancedView", advancedView)
 				.add("details", details.isEmpty() ? null : details)
 				.add("sideList", sideList)
 				.toString();
@@ -117,25 +120,39 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return documentNoElement;
 	}
-	
+
 	public DocumentLayoutElementDescriptor getDocumentSummaryElement()
 	{
 		return documentSummaryElement;
 	}
-	
+
 	public DocumentLayoutElementDescriptor getDocActionElement()
 	{
 		return docActionElement;
 	}
 
+	/**
+	 * @return layout sections
+	 */
 	public List<DocumentLayoutSectionDescriptor> getSections()
 	{
 		return sections;
 	}
-	
+
+	/**
+	 * @return the layout for grid view (for header documents)
+	 */
 	public DocumentLayoutDetailDescriptor getGridView()
 	{
 		return gridView;
+	}
+
+	/**
+	 * @return the layout for advanced editing (for header documents)
+	 */
+	public DocumentLayoutDetailDescriptor getAdvancedView()
+	{
+		return advancedView;
 	}
 
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
@@ -187,6 +204,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 		private DocumentLayoutDetailDescriptor.Builder gridView;
+		private DocumentLayoutDetailDescriptor.Builder advancedView;
 
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 		private DocumentLayoutSideListDescriptor sideList;
@@ -274,7 +292,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			this.documentNoElement = documentNoElement;
 			return this;
 		}
-		
+
 		public Builder setDocumentSummaryElement(DocumentLayoutElementDescriptor documentSummaryElement)
 		{
 			this.documentSummaryElement = documentSummaryElement;
@@ -330,6 +348,12 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public Builder setGridView(final DocumentLayoutDetailDescriptor.Builder gridView)
 		{
 			this.gridView = gridView;
+			return this;
+		}
+
+		public Builder setAdvancedView(DocumentLayoutDetailDescriptor.Builder advancedView)
+		{
+			this.advancedView = advancedView;
 			return this;
 		}
 

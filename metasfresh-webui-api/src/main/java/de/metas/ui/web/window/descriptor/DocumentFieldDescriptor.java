@@ -3,7 +3,9 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +14,7 @@ import java.util.TreeSet;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -22,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 import de.metas.logging.LogManager;
@@ -31,7 +35,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
-import de.metas.ui.web.window.model.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
  * #%L
@@ -90,8 +94,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Class<?> valueClass;
 
 	// @JsonProperty("defaultValueExpression")
-	@JsonIgnore       // FIXME: JSON serialization/deserialization of optional defaultValueExpression
+	@JsonIgnore                 // FIXME: JSON serialization/deserialization of optional defaultValueExpression
 	private final Optional<IExpression<?>> defaultValueExpression;
+
+	@JsonIgnore                 // FIXME: JSON serialization/deserialization of callouts
+	private final List<IDocumentFieldCallout> callouts;
 
 	public static enum Characteristic
 	{
@@ -114,7 +121,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final ILogicExpression mandatoryLogic;
 
 	@JsonProperty("data-binding")
-	private final DocumentFieldDataBindingDescriptor dataBinding;
+	private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
 
 	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
@@ -145,6 +152,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		dataBinding = builder.getDataBinding();
 
 		dependencies = builder.buildDependencies();
+
+		callouts = ImmutableList.copyOf(builder.callouts);
 	}
 
 	@JsonCreator
@@ -268,9 +277,9 @@ public final class DocumentFieldDescriptor implements Serializable
 	}
 
 	/**
-	 * @return field data binding info; never null
+	 * @return field data binding info
 	 */
-	public DocumentFieldDataBindingDescriptor getDataBinding()
+	public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
 	{
 		return dataBinding;
 	}
@@ -282,7 +291,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	/**
 	 * Converts given value to target class.
-	 * 
+	 *
 	 * @param value value to be converted
 	 * @param targetType target type
 	 * @param lookupDataSource optional Lookup data source, if needed
@@ -295,7 +304,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	/**
 	 * Converts given value to target class.
-	 * 
+	 *
 	 * @param fieldName field name, needed only for logging purposes
 	 * @param value value to be converted
 	 * @param targetType target type
@@ -333,7 +342,7 @@ public final class DocumentFieldDescriptor implements Serializable
 							+ "\n Value: " + value
 							+ "\n LookupDataSource: " + lookupDataSource);
 				}
-				
+
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)value;
 				return valueConv;
@@ -475,10 +484,19 @@ public final class DocumentFieldDescriptor implements Serializable
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType, e);
+			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
+					+ "\n LookupDataSource: " + lookupDataSource //
+					, e);
 		}
 
-		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType);
+		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
+				+ "\n LookupDataSource: " + lookupDataSource //
+		);
+	}
+
+	/* package */List<IDocumentFieldCallout> getCallouts()
+	{
+		return callouts;
 	}
 
 	public static final class Builder
@@ -505,11 +523,25 @@ public final class DocumentFieldDescriptor implements Serializable
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
 		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
 
-		private DocumentFieldDataBindingDescriptor _dataBinding;
+		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
+
+		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
 		private Builder()
 		{
 			super();
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("name", fieldName)
+					.add("detailId", detailId)
+					.add("widgetType", widgetType)
+					.add("characteristics", characteristics.isEmpty() ? null : characteristics)
+					.toString();
 		}
 
 		public DocumentFieldDescriptor getOrBuild()
@@ -592,6 +624,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setDefaultValueExpression(final IExpression<?> defaultValueExpression)
+		{
+			assertNotBuilt();
+			this.defaultValueExpression = Optional.of(defaultValueExpression);
+			return this;
+		}
+
 		public Builder addCharacteristic(final Characteristic c)
 		{
 			characteristics.add(c);
@@ -645,24 +684,47 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDataBinding(final DocumentFieldDataBindingDescriptor dataBinding)
 		{
 			assertNotBuilt();
-			_dataBinding = dataBinding;
+			_dataBinding = Optional.ofNullable(dataBinding);
 			return this;
 		}
 
-		public DocumentFieldDataBindingDescriptor getDataBinding()
+		public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
 		{
-			Preconditions.checkNotNull(_dataBinding, "dataBinding is null");
 			return _dataBinding;
 		}
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{
-			return DocumentFieldDependencyMap.builder()
+			DocumentFieldDependencyMap.Builder dependencyMapBuilder = DocumentFieldDependencyMap.builder()
 					.add(fieldName, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
 					.add(fieldName, displayLogic.getParameters(), DependencyType.DisplayLogic)
-					.add(fieldName, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic)
-					.add(fieldName, getDataBinding().getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues)
-					.build();
+					.add(fieldName, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic);
+
+			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
+			if (dataBinding != null)
+			{
+				dependencyMapBuilder.add(fieldName, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues);
+			}
+
+			return dependencyMapBuilder.build();
+		}
+
+		public Builder addCallout(final IDocumentFieldCallout callout)
+		{
+			Check.assumeNotNull(callout, "Parameter callout is not null");
+
+			if (callouts.contains(callout))
+			{
+				logger.warn("Skip adding {} because it was already added to {}", callout, this);
+				return this;
+			}
+			callouts.add(callout);
+			return this;
+		}
+
+		/* package */List<IDocumentFieldCallout> getCallouts()
+		{
+			return callouts;
 		}
 
 	}

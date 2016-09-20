@@ -1,8 +1,10 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.descriptor;
 
-import java.util.List;
+import java.util.Set;
 
-import de.metas.ui.web.window.datatypes.LookupValue;
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.api.ICalloutInstance;
 
 /*
  * #%L
@@ -14,40 +16,34 @@ import de.metas.ui.web.window.datatypes.LookupValue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface LookupDataSource
+/**
+ * Document field callout: an {@link ICalloutField} implementation which also provides the field names for which this callout shall be triggered.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface IDocumentFieldCallout extends ICalloutInstance
 {
-	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
-
-	List<LookupValue> findEntities(Document document, String filter, int firstRow, int pageLength);
-
-	List<LookupValue> findEntities(Document document, int pageLength);
-
-	LookupValue findById(Object id);
-
-	boolean isNumericKey();
+	@Override
+	String getId();
 
 	/**
-	 * Set this data source as staled.
-	 *
-	 * @param triggeringFieldName field name which triggered this request (optional)
-	 * @return true if this lookup source was marked as staled
+	 * @return list of field names for which this callout shall be triggered.
 	 */
-	boolean setStaled(final String triggeringFieldName);
+	Set<String> getDependsOnFieldNames();
 
-	boolean isStaled();
-
-	LookupDataSource copy();
+	@Override
+	void execute(ICalloutExecutor executor, ICalloutField field) throws Exception;
 }

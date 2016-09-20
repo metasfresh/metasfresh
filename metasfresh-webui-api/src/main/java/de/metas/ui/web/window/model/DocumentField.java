@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -12,10 +11,12 @@ import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
  * #%L
@@ -46,6 +47,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	private final DocumentFieldDescriptor descriptor;
 	private final Document _document;
 	private final LookupDataSource lookupDataSource;
+	private boolean lookupValuesStaled = true;
 
 	private transient ICalloutField _calloutField; // lazy
 
@@ -68,7 +70,10 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		super();
 		this.descriptor = descriptor;
 		_document = document;
-		lookupDataSource = descriptor.getDataBinding().createLookupDataSource();
+		
+		final DocumentFieldDataBindingDescriptor dataBinding = descriptor.getDataBinding().orElse(null);
+		lookupDataSource = dataBinding == null ? null : dataBinding.createLookupDataSource();
+		
 		_valid = DocumentValidStatus.inititalInvalid();
 	}
 
@@ -78,7 +83,8 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		super();
 		descriptor = from.descriptor;
 		_document = document;
-		lookupDataSource = from.lookupDataSource == null ? null : from.lookupDataSource.copy();
+		lookupDataSource = from.lookupDataSource;
+		lookupValuesStaled = from.lookupValuesStaled;
 		_calloutField = null; // don't copy it
 		_initialValue = from._initialValue;
 		_value = from._value;
@@ -289,7 +295,11 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 	@Override
 	public boolean isLookupValuesStale()
 	{
-		return lookupDataSource != null && lookupDataSource.isStaled();
+		if(lookupDataSource == null)
+		{
+			return false;
+		}
+		return lookupValuesStaled;
 	}
 
 	@Override
@@ -299,33 +309,38 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 		{
 			return false;
 		}
-		return lookupDataSource.setStaled(triggeringFieldName);
+		
+		lookupValuesStaled = true;
+		logger.trace("Marked {} as staled (triggeringFieldName={})", this, triggeringFieldName);
+		
+		return true;
 	}
 
 	@Override
-	public boolean isLookupWithNumericKey()
-	{
-		return lookupDataSource != null && lookupDataSource.isNumericKey();
-	}
-
-	@Override
-	public List<LookupValue> getLookupValues(final Document document)
+	public LookupValuesList getLookupValues()
 	{
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document, LookupDataSource.DEFAULT_PageLength);
+		
+		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final LookupValuesList values = lookupDataSource.findEntities(ctx, LookupDataSource.DEFAULT_PageLength);
+		lookupValuesStaled = false;
+		return values;
 	}
 
 	@Override
-	public List<LookupValue> getLookupValuesForQuery(final Document document, final String query)
+	public LookupValuesList getLookupValuesForQuery(final String query)
 	{
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		return lookupDataSource.findEntities(document, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final LookupValuesList values = lookupDataSource.findEntities(ctx, query, LookupDataSource.FIRST_ROW, LookupDataSource.DEFAULT_PageLength);
+		lookupValuesStaled = false;
+		return values;
 	}
 
 	@Override

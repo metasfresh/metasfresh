@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,15 +20,18 @@ import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -77,10 +81,14 @@ public class WindowRestController implements IWindowRestController
 	private static final String PARAM_RowId = "rowId";
 	private static final String PARAM_Field = "field";
 	private static final String PARAM_FieldsList = "fields";
-	private static final String PARAM_FirstRow = "firstRow";
-	private static final String PARAM_PageLength = "pageLength";
 	private static final String PARAM_Advanced = "advanced";
 	private static final String PARAM_Advanced_DefaultValue = "false";
+
+	private static final String PARAM_ViewId = "viewId";
+	private static final String PARAM_ViewDataType = "viewType";
+	private static final String PARAM_FirstRow = "firstRow";
+	private static final String PARAM_FirstRow_Description = "first row to fetch (starting from 0)";
+	private static final String PARAM_PageLength = "pageLength";
 
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
@@ -129,48 +137,13 @@ public class WindowRestController implements IWindowRestController
 
 		if (Strings.isNullOrEmpty(detailId))
 		{
-			return JSONDocumentLayout.of(layout, jsonFilteringOpts);
+			return JSONDocumentLayout.ofHeaderLayout(layout, jsonFilteringOpts);
 		}
 		else
 		{
 			final DocumentLayoutDetailDescriptor detailLayout = layout.getDetail(detailId);
 			return JSONDocumentLayout.ofDetailTab(adWindowId, detailLayout, jsonFilteringOpts);
 		}
-	}
-
-	@Override
-	@RequestMapping(value = "/gridLayout", method = RequestMethod.GET)
-	public JSONDocumentLayout gridLayout(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-	)
-	{
-		loginService.autologin();
-
-		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(adWindowId)
-				.getLayout();
-
-		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
-				.build();
-
-		final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
-		return JSONDocumentLayout.ofDetailTab(adWindowId, gridLayout, jsonFilteringOpts);
-	}
-
-	@Override
-	@RequestMapping(value = "/sideListLayout", method = RequestMethod.GET)
-	public JSONDocumentLayout sideListLayout(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-	)
-	{
-		loginService.autologin();
-
-		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(adWindowId)
-				.getLayout();
-		final DocumentLayoutSideListDescriptor sideListLayout = layout.getSideList();
-		final List<DocumentQueryFilterDescriptor> filters = layout.getFilters();
-		return JSONDocumentLayout.ofSideListLayout(adWindowId, sideListLayout, filters, newJSONFilteringOptions().build());
 	}
 
 	@Override
@@ -302,7 +275,7 @@ public class WindowRestController implements IWindowRestController
 
 	@Override
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
-	public List<JSONLookupValue> typeahead(
+	public JSONLookupValuesList typeahead(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
 			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
@@ -321,13 +294,13 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final List<LookupValue> lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
-		return JSONLookupValue.ofLookupValuesList(lookupValues);
+		final LookupValuesList lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
+		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}
 
 	@Override
 	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
-	public List<JSONLookupValue> dropdown(
+	public JSONLookupValuesList dropdown(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true, defaultValue = DocumentId.NEW_ID_STRING) final String idStr //
 			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
@@ -345,16 +318,48 @@ public class WindowRestController implements IWindowRestController
 				.build();
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final List<LookupValue> lookupValues = document.getFieldLookupValues(fieldName);
+		final LookupValuesList lookupValues = document.getFieldLookupValues(fieldName);
 
-		return JSONLookupValue.ofLookupValuesList(lookupValues);
+		return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 	}
 
 	@Override
-	@RequestMapping(value = "/createView", method = RequestMethod.PUT)
+	@RequestMapping(value = "/viewLayout", method = RequestMethod.GET)
+	public JSONDocumentLayoutTab viewLayout(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
+
+	)
+	{
+		loginService.autologin();
+
+		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
+				.getDocumentDescriptor(adWindowId)
+				.getLayout();
+
+		final JSONFilteringOptions jsonOpts = newJSONFilteringOptions()
+				.build();
+
+		switch (viewDataType)
+		{
+			case grid:
+				final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
+				return JSONDocumentLayoutTab.of(adWindowId, gridLayout, jsonOpts);
+			case list:
+				final DocumentLayoutSideListDescriptor sideListLayout = layout.getSideList();
+				final List<DocumentQueryFilterDescriptor> filters = layout.getFilters();
+				return JSONDocumentLayoutTab.ofSideListLayout(adWindowId, sideListLayout, filters, newJSONFilteringOptions().build());
+			default:
+				throw new IllegalArgumentException("Invalid " + PARAM_ViewDataType + "=" + viewDataType);
+		}
+	}
+
+	@Override
+	@RequestMapping(value = "/view", method = RequestMethod.PUT)
 	public JSONDocumentViewResult createView(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") final int firstRow //
+			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
+			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
 			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
 	)
@@ -366,8 +371,15 @@ public class WindowRestController implements IWindowRestController
 				.getDocumentDescriptor(adWindowId)
 				.getEntityDescriptor();
 
+		final Characteristic requiredFieldCharacteristic = viewDataType.getRequiredFieldCharacteristic();
+		final List<DocumentFieldDescriptor> fields = entityDescriptor.getFieldsWithCharacteristic(requiredFieldCharacteristic);
+		if (fields.isEmpty())
+		{
+			throw new IllegalStateException("No fields were found for " + PARAM_ViewDataType + ": " + viewDataType + "(required field characteristic: " + requiredFieldCharacteristic + ")");
+		}
+
 		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
-				.setViewFields(entityDescriptor.getFieldsWithCharacteristic(Characteristic.GridViewField))
+				.setViewFields(fields)
 				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters))
 				.build();
 
@@ -384,40 +396,31 @@ public class WindowRestController implements IWindowRestController
 		{
 			return JSONDocumentViewResult.of(view);
 		}
-
 	}
 
 	@Override
-	@RequestMapping(value = "/browseView", method = RequestMethod.GET)
-	public JSONDocumentViewResult browseView(
-			@RequestParam(name = "viewId", required = true) final String viewId//
-			, @RequestParam(name = PARAM_FirstRow, required = true) final int firstRow //
-			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
-	)
-	{
-		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-		final List<IDocumentView> page = view.getPage(firstRow, pageLength);
-		return JSONDocumentViewResult.of(view, firstRow, pageLength, page);
-	}
-
-	@RequestMapping(value = "/sideListData", method = RequestMethod.PUT)
-	public List<JSONDocument> sideListData(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
+	@RequestMapping(value = "/view/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
+	public void deleteView(
+			@PathVariable(PARAM_ViewId) final String viewId//
 	)
 	{
 		loginService.autologin();
 
-		final DocumentEntityDescriptor entityDescriptor = documentCollection
-				.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(adWindowId)
-				.getEntityDescriptor();
-		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
-				.setViewFields(entityDescriptor.getFieldsWithCharacteristic(Characteristic.SideListField))
-				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters))
-				.build();
+		documentViewsRepo.deleteView(viewId);
+	}
 
-		final List<IDocumentView> sideDocuments = documentViewsRepo.createView(query).getPage(0, 100);
-		return JSONDocument.ofDocumentViewList(sideDocuments);
+	@Override
+	@RequestMapping(value = "/view/{" + PARAM_ViewId + "}", method = RequestMethod.GET)
+	public JSONDocumentViewResult browseView(
+			@PathVariable(PARAM_ViewId) final String viewId//
+			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
+			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
+	)
+	{
+		loginService.autologin();
+
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+		final List<IDocumentView> page = view.getPage(firstRow, pageLength);
+		return JSONDocumentViewResult.of(view, firstRow, pageLength, page);
 	}
 }

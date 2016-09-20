@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
@@ -27,8 +28,8 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentView;
-import de.metas.ui.web.window.model.LookupDataSource;
-import de.metas.ui.web.window.model.sql.SqlLookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
 /*
  * #%L
@@ -59,9 +60,24 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return new Builder();
 	}
 
-	public static final SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	/**
+	 * @param optionalDescriptor
+	 * @return {@link SqlDocumentFieldDataBindingDescriptor} if given <code>optionalDescriptor</code> is present and it's of this type.
+	 */
+	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final Optional<DocumentFieldDataBindingDescriptor> optionalDescriptor)
 	{
-		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+		if (!optionalDescriptor.isPresent())
+		{
+			return null;
+		}
+
+		final DocumentFieldDataBindingDescriptor descriptor = optionalDescriptor.get();
+		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
+		{
+			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+		}
+
+		return null;
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);
@@ -264,11 +280,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return encrypted;
 	}
 
-	public SqlLookupDescriptor getSqlLookupDescriptor()
-	{
-		return sqlLookupDescriptor;
-	}
-
 	public boolean isUsingDisplayColumn()
 	{
 		return usingDisplayColumn;
@@ -296,12 +307,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return null;
 		}
+		
+		return LookupDataSourceFactory.instance.getLookupDataSource(sqlLookupDescriptor);
 
-		// TODO: implement more specialized SqlLookupDataSources.
-		// * a high volume, generic one (i.e. SqlLookupDataSource)
-		// * in case there is no validation rule or the validation rule is immutable we could have an implementation which would cache the results
-
-		return SqlLookupDataSource.of(sqlLookupDescriptor);
 	}
 
 	@JsonIgnore

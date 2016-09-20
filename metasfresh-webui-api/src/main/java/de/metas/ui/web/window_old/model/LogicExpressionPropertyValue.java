@@ -1,7 +1,7 @@
 package de.metas.ui.web.window_old.model;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -65,7 +65,7 @@ public class LogicExpressionPropertyValue implements PropertyValue
 		this.dependencyType = Preconditions.checkNotNull(dependencyType, "dependencyType");
 		this.logicExpression = Preconditions.checkNotNull(logicExpression, "logicExpression");
 
-		final List<String> logicExpressionParams = logicExpression.getParameters();
+		final Set<String> logicExpressionParams = logicExpression.getParameters();
 		dependencies = PropertyNameDependenciesMap.builder()
 				.add(propertyName, PropertyName.toSet(logicExpressionParams), dependencyType)
 				.build();

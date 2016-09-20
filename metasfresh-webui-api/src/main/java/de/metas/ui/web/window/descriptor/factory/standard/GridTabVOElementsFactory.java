@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,8 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
@@ -21,6 +20,7 @@ import org.adempiere.ad.expression.api.impl.BigDecimalStringExpressionSupport.Bi
 import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.BooleanStringExpression;
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
+import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -32,6 +32,7 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -54,6 +55,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
@@ -67,6 +69,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 /*
  * #%L
@@ -100,6 +103,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	/** Column names where we shall use {@link DocumentFieldWidgetType#Switch} instead of {@link DocumentFieldWidgetType#YesNo} */
 	private static final Set<String> COLUMNNAMES_Switch = ImmutableSet.of(WindowConstants.FIELDNAME_IsActive); // FIXME: hardcoded
 
+	private static final String HARDCODED_DEFAUL_EXPRESSION_STRING_NULL = "@NULL@";
 	/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
 	private static final ILogicExpression LOGICEXPRESSION_NotActive;
 	/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
@@ -117,8 +121,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
 		LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
 
-		DEFAULT_VALUE_EXPRESSION_Yes = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(true), BigDecimalStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), BigDecimalStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_Yes = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(true), BooleanStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), BooleanStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal = Optional.of(expressionFactory.compile("0", BigDecimalStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_Integer = Optional.of(expressionFactory.compile("0", IntegerStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
@@ -302,6 +306,22 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				layoutSectionBuilders.add(layoutSection(uiSection));
 			}
 
+			//
+			// HARDCODED: C_Order's DocumentSummary
+			final GridTabVO gridTabVO = getGridTabVO();
+			if (I_C_Order.Table_Name.equals(gridTabVO.getTableName()))
+			{
+				// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
+				final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
+				documentField_InternalVirtual(
+						SpecialFieldsCollector.COLUMNNAME_DocumentSummary // fieldName
+						, DocumentFieldWidgetType.Text // widgetType
+						, String.class // valueType
+						, true // publicField
+						, valueProvider // valueProvider
+				);
+			}
+
 			return layoutSectionBuilders;
 		}
 		finally
@@ -411,7 +431,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 	{
 		logger.trace("Building layout element line for {}", uiElement);
 
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement, layoutElementGroupBuilder);
+		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
 		if (layoutElementBuilder == null)
 		{
 			logger.trace("Skip building layout element line because got null layout element", uiElement);
@@ -428,12 +448,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement)
 	{
-		final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = null;
-		return layoutElement(uiElement, layoutElementGroupBuilder);
-	}
-
-	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement, @Nullable final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
-	{
 		logger.trace("Building layout element for {}", uiElement);
 
 		if (!uiElement.isActive())
@@ -442,12 +456,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			return null;
 		}
 
-		LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
-		if (layoutType == null && layoutElementGroupBuilder != null)
-		{
-			final boolean isFirstElementInGroup = !layoutElementGroupBuilder.hasElementLines();
-			layoutType = isFirstElementInGroup ? LayoutType.primary : LayoutType.secondary;
-		}
+		final LayoutType layoutType = LayoutType.fromNullable(uiElement.getUIStyle());
 
 		//
 		// UI main field
@@ -556,6 +565,16 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			return null;
 		}
 
+		final List<I_AD_UI_Section> uiSections = getUISections();
+		final Stream<Builder> layoutElements = uiSections.stream()
+				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
+				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
+				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
+				.filter(uiElement -> uiElement.isDisplayedGrid())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
+				.map(uiElement -> layoutElement(uiElement).setGridElement())
+				.filter(uiElement -> uiElement != null);
+
 		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(getDetailId())
 				.setCaption(detailTab.getName())
@@ -565,23 +584,53 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.addFilters(documentFilters())
-				.addElements(layoutElementsGridView());
+				.addElements(layoutElements);
 
 		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
 		return layoutDetail;
 	}
 
-	private Stream<DocumentLayoutElementDescriptor.Builder> layoutElementsGridView()
+	/**
+	 * Build the layout for advanced view (for header documents).
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
+	 */
+	public DocumentLayoutDetailDescriptor.Builder layoutAdvancedView()
 	{
+		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
+		final GridTabVO gridTabVO = getGridTabVO();
+		logger.trace("Generating advanced view layout for {}", gridTabVO);
+
+		// If the detail is never displayed then don't add it to layout
+		final ILogicExpression tabDisplayLogic = getTabDisplayLogic();
+		if (tabDisplayLogic.isConstantFalse())
+		{
+			logger.trace("Skip adding advanced view layout because it's never displayed: {}, tabDisplayLogic={}", gridTabVO, tabDisplayLogic);
+			return null;
+		}
+
 		final List<I_AD_UI_Section> uiSections = getUISections();
-		return uiSections.stream()
+		final Stream<Builder> layoutElements = uiSections.stream()
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
 				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
-				.filter(uiElement -> uiElement.isDisplayedGrid())
-				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNoGrid() - uiElement2.getSeqNoGrid())
-				.map(uiElement -> layoutElement(uiElement).setGridElement())
+				.filter(uiElement -> uiElement.isDisplayed())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo))
+				.map(uiElement -> layoutElement(uiElement).setNotGridElement())
 				.filter(uiElement -> uiElement != null);
+
+		final DocumentLayoutDetailDescriptor.Builder advancedViewLayout = DocumentLayoutDetailDescriptor.builder()
+				.setDetailId(getDetailId())
+				.setCaption(gridTabVO.getName())
+				.setCaptionTrls(gridTabVO.getNameTrls())
+				.setDescription(gridTabVO.getDescription())
+				.setDescriptionTrls(gridTabVO.getDescriptionTrls())
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				// .addFilters(documentFilters()) // no filters are needed here
+				.addElements(layoutElements);
+
+		return advancedViewLayout;
 	}
 
 	public DocumentEntityDescriptor.Builder documentEntity()
@@ -636,7 +685,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	public void documentFields()
 	{
-		getGridTabVO()
+		final GridTabVO gridTabVO = getGridTabVO();
+		gridTabVO
 				.getFields()
 				.stream()
 				.forEach(gridFieldVO -> documentField(gridFieldVO));
@@ -767,6 +817,64 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		//
 		// Add Field's data binding to entity data binding
 		entityBindingsBuilder.addField(dataBinding);
+
+		return fieldBuilder;
+	}
+
+	private final DocumentFieldDescriptor.Builder documentField_InternalVirtual(
+			final String fieldName //
+			, final DocumentFieldWidgetType widgetType //
+			, final Class<?> valueClass //
+			, final boolean publicField, final IExpression<?> valueProvider //
+	)
+	{
+		final String detailId = getDetailId();
+
+		final ExpressionDocumentFieldCallout callout = ExpressionDocumentFieldCallout.of(fieldName, valueProvider);
+		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder()
+				.setFieldName(fieldName)
+				.setDetailId(detailId)
+				//
+				.setKey(false)
+				.setParentLink(false)
+				//
+				.setWidgetType(widgetType)
+				.setValueClass(valueClass)
+				.setVirtualField(true)
+				.setCalculated(true)
+				//
+				// Default value: use our expression
+				.setDefaultValueExpression(valueProvider)
+				//
+				// Characteristics: none, it's an internal field
+				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
+				//
+				// Logics:
+				.setReadonlyLogic(ILogicExpression.TRUE) // yes, always readonly for outside
+				.setAlwaysUpdateable(false)
+				.setMandatoryLogic(ILogicExpression.FALSE) // not mandatory
+				.setDisplayLogic(ILogicExpression.FALSE) // never display it
+				//
+				.setDataBinding(null) // no databinding !
+				//
+				.addCallout(callout);
+
+		//
+		// Add Field builder to document entity
+		documentEntity().addField(fieldBuilder);
+
+		//
+		// Add Field's data binding to entity data binding
+		// entityBindingsBuilder.addField(dataBinding); // no databinding!
+
+		collectSpecialField(DocumentLayoutElementDescriptor.builder()
+				.setWidgetType(widgetType)
+				.setInternalName(fieldName)
+				.setLayoutTypeNone()
+				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldName)
+						.setInternalName(fieldName)
+						.setPublicField(publicField)
+						.setEmptyText(HARDCODED_FIELD_EMPTY_TEXT)));
 
 		return fieldBuilder;
 	}
@@ -1281,6 +1389,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		final String defaultValueStr = gridFieldVO.getDefaultValue();
+
+		// If there is no default value expression, use some defaults
 		if (defaultValueStr == null || defaultValueStr.isEmpty())
 		{
 			final int displayType = gridFieldVO.getDisplayType();
@@ -1299,7 +1409,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				if (gridFieldVO.isMandatory())
 				{
-					if(DisplayType.Integer == displayType)
+					if (DisplayType.Integer == displayType)
 					{
 						return DEFAULT_VALUE_EXPRESSION_Zero_Integer;
 					}
@@ -1314,12 +1424,15 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 			return Optional.empty();
 		}
+		// If it's a SQL expression => compile it as SQL expression
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
+			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
 			final String sqlTemplate = defaultValueStr.substring(5).trim();
 			final IStringExpression sqlTemplateStringExpression = expressionFactory.compile(sqlTemplate, IStringExpression.class);
-			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression));
+			return Optional.of(SqlDefaultValueExpression.of(sqlTemplateStringExpression, fieldValueClass));
 		}
+		// Regular default value expression
 		else
 		{
 			final Class<?> fieldValueClass = getValueClass(gridFieldVO);
@@ -1330,6 +1443,18 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 	private Optional<IExpression<?>> buildExpression(final String expressionStr, final Class<?> fieldValueClass, final DocumentFieldWidgetType widgetType)
 	{
+		// Hardcoded: NULL
+		if (HARDCODED_DEFAUL_EXPRESSION_STRING_NULL.equalsIgnoreCase(expressionStr))
+		{
+			return Optional.empty();
+		}
+
+		// Hardcoded: SysDate
+		if (SysDateDateExpression.EXPRESSION_STRING.equals(expressionStr))
+		{
+			return SysDateDateExpression.optionalInstance;
+		}
+
 		final IExpression<?> expression;
 		if (Integer.class.equals(fieldValueClass))
 		{
@@ -1343,13 +1468,19 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		{
 			expression = expressionFactory.compile(expressionStr, IntegerStringExpression.class);
 		}
+		else if (StringLookupValue.class.equals(fieldValueClass))
+		{
+			final String expressionStrNorm = stripDefaultValueQuotes(expressionStr);
+			expression = expressionFactory.compile(expressionStrNorm, IStringExpression.class);
+		}
 		else if (java.util.Date.class.equals(fieldValueClass))
 		{
 			expression = expressionFactory.compile(expressionStr, DateStringExpression.class);
 		}
 		else if (Boolean.class.equals(fieldValueClass))
 		{
-			expression = expressionFactory.compile(expressionStr, BooleanStringExpression.class);
+			final String expressionStrNorm = stripDefaultValueQuotes(expressionStr);
+			expression = expressionFactory.compile(expressionStrNorm, BooleanStringExpression.class);
 		}
 		//
 		// Fallback
@@ -1363,6 +1494,34 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			return Optional.empty();
 		}
 		return Optional.of(expression);
+	}
+	
+	/**
+	 * Strips default value expressions which are quoted strings.
+	 * e.g.
+	 * <ul>
+	 * <li>we have some cases where a YesNo default value is 'N' or 'Y'
+	 * <li>we have some cases where a List default value is something like 'P'
+	 * <li>we have some cases where a Table's reference default value is something like 'de.metas.swat'
+	 * </ul>
+	 * 
+	 * @param expressionStr
+	 * @return fixed expression or same expression if does not apply
+	 */
+	private static final String stripDefaultValueQuotes(final String expressionStr)
+	{
+		if (expressionStr == null || expressionStr.isEmpty())
+		{
+			return expressionStr;
+		}
+
+		if (expressionStr.startsWith("'") && expressionStr.endsWith("'"))
+		{
+			final String expressionStrNorm = expressionStr.substring(1, expressionStr.length() - 1);
+			logger.warn("Normalized boolean string expression: [{}] -> [{}]", expressionStr, expressionStrNorm);
+		}
+
+		return expressionStr;
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridFieldVO gridFieldVO)
@@ -1403,7 +1562,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
-				.sorted((uiElement1, uiElement2) -> uiElement1.getSeqNo_SideList() - uiElement2.getSeqNo_SideList())
+				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);

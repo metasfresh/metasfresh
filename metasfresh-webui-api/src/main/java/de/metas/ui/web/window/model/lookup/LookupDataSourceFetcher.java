@@ -1,6 +1,8 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
  * #%L
@@ -12,25 +14,31 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface DocumentViewsRepository
+public interface LookupDataSourceFetcher
 {
-	IDocumentViewSelection getView(String viewId);
+	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
 
-	IDocumentViewSelection createView(DocumentQuery query);
+	String getLookupTableName();
 
-	void deleteView(String viewId);
+	boolean isNumericKey();
 
-	List<IDocumentViewSelection> getViews();
+	LookupDataSourceContext.Builder newContextForFetchingById(Object id);
+
+	LookupValue retrieveLookupValueById(LookupDataSourceContext evalCtx);
+
+	LookupDataSourceContext.Builder newContextForFetchingList();
+
+	LookupValuesList retrieveEntities(LookupDataSourceContext evalCtx);
 }

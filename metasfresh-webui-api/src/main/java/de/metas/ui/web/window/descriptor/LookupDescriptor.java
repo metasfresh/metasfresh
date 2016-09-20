@@ -1,6 +1,4 @@
-package de.metas.ui.web.window.model;
-
-import java.util.List;
+package de.metas.ui.web.window.descriptor;
 
 /*
  * #%L
@@ -24,13 +22,7 @@ import java.util.List;
  * #L%
  */
 
-public interface DocumentViewsRepository
+public interface LookupDescriptor
 {
-	IDocumentViewSelection getView(String viewId);
-
-	IDocumentViewSelection createView(DocumentQuery query);
-
-	void deleteView(String viewId);
-
-	List<IDocumentViewSelection> getViews();
+	String getTableName();
 }

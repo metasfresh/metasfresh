@@ -11,9 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -49,26 +48,18 @@ public class JSONDocumentLayoutElementLine implements Serializable
 				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
+	
+	static List<JSONDocumentLayoutElementLine> ofElementsOnePerLine(final List<DocumentLayoutElementDescriptor> elements, final JSONFilteringOptions jsonFilteringOpts)
+	{
+		return JSONDocumentLayoutElement.ofList(elements, jsonFilteringOpts)
+				.stream()
+				.map(element -> new JSONDocumentLayoutElementLine(element))
+				.collect(GuavaCollectors.toImmutableList());
+	}
 
 	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine, jsonFilteringOpts);
-	}
-
-	static List<JSONDocumentLayoutElementLine> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
-	{
-		return JSONDocumentLayoutElement.ofList(detailLayout.getElements(), jsonFilteringOpts)
-				.stream()
-				.map(element -> new JSONDocumentLayoutElementLine(element))
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	static List<JSONDocumentLayoutElementLine> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
-	{
-		return JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonFilteringOpts)
-				.stream()
-				.map(element -> new JSONDocumentLayoutElementLine(element))
-				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@JsonProperty("elements")

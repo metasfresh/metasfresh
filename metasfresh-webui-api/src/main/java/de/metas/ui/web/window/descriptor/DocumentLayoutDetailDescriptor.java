@@ -271,12 +271,6 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			this.filters.addAll(filters);
 			return this;
 		}
-
-		public Builder clearFilters()
-		{
-			filters.clear();
-			return this;
-		}
 	}
 
 }

@@ -1,6 +1,6 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 /*
  * #%L
@@ -24,13 +24,22 @@ import java.util.List;
  * #L%
  */
 
-public interface DocumentViewsRepository
+public enum JSONViewDataType
 {
-	IDocumentViewSelection getView(String viewId);
-
-	IDocumentViewSelection createView(DocumentQuery query);
-
-	void deleteView(String viewId);
-
-	List<IDocumentViewSelection> getViews();
+	/** Side list data */
+	list(Characteristic.SideListField) //
+	/** Grid layout data */
+	, grid(Characteristic.GridViewField) //
+	;
+	
+	private final Characteristic requiredFieldCharacteristic;
+	private JSONViewDataType(final Characteristic requiredFieldCharacteristic)
+	{
+		this.requiredFieldCharacteristic = requiredFieldCharacteristic;
+	}
+	
+	public Characteristic getRequiredFieldCharacteristic()
+	{
+		return requiredFieldCharacteristic;
+	}
 }

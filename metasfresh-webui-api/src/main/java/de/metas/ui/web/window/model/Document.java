@@ -23,6 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -40,12 +41,13 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
@@ -134,7 +136,7 @@ public final class Document
 	}
 
 	@FunctionalInterface
-	public static interface FieldInitialValueSupplier
+	public static interface FieldValueSupplier
 	{
 		Object NO_VALUE = new Object();
 
@@ -142,7 +144,7 @@ public final class Document
 		 * @param fieldDescriptor
 		 * @return initial value or {@link #NO_VALUE} if it cannot provide a value
 		 */
-		Object getInitialValue(final DocumentFieldDescriptor fieldDescriptor);
+		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
 	private Document(final Builder builder)
@@ -328,7 +330,7 @@ public final class Document
 		return _writable;
 	}
 
-	private final void initializeFields(final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
+	private final void initializeFields(final FieldInitializationMode mode, final FieldValueSupplier initialValueSupplier)
 	{
 		logger.trace("Initializing fields: mode={}", mode);
 
@@ -389,7 +391,7 @@ public final class Document
 	 * @param mode initialization mode
 	 * @param initialValueSupplier initial value supplier
 	 */
-	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final FieldInitialValueSupplier initialValueSupplier)
+	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final FieldValueSupplier initialValueSupplier)
 	{
 		boolean valueSet = false;
 		Object valueOld = null;
@@ -399,11 +401,11 @@ public final class Document
 
 			//
 			// Get the initialization value
-			final Object initialValue = initialValueSupplier.getInitialValue(fieldDescriptor);
+			final Object initialValue = initialValueSupplier.getValue(fieldDescriptor);
 
 			//
 			// Update field's initial value
-			if (initialValue != FieldInitialValueSupplier.NO_VALUE)
+			if (initialValue != FieldValueSupplier.NO_VALUE)
 			{
 				valueOld = documentField.getValue();
 				documentField.setInitialValue(initialValue);
@@ -454,76 +456,110 @@ public final class Document
 		}
 	}
 
-	private static final Object provideFieldInitialValueForNewDocument(final DocumentFieldDescriptor fieldDescriptor, final Document document, final IntSupplier documentIdSupplier)
+	private static final class InitialFieldValueSupplier implements FieldValueSupplier
 	{
-		//
-		// Primary Key field
-		if (fieldDescriptor.isKey())
+		// Parameters
+		private final IntSupplier documentIdSupplier;
+		private final Properties ctx;
+		private final int adWindowId;
+		private final Evaluatee evaluatee;
+		private final Document parentDocument;
+
+		private InitialFieldValueSupplier(final Document document, final IntSupplier documentIdSupplier)
 		{
-			final int id = documentIdSupplier.getAsInt();
-			return id;
+			super();
+			this.documentIdSupplier = documentIdSupplier;
+
+			ctx = document.getCtx();
+
+			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+			adWindowId = entityDescriptor.getAD_Window_ID();
+
+			evaluatee = document.asEvaluatee();
+
+			parentDocument = document.getParentDocument();
 		}
 
-		//
-		// Parent link field
-		if (fieldDescriptor.isParentLink())
+		@Override
+		public String toString()
 		{
-			final Document parentDocument = document.getParentDocument();
-			if (parentDocument != null)
+			return MoreObjects.toStringHelper(this)
+					.add("AD_Window_ID", adWindowId)
+					.add("evaluatee", evaluatee)
+					.toString();
+		}
+
+		@Override
+		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
+		{
+			//
+			// Primary Key field
+			if (fieldDescriptor.isKey())
 			{
-				final int value = parentDocument.getDocumentIdAsInt();
+				final int id = documentIdSupplier.getAsInt();
+				return id;
+			}
+
+			//
+			// Parent link field
+			if (fieldDescriptor.isParentLink())
+			{
+				if (parentDocument != null)
+				{
+					final int value = parentDocument.getDocumentIdAsInt();
+					return value;
+				}
+			}
+
+			//
+			// Default value expression
+			final IExpression<?> defaultValueExpression = fieldDescriptor.getDefaultValueExpression().orElse(null);
+			if (defaultValueExpression != null)
+			{
+				final Object value = defaultValueExpression.evaluate(evaluatee, OnVariableNotFound.Fail);
+
+				if (value != null
+						&& String.class.equals(defaultValueExpression.getValueClass())
+						&& Check.isEmpty(value.toString(), false))
+				{
+					// FIXME: figure out how we can get rid of this hardcoded corner case! ... not sure if is needed
+					logger.warn("Development hint: Converting default value empty string to null. Please check how can we avoid this case"
+							+ "\n FieldDescriptor: {}" //
+							+ "\n Document: {}" //
+							, fieldDescriptor, this);
+					return null;
+				}
+
 				return value;
 			}
-		}
 
-		//
-		// Default value expression
-		final IExpression<?> defaultValueExpression = fieldDescriptor.getDefaultValueExpression().orElse(null);
-		if (defaultValueExpression != null)
-		{
-			final Object value = defaultValueExpression.evaluate(document.asEvaluatee(), OnVariableNotFound.Fail);
-
-			if (value != null
-					&& String.class.equals(defaultValueExpression.getValueClass())
-					&& Check.isEmpty(value.toString(), false))
+			//
+			// Preference (user) - P|
+			final String fieldName = fieldDescriptor.getFieldName();
 			{
-				// FIXME: figure out how we can get rid of this hardcoded corner case! ... not sure if is needed
-				logger.warn("Development hint: Converting default value empty string to null. Please check how can we avoid this case"
-						+ "\n FieldDescriptor: {}" //
-						+ "\n Document: {}" //
-						, fieldDescriptor, document);
-				return null;
+				final boolean retrieveGlobalPreferences = false; // retrieve Window level preferences
+				final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
+				if (!Check.isEmpty(valueStr, false))
+				{
+					return valueStr;
+				}
 			}
 
-			return value;
-		}
-
-		//
-		// Preference (user) - P|
-		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-		{
-			final boolean retrieveGlobalPreferences = false; // retrieve Window level preferences
-			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), retrieveGlobalPreferences);
-			if (!Check.isEmpty(valueStr, false))
+			//
+			// Preference (System) - # $
 			{
-				return valueStr;
+				final boolean retrieveGlobalPreferences = true;
+				final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
+				if (!Check.isEmpty(valueStr, false))
+				{
+					return valueStr;
+				}
 			}
-		}
 
-		//
-		// Preference (System) - # $
-		{
-			final boolean retrieveGlobalPreferences = true;
-			final String valueStr = Env.getPreference(document.getCtx(), entityDescriptor.getAD_Window_ID(), fieldDescriptor.getFieldName(), retrieveGlobalPreferences);
-			if (!Check.isEmpty(valueStr, false))
-			{
-				return valueStr;
-			}
+			//
+			// Fallback
+			return FieldValueSupplier.NO_VALUE;
 		}
-
-		//
-		// Fallback
-		return FieldInitialValueSupplier.NO_VALUE;
 	}
 
 	public Document copyWritable()
@@ -564,7 +600,7 @@ public final class Document
 		// TODO: mark it as destroyed, fail read/write operations etc
 	}
 
-	public void refresh(final FieldInitialValueSupplier fieldValuesSupplier)
+	public void refresh(final FieldValueSupplier fieldValuesSupplier)
 	{
 		initializeFields(FieldInitializationMode.Refresh, fieldValuesSupplier);
 	}
@@ -876,12 +912,22 @@ public final class Document
 
 	private void executeAllFieldCallouts()
 	{
-		logger.trace("Executing all callouts for {}", this);
+		fieldCalloutExecutor.executeAll((fieldName) -> {
+			final IDocumentField documentField = getFieldOrNull(fieldName);
+			if (documentField == null)
+			{
+				return null;
+			}
 
-		for (final IDocumentField documentField : getFields())
-		{
-			fieldCalloutExecutor.execute(documentField.asCalloutField());
-		}
+			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
+			final DocumentFieldWidgetType widgetType = documentField.getDescriptor().getWidgetType();
+			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
+			{
+				return null;
+			}
+
+			return documentField.asCalloutField();
+		});
 	}
 
 	/**
@@ -1034,14 +1080,14 @@ public final class Document
 		}
 	}
 
-	public List<LookupValue> getFieldLookupValues(final String fieldName)
+	public LookupValuesList getFieldLookupValues(final String fieldName)
 	{
-		return getField(fieldName).getLookupValues(this);
+		return getField(fieldName).getLookupValues();
 	}
 
-	public List<LookupValue> getFieldLookupValuesForQuery(final String fieldName, final String query)
+	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
-		return getField(fieldName).getLookupValuesForQuery(this, query);
+		return getField(fieldName).getLookupValuesForQuery(query);
 
 	}
 
@@ -1341,7 +1387,7 @@ public final class Document
 		private DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
-		private FieldInitialValueSupplier fieldInitializer;
+		private FieldValueSupplier fieldInitializer;
 		private IntSupplier documentIdSupplier;
 
 		private DocumentPath _documentPath;
@@ -1362,7 +1408,7 @@ public final class Document
 			// Initialize the fields
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
-				fieldInitializer = (fieldDescriptor) -> provideFieldInitialValueForNewDocument(fieldDescriptor, document, documentIdSupplier);
+				fieldInitializer = new InitialFieldValueSupplier(document, documentIdSupplier);
 			}
 
 			if (fieldInitializer != null)
@@ -1408,7 +1454,7 @@ public final class Document
 			return fieldInitializerMode == FieldInitializationMode.NewDocument;
 		}
 
-		public Builder initializeAsExistingRecord(final FieldInitialValueSupplier fieldInitializer)
+		public Builder initializeAsExistingRecord(final FieldValueSupplier fieldInitializer)
 		{
 			Preconditions.checkNotNull(fieldInitializer, "fieldInitializer");
 			fieldInitializerMode = FieldInitializationMode.Load;

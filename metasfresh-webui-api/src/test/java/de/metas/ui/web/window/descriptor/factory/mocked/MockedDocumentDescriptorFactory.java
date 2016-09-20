@@ -124,6 +124,7 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
 				.setGridView(DocumentLayoutDetailDescriptor.builder())
+				.setAdvancedView(DocumentLayoutDetailDescriptor.builder())
 				.addSection(DocumentLayoutSectionDescriptor.builder()
 						.addColumn(DocumentLayoutColumnDescriptor.builder()
 								.addElementGroup(DocumentLayoutElementGroupDescriptor.builder()
