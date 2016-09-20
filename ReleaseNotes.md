@@ -10,11 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.36.36 (2016-39)
+# metasfresh 4.37.36 (2016-39)
 
 upcoming
 
 ## Features
+ * #302 Add different onError policies to TrxItemChunkProcessorExecutor
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
