@@ -47,6 +47,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
@@ -914,6 +915,13 @@ public final class Document
 		fieldCalloutExecutor.executeAll((fieldName) -> {
 			final IDocumentField documentField = getFieldOrNull(fieldName);
 			if (documentField == null)
+			{
+				return null;
+			}
+
+			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
+			final DocumentFieldWidgetType widgetType = documentField.getDescriptor().getWidgetType();
+			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
 			{
 				return null;
 			}
