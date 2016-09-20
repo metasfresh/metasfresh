@@ -287,7 +287,7 @@ class Lookup extends Component {
                     }>
                         <input
                             type="text"
-                            className="input-field js-input-field font-weight-bold"
+                            className="input-field js-input-field font-weight-semibold"
                             onChange={this.handleChange}
                             onFocus={this.handleFocus}
                             ref={(c) => this.inputSearch = c}

@@ -879,3 +879,11 @@ table .rdtPicker table td, .rdtPicker table th {
 .column-wrapper {
     column-count: 2;
 }
+
+.font-weight-semibold {
+    font-weight: 500;
+}
+
+.input-dropdown-item-title {
+    font-weight: 400;
+}
