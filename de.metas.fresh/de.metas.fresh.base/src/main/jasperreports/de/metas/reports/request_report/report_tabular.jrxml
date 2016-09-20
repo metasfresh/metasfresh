@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-12T13:19:03 -->
+<!-- 2016-09-19T17:42:59 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1500" pageHeight="595" orientation="Landscape" columnWidth="1460" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/request_report/report" uuid="d6ca4e72-06bf-4f5c-bec4-5ba066220b99">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -15,7 +15,6 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="IsMaterialReturned" class="java.lang.String"/>
-	<parameter name="R_Resolution_ID" class="java.math.BigDecimal"/>
 	<parameter name="R_Status_ID" class="java.math.BigDecimal">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -30,7 +29,6 @@
 	$P{QualityNote}, 
 	$P{PerformanceType}, 
 	$P{IsMaterialReturned},
-	$P{R_Resolution_ID}, 
 	$P{R_Status_ID},
 	$P{M_Product_ID}
 	);]]>
@@ -44,7 +42,7 @@
 	<field name="qualitynote" class="java.lang.String"/>
 	<field name="performance" class="java.lang.String"/>
 	<field name="ismaterialreturned" class="java.lang.String"/>
-	<field name="resolution" class="java.lang.String"/>
+	<field name="lastresult" class="java.lang.String"/>
 	<field name="status" class="java.lang.String"/>
 	<field name="p_doctype" class="java.lang.String"/>
 	<field name="p_startdate" class="java.lang.String"/>
@@ -53,7 +51,6 @@
 	<field name="p_qualitynote" class="java.lang.String"/>
 	<field name="p_performancetype" class="java.lang.String"/>
 	<field name="p_ismaterialreturned" class="java.lang.String"/>
-	<field name="p_resolution" class="java.lang.String"/>
 	<field name="p_status" class="java.lang.String"/>
 	<field name="p_product" class="java.lang.String"/>
 	<background>
@@ -195,25 +192,7 @@
 				<textFieldExpression><![CDATA[$F{p_ismaterialreturned}  != null ? $F{p_ismaterialreturned}  : $R{all}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="542" y="26" width="164" height="12" uuid="88abc150-9d1d-43c4-adce-15741b5ddcf2">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{result}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="707" y="26" width="144" height="12" uuid="b352f1ad-f5f2-448c-a00c-2ac64146b2eb">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{p_resolution}  != null ? $F{p_resolution}  : $R{all}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="707" y="39" width="144" height="12" uuid="d6d3104b-f07e-4327-888d-cd58c91490f9">
+				<reportElement x="707" y="26" width="144" height="12" uuid="d6d3104b-f07e-4327-888d-cd58c91490f9">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -222,7 +201,7 @@
 				<textFieldExpression><![CDATA[$F{p_status}  != null ? $F{p_status}  : $R{all}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="542" y="39" width="164" height="12" uuid="1002876e-71ef-4b9b-a977-33d68a1c20fe">
+				<reportElement x="542" y="26" width="164" height="12" uuid="1002876e-71ef-4b9b-a977-33d68a1c20fe">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -232,7 +211,7 @@
 				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="707" y="52" width="144" height="12" uuid="9ae8aada-9a8f-48e7-a258-64be15c649bc">
+				<reportElement x="707" y="39" width="144" height="12" uuid="9ae8aada-9a8f-48e7-a258-64be15c649bc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -242,7 +221,7 @@
 				<textFieldExpression><![CDATA[$F{p_product}  != null ? $F{p_product}  : $R{all}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="542" y="52" width="164" height="12" uuid="96d65f14-073f-4284-8c00-4ed217421491">
+				<reportElement x="542" y="39" width="164" height="12" uuid="96d65f14-073f-4284-8c00-4ed217421491">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -359,9 +338,8 @@
 				<textFieldExpression><![CDATA[$R{shipment}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="1034" y="91" width="93" height="12" uuid="cad87dd3-380a-4fea-a3f5-09242a10bcbf">
+				<reportElement x="1034" y="91" width="143" height="12" uuid="cad87dd3-380a-4fea-a3f5-09242a10bcbf">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="9" isBold="true"/>
@@ -369,13 +347,31 @@
 				<textFieldExpression><![CDATA[$R{result}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="1128" y="91" width="57" height="12" uuid="b2b0cc82-0ba1-47a0-9578-f37d9fcdd3a6">
+				<reportElement x="1178" y="91" width="57" height="12" uuid="b2b0cc82-0ba1-47a0-9578-f37d9fcdd3a6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="707" y="52" width="144" height="12" uuid="a8e38e42-a1a2-4f37-8110-5f220dd64485">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="542" y="52" width="164" height="12" uuid="1ec92e00-9855-40e7-9601-29e06d2ad124">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -448,16 +444,16 @@
 				<textFieldExpression><![CDATA[$F{ismaterialreturned}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="1034" y="0" width="93" height="12" uuid="63de6929-3e24-42b1-81ff-c9b598e0f9ab">
+				<reportElement x="1034" y="0" width="143" height="12" uuid="63de6929-3e24-42b1-81ff-c9b598e0f9ab">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{resolution}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{lastresult}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="1128" y="0" width="57" height="12" uuid="ceee60c1-7614-467c-9d3e-3d68f302a09e">
+				<reportElement x="1178" y="0" width="57" height="12" uuid="ceee60c1-7614-467c-9d3e-3d68f302a09e">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>

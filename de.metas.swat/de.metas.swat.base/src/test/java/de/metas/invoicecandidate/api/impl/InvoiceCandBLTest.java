@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.invoicecandidate.api.impl;
 
@@ -13,18 +13,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertThat;
@@ -51,7 +50,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * @author cg
- * 
+ *
  */
 public class InvoiceCandBLTest extends AbstractICTestSupport
 {
@@ -76,7 +75,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: priceEntered in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -123,8 +122,8 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 		updateInvalid(invoiceCandidates);
 
-		Check.assume(ic1.getPriceActual_Override().compareTo(priceActual_OverrideComputed1) == 0, "Price Actual Oveeride should be same with price actual computed!", ic1.getDescription());
-		Check.assume(ic2.getPriceActual_Override().compareTo(priceActual_OverrideComputed2) == 0, "Price Actual Override should be same with price actual computed!", ic2.getDescription());
+		assertThat("Price Actual Override should be same with price actual computed for " + ic1.getDescription(), ic1.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed1));
+		assertThat("Price Actual Override should be same with price actual computed for " + ic2.getDescription(), ic2.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed2));
 
 		final BigDecimal discount1After = ic1.getDiscount();
 		final BigDecimal discount_override1After = ic1.getDiscount_Override();
@@ -146,7 +145,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: priceEntered_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -180,7 +179,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: Discount_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -215,7 +214,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: Discount_Override and PriceEntered_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -251,7 +250,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: remove priceEntered_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -293,7 +292,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: remove Discount_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -330,7 +329,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 	/**
 	 * Test: Remove Discount_Override and PriceEntered_Override in Invoice candidates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
