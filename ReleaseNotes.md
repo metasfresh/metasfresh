@@ -10,11 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.36.35 (2016-38)
+# metasfresh 4.36.36 (2016-39)
 
 upcoming
 
 ## Features
+
+## Fixes
+ * #409 MRP Product Info might leave back stale entries after fast changes
+ * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
+
+# metasfresh 4.36.35 (2016-38)
+
+this week's RC
+
+## Features
+ * #395 Add Description in Jasper Invoice Vendor
  * ME-46 Support Ubuntu 16.04 server with metasfresh server installer
  * #369 request report
  * #361 Request change for customer service
@@ -33,6 +44,8 @@ upcoming
  * #7 provide "grid-align" for layout elements
 
 ## Fixes
+ * #411 missing index on C_OrderTax.C_Order_ID
+ * #367 Invoice candidates invoicing Pricelist not found
  * #380 duplicate lines in inout
  * #348 Sort tabs shall consider Link column and parent link column if set
  * #330 Process's RefreshAllAfterExecution does not work when the record was moved
@@ -45,10 +58,10 @@ upcoming
  * #12 Data not shown in SubTab
  * #311 Payment Selection Exception when not able to find bpartner account
  * #378 Bug in validation of field docsubtype
+ * #262 sales and purchase tracking
+   - minor tweaks and fixes   
 
 # metasfresh 4.35.34 (2016-37)
-
-this week's RC
 
 ## Features
  * FRESH-112 metasfresh web 

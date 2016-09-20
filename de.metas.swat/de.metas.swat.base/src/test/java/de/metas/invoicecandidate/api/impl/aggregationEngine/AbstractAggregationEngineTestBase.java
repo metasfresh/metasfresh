@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.lessThan;
@@ -40,7 +39,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
-import org.compiere.model.MPricingSystem;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.junit.Assert;
@@ -83,7 +81,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		InterfaceWrapperHelper.save(manualHandler);
 
 		// registerModelInterceptors(); doesn't work well with the legacy tests. Only register then in AbstractNewAggregationEngineTests
-		
+
 		LogManager.setLevel(Level.DEBUG);
 	}
 
@@ -120,7 +118,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	}
 
 	protected List<I_C_Invoice_Candidate> test_2StepShipment_CommonSetup_Step01(
-			final boolean isSOTrx, 
+			final boolean isSOTrx,
 			final boolean allowConsolidateInvoice,
 			final BigDecimal priceEntered_Override)
 	{
@@ -232,7 +230,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	protected List<IInvoiceHeader> invokeAggregationEngine(final AggregationEngine engine)
 	{
 		final List<IInvoiceHeader> invoices = engine.aggregate();
-		
+
 		return invoices;
 	}
 
@@ -247,15 +245,20 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		final String messagePrefix = message + " - IC=" + POJOWrapper.getInstanceName(fromIC);
 
 		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getAD_Org_ID());
-		//assertEquals(messagePrefix + " - Invalid M_PricingSystem_ID", fromIC.getM_PricingSystem_ID(), invoice.getM_PricingSystem_ID());
-		assertEquals(messagePrefix + " - Invalid M_PricingSystem_ID", MPricingSystem.M_PricingSystem_ID_None, invoice.getM_PricingSystem_ID());
+
+		if (fromIC.getM_PriceList_Version_ID() > 0)
+		{
+			// if our IC had a M_PriceListVersion_ID, we want that PLV's M_PriceList to be in the invoice
+			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", fromIC.getM_PriceList_Version().getM_PriceList_ID(), invoice.getM_PriceList_ID());
+		}
+
 		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), invoice.getBill_BPartner_ID());
 		assertEquals(messagePrefix + " - Invalid Bill_Location_ID", fromIC.getBill_Location_ID(), invoice.getBill_Location_ID());
-		
-// task 08241: we want to aggregate candidates with different Bill_User_IDs into one invoice
-// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler		
-//		assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
-		
+
+		// task 08241: we want to aggregate candidates with different Bill_User_IDs into one invoice
+		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler
+		// assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
+
 		assertEquals(messagePrefix + " - Invalid C_Currency_ID", fromIC.getC_Currency_ID(), invoice.getC_Currency_ID());
 		if (invoiceReferencesOrder)
 		{
@@ -263,7 +266,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		}
 		assertEquals(messagePrefix + " - Invalid isSOTrx", fromIC.isSOTrx(), invoice.isSOTrx());
 	}
-	
+
 	protected IInvoiceCandidateInOutLineToUpdate retrieveIcIolToUpdateIfExists(final IInvoiceLineRW invoiceLineRW, final I_M_InOutLine iol)
 	{
 		for (IInvoiceCandidateInOutLineToUpdate icIolToUpdate : invoiceLineRW.getInvoiceCandidateInOutLinesToUpdate())

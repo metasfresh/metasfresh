@@ -18,12 +18,12 @@ import com.google.common.base.Supplier;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 {
 	// services:
 	// NOTE: this is supposed to be a long living class, so having services here is not a good idea
-	
+
 	/**
 	 * Collects given item.
 	 * <ul>
@@ -56,7 +56,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	public final void collect(final ItemType item)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		
+
 		final String trxName = extractTrxNameFromItem(item);
 		final ITrx trx = trxManager.getTrx(trxName);
 		if (trxManager.isNull(trx))
@@ -80,7 +80,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 					final CollectorType collector = newCollector(item);
 
 					// Collect item now.
-					// We do it right now to avoid leaking the item in case the transaction is committed after we register the transaction listener but before the item is added in the calling method. 
+					// We do it right now to avoid leaking the item in case the transaction is committed after we register the transaction listener but before the item is added in the calling method.
 					collectItem(collector, item);
 					itemWasCollected.set(true);
 
@@ -98,11 +98,11 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 							{
 								return;
 							}
-							
+
 							// Process the collector.
 							processCollector(collector);
 						}
-						
+
 						@Override
 						public void afterRollback(final ITrx trx)
 						{
@@ -114,14 +114,13 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 							{
 								return;
 							}
-							
+
 							// Process the collector.
 							discardCollector(collector);
-							
 						}
 					});
 
-					// Return the newly created collector. 
+					// Return the newly created collector.
 					return collector;
 				}
 			});
@@ -173,10 +172,10 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 * @param collector
 	 */
 	protected abstract void processCollector(final CollectorType collector);
-	
+
 	/**
 	 * Discard the collector.
-	 * 
+	 *
 	 * This method is called on transaction rollback.
 	 * @param collector
 	 */
