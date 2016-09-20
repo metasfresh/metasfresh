@@ -75,7 +75,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 	private static final int WINDOWNO_Dummy = 99999;
 
-	private final String sqlTableName;
+	private final String tableName;
 	private final ICachedStringExpression sqlForFetchingExpression;
 	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final int entityTypeIndex;
@@ -89,7 +89,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		super();
 
-		sqlTableName = builder.sqlTableName;
+		tableName = builder.sqlTableName;
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
 		sqlForFetchingDisplayNameByIdExpression = builder.sqlForFetchingDisplayNameByIdExpression;
 		entityTypeIndex = builder.entityTypeIndex;
@@ -107,8 +107,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("tableName", sqlTableName)
-				.add("highVolume", highVolume)
+				.omitNullValues()
+				.add("tableName", tableName)
+				.add("highVolume", highVolume ? highVolume : null)
+				.add("sqlForFetching", sqlForFetchingExpression.toOneLineString())
+				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == INamePairPredicate.NULL ? null : postQueryPredicate)
 				.toString();
 	}
 
@@ -116,7 +119,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	public int hashCode()
 	{
 		return Objects.hash(
-				sqlTableName,
+				tableName,
 				sqlForFetchingExpression,
 				sqlForFetchingDisplayNameByIdExpression,
 				entityTypeIndex,
@@ -146,7 +149,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		}
 
 		final SqlLookupDescriptor other = (SqlLookupDescriptor)obj;
-		return Objects.equals(sqlTableName, other.sqlTableName)
+		return Objects.equals(tableName, other.tableName)
 				&& Objects.equals(sqlForFetchingExpression, other.sqlForFetchingExpression)
 				&& Objects.equals(sqlForFetchingDisplayNameByIdExpression, other.sqlForFetchingDisplayNameByIdExpression)
 				&& entityTypeIndex == other.entityTypeIndex
@@ -162,9 +165,10 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return numericKey;
 	}
 
-	public String getSqlTableName()
+	@Override
+	public String getTableName()
 	{
-		return sqlTableName;
+		return tableName;
 	}
 
 	public IStringExpression getSqlForFetchingExpression()

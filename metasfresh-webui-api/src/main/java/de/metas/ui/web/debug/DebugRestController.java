@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
 /*
  * #%L
@@ -120,4 +121,12 @@ public class DebugRestController
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	@RequestMapping(value = "/lookups/cacheStats", method = RequestMethod.GET)
+	public List<String> getLookupCacheStats()
+	{
+		return LookupDataSourceFactory.instance.getCacheStats()
+				.stream()
+				.map(stats -> stats.toString())
+				.collect(GuavaCollectors.toImmutableList());
+	}
 }

@@ -1,19 +1,17 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.util.CCache;
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -40,29 +38,31 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-public class InMemoryLookupDataSource implements LookupDataSource
+class FullyCachedLookupDataSource implements LookupDataSource
 {
-	public static final InMemoryLookupDataSource of(final LookupDataSourceFetcher fetcher)
+	public static final FullyCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
 	{
-		return new InMemoryLookupDataSource(fetcher);
+		return new FullyCachedLookupDataSource(fetcher);
 	}
+
+	private static final String NAME = "OnePartition";
 
 	private final LookupDataSourceFetcher fetcher;
 
-	private final transient LoadingCache<LookupDataSourceContext, LookupValuesList> cacheByPartition = CacheBuilder.newBuilder().build(new CacheLoader<LookupDataSourceContext, LookupValuesList>()
-	{
-		@Override
-		public LookupValuesList load(final LookupDataSourceContext evalCtx) throws Exception
-		{
-			return fetcher.retrieveEntities(evalCtx);
-		}
-	});
+	private final transient CCache<LookupDataSourceContext, LookupValuesList> cacheByPartition;
 
-	private InMemoryLookupDataSource(final LookupDataSourceFetcher fetcher)
+	private FullyCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
 	{
 		super();
 		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
+
+		final String lookupTableName = fetcher.getLookupTableName();
+		Check.assumeNotEmpty(lookupTableName, "lookupTableName is not empty");
+		final int maxSize = 100;
+		final int expireAfterMinutes = 60 * 2;
+		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
+		cacheByPartition = CCache.newLRUCache(lookupTableName + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
 	}
 
 	private LookupValuesList getLookupValuesList(final Evaluatee parentEvaluatee)
@@ -71,14 +71,8 @@ public class InMemoryLookupDataSource implements LookupDataSource
 				.setParentEvaluatee(parentEvaluatee)
 				.putFilter(LookupDataSourceContext.FILTER_Any, FIRST_ROW, Integer.MAX_VALUE)
 				.build();
-		try
-		{
-			return cacheByPartition.get(evalCtx);
-		}
-		catch (final ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
+
+		return cacheByPartition.getOrLoad(evalCtx, () -> fetcher.retrieveEntities(evalCtx));
 	}
 
 	@Override
@@ -137,6 +131,12 @@ public class InMemoryLookupDataSource implements LookupDataSource
 		}
 
 		return partition.getById(idNormalized);
+	}
+
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of(cacheByPartition.stats());
 	}
 
 	private static final class FilterPredicate implements Predicate<LookupValue>

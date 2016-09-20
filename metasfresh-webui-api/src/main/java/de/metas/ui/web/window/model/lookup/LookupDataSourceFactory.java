@@ -1,7 +1,14 @@
 package de.metas.ui.web.window.model.lookup;
 
-import org.compiere.util.CCache;
+import java.util.Comparator;
+import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+import org.compiere.util.CCache;
+import org.compiere.util.CCache.CCacheStats;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
@@ -31,6 +38,8 @@ public final class LookupDataSourceFactory
 {
 	public static final transient LookupDataSourceFactory instance = new LookupDataSourceFactory();
 
+	private static final Logger logger = LogManager.getLogger(LookupDataSourceFactory.class);
+
 	private final CCache<LookupDescriptor, LookupDataSource> lookupDataSourcesCache = new CCache<>("LookupDataSourcesCache", 300);
 
 	private LookupDataSourceFactory()
@@ -51,19 +60,35 @@ public final class LookupDataSourceFactory
 
 			final GenericSqlLookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(sqlLookupDescriptor);
 
+			final LookupDataSource lookupDataSource;
 			if (!sqlLookupDescriptor.isHighVolume()
 					&& sqlLookupDescriptor.getSqlForFetchingExpression().getParameters().isEmpty()
 					&& sqlLookupDescriptor.getPostQueryPredicate().getParameters().isEmpty())
 			{
-				return InMemoryLookupDataSource.of(fetcher);
+				lookupDataSource = FullyCachedLookupDataSource.of(fetcher);
+			}
+			else
+			{
+				lookupDataSource = PartitionCachedLookupDataSource.of(fetcher);
 			}
 
-			return LocallyCachedLookupDataSource.of(fetcher);
+			logger.debug("Creating lookup data source for {}: {}", lookupDescriptor, lookupDataSource);
+			return lookupDataSource;
 		}
 		else
 		{
 			throw new IllegalArgumentException("Unsupported lookup descriptor type: " + lookupDescriptor);
 		}
+	}
 
+	public List<CCacheStats> getCacheStats()
+	{
+		return lookupDataSourcesCache
+				.values()
+				.stream()
+				.flatMap(dataSource -> dataSource.getCacheStats().stream())
+				.distinct()
+				.sorted(Comparator.comparing(CCacheStats::getName))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 }

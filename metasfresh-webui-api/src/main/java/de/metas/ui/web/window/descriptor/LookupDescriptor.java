@@ -24,5 +24,5 @@ package de.metas.ui.web.window.descriptor;
 
 public interface LookupDescriptor
 {
-
+	String getTableName();
 }

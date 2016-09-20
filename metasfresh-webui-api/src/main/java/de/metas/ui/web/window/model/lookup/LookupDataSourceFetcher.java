@@ -30,6 +30,8 @@ public interface LookupDataSourceFetcher
 {
 	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
 
+	String getLookupTableName();
+
 	boolean isNumericKey();
 
 	LookupDataSourceContext.Builder newContextForFetchingById(Object id);

@@ -49,7 +49,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
  * #L%
  */
 
-public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
+class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	public static final GenericSqlLookupDataSourceFetcher of(final SqlLookupDescriptor sqlLookupDescriptor)
 	{
@@ -70,7 +70,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	{
 		super();
 		Preconditions.checkNotNull(sqlLookupDescriptor);
-		lookupTableName = sqlLookupDescriptor.getSqlTableName();
+		lookupTableName = sqlLookupDescriptor.getTableName();
 		numericKey = sqlLookupDescriptor.isNumericKey();
 		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 
@@ -89,6 +89,12 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 				.add("sqlForFetchingExpression", sqlForFetchingExpression)
 				.add("postQueryPredicate", postQueryPredicate)
 				.toString();
+	}
+
+	@Override
+	public String getLookupTableName()
+	{
+		return lookupTableName;
 	}
 
 	@Override

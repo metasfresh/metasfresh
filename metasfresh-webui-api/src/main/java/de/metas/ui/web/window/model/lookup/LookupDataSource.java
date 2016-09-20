@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.model.lookup;
 
+import java.util.List;
+
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -37,4 +40,6 @@ public interface LookupDataSource
 	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
 
 	LookupValue findById(Object id);
+	
+	List<CCacheStats> getCacheStats();
 }

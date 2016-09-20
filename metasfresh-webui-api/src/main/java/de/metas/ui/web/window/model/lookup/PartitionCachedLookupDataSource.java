@@ -1,15 +1,14 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.util.CCache;
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -36,38 +35,32 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-public class LocallyCachedLookupDataSource implements LookupDataSource
+class PartitionCachedLookupDataSource implements LookupDataSource
 {
-	public static final LocallyCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
+	public static final PartitionCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
 	{
-		return new LocallyCachedLookupDataSource(fetcher);
+		return new PartitionCachedLookupDataSource(fetcher);
 	}
 
-	private final transient LoadingCache<LookupDataSourceContext, LookupValuesList> cacheByPartition = CacheBuilder.newBuilder().build(new CacheLoader<LookupDataSourceContext, LookupValuesList>()
-	{
-		@Override
-		public LookupValuesList load(final LookupDataSourceContext evalCtx) throws Exception
-		{
-			return fetcher.retrieveEntities(evalCtx);
-		}
-	});
+	private static final String NAME = "PerPartition";
 
-	private final transient LoadingCache<LookupDataSourceContext, LookupValue> cacheById = CacheBuilder.newBuilder().build(new CacheLoader<LookupDataSourceContext, LookupValue>()
-	{
-		@Override
-		public LookupValue load(final LookupDataSourceContext evalCtx) throws Exception
-		{
-			return fetcher.retrieveLookupValueById(evalCtx);
-		}
-	});
-
+	private final transient CCache<LookupDataSourceContext, LookupValuesList> cacheByPartition;
+	private final transient CCache<LookupDataSourceContext, LookupValue> cacheByKey;
 	private final LookupDataSourceFetcher fetcher;
 
-	private LocallyCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
+	private PartitionCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
 	{
 		super();
 		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
+
+		final String lookupTableName = fetcher.getLookupTableName();
+		Check.assumeNotEmpty(lookupTableName, "lookupTableName is not empty");
+		final int maxSize = 100;
+		final int expireAfterMinutes = 60 * 2;
+		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
+		cacheByPartition = CCache.newLRUCache(lookupTableName + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
+		cacheByKey = CCache.newLRUCache(lookupTableName + "#" + NAME + "#LookupByKey", maxSize, expireAfterMinutes);
 	}
 
 	@Override
@@ -97,14 +90,7 @@ public class LocallyCachedLookupDataSource implements LookupDataSource
 				.putFilter(filter, firstRow, pageLength)
 				.build();
 
-		try
-		{
-			return cacheByPartition.get(evalCtx);
-		}
-		catch (final ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
+		return cacheByPartition.getOrLoad(evalCtx, () -> fetcher.retrieveEntities(evalCtx));
 	}
 
 	@Override
@@ -131,19 +117,12 @@ public class LocallyCachedLookupDataSource implements LookupDataSource
 
 		//
 		// Get the lookup value
-		try
+		final LookupValue lookupValue = cacheByKey.getOrLoad(evalCtx, () -> fetcher.retrieveLookupValueById(evalCtx));
+		if (lookupValue == LookupDataSourceFetcher.LOOKUPVALUE_NULL)
 		{
-			final LookupValue lookupValue = cacheById.get(evalCtx);
-			if (lookupValue == LookupDataSourceFetcher.LOOKUPVALUE_NULL)
-			{
-				return null;
-			}
-			return lookupValue;
+			return null;
 		}
-		catch (final ExecutionException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		return lookupValue;
 	}
 
 	private boolean isValidFilter(final String filter)
@@ -159,5 +138,11 @@ public class LocallyCachedLookupDataSource implements LookupDataSource
 		}
 
 		return true;
+	}
+
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of(cacheByPartition.stats(), cacheByKey.stats());
 	}
 }
