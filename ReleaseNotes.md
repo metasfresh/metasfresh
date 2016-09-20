@@ -34,6 +34,7 @@ this week's RC
  * #7 provide "grid-align" for layout elements
 
 ## Fixes
+ * #411 missing index on C_OrderTax.C_Order_ID
  * #367 Invoice candidates invoicing Pricelist not found
  * #380 duplicate lines in inout
  * #348 Sort tabs shall consider Link column and parent link column if set
