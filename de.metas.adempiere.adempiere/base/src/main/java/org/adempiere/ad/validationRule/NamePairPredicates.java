@@ -50,7 +50,7 @@ public final class NamePairPredicates
 		@Override
 		public String toString()
 		{
-			return INamePairPredicate.class.getSimpleName();
+			return "NULL";
 		}
 
 		@Override
