@@ -314,11 +314,11 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
 				final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
 				documentField_InternalVirtual(
-						SpecialFieldsCollector.COLUMNNAME_DocumentSummary,             // fieldName
-						DocumentFieldWidgetType.Text,             // widgetType
-						String.class,             // valueType
-						true,              // publicField
-						valueProvider // valueProvider
+						SpecialFieldsCollector.COLUMNNAME_DocumentSummary // fieldName
+						, DocumentFieldWidgetType.Text // widgetType
+						, String.class // valueType
+						, true // publicField
+						, valueProvider // valueProvider
 				);
 			}
 
@@ -1468,13 +1468,19 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		{
 			expression = expressionFactory.compile(expressionStr, IntegerStringExpression.class);
 		}
+		else if (StringLookupValue.class.equals(fieldValueClass))
+		{
+			final String expressionStrNorm = stripDefaultValueQuotes(expressionStr);
+			expression = expressionFactory.compile(expressionStrNorm, IStringExpression.class);
+		}
 		else if (java.util.Date.class.equals(fieldValueClass))
 		{
 			expression = expressionFactory.compile(expressionStr, DateStringExpression.class);
 		}
 		else if (Boolean.class.equals(fieldValueClass))
 		{
-			expression = expressionFactory.compile(expressionStr, BooleanStringExpression.class);
+			final String expressionStrNorm = stripDefaultValueQuotes(expressionStr);
+			expression = expressionFactory.compile(expressionStrNorm, BooleanStringExpression.class);
 		}
 		//
 		// Fallback
@@ -1488,6 +1494,34 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 			return Optional.empty();
 		}
 		return Optional.of(expression);
+	}
+	
+	/**
+	 * Strips default value expressions which are quoted strings.
+	 * e.g.
+	 * <ul>
+	 * <li>we have some cases where a YesNo default value is 'N' or 'Y'
+	 * <li>we have some cases where a List default value is something like 'P'
+	 * <li>we have some cases where a Table's reference default value is something like 'de.metas.swat'
+	 * </ul>
+	 * 
+	 * @param expressionStr
+	 * @return fixed expression or same expression if does not apply
+	 */
+	private static final String stripDefaultValueQuotes(final String expressionStr)
+	{
+		if (expressionStr == null || expressionStr.isEmpty())
+		{
+			return expressionStr;
+		}
+
+		if (expressionStr.startsWith("'") && expressionStr.endsWith("'"))
+		{
+			final String expressionStrNorm = expressionStr.substring(1, expressionStr.length() - 1);
+			logger.warn("Normalized boolean string expression: [{}] -> [{}]", expressionStr, expressionStrNorm);
+		}
+
+		return expressionStr;
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final GridFieldVO gridFieldVO)
