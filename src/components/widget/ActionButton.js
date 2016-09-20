@@ -65,10 +65,9 @@ class ActionButton extends Component {
             >
                 {item[key]}
             </li>
-            
         })
 
-            
+
     }
     render() {
         const {data} = this.props
