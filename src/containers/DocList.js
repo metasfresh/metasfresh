@@ -12,9 +12,14 @@ import {
     browseViewRequest
 } from '../actions/AppActions';
 
+import {
+    getWindowBreadcrumb
+} from '../actions/MenuActions';
+
 class DocList extends Component {
     constructor(props){
         super(props);
+        console.log('ss');
 
         this.state = {
             page: 1,
@@ -42,7 +47,7 @@ class DocList extends Component {
             })
         });
 
-
+        dispatch(getWindowBreadcrumb(windowType))
     }
 
     getView = () => {
@@ -80,13 +85,13 @@ class DocList extends Component {
     }
 
     render() {
-        const {dispatch, windowType} = this.props;
+        const {dispatch, windowType, breadcrumb} = this.props;
         const {layout, data, page} = this.state;
         if( layout && data) {
 
             return (
                 <div>
-                    <Header />
+                    <Header breadcrumb={breadcrumb} />
                     <div className="container header-sticky-distance">
                         <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                             <button
@@ -130,10 +135,37 @@ class DocList extends Component {
     }
 }
 
+function mapStateToProps(state) {
+    const { windowHandler, menuHandler } = state;
+    const {
+        master,
+        connectionError,
+        modal
+    } = windowHandler || {
+        master: {},
+        connectionError: false,
+        modal: false
+    }
+
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
+    return {
+        master,
+        connectionError,
+        breadcrumb,
+        modal
+    }
+}
+
 DocList.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-DocList = connect()(DocList)
+DocList = connect(mapStateToProps)(DocList)
 
 export default DocList;
