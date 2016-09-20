@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.awt.Container;
@@ -30,8 +29,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -44,10 +41,12 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.ui.MiniTableUtil;
+import de.metas.logging.LogManager;
 
 public class TerminalTable
 		extends MiniTable
@@ -55,7 +54,7 @@ public class TerminalTable
 {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7884238751207398699L;
 
@@ -102,6 +101,8 @@ public class TerminalTable
 		growScrollbars();
 
 		getSelectionModel().addListSelectionListener(selectionListener);
+
+		tc.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -209,7 +210,7 @@ public class TerminalTable
 			Object data = getModel().getValueAt(row, 0);
 			if (data != null)
 			{
-				Integer id = (Integer)((IDColumn)data).getRecord_ID();
+				Integer id = ((IDColumn)data).getRecord_ID();
 				return id == null ? -1 : id.intValue();
 			}
 		}
@@ -256,6 +257,8 @@ public class TerminalTable
 
 	private boolean fireSelectionEvent = true;
 
+	private boolean disposed = false;
+
 	@Override
 	public Component getComponent()
 	{
@@ -268,10 +271,18 @@ public class TerminalTable
 		return tc;
 	}
 
+	/**
+	 * Does nothing, only sets our internal disposed flag.
+	 */
 	@Override
 	public void dispose()
 	{
-		// TODO Auto-generated method stub
-		
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 }

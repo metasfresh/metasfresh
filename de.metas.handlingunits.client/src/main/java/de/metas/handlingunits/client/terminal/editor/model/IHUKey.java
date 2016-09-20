@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.editor.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -106,7 +105,7 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	List<IHUKey> addChildren(Collection<IHUKey> children);
 
 	/**
-	 * Removes given child.
+	 * Remove given child huKey. Do not call the child's dispose method. If this
 	 *
 	 * If child was actually removed then {@link #updateName()} is called automatically.
 	 *
@@ -152,9 +151,9 @@ public interface IHUKey extends ITerminalKey, IDisposable
 
 	/**
 	 * Checks if the {@link IHUKey} was flagged as destroyed and it shall not longer be part on ANY HU structure.
-	 * 
+	 *
 	 * NOTE: when implementing this method keep in mind this state is considered ireversible, so, once it's flaged as Destroyed there cannot be un-destroyed.
-	 * 
+	 *
 	 * @return true
 	 */
 	boolean isDestroyed();
@@ -180,9 +179,6 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	 */
 	IHUKeyVisitor.VisitResult iterate(IHUKeyVisitor visitor);
 
-	@Override
-	void dispose();
-
 	/**
 	 * Called by API when user presses on this key
 	 */
@@ -190,7 +186,7 @@ public interface IHUKey extends ITerminalKey, IDisposable
 
 	/**
 	 * Refresh this key (display name, children etc).
-	 * 
+	 *
 	 * If the HU key {@link #isDestroyed()} it will be directly removed from it's parent.
 	 */
 	void refresh();
@@ -213,9 +209,9 @@ public interface IHUKey extends ITerminalKey, IDisposable
 
 	/**
 	 * Sets children filter to be used.
-	 * 
+	 *
 	 * Fires {@link #ACTION_ChildrenFilterChanged}.
-	 * 
+	 *
 	 * @param childrenFilter
 	 */
 	void setChildrenFilter(final IHUKeyChildrenFilter childrenFilter);

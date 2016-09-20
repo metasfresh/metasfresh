@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.select.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -36,7 +35,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -46,6 +44,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
@@ -91,8 +90,6 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 
 	public AbstractHUSelectPanel(final ITerminalContext terminalContext, final MT model)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 
@@ -134,7 +131,15 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 					{
 						linesTable.stopEditing();
 					}
-					doProcessSelectedLines();
+
+					try (final ITerminalContextReferences newReferences = getTerminalContext().newReferences())
+					{
+						doProcessSelectedLines(getModel());
+					}
+					catch (Exception e)
+					{
+						throw AdempiereException.wrapIfNeeded(e);
+					}
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
 				{
@@ -151,6 +156,7 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 			}
 		});
 
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	protected final IConfirmPanel getConfirmPanel()
@@ -158,13 +164,17 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 		return confirmPanel;
 	}
 
-	/** @return {@link #ACTION_CloseLine} button or <code>null</code> */
+	/**
+	 * @return {@link #ACTION_CloseLine} button or <code>null</code>
+	 */
 	protected final ITerminalButton getButtonCloseLines()
 	{
 		return btnCloseLine;
 	}
 
-	/** @return {@link #ACTION_PhotoShoot} button or <code>null</code> */
+	/**
+	 * @return {@link #ACTION_PhotoShoot} button or <code>null</code>
+	 */
 	protected final ITerminalButton getButtonPhotoShoot()
 	{
 		return btnPhotoShoot;
@@ -175,7 +185,7 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	 *
 	 * NOTE: It is not mandatory to implement it only in case of a POS with lines.
 	 */
-	protected abstract void doProcessSelectedLines();
+	protected abstract void doProcessSelectedLines(MT model);
 
 	@Override
 	public final void dispose()
@@ -198,30 +208,20 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 		terminalContext = null;
 		model = null; // don't dispose it because it was not created by us
 
-		panel = DisposableHelper.dispose(panel);
-		warehousePanel = DisposableHelper.dispose(warehousePanel);
-		bpartnersPanel = DisposableHelper.dispose(bpartnersPanel);
-		linesTable = DisposableHelper.dispose(linesTable);
+		// note: we don't have to dispose our ITerminalKeyPanels and ITerminalTable2, because they add themselves to the terminal context as disposable compoments in their own constructors
 
-		// Confirm panel & buttons
-		confirmPanel = DisposableHelper.dispose(confirmPanel);
-		btnCloseLine = DisposableHelper.dispose(btnCloseLine);
-		btnPhotoShoot = DisposableHelper.dispose(btnPhotoShoot);
-
-		//
 		// Mark as disposed
 		_disposed = true;
 
 		//
 		// Notify everybody that this window will be disposed
 		firePropertyChange(IHUSelectPanel.PROPERTY_Disposed, false, true);
+	}
 
-		// Remove all listeners (after firing our last event)
-		if (pcs != null)
-		{
-			pcs.clear();
-			pcs = null;
-		}
+	@Override
+	public boolean isDisposed()
+	{
+		return _disposed;
 	}
 
 	/**
@@ -295,17 +295,24 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	}
 
 	/**
-	 * Open HU Editor for editing given HUs.
+	 * Opens HU Editor for editing given HUs. Does not cause a new {@link ITerminalContextReferences} instance to be created,
+	 * because we should assume that one was already created around the given <code>huEditorModel</code>.
 	 *
 	 * @param huEditorModel
-	 * @return true if editor was closed with OK; false if editor was closed with Cancel.
+	 * @return <code>true</code> if editor was closed with OK; false if editor was closed with Cancel.
 	 */
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public boolean editHUs(final HUEditorModel huEditorModel)
 	{
 		final HUEditorPanel editorPanel = createHUEditorPanelInstance(huEditorModel);
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", editorPanel); // TODO ts: Hardcoded ?!?
+
+		// we already have our own terminal context ref that was created when 'huEditorModel' was created
+		final boolean maintainOwnContextReferences = false;
+
+		final ITerminalDialog editorDialog = getTerminalFactory()
+				.createModalDialog(this, "Edit", editorPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
+
 		editorDialog.setSize(getTerminalContext().getScreenResolution());
 
 		// Activate editor dialog and wait until user closes the window

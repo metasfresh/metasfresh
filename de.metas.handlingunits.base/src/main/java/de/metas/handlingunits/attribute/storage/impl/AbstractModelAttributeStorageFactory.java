@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -48,10 +47,10 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
  * @param <AttributeStorageType> attribute storage type
  */
 public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeStorageType extends IAttributeStorage>
-extends AbstractAttributeStorageFactory
+		extends AbstractAttributeStorageFactory
 {
 	/**
-	 * Map used to "cache" attribute storages which were already created.
+	 * Map used to "cache" attribute storages which were already created. Also see {@link #getAttributeStorageForModel(Object)}.
 	 * <ul>
 	 * <li>Key: underlying data model key (see {@link #mkKey(Object)})
 	 * <li>Value: existing {@link IAttributeStorage}
@@ -82,7 +81,8 @@ extends AbstractAttributeStorageFactory
 	 * Gets the underlying data-type from given <code>modelObj</code>
 	 *
 	 * @param modelObj
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>underlying data-type model
 	 *         <li><code>null</code> if this modelObj cannot be handled by this factory
 	 *         <li>a null marker if this modelObj is actually handled by this factory but there is no underlying data-type model for it. In this case {@link #isNullModel(Object)} shall return true for
@@ -116,7 +116,7 @@ extends AbstractAttributeStorageFactory
 	}
 
 	/**
-	 * Creates a key from underlying data model to be used when caching current storages
+	 * Creates a key from underlying data model to be used when caching current storages. Note that the implementation does only need to create a key that is unique per <code>ModelType</code>.
 	 *
 	 * @param model
 	 * @return key
@@ -138,27 +138,51 @@ extends AbstractAttributeStorageFactory
 		return false;
 	}
 
-	protected final IAttributeStorage getAttributeStorageForModel(final ModelType model)
+	protected final IAttributeStorage getAttributeStorageForModelIfLoaded(final ModelType model)
+	{
+		final boolean onlyIfPresent = true; // if it's not yet there, then return null
+		return getAttributeStorageForModel(model, onlyIfPresent);
+	}
+
+	protected IAttributeStorage getAttributeStorageForModel(final ModelType model)
+	{
+		final boolean onlyIfPresent = false; // also get it if it's not yet loaded.
+		return getAttributeStorageForModel(model, onlyIfPresent);
+	}
+
+	private IAttributeStorage getAttributeStorageForModel(final ModelType model, final boolean onlyIfPresent)
 	{
 		final ArrayKey key = mkKey(model);
-
 		try
 		{
-			return key2storage.get(key, new Callable<AttributeStorageType>()
+			final IAttributeStorage result;
+			if (onlyIfPresent)
 			{
-
-				@Override
-				public AttributeStorageType call() throws Exception
+				result = key2storage.getIfPresent(key);
+			}
+			else
+			{
+				result = key2storage.get(key, new Callable<AttributeStorageType>()
 				{
-					final AttributeStorageType storage = createAttributeStorage(model);
-					Check.assumeNotNull(storage, "storage not null");
+					@Override
+					public AttributeStorageType call() throws Exception
+					{
+						final AttributeStorageType storage = createAttributeStorage(model);
+						Check.assumeNotNull(storage, "storage not null");
 
-					// Add listeners to our storage
-					addListenersToAttributeStorage(storage);
+						// Add listeners to our storage
+						addListenersToAttributeStorage(storage);
 
-					return storage;
-				}
-			});
+						return storage;
+					}
+				});
+			}
+
+			if (result != null)
+			{
+				result.assertNotDisposed();
+			}
+			return result;
 		}
 		catch (final Exception e)
 		{
@@ -201,7 +225,7 @@ extends AbstractAttributeStorageFactory
 	{
 		// nothing on this level
 	}
-	
+
 	@Override
 	protected void toString(final ToStringHelper stringHelper)
 	{

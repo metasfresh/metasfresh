@@ -72,10 +72,10 @@ public class HUKeyFactory implements IHUKeyFactory
 	private final IHUStorageFactory storageFactory;
 	private final HUKeyAttributeStorageFactory attributesStorageFactory;
 
+	private boolean disposed = false;
+
 	public HUKeyFactory()
 	{
-		super();
-
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		storageFactory = handlingUnitsBL.getStorageFactory();
 
@@ -109,12 +109,20 @@ public class HUKeyFactory implements IHUKeyFactory
 		}
 
 		this.terminalContext = terminalContext;
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
 	public void dispose()
 	{
 		attributesStorageFactory.clearCache();
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 	@Override

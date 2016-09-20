@@ -422,7 +422,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
 		call(callable);
 	}
-	
+
 	@Override
 	public <T> T call(final TrxCallable<T> callable)
 	{
@@ -436,7 +436,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
 		call(trxName, callable);
 	}
-	
+
 	@Override
 	public <T> T call(final String trxName, final TrxCallable<T> callable)
 	{
@@ -459,7 +459,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		call(trxName, manageTrx, callable);
 	}
-	
+
 	@Override
 	public <T> T call(final String trxName, final boolean manageTrx, final TrxCallable<T> callable)
 	{
@@ -703,7 +703,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				// "org.postgresql.util.PSQLException: ERROR: RELEASE SAVEPOINT can only be used in transaction blocks; State=25P01; ErrorCode=0"
 				savepoint = null;
 			}
-			
+
 			return callableResult;
 		}
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
@@ -1282,6 +1282,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 	public boolean isDebugConnectionBackendId()
 	{
 		return debugConnectionBackendId;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "AbstractTrxManager [trxName2trx=" + trxName2trx + ", trxName2trxLock=" + trxName2trxLock + ", trxNameGenerator=" + trxNameGenerator + ", threadLocalTrx=" + threadLocalTrx + ", threadLocalOnRunnableFail=" + threadLocalOnRunnableFail + ", debugTrxCreateStacktrace=" + debugTrxCreateStacktrace + ", debugTrxCloseStacktrace=" + debugTrxCloseStacktrace + ", debugClosedTransactionsList="
+				+ debugClosedTransactionsList + ", debugConnectionBackendId=" + debugConnectionBackendId + "]";
 	}
 
 }

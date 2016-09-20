@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,8 +25,6 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -34,6 +32,9 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class AttributeSetCalloutExecutor
@@ -42,10 +43,10 @@ public class AttributeSetCalloutExecutor
 
 	/**
 	 * Execute the callout for the given <code>attribute</code> which was changed.
-	 * 
+	 *
 	 * Note that callouts now fire and change other attributes.
 	 * <b>{@link IAttributeValueContext} is responsible for preventing setting values multiple times</b>
-	 * 
+	 *
 	 * @param attributeValueContext
 	 * @param attributeSet
 	 * @param attribute
@@ -53,8 +54,10 @@ public class AttributeSetCalloutExecutor
 	 * @param valueOld
 	 */
 	public final void executeCallout(final IAttributeValueContext attributeValueContext,
-			final IAttributeSet attributeSet, final I_M_Attribute attribute,
-			final Object valueNew, final Object valueOld)
+			final IAttributeSet attributeSet,
+			final I_M_Attribute attribute,
+			final Object valueNew,
+			final Object valueOld)
 	{
 		// Get the M_Attribute from storage (to make sure we are using the same instance of it)
 		final I_M_Attribute attributeCurrent = attributeSet.getAttributeByIdIfExists(attribute.getM_Attribute_ID());
@@ -75,12 +78,6 @@ public class AttributeSetCalloutExecutor
 
 		final IAttributeValueCallout callout = attributeSet.getAttributeValueCallout(attributeCurrent);
 		executeCallout(attributeValueContext, callout, attributeSet, attributeCurrent, valueNew, valueOld);
-	}
-
-	@Override
-	public String toString()
-	{
-		return "AttributeSetCalloutExecutor [calloutsActive=" + calloutsActive + "]";
 	}
 
 	private final List<IAttributeValueCallout> calloutsActive = new ArrayList<IAttributeValueCallout>();
@@ -115,4 +112,11 @@ public class AttributeSetCalloutExecutor
 			calloutsActive.remove(callout);
 		}
 	}
+
+	@Override
+	public String toString()
+	{
+		return "AttributeSetCalloutExecutor [calloutsActive=" + calloutsActive + "]";
+	}
+
 }

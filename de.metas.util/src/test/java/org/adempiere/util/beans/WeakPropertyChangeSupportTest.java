@@ -10,18 +10,17 @@ package org.adempiere.util.beans;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -81,17 +80,11 @@ public class WeakPropertyChangeSupportTest
 		{
 			for (final boolean addWeak : new Boolean[] { false, true })
 			{
-				for (final boolean removeWeak : new Boolean[] { false, true })
-				{
-					final WeakPropertyChangeSupport pcs = new WeakPropertyChangeSupport(sourceBean, weakDefault);
-					final MockedPropertyChangeListener listener = new MockedPropertyChangeListener();
-					final PropertyChangeListener listenerWeak = WeakPropertyChangeSupport.asWeak(listener);
-					final PropertyChangeListener listenerToAdd = addWeak ? listenerWeak : listener;
-					final PropertyChangeListener listenerToRemove = removeWeak ? listenerWeak : listener;
+				final WeakPropertyChangeSupport pcs = new WeakPropertyChangeSupport(sourceBean, weakDefault);
+				final MockedPropertyChangeListener listener = new MockedPropertyChangeListener();
 
-					final TestAddRemoveParameters parameters = new TestAddRemoveParameters(pcs, listener, listenerToAdd, listenerToRemove);
-					testAddRemoveListener(parameters);
-				}
+				final TestAddRemoveParameters parameters = new TestAddRemoveParameters(pcs, listener, addWeak);
+				testAddRemoveListener(parameters);
 			}
 		}
 	}
@@ -105,7 +98,7 @@ public class WeakPropertyChangeSupportTest
 
 		//
 		// Add listener
-		pcs.addPropertyChangeListener(parameters.getListenerToAdd());
+		pcs.addPropertyChangeListener(parameters.getListener(), parameters.isAddWeak());
 
 		//
 		// guard: Make sure listener was correctly added
@@ -114,7 +107,7 @@ public class WeakPropertyChangeSupportTest
 
 		//
 		// Remove listener
-		pcs.removePropertyChangeListener(parameters.getListenerToRemove());
+		pcs.removePropertyChangeListener(parameters.getListener());
 
 		//
 		// Make sure listener was correctly removed
@@ -191,15 +184,13 @@ class TestAddRemoveParameters
 {
 	private WeakPropertyChangeSupport pcs;
 	private MockedPropertyChangeListener listener;
-	private PropertyChangeListener listenerToAdd;
-	private PropertyChangeListener listenerToRemove;
+	private final boolean addWeak;
 
-	public TestAddRemoveParameters(WeakPropertyChangeSupport pcs, MockedPropertyChangeListener listener, PropertyChangeListener listenerToAdd, PropertyChangeListener listenerToRemove)
+	public TestAddRemoveParameters(WeakPropertyChangeSupport pcs, MockedPropertyChangeListener listener, boolean addWeak)
 	{
 		this.pcs = pcs;
 		this.listener = listener;
-		this.listenerToAdd = listenerToAdd;
-		this.listenerToRemove = listenerToRemove;
+		this.addWeak = addWeak;
 	}
 
 	public WeakPropertyChangeSupport getPcs()
@@ -212,13 +203,9 @@ class TestAddRemoveParameters
 		return listener;
 	}
 
-	public PropertyChangeListener getListenerToAdd()
+	public boolean isAddWeak()
 	{
-		return listenerToAdd;
+		return addWeak;
 	}
 
-	public PropertyChangeListener getListenerToRemove()
-	{
-		return listenerToRemove;
-	}
 }

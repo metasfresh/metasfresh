@@ -13,18 +13,17 @@ package de.metas.handlingunits.client.terminal.pporder.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -53,7 +52,6 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -145,6 +143,8 @@ public class HUIssuePanel implements IHUSelectPanel
 				load();
 			}
 		});
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void initComponents()
@@ -320,7 +320,7 @@ public class HUIssuePanel implements IHUSelectPanel
 			if (partner != null)
 			{
 				final I_M_Product product = ppOrder.getM_Product();
-				
+
 				final int orgId = product.getAD_Org_ID();
 
 				final I_C_BPartner_Product bppRaw = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
@@ -686,30 +686,16 @@ public class HUIssuePanel implements IHUSelectPanel
 			return;
 		}
 
-		DisposableHelper.disposeAll(
-				model, // we can dispose the model because we created it internally
-				confirmPanel,
-				bomProductsPanel,
-				closeOrderBUtton,
-				ddOrderButton,
-				detailsLabel,
-				issueOrderButton,
-				manufacturingOrderPanel,
-				panel,
-				receiptHUEditorButton,
-				receiptOrderButton
-				);
-
 		terminalContext = null;
-
-		WeakPropertyChangeSupport pcs = this.pcs;
-		this.pcs = null; // we will clear it later...
-
 		_disposed = true;
 
 		pcs.firePropertyChange(IHUSelectPanel.PROPERTY_Disposed, false, true);
-		pcs.clear(); // clear listeners, after we fired our last event
-		pcs = null;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return _disposed;
 	}
 
 	private void afterReceipt(final List<I_M_HU> hus)
