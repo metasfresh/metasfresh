@@ -67,7 +67,7 @@ import de.metas.lock.api.ILock;
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 	private static final String SYSCONFIG_ItemsPerBatch = "de.metas.invoicecandidate.api.impl.InvoiceCandInvalidUpdater.ItemsPerBatch";
-	private static final int DEFAULT_ItemsPerBatch = 1;
+	private static final int DEFAULT_ItemsPerBatch = 100;
 
 	//
 	// Parameters
@@ -156,7 +156,7 @@ import de.metas.lock.api.ILock;
 					.setItemsPerBatch(itemsPerBatch)
 					.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and do not help us here
 					.setExceptionHandler(new ICTrxItemExceptionHandler(result))
-					.setOnItemErrorPolicy(ITrxItemExecutorBuilder.OnItemErrorPolicy.ContinueChunkAndCommit) // issue #302
+					.setOnItemErrorPolicy(ITrxItemExecutorBuilder.OnItemErrorPolicy.ContinueChunkAndCommit) // issue #302: ICTrxItemExceptionHandler will deal with problems, so we just continue if they happen.
 					.setProcessor(new TrxItemChunkProcessorAdapter<I_C_Invoice_Candidate, ICUpdateResult>()
 					{
 						/** the invoice candidates which were updated in current batch/chunk */

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.util.Services;
@@ -31,11 +31,11 @@ import junit.framework.AssertionFailedError;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -58,6 +58,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	private List<IT> _items;
 	private RT expectedResult;
 	private Class<?> expectedExceptionClass;
+	private OnItemErrorPolicy onItemErrorPolicy;
 
 	public TrxItemProcessorExecutorRunExpectations()
 	{
@@ -82,7 +83,6 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		final IMutable<Exception> exceptionActual = new Mutable<>();
 		final TrxRunnable trxRunnable = new TrxRunnableAdapter()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
@@ -97,13 +97,11 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 				//
 				// Create the executor
 				final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<>(
-						processorCtx, // processing context
-						processor, // processor
+						processorCtx,  // processing context
+						processor,  // processor
 						ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler,
-						ITrxItemExecutorBuilder.OnItemErrorPolicy.CancelChunkAndRollBack,
-						useTrxSavepoints
-				);
-
+						onItemErrorPolicy,
+						useTrxSavepoints);
 
 				//
 				// Run the executor and gather the result
@@ -147,7 +145,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		// Make sure the thread inherited transaction was restored
 		final String threadIneritedTrxNameAfter = trxManager.getThreadInheritedTrxName();
 		Assert.assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
-				threadIneritedTrxNameBefore, // expected,
+				threadIneritedTrxNameBefore,  // expected,
 				threadIneritedTrxNameAfter // actual
 		);
 		trxManager.setThreadInheritedTrxName(null); // just reset it to have it clean
@@ -252,6 +250,12 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	public TrxItemProcessorExecutorRunExpectations<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints)
 	{
 		this.useTrxSavepoints = useTrxSavepoints;
+		return this;
+	}
+
+	public TrxItemProcessorExecutorRunExpectations<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy)
+	{
+		this.onItemErrorPolicy = onItemErrorPolicy;
 		return this;
 	}
 

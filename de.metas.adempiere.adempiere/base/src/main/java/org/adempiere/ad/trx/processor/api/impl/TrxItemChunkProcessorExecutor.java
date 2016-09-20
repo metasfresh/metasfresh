@@ -70,10 +70,12 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	// Configuration parameters
 	private final ITrxItemProcessorContext processorCtx;
 	private final ITrxItemChunkProcessor<IT, RT> processor;
-	private ITrxItemExceptionHandler exceptionHandler;
+
 	private final OnItemErrorPolicy onItemErrorPolicy; // issue #302
 
-	private boolean useTrxSavepoints;
+	private ITrxItemExceptionHandler exceptionHandler; // non-final for historical reasons
+
+	private boolean useTrxSavepoints; // non-final for historical reasons
 
 	//
 	// State
@@ -160,7 +162,9 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			// Close last chunk if any
 			if (chunkOpen)
 			{
-				if (chunkHasErrors)
+				if (chunkHasErrors
+						&& (onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndRollBack
+								|| onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndCommit))
 				{
 					final boolean processItemFailed = true;
 					cancelChunk(processItemFailed);
@@ -203,8 +207,10 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 	private void processItem(final IT item)
 	{
+		//
+		// error handling
 		if (chunkHasErrors
-				// at least one item in this was processed with an error
+				// at least one item in this chunk was processed with an error
 				&& (onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndRollBack
 						|| onItemErrorPolicy == OnItemErrorPolicy.CancelChunkAndCommit))
 		{
@@ -213,7 +219,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 			if (processor.isSameChunk(item))
 			{
 				// the item is part of current chunk which has errors.
-				// we are skipping this item (and all other items of this chunk).
+				// we are skipping this item (and all other items of this chunk). I.e. we skip forward to the last item, and then call cancelChunk(true)
 				return;
 			}
 			else
@@ -360,6 +366,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	 * If something went wrong this method will throw an exception right away, exception which will stop entire batch processing.
 	 *
 	 * @param processItemFailed if <code>true</code>, then do what our current {@link #onItemErrorPolicy} value indicates.
+	 *            If <code>false</code>, then just roll back the trx.
 	 */
 	private void cancelChunk(boolean processItemFailed)
 	{
@@ -522,7 +529,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		chunkTrx = null;
 
-		// NOTE: no need to restore/reset thread transaction because "execute" method will retore it anyways at the end
+		// NOTE: no need to restore/reset thread transaction because the "execute" method will restore it anyways at the end
 		// trxManager.setThreadInheritedTrxName(null);
 	}
 

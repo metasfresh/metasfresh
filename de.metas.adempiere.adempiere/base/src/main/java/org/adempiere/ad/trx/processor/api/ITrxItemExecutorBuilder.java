@@ -39,7 +39,7 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 public interface ITrxItemExecutorBuilder<IT, RT>
 {
 	/**
-	 * Used to specify what shall be done when processing a chunk failed.
+	 * Used to specify what shall be done when processing a chunk failed. See {@link ITrxItemExecutorBuilder#setOnItemErrorPolicy(OnItemErrorPolicy)}.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 * @task https://github.com/metasfresh/metasfresh/issues/302
@@ -47,28 +47,24 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	enum OnItemErrorPolicy
 	{
 		/**
-		 * Call the processor's cancelChunk() method and commit the current trx
+		 * Call the processor's cancelChunk() method and commit the current trx.
 		 */
 		CancelChunkAndCommit,
 
 		/**
+		 * Call the processor's cancelChunk() method and roll back the current trx.<br>
 		 * This is what the current implementation happened to do before we added {@link ITrxItemExecutorBuilder#setOnItemErrorPolicy(OnItemErrorPolicy)}, so we keep it as the default.
 		 */
 		CancelChunkAndRollBack,
 
 		/**
-		 * Just go on with the current chunk.
-		 * The processor's {@link ITrxItemExceptionHandler#onItemError(Exception, Object)} method already dealt with it, and no other items of the chunk are affected.
+		 * Just go on with the current chunk, assuming that<br>
+		 * the processor's {@link ITrxItemExceptionHandler#onItemError(Exception, Object)} method already dealt with it, and no other items of the chunk are affected.
 		 * This is what we need for issue #302
 		 *
 		 * @task https://github.com/metasfresh/metasfresh/issues/302
 		 */
-		ContinueChunkAndCommit,
-
-		// /**
-		// * this might be useful in future..discard what we did so far from the chunk, but process its further items..
-		// */
-		// ContinueChunkAndRollBack
+		ContinueChunkAndCommit
 	}
 
 	/**
