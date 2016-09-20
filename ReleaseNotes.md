@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.36.35 (2016-38)
 
-upcoming
+this week's RC
 
 ## Features
  * #395 Add Description in Jasper Invoice Vendor
