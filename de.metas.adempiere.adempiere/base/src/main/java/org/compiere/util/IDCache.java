@@ -51,7 +51,8 @@ public class IDCache<V> extends CCache<Object, V>
 				buildCacheName(tableName, trxName),
 				tableName,
 				initialCapacity,
-				expireMinutes);
+				expireMinutes,
+				cacheMapType);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 	}

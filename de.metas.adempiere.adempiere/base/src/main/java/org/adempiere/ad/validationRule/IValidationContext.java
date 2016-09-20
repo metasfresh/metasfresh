@@ -44,15 +44,11 @@ public interface IValidationContext extends Evaluatee
 	 */
 	IValidationContext CACHED = new NullValidationContext();
 
-
-	int getWindowNo();
-
 	/**
-	 * Table Name which contains the column on which we are doing the evaluation (e.g. contextTableName can be C_Order and tableName can be C_BPartner_Location_ID).
-	 * 
-	 * @return context table name
+	 * Parameter to identify which is the context table name in which the validation rule is running.
+	 * e.g. for C_Invoice.C_BPartner_ID lookup, the context table name is C_Invoice.
 	 */
-	String getContextTableName();
+	String PARAMETER_ContextTableName = "_ContextTableName";
 
 	/**
 	 * Table Name from which validation records are

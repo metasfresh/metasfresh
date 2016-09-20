@@ -183,7 +183,7 @@ public abstract class TranslatableParameterizedString
 		private final String adLanguageParamName;
 
 		/** Map of AD_Language to translated string */
-		private Map<String, String> _stringTrls; // lazy
+		private volatile Map<String, String> _stringTrls; // lazy
 
 		private RegularTranslatableParameterizedString(final String adLanguageParamName, final String stringBaseLang, final String stringTrlPattern)
 		{

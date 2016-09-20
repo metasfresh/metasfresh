@@ -1,7 +1,7 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
@@ -10,7 +10,7 @@ import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 public final class ConstantLogicExpression implements ILogicExpression
@@ -94,9 +94,9 @@ public final class ConstantLogicExpression implements ILogicExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 
 	@Override

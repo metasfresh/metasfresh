@@ -1,15 +1,20 @@
 package org.compiere.util;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /*
  * #%L
@@ -35,7 +40,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * {@link Evaluatee} convenient factories.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -51,9 +56,24 @@ public final class Evaluatees
 		return new SingletonEvaluatee(variableName, value);
 	}
 
+	public static final Evaluatee ofSupplier(final String variableName, final Supplier<?> supplier)
+	{
+		return new SupplierEvaluatee(variableName, supplier);
+	}
+
+	public static final Evaluatee ofSupplier(final String variableName, final com.google.common.base.Supplier<?> supplier)
+	{
+		return new GuavaSupplierEvaluatee(variableName, supplier);
+	}
+
 	public static final Evaluatee2 ofMap(final Map<String, ? extends Object> map)
 	{
 		return new MapEvaluatee(map);
+	}
+	
+	public static final MapEvaluateeBuilder mapBuilder()
+	{
+		return new MapEvaluateeBuilder();
 	}
 
 	public static final Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
@@ -140,19 +160,20 @@ public final class Evaluatees
 
 	/**
 	 * Map
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private static final class MapEvaluatee implements Evaluatee2
 	{
-		private final Map<String, ? extends Object> map;
+		private final Map<String, Object> map;
 
+		@SuppressWarnings("unchecked")
 		private MapEvaluatee(final Map<String, ? extends Object> map)
 		{
 			super();
 			Check.assumeNotNull(map, "map not null");
-			this.map = map;
+			this.map = (Map<String, Object>)map;
 		}
 
 		@Override
@@ -161,6 +182,14 @@ public final class Evaluatees
 			return MoreObjects.toStringHelper(this)
 					.add("map", map)
 					.toString();
+		}
+
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			@SuppressWarnings("unchecked")
+			final T value = (T)map.get(variableName);
+			return value;
 		}
 
 		@Override
@@ -182,6 +211,50 @@ public final class Evaluatees
 			return null;
 		}
 	}
+	
+	public static final class MapEvaluateeBuilder
+	{
+		private LinkedHashMap<String, Object> map;
+		
+		private MapEvaluateeBuilder()
+		{
+			super();
+		}
+		
+		public Evaluatee build()
+		{
+			if(map == null || map.isEmpty())
+			{
+				return EMPTY;
+			}
+			else if(map.size() == 1)
+			{
+				final Entry<String, Object> entry = map.entrySet().iterator().next();
+				return new SingletonEvaluatee(entry.getKey(), entry.getValue());
+			}
+			else
+			{
+				return new MapEvaluatee(ImmutableMap.copyOf(map));
+			}
+		}
+		
+		public MapEvaluateeBuilder put(final String variableName, final Object value)
+		{
+			if(map == null)
+			{
+				map = new LinkedHashMap<>();
+			}
+			map.put(variableName, value);
+			return this;
+		}
+		
+		public MapEvaluateeBuilder put(CtxName name, final Object value)
+		{
+			put(name.getName(), value);
+			return this;
+		}
+	}
+
 
 	/**
 	 * Wraps a given {@link Properties} context to {@link Evaluatee}
@@ -218,11 +291,23 @@ public final class Evaluatees
 		{
 			return Env.getContext(ctx, windowNo, variableName, onlyWindow);
 		}
+
+		@Override
+		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+		{
+			return Env.getContextAsInt(ctx, windowNo, variableName, onlyWindow);
+		}
+
+		@Override
+		public Date get_ValueAsDate(final String variableName, final Date defaultValue)
+		{
+			return Env.getContextAsDate(ctx, windowNo, variableName, onlyWindow);
+		}
 	}
 
 	/**
 	 * Composite
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
@@ -250,6 +335,22 @@ public final class Evaluatees
 
 			sources.add(source);
 			return this;
+		}
+
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			for (final Evaluatee source : sources)
+			{
+				final Object value = source.get_ValueAsObject(variableName);
+				if (value != null)
+				{
+					@SuppressWarnings("unchecked")
+					T valueCasted = (T)value;
+					return valueCasted;
+				}
+			}
+			return null;
 		}
 
 		@Override
@@ -310,14 +411,28 @@ public final class Evaluatees
 	private static final class SingletonEvaluatee implements Evaluatee2
 	{
 		private final String variableName;
-		private final String value;
+		private final Object value;
+		private final String valueStr;
 
 		private SingletonEvaluatee(final String variableName, final Object value)
 		{
 			super();
 			Check.assumeNotEmpty(variableName, "variableName not empty");
 			this.variableName = variableName;
-			this.value = value == null ? null : String.valueOf(value);
+			this.value = value;
+			valueStr = value == null ? null : String.valueOf(value); // precompute because it's the most used one
+		}
+
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			if (!this.variableName.equals(variableName))
+			{
+				return null;
+			}
+			@SuppressWarnings("unchecked")
+			final T valueCasted = (T)value;
+			return valueCasted;
 		}
 
 		@Override
@@ -327,7 +442,7 @@ public final class Evaluatees
 			{
 				return null;
 			}
-			return value;
+			return valueStr;
 		}
 
 		@Override
@@ -343,23 +458,124 @@ public final class Evaluatees
 		}
 	}
 
+	/**
+	 * Supplier implementation of {@link Evaluatee2}
+	 *
+	 * @author tsa
+	 *
+	 */
+	private static final class SupplierEvaluatee implements Evaluatee
+	{
+		private final String variableName;
+		private final Supplier<?> supplier;
+
+		private SupplierEvaluatee(final String variableName, final Supplier<?> supplier)
+		{
+			super();
+			Check.assumeNotEmpty(variableName, "variableName not empty");
+			Check.assumeNotNull(supplier, "Parameter supplier is not null");
+			this.variableName = variableName;
+			this.supplier = supplier;
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			if (!this.variableName.equals(variableName))
+			{
+				return null;
+			}
+			final Object valueObj = supplier.get();
+			return valueObj == null ? null : valueObj.toString();
+		}
+
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			if (!this.variableName.equals(variableName))
+			{
+				return null;
+			}
+
+			final Object valueObj = supplier.get();
+
+			@SuppressWarnings("unchecked")
+			T valueConv = (T)valueObj;
+			return valueConv;
+		}
+	}
+
+	/**
+	 * Guava Supplier implementation of {@link Evaluatee2}
+	 *
+	 * @author tsa
+	 *
+	 */
+	private static final class GuavaSupplierEvaluatee implements Evaluatee
+	{
+		private final String variableName;
+		private final com.google.common.base.Supplier<?> supplier;
+
+		private GuavaSupplierEvaluatee(final String variableName, final com.google.common.base.Supplier<?> supplier)
+		{
+			super();
+			Check.assumeNotEmpty(variableName, "variableName not empty");
+			Check.assumeNotNull(supplier, "Parameter supplier is not null");
+			this.variableName = variableName;
+			this.supplier = supplier;
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			if (!this.variableName.equals(variableName))
+			{
+				return null;
+			}
+			final Object valueObj = supplier.get();
+			return valueObj == null ? null : valueObj.toString();
+		}
+
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			if (!this.variableName.equals(variableName))
+			{
+				return null;
+			}
+
+			final Object valueObj = supplier.get();
+
+			@SuppressWarnings("unchecked")
+			T valueConv = (T)valueObj;
+			return valueConv;
+		}
+	}
+
+	/**
+	 * Wraps given <code>evaluatee</code> but it will return <code>null</code> for the <code>excludeVariableName</code>.
+	 * 
+	 * @param evaluatee
+	 * @param excludeVariableName
+	 * @return
+	 */
 	public static final Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
 	{
 		return new ExcludingVariablesEvaluatee(evaluatee, excludeVariableName);
 	}
-	
+
 	private static final class ExcludingVariablesEvaluatee implements Evaluatee
 	{
 		private final Evaluatee parent;
 		private final String excludeVariableName;
-		
+
 		private ExcludingVariablesEvaluatee(final Evaluatee parent, final String excludeVariableName)
 		{
 			super();
 			this.parent = parent;
 			this.excludeVariableName = excludeVariableName;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -368,11 +584,21 @@ public final class Evaluatees
 					.add("parent", parent)
 					.toString();
 		}
-		
+
 		@Override
-		public String get_ValueAsString(String variableName)
+		public <T> T get_ValueAsObject(final String variableName)
 		{
-			if(excludeVariableName.equals(variableName))
+			if (excludeVariableName.equals(variableName))
+			{
+				return null;
+			}
+			return parent.get_ValueAsObject(variableName);
+		}
+
+		@Override
+		public String get_ValueAsString(final String variableName)
+		{
+			if (excludeVariableName.equals(variableName))
 			{
 				return null;
 			}

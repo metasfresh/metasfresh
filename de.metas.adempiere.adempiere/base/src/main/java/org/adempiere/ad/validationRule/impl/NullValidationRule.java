@@ -1,12 +1,12 @@
 package org.adempiere.ad.validationRule.impl;
 
-import java.util.List;
+import java.util.Set;
 
-import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.compiere.util.NamePair;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Null validation rule. A null validation rule, does nothing. Is not filtering any records.
@@ -35,26 +35,20 @@ public final class NullValidationRule implements IValidationRule
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public Set<String> getAllParameters()
 	{
-		return null;
+		return ImmutableSet.of();
 	}
 
 	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public IStringExpression getPrefilterWhereClause()
 	{
-		return true;
+		return IStringExpression.NULL;
 	}
-
+	
 	@Override
-	public List<String> getParameters()
+	public INamePairPredicate getPostQueryFilter()
 	{
-		return ImmutableList.of();
-	}
-
-	@Override
-	public NamePair getValidValue(Object currentValue)
-	{
-		return null;
+		return INamePairPredicate.NULL;
 	}
 };

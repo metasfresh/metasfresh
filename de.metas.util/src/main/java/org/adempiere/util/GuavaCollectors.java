@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -187,6 +188,16 @@ public final class GuavaCollectors
 		final Function<List<T>, String> finisher = joiner::join;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
+	
+	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
+	{
+		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;
+		final BiConsumer<ImmutableMap.Builder<K, V>, Entry<K,V>> accumulator = (builder, entry) -> builder.put(entry);
+		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
+		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 
 	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKey(final Function<? super V, ? extends K> keyMapper)
 	{

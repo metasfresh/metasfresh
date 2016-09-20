@@ -9,8 +9,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutFactory;
@@ -21,13 +24,17 @@ import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
 
@@ -52,7 +59,9 @@ public final class CalloutExecutor implements ICalloutExecutor
 	/** A set of callouts which are currently running */
 	private final Set<ICalloutInstance> activeCalloutInstances = new HashSet<>();
 	/** When enabled, contains a set of already executed callouts */
-	private volatile Set<ICalloutInstance> executedCalloutsTrace = null;
+	private volatile Set<ArrayKey> executedCalloutsTrace = null;
+
+	private CalloutStatisticsEntry statisticsCollector;
 
 	private CalloutExecutor(
 			final String tableName,
@@ -120,7 +129,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		//
 		// Enabled executed callouts tracing.
 		// We will track all indirectly executed callouts and we won't execute them again here.
-		final Set<ICalloutInstance> executedCalloutsTrace = new HashSet<>();
+		final Set<ArrayKey> executedCalloutsTrace = new HashSet<>();
 		if (this.executedCalloutsTrace != null)
 		{
 			throw new IllegalStateException("executedCalloutsTrace is not null. Is there another executeAll currently running?"); // shall not happen
@@ -129,7 +138,8 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 		//
 		// Statistics
-		StatisticsCollector statisticsCollector = logger.isTraceEnabled() ? new StatisticsCollector() : null;
+		CalloutStatisticsEntry statisticsCollector = logger.isTraceEnabled() ? CalloutStatisticsEntry.newRoot() : null;
+		this.statisticsCollector = statisticsCollector;
 
 		try
 		{
@@ -141,12 +151,12 @@ public final class CalloutExecutor implements ICalloutExecutor
 				final ICalloutField field = calloutFieldsSupplier.apply(columnName);
 				if (field == null)
 				{
-					statisticsCollector = statisticsCollector == null ? null : statisticsCollector.collectFieldSkipped(columnName, "supplied field was null");
+					statisticsCollector = statisticsCollector == null ? null : statisticsCollector.childSkipped(columnName, "supplied field was null");
 					continue;
 				}
 				if (!isEligibleForExecuting(field))
 				{
-					statisticsCollector = statisticsCollector == null ? null : statisticsCollector.collectFieldSkipped(field, "not eligible");
+					statisticsCollector = statisticsCollector == null ? null : statisticsCollector.childSkipped(field, "not eligible");
 					continue;
 				}
 
@@ -158,15 +168,11 @@ public final class CalloutExecutor implements ICalloutExecutor
 					// Optimization: don't fire this callout if it was indirectly already fired.
 					if (executedCalloutsTrace.contains(callout))
 					{
-						statisticsCollector = statisticsCollector == null ? null : statisticsCollector.collectCalloutSkipped(columnName, callout, "it was already executed");
+						statisticsCollector = statisticsCollector == null ? null : statisticsCollector.childSkipped(field, callout, "it was already executed");
 						continue;
 					}
 
-					final Stopwatch calloutDuration = statisticsCollector == null ? null : Stopwatch.createStarted();
-
 					execute(callout, field);
-
-					statisticsCollector = statisticsCollector == null ? null : statisticsCollector.collectCalloutExecuted(columnName, callout, calloutDuration);
 				}
 			}
 		}
@@ -178,8 +184,9 @@ public final class CalloutExecutor implements ICalloutExecutor
 			logger.trace("executeAll: Finished executing all callouts for {} using fields supplier: {}", this, calloutFieldsSupplier);
 			if (statisticsCollector != null)
 			{
-				statisticsCollector.stop();
-				logger.trace("{}", statisticsCollector.getSummary());
+				statisticsCollector.setStatusExecuted();
+				this.statisticsCollector = null;
+				logger.trace("Execution statistics: {}", statisticsCollector.getSummary());
 			}
 		}
 	}
@@ -212,52 +219,79 @@ public final class CalloutExecutor implements ICalloutExecutor
 	{
 		final String calloutId = callout.getId();
 
-		if (executionBlackListIds.contains(calloutId))
+		//
+		// Statistics
+		final boolean tracing = logger.isTraceEnabled();
+		final CalloutStatisticsEntry statisticsCollectorPrevious;
+		CalloutStatisticsEntry statisticsCollectorCurrent;
+		if (tracing)
 		{
-			logger.trace("Skip executing callout {} because it's on backlist", callout);
-			return;
+			statisticsCollectorPrevious = this.statisticsCollector;
+			this.statisticsCollector = statisticsCollectorCurrent = CalloutStatisticsEntry.child(statisticsCollectorPrevious, field, callout);
+		}
+		else
+		{
+			statisticsCollectorPrevious = null;
+			statisticsCollectorCurrent = null;
 		}
 
 		try
 		{
-			final boolean added = activeCalloutInstances.add(callout);
-			// detect infinite loop
-			if (!added)
+			if (executionBlackListIds.contains(calloutId))
 			{
-				logger.debug("Skip callout {} because is already active", callout);
+				statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusSkipped("blacklist");
 				return;
 			}
 
-			if (logger.isDebugEnabled())
+			//
+			// Add the callout to active running callouts list
+			final boolean added = activeCalloutInstances.add(callout);
+			if (!added)
 			{
-				logger.debug("Executing callout {}: {}={} - old={}", callout, field, field.getValue(), field.getOldValue());
+				// callout is already running => don't run it again because it will introduce a loop
+				statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusSkipped("already active", "active callouts: " + activeCalloutInstances);
+				return;
 			}
 
+			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusStarted();
+
+			//
+			// Actually execute the callout
 			callout.execute(this, field);
 
+			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusExecuted();
+
+			//
 			// Trace executed callout if required
-			final Set<ICalloutInstance> executedCalloutsTrace = this.executedCalloutsTrace;
+			final Set<ArrayKey> executedCalloutsTrace = this.executedCalloutsTrace;
 			if (executedCalloutsTrace != null)
 			{
-				executedCalloutsTrace.add(callout);
+				executedCalloutsTrace.add(Util.mkKey(field.getColumnName(), callout));
 			}
 		}
 		catch (final CalloutInitException e)
 		{
 			logger.error("Callout {} failed with init error on execution. Discarding the callout from next calls and propagating the exception", callout, e);
 			executionBlackListIds.add(calloutId);
+			
+			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
+			
 			throw e.setCalloutExecutorIfAbsent(this)
 					.setFieldIfAbsent(field)
 					.setCalloutInstanceIfAbsent(callout);
 		}
 		catch (final CalloutException e)
 		{
+			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
+			
 			throw e.setCalloutExecutorIfAbsent(this)
 					.setFieldIfAbsent(field)
 					.setCalloutInstanceIfAbsent(callout);
 		}
 		catch (final Exception e)
 		{
+			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
+			
 			throw CalloutExecutionException.of(e)
 					.setCalloutExecutor(this)
 					.setField(field)
@@ -265,6 +299,17 @@ public final class CalloutExecutor implements ICalloutExecutor
 		}
 		finally
 		{
+			//
+			// Statistics
+			this.statisticsCollector = statisticsCollectorPrevious;
+			if(statisticsCollectorCurrent != null && statisticsCollectorPrevious == null)
+			{
+				logger.trace("Executed callout {} for {}", callout, field);
+				logger.trace("Execution statistics: {}", statisticsCollectorCurrent.getSummary());
+			}
+
+			//
+			// Remove callout from currently running callouts list
 			activeCalloutInstances.remove(callout);
 		}
 	}
@@ -345,138 +390,281 @@ public final class CalloutExecutor implements ICalloutExecutor
 	}
 
 	/**
-	 * Internal object for collecting statistics when we run {@link CalloutExecutor#executeAll(Function)}.
+	 * Internal object for collecting statistics when we run callouts.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	private static final class StatisticsCollector
+	private static final class CalloutStatisticsEntry
 	{
-		private final Stopwatch durationTotal = Stopwatch.createStarted();
-		private int countFieldsSkipped = 0;
-		private int countCalloutsExecuted = 0;
-		private int countCalloutsSkipped = 0;
-		private final LinkedHashMap<ICalloutInstance, CalloutStatisticsEntry> calloutStatistics = new LinkedHashMap<>();
+		public static final CalloutStatisticsEntry newRoot()
+		{
+			return new CalloutStatisticsEntry()
+					.setStatusStarted();
+		}
 
-		private StatisticsCollector()
+		public static final CalloutStatisticsEntry child(@Nullable final CalloutStatisticsEntry parent, final ICalloutField field, final ICalloutInstance callout)
+		{
+			if (parent == null)
+			{
+				final IntSupplier indexSupplier = null; // N/A
+				return new CalloutStatisticsEntry(indexSupplier, field, callout);
+			}
+			else
+			{
+				return parent.getCreateChild(field, callout);
+			}
+		}
+
+		private final int index;
+		private final IntSupplier indexSupplier;
+		private final String columnName;
+		private final ICalloutField calloutField;
+		private final ICalloutInstance callout;
+
+		//
+		// Node level info
+		private static enum Status
+		{
+			Unknown, Started, Executed, Skipped, Failed
+		};
+
+		private Status status = Status.Unknown;
+		private String skipReasonSummary;
+		private String skipReasonDetails;
+		private static final Object FIELD_VALUE_UNKNOWN = "<UNKNOWN>";
+		private Object fieldValueOnStart = FIELD_VALUE_UNKNOWN;
+		private Object fieldValueOldOnStart = FIELD_VALUE_UNKNOWN;
+		private Throwable exception;
+		private String _nodeSummary; // lazy
+		//
+		private Stopwatch duration = null;
+
+		//
+		// Children info
+		private final LinkedHashMap<ArrayKey, CalloutStatisticsEntry> children = new LinkedHashMap<>();
+		private int countChildFieldsSkipped = 0;
+
+		private CalloutStatisticsEntry(final IntSupplier indexSupplier, final ICalloutField field, final ICalloutInstance callout)
 		{
 			super();
+			
+			this.indexSupplier = indexSupplier != null ? indexSupplier : new AtomicInteger(1)::getAndIncrement;
+			index = this.indexSupplier.getAsInt();
+			
+			this.calloutField = field;
+			this.columnName = calloutField == null ? null : calloutField.getColumnName();
+			
+			this.callout = callout;
+		}
+
+		/** Root constructor */
+		private CalloutStatisticsEntry()
+		{
+			this(
+					(IntSupplier)null // indexSupplier
+					, (ICalloutField)null // field
+					, null // callout
+			);
+		}
+
+		@Override
+		public String toString()
+		{
+			return getNodeSummary();
 		}
 
 		public String getSummary()
 		{
+			final String linePrefix = "\n";
+			final boolean showOverallSummary = true;
+			return getSummary(linePrefix, showOverallSummary);
+		}
+
+		private String getSummary(final String linePrefix, final boolean showOverallSummary)
+		{
 			final StringBuilder sb = new StringBuilder();
-			sb.append("\n Executed " + countCalloutsExecuted + " callouts in " + durationTotal);
-			if (countCalloutsSkipped > 0)
+
+			if (showOverallSummary)
 			{
-				sb.append("\n Skipped " + countCalloutsSkipped + " callouts which were called indirectly");
-			}
-			if (countFieldsSkipped > 0)
-			{
-				sb.append("\n Skipped " + countFieldsSkipped + " fields because they are no eligible");
+				if (countChildFieldsSkipped > 0)
+				{
+					sb.append(linePrefix + "Skipped " + countChildFieldsSkipped + " fields because they are no eligible");
+				}
 			}
 
-			final Collection<CalloutStatisticsEntry> calloutStatsEntries = calloutStatistics.values();
-			if (!calloutStatsEntries.isEmpty())
+			//
+			// Node summary entry
+			sb.append(linePrefix + " * " + getNodeSummary());
+
+			//
+			// Child summary
+			final Collection<CalloutStatisticsEntry> childrenList = children.values();
+			if (!childrenList.isEmpty())
 			{
-				sb.append("\n Following callouts were executed: ");
-				calloutStatsEntries
+				final boolean childShowOverallSummary = false;
+				final String childLinePrefix = linePrefix + "  ";
+				childrenList
 						.stream()
-						.sorted((s1, s2) -> (int)(s2.getDurationNanos() - s1.getDurationNanos())) // descending by duration
-						.forEach((s) -> sb.append("\n * " + s));
+						.forEach((s) -> sb.append(s.getSummary(childLinePrefix, childShowOverallSummary)));
 			}
 
 			return sb.toString();
 		}
 
-		public StatisticsCollector stop()
+		public String getNodeSummary()
 		{
-			durationTotal.stop();
+			if (_nodeSummary == null)
+			{
+				_nodeSummary = buildSummary();
+			}
+			return _nodeSummary;
+		}
+
+		private String buildSummary()
+		{
+			final StringBuilder sb = new StringBuilder();
+
+			// Index
+			sb.append("(").append(String.format("%3d", index)).append(")");
+
+			// Status
+			sb.append(" ").append(Strings.padStart(status.toString(), 8, ' '));
+			
+			// ColumnName
+			sb.append(" ").append(columnName != null ? columnName : "(ROOT)");
+
+			// Duration
+			final Stopwatch duration = this.duration;
+			if (duration != null)
+			{
+				sb.append(" - ").append(duration);
+				if (duration.isRunning())
+				{
+					sb.append("(!)");
+				}
+			}
+
+			// Skip reason summary
+			if (status == Status.Skipped && !Check.isEmpty(skipReasonSummary, true))
+			{
+				sb.append(" - ").append(skipReasonSummary);
+			}
+
+			// Callout
+			if (callout != null)
+			{
+				sb.append(" - ").append(callout);
+			}
+
+			// Skip reason details
+			if (status == Status.Skipped && !Check.isEmpty(skipReasonDetails, true))
+			{
+				sb.append(" - ").append(skipReasonDetails);
+			}
+			
+			if(status == Status.Failed && exception != null)
+			{
+				sb.append(" - Exception: ").append(AdempiereException.extractMessage(exception));
+			}
+
+			//
+			return sb.toString();
+		}
+
+		public CalloutStatisticsEntry setStatusStarted()
+		{
+			status = Status.Started;
+			fieldValueOnStart = calloutField == null ? FIELD_VALUE_UNKNOWN : calloutField.getValue();
+			fieldValueOldOnStart = calloutField == null ? FIELD_VALUE_UNKNOWN : calloutField.getValue();
+			duration = Stopwatch.createStarted();
+			_nodeSummary = null; // reset
+			
+			logger.debug("Executing callout {}: {}={} - old={}", callout, calloutField, fieldValueOnStart, fieldValueOldOnStart);
+
 			return this;
 		}
 
-		public StatisticsCollector collectFieldSkipped(final String columnName, final String reason)
+		public CalloutStatisticsEntry setStatusExecuted()
+		{
+			duration = duration == null ? null : duration.stop();
+
+			if (status != Status.Started)
+			{
+				logger.warn("Callout statistics internal bug: changing status from {} to {} for {}", status, Status.Executed, this);
+			}
+
+			status = Status.Executed;
+			_nodeSummary = null; // reset
+
+			return this;
+		}
+
+		public CalloutStatisticsEntry setStatusSkipped(final String skipReasonSummary)
+		{
+			final String skipReasonDetails = null;
+			return setStatusSkipped(skipReasonSummary, skipReasonDetails);
+		}
+
+		public CalloutStatisticsEntry setStatusSkipped(final String skipReasonSummary, final String skipReasonDetails)
+		{
+			if (status != Status.Unknown)
+			{
+				logger.warn("Callout statistics internal bug: changing status from {} to {} for {}", status, Status.Skipped, this);
+			}
+
+			status = Status.Skipped;
+			this.skipReasonSummary = skipReasonSummary;
+			this.skipReasonDetails = skipReasonDetails;
+			_nodeSummary = null; // reset
+
+			return this;
+		}
+
+		public CalloutStatisticsEntry setStatusFailed(final Throwable exception)
+		{
+			duration = duration == null ? null : duration.stop();
+			this.exception = exception;
+
+			status = Status.Failed;
+			_nodeSummary = null; // reset
+
+			return this;
+		}
+
+		public CalloutStatisticsEntry getCreateChild(final ICalloutField field, final ICalloutInstance callout)
+		{
+			final ArrayKey key = Util.mkKey(field.getColumnName(), callout);
+			return children.computeIfAbsent(key, (theKey) -> new CalloutStatisticsEntry(indexSupplier, field, callout));
+		}
+
+		public CalloutStatisticsEntry childSkipped(final String columnName, final String reason)
 		{
 			logger.trace("Skip executing all callouts for {} because {}", columnName, reason);
-			countFieldsSkipped++;
+			countChildFieldsSkipped++;
 			return this;
 		}
 
-		public StatisticsCollector collectFieldSkipped(final ICalloutField calloutField, final String reason)
+		public CalloutStatisticsEntry childSkipped(final ICalloutField field, final String reason)
 		{
-			logger.trace("Skip executing all callouts for {} because {}", calloutField, reason);
-			countFieldsSkipped++;
+			logger.trace("Skip executing all callouts for {} because {}", field, reason);
+			countChildFieldsSkipped++;
 			return this;
 		}
 
-		public StatisticsCollector collectCalloutSkipped(final String columnName, final ICalloutInstance callout, final String reason)
+		public CalloutStatisticsEntry childSkipped(final ICalloutField field, final ICalloutInstance callout, final String reasonSummary)
 		{
-			logger.trace("Skip executing callout {}: {} because {}", columnName, callout, reason);
-			countCalloutsSkipped++;
-			calloutStatistics.put(callout, CalloutStatisticsEntry.skipped(columnName, callout, reason));
-			return this;
+			final String reasonDetails = null;
+			return childSkipped(field, callout, reasonSummary, reasonDetails);
 		}
 
-		public StatisticsCollector collectCalloutExecuted(final String columnName, final ICalloutInstance callout, final Stopwatch calloutDuration)
+		public CalloutStatisticsEntry childSkipped(final ICalloutField field, final ICalloutInstance callout, final String reasonSummary, final String reasonDetails)
 		{
-			countCalloutsExecuted++;
-			calloutStatistics.put(callout, CalloutStatisticsEntry.executed(columnName, callout, calloutDuration));
+			logger.trace("Skip executing callout {} for field {} because {} ({})", callout, field, reasonSummary, reasonDetails);
+
+			getCreateChild(field, callout).setStatusSkipped(reasonSummary, reasonDetails);
 			return this;
-		}
-
-		/**
-		 * Per {@link ICalloutInstance} statistics.
-		 *
-		 * @author metas-dev <dev@metasfresh.com>
-		 *
-		 */
-		private static final class CalloutStatisticsEntry
-		{
-			public static final CalloutStatisticsEntry executed(final String columnName, final ICalloutInstance callout, final Stopwatch calloutDuration)
-			{
-				final long durationNanos;
-				final String durationStr;
-				if (calloutDuration != null)
-				{
-					calloutDuration.stop();
-					durationStr = calloutDuration.toString();
-					durationNanos = calloutDuration.elapsed(TimeUnit.NANOSECONDS);
-				}
-				else
-				{
-					durationStr = "???";
-					durationNanos = Long.MAX_VALUE; // just to jump in developer's eye!
-				}
-				final String summary = "EXECUTED " + columnName + " - " + durationStr + " - " + callout;
-				return new CalloutStatisticsEntry(summary, durationNanos);
-			}
-
-			public static final CalloutStatisticsEntry skipped(final String columnName, final ICalloutInstance callout, final String skipReason)
-			{
-				final String summary = "SKIPPED  " + columnName + " - " + skipReason + " - " + callout;
-				return new CalloutStatisticsEntry(summary, 0);
-			}
-
-			private final String summary;
-			private final long durationNanos;
-
-			private CalloutStatisticsEntry(final String summary, final long durationNanos)
-			{
-				super();
-				this.summary = summary;
-				this.durationNanos = durationNanos;
-			}
-
-			@Override
-			public String toString()
-			{
-				return summary;
-			}
-
-			public long getDurationNanos()
-			{
-				return durationNanos;
-			}
 		}
 	}
+
 }

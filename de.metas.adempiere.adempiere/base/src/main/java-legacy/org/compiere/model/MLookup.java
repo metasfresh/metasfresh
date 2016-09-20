@@ -26,9 +26,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -160,10 +163,11 @@ public final class MLookup extends Lookup implements Serializable
 	 * @param info info
 	 * @param TabNo tab no
 	 */
-	public MLookup(final Properties ctx, final MLookupInfo info, final int TabNo)
+	public MLookup(final Properties ctx, final int adColumnId, final MLookupInfo info, final int TabNo)
 	{
 		super(info.getDisplayType(), info.getWindowNo());
-		this.ctx = ctx; 
+		this.ctx = ctx;
+		this.adColumnId = adColumnId <= 0 ? -1 : adColumnId;
 		m_info = info;
 
 		//
@@ -210,6 +214,7 @@ public final class MLookup extends Lookup implements Serializable
 	private static Integer MINUS_ONE = new Integer(-1);
 
 	private Properties ctx;
+	private final int adColumnId;
 	/** The Lookup Info Value Object */
 	private MLookupInfo m_info;
 	private final IValidationContext m_evalCtx; // metas
@@ -555,12 +560,12 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public String toString()
 	{
-		return "MLookup[" + m_info.getKeyColumn() + ",Column_ID=" + m_info.getAD_Column_ID()
+		return "MLookup[" + m_info.getKeyColumn()
 				+ ",Size=" + size()
 				// // metas: check only the flag and do not call isValidated() method because that method tries to parse the validation code
 				// // which is time consuming when we try to render the grid because java.awt.Container.mixOnShowing() tries to log it
 				// + ",Validated=" + (m_info != null && m_info.IsValidated)
-				+ "-" + getValidation()
+				+ "-" + m_info.getValidationRule()
 				+ "]";
 	}	// toString
 
@@ -577,15 +582,18 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return true;
 		}
-
-		if (obj instanceof MLookup)
+		if(obj == null)
 		{
-			final MLookup ll = (MLookup)obj;
-			if (ll.m_info.getAD_Column_ID() == this.m_info.getAD_Column_ID())
-				return true;
+			return false;
 		}
-		return false;
-	}	// equals
+		if(!(obj instanceof MLookup))
+		{
+			return false;
+		}
+
+		final MLookup other = (MLookup)obj;
+		return adColumnId == other.adColumnId;
+	}
 
 	/**
 	 * Return Size
@@ -669,8 +677,14 @@ public final class MLookup extends Lookup implements Serializable
 	public String getValidation()
 	{
 		final IValidationRule validationRule = m_info.getValidationRule();
-		final String validation = validationRule.getPrefilterWhereClause(m_evalCtx);
-		return validation == null ? "" : validation;
+		final IStringExpression prefilterWhereClause = validationRule.getPrefilterWhereClause();
+		final String validation = prefilterWhereClause.evaluate(m_evalCtx, OnVariableNotFound.ReturnNoResult);
+		if(prefilterWhereClause.isNoResult(validation))
+		{
+			return "";
+		}
+		
+		return validation;
 	}   // getValidation
 
 	/**
@@ -1038,7 +1052,7 @@ public final class MLookup extends Lookup implements Serializable
 
 		if (IValidationContext.NULL != validationCtx)
 		{
-			for (final String parameterName : lookupInfo.getValidationRule().getParameters())
+			for (final String parameterName : lookupInfo.getValidationRule().getAllParameters())
 			{
 				final String parameterValue = validationCtx.get_ValueAsString(parameterName);
 				keys.add(parameterName);
@@ -1070,9 +1084,9 @@ public final class MLookup extends Lookup implements Serializable
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return m_info.getValidationRule().getParameters();
+		return m_info.getValidationRule().getAllParameters();
 	}
 
 	@Override
@@ -1090,9 +1104,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public NamePair suggestValidValue(final NamePair value)
 	{
-		final MLookupInfo lookupInfo = getLookupInfo();
-		final NamePair valueNew = lookupInfo.getValidationRule().getValidValue(value);
-		return valueNew;
+		return null;
 	}
 
 }	// MLookup

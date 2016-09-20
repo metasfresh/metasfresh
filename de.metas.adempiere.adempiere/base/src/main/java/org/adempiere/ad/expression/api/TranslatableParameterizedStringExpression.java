@@ -1,18 +1,21 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.ad.expression.api.impl.StringExpressionsHelper;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 
@@ -41,6 +44,9 @@ import de.metas.i18n.TranslatableParameterizedString;
 /**
  * Similar with {@link TranslatableParameterizedString} but works on {@link IStringExpression}s.
  *
+ * WARNING: this is a pure expression whom evaluation depends only on {@link Evaluatee} with one exception, the {@link Language#isBaseLanguage(String)} method used to determine if a given language is
+ * the base language.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -48,7 +54,34 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 {
 	public static final TranslatableParameterizedStringExpression of(final String adLanguageParamName, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
 	{
-		return new TranslatableParameterizedStringExpression(adLanguageParamName, expressionBaseLang, expressionTrl);
+		final CtxName adLanguageParam = CtxName.parse(adLanguageParamName);
+		return new TranslatableParameterizedStringExpression(adLanguageParam, expressionBaseLang, expressionTrl);
+	}
+
+	public static final IStringExpression of(final TranslatableParameterizedString translatableString)
+	{
+		if (translatableString == TranslatableParameterizedString.EMPTY)
+		{
+			return NullStringExpression.instance;
+		}
+
+		final CtxName adLanguageParam = CtxName.parseWithMarkers(translatableString.getAD_LanguageParamName());
+		return of(adLanguageParam, translatableString.getStringBaseLanguage(), translatableString.getStringTrlPattern());
+	}
+
+	public static final IStringExpression of(final CtxName adLanguageParam, final String expressionBaseLang, final String expressionTrl)
+	{
+		if (Objects.equals(expressionBaseLang, expressionTrl))
+		{
+			// => we have no translation, just a constant string expression
+			return ConstantStringExpression.of(expressionBaseLang);
+		}
+
+		// NOTE: we need to compile the expressions because we don't know if they are constant or not
+		final IStringExpression aexpressionBaseLang = StringExpressionCompiler.instance.compile(expressionBaseLang);
+		final IStringExpression aexpressionTrl = StringExpressionCompiler.instance.compile(expressionTrl);
+
+		return new TranslatableParameterizedStringExpression(adLanguageParam, aexpressionBaseLang, aexpressionTrl);
 	}
 
 	public static final IStringExpression getExpressionBaseLang(final IStringExpression expression)
@@ -89,15 +122,15 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	private final IStringExpression expressionBaseLang;
 	private final IStringExpression expressionTrl;
-	private final String adLanguageParamName;
-	private final List<String> parameters;
+	private final CtxName adLanguageParam;
+	private final Set<String> parameters;
 
-	public TranslatableParameterizedStringExpression(final String adLanguageParamName, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
+	private TranslatableParameterizedStringExpression(final CtxName adLanguageParam, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
 	{
 		super();
 
-		Check.assumeNotEmpty(adLanguageParamName, "adLanguageParamName is not empty");
-		this.adLanguageParamName = adLanguageParamName;
+		Check.assumeNotNull(adLanguageParam, "Parameter adLanguageParam is not null");
+		this.adLanguageParam = adLanguageParam;
 
 		Check.assumeNotNull(expressionBaseLang, "Parameter expressionBaseLang is not null");
 		this.expressionBaseLang = expressionBaseLang;
@@ -105,22 +138,51 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 		Check.assumeNotNull(expressionTrl, "Parameter expressionTrl is not null");
 		this.expressionTrl = expressionTrl;
 
-		final Set<String> parameters = new LinkedHashSet<>();
-		parameters.addAll(expressionBaseLang.getParameters());
-		parameters.addAll(expressionTrl.getParameters());
-		parameters.add(adLanguageParamName);
-
-		this.parameters = ImmutableList.copyOf(parameters);
+		//
+		// Expression parameters: all parameters from both expressions, plus the AD_Language parameter
+		this.parameters = ImmutableSet.<String>builder()
+				.addAll(expressionBaseLang.getParameters())
+				.addAll(expressionTrl.getParameters())
+				.add(adLanguageParam.getName())
+				.build();
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("baseLang", expressionBaseLang)
-				.add("trl", expressionTrl)
-				.add("adLanguageParamName", adLanguageParamName)
+		// NOTE: we display only the base language expression
+		// because we want to have a quick human readable string representation,
+		// mainly when this expression is part of a composite
+		return MoreObjects.toStringHelper("TRL")
+				.addValue(expressionBaseLang)
 				.toString();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(adLanguageParam, expressionBaseLang, expressionTrl);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (!getClass().equals(obj.getClass()))
+		{
+			return false;
+		}
+		final TranslatableParameterizedStringExpression other = (TranslatableParameterizedStringExpression)obj;
+		return Objects.equals(adLanguageParam, other.adLanguageParam)
+				&& Objects.equals(expressionBaseLang, other.expressionBaseLang)
+				&& Objects.equals(expressionTrl, other.expressionTrl);
 	}
 
 	public IStringExpression getExpressionBaseLang()
@@ -135,7 +197,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	public String getAD_LanguageParamName()
 	{
-		return adLanguageParamName;
+		return adLanguageParam.getName();
 	}
 
 	@Override
@@ -151,7 +213,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return parameters;
 	}
@@ -159,31 +221,81 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	@Override
 	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
-		final IStringExpression expressionEffective;
-		final String adLanguage = ctx.get_ValueAsString(adLanguageParamName);
-		if (Language.isBaseLanguage(adLanguage))
+		try
 		{
-			expressionEffective = expressionBaseLang;
-		}
-		else
-		{
-			expressionEffective = expressionTrl;
-		}
+			//
+			// Evaluate the adLanguage parameter
+			final OnVariableNotFound adLanguageOnVariableNoFound = getOnVariableNotFoundForInternalParameter(onVariableNotFound);
+			final String adLanguage = StringExpressionsHelper.evaluateParam(adLanguageParam, ctx, adLanguageOnVariableNoFound);
+			if (adLanguage == null || adLanguage == IStringExpression.EMPTY_RESULT)
+			{
+				return IStringExpression.EMPTY_RESULT;
+			}
+			else if (adLanguage.isEmpty() && onVariableNotFound == OnVariableNotFound.Empty)
+			{
+				return "";
+			}
 
-		return expressionEffective.evaluate(ctx, onVariableNotFound);
+			final IStringExpression expressionEffective;
+			if (Language.isBaseLanguage(adLanguage))
+			{
+				expressionEffective = expressionBaseLang;
+			}
+			else
+			{
+				expressionEffective = expressionTrl;
+			}
+
+			return expressionEffective.evaluate(ctx, onVariableNotFound);
+		}
+		catch (final Exception e)
+		{
+			throw ExpressionEvaluationException.wrapIfNeeded(e)
+					.addExpression(this);
+		}
 	}
 
-	@Override
-	public List<Object> getExpressionChunks()
+	private static final OnVariableNotFound getOnVariableNotFoundForInternalParameter(final OnVariableNotFound onVariableNotFound)
 	{
-		throw new UnsupportedOperationException();
+		switch (onVariableNotFound)
+		{
+			case Preserve:
+				// Preserve is not supported because we don't know which expression to pick if the deciding parameter is not determined
+				return OnVariableNotFound.Fail;
+			default:
+				return onVariableNotFound;
+		}
 	}
 
 	@Override
 	public IStringExpression resolvePartial(final Evaluatee ctx)
 	{
-		final IStringExpression expressionBaseLangNew = expressionBaseLang.resolvePartial(ctx);
-		final IStringExpression expressionTrlNew = expressionTrl.resolvePartial(Evaluatees.excludingVariables(ctx, adLanguageParamName));
-		return new TranslatableParameterizedStringExpression(adLanguageParamName, expressionBaseLangNew, expressionTrlNew);
+		try
+		{
+			boolean changed = false;
+			final IStringExpression expressionBaseLangNew = expressionBaseLang.resolvePartial(ctx);
+			if (!expressionBaseLang.equals(expressionBaseLangNew))
+			{
+				changed = true;
+			}
+
+			final IStringExpression expressionTrlNew = expressionTrl.resolvePartial(Evaluatees.excludingVariables(ctx, adLanguageParam.getName()));
+			if (!changed && !expressionTrl.equals(expressionTrlNew))
+			{
+				changed = true;
+			}
+
+			if (!changed)
+			{
+				return this;
+			}
+
+			return new TranslatableParameterizedStringExpression(adLanguageParam, expressionBaseLangNew, expressionTrlNew);
+		}
+		catch (final Exception e)
+		{
+			throw ExpressionEvaluationException.wrapIfNeeded(e)
+					.addExpression(this);
+		}
 	}
 }

@@ -258,7 +258,7 @@ public class SwatValidator implements ModelValidator
 
 		JRClient.get(); // make sure Jasper client is loaded and initialized
 
-		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.class);
+		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.instance);
 
 		// task 06295: those two are implemented in de.metas.adempiere.adempiere, but we don't have such a nice central MV in there.
 		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ResetSchedulerState());
