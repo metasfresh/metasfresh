@@ -887,3 +887,112 @@ table .rdtPicker table td, .rdtPicker table th {
 .input-dropdown-item-title {
     font-weight: 400;
 }
+
+
+/* Date range datepicker custom styles */
+
+.daterangepicker td.in-range {
+    background-color: $brand-super-light-color;
+}
+
+.daterangepicker td.active,
+.daterangepicker td.active:hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.cancelBtn {
+    border: solid 1px $brand-light-color;
+    color: $brand-font-color-secondary;
+    background-color: transparent;
+}
+
+.applyBtn {
+    color: #fff;
+    background-color: #9aafbd;
+    border-color: #9aafbd;
+}
+
+.applyBtn:hover {
+    background-color: color(#9aafbd lightness(45%));
+    border-color: color(#9aafbd lightness(45%));
+}
+
+.ranges li {
+    background-color: $brand-super-light-color;
+    color: $brand-font-color;
+}
+
+.ranges li:hover {
+    background-color: $brand-color-primary;
+    border: 1px solid $brand-color-primary;
+}
+
+.ranges li.active {
+    background-color: $brand-color-primary;
+    border: 1px solid $brand-color-primary;
+}
+
+.daterangepicker .input-mini.active {
+    border: 1px solid $brand-color-primary;
+}
+
+.dropdown-menu.daterangepicker {
+    border: 1px solid $brand-light-color;
+}
+
+.daterangepicker td,
+.daterangepicker th {
+    font-size: .8rem;
+}
+
+.daterangepicker .calendar th,
+.daterangepicker .calendar td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.daterangepicker .next.available {
+    background: $brand-light-color;
+}
+
+.daterangepicker .next.available i {
+    position: relative;
+}
+.daterangepicker .next.available i {
+    /*position: absolute;
+    content: '›';
+    color: #fff;
+    width: 8px;
+    height: 8px;
+    top: 50%;
+    left: 50%;
+    font-family: meta;
+    margin-top: -4px;
+    margin-left: -4px;*/
+}
+
+.daterangepicker .next.available:hover {
+    background: $brand-color-primary;
+}
+
+.daterangepicker .prev.available {
+    background: $brand-light-color;
+}
+
+.daterangepicker .prev.available:hover {
+    background: $brand-color-primary;
+}
+
+.daterangepicker .prev.available i:after {
+    /*position: absolute;
+    content: '›';
+    color: #fff;
+    width: 8px;
+    height: 8px;
+    top: 50%;
+    left: 50%;
+    font-family: meta;
+    margin-top: -4px;
+    margin-left: -4px;*/
+}
