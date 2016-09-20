@@ -1,6 +1,7 @@
 package de.metas.fresh.mrp_productinfo.async.spi.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -8,10 +9,12 @@ import java.util.TreeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DB;
 
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
@@ -31,11 +34,11 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,6 +66,12 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 		{
 			return item.getModel();
 		}
+
+		@Override
+		protected Map<String, Object> extractParametersFromItem(final IMRPProductInfoSelector item)
+		{
+			return item.asMap();
+		}
 	};
 
 	public static void schedule(final Object item)
@@ -78,10 +87,15 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage,
+	public Result processWorkPackage(
+			final I_C_Queue_WorkPackage workpackage,
 			final String localTrxName)
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
+
+		final IParams params = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
+
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
 
 		final List<Object> items = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
@@ -91,7 +105,7 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 
 		for (final Object item : items)
 		{
-			final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNull(item);
+			final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNull(item, params);
 			if (selector == null)
 			{
 				continue;
