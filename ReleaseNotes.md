@@ -10,6 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.36.36 (2016-39)
+
+upcoming
+
+## Features
+
+## Fixes
+ * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
+
 # metasfresh 4.36.35 (2016-38)
 
 this week's RC
