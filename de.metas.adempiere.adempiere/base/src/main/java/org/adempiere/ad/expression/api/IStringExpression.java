@@ -87,4 +87,14 @@ public interface IStringExpression extends IExpression<String>
 	{
 		return CachedStringExpression.wrapIfPossible(this);
 	}
+
+	/**
+	 * @return same as {@link #toString()} but the whole string representation will be on one line (new lines are stripped)
+	 */
+	default String toOneLineString()
+	{
+		return toString()
+				.replace("\r", "")
+				.replace("\n", "");
+	}
 }
