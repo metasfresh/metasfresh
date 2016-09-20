@@ -15,7 +15,7 @@ Here come the actual release notes:
 upcoming
 
 ## Features
- * #367 Invoice candidates invoicing Pricelist not found
+ * #395 Add Description in Jasper Invoice Vendor
  * ME-46 Support Ubuntu 16.04 server with metasfresh server installer
  * #369 request report
  * #361 Request change for customer service
@@ -34,6 +34,7 @@ upcoming
  * #7 provide "grid-align" for layout elements
 
 ## Fixes
+ * #367 Invoice candidates invoicing Pricelist not found
  * #380 duplicate lines in inout
  * #348 Sort tabs shall consider Link column and parent link column if set
  * #330 Process's RefreshAllAfterExecution does not work when the record was moved
@@ -46,10 +47,10 @@ upcoming
  * #12 Data not shown in SubTab
  * #311 Payment Selection Exception when not able to find bpartner account
  * #378 Bug in validation of field docsubtype
+ * #262 sales and purchase tracking
+   - minor tweaks and fixes   
 
 # metasfresh 4.35.34 (2016-37)
-
-this week's RC
 
 ## Features
  * FRESH-112 metasfresh web 

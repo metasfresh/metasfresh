@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -239,25 +238,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
-		final int taxId = Services.get(ITaxBL.class).getTax(ctx
-				, ic
-				, taxCategoryId
-				, productId
-				, chargeId
-				, billDate
-				, shipDate
-				, adOrgId
-				, inOut.getM_Warehouse()
-				, locationId // billC_BPartner_Location_ID
+		final int taxId = Services.get(ITaxBL.class).getTax(ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
 				, locationId // shipC_BPartner_Location_ID
-				, isSOTrx
-				, trxName);
+				, isSOTrx, trxName);
 		ic.setC_Tax_ID(taxId);
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		InterfaceWrapperHelper.save(ic);
-
 
 		// set Quality Issue Percentage Override
 
@@ -265,7 +253,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
-
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
@@ -320,7 +307,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * Qty Sign Multiplier
 	 *
 	 * @param ic
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>+1 on regular shipment/receipt
 	 *         <li>-1 on material returns
 	 *         </ul>
@@ -497,19 +485,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public void setPriceActual(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
-		final IPricingResult pricingResult = inOutBL.getProductPrice(inOutLine);
-
-		ic.setPriceActual(pricingResult.getPriceStd());
-		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
-		if (ic.getC_Order_ID() > 0)
-		{
-			// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
-			ic.setIsTaxIncluded(ic.getC_Order().isTaxIncluded());
-		}
-		else
-		{
-			ic.setIsTaxIncluded(pricingResult.isTaxIncluded());
-		}
+		setPricingInfo(ic, inOutLine);
 	}
 
 	/**
@@ -539,7 +515,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090 when we set PriceActual, we shall also set PriceUOM.
 			ic.setDiscount(pricingResult.getDiscount());
 			ic.setC_Currency_ID(pricingResult.getC_Currency_ID());
-			ic.setIsTaxIncluded(pricingResult.isTaxIncluded());
+
+			if (ic.getC_Order_ID() > 0)
+			{
+				// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
+				ic.setIsTaxIncluded(ic.getC_Order().isTaxIncluded());
+			}
+			else
+			{
+				ic.setIsTaxIncluded(pricingResult.isTaxIncluded());
+			}
 		}
 		catch (final ProductNotOnPriceListException e)
 		{

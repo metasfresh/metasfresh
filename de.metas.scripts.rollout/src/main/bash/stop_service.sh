@@ -6,6 +6,12 @@
 #
 
 # IMPORTANT: tools.sh requires bash, so if you source it here, make sure that this script also uses bash
-. ./tools.sh
+TOOLS=$(dirname $0)/tools.sh
+if [ -f $TOOLS ] && [ -r $TOOLS ]; then
+	source $TOOLS
+else
+	echo "Missing file ${TOOLS}"
+	exit 1
+fi
 
 stop_metasfresh
