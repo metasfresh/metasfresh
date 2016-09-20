@@ -256,13 +256,31 @@ class Table extends Component {
         }, 0);
     }
     getProductRange = (id) => {
-        const {rowData, tabid} = this.props;
+        const {rowData, tabid, keyProperty} = this.props;
+        let arrayIndex;
+
+        let selectIdA;
+        let selectIdB;
+
+        if(keyProperty === 'id'){
+            arrayIndex = rowData[tabid].map(function(item){return item.id});
+            selectIdA = arrayIndex.findIndex(x => x === id)
+            selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0])
+        }else {
+            selectIdA = Object.keys(rowData[tabid]).findIndex(x => x === id)
+            selectIdB = Object.keys(rowData[tabid]).findIndex(x => x === this.state.selected[0])
+        }
+
         let selected = [
-            Object.keys(rowData[tabid]).findIndex(x => x === id),
-            Object.keys(rowData[tabid]).findIndex(x => x === this.state.selected[0])
+            selectIdA,
+            selectIdB
         ];
         selected.sort((a,b) => a - b);
-        return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
+            if(keyProperty === 'id'){
+                return arrayIndex.slice(selected[0], selected[1]+1);
+            }else {
+                return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
+            }
     }
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
@@ -279,6 +297,7 @@ class Table extends Component {
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
+                // console.log(keyProperty);
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
