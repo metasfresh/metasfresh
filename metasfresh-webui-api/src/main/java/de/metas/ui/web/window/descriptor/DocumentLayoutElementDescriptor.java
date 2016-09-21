@@ -283,16 +283,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			{
 				return null;
 			}
-			switch (widgetType)
-			{
-				case Integer:
-					return 0;
-				case CostPrice:
-				case Amount:
-					return 2;
-				default:
-					return null;
-			}
+			return widgetType.getStandardNumberPrecision();
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)

@@ -83,4 +83,20 @@ public enum DocumentFieldWidgetType
 	{
 		return gridAlign;
 	}
+	
+	public final Integer getStandardNumberPrecision()
+	{
+		// FIXME: hardcoded standard number precision
+		
+		switch (this)
+		{
+			case Integer:
+				return 0;
+			case CostPrice:
+			case Amount:
+				return 2;
+			default:
+				return null;
+		}
+	}
 }
