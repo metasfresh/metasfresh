@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.math.BigDecimal;
+
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -48,6 +50,12 @@ public final class Values
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			return JSONLookupValue.ofLookupValue(lookupValue);
+		}
+		else if (value instanceof BigDecimal)
+		{
+			// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
+			// we need to provide the BigDecimals as Strings.
+			return value.toString();
 		}
 		else
 		{

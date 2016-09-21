@@ -1,9 +1,11 @@
 package de.metas.ui.web.window.model;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.util.NumberUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -70,10 +72,10 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		super();
 		this.descriptor = descriptor;
 		_document = document;
-		
+
 		final DocumentFieldDataBindingDescriptor dataBinding = descriptor.getDataBinding().orElse(null);
 		lookupDataSource = dataBinding == null ? null : dataBinding.createLookupDataSource();
-		
+
 		_valid = DocumentValidStatus.inititalInvalid();
 	}
 
@@ -138,7 +140,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public void setInitialValue(final Object value)
 	{
-		final Object valueNew = convertToValueClass(value);
+		final Object valueNew = convertToValueClassAndCorrect(value);
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("setInitialValue: {} = {}", getFieldName(), valueNew);
@@ -168,7 +170,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public void setValue(final Object value)
 	{
-		final Object valueNew = convertToValueClass(value);
+		final Object valueNew = convertToValueClassAndCorrect(value);
 		final Object valueOld = _value;
 
 		if (DataTypes.equals(valueNew, valueOld))
@@ -230,6 +232,34 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	{
 		final Class<?> targetType = descriptor.getValueClass();
 		return convertToValueClass(value, targetType);
+	}
+
+	/**
+	 * Converts given value to field's type and after that applies various corrections like precision in case of numbers with precision.
+	 * 
+	 * @param value
+	 * @return value converted and corrected
+	 */
+	private Object convertToValueClassAndCorrect(final Object value)
+	{
+		final Object valueConv = convertToValueClass(value);
+
+		//
+		// Apply corrections if needed
+		//
+
+		// Apply number precision
+		if (valueConv instanceof BigDecimal)
+		{
+			final Integer precision = getDescriptor().getWidgetType().getStandardNumberPrecision();
+			if (precision != null)
+			{
+				final BigDecimal valueBDCorrected = NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
+				return valueBDCorrected;
+			}
+		}
+
+		return valueConv;
 	}
 
 	private final <T> T convertToValueClass(final Object value, final Class<T> targetType)
@@ -295,7 +325,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean isLookupValuesStale()
 	{
-		if(lookupDataSource == null)
+		if (lookupDataSource == null)
 		{
 			return false;
 		}
@@ -309,10 +339,10 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		{
 			return false;
 		}
-		
+
 		lookupValuesStaled = true;
 		logger.trace("Marked {} as staled (triggeringFieldName={})", this, triggeringFieldName);
-		
+
 		return true;
 	}
 
@@ -323,7 +353,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		
+
 		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx, LookupDataSource.DEFAULT_PageLength);
 		lookupValuesStaled = false;
