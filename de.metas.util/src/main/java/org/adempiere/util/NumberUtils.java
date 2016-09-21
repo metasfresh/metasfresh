@@ -22,8 +22,8 @@ package org.adempiere.util;
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Number Utils
@@ -73,6 +73,31 @@ public final class NumberUtils
 	}
 
 	/**
+	 * Converts given <code>bd</code> to a big decimal which has at least <code>minScale</code> decimals.
+	 * 
+	 * If it has more decimals (and not trailing zeros) the value will not be changed.
+	 * 
+	 * @param bd
+	 * @param minScale
+	 */
+	public static final BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
+	{
+		BigDecimal result = bd;
+		if (result.scale() < minScale)
+		{
+			return result.setScale(minScale, RoundingMode.UNNECESSARY);
+		}
+
+		result = result.stripTrailingZeros();
+		if (result.scale() < minScale)
+		{
+			return result.setScale(minScale, RoundingMode.UNNECESSARY);
+		}
+
+		return result;
+	}
+
+	/**
 	 * Creates the error margin absolute value for given scale.
 	 * 
 	 * e.g.
@@ -95,14 +120,15 @@ public final class NumberUtils
 		}
 		return BigDecimal.ONE.movePointLeft(scale);
 	}
-	
+
 	/**
 	 * Converts given <code>value</code> to BigDecimal.
 	 * 
 	 * @param value
 	 * @param defaultValue
-	 * @return <ul>
-	 *         <li> {@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
+	 * @return
+	 * 		<ul>
+	 *         <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
 	 */
@@ -138,7 +164,8 @@ public final class NumberUtils
 	 * 
 	 * @param value
 	 * @param defaultValue
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>integer value if the value is a integer or its string representation can be converted to integer
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 *         </ul>
