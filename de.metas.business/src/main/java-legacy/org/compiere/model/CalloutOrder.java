@@ -405,8 +405,15 @@ public class CalloutOrder extends CalloutEngine
 				// metas (2009 0027 G1): setting billTo location. Why has it
 				// been selected above when it isn't used?
 				final int billTo_ID = rs.getInt("Bill_Location_ID");
-				order.setBill_Location_ID(billTo_ID <= 0 ? null : billTo_ID);
-						// metas: end
+				if(billTo_ID <= 0)
+				{
+					order.setBill_Location(null);
+				}
+				else
+				{
+					order.setBill_Location_ID(billTo_ID);
+				}
+				// metas: end
 
 				// metas: Einkaufsgenossenschaft
 				// TODO auskommentiert, weil Aufruf macht nur aus C_OrderLine heraus Sinn
