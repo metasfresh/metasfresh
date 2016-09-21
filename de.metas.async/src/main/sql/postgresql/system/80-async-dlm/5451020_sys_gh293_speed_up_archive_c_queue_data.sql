@@ -1,6 +1,7 @@
+﻿
 -- Function: dlm.archive_c_queue_data(integer, integer)
 
--- DROP FUNCTION dlm.archive_c_queue_data(integer, integer);
+DROP FUNCTION IF EXISTS dlm.archive_c_queue_data(integer, integer);
 CREATE OR REPLACE FUNCTION dlm.archive_c_queue_data(
     IN daysback integer,
     IN limitrecords integer)
