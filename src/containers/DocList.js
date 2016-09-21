@@ -19,7 +19,6 @@ import {
 class DocList extends Component {
     constructor(props){
         super(props);
-        console.log('ss');
 
         this.state = {
             page: 1,

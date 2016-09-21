@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import update from 'react-addons-update';
+import {push} from 'react-router-redux';
 
 import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -27,6 +28,11 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false
         }
+    }
+
+    linkToPage = (page) => {
+        const {dispatch} = this.props;
+        dispatch(push("/window/"+page));
     }
 
     handleSubheaderOpen = () => {
@@ -57,7 +63,7 @@ class Header extends Component {
         }else{
             toggelBreadcrumb();
         }
-      
+
     }
     componentDidMount() {
         document.addEventListener('scroll', this.handleScroll);
@@ -82,7 +88,7 @@ class Header extends Component {
     }
 
     renderBreadcrumb = () => {
-        const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId} = this.props;
+        const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
         const {menuOverlay} = this.state;
         return (
             <span className="header-breadcrumb">
@@ -90,10 +96,10 @@ class Header extends Component {
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
                         <span
-                            className="menu-overlay-expand"
-                            onClick={e => this.handleMenuOverlay(e, item.nodeId)}
+                            className={ (!item.children.elementId || windowType ? "menu-overlay-expand " : '') + (item.children.captionBreadcrumb === "Menu" ? "ico-home" : "")}
+                            onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
-                            {item && item.children && item.children.captionBreadcrumb}
+                            {(item.children.captionBreadcrumb === "Menu") ? "" : item && item.children && item.children.captionBreadcrumb}
                         </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
@@ -101,6 +107,7 @@ class Header extends Component {
                                 node={item}
                                 onClickOutside={e => this.handleMenuOverlay(e, "")}
                                 disableOnClickOutside={menuOverlay !== item.nodeId}
+                                siteName={siteName}
                             />
                         }
                     </span>
@@ -121,6 +128,13 @@ class Header extends Component {
                 {docSummaryData && <div className="header-breadcrumb">
                     <span>{docSummaryData.value}</span>
                 </div>}
+
+                {siteName && <span className="divider">/</span>}
+
+                {siteName && <div className="header-breadcrumb">
+                    <span>{siteName}</span>
+                </div>}
+
             </span>
         )
     }

@@ -18,7 +18,7 @@ export function nodePathsRequest(nodeId, limit) {
 }
 
 export function elementPathRequest(pathType, elementId) {
-    return dispatch => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId);
+    return dispatch => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
 }
 
 export function queryPathsRequest(query, limit) {
@@ -71,6 +71,7 @@ export function getWindowBreadcrumb(id){
         });
     }
 }
+
 
 //END OF THUNK ACTIONS
 

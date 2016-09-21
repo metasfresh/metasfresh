@@ -976,3 +976,15 @@ table .rdtPicker table td, .rdtPicker table th {
 th {
     font-weight: 500;
 }
+
+.ico-home {
+    width: 20px;
+    height: 14px;
+    min-width: 20px;
+    background: url('../images/icon-menu.png') no-repeat center;
+    display: inline-block;
+}
+
+.header-breadcrumb > span:first-of-type > .ico-home {
+    min-width: 20px;
+}

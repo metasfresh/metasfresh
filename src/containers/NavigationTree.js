@@ -9,8 +9,10 @@ import {push} from 'react-router-redux';
 
 import {
     rootRequest,
-    nodePathsRequest
+    nodePathsRequest,
+    getWindowBreadcrumb
  } from '../actions/MenuActions';
+
 
 class NavigationTree extends Component {
     constructor(props){
@@ -24,8 +26,12 @@ class NavigationTree extends Component {
         };
     }
 
-    componentDidMount(){
+    componentDidMount = () => {
+        const {dispatch, windowType} = this.props;
+
         this.getData();
+        // dispatch(getRootMenu());
+        dispatch(getWindowBreadcrumb("143"));
     }
 
     getData = () => {
@@ -91,7 +97,8 @@ class NavigationTree extends Component {
         return (
           <div className="map-tree-wrapper">
               <Header
-                  breadcrumb={breadcrumb}
+                  breadcrumb={breadcrumb.slice(0,1)}
+                  siteName = {"Sitemap"}
               />
               {connectionError && <ErrorScreen />}
 
@@ -106,10 +113,37 @@ class NavigationTree extends Component {
     }
 }
 
+function mapStateToProps(state) {
+    const { windowHandler, menuHandler } = state;
+    const {
+        master,
+        connectionError,
+        modal
+    } = windowHandler || {
+        master: {},
+        connectionError: false,
+        modal: false
+    }
+
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
+    return {
+        master,
+        connectionError,
+        breadcrumb,
+        modal
+    }
+}
+
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-NavigationTree = connect()(NavigationTree);
+NavigationTree = connect(mapStateToProps)(NavigationTree);
 
 export default NavigationTree
