@@ -90,7 +90,7 @@ public interface IWindowRestController
 			, List<JSONDocumentQueryFilter> jsonFilters //
 	);
 
-	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength);
+	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength, final String orderBysListStr);
 
 	void deleteView(String viewId);
 }

@@ -22,6 +22,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
@@ -117,6 +118,7 @@ public class DebugRestController
 	{
 		return documentViewsRepo.getViews()
 				.stream()
+				.map(DocumentViewResult::of)
 				.map(JSONDocumentViewResult::of)
 				.collect(GuavaCollectors.toImmutableList());
 	}

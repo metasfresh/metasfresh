@@ -14,7 +14,6 @@ import org.compiere.util.Evaluatees;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -41,6 +40,14 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  * #L%
  */
 
+/**
+ * Document query.
+ * 
+ * NOTE: this is not serializable, so please DO NOT CACHE IT
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class DocumentQuery
 {
 	public static final Builder builder(final DocumentEntityDescriptor entityDescriptor)
@@ -59,6 +66,7 @@ public final class DocumentQuery
 	private final Document parentDocument;
 
 	private final List<DocumentQueryFilter> filters;
+	private final List<DocumentQueryOrderBy> orderBys;
 
 	private final int firstRow;
 	private final int pageLength;
@@ -75,6 +83,7 @@ public final class DocumentQuery
 		parentDocument = builder.parentDocument;
 
 		filters = builder.filters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.filters);
+		orderBys = builder.orderBys == null ? ImmutableList.of() : ImmutableList.copyOf(builder.orderBys);
 
 		firstRow = builder.firstRow;
 		pageLength = builder.pageLength;
@@ -143,10 +152,10 @@ public final class DocumentQuery
 
 	private Evaluatee createEvaluationContext()
 	{
-		final Evaluatee evalCtx = Evaluatees.ofMap(ImmutableMap.<String, String> builder()
+		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(Env.CTXNAME_AD_Language, getAD_Language())
 				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKey())
-				.build());
+				.build();
 
 		final Evaluatee parentEvalCtx;
 		if (parentDocument != null)
@@ -180,6 +189,11 @@ public final class DocumentQuery
 		return filters;
 	}
 
+	public List<DocumentQueryOrderBy> getOrderBys()
+	{
+		return orderBys;
+	}
+
 	public int getFirstRow()
 	{
 		return firstRow;
@@ -201,6 +215,7 @@ public final class DocumentQuery
 		private Document parentDocument;
 		private int recordId = -1;
 		public List<DocumentQueryFilter> filters = null;
+		public List<DocumentQueryOrderBy> orderBys = null;
 		private int firstRow = -1;
 		private int pageLength = -1;
 		public List<DocumentFieldDescriptor> viewFields;
@@ -252,6 +267,18 @@ public final class DocumentQuery
 				filters = new ArrayList<>();
 			}
 			filters.addAll(filtersToAdd);
+			return this;
+		}
+
+		public Builder addOrderBy(final DocumentQueryOrderBy orderBy)
+		{
+			Check.assumeNotNull(orderBy, "Parameter orderBy is not null");
+
+			if (orderBys == null)
+			{
+				orderBys = new ArrayList<>();
+			}
+			orderBys.add(orderBy);
 			return this;
 		}
 

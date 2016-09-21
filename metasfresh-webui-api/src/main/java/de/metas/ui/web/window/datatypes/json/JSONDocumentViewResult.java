@@ -11,10 +11,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.model.IDocumentView;
+import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
 
 /*
@@ -42,74 +43,57 @@ import de.metas.ui.web.window.model.IDocumentViewSelection;
 @SuppressWarnings("serial")
 public final class JSONDocumentViewResult implements Serializable
 {
-	public static final JSONDocumentViewResult of(
-			final IDocumentViewSelection view //
-			, final Integer firstRow //
-			, final Integer pageLength //
-			, final List<IDocumentView> result //
-	)
+	public static final JSONDocumentViewResult of(final DocumentViewResult result)
 	{
-		return new JSONDocumentViewResult(
-				view //
-				, firstRow //
-				, pageLength //
-				, JSONDocument.ofDocumentViewList(result) //
-		);
+		return new JSONDocumentViewResult(result);
 	}
 
-	public static final JSONDocumentViewResult of(
-			final IDocumentViewSelection view //
-	)
-	{
-		final Integer firstRow = null;
-		final Integer pageLength = null;
-		final List<JSONDocument> result = null;
-		return new JSONDocumentViewResult(view, firstRow, pageLength, result);
-	}
-
-	@JsonProperty("viewId")
+	@JsonProperty(value = "viewId", index = 10)
 	private final String viewId;
 
-	@JsonProperty("type")
+	@JsonProperty(value = "type", index = 20)
 	private final int AD_Window_ID;
 
-	@JsonProperty("size")
+	@JsonProperty(value = "size", index = 30)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer size;
+	private final Long size;
 
 	//
 	// Result
-	@JsonProperty("firstRow")
+	@JsonProperty(value = "firstRow", index = 40)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer firstRow;
 
-	@JsonProperty("pageLength")
+	@JsonProperty(value = "pageLength", index = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
 
-	@JsonProperty("result")
+	@JsonProperty(value = "orderBy", index = 60)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentViewOrderBy> orderBy;
+
+	@JsonProperty(value = "result", index = 70)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocument> result;
 
 	private final Map<String, Object> debugPropeties;
 
-	public JSONDocumentViewResult(
-			final IDocumentViewSelection view //
-			, final Integer firstRow //
-			, final Integer pageLength //
-			, final List<JSONDocument> result //
-	)
+	public JSONDocumentViewResult(final DocumentViewResult viewResult)
 	{
 		super();
+		final IDocumentViewSelection view = viewResult.getView();
 		viewId = view.getViewId();
 		AD_Window_ID = view.getAD_Window_ID();
 
-		final int size = view.size();
+		final long size = view.size();
 		this.size = size >= 0 ? size : null;
 
-		this.firstRow = firstRow;
-		this.pageLength = pageLength;
-		this.result = result;
+		firstRow = viewResult.getFirstRow();
+		pageLength = viewResult.getPageLength();
+
+		orderBy = JSONDocumentViewOrderBy.ofList(viewResult.getOrderBys());
+
+		result = JSONDocument.ofDocumentViewList(viewResult.getPage());
 
 		if (WindowConstants.isProtocolDebugging())
 		{
@@ -125,10 +109,11 @@ public final class JSONDocumentViewResult implements Serializable
 	private JSONDocumentViewResult( //
 			@JsonProperty("viewId") final String viewId //
 			, @JsonProperty("type") final int adWindowId //
-			, @JsonProperty("size") final Integer size //
+			, @JsonProperty("size") final Long size //
 			, @JsonProperty("result") final List<JSONDocument> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
+			, @JsonProperty("orderBy") final List<JSONDocumentViewOrderBy> orderBy //
 	)
 	{
 		super();
@@ -138,6 +123,8 @@ public final class JSONDocumentViewResult implements Serializable
 
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
+		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
+
 		this.result = result;
 
 		debugPropeties = new HashMap<>();
@@ -167,7 +154,7 @@ public final class JSONDocumentViewResult implements Serializable
 		return AD_Window_ID;
 	}
 
-	public Integer getSize()
+	public Long getSize()
 	{
 		return size;
 	}

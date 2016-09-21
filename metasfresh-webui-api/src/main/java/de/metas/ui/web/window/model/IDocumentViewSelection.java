@@ -30,7 +30,10 @@ public interface IDocumentViewSelection
 
 	int getAD_Window_ID();
 
-	int size();
+	long size();
 
-	List<IDocumentView> getPage(int firstRow, int pageLength);
+	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
+
+	List<DocumentQueryOrderBy> getDefaultOrderBys();
+
 }

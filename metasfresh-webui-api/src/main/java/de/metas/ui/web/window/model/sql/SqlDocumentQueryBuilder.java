@@ -10,13 +10,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryFilter;
 import de.metas.ui.web.window.model.DocumentQueryFilterParam;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -49,6 +50,7 @@ class SqlDocumentQueryBuilder
 
 	private final DocumentQuery query;
 
+	private final DocumentEntityDescriptor entityDescriptor;
 	private final SqlDocumentEntityDataBindingDescriptor entityBinding;
 
 	private IStringExpression _sqlWhereExpr;
@@ -56,11 +58,12 @@ class SqlDocumentQueryBuilder
 	private IStringExpression _sqlExpr;
 	private List<Object> _sqlParams;
 
+
 	private SqlDocumentQueryBuilder(final DocumentQuery query)
 	{
 		super();
 		this.query = query;
-		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		entityDescriptor = query.getEntityDescriptor();
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 	}
 
@@ -115,8 +118,8 @@ class SqlDocumentQueryBuilder
 
 		//
 		// ORDER BY
-		final String sqlOrderBy = getSqlOrderBy();
-		if (!Check.isEmpty(sqlOrderBy))
+		final IStringExpression sqlOrderBy = getSqlOrderByEffective();
+		if (!sqlOrderBy.isNullExpression())
 		{
 			sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
 		}
@@ -135,7 +138,6 @@ class SqlDocumentQueryBuilder
 			sqlBuilder.append("\n LIMIT ?");
 			sqlParams.add(pageLength);
 		}
-
 
 		//
 		//
@@ -169,7 +171,6 @@ class SqlDocumentQueryBuilder
 	private void buildSqlWhereClause()
 	{
 		final List<Object> sqlParams = new ArrayList<>();
-		// final StringBuilder sqlWhereClause = new StringBuilder();
 
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
@@ -216,10 +217,12 @@ class SqlDocumentQueryBuilder
 			}
 		}
 
+		//
+		// Document filters
 		for (final DocumentQueryFilter filter : query.getFilters())
 		{
-			final String sqlFilter = buildSqlWhereClause(sqlParams, filter);
-			if (Check.isEmpty(sqlFilter, true))
+			final IStringExpression sqlFilter = buildSqlWhereClause(sqlParams, filter);
+			if(sqlFilter.isNullExpression())
 			{
 				continue;
 			}
@@ -229,34 +232,31 @@ class SqlDocumentQueryBuilder
 		}
 
 		//
-		//
+		// Build the final SQL where clause
 		_sqlWhereExpr = sqlWhereClauseBuilder.build();
 		_sqlWhereParams = sqlParams;
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilter filter)
+	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilter filter)
 	{
-		final StringBuilder sql = new StringBuilder();
+		final CompositeStringExpression.Builder sql = IStringExpression.composer();
 
 		for (final DocumentQueryFilterParam filterParam : filter.getParameters())
 		{
-			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
-			if (Check.isEmpty(sqlFilterParam, true))
+			final IStringExpression sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
+			if (sqlFilterParam.isNullExpression())
 			{
 				continue;
 			}
 
-			if (sql.length() > 0)
-			{
-				sql.append("\n AND ");
-			}
+			sql.appendIfNotEmpty("\n AND ");
 			sql.append("/* filter param */ (").append(sqlFilterParam).append(")");
 		}
 
-		return sql.toString();
+		return sql.build();
 	}
 
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilterParam filterParam)
+	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilterParam filterParam)
 	{
 		// FIXME: refactor and introduce DocumentQueryFilter Descriptor and SQL DataBinding
 		// TODO: improve SQL logic
@@ -265,7 +265,7 @@ class SqlDocumentQueryBuilder
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 
 		final POInfo poInfo = entityBinding.getPOInfo();
-		final String sqlColumn = fieldBinding.getSqlColumnSql();
+		final IStringExpression sqlColumnExpr = fieldBinding.getSqlColumnSql();
 		final String columnName = fieldBinding.getColumnName();
 		final Class<?> targetClass = poInfo.getColumnClass(columnName);
 		final Object sqlValue = SqlDocumentRepository.convertValueToPO(filterParam.getValue(), columnName, targetClass);
@@ -275,29 +275,63 @@ class SqlDocumentQueryBuilder
 		{
 			if (sqlValue == null)
 			{
-				return "(" + sqlColumn + ") IS NULL";
+				return IStringExpression.composer()
+						.append("(").append(sqlColumnExpr).append(" IS NULL")
+						.build();
 			}
 
 			sqlParams.add(sqlValue);
-			return "(" + sqlColumn + ") = ?";
+			return IStringExpression.composer()
+					.append("(").append(sqlColumnExpr).append(" = ?")
+					.build();
 		}
 		else
 		{
 			if (sqlValue == null)
 			{
 				sqlParams.add(sqlValueTo);
-				return "(" + sqlColumn + ") <= ?";
+				return IStringExpression.composer()
+						.append("(").append(sqlColumnExpr).append(" <= ?")
+						.build();
 			}
 
 			sqlParams.add(sqlValue);
 			sqlParams.add(sqlValueTo);
-			return "(" + sqlColumn + ") BETWEEN ? AND ?";
+			return IStringExpression.composer()
+					.append("(").append(sqlColumnExpr).append(" BETWEEN ? AND ?")
+					.build();
 		}
 	}
-
-	public String getSqlOrderBy()
+	
+	public List<DocumentQueryOrderBy> getOrderBysEffective()
 	{
-		return entityBinding.getSqlOrderBy();
+		final List<DocumentQueryOrderBy> queryOrderBys = query.getOrderBys();
+		if(queryOrderBys != null && !queryOrderBys.isEmpty())
+		{
+			return queryOrderBys;
+		}
+		
+		return entityBinding.getOrderBys();
 	}
 
+	public IStringExpression getSqlOrderByEffective()
+	{
+		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
+		return entityBinding.buildSqlOrderBy(orderBys);
+	}
+	
+	public DocumentEntityDescriptor getEntityDescriptor()
+	{
+		return entityDescriptor;
+	}
+	
+	public SqlDocumentEntityDataBindingDescriptor getEntityBinding()
+	{
+		return entityBinding;
+	}
+	
+	public List<DocumentFieldDescriptor> getViewFields()
+	{
+		return query.getViewFields();
+	}
 }

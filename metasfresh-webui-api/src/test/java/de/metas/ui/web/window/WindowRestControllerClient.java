@@ -173,7 +173,7 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentViewResult browseView(final String viewId, final int firstRow, final int pageLength)
+	public JSONDocumentViewResult browseView(final String viewId, final int firstRow, final int pageLength, final String orderByStr)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();

@@ -92,7 +92,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@JsonProperty("sqlColumnName")
 	private final String sqlColumnName;
 	@JsonProperty("sqlColumnSql")
-	private final String sqlColumnSql;
+	private final IStringExpression sqlColumnSql;
+	@JsonProperty("virtualColumn")
+	private boolean virtualColumn;
 	@JsonProperty("keyColumn")
 	private final boolean keyColumn;
 	@JsonProperty("parentLinkColumn")
@@ -120,11 +122,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private final Boolean numericKey;
 
 	@JsonIgnore
-	private final int orderByPriority;
+	private final int defaultOrderByPriority;
 	@JsonIgnore
-	private final boolean orderByAscending;
-	@JsonIgnore
-	private final String sqlOrderBy;
+	private final boolean defaultOrderByAscending;
 
 	// required for JSON serialization/deserialization
 	@JsonProperty("displayType")
@@ -143,6 +143,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlTableAlias = builder.sqlTableAlias;
 		sqlColumnName = builder.sqlColumnName;
 		sqlColumnSql = builder.sqlColumnSql;
+		virtualColumn = builder.virtualColumn;
 		keyColumn = builder.keyColumn;
 		parentLinkColumn = builder.parentLinkColumn;
 		encrypted = builder.encrypted;
@@ -162,17 +163,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		//
 		// ORDER BY
 		{
-			orderByPriority = builder.orderByPriority;
-			orderByAscending = builder.orderByAscending;
-			if (orderByPriority == 0)
-			{
-				sqlOrderBy = null;
-			}
-			else
-			{
-				final String sqlOrderByColumnName = usingDisplayColumn ? displayColumnName : sqlColumnName;
-				sqlOrderBy = sqlOrderByColumnName + (orderByAscending ? " ASC" : " DESC");
-			}
+			defaultOrderByPriority = builder.orderByPriority;
+			defaultOrderByAscending = builder.orderByAscending;
 		}
 
 		//
@@ -188,7 +180,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			, @JsonProperty("sqlTableName") final String sqlTableName //
 			, @JsonProperty("sqlTableAlias") final String sqlTableAlias //
 			, @JsonProperty("sqlColumnName") final String sqlColumnName //
-			, @JsonProperty("sqlColumnSql") final String sqlColumnSql //
+			, @JsonProperty("sqlColumnSql") final IStringExpression sqlColumnSql //
+			, @JsonProperty("virtualColumn") boolean virtualColumn //
 			, @JsonProperty("keyColumn") final boolean keyColumn //
 			, @JsonProperty("parentLinkColumn") final boolean parentLinkColumn //
 			, @JsonProperty("encrypted") final boolean encrypted //
@@ -204,6 +197,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(sqlColumnName)
 				.setSqlColumnSql(sqlColumnSql)
+				.setVirtualColumn(virtualColumn)
 				.setKeyColumn(keyColumn)
 				.setParentLinkColumn(parentLinkColumn)
 				.setEncrypted(encrypted)
@@ -250,9 +244,20 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return sqlColumnName;
 	}
 
-	public String getSqlColumnSql()
+	/**
+	 * @return ColumnName or a SQL string expression in case {@link #isVirtualColumn()}
+	 */
+	public IStringExpression getSqlColumnSql()
 	{
 		return sqlColumnSql;
+	}
+
+	/**
+	 * @return true if this is a virtual SQL column (i.e. it's has an SQL expression to compute the value, instead of having just the field name)
+	 */
+	public boolean isVirtualColumn()
+	{
+		return virtualColumn;
 	}
 
 	public Class<?> getValueClass()
@@ -307,7 +312,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return null;
 		}
-		
+
 		return LookupDataSourceFactory.instance.getLookupDataSource(sqlLookupDescriptor);
 
 	}
@@ -328,27 +333,50 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	 * @see #getSqlOrderBy()
 	 */
 	@JsonIgnore
-	public boolean isOrderBy()
+	public boolean isDefaultOrderBy()
 	{
-		return sqlOrderBy != null;
+		return defaultOrderByPriority != 0;
 	}
 
-	public int getOrderByPriority()
+	public int getDefaultOrderByPriority()
 	{
-		return orderByPriority;
+		return defaultOrderByPriority;
 	}
 
-	public boolean isOrderByAscending()
+	public boolean isDefaultOrderByAscending()
 	{
-		return orderByAscending;
+		return defaultOrderByAscending;
+	}
+
+	public final IStringExpression buildSqlOrderBy(final boolean ascending)
+	{
+		final String sqlOrderByColumnName = isUsingDisplayColumn() ? getDisplayColumnName() : getColumnName();
+		return IStringExpression.composer()
+				.append(sqlOrderByColumnName).append(ascending ? " ASC" : " DESC")
+				.build();
 	}
 
 	/**
-	 * @return SQL ORDER BY or null if this field does not have ORDER BY instructions
+	 * @param ascending
+	 * @return ORDER BY sql which consist of full column SQL definition instead of just the column name / display name
 	 */
-	public String getSqlOrderBy()
+	public final IStringExpression buildSqlFullOrderBy(final boolean ascending)
 	{
-		return sqlOrderBy;
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getSqlColumnSql();
+		if (orderByExpr.isNullExpression())
+		{
+			return orderByExpr;
+		}
+
+		return IStringExpression.composer()
+				.append("(").append(orderByExpr).append(")").append(ascending ? " ASC" : " DESC")
+				.build();
+	}
+	
+	public IStringExpression getSqlFullOrderBy()
+	{
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getSqlColumnSql();
+		return orderByExpr;
 	}
 
 	public DocumentViewFieldValueLoader getDocumentViewFieldValueLoader()
@@ -443,7 +471,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private String sqlTableName;
 		private String sqlTableAlias;
 		private String sqlColumnName;
-		private String sqlColumnSql;
+		private IStringExpression sqlColumnSql;
+		private Boolean virtualColumn;
 
 		private Class<?> valueClass;
 		private Integer displayType;
@@ -678,9 +707,15 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setSqlColumnSql(final String sqlColumnSql)
+		public Builder setSqlColumnSql(final IStringExpression sqlColumnSql)
 		{
 			this.sqlColumnSql = sqlColumnSql;
+			return this;
+		}
+
+		public Builder setVirtualColumn(boolean virtualColumn)
+		{
+			this.virtualColumn = virtualColumn;
 			return this;
 		}
 

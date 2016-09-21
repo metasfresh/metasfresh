@@ -3,33 +3,36 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_T_Query_Selection;
 import org.compiere.model.POInfo;
+import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -91,8 +94,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	@JsonProperty("sqlWhereClause")
 	private final ICachedStringExpression sqlWhereClause;
-	@JsonProperty("sqlOrderBy")
-	private final String sqlOrderBy;
+	@JsonIgnore
+	private final List<DocumentQueryOrderBy> orderBys;
 
 	@JsonProperty("fields")
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> fieldsByFieldName;
@@ -118,7 +121,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.caching();
 		sqlWhereClause = builder.getSqlWhereClauseExpression()
 				.caching();
-		sqlOrderBy = builder.buildSqlOrderBy();
+
+		orderBys = ImmutableList.copyOf(builder.getOrderBysList());
 	}
 
 	@JsonCreator
@@ -127,7 +131,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			, @JsonProperty("sqlTableAlias") final String sqlTableAlias//
 			, @JsonProperty("sqlParentLinkColumnName") final String sqlParentLinkColumnName//
 			, @JsonProperty("sqlWhereClause") final IStringExpression sqlWhereClause//
-			, @JsonProperty("sqlOrderBy") final String sqlOrderBy//
 			, @JsonProperty("fields") final List<SqlDocumentFieldDataBindingDescriptor> fields //
 	)
 	{
@@ -137,7 +140,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				// key
 				.setSqlParentLinkColumnName(sqlParentLinkColumnName)
 				.setSqlWhereClauseExpression(sqlWhereClause)
-				.setSqlOrderBy(sqlOrderBy)
 				.addFields(fields)
 		//
 		);
@@ -152,7 +154,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.add("sqlTableAlias", sqlTableAlias)
 				.add("sqlKeyColumnName", sqlKeyColumnName)
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
-				.add("sqlOrderBy", sqlOrderBy)
+				.add("orderBys", orderBys)
 				.add("fields", fieldsByFieldName.isEmpty() ? null : fieldsByFieldName.values())
 				.toString();
 	}
@@ -206,9 +208,85 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlWhereClause;
 	}
 
-	public String getSqlOrderBy()
+	public List<DocumentQueryOrderBy> getOrderBys()
 	{
-		return sqlOrderBy;
+		return orderBys;
+	}
+
+	public final IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
+	{
+		if (orderBys.isEmpty())
+		{
+			return null;
+		}
+
+		final IStringExpression sqlOrderByFinal = orderBys
+				.stream()
+				.map(orderBy -> buildSqlOrderBy(orderBy))
+				.filter(sql -> sql != null && !sql.isNullExpression())
+				.collect(IStringExpression.collectJoining(", "));
+
+		return sqlOrderByFinal;
+	}
+
+	public final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
+	{
+		if (orderBy.isExplicit())
+		{
+			return orderBy.getExplicitCode();
+		}
+
+		final String fieldName = orderBy.getFieldName();
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
+		return fieldBinding.buildSqlOrderBy(orderBy.isAscending());
+	}
+
+	public final IStringExpression buildSqlFullOrderBy(final List<DocumentQueryOrderBy> orderBys)
+	{
+		if (orderBys.isEmpty())
+		{
+			return null;
+		}
+
+		final IStringExpression sqlOrderByFinal = orderBys
+				.stream()
+				.map(orderBy -> buildSqlFullOrderBy(orderBy))
+				.filter(sql -> sql != null && !sql.isNullExpression())
+				.collect(IStringExpression.collectJoining(", "));
+
+		return sqlOrderByFinal;
+	}
+
+	public final IStringExpression buildSqlFullOrderBy(final DocumentQueryOrderBy orderBy)
+	{
+		if (orderBy.isExplicit())
+		{
+			return orderBy.getExplicitCode();
+		}
+
+		final String fieldName = orderBy.getFieldName();
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
+		return fieldBinding.buildSqlFullOrderBy(orderBy.isAscending());
+	}
+
+	public Map<String, String> getAvailableFieldFullOrderBys(final Evaluatee evalCtx)
+	{
+		final ImmutableMap.Builder<String, String> result = ImmutableMap.builder();
+		for (final SqlDocumentFieldDataBindingDescriptor fieldBinding : fieldsByFieldName.values())
+		{
+			final String fieldName = fieldBinding.getFieldName();
+			final String fieldOrderBy = fieldBinding.getSqlFullOrderBy()
+					.evaluate(evalCtx, OnVariableNotFound.Fail);
+
+			if (Check.isEmpty(fieldOrderBy, true))
+			{
+				continue;
+			}
+
+			result.put(fieldName, fieldOrderBy);
+		}
+
+		return result.build();
 	}
 
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
@@ -228,12 +306,10 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private String _sqlTableName;
 		private String _sqlTableAlias;
 		private String _sqlParentLinkColumnName;
-		private String _sqlOrderBy;
 		private String _sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
 
 		//
-		private static final Joiner JOINER_SqlSelectFields = Joiner.on("\n, ");
 		private IStringExpression _sqlSelectAll; // will be built
 		private IStringExpression _sqlPagedSelectAll; // will be built
 
@@ -292,13 +368,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				throw new IllegalStateException("No SQL fields found");
 			}
 
-			final List<String> sqlSelectValuesList = new ArrayList<>(fields.size());
+			final List<IStringExpression> sqlSelectValuesList = new ArrayList<>(fields.size());
 			final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>(fields.size());
 			for (final SqlDocumentFieldDataBindingDescriptor sqlField : fields)
 			{
 				//
 				// Value column
-				final String sqlSelectValue = buildSqlSelectValue(sqlField);
+				final IStringExpression sqlSelectValue = buildSqlSelectValue(sqlField);
 				sqlSelectValuesList.add(sqlSelectValue);
 
 				//
@@ -315,36 +391,39 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 
 			//
-			final String sqlSelectValues = JOINER_SqlSelectFields.join(sqlSelectValuesList);
-			_sqlSelectAll = buildSqlSelect(sqlSelectValues, sqlSelectDisplayNamesList);
-			_sqlPagedSelectAll = buildSqlPagedSelect(sqlSelectValues, sqlSelectDisplayNamesList);
+			_sqlSelectAll = buildSqlSelect(sqlSelectValuesList, sqlSelectDisplayNamesList);
+			_sqlPagedSelectAll = buildSqlPagedSelect(sqlSelectValuesList, sqlSelectDisplayNamesList);
 		}
 
-		private final String buildSqlSelectValue(final SqlDocumentFieldDataBindingDescriptor sqlField)
+		private final IStringExpression buildSqlSelectValue(final SqlDocumentFieldDataBindingDescriptor sqlField)
 		{
-			final String columnSql = sqlField.getSqlColumnSql();
+			final IStringExpression columnSqlExpr = sqlField.getSqlColumnSql();
 			final String columnName = sqlField.getSqlColumnName();
 
-			final boolean isVirtualColumn = !columnName.equals(columnSql);
+			final boolean isVirtualColumn = sqlField.isVirtualColumn();
 			if (isVirtualColumn)
 			{
-				return columnSql + " AS " + columnName;
+				return IStringExpression.composer()
+						.append(columnSqlExpr).append(" AS ").append(columnName)
+						.build();
 			}
 			else
 			{
-				return getSqlTableName() + "." + columnSql + " AS " + columnName;
-
+				return IStringExpression.composer()
+						.append(getSqlTableName()).append(".").append(columnSqlExpr).append(" AS ").append(columnName)
+						.build();
 			}
 		}
 
-		private final IStringExpression buildSqlSelect(final String sqlSelectValues, final List<IStringExpression> sqlSelectDisplayNamesList)
+		private final IStringExpression buildSqlSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
 			final String sqlTableName = getSqlTableName();
 			final String sqlTableAlias = getSqlTableAlias();
 
 			final IStringExpression sqlInnerExpr = IStringExpression.composer()
-					.append("SELECT ").append(sqlSelectValues)
-					.append(" FROM ").append(sqlTableName)
+					.append("SELECT ")
+					.append("\n ").appendAllJoining("\n, ", sqlSelectValuesList)
+					.append("\n FROM ").append(sqlTableName)
 					.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
 
@@ -355,7 +434,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			// DisplayName fields
 			if (!sqlSelectDisplayNamesList.isEmpty())
 			{
-				sqlBuilder.append(", \n").appendAllJoining(", \n", sqlSelectDisplayNamesList);
+				sqlBuilder.append("\n, ").appendAllJoining("\n, ", sqlSelectDisplayNamesList);
 			}
 
 			sqlBuilder.append("\n FROM (").append(sqlInnerExpr).append(") ").append(sqlTableAlias); // FROM
@@ -363,7 +442,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlBuilder.build();
 		}
 
-		private final IStringExpression buildSqlPagedSelect(final String sqlSelectValues, final List<IStringExpression> sqlSelectDisplayNamesList)
+		private final IStringExpression buildSqlPagedSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
 			final String sqlTableName = getSqlTableName();
 			final String sqlTableAlias = getSqlTableAlias();
@@ -376,27 +455,30 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				return IStringExpression.composer()
 						.append("SELECT ")
 						.append("\n").append(sqlTableAlias).append(".*") // Value fields
-						.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList)// DisplayName fields
-						.append("\n FROM ("
-								+ "\n   SELECT "
-								+ "\n   " + sqlSelectValues
-								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo
-								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID
-								+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID
-								+ "\n   FROM " + I_T_Query_Selection.Table_Name + " sel"
-								+ "\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")"
-								+ "\n ) " + sqlTableAlias) // FROM
+						.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList) // DisplayName fields
+						.append("\n FROM (")
+						.append("\n   SELECT ")
+						.append("\n   ").appendAllJoining(", ", sqlSelectValuesList)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+						.append("\n   FROM " + I_T_Query_Selection.Table_Name + " sel")
+						.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")")
+						.append("\n ) " + sqlTableAlias) // FROM
 						.build();
 			}
 			else
 			{
-				return ConstantStringExpression.of("SELECT "
-						+ "\n " + sqlSelectValues
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID
-						+ "\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID
-						+ "\n FROM " + I_T_Query_Selection.Table_Name + " sel"
-						+ "\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")");
+				return IStringExpression.composer()
+						.append("SELECT ")
+						.append("\n ").appendAllJoining("\n, ", sqlSelectValuesList)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+						.append("\n FROM " + I_T_Query_Selection.Table_Name + " sel")
+						.append("\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID
+								+ ")")
+						.build();
 			}
 		}
 
@@ -426,29 +508,16 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlWhereClauseExpr;
 		}
 
-		private String buildSqlOrderBy()
+		private List<DocumentQueryOrderBy> getOrderBysList()
 		{
-			// Explicit ORDER BY
-			if (_sqlOrderBy != null)
-			{
-				return _sqlOrderBy;
-			}
-
-			//
 			// Build the ORDER BY from fields
-			final String sqlOrderByBuilt = getFieldsByFieldName()
+			return getFieldsByFieldName()
 					.values()
 					.stream()
-					.filter(field -> field.isOrderBy())
-					.sorted((field1, field2) -> field1.getOrderByPriority() - field2.getOrderByPriority())
-					.map(field -> field.getSqlOrderBy())
-					.collect(Collectors.joining(", "));
-			if (!sqlOrderByBuilt.isEmpty())
-			{
-				return sqlOrderByBuilt;
-			}
-
-			return null;
+					.filter(field -> field.isDefaultOrderBy())
+					.sorted(Comparator.comparing(SqlDocumentFieldDataBindingDescriptor::getDefaultOrderByPriority))
+					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
+					.collect(GuavaCollectors.toImmutableList());
 		}
 
 		public Builder setSqlTableName(final String sqlTableName)
@@ -513,13 +582,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 			_sqlWhereClauseExpression = sqlWhereClauseExpression;
-			return this;
-		}
-
-		public Builder setSqlOrderBy(final String sqlOrderBy)
-		{
-			assertNotBuilt();
-			_sqlOrderBy = Check.isEmpty(sqlOrderBy, true) ? null : sqlOrderBy.trim();
 			return this;
 		}
 

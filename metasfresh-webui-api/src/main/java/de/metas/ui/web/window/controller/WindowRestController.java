@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -40,9 +41,10 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentView;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -89,6 +91,8 @@ public class WindowRestController implements IWindowRestController
 	private static final String PARAM_FirstRow = "firstRow";
 	private static final String PARAM_FirstRow_Description = "first row to fetch (starting from 0)";
 	private static final String PARAM_PageLength = "pageLength";
+	private static final String PARAM_OrderBy = "orderBy";
+	private static final String PARAM_OrderBy_Description = "Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered";
 
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
@@ -387,15 +391,18 @@ public class WindowRestController implements IWindowRestController
 
 		//
 		// Fetch result if requested
+		final DocumentViewResult result;
 		if (pageLength > 0)
 		{
-			final List<IDocumentView> result = view.getPage(firstRow, pageLength);
-			return JSONDocumentViewResult.of(view, firstRow, pageLength, result);
+			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+			result = view.getPage(firstRow, pageLength, orderBys);
 		}
 		else
 		{
-			return JSONDocumentViewResult.of(view);
+			result = DocumentViewResult.of(view);
 		}
+
+		return JSONDocumentViewResult.of(result);
 	}
 
 	@Override
@@ -415,12 +422,15 @@ public class WindowRestController implements IWindowRestController
 			@PathVariable(PARAM_ViewId) final String viewId//
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
+			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
 	)
 	{
 		loginService.autologin();
 
+		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+
 		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-		final List<IDocumentView> page = view.getPage(firstRow, pageLength);
-		return JSONDocumentViewResult.of(view, firstRow, pageLength, page);
+		final DocumentViewResult result = view.getPage(firstRow, pageLength, orderBys);
+		return JSONDocumentViewResult.of(result);
 	}
 }

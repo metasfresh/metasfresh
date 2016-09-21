@@ -22,6 +22,7 @@ import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStri
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.GridFieldVO;
@@ -672,12 +673,16 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		{
 			final GridTabVO tab = getGridTabVO();
 
+			if (!Check.isEmpty(tab.getOrderByClause(), true))
+			{
+				logger.warn("Ignoring SQL order by for {}. See https://github.com/metasfresh/metasfresh/issues/412.", tab);
+			}
+
 			_documentEntryDataBinding = SqlDocumentEntityDataBindingDescriptor.builder()
 					.setSqlTableName(tab.getTableName())
 					.setSqlTableAliasFromDetailId(getDetailId())
 					.setSqlParentLinkColumnName(extractParentLinkColumnName())
-					.setSqlWhereClause(tab.getWhereClause())
-					.setSqlOrderBy(tab.getOrderByClause());
+					.setSqlWhereClause(tab.getWhereClause());
 		}
 
 		return _documentEntryDataBinding;
@@ -768,12 +773,15 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
+		final IStringExpression sqlColumnSql = expressionFactory.compile(gridFieldVO.getColumnSQL(false), IStringExpression.class);
+
 		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setSqlTableName(sqlTableName)
 				.setSqlTableAlias(sqlTableAlias)
 				.setSqlColumnName(sqlColumnName)
-				.setSqlColumnSql(gridFieldVO.getColumnSQL(false))
+				.setSqlColumnSql(sqlColumnSql)
+				.setVirtualColumn(gridFieldVO.isVirtualColumn())
 				.setValueClass(valueClass)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
@@ -1495,7 +1503,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		}
 		return Optional.of(expression);
 	}
-	
+
 	/**
 	 * Strips default value expressions which are quoted strings.
 	 * e.g.
