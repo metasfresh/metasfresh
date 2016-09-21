@@ -73,7 +73,7 @@
 
 .header-breadcrumb > span:first-of-type > span{
     min-width: 45px;
-    font-weight: bold;
+    font-weight: 500;
     display: inline-block;
 }
 
@@ -272,7 +272,7 @@
 
 .menu-overlay-header {
     text-transform: uppercase;
-    font-weight: bold;
+    font-weight: 500;
     font-size: .875rem;
     margin: 1rem 0;
 }

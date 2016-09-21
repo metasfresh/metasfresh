@@ -50,6 +50,7 @@ body {
     border-radius: .2rem;
     color: #fff;
     display: inline-block;
+    font-weight: 500;
 }
 
 .tag-success {
@@ -798,7 +799,8 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .nav-tree-header {
-  font-weight: bold;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
 .header-super-faded {
@@ -953,46 +955,25 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .daterangepicker .next.available {
-    background: $brand-light-color;
+    /* TO DO add icon to meta font */
+    background: url('../images/icon-right.png') no-repeat center;
 }
 
-.daterangepicker .next.available i {
-    position: relative;
-}
-.daterangepicker .next.available i {
-    /*position: absolute;
-    content: '›';
-    color: #fff;
-    width: 8px;
-    height: 8px;
-    top: 50%;
-    left: 50%;
-    font-family: meta;
-    margin-top: -4px;
-    margin-left: -4px;*/
-}
-
-.daterangepicker .next.available:hover {
-    background: $brand-color-primary;
-}
 
 .daterangepicker .prev.available {
-    background: $brand-light-color;
+    background: url('../images/icon-left.png') no-repeat center;
 }
 
-.daterangepicker .prev.available:hover {
-    background: $brand-color-primary;
+/* Pagination */
+
+.page-item.active .page-link,
+.page-item.active .page-link:focus,
+.page-item.active .page-link:hover {
+    background-color: $brand-color-primary;
+    border-color: $brand-color-primary;
 }
 
-.daterangepicker .prev.available i:after {
-    /*position: absolute;
-    content: '›';
-    color: #fff;
-    width: 8px;
-    height: 8px;
-    top: 50%;
-    left: 50%;
-    font-family: meta;
-    margin-top: -4px;
-    margin-left: -4px;*/
+
+th {
+    font-weight: 500;
 }
