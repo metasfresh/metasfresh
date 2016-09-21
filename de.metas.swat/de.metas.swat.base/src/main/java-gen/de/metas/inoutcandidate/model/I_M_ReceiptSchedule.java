@@ -657,7 +657,7 @@ public interface I_M_ReceiptSchedule
 	 * Set Packaging Material .
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial);
@@ -666,7 +666,7 @@ public interface I_M_ReceiptSchedule
 	 * Get Packaging Material .
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public boolean isPackagingMaterial();

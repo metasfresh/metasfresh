@@ -16,7 +16,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 234704668L;
+	private static final long serialVersionUID = 14259786L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -30,6 +30,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
 			setIsBPartnerAddress_Override (false);
+// N
+			setIsPackagingMaterial (false);
 // N
 			setM_Product_ID (0);
 			setM_ReceiptSchedule_ID (0);
@@ -687,7 +689,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	@Override
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial)
 	{
-		throw new IllegalArgumentException ("IsPackagingMaterial is virtual column");	}
+		set_Value (COLUMNNAME_IsPackagingMaterial, Boolean.valueOf(IsPackagingMaterial));
+	}
 
 	/** Get Packaging Material .
 		@return Packaging Material 	  */
