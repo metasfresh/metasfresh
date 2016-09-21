@@ -257,6 +257,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 				final BigDecimal valueBDCorrected = NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
 				return valueBDCorrected;
 			}
+			else
+			{
+				final BigDecimal valueBDCorrected = NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
+				return valueBDCorrected;
+			}
 		}
 
 		return valueConv;
