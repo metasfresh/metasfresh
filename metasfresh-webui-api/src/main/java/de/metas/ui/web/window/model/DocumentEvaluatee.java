@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 
@@ -375,6 +376,10 @@ public final class DocumentEvaluatee implements Evaluatee
 		else if (valueObj instanceof Number)
 		{
 			return ((Number)valueObj).intValue();
+		}
+		else if (valueObj instanceof IntegerLookupValue)
+		{
+			return ((IntegerLookupValue)valueObj).getIdAsInt();
 		}
 		else
 		{
