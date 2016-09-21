@@ -43,3 +43,18 @@ INSERT INTO t_alter_column values('m_receiptschedule','IsPackagingMaterial',null
 ;
 
 commit;
+
+
+-- no more lazyLoading
+
+
+UPDATE
+	AD_Column
+SET
+	IsLazyLoading = 'N'
+WHERE 
+	AD_Column_ID = 550587
+	
+	;
+	
+	
