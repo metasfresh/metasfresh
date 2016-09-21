@@ -56,7 +56,8 @@ public final class NumberUtils
 		BigDecimal result = bd.stripTrailingZeros();
 
 		// Fix very weird java 6 bug: stripTrailingZeros doesn't work on 0 itself
-		// http://stackoverflow.com/questions/5239137/clarification-on-behavior-of-bigdecimal-striptrailingzeroes
+		// see http://stackoverflow.com/questions/5239137/clarification-on-behavior-of-bigdecimal-striptrailingzeroes
+		// see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6480539 => fixed in 8 (b100)
 		if (result.signum() == 0)
 		{
 			result = BigDecimal.ZERO;
@@ -88,7 +89,7 @@ public final class NumberUtils
 			return result.setScale(minScale, RoundingMode.UNNECESSARY);
 		}
 
-		result = result.stripTrailingZeros();
+		result = stripTrailingDecimalZeros(result);
 		if (result.scale() < minScale)
 		{
 			return result.setScale(minScale, RoundingMode.UNNECESSARY);
