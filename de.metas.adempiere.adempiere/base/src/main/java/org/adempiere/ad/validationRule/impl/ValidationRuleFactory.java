@@ -1,32 +1,10 @@
 package org.adempiere.ad.validationRule.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -56,40 +34,21 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 	private static final int ROWINDEX_None = -1;
 
-	private final Map<String, List<Class<? extends IValidationRule>>> tableRuleClassesMap = new HashMap<String, List<Class<? extends IValidationRule>>>();
+	private final Map<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
+	
+	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
 	@Override
-	public void registerTableValidationRule(final String tableName, final Class<? extends IValidationRule> ruleClass)
+	public void registerTableValidationRule(final String tableName, IValidationRule rule)
 	{
-		Check.assume(ruleClass != null, "ruleClass not null");
-		List<Class<? extends IValidationRule>> rules = tableRuleClassesMap.get(tableName);
-		if (rules == null)
+		Check.assume(rule != null, "rule not null");
+		
+		final boolean added = tableRulesMap
+				.computeIfAbsent(tableName, key->new CopyOnWriteArrayList<>())
+				.addIfAbsent(rule);
+		if (added)
 		{
-			rules = new ArrayList<Class<? extends IValidationRule>>();
-			tableRuleClassesMap.put(tableName, rules);
-		}
-		if (!rules.contains(ruleClass))
-		{
-			rules.add(ruleClass);
-			logger.info("Registered rule class " + ruleClass + " for " + tableName);
-		}
-	}
-
-	@Override
-	public void unregisterTableValidationRule(final String tableName, final Class<? extends IValidationRule> ruleClass)
-	{
-		Check.assume(ruleClass != null, "ruleClass not null");
-		final List<Class<? extends IValidationRule>> rules = tableRuleClassesMap.get(tableName);
-		if (rules == null)
-		{
-			return;
-		}
-
-		final boolean removed = rules.remove(ruleClass);
-
-		if (removed)
-		{
-			logger.info("Unregistered rule class " + ruleClass + " for " + tableName);
+			logger.info("Registered rule class {} for {}", rule, tableName);
 		}
 	}
 
@@ -148,12 +107,11 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final String classname = valRule.getClassname();
 		if (Check.isEmpty(classname, true))
 		{
-			logger.warn("No Classname found for " + valRule.getName());
+			logger.warn("No Classname found for {}", valRule.getName());
 			return NullValidationRule.instance;
 		}
-
-		final IValidationRule rule = Util.getInstance(IValidationRule.class, classname);
-		return rule;
+		
+		return classname2rulesCache.computeIfAbsent(classname, newClassname -> Util.getInstance(IValidationRule.class, newClassname));
 	}
 
 	@Override
@@ -188,26 +146,13 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 	private List<IValidationRule> retrieveTableValidationRules(final String tableName)
 	{
-		final List<Class<? extends IValidationRule>> ruleClasses = tableRuleClassesMap.get(tableName);
-		if (ruleClasses == null || ruleClasses.isEmpty())
+		final List<IValidationRule> rules = tableRulesMap.get(tableName);
+		if (rules == null || rules.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-
-		final List<IValidationRule> rules = new ArrayList<>(ruleClasses.size());
-		for (final Class<? extends IValidationRule> ruleClass : ruleClasses)
-		{
-			try
-			{
-				final IValidationRule rule = ruleClass.newInstance();
-				rules.add(rule);
-			}
-			catch (final Exception e)
-			{
-				logger.warn("Cannot instantiate rule class " + ruleClass + " [SKIP]", e);
-			}
-		}
-		return rules;
+		
+		return ImmutableList.copyOf(rules);
 	}
 
 	@Override

@@ -82,7 +82,7 @@ import de.metas.logging.LogManager;
 	private IPropertiesPanelModel model;
 
 	private IContainer panel;
-	private ITerminalScrollPane scroll;
+	private final ITerminalScrollPane scroll;
 
 	private final Map<String, ITerminalField<?>> propertyName2editors = new HashMap<>();
 
@@ -96,6 +96,10 @@ import de.metas.logging.LogManager;
 		{
 			onModelChanged(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "SwingPropertiesPanel[<anonymous modelListener>]"; };
+		// @formatter:on
 	};
 
 	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext)
@@ -117,6 +121,8 @@ import de.metas.logging.LogManager;
 		scroll.setVerticalScrollBarPolicy(ScrollPolicy.WHEN_NEEDED);
 
 		scroll.setBorderEnabled(false); // hide borders
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void onModelChanged(final String eventName, final Object valueOld, final Object valueNew)
@@ -305,6 +311,7 @@ import de.metas.logging.LogManager;
 			}
 
 			final Object value = model.getPropertyValue(propertyName);
+			logger.debug("Setting property={} to value={} at editor={}", propertyName, value, editor);
 			editor.setValue(value);
 
 			final boolean editable = model.isEditable(propertyName);
@@ -363,6 +370,7 @@ import de.metas.logging.LogManager;
 						public Object runInBackground(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor)
 						{
 							final Object value = inputMethod.invoke();
+							logger.debug("inputMethod={} returned value={} in UIAsyncPropertyChangeListener={} in UIAsyncPropertyChangeListener={}", inputMethod, value, this);
 							return value;
 						};
 
@@ -382,10 +390,13 @@ import de.metas.logging.LogManager;
 								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
-
-							editor.setValue(value, true); // fireEvent=true
+							logger.debug("Set value={} to editor={} ,editor.toString()={} in UIAsyncPropertyChangeListener={}", value, editor.getName(), editor, this);
+							//
+							// #370: trying to *not* set the field but the model. setting the field will also cause the model to be updated, but eventually from the model updating, the field will be updated a second time
+							// editor.setValue(value, true); // fireEvent=true
+							getModel().setPropertyValue(propertyName, value);
 						}
-					});
+					}); // addListener
 
 			// NOTE: we are appending the input method buttons INSIDE the editor component
 			// mainly because we want the "constraintsEditor" to be applied to the whole editor+inputMethodButtons as a group.
@@ -411,12 +422,11 @@ import de.metas.logging.LogManager;
 		{
 			final ITerminalNumericField editor = factory.createTerminalNumericField(propertyName, displayType,
 					SwingPropertiesPanel.DEFAULT_FONT_SIZE,
-					true,   // withButtons,
-					false,   // withLabel
+					true,       // withButtons,
+					false,       // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
-			editor.addListener(new PropertyChangeListener()
+				editor.addListener(new PropertyChangeListener()
 			{
-
 				@Override
 				public void propertyChange(final PropertyChangeEvent evt)
 				{
@@ -426,6 +436,9 @@ import de.metas.logging.LogManager;
 						setValueFromUI(propertyName, value, editor);
 					}
 				}
+				// @formatter:off
+				@Override public String toString() { return "SwingPropertiesPanel[<anonymous propertyChangeListener for property=" + propertyName + " and editor=" + editor+">]"; }
+				// @formatter:on
 			});
 
 			return editor;
@@ -546,6 +559,8 @@ import de.metas.logging.LogManager;
 
 	private boolean _fireValueChangedOnFocusedLost = true;
 
+	private boolean disposed = false;
+
 	@Override
 	public final void disableFireValueChangedOnFocusLost()
 	{
@@ -634,17 +649,13 @@ import de.metas.logging.LogManager;
 	{
 		setModel(null); // will also reset depending fields
 
-		if (scroll != null)
-		{
-			scroll.dispose();
-			scroll = null;
-		}
+		disposed = true;
+	}
 
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	@Override

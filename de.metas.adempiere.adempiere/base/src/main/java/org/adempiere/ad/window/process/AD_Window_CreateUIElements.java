@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.window.api.IADFieldDAO;
@@ -155,8 +156,8 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			Check.assumeNotNull(consumer, "Parameter consumer is not null");
 			this.consumer = consumer;
 		}
-		
-		private final void log(final String msg, final Object...msgParameters)
+
+		private final void log(final String msg, final Object... msgParameters)
 		{
 			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
 		}
@@ -244,14 +245,15 @@ public class AD_Window_CreateUIElements extends SvrProcess
 
 			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
 
-			int uiElement_nextSeqNo = 10;
+			final AtomicInteger uiElement_nextSeqNo = new AtomicInteger(10);
+			final AtomicInteger uiElement_nextSeqNoGrid = new AtomicInteger(10);
 			for (final I_AD_Field adField : adFields)
 			{
 				if (!adField.isActive())
 				{
 					continue;
 				}
-				if (!adField.isDisplayed())
+				if (!adField.isDisplayed() && !adField.isDisplayedGrid())
 				{
 					continue;
 				}
@@ -266,10 +268,9 @@ public class AD_Window_CreateUIElements extends SvrProcess
 
 				if (uiElement == null)
 				{
-					uiElement = createUIElement(uiElementGroup_Left_Default, adField, uiElement_nextSeqNo);
+					uiElement = createUIElement(uiElementGroup_Left_Default, adField, uiElement_nextSeqNo, uiElement_nextSeqNoGrid);
 					if (uiElement != null)
 					{
-						uiElement_nextSeqNo += 10;
 						uiElementsById.put(uiElementId, uiElement);
 					}
 				}
@@ -407,11 +408,25 @@ public class AD_Window_CreateUIElements extends SvrProcess
 			return uiElement;
 		}
 
-		private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final int seqNo)
+		private I_AD_UI_Element createUIElement(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_Field adField, final AtomicInteger nextSeqNo, final AtomicInteger nextSeqNoGrid)
 		{
 			final I_AD_UI_Element uiElement = createUIElementCommon(uiElementGroup, adField);
-			uiElement.setIsDisplayed(true);
-			uiElement.setSeqNo(seqNo);
+
+			final boolean displayed = adField.isDisplayed();
+			uiElement.setIsDisplayed(displayed);
+			if (displayed)
+			{
+				final int seqNo = nextSeqNo.getAndAdd(10);
+				uiElement.setSeqNo(seqNo);
+			}
+
+			final boolean displayedGrid = adField.isDisplayedGrid();
+			uiElement.setIsDisplayedGrid(displayedGrid);
+			if (displayedGrid)
+			{
+				final int seqNoGrid = nextSeqNoGrid.getAndAdd(10);
+				uiElement.setSeqNoGrid(seqNoGrid);
+			}
 
 			consumer.consume(uiElement, uiElementGroup);
 

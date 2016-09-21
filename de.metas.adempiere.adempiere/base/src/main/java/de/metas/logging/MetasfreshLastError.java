@@ -9,8 +9,6 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -198,7 +196,7 @@ public class MetasfreshLastError
 	private final static LastErrorsInstance getLastErrorsInstance()
 	{
 		final Properties ctx = Env.getCtx();
-		return Env.get(ctx, LASTERRORINSTANCE_CTXKEY, LastErrorsInstance.supplier);
+		return Env.get(ctx, LASTERRORINSTANCE_CTXKEY, LastErrorsInstance::new);
 	}
 
 	/**
@@ -210,16 +208,6 @@ public class MetasfreshLastError
 	@SuppressWarnings("serial")
 	private static class LastErrorsInstance implements Serializable
 	{
-		public static final transient Supplier<LastErrorsInstance> supplier = new Supplier<LastErrorsInstance>()
-		{
-
-			@Override
-			public LastErrorsInstance get()
-			{
-				return new LastErrorsInstance();
-			}
-		};
-
 		private ValueNamePair lastError;
 		private Throwable lastException;
 		private ValueNamePair lastWarning;

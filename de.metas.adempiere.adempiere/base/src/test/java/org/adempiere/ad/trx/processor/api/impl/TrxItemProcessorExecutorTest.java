@@ -13,11 +13,11 @@ package org.adempiere.ad.trx.processor.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +28,8 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
 import org.adempiere.ad.trx.api.impl.PredictableTrxNameGenerator;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -73,41 +75,35 @@ public class TrxItemProcessorExecutorTest
 				//
 				new Item("3", "1"),
 				new Item("3", "2"),
-				new Item("3", "3")
-				);
+				new Item("3", "3"));
 
 		final ItemProcessorResult resultExpected = new ItemProcessorResult(
 				new AggregatedItem("1", "trx1",
 						new Item("1", "1"),
 						new Item("1", "2"),
-						new Item("1", "3")
-				),
+						new Item("1", "3")),
 				new AggregatedItem("2", "trx2",
-						new Item("2", "1")
-				),
+						new Item("2", "1")),
 				new AggregatedItem("3", "trx3",
 						new Item("3", "1"),
 						new Item("3", "2"),
-						new Item("3", "3")
-				)
-				);
+						new Item("3", "3")));
 
-		assertProcessorResult(items, resultExpected);
+		assertProcessorResult_CancelChunkAndRollBack(items, resultExpected);
 	}
 
-	@Test
-	public void test_execute_FailingItem()
-	{
-		final List<Item> items = Arrays.asList(
-				new Item("1", "1"),
-				new Item("1", "2"),
-				new Item("1", "3"),
-				new Item("2", "1"),
-				new Item("3", "1"),
-				new Item("3", "2"),
-				new Item("3", "3")
-				);
+	private final List<Item> items = Arrays.asList(
+			new Item("1", "1"),
+			new Item("1", "2"),
+			new Item("1", "3"),
+			new Item("2", "1"),
+			new Item("3", "1"),
+			new Item("3", "2"),
+			new Item("3", "3"));
 
+	@Test
+	public void test_execute_FailingItem_CancelAndRollBack()
+	{
 		processor.setThrowExceptionIfItem(new Item("1", "2"));
 
 		final ItemProcessorResult resultExpected = new ItemProcessorResult(
@@ -118,16 +114,37 @@ public class TrxItemProcessorExecutorTest
 				// new Item("1", "3")
 				// ),
 				new AggregatedItem("2", "trx2",
-						new Item("2", "1")
-				),
+						new Item("2", "1")),
 				new AggregatedItem("3", "trx3",
 						new Item("3", "1"),
 						new Item("3", "2"),
-						new Item("3", "3")
-				)
-				);
+						new Item("3", "3")));
 
-		assertProcessorResult(items, resultExpected);
+		assertProcessorResult_CancelChunkAndRollBack(items, resultExpected);
+	}
+
+	@Test
+	public void test_execute_FailingItem_ContinueChunkAndCommit()
+	{
+		processor.setThrowExceptionIfItem(new Item("1", "2"));
+
+		final ItemProcessorResult resultExpected = new ItemProcessorResult(
+
+				new AggregatedItem("1", "trx1",
+						new Item("1", "1"),
+				//		new Item("1", "2"), // the failing item will not make it into the result, because the mock processor throws an exception instead of adding it
+						new Item("1", "3")),
+				new AggregatedItem("2", "trx2",
+						new Item("2", "1")),
+				new AggregatedItem("3", "trx3",
+						new Item("3", "1"),
+						new Item("3", "2"),
+						new Item("3", "3")));
+
+		assertProcessorResult(items,
+				OnItemErrorPolicy.ContinueChunkAndCommit,
+				resultExpected,
+				null);
 	}
 
 	@Test
@@ -140,8 +157,7 @@ public class TrxItemProcessorExecutorTest
 				new Item("2", "1"),
 				new Item("3", "1"),
 				new Item("3", "2"),
-				new Item("3", "3")
-				);
+				new Item("3", "3"));
 
 		processor.setThrowExceptionOnCompleteChunk("1");
 
@@ -153,16 +169,16 @@ public class TrxItemProcessorExecutorTest
 				// new Item("1", "3")
 				// ),
 				new AggregatedItem("2", "trx2",
-						new Item("2", "1")
-				),
+						new Item("2", "1")),
 				new AggregatedItem("3", "trx3",
 						new Item("3", "1"),
 						new Item("3", "2"),
-						new Item("3", "3")
-				)
-				);
+						new Item("3", "3")));
 
-		assertProcessorResult(items, resultExpected);
+		assertProcessorResult(items,
+				OnItemErrorPolicy.CancelChunkAndRollBack,
+				resultExpected,
+				null);
 	}
 
 	@Test
@@ -175,8 +191,7 @@ public class TrxItemProcessorExecutorTest
 				new Item("2", "1"),
 				new Item("3", "1"),
 				new Item("3", "2"),
-				new Item("3", "3")
-				);
+				new Item("3", "3"));
 
 		processor.setThrowExceptionOnCompleteChunk("2");
 		processor.setThrowExceptionOnCancelChunk("2");
@@ -185,22 +200,29 @@ public class TrxItemProcessorExecutorTest
 				new AggregatedItem("1", "trx1",
 						new Item("1", "1"),
 						new Item("1", "2"),
-						new Item("1", "3")
-				)
-				// NOTE: following chunks shall not be present because cancelChunk fails on chunk "2"
-				// which means that entire batch processing will be stopped
+						new Item("1", "3"))
+						// NOTE: following chunks shall not be present because cancelChunk fails on chunk "2"
+						// which means that entire batch processing will be stopped
 
-				// , new AggregatedItem("2", "trx2",
-				// new Item("2", "1")
-				// )
-				// , new AggregatedItem("3", "trx3",
-				// new Item("3", "1"),
-				// new Item("3", "2"),
-				// new Item("3", "3")
-				// )
-				);
+		// , new AggregatedItem("2", "trx2",
+		// new Item("2", "1")
+		// )
+		// , new AggregatedItem("3", "trx3",
+		// new Item("3", "1"),
+		// new Item("3", "2"),
+		// new Item("3", "3")
+		// )
+		);
 
 		assertProcessorResult(items,
+				OnItemErrorPolicy.CancelChunkAndRollBack,
+				resultExpected,
+				AdempiereException.class // we are expecting processing to fail on cancel
+		);
+
+		// se expect the same result for CancelChunkAndCommit
+		assertProcessorResult(items,
+				OnItemErrorPolicy.CancelChunkAndCommit,
 				resultExpected,
 				AdempiereException.class // we are expecting processing to fail on cancel
 		);
@@ -216,8 +238,7 @@ public class TrxItemProcessorExecutorTest
 				new Item("2", "1"),
 				new Item("3", "1"),
 				new Item("3", "2"),
-				new Item("3", "3")
-				);
+				new Item("3", "3"));
 
 		processor.setThrowExceptionOnNewChunk("1");
 
@@ -230,16 +251,13 @@ public class TrxItemProcessorExecutorTest
 				// new Item("1", "3")
 				// ),
 				new AggregatedItem("2", "trx4",
-						new Item("2", "1")
-				),
+						new Item("2", "1")),
 				new AggregatedItem("3", "trx5",
 						new Item("3", "1"),
 						new Item("3", "2"),
-						new Item("3", "3")
-				)
-				);
+						new Item("3", "3")));
 
-		assertProcessorResult(items, resultExpected);
+		assertProcessorResult_CancelChunkAndRollBack(items, resultExpected);
 	}
 
 	@Test
@@ -248,9 +266,7 @@ public class TrxItemProcessorExecutorTest
 		final List<Item> items = Arrays.asList(new Item("1", "1"));
 		final ItemProcessorResult resultExpected = new ItemProcessorResult(
 				new AggregatedItem("1", "trx1",
-						new Item("1", "1")
-				)
-				);
+						new Item("1", "1")));
 
 		processor.setExpectTrxSavepoints(false);
 		new TrxItemProcessorExecutorRunExpectations<Item, ItemProcessorResult>()
@@ -268,9 +284,7 @@ public class TrxItemProcessorExecutorTest
 		final List<Item> items = Arrays.asList(new Item("1", "1"));
 		final ItemProcessorResult resultExpected = new ItemProcessorResult(
 				new AggregatedItem("1", "trx1",
-						new Item("1", "1")
-				)
-				);
+						new Item("1", "1")));
 
 		processor.setExpectTrxSavepoints(true);
 		new TrxItemProcessorExecutorRunExpectations<Item, ItemProcessorResult>()
@@ -282,10 +296,15 @@ public class TrxItemProcessorExecutorTest
 				.assertExpected();
 	}
 
-	private void assertProcessorResult(final List<Item> items, final ItemProcessorResult resultExpected)
+	private void assertProcessorResult_CancelChunkAndRollBack(
+			final List<Item> items,
+			final ItemProcessorResult resultExpected)
 	{
 		final Class<?> expectedException = null; // we don't expect any exception
-		assertProcessorResult(items, resultExpected, expectedException);
+		assertProcessorResult(items,
+				OnItemErrorPolicy.CancelChunkAndRollBack,
+				resultExpected,
+				expectedException);
 	}
 
 	/**
@@ -295,10 +314,15 @@ public class TrxItemProcessorExecutorTest
 	 * @param resultExpected
 	 * @param expectedExceptionClass
 	 */
-	private void assertProcessorResult(final List<Item> items, final ItemProcessorResult resultExpected, final Class<?> expectedExceptionClass)
+	private void assertProcessorResult(
+			final List<Item> items,
+			final ITrxItemExecutorBuilder.OnItemErrorPolicy onItemErrorPolicy,
+			final ItemProcessorResult resultExpected,
+			final Class<?> expectedExceptionClass)
 	{
 		final TrxItemProcessorExecutorRunExpectations<Item, ItemProcessorResult> expectations = new TrxItemProcessorExecutorRunExpectations<Item, ItemProcessorResult>()
 				.setProcessor(processor)
+				.setOnItemErrorPolicy(onItemErrorPolicy)
 				.setItems(items)
 				.setExpectedResult(resultExpected)
 				.setExpectedExceptionClass(expectedExceptionClass);

@@ -1,7 +1,6 @@
 package org.adempiere.ad.expression.api.impl;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,7 +10,7 @@ import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicExpression extends AbstractLogicExpression
@@ -21,7 +20,7 @@ import com.google.common.collect.ImmutableList;
 	private final String operator;
 	private final Boolean constantValue;
 
-	private ImmutableList<String> _parameters;
+	private ImmutableSet<String> _parameters;
 
 	private Integer _hashcode; // lazy
 	private String _expressionString; // lazy
@@ -208,19 +207,19 @@ import com.google.common.collect.ImmutableList;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		if (_parameters == null)
 		{
 			if (isConstant())
 			{
-				_parameters = ImmutableList.of();
+				_parameters = ImmutableSet.of();
 			}
 			else
 			{
 				final Set<String> result = new LinkedHashSet<>(left.getParameters());
 				result.addAll(right.getParameters());
-				_parameters = ImmutableList.copyOf(result);
+				_parameters = ImmutableSet.copyOf(result);
 			}
 		}
 		return _parameters;

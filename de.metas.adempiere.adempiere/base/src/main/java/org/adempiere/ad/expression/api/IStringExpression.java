@@ -1,32 +1,11 @@
 package org.adempiere.ad.expression.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.CachedStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionDeserializer;
 import org.compiere.util.Evaluatee;
@@ -36,6 +15,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * String Expression
+ * 
+ * NOTE to developers: If you are going to implement this interface please make sure your new implementation's evaluator is depending only on the context which is given as parameter and no other
+ * external variables. Breaking this rule will make the expressions behaving weird.
  *
  * @author tsa
  *
@@ -43,6 +25,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(using = JsonStringExpressionDeserializer.class)
 public interface IStringExpression extends IExpression<String>
 {
+	/**
+	 * Gets a new composite string expression builder.
+	 * 
+	 * @return composer
+	 */
+	public static CompositeStringExpression.Builder composer()
+	{
+		return CompositeStringExpression.builder();
+	}
+
 	String EMPTY_RESULT = new String(""); // NOTE: we get a new string instance because we will compare with it by identity
 
 	/**
@@ -56,19 +48,8 @@ public interface IStringExpression extends IExpression<String>
 		return String.class;
 	}
 
-	/**
-	 * Gets internal string expression chunks. Don't use it directly, the API will use it only
-	 *
-	 * @return
-	 */
-	List<Object> getExpressionChunks();
-	
 	@Override
-	default String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
-	{
-		final String value = StringExpressionEvaluator.instance.evaluate(ctx, this, onVariableNotFound);
-		return value;
-	}
+	Set<String> getParameters();
 
 	@Override
 	default boolean isNoResult(final Object result)
@@ -76,7 +57,7 @@ public interface IStringExpression extends IExpression<String>
 		return result == null
 				|| Util.same(result, EMPTY_RESULT);
 	}
-	
+
 	@Override
 	default boolean isNullExpression()
 	{
@@ -96,4 +77,24 @@ public interface IStringExpression extends IExpression<String>
 		return StringExpressionCompiler.instance.compile(expressionStr);
 	}
 
+	/**
+	 * Turns this expression in an expression which caches it's evaluation results.
+	 * If this expression implements {@link ICachedStringExpression} it will be returned directly without any wrapping.
+	 * 
+	 * @return cached expression
+	 */
+	default ICachedStringExpression caching()
+	{
+		return CachedStringExpression.wrapIfPossible(this);
+	}
+
+	/**
+	 * @return same as {@link #toString()} but the whole string representation will be on one line (new lines are stripped)
+	 */
+	default String toOneLineString()
+	{
+		return toString()
+				.replace("\r", "")
+				.replace("\n", "");
+	}
 }

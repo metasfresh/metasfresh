@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -32,8 +31,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.JButton;
@@ -41,12 +38,14 @@ import javax.swing.Timer;
 
 import org.compiere.swing.CPanel;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.ITerminalKeySuggestionsPanel;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.ITerminalLookupField;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /* package */class SwingTerminalKeySuggestionsPanel
 		implements IComponentSwing, ITerminalKeySuggestionsPanel
@@ -100,9 +99,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private boolean _disposed = false;
 
-	public SwingTerminalKeySuggestionsPanel(final SwingTerminalKeyDialog parent, final ITerminalLookupField lookupField)
+	public SwingTerminalKeySuggestionsPanel(final SwingTerminalKeyDialog parent,
+			final ITerminalLookupField lookupField)
 	{
-		super();
 		this.parent = parent;
 		this.lookupField = lookupField;
 		this.terminalContext = parent.getTerminalContext();
@@ -116,6 +115,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 		final ITerminalTextField textField = lookupField.getTextField();
 		textField.addListener(ITerminalTextField.PROPERTY_TextChanged, textChangedListener);
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void initUI()
@@ -156,7 +157,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			timer.stop();
 		}
 		timerListener = null;
-		
+
 		parent = null;
 
 		final ITerminalTextField textField = lookupField.getTextField();
@@ -192,6 +193,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		//
 		//
 		_disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return _disposed;
 	}
 
 	@Override

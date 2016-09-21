@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.mmovement.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -31,7 +30,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -378,18 +376,6 @@ public abstract class AbstractLTCUModel extends AbstractMaterialMovementModel im
 	}
 
 	/**
-	 * Clean up.
-	 *
-	 * Nothing at this level.
-	 */
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-		DisposableHelper.disposeAll(_cuKeyLayout, _tuKeyLayout, _luKeyLayout);
-	}
-
-	/**
 	 * Helper method which is:
 	 * <ul>
 	 * <li>removing all top level HUs which were destroyed
@@ -426,7 +412,7 @@ public abstract class AbstractLTCUModel extends AbstractMaterialMovementModel im
 
 				// recreate the key if not already destroyed and it's still top level
 				if (!handlingUnitsBL.isDestroyedRefreshFirst(hu) // re-add keys which have their HUs were not destroyed
-						&& handlingUnitsBL.isTopLevel(hu)) // AND which are not attached to a parent
+						&& handlingUnitsBL.isTopLevel(hu))   // AND which are not attached to a parent
 				{
 					final IHUKey keyNew = keyFactory.createKey(hu, huKeyOld.findDocumentLineOrNull());
 					rootKey.addChild(keyNew);

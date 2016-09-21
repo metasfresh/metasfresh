@@ -1360,11 +1360,20 @@ public class CalloutOrder extends CalloutEngine
 	{
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 	}
+	
+	private static interface DropShipPartnerAware
+	{
+		public int getC_BPartner_ID();
+		public void setDropShip_Location_ID (int DropShip_Location_ID);
+		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
+		public void setDropShip_User_ID (int DropShip_User_ID);
+		public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
+	}
 
 	public String deliveryToBPartnerID(final ICalloutField calloutField)
 	{
-		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		final int C_BPartner_ID = order.getC_BPartner_ID();
+		final DropShipPartnerAware dropShipAware = calloutField.getModel(DropShipPartnerAware.class);
+		final int C_BPartner_ID = dropShipAware.getC_BPartner_ID();
 		if (C_BPartner_ID <= 0)
 			return NO_ERROR;
 		String sql = "SELECT lship.C_BPartner_Location_ID,c.AD_User_ID "
@@ -1401,9 +1410,9 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 				if (shipTo_ID <= 0)
-					order.setDropShip_Location(null);
+					dropShipAware.setDropShip_Location(null);
 				else
-					order.setDropShip_Location_ID(shipTo_ID);
+					dropShipAware.setDropShip_Location_ID(shipTo_ID);
 
 				int contID = rs.getInt("AD_User_ID");
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
@@ -1413,10 +1422,10 @@ public class CalloutOrder extends CalloutEngine
 						contID = tabInfoContactId;
 				}
 				if (contID <= 0)
-					order.setDropShip_User(null);
+					dropShipAware.setDropShip_User(null);
 				else
 				{
-					order.setDropShip_User_ID(contID);
+					dropShipAware.setDropShip_User_ID(contID);
 				}
 
 			}

@@ -45,7 +45,6 @@ public class GridTabValidationContext implements IValidationContext
 	private final int windowNo;
 	private final int tabNo;
 	private final String contextTableName;
-	private final int contextTableId;
 	private final String tableName;
 
 
@@ -70,7 +69,6 @@ public class GridTabValidationContext implements IValidationContext
 		if (contextTableId <= 0)
 		{
 			this.contextTableName = null;
-			this.contextTableId = -1;
 			// accept even if there is no tableId found, because maybe we are using the field in custom interfaces
 			// throw new AdempiereException("No AD_Table_ID found for WindowNo=" + windowNo + ", TabNo=" + tabNo);
 		}
@@ -81,27 +79,13 @@ public class GridTabValidationContext implements IValidationContext
 			{
 				throw new AdempiereException("No TableName found for AD_Table_ID=" + contextTableId);
 			}
-			
-			this.contextTableId = contextTableId;
 		}
-	}
-
-	@Override
-	public String getContextTableName()
-	{
-		return contextTableName;
 	}
 
 	@Override
 	public String getTableName()
 	{
 		return tableName;
-	}
-
-	@Override
-	public int getWindowNo()
-	{
-		return windowNo;
 	}
 
 	/**
@@ -111,6 +95,11 @@ public class GridTabValidationContext implements IValidationContext
 	public String get_ValueAsString(final String variableName)
 	{
 		Check.assumeNotNull(variableName, "variableName not null");
+		
+		if(PARAMETER_ContextTableName.equals(variableName))
+		{
+			return contextTableName;
+		}
 
 		// only checking the window scope; global scope might contain default values (e.g. #C_DocTypeTarget_ID) that might confuse a validation rule
 		final String value = Env.getContext(ctx, windowNo, tabNo, variableName, Scope.Window);

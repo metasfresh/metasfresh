@@ -39,10 +39,13 @@ import java.util.Properties;
 
 import javax.swing.text.JTextComponent;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -199,9 +202,9 @@ import de.metas.autocomplete.model.I_AD_Table;
 			}
 
 			// Full generated identifier search
-			if (!Check.isEmpty(lookupInfo.getDisplayColumnSQL(), true))
+			if (!Check.isEmpty(lookupInfo.getDisplayColumnSqlAsString(), true))
 			{
-				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSQL()) + ")"
+				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSqlAsString()) + ")"
 						+ " LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ")");
 				paramsTemplate.add(VLookupAutoCompleterValidationRule.SEARCHSQL_PLACEHOLDER);
 			}
@@ -223,7 +226,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 	}
 
 	@Override
-	protected Object fetchUserObject(ResultSet rs) throws SQLException
+	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
 
@@ -240,7 +243,8 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 
 		// Validate the result
-		if (!validationRule.accept(getValidationContext(), item))
+		final INamePairPredicate postQueryFilter = validationRule.getPostQueryFilter();
+		if (!postQueryFilter.accept(getValidationContext(), item))
 		{
 			return null;
 		}
@@ -278,7 +282,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 	{
 		final String searchSQL = getSearchStringSQL(searchInput, caretPosition);
 
-		final String sqlSelect = lookupInfo.getSelectSqlPart();
+		final String sqlSelect = lookupInfo.getSelectSqlPartAsString();
 		if (Check.isEmpty(sqlSelect, true))
 		{
 			log.warn("Empty SELECT SQL found for: " + lookupInfo);
@@ -295,8 +299,9 @@ import de.metas.autocomplete.model.I_AD_Table;
 				sqlWhere.append("(").append(lookupInfo.getWhereClauseSqlPart()).append(")");
 			}
 
-			final String sqlWhereValRule = validationRule.getPrefilterWhereClause(getValidationContext());
-			if (sqlWhereValRule == IValidationRule.WHERECLAUSE_ERROR)
+			final IStringExpression sqlWhereValRuleExpr = validationRule.getPrefilterWhereClause();
+			final String sqlWhereValRule = sqlWhereValRuleExpr.evaluate(getValidationContext(), OnVariableNotFound.ReturnNoResult);
+			if(sqlWhereValRuleExpr.isNoResult(sqlWhereValRule))
 			{
 				return null;
 			}

@@ -1,39 +1,23 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
+
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for R_Request
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_R_Request extends PO implements I_R_Request, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_R_Request extends org.compiere.model.PO implements I_R_Request, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 650613102L;
 
     /** Standard Constructor */
     public X_R_Request (Properties ctx, int R_Request_ID, String trxName)
@@ -47,7 +31,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 // C
 			setDocumentNo (null);
 			setDueType (null);
-// 5
+// 7
 			setIsEscalated (false);
 			setIsInvoiced (false);
 			setIsSelfService (false);
@@ -68,37 +52,32 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 7 - System - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_R_Request[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_A_Asset getA_Asset() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_A_Asset_ID, org.compiere.model.I_A_Asset.class);
+	}
 
-	public I_A_Asset getA_Asset() throws RuntimeException
-    {
-		return (I_A_Asset)MTable.get(getCtx(), I_A_Asset.Table_Name)
-			.getPO(getA_Asset_ID(), get_TrxName());	}
+	@Override
+	public void setA_Asset(org.compiere.model.I_A_Asset A_Asset)
+	{
+		set_ValueFromPO(COLUMNNAME_A_Asset_ID, org.compiere.model.I_A_Asset.class, A_Asset);
+	}
 
 	/** Set Asset.
 		@param A_Asset_ID 
 		Asset used internally or by customers
 	  */
+	@Override
 	public void setA_Asset_ID (int A_Asset_ID)
 	{
 		if (A_Asset_ID < 1) 
@@ -110,6 +89,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Asset.
 		@return Asset used internally or by customers
 	  */
+	@Override
 	public int getA_Asset_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_A_Asset_ID);
@@ -118,15 +98,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Role getAD_Role() throws RuntimeException
-    {
-		return (I_AD_Role)MTable.get(getCtx(), I_AD_Role.Table_Name)
-			.getPO(getAD_Role_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
+	}
 
-	/** Set Role.
+	@Override
+	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class, AD_Role);
+	}
+
+	/** Set Rolle.
 		@param AD_Role_ID 
 		Responsibility Role
 	  */
+	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
 		if (AD_Role_ID < 0) 
@@ -135,9 +123,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
-	/** Get Role.
+	/** Get Rolle.
 		@return Responsibility Role
 	  */
+	@Override
 	public int getAD_Role_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
@@ -146,15 +135,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -163,9 +160,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -174,26 +172,35 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_User getAD_User() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getAD_User_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+	}
 
-	/** Set User/Contact.
+	@Override
+	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+	}
+
+	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
-	/** Get User/Contact.
+	/** Get Ansprechpartner.
 		@return User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
@@ -202,15 +209,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Activity getC_Activity() throws RuntimeException
-    {
-		return (I_C_Activity)MTable.get(getCtx(), I_C_Activity.Table_Name)
-			.getPO(getC_Activity_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
+	}
 
-	/** Set Activity.
+	@Override
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
+	}
+
+	/** Set Kostenstelle.
 		@param C_Activity_ID 
-		Business Activity
+		Kostenstelle
 	  */
+	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -219,9 +234,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
-	/** Get Activity.
-		@return Business Activity
+	/** Get Kostenstelle.
+		@return Kostenstelle
 	  */
+	@Override
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
@@ -230,15 +246,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
 
 	/** Set Business Partner .
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -250,6 +274,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Business Partner .
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -258,15 +283,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Campaign getC_Campaign() throws RuntimeException
-    {
-		return (I_C_Campaign)MTable.get(getCtx(), I_C_Campaign.Table_Name)
-			.getPO(getC_Campaign_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
 
-	/** Set Campaign.
+	@Override
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	/** Set Werbemassnahme.
 		@param C_Campaign_ID 
 		Marketing Campaign
 	  */
+	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
@@ -275,9 +308,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
-	/** Get Campaign.
+	/** Get Werbemassnahme.
 		@return Marketing Campaign
 	  */
+	@Override
 	public int getC_Campaign_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
@@ -286,15 +320,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Invoice getC_Invoice() throws RuntimeException
-    {
-		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
-			.getPO(getC_Invoice_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
 
-	/** Set Invoice.
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
 		@param C_Invoice_ID 
 		Invoice Identifier
 	  */
+	@Override
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -303,9 +345,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
 	}
 
-	/** Get Invoice.
+	/** Get Rechnung.
 		@return Invoice Identifier
 	  */
+	@Override
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
@@ -314,15 +357,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Invoice getC_InvoiceRequest() throws RuntimeException
-    {
-		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
-			.getPO(getC_InvoiceRequest_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Invoice getC_InvoiceRequest() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_InvoiceRequest_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_InvoiceRequest(org.compiere.model.I_C_Invoice C_InvoiceRequest)
+	{
+		set_ValueFromPO(COLUMNNAME_C_InvoiceRequest_ID, org.compiere.model.I_C_Invoice.class, C_InvoiceRequest);
+	}
 
 	/** Set Request Invoice.
 		@param C_InvoiceRequest_ID 
 		The generated invoice for this request
 	  */
+	@Override
 	public void setC_InvoiceRequest_ID (int C_InvoiceRequest_ID)
 	{
 		if (C_InvoiceRequest_ID < 1) 
@@ -334,6 +385,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Request Invoice.
 		@return The generated invoice for this request
 	  */
+	@Override
 	public int getC_InvoiceRequest_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceRequest_ID);
@@ -346,7 +398,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param CloseDate 
 		Close Date
 	  */
-	public void setCloseDate (Timestamp CloseDate)
+	@Override
+	public void setCloseDate (java.sql.Timestamp CloseDate)
 	{
 		set_Value (COLUMNNAME_CloseDate, CloseDate);
 	}
@@ -354,12 +407,16 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Close Date.
 		@return Close Date
 	  */
-	public Timestamp getCloseDate () 
+	@Override
+	public java.sql.Timestamp getCloseDate () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_CloseDate);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_CloseDate);
 	}
 
-	/** ConfidentialType AD_Reference_ID=340 */
+	/** 
+	 * ConfidentialType AD_Reference_ID=340
+	 * Reference name: R_Request Confidential
+	 */
 	public static final int CONFIDENTIALTYPE_AD_Reference_ID=340;
 	/** Public Information = A */
 	public static final String CONFIDENTIALTYPE_PublicInformation = "A";
@@ -373,7 +430,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param ConfidentialType 
 		Type of Confidentiality
 	  */
-	public void setConfidentialType (String ConfidentialType)
+	@Override
+	public void setConfidentialType (java.lang.String ConfidentialType)
 	{
 
 		set_Value (COLUMNNAME_ConfidentialType, ConfidentialType);
@@ -382,12 +440,16 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Confidentiality.
 		@return Type of Confidentiality
 	  */
-	public String getConfidentialType () 
+	@Override
+	public java.lang.String getConfidentialType () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfidentialType);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfidentialType);
 	}
 
-	/** ConfidentialTypeEntry AD_Reference_ID=340 */
+	/** 
+	 * ConfidentialTypeEntry AD_Reference_ID=340
+	 * Reference name: R_Request Confidential
+	 */
 	public static final int CONFIDENTIALTYPEENTRY_AD_Reference_ID=340;
 	/** Public Information = A */
 	public static final String CONFIDENTIALTYPEENTRY_PublicInformation = "A";
@@ -401,7 +463,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param ConfidentialTypeEntry 
 		Confidentiality of the individual entry
 	  */
-	public void setConfidentialTypeEntry (String ConfidentialTypeEntry)
+	@Override
+	public void setConfidentialTypeEntry (java.lang.String ConfidentialTypeEntry)
 	{
 
 		set_Value (COLUMNNAME_ConfidentialTypeEntry, ConfidentialTypeEntry);
@@ -410,20 +473,29 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Entry Confidentiality.
 		@return Confidentiality of the individual entry
 	  */
-	public String getConfidentialTypeEntry () 
+	@Override
+	public java.lang.String getConfidentialTypeEntry () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfidentialTypeEntry);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfidentialTypeEntry);
 	}
 
-	public I_C_Order getC_Order() throws RuntimeException
-    {
-		return (I_C_Order)MTable.get(getCtx(), I_C_Order.Table_Name)
-			.getPO(getC_Order_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
 
-	/** Set Order.
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
 		@param C_Order_ID 
 		Order
 	  */
+	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -432,9 +504,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
 	}
 
-	/** Get Order.
+	/** Get Auftrag.
 		@return Order
 	  */
+	@Override
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
@@ -443,15 +516,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Payment getC_Payment() throws RuntimeException
-    {
-		return (I_C_Payment)MTable.get(getCtx(), I_C_Payment.Table_Name)
-			.getPO(getC_Payment_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
+	}
 
-	/** Set Payment.
+	@Override
+	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
+	}
+
+	/** Set Zahlung.
 		@param C_Payment_ID 
 		Payment identifier
 	  */
+	@Override
 	public void setC_Payment_ID (int C_Payment_ID)
 	{
 		if (C_Payment_ID < 1) 
@@ -460,9 +541,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
 	}
 
-	/** Get Payment.
+	/** Get Zahlung.
 		@return Payment identifier
 	  */
+	@Override
 	public int getC_Payment_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
@@ -471,15 +553,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Project getC_Project() throws RuntimeException
-    {
-		return (I_C_Project)MTable.get(getCtx(), I_C_Project.Table_Name)
-			.getPO(getC_Project_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
+	}
+
+	@Override
+	public void setC_Project(org.compiere.model.I_C_Project C_Project)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
+	}
 
 	/** Set Project.
 		@param C_Project_ID 
 		Financial Project
 	  */
+	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -491,6 +581,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Project.
 		@return Financial Project
 	  */
+	@Override
 	public int getC_Project_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
@@ -503,7 +594,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param DateCompletePlan 
 		Planned Completion Date
 	  */
-	public void setDateCompletePlan (Timestamp DateCompletePlan)
+	@Override
+	public void setDateCompletePlan (java.sql.Timestamp DateCompletePlan)
 	{
 		set_Value (COLUMNNAME_DateCompletePlan, DateCompletePlan);
 	}
@@ -511,16 +603,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Complete Plan.
 		@return Planned Completion Date
 	  */
-	public Timestamp getDateCompletePlan () 
+	@Override
+	public java.sql.Timestamp getDateCompletePlan () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateCompletePlan);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateCompletePlan);
 	}
 
 	/** Set Date last action.
 		@param DateLastAction 
 		Date this request was last acted on
 	  */
-	public void setDateLastAction (Timestamp DateLastAction)
+	@Override
+	public void setDateLastAction (java.sql.Timestamp DateLastAction)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateLastAction, DateLastAction);
 	}
@@ -528,16 +622,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Date last action.
 		@return Date this request was last acted on
 	  */
-	public Timestamp getDateLastAction () 
+	@Override
+	public java.sql.Timestamp getDateLastAction () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateLastAction);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastAction);
 	}
 
 	/** Set Last Alert.
 		@param DateLastAlert 
 		Date when last alert were sent
 	  */
-	public void setDateLastAlert (Timestamp DateLastAlert)
+	@Override
+	public void setDateLastAlert (java.sql.Timestamp DateLastAlert)
 	{
 		set_Value (COLUMNNAME_DateLastAlert, DateLastAlert);
 	}
@@ -545,16 +641,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Last Alert.
 		@return Date when last alert were sent
 	  */
-	public Timestamp getDateLastAlert () 
+	@Override
+	public java.sql.Timestamp getDateLastAlert () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateLastAlert);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastAlert);
 	}
 
 	/** Set Date next action.
 		@param DateNextAction 
 		Date that this request should be acted on
 	  */
-	public void setDateNextAction (Timestamp DateNextAction)
+	@Override
+	public void setDateNextAction (java.sql.Timestamp DateNextAction)
 	{
 		set_Value (COLUMNNAME_DateNextAction, DateNextAction);
 	}
@@ -562,16 +660,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Date next action.
 		@return Date that this request should be acted on
 	  */
-	public Timestamp getDateNextAction () 
+	@Override
+	public java.sql.Timestamp getDateNextAction () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateNextAction);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateNextAction);
 	}
 
 	/** Set Start Plan.
 		@param DateStartPlan 
 		Planned Start Date
 	  */
-	public void setDateStartPlan (Timestamp DateStartPlan)
+	@Override
+	public void setDateStartPlan (java.sql.Timestamp DateStartPlan)
 	{
 		set_Value (COLUMNNAME_DateStartPlan, DateStartPlan);
 	}
@@ -579,49 +679,48 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Start Plan.
 		@return Planned Start Date
 	  */
-	public Timestamp getDateStartPlan () 
+	@Override
+	public java.sql.Timestamp getDateStartPlan () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateStartPlan);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateStartPlan);
 	}
 
-	/** Set Document No.
+	/** Set Beleg Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Beleg Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getDocumentNo());
-    }
-
-	/** DueType AD_Reference_ID=222 */
+	/** 
+	 * DueType AD_Reference_ID=222
+	 * Reference name: R_Request Due Type
+	 */
 	public static final int DUETYPE_AD_Reference_ID=222;
-	/** Overdue = 3 */
-	public static final String DUETYPE_Overdue = "3";
-	/** Due = 5 */
-	public static final String DUETYPE_Due = "5";
-	/** Scheduled = 7 */
-	public static final String DUETYPE_Scheduled = "7";
+	/** Überfällig = 3 */
+	public static final String DUETYPE_Ueberfaellig = "3";
+	/** Fällig = 5 */
+	public static final String DUETYPE_Faellig = "5";
+	/** Geplant = 7 */
+	public static final String DUETYPE_Geplant = "7";
 	/** Set Due type.
 		@param DueType 
 		Status of the next action for this Request
 	  */
-	public void setDueType (String DueType)
+	@Override
+	public void setDueType (java.lang.String DueType)
 	{
 
 		set_Value (COLUMNNAME_DueType, DueType);
@@ -630,16 +729,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Due type.
 		@return Status of the next action for this Request
 	  */
-	public String getDueType () 
+	@Override
+	public java.lang.String getDueType () 
 	{
-		return (String)get_Value(COLUMNNAME_DueType);
+		return (java.lang.String)get_Value(COLUMNNAME_DueType);
 	}
 
 	/** Set End Time.
 		@param EndTime 
 		End of the time span
 	  */
-	public void setEndTime (Timestamp EndTime)
+	@Override
+	public void setEndTime (java.sql.Timestamp EndTime)
 	{
 		set_Value (COLUMNNAME_EndTime, EndTime);
 	}
@@ -647,15 +748,17 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get End Time.
 		@return End of the time span
 	  */
-	public Timestamp getEndTime () 
+	@Override
+	public java.sql.Timestamp getEndTime () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_EndTime);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_EndTime);
 	}
 
 	/** Set Escalated.
 		@param IsEscalated 
 		This request has been escalated
 	  */
+	@Override
 	public void setIsEscalated (boolean IsEscalated)
 	{
 		set_Value (COLUMNNAME_IsEscalated, Boolean.valueOf(IsEscalated));
@@ -664,6 +767,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Escalated.
 		@return This request has been escalated
 	  */
+	@Override
 	public boolean isEscalated () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEscalated);
@@ -680,6 +784,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param IsInvoiced 
 		Is this invoiced?
 	  */
+	@Override
 	public void setIsInvoiced (boolean IsInvoiced)
 	{
 		set_Value (COLUMNNAME_IsInvoiced, Boolean.valueOf(IsInvoiced));
@@ -688,6 +793,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Invoiced.
 		@return Is this invoiced?
 	  */
+	@Override
 	public boolean isInvoiced () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsInvoiced);
@@ -704,6 +810,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param IsSelfService 
 		This is a Self-Service entry or this entry can be changed via Self-Service
 	  */
+	@Override
 	public void setIsSelfService (boolean IsSelfService)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsSelfService, Boolean.valueOf(IsSelfService));
@@ -712,6 +819,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Self-Service.
 		@return This is a Self-Service entry or this entry can be changed via Self-Service
 	  */
+	@Override
 	public boolean isSelfService () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
@@ -728,7 +836,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param LastResult 
 		Result of last contact
 	  */
-	public void setLastResult (String LastResult)
+	@Override
+	public void setLastResult (java.lang.String LastResult)
 	{
 		set_Value (COLUMNNAME_LastResult, LastResult);
 	}
@@ -736,20 +845,29 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Last Result.
 		@return Result of last contact
 	  */
-	public String getLastResult () 
+	@Override
+	public java.lang.String getLastResult () 
 	{
-		return (String)get_Value(COLUMNNAME_LastResult);
+		return (java.lang.String)get_Value(COLUMNNAME_LastResult);
 	}
 
-	public I_M_ChangeRequest getM_ChangeRequest() throws RuntimeException
-    {
-		return (I_M_ChangeRequest)MTable.get(getCtx(), I_M_ChangeRequest.Table_Name)
-			.getPO(getM_ChangeRequest_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_ChangeRequest getM_ChangeRequest() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ChangeRequest_ID, org.compiere.model.I_M_ChangeRequest.class);
+	}
+
+	@Override
+	public void setM_ChangeRequest(org.compiere.model.I_M_ChangeRequest M_ChangeRequest)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ChangeRequest_ID, org.compiere.model.I_M_ChangeRequest.class, M_ChangeRequest);
+	}
 
 	/** Set Change Request.
 		@param M_ChangeRequest_ID 
 		BOM (Engineering) Change Request
 	  */
+	@Override
 	public void setM_ChangeRequest_ID (int M_ChangeRequest_ID)
 	{
 		if (M_ChangeRequest_ID < 1) 
@@ -761,6 +879,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Change Request.
 		@return BOM (Engineering) Change Request
 	  */
+	@Override
 	public int getM_ChangeRequest_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ChangeRequest_ID);
@@ -769,15 +888,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_ChangeNotice getM_FixChangeNotice() throws RuntimeException
-    {
-		return (I_M_ChangeNotice)MTable.get(getCtx(), I_M_ChangeNotice.Table_Name)
-			.getPO(getM_FixChangeNotice_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_ChangeNotice getM_FixChangeNotice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_FixChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class);
+	}
+
+	@Override
+	public void setM_FixChangeNotice(org.compiere.model.I_M_ChangeNotice M_FixChangeNotice)
+	{
+		set_ValueFromPO(COLUMNNAME_M_FixChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class, M_FixChangeNotice);
+	}
 
 	/** Set Fixed in.
 		@param M_FixChangeNotice_ID 
 		Fixed in Change Notice
 	  */
+	@Override
 	public void setM_FixChangeNotice_ID (int M_FixChangeNotice_ID)
 	{
 		if (M_FixChangeNotice_ID < 1) 
@@ -789,6 +916,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Fixed in.
 		@return Fixed in Change Notice
 	  */
+	@Override
 	public int getM_FixChangeNotice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_FixChangeNotice_ID);
@@ -797,15 +925,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_InOut getM_InOut() throws RuntimeException
-    {
-		return (I_M_InOut)MTable.get(getCtx(), I_M_InOut.Table_Name)
-			.getPO(getM_InOut_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
 
-	/** Set Shipment/Receipt.
+	@Override
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	/** Set Lieferung/Wareneingang.
 		@param M_InOut_ID 
 		Material Shipment Document
 	  */
+	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
@@ -814,9 +950,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
 	}
 
-	/** Get Shipment/Receipt.
+	/** Get Lieferung/Wareneingang.
 		@return Material Shipment Document
 	  */
+	@Override
 	public int getM_InOut_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
@@ -825,15 +962,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -842,9 +987,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -853,15 +999,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_ProductSpent() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_ProductSpent_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_ProductSpent() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ProductSpent_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_ProductSpent(org.compiere.model.I_M_Product M_ProductSpent)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ProductSpent_ID, org.compiere.model.I_M_Product.class, M_ProductSpent);
+	}
 
 	/** Set Product Used.
 		@param M_ProductSpent_ID 
 		Product/Resource/Service used in Request
 	  */
+	@Override
 	public void setM_ProductSpent_ID (int M_ProductSpent_ID)
 	{
 		if (M_ProductSpent_ID < 1) 
@@ -873,6 +1027,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Product Used.
 		@return Product/Resource/Service used in Request
 	  */
+	@Override
 	public int getM_ProductSpent_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductSpent_ID);
@@ -881,15 +1036,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_RMA getM_RMA() throws RuntimeException
-    {
-		return (I_M_RMA)MTable.get(getCtx(), I_M_RMA.Table_Name)
-			.getPO(getM_RMA_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_RMA getM_RMA() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_RMA_ID, org.compiere.model.I_M_RMA.class);
+	}
+
+	@Override
+	public void setM_RMA(org.compiere.model.I_M_RMA M_RMA)
+	{
+		set_ValueFromPO(COLUMNNAME_M_RMA_ID, org.compiere.model.I_M_RMA.class, M_RMA);
+	}
 
 	/** Set RMA.
 		@param M_RMA_ID 
 		Return Material Authorization
 	  */
+	@Override
 	public void setM_RMA_ID (int M_RMA_ID)
 	{
 		if (M_RMA_ID < 1) 
@@ -901,6 +1064,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get RMA.
 		@return Return Material Authorization
 	  */
+	@Override
 	public int getM_RMA_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_RMA_ID);
@@ -909,7 +1073,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	/** NextAction AD_Reference_ID=219 */
+	/** 
+	 * NextAction AD_Reference_ID=219
+	 * Reference name: R_Request Next Action
+	 */
 	public static final int NEXTACTION_AD_Reference_ID=219;
 	/** None = N */
 	public static final String NEXTACTION_None = "N";
@@ -919,7 +1086,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param NextAction 
 		Next Action to be taken
 	  */
-	public void setNextAction (String NextAction)
+	@Override
+	public void setNextAction (java.lang.String NextAction)
 	{
 
 		set_Value (COLUMNNAME_NextAction, NextAction);
@@ -928,12 +1096,16 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Next action.
 		@return Next Action to be taken
 	  */
-	public String getNextAction () 
+	@Override
+	public java.lang.String getNextAction () 
 	{
-		return (String)get_Value(COLUMNNAME_NextAction);
+		return (java.lang.String)get_Value(COLUMNNAME_NextAction);
 	}
 
-	/** Priority AD_Reference_ID=154 */
+	/** 
+	 * Priority AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
 	public static final int PRIORITY_AD_Reference_ID=154;
 	/** High = 3 */
 	public static final String PRIORITY_High = "3";
@@ -949,7 +1121,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param Priority 
 		Indicates if this request is of a high, medium or low priority.
 	  */
-	public void setPriority (String Priority)
+	@Override
+	public void setPriority (java.lang.String Priority)
 	{
 
 		set_Value (COLUMNNAME_Priority, Priority);
@@ -958,12 +1131,16 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Priority.
 		@return Indicates if this request is of a high, medium or low priority.
 	  */
-	public String getPriority () 
+	@Override
+	public java.lang.String getPriority () 
 	{
-		return (String)get_Value(COLUMNNAME_Priority);
+		return (java.lang.String)get_Value(COLUMNNAME_Priority);
 	}
 
-	/** PriorityUser AD_Reference_ID=154 */
+	/** 
+	 * PriorityUser AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
 	public static final int PRIORITYUSER_AD_Reference_ID=154;
 	/** High = 3 */
 	public static final String PRIORITYUSER_High = "3";
@@ -979,7 +1156,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param PriorityUser 
 		Priority of the issue for the User
 	  */
-	public void setPriorityUser (String PriorityUser)
+	@Override
+	public void setPriorityUser (java.lang.String PriorityUser)
 	{
 
 		set_Value (COLUMNNAME_PriorityUser, PriorityUser);
@@ -988,23 +1166,26 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get User Importance.
 		@return Priority of the issue for the User
 	  */
-	public String getPriorityUser () 
+	@Override
+	public java.lang.String getPriorityUser () 
 	{
-		return (String)get_Value(COLUMNNAME_PriorityUser);
+		return (java.lang.String)get_Value(COLUMNNAME_PriorityUser);
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -1017,19 +1198,21 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return false;
 	}
 
-	/** Set Quantity Invoiced.
+	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Invoiced Quantity
+		Menge, die bereits in Rechnung gestellt wurde
 	  */
-	public void setQtyInvoiced (BigDecimal QtyInvoiced)
+	@Override
+	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
 	{
 		set_Value (COLUMNNAME_QtyInvoiced, QtyInvoiced);
 	}
 
-	/** Get Quantity Invoiced.
-		@return Invoiced Quantity
+	/** Get Berechn. Menge.
+		@return Menge, die bereits in Rechnung gestellt wurde
 	  */
-	public BigDecimal getQtyInvoiced () 
+	@Override
+	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
@@ -1041,7 +1224,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param QtyPlan 
 		Planned Quantity
 	  */
-	public void setQtyPlan (BigDecimal QtyPlan)
+	@Override
+	public void setQtyPlan (java.math.BigDecimal QtyPlan)
 	{
 		set_Value (COLUMNNAME_QtyPlan, QtyPlan);
 	}
@@ -1049,7 +1233,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Quantity Plan.
 		@return Planned Quantity
 	  */
-	public BigDecimal getQtyPlan () 
+	@Override
+	public java.math.BigDecimal getQtyPlan () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPlan);
 		if (bd == null)
@@ -1061,7 +1246,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param QtySpent 
 		Quantity used for this event
 	  */
-	public void setQtySpent (BigDecimal QtySpent)
+	@Override
+	public void setQtySpent (java.math.BigDecimal QtySpent)
 	{
 		set_Value (COLUMNNAME_QtySpent, QtySpent);
 	}
@@ -1069,7 +1255,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Quantity Used.
 		@return Quantity used for this event
 	  */
-	public BigDecimal getQtySpent () 
+	@Override
+	public java.math.BigDecimal getQtySpent () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtySpent);
 		if (bd == null)
@@ -1077,15 +1264,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return bd;
 	}
 
-	public I_R_Category getR_Category() throws RuntimeException
-    {
-		return (I_R_Category)MTable.get(getCtx(), I_R_Category.Table_Name)
-			.getPO(getR_Category_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_Category getR_Category() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_Category_ID, org.compiere.model.I_R_Category.class);
+	}
+
+	@Override
+	public void setR_Category(org.compiere.model.I_R_Category R_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_R_Category_ID, org.compiere.model.I_R_Category.class, R_Category);
+	}
 
 	/** Set Category.
 		@param R_Category_ID 
 		Request Category
 	  */
+	@Override
 	public void setR_Category_ID (int R_Category_ID)
 	{
 		if (R_Category_ID < 1) 
@@ -1097,6 +1292,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Category.
 		@return Request Category
 	  */
+	@Override
 	public int getR_Category_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_Category_ID);
@@ -1105,10 +1301,11 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Record ID.
+	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
 	  */
+	@Override
 	public void setRecord_ID (int Record_ID)
 	{
 		if (Record_ID < 0) 
@@ -1117,9 +1314,10 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Record ID.
+	/** Get Datensatz-ID.
 		@return Direct internal record ID
 	  */
+	@Override
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
@@ -1132,7 +1330,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param RequestAmt 
 		Amount associated with this request
 	  */
-	public void setRequestAmt (BigDecimal RequestAmt)
+	@Override
+	public void setRequestAmt (java.math.BigDecimal RequestAmt)
 	{
 		set_Value (COLUMNNAME_RequestAmt, RequestAmt);
 	}
@@ -1140,7 +1339,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Request Amount.
 		@return Amount associated with this request
 	  */
-	public BigDecimal getRequestAmt () 
+	@Override
+	public java.math.BigDecimal getRequestAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RequestAmt);
 		if (bd == null)
@@ -1148,32 +1348,58 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return bd;
 	}
 
-	/** Set Result.
+	/** Set Request_includedTab.
+		@param Request_includedTab Request_includedTab	  */
+	@Override
+	public void setRequest_includedTab (java.lang.String Request_includedTab)
+	{
+		set_Value (COLUMNNAME_Request_includedTab, Request_includedTab);
+	}
+
+	/** Get Request_includedTab.
+		@return Request_includedTab	  */
+	@Override
+	public java.lang.String getRequest_includedTab () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Request_includedTab);
+	}
+
+	/** Set Ergebnis.
 		@param Result 
 		Result of the action taken
 	  */
-	public void setResult (String Result)
+	@Override
+	public void setResult (java.lang.String Result)
 	{
 		set_Value (COLUMNNAME_Result, Result);
 	}
 
-	/** Get Result.
+	/** Get Ergebnis.
 		@return Result of the action taken
 	  */
-	public String getResult () 
+	@Override
+	public java.lang.String getResult () 
 	{
-		return (String)get_Value(COLUMNNAME_Result);
+		return (java.lang.String)get_Value(COLUMNNAME_Result);
 	}
 
-	public I_R_Group getR_Group() throws RuntimeException
-    {
-		return (I_R_Group)MTable.get(getCtx(), I_R_Group.Table_Name)
-			.getPO(getR_Group_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_Group getR_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_Group_ID, org.compiere.model.I_R_Group.class);
+	}
+
+	@Override
+	public void setR_Group(org.compiere.model.I_R_Group R_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_R_Group_ID, org.compiere.model.I_R_Group.class, R_Group);
+	}
 
 	/** Set Group.
 		@param R_Group_ID 
 		Request Group
 	  */
+	@Override
 	public void setR_Group_ID (int R_Group_ID)
 	{
 		if (R_Group_ID < 1) 
@@ -1185,6 +1411,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Group.
 		@return Request Group
 	  */
+	@Override
 	public int getR_Group_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_Group_ID);
@@ -1193,15 +1420,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_MailText getR_MailText() throws RuntimeException
-    {
-		return (I_R_MailText)MTable.get(getCtx(), I_R_MailText.Table_Name)
-			.getPO(getR_MailText_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_MailText getR_MailText() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setR_MailText(org.compiere.model.I_R_MailText R_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class, R_MailText);
+	}
 
 	/** Set Mail Template.
 		@param R_MailText_ID 
 		Text templates for mailings
 	  */
+	@Override
 	public void setR_MailText_ID (int R_MailText_ID)
 	{
 		if (R_MailText_ID < 1) 
@@ -1213,6 +1448,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Mail Template.
 		@return Text templates for mailings
 	  */
+	@Override
 	public int getR_MailText_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_MailText_ID);
@@ -1225,6 +1461,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param R_Request_ID 
 		Request from a Business Partner or Prospect
 	  */
+	@Override
 	public void setR_Request_ID (int R_Request_ID)
 	{
 		if (R_Request_ID < 1) 
@@ -1236,6 +1473,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Request.
 		@return Request from a Business Partner or Prospect
 	  */
+	@Override
 	public int getR_Request_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_Request_ID);
@@ -1244,15 +1482,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_Request getR_RequestRelated() throws RuntimeException
-    {
-		return (I_R_Request)MTable.get(getCtx(), I_R_Request.Table_Name)
-			.getPO(getR_RequestRelated_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_Request getR_RequestRelated() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_RequestRelated_ID, org.compiere.model.I_R_Request.class);
+	}
+
+	@Override
+	public void setR_RequestRelated(org.compiere.model.I_R_Request R_RequestRelated)
+	{
+		set_ValueFromPO(COLUMNNAME_R_RequestRelated_ID, org.compiere.model.I_R_Request.class, R_RequestRelated);
+	}
 
 	/** Set Related Request.
 		@param R_RequestRelated_ID 
 		Related Request (Master Issue, ..)
 	  */
+	@Override
 	public void setR_RequestRelated_ID (int R_RequestRelated_ID)
 	{
 		if (R_RequestRelated_ID < 1) 
@@ -1264,6 +1510,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Related Request.
 		@return Related Request (Master Issue, ..)
 	  */
+	@Override
 	public int getR_RequestRelated_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_RequestRelated_ID);
@@ -1272,15 +1519,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_RequestType getR_RequestType() throws RuntimeException
-    {
-		return (I_R_RequestType)MTable.get(getCtx(), I_R_RequestType.Table_Name)
-			.getPO(getR_RequestType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_RequestType getR_RequestType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class);
+	}
+
+	@Override
+	public void setR_RequestType(org.compiere.model.I_R_RequestType R_RequestType)
+	{
+		set_ValueFromPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class, R_RequestType);
+	}
 
 	/** Set Request Type.
 		@param R_RequestType_ID 
 		Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public void setR_RequestType_ID (int R_RequestType_ID)
 	{
 		if (R_RequestType_ID < 1) 
@@ -1292,6 +1547,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Request Type.
 		@return Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public int getR_RequestType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_RequestType_ID);
@@ -1300,15 +1556,39 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_Resolution getR_Resolution() throws RuntimeException
-    {
-		return (I_R_Resolution)MTable.get(getCtx(), I_R_Resolution.Table_Name)
-			.getPO(getR_Resolution_ID(), get_TrxName());	}
+	/** Set Request Type Interner Name.
+		@param R_RequestType_InternalName Request Type Interner Name	  */
+	@Override
+	public void setR_RequestType_InternalName (java.lang.String R_RequestType_InternalName)
+	{
+		set_Value (COLUMNNAME_R_RequestType_InternalName, R_RequestType_InternalName);
+	}
+
+	/** Get Request Type Interner Name.
+		@return Request Type Interner Name	  */
+	@Override
+	public java.lang.String getR_RequestType_InternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_R_RequestType_InternalName);
+	}
+
+	@Override
+	public org.compiere.model.I_R_Resolution getR_Resolution() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_Resolution_ID, org.compiere.model.I_R_Resolution.class);
+	}
+
+	@Override
+	public void setR_Resolution(org.compiere.model.I_R_Resolution R_Resolution)
+	{
+		set_ValueFromPO(COLUMNNAME_R_Resolution_ID, org.compiere.model.I_R_Resolution.class, R_Resolution);
+	}
 
 	/** Set Resolution.
 		@param R_Resolution_ID 
 		Request Resolution
 	  */
+	@Override
 	public void setR_Resolution_ID (int R_Resolution_ID)
 	{
 		if (R_Resolution_ID < 1) 
@@ -1320,6 +1600,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Resolution.
 		@return Request Resolution
 	  */
+	@Override
 	public int getR_Resolution_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_Resolution_ID);
@@ -1328,15 +1609,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_StandardResponse getR_StandardResponse() throws RuntimeException
-    {
-		return (I_R_StandardResponse)MTable.get(getCtx(), I_R_StandardResponse.Table_Name)
-			.getPO(getR_StandardResponse_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_StandardResponse getR_StandardResponse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StandardResponse_ID, org.compiere.model.I_R_StandardResponse.class);
+	}
+
+	@Override
+	public void setR_StandardResponse(org.compiere.model.I_R_StandardResponse R_StandardResponse)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StandardResponse_ID, org.compiere.model.I_R_StandardResponse.class, R_StandardResponse);
+	}
 
 	/** Set Standard Response.
 		@param R_StandardResponse_ID 
 		Request Standard Response 
 	  */
+	@Override
 	public void setR_StandardResponse_ID (int R_StandardResponse_ID)
 	{
 		if (R_StandardResponse_ID < 1) 
@@ -1348,6 +1637,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Standard Response.
 		@return Request Standard Response 
 	  */
+	@Override
 	public int getR_StandardResponse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_StandardResponse_ID);
@@ -1356,15 +1646,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_Status getR_Status() throws RuntimeException
-    {
-		return (I_R_Status)MTable.get(getCtx(), I_R_Status.Table_Name)
-			.getPO(getR_Status_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_Status getR_Status() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_Status_ID, org.compiere.model.I_R_Status.class);
+	}
+
+	@Override
+	public void setR_Status(org.compiere.model.I_R_Status R_Status)
+	{
+		set_ValueFromPO(COLUMNNAME_R_Status_ID, org.compiere.model.I_R_Status.class, R_Status);
+	}
 
 	/** Set Status.
 		@param R_Status_ID 
 		Request Status
 	  */
+	@Override
 	public void setR_Status_ID (int R_Status_ID)
 	{
 		if (R_Status_ID < 1) 
@@ -1376,6 +1674,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Status.
 		@return Request Status
 	  */
+	@Override
 	public int getR_Status_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_Status_ID);
@@ -1384,15 +1683,23 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_User getSalesRep() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getSalesRep_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
+	{
+		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+	}
 
 	/** Set Sales Representative.
 		@param SalesRep_ID 
 		Sales Representative or Company Agent
 	  */
+	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -1404,6 +1711,7 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Sales Representative.
 		@return Sales Representative or Company Agent
 	  */
+	@Override
 	public int getSalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
@@ -1412,28 +1720,31 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Start Date.
+	/** Set Anfangsdatum.
 		@param StartDate 
 		First effective day (inclusive)
 	  */
-	public void setStartDate (Timestamp StartDate)
+	@Override
+	public void setStartDate (java.sql.Timestamp StartDate)
 	{
 		set_Value (COLUMNNAME_StartDate, StartDate);
 	}
 
-	/** Get Start Date.
+	/** Get Anfangsdatum.
 		@return First effective day (inclusive)
 	  */
-	public Timestamp getStartDate () 
+	@Override
+	public java.sql.Timestamp getStartDate () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_StartDate);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartDate);
 	}
 
 	/** Set Start Time.
 		@param StartTime 
 		Time started
 	  */
-	public void setStartTime (Timestamp StartTime)
+	@Override
+	public void setStartTime (java.sql.Timestamp StartTime)
 	{
 		set_Value (COLUMNNAME_StartTime, StartTime);
 	}
@@ -1441,16 +1752,18 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Start Time.
 		@return Time started
 	  */
-	public Timestamp getStartTime () 
+	@Override
+	public java.sql.Timestamp getStartTime () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_StartTime);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartTime);
 	}
 
 	/** Set Summary.
 		@param Summary 
 		Textual summary of this request
 	  */
-	public void setSummary (String Summary)
+	@Override
+	public void setSummary (java.lang.String Summary)
 	{
 		set_Value (COLUMNNAME_Summary, Summary);
 	}
@@ -1458,12 +1771,16 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Summary.
 		@return Textual summary of this request
 	  */
-	public String getSummary () 
+	@Override
+	public java.lang.String getSummary () 
 	{
-		return (String)get_Value(COLUMNNAME_Summary);
+		return (java.lang.String)get_Value(COLUMNNAME_Summary);
 	}
 
-	/** TaskStatus AD_Reference_ID=366 */
+	/** 
+	 * TaskStatus AD_Reference_ID=366
+	 * Reference name: R_Request TaskStatus
+	 */
 	public static final int TASKSTATUS_AD_Reference_ID=366;
 	/**  0% Not Started = 0 */
 	public static final String TASKSTATUS_0NotStarted = "0";
@@ -1487,7 +1804,8 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 		@param TaskStatus 
 		Status of the Task
 	  */
-	public void setTaskStatus (String TaskStatus)
+	@Override
+	public void setTaskStatus (java.lang.String TaskStatus)
 	{
 
 		set_Value (COLUMNNAME_TaskStatus, TaskStatus);
@@ -1496,8 +1814,9 @@ public class X_R_Request extends PO implements I_R_Request, I_Persistent
 	/** Get Task Status.
 		@return Status of the Task
 	  */
-	public String getTaskStatus () 
+	@Override
+	public java.lang.String getTaskStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_TaskStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_TaskStatus);
 	}
 }

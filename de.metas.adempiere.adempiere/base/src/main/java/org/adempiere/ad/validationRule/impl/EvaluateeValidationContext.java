@@ -37,24 +37,6 @@ public class EvaluateeValidationContext implements IValidationContext
 	}
 
 	/**
-	 * @return always 0
-	 */
-	@Override
-	public int getWindowNo()
-	{
-		return 0;
-	}
-
-	/**
-	 * @return null
-	 */
-	@Override
-	public String getContextTableName()
-	{
-		return null;
-	}
-
-	/**
 	 * @return null
 	 */
 	@Override

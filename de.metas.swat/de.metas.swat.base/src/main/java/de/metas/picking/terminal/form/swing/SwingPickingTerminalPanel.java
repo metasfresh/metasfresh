@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,8 +32,6 @@ import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 
@@ -42,6 +40,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IComponent;
@@ -58,12 +57,13 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.logging.LogManager;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.PickingTerminalPanel;
 
 /**
  * Picking First Window Panel.
- * 
+ *
  * Contains:
  * <ul>
  * <li>Warehouse Keys
@@ -71,9 +71,9 @@ import de.metas.picking.terminal.PickingTerminalPanel;
  * <li>actual picking panel ( {@link SwingPickingOKPanel} )
  * <li>confirm panel (bottom)
  * </ul>
- * 
+ *
  * @author cg
- * 
+ *
  */
 public class SwingPickingTerminalPanel extends PickingTerminalPanel
 {
@@ -108,13 +108,13 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 	{
 		final ITerminalContext tc = getTerminalContext();
 		tc.setWindowNo(windowNo);
-		
+
 		frame.setJMenuBar(null);
 		setFrame(frame);
 		try
 		{
 			doLogin();
-			
+
 			// If user choose to quit from Login panel, then we need to stop right away
 			if (isDisposed())
 			{
@@ -154,7 +154,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 			frame.dispose();
 			frame = null;
 		}
-		
+
 		super.dispose();
 	}
 
@@ -203,7 +203,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 
 	/**
 	 * Creates and configures the Warehouse Key Layout
-	 * 
+	 *
 	 * @return warehouse key layout
 	 */
 	protected IKeyLayout createWarehouseKeyLayout()
@@ -232,7 +232,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 
 	/**
 	 * Layout for warehouse picking panel (Card 1).
-	 * 
+	 *
 	 * @see #CARDNAME_WAREHOUSE_PICKING
 	 */
 	protected void initLayout_WarehousePicking()
@@ -245,7 +245,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 
 	/**
 	 * Layout for result panel (Card 2).
-	 * 
+	 *
 	 * @see #CARDNAME_RESULT
 	 */
 	protected void initLayout_Result()
@@ -286,7 +286,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 
 	/**
 	 * Displays given panel card.
-	 * 
+	 *
 	 * @param cardName card name (see CARDNAME_* constants)
 	 */
 	private final void showCard(final String cardName)

@@ -1,20 +1,24 @@
 package de.metas.fresh.mrp_productinfo.impl;
 
 import java.sql.Timestamp;
+import java.util.Map;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
@@ -38,11 +42,11 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,7 +69,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = getDateForOrderLine(orderLine);
-			return new MRPProdcutInfoSelector(asiAware, date, model);
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_MovementLine.class))
 		{
@@ -73,7 +77,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = movementLine.getM_Movement().getMovementDate();
-			return new MRPProdcutInfoSelector(asiAware, date, model);
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
 		{
@@ -81,7 +85,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = inOutLine.getM_InOut().getMovementDate();
-			return new MRPProdcutInfoSelector(asiAware, date, model);
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_Fresh_QtyOnHand_Line.class))
 		{
@@ -98,7 +102,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = qtyOnHand.getDateDoc();
-			return new MRPProdcutInfoSelector(asiAware, date, model);
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_PMM_PurchaseCandidate.class))
 		{
@@ -106,7 +110,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
 
 			final Timestamp date = purchaseCandidate.getDatePromised();
-			return new MRPProdcutInfoSelector(asiAware, date, model);
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
 		return null;
 	}
@@ -117,7 +121,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		if (shipmentSched != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
-			if (date != null) // don't blindly assume that the sched is already initialized
+			if (date != null)      // don't blindly assume that the sched is already initialized
 			{
 				return date;
 			}
@@ -137,53 +141,55 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		return date;
 	}
 
-	static class MRPProdcutInfoSelector implements IMRPProductInfoSelector
+	@Override
+	public IMRPProductInfoSelector createOrNull(Object model, IParams params)
 	{
-		private final IAttributeSetInstanceAware asiAware;
+		final String productParamKey = MRPProductInfoSelector.mkProductParamKey(model);
+		final int productID = params.getParameterAsInt(productParamKey);
+
+		final String attributeSetInstanceParamKey = MRPProductInfoSelector.mkAttributeSetInstanceParamKey(model);
+		final int asiID = params.getParameterAsInt(attributeSetInstanceParamKey);
+
+		final String dateParamKey = MRPProductInfoSelector.mkDateParamKey(model);
+		final Timestamp date = params.getParameterAsTimestamp(dateParamKey);
+
+		return new MRPProductInfoSelector(productID, asiID, date, model);
+	}
+
+	static class MRPProductInfoSelector implements IMRPProductInfoSelector
+	{
+		private final int M_Product_ID;
+		private final int M_AttributeSetInstance_ID;
 		private final Timestamp date;
 		private final Object model;
 
-		private MRPProdcutInfoSelector(final IAttributeSetInstanceAware asiAware,
+		private MRPProductInfoSelector(
+				final int M_Product_ID,
+				final int M_AttributeSetInstance_ID,
 				final Timestamp date,
 				final Object model)
 		{
-			Check.assumeNotNull(asiAware, "Param 'asiAware' not null");
+			Check.assume(M_Product_ID > 0, "Param 'M_Product_ID' > 0");
+			Check.assume(M_AttributeSetInstance_ID >= 0, "Param 'M_AttributeSetInstance_ID' > 0");
 			Check.assumeNotNull(date, "Param 'date' not null");
 			Check.assumeNotNull(model, "Param 'model' not null");
 
-			this.asiAware = asiAware;
+			this.M_Product_ID = M_Product_ID;
+			this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
 			this.date = date;
 			this.model = model;
 		}
 
 		@Override
-		public I_M_Product getM_Product()
-		{
-			return asiAware.getM_Product();
-		}
-
-		@Override
 		public int getM_Product_ID()
 		{
-			return asiAware.getM_Product_ID();
-		}
-
-		@Override
-		public I_M_AttributeSetInstance getM_AttributeSetInstance()
-		{
-			return asiAware.getM_AttributeSetInstance();
+			return M_Product_ID;
 		}
 
 		@Override
 		public int getM_AttributeSetInstance_ID()
 		{
-			return asiAware.getM_AttributeSetInstance_ID();
-		}
-
-		@Override
-		public void setM_AttributeSetInstance(final I_M_AttributeSetInstance asi)
-		{
-			asiAware.setM_AttributeSetInstance(asi);
+			return M_AttributeSetInstance_ID;
 		}
 
 		@Override
@@ -201,12 +207,46 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		@Override
 		public int compareTo(final IMRPProductInfoSelector o)
 		{
-			final CompareToBuilder append =
-					new CompareToBuilder()
-							.append(o.getM_Product_ID(), getM_Product_ID())
-							.append(o.getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID())
-							.append(o.getDate(), getDate());
+			final CompareToBuilder append = new CompareToBuilder()
+					.append(o.getM_Product_ID(), getM_Product_ID())
+					.append(o.getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID())
+					.append(o.getDate(), getDate());
 			return append.build();
+		}
+
+		@Override
+		public Map<String, Object> asMap()
+		{
+			return ImmutableMap.<String, Object> of(
+					mkProductParamKey(model), getM_Product_ID(),
+					mkAttributeSetInstanceParamKey(model), getM_AttributeSetInstance_ID(),
+					mkDateParamKey(model), getDate());
+		}
+
+		private static String createParamPrefix(final Object model)
+		{
+			final ITableRecordReference record = TableRecordReference.of(model);
+
+			final String prefix = record.getTableName() + "_" + record.getRecord_ID() + "_";
+			return prefix;
+		}
+
+		private static String mkProductParamKey(final Object model)
+		{
+			final String prefix = createParamPrefix(model);
+			return prefix + "M_Product_ID";
+		}
+
+		private static String mkAttributeSetInstanceParamKey(final Object model)
+		{
+			final String prefix = createParamPrefix(model);
+			return prefix + "M_AttributeSetInstance_ID";
+		}
+
+		private static String mkDateParamKey(final Object model)
+		{
+			final String prefix = createParamPrefix(model);
+			return prefix + "Date";
 		}
 
 		@Override

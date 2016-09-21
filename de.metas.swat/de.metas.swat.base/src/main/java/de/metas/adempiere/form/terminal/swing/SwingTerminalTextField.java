@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Component;
@@ -40,8 +39,6 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -55,17 +52,19 @@ import javax.swing.Timer;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.JTextComponent;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Formatted Text field with on-screen keyboard support
@@ -96,7 +95,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	 * Used to display the soft-keyboard after {@link #KEYBOARD_ShowDelayMillis}.
 	 * <p>
 	 * Note: the timer is reusable, i.e it's not required to recreate it after it was used. See http://www.math.uni-hamburg.de/doc/java/tutorial/uiswing/misc/timer.html
-	 * 
+	 *
 	 * @see #showKeyboardDelayed()
 	 */
 	private Timer timer = new Timer(KEYBOARD_ShowDelayMillis, new ActionListener()
@@ -284,12 +283,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			final JTextArea textArea = new JTextArea();
 			// textArea.setColumns(columns); // info not available
 			textArea.setRows(4); // NOTE: atm we are hardcoding this
-			
+
 			// NOTE: having the LineWrap=true will cause weird resizing issues with MigLayout, each time when we set a new value.
 			textArea.setLineWrap(false);
-			
-			// NOTE: if we want vertical scroll bars here, we shall use JScrollPane 
-			
+
+			// NOTE: if we want vertical scroll bars here, we shall use JScrollPane
+
 			this.textComponent = textArea;
 		}
 		else
@@ -306,7 +305,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 				textComponent = new JFormattedTextField(formatter);
 			}
 			textComponent.addPropertyChangeListener("value", textFieldValueChangedListener);
-			
+
 			panel = null;
 		}
 
@@ -438,12 +437,10 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	public void setText(final String text)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("text=" + text);
-		}
-
 		final String textOld = textComponent.getText();
+
+		logger.trace("this-ID={}, Name={}, text={}, textOld={}, this={}", System.identityHashCode(this), getName(), text, textOld, this);
+
 		textComponent.setText(text);
 		firePropertyChanged(ITerminalTextField.PROPERTY_TextChanged, textOld, text);
 	}
@@ -711,5 +708,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		tabKeyAsFocusLostDispatcher = new TabKeyAsFocusLostDispatcher();
 		KeyboardFocusManager.getCurrentKeyboardFocusManager()
 				.addKeyEventDispatcher(tabKeyAsFocusLostDispatcher);
+	}
+
+	@Override
+	public String toString()
+	{
+		final boolean multiLine = false;
+		return ObjectUtils.toString(this, multiLine);
 	}
 }

@@ -164,7 +164,7 @@ public class CallCenterModel
 	{
 		if (m_mTabOtherRequests != null)
 			return m_mTabOtherRequests;
-		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_Request.Table_ID, true);
+		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), InterfaceWrapperHelper.getTableId(I_R_Request.class), true);
 		return m_mTabOtherRequests;
 	}
 	

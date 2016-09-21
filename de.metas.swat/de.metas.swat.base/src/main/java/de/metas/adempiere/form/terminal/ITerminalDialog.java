@@ -10,31 +10,32 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Dimension;
+
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * Terminal dialog.
- * 
+ *
  * @author tsa
  *
  */
 public interface ITerminalDialog extends IComponent
 {
 	/**
-	 * Display dialog
+	 * Display dialog.
 	 */
 	void activate();
 
@@ -54,6 +55,10 @@ public interface ITerminalDialog extends IComponent
 	 */
 	void cancelDispose();
 
+	/**
+	 * dispose this component. If {@link #activate(boolean)} was called with <code>true</code>,
+	 * then also call {@link ITerminalContext#deleteReferences(de.metas.adempiere.form.terminal.context.ITerminalContextReferences)} with the refs instance that was obtained during <code>activate(true)</code>.
+	 */
 	@Override
 	void dispose();
 

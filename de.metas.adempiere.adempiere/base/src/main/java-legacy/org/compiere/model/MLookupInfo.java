@@ -84,7 +84,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	static final long serialVersionUID = -7958664359250070233L;
 
-	public static final CtxName CTXNAME_AD_Language = CtxName.parse("AD_Language");
+	/* package */static final CtxName CTXNAME_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
 
 	/** SQL Query */
 	private final TranslatableParameterizedString sqlQuery;
@@ -122,8 +122,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/** WindowNo */
 	private int WindowNo;
 
-	/** AD_Column_Info or AD_Process_Para */
-	private int Column_ID;
 	/** AD_Reference_ID */
 	private int DisplayType;
 	/** Real AD_Reference_ID */
@@ -164,12 +162,14 @@ public final class MLookupInfo implements Serializable, Cloneable
 		}
 		catch (Exception e)
 		{
-			logger.error("", e);
+			logger.error("Failed cloning: " + this, e);
 		}
 		return null;
 	}	// clone
 
 	/**
+	 * WARNING: this method is supported to be used EXCLUSIVELLY in Swing UI
+	 * 
 	 * @return the whole SQL query, including SELECT, FROM, WHERE, ORDER BY
 	 */
 	public String getSqlQuery()
@@ -193,6 +193,8 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private final Map<Integer, TranslatableParameterizedString> _adRoleId2sqlQuery = new ConcurrentHashMap<>();
 
 	/**
+	 * WARNING: this method is supported to be used EXCLUSIVELLY in Swing UI
+	 * 
 	 * @return Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?)
 	 */
 	public String getSqlQueryDirect()
@@ -234,9 +236,14 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this._validationRuleEffective = null; // reset
 	}
 
-	public String getDisplayColumnSQL()
+	public String getDisplayColumnSqlAsString()
 	{
 		return displayColumnSQL.translate();
+	}
+
+	public TranslatableParameterizedString getDisplayColumnSql()
+	{
+		return displayColumnSQL;
 	}
 
 	public String getDisplayColumnSQL(final LanguageInfo languageInfo)
@@ -279,7 +286,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/**
 	 * @return SELECT Key, Value, Name, IsActive, EntityType FROM ... (without WHERE!)
 	 */
-	public String getSelectSqlPart()
+	public String getSelectSqlPartAsString()
 	{
 		return selectSqlPart.translate();
 	}
@@ -294,6 +301,11 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return selectSqlPart.getStringTrlPattern();
 	}
 
+	public TranslatableParameterizedString getSelectSqlPart()
+	{
+		return selectSqlPart;
+	}
+
 	/* package */void setSelectSqlPart(final String selectSqlPart_BaseLang, final String selectSqlPart_Trl)
 	{
 		this.selectSqlPart = TranslatableParameterizedString.of(CTXNAME_AD_Language, selectSqlPart_BaseLang, selectSqlPart_Trl);
@@ -302,9 +314,14 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/**
 	 * @return SQL FROM part, with joins to translation tables if needed, without FROM keyword
 	 */
-	public String getFromSqlPart()
+	public String getFromSqlPartAsString()
 	{
 		return fromSqlPart.translate();
+	}
+
+	public TranslatableParameterizedString getFromSqlPart()
+	{
+		return fromSqlPart;
 	}
 
 	public String getFromSqlPart(final LanguageInfo languageInfo)
@@ -328,7 +345,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	/**
-	 * @return SQL WHERE part (without WHERE keyword); this SQL is NOT including the {@link #getValidationRule()} code
+	 * @return static SQL WHERE part (without WHERE keyword); this SQL is NOT including the {@link #getValidationRule()} code
 	 */
 	public String getWhereClauseSqlPart()
 	{
@@ -482,16 +499,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	void setIsParent(final boolean isParent)
 	{
 		this.IsParent = isParent;
-	}
-
-	public int getAD_Column_ID()
-	{
-		return this.Column_ID;
-	}
-
-	void setAD_Column_ID(int column_ID)
-	{
-		this.Column_ID = column_ID;
 	}
 
 	void setAutoComplete(boolean autoComplete)

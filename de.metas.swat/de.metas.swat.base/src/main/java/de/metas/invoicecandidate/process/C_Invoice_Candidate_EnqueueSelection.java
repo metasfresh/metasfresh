@@ -80,14 +80,6 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
-		// NOTE: commenting out because that checksum is not always reliable (e.g. we are running the process with isIgnoreInvoiceSchedule=false)
-		// final InvoiceCandidatesSelectionSummary invoiceCandidatesSelectionSummary = getProcessInfo().getGridTabSummaryInfoOrNull(InvoiceCandidatesSelectionSummary.class);
-		// if (invoiceCandidatesSelectionSummary != null)
-		// {
-		// this.totalNetAmtToInvoiceChecksum = invoiceCandidatesSelectionSummary.getTotalNetAmt(invoicingParams.isOnlyApprovedForInvoicing());
-		// addLog("@InvoiceCandidatesSelectionSummary@: " + invoiceCandidatesSelectionSummary.getSummaryMessage());
-		// }
-
 		//
 		// Create and check invoice candidate selection
 		selectionCount = createSelection();

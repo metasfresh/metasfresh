@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
@@ -46,14 +45,25 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	private final CompositeTerminalFieldConstraint<T> constraints = new CompositeTerminalFieldConstraint<T>();
 	private boolean disposed = false;
 
+	/**
+	 * @see {@link #setDebugPropertyNameOnce(String)}
+	 */
+	private String debugPropertyName;
+
+	/**
+	 *
+	 * @param terminalContext
+	 *
+	 */
 	public AbstractTerminalField(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
+		this.debugPropertyName = "<unspecified>";
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -75,29 +85,34 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	@Override
 	public final void addListener(final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}: adding listener={}", getName(), listener);
 		listeners.addPropertyChangeListener(listener);
 	}
 
 	@Override
 	public final void addListener(final String propertyName, final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: adding listener={}", getName(), propertyName, listener);
 		listeners.addPropertyChangeListener(propertyName, listener);
 	}
 
 	@Override
 	public final void removeListener(final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}: removing listener={}", getName(), listener);
 		listeners.removePropertyChangeListener(listener);
 	}
 
 	@Override
 	public final void removeListener(final String propertyName, final PropertyChangeListener listener)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: removing listener={}", getName(), propertyName, listener);
 		listeners.removePropertyChangeListener(propertyName, listener);
 	}
 
 	protected final void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue)
 	{
+		logger.debug("Fieldname={}, PropertyName={}: firing on listeners={}", getName(), propertyName, listeners);
 		listeners.firePropertyChange(propertyName, oldValue, newValue);
 	}
 
@@ -133,6 +148,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 		}
 		catch (Exception ex)
 		{
+			logger.info("About to show a warning because of exception: " + ex.getLocalizedMessage(), ex);
 			showWarningAndRequestFocus(ex);
 			return;
 		}
@@ -148,6 +164,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 			//
 			// Reset field value
 			// TODO: find a way to use a default value fallback / or fallback to the old value
+			logger.info("About to show a warning because of exception from setFieldValue(): " + ex.getLocalizedMessage(), ex);
 			setFieldValue(null, fireEvent);
 			showWarningAndRequestFocus(ex);
 		}
@@ -163,9 +180,9 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	 * Set field value. Use <code>fireEvent</code>, to decide whether to fire events in the implementing class or not.<br>
 	 * <br>
 	 * Do not worry about constraints, as they're already evaluated in {@link #setValue(Object)}.
-	 * 
+	 *
 	 * WARNING: never ever call this method directly, it's supposed to be called only by {@link #setValue(Object, boolean)}.
-	 * 
+	 *
 	 * @param value
 	 * @param fireEvent
 	 */
@@ -203,7 +220,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 
 	/**
 	 * Calls the terminalContext's {@link ITerminalFactory#showWarning(IComponent, String, String, Exception)}.
-	 * 
+	 *
 	 * @param ex
 	 */
 	protected final void showWarning(final Exception ex)
@@ -221,7 +238,7 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 
 	/**
 	 * Calls the terminalContext's {@link ITerminalFactory#showWarning(IComponent, String, String, Exception)} and requestFocus on the component.
-	 * 
+	 *
 	 * @param ex
 	 */
 	protected final void showWarningAndRequestFocus(final Exception ex)
@@ -251,14 +268,14 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		disposed = true;
 		constraints.clear();
-		listeners.clear();
-		
+
 		logger.trace("Disposed terminal field: {}", this);
+		disposed = true;
 	}
 
-	protected final boolean isDisposed()
+	@Override
+	public final boolean isDisposed()
 	{
 		return disposed;
 	}
@@ -270,6 +287,27 @@ public abstract class AbstractTerminalField<T> implements ITerminalField<T>
 	public boolean isValid()
 	{
 		return true;
+	}
+
+	/**
+	 * Allows the code which set up a field to also pass the property which the field is for. This should ease debugging.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public AbstractTerminalField<T> setDebugPropertyNameOnce(final String propertyName)
+	{
+		Check.errorIf(debugPropertyName != null,
+				"debugPropertyName shall be set only once! If was already set to {} and now someone tried to set it to {}; this={}",
+				debugPropertyName, propertyName, this);
+
+		debugPropertyName = propertyName;
+		return this;
+	}
+
+	public String getDebugPropertyName()
+	{
+		return debugPropertyName == null ? debugPropertyName : "<unspecified>";
 	}
 
 }

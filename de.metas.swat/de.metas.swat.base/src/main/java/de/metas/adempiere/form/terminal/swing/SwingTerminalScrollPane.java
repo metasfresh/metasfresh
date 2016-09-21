@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,9 +43,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * Swing implementation of a Scroll Pane
- * 
+ *
  * @author tsa
- * 
+ *
  */
 /* package */class SwingTerminalScrollPane
 		implements ITerminalScrollPane, IComponentSwing
@@ -68,13 +68,13 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	private boolean horizontalStrechView = true;
 	private boolean verticalStrechView = true;
 
+	private boolean disposed = false;
+
 	/**
 	 * @param view
 	 */
 	public SwingTerminalScrollPane(final IComponent view)
 	{
-		super();
-
 		//
 		// Setup Swing Scroll Pane
 		scrollPaneSwing = new CScrollPane();
@@ -82,7 +82,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		scrollPaneSwing.getHorizontalScrollBar().setPreferredSize(new Dimension(0, SwingTerminalFactory.SCROLL_Size));
 
 		scrollPaneSwing.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-		
+
 		this.scrollBorder = scrollPaneSwing.getBorder();
 
 		setBorderEnabled(true); // backward compatibility
@@ -90,6 +90,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		//
 		// Set view component
 		setViewport(view);
+
+		getTerminalContext().addToDisposableComponents(this);
 	}
 
 	@Override
@@ -311,6 +313,13 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	public void dispose()
 	{
 		setViewport(null);
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 }

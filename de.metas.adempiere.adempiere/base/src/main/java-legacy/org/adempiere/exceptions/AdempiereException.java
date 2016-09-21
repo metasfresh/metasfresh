@@ -83,7 +83,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 * @param throwable
 	 * @return message; never return null
 	 */
-	protected static final String extractMessage(final Throwable throwable)
+	public static final String extractMessage(final Throwable throwable)
 	{
 		// guard against NPE, shall not happen
 		if(throwable == null)
