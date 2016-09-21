@@ -159,7 +159,6 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.stream()
 
 		// task 06570: exclude lines that are packaging materials
-		// TODO: make isPackagingMaterial a physical column https://github.com/metasfresh/metasfresh/issues/388
 				.filter(rs -> !rs.isPackagingMaterial())
 
 		// task 07074: exclude lines with products that have type != item (fixes this comment when i migrated to lambda)
