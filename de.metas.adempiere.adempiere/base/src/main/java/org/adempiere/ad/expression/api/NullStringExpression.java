@@ -1,25 +1,25 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * NULL {@link IStringExpression}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
-public final class NullStringExpression implements IStringExpression
+public final class NullStringExpression implements ICachedStringExpression
 {
 	public static final NullStringExpression instance = new NullStringExpression();
-	
+
 	private NullStringExpression()
 	{
 		super();
@@ -38,25 +38,19 @@ public final class NullStringExpression implements IStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
+		return ImmutableSet.of();
 	}
 
 	@Override
-	public List<Object> getExpressionChunks()
-	{
-		return ImmutableList.of();
-	}
-
-	@Override
-	public String evaluate(Evaluatee ctx, boolean ignoreUnparsable)
+	public String evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
 	{
 		return EMPTY_RESULT;
 	}
 
 	@Override
-	public String evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
+	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
 	{
 		return EMPTY_RESULT;
 	}
@@ -66,10 +60,17 @@ public final class NullStringExpression implements IStringExpression
 	{
 		return this;
 	}
-	
+
 	@Override
 	public boolean isNullExpression()
 	{
 		return true;
+	}
+
+	@Override
+	public Class<String> getValueClass()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

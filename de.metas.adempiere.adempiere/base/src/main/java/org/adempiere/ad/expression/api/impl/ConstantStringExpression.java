@@ -1,8 +1,9 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
@@ -10,7 +11,8 @@ import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -35,17 +37,35 @@ import com.google.common.collect.ImmutableList;
  */
 
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
-class ConstantStringExpression implements IStringExpression
+public final class ConstantStringExpression implements IStringExpression, ICachedStringExpression
 {
-	private final String expressionStr;
-	private final List<Object> expressionChunks;
+	public static final ConstantStringExpression of(final String expressionStr)
+	{
+		final ConstantStringExpression cached = CACHE.get(expressionStr);
+		if (cached != null)
+		{
+			return cached;
+		}
 
-	/* package */ ConstantStringExpression(final String expressionStr)
+		return new ConstantStringExpression(expressionStr);
+	}
+
+	private static final ImmutableMap<String, ConstantStringExpression> CACHE = ImmutableMap.<String, ConstantStringExpression> builder()
+			.put("", new ConstantStringExpression("")) // this case is totally discouraged, but if it happens, lets not create a lot of instances...
+			.put(" ", new ConstantStringExpression(" ")) // one space
+			.put(", ", new ConstantStringExpression(", ")) // one space comma
+			.put("\n, ", new ConstantStringExpression("\n, "))
+			.put("\n", new ConstantStringExpression("\n"))
+			.put("\r\n", new ConstantStringExpression("\r\n"))
+			.build();
+
+	private final String expressionStr;
+
+	private ConstantStringExpression(final String expressionStr)
 	{
 		super();
 		Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 		this.expressionStr = expressionStr;
-		this.expressionChunks = ImmutableList.of((Object)expressionStr);
 	}
 
 	@Override
@@ -92,15 +112,9 @@ class ConstantStringExpression implements IStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return ImmutableList.of();
-	}
-
-	@Override
-	public List<Object> getExpressionChunks()
-	{
-		return expressionChunks;
+		return ImmutableSet.of();
 	}
 
 	@Override
@@ -111,6 +125,11 @@ class ConstantStringExpression implements IStringExpression
 
 	@Override
 	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
+	{
+		return expressionStr;
+	}
+
+	public String getConstantValue()
 	{
 		return expressionStr;
 	}

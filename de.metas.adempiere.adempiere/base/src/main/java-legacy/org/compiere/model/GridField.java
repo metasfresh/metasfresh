@@ -216,7 +216,7 @@ public class GridField
 			}
 			//
 			lookupInfo.setIsKey(isKey());
-			return new MLookup(getCtx(), vo.getLookupInfo(), vo.TabNo);
+			return new MLookup(getCtx(), vo.getAD_Column_ID(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
 		{
@@ -285,12 +285,12 @@ public class GridField
 		}
 
 		// if there is a validation string, the lookup is unstable
-		if (lookup.getValidation().length() == 0)
+		if(!lookup.hasValidation())
 		{
 			return true;
 		}
+		
 		//
-		log.debug("(" + m_vo.getColumnName() + ")");
 		lookup.refresh();
 		return lookup.isValidated();
 	}   // refreshLookup

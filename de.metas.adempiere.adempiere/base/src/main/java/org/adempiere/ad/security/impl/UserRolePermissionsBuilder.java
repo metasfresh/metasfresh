@@ -50,6 +50,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -65,7 +66,9 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private Integer _userId;
 	private Integer _adClientId;
 	private I_AD_Client _adClient; // lazy
+	private I_AD_ClientInfo _adClientInfo; // lazy
 	private TableAccessLevel userLevel;
+	private Integer _menu_AD_Tree_ID;  // lazy or configured
 
 	//
 	private OrgPermissions orgAccesses;
@@ -351,6 +354,17 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		}
 		return _adClient;
 	}
+	
+	private I_AD_ClientInfo getAD_ClientInfo()
+	{
+		if(_adClientInfo == null)
+		{
+			final int adClientId = getAD_Client_ID();
+			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId);
+		}
+		return _adClientInfo;
+	}
+
 
 	@Override
 	public UserRolePermissionsBuilder setUserLevel(final TableAccessLevel userLevel)
@@ -524,5 +538,39 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	{
 		Check.assumeNotNull(userRolePermissionsIncluded, "userRolePermissionsIncluded not null");
 		return userRolePermissionsIncluded;
+	}
+	
+	public UserRolePermissionsBuilder setMenu_AD_Tree_ID(Integer _menu_AD_Tree_ID)
+	{
+		this._menu_AD_Tree_ID = _menu_AD_Tree_ID;
+		return this;
+	}
+
+	public int getMenu_Tree_ID()
+	{
+		if(_menu_AD_Tree_ID == null)
+		{
+			_menu_AD_Tree_ID = findMenu_Tree_ID();
+		}
+		return _menu_AD_Tree_ID;
+	}
+	
+	private int findMenu_Tree_ID()
+	{
+		int roleMenuTreeId = getAD_Role().getAD_Tree_Menu_ID();
+		if(roleMenuTreeId > 0)
+		{
+			return roleMenuTreeId;
+		}
+		
+		final I_AD_ClientInfo adClientInfo = getAD_ClientInfo();
+		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
+		if(adClientMenuTreeId > 0)
+		{
+			return adClientMenuTreeId;
+		}
+
+		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
+		return 10; // Menu // FIXME: hardcoded
 	}
 }

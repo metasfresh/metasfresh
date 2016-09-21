@@ -10,41 +10,60 @@ package de.metas.adempiere.form.terminal.context;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
+import de.metas.adempiere.form.terminal.IKeyLayout;
+import de.metas.logging.LogManager;
 
 /* package */final class TerminalContextReferences implements ITerminalContextReferences
 {
 	private static final transient Logger logger = LogManager.getLogger(TerminalContextReferences.class);
 
 	private List<WeakPropertyChangeSupport> propertyChangeSupports = null;
-	private final WeakList<IDisposable> _disposableComponents = new WeakList<>(true); // weakDefault=true
+	private final List<IDisposable> _disposableComponents = new ArrayList<>();
 
-	@Override
+	private final ITerminalContext terminalContext;
+
+	private IKeyLayout keyLayoutNumeric;
+	private IKeyLayout keyLayoutText;
+
+	/**
+	 *
+	 * @param terminalContext
+	 */
+	public TerminalContextReferences(final ITerminalContext terminalContext)
+	{
+		Check.assumeNotNull(terminalContext, "Parameter 'terminalContext"); // to make sure our close() implementation works
+		this.terminalContext = terminalContext;
+	}
+
+
 	public void dispose()
 	{
 		disposeComponents();
 
+		// to this last, because some components wand to fire one last event while they are disposed.
 		disposePropertyChangeSupports();
 	}
 
@@ -60,7 +79,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 	{
 		if (propertyChangeSupports == null)
 		{
-			propertyChangeSupports = new WeakList<>(true); // weakDefault = true
+			propertyChangeSupports = new WeakList<>(false); // weakDefault = false, we want to see problems
 		}
 
 		final WeakPropertyChangeSupport pcs = new WeakPropertyChangeSupport(sourceBean, weakDefault);
@@ -76,9 +95,36 @@ import de.metas.adempiere.form.terminal.IDisposable;
 		{
 			return;
 		}
-
 		_disposableComponents.add(comp);
 	}
+
+	@Override
+	public IKeyLayout getNumericKeyLayout()
+	{
+		return keyLayoutNumeric;
+	}
+
+
+	@Override
+	public void setNumericKeyLayout(IKeyLayout keyLayoutNumeric)
+	{
+		this.keyLayoutNumeric = keyLayoutNumeric;
+	}
+
+
+	@Override
+	public IKeyLayout getTextKeyLayout()
+	{
+		return keyLayoutText;
+	}
+
+
+	@Override
+	public void setTextKeyLayout(IKeyLayout keyLayoutText)
+	{
+		this.keyLayoutText = keyLayoutText;
+	}
+
 
 	/**
 	 * Dispose all created components
@@ -89,28 +135,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 		// just because we want to give them the opportunity to dispose nicely
 		final List<IDisposable> disposables = new ArrayList<>(_disposableComponents);
 		Collections.reverse(disposables);
-		
-		int countDisposed = 0;
-		for (final IDisposable disposable : disposables)
-		{
-			// guard: skip null dispoables
-			if(disposable == null)
-			{
-				continue;
-			}
-			
-			try
-			{
-				disposable.dispose();
-				countDisposed++;
-			}
-			catch (Exception e)
-			{
-				logger.warn("Error while disposing component " + disposable + ". Ignored.", e);
-			}
-		}
-
-		logger.info("Disposed {} components", countDisposed);
+		DisposableHelper.disposeAll(disposables);
 	}
 
 	/**
@@ -135,4 +160,15 @@ import de.metas.adempiere.form.terminal.IDisposable;
 		logger.info("Cleared {} property change supports", countAll);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "TerminalContextReferences [propertyChangeSupports=" + propertyChangeSupports + ", _disposableComponents=" + _disposableComponents + "]";
+	}
+
+	@Override
+	public void close()
+	{
+		terminalContext.deleteReferences(this);
+	}
 }

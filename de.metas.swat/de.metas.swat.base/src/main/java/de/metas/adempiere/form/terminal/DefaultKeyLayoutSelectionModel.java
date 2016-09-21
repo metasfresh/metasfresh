@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,7 @@ public class DefaultKeyLayoutSelectionModel implements IKeyLayoutSelectionModel
 
 	/**
 	 * Selected keys (used when {@link #allowKeySelection} is true).
-	 * 
+	 *
 	 * Map of KeyId to {@link ITerminalKey}.
 	 */
 	private final Map<String, ITerminalKey> selectedKeys = new HashMap<String, ITerminalKey>();
@@ -69,8 +69,8 @@ public class DefaultKeyLayoutSelectionModel implements IKeyLayoutSelectionModel
 
 	public DefaultKeyLayoutSelectionModel(final ITerminalContext terminalContext)
 	{
-		super();
 		pcs = terminalContext.createPropertyChangeSupport(this);
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private boolean _disposed = false;
@@ -82,20 +82,13 @@ public class DefaultKeyLayoutSelectionModel implements IKeyLayoutSelectionModel
 		{
 			return;
 		}
-
-		if (pcs != null)
-		{
-			pcs.clear();
-		}
-
-		// NOTE: if we clear the selected keys, we will lost this information for all other classes which rely on this.
-		// selectedKey = null;
-		// if (selectedKeys != null)
-		// {
-		// selectedKeys.clear();
-		// }
-
 		_disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return _disposed;
 	}
 
 	@Override

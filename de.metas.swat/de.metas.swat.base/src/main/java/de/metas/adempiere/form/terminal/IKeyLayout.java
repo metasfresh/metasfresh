@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -137,7 +137,7 @@ public interface IKeyLayout extends IDisposable
 	ITerminalBasePanel getBasePanel();
 
 	/**
-	 * Reset current keys.
+	 * Reset current keys. Dispose the old keys.
 	 */
 	void resetKeys();
 
@@ -163,6 +163,11 @@ public interface IKeyLayout extends IDisposable
 
 	IKeyLayoutSelectionModel getKeyLayoutSelectionModel();
 
+	/**
+	 * Set the new keys. Dispose the old keys.
+	 *
+	 * @param keysNew
+	 */
 	void setKeys(Collection<? extends ITerminalKey> keysNew);
 
 	void setSelectedKey(ITerminalKey selectedKey);

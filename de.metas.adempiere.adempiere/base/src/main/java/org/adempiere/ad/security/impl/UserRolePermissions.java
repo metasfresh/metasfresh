@@ -128,6 +128,8 @@ class UserRolePermissions implements IUserRolePermissions
 
 	/** Permission constraints */
 	private final Constraints constraints;
+	
+	private final int menu_AD_Tree_ID;
 
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
@@ -156,6 +158,8 @@ class UserRolePermissions implements IUserRolePermissions
 
 		this.miscPermissions = builder.getMiscPermissions();
 		this.constraints = builder.getConstraints();
+		
+		this.menu_AD_Tree_ID = builder.getMenu_Tree_ID();
 	}
 
 	@Override
@@ -167,6 +171,7 @@ class UserRolePermissions implements IUserRolePermissions
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setUserLevel(userLevel)
+				.setMenu_AD_Tree_ID(getMenu_Tree_ID())
 				//
 				.setOrgPermissions(orgPermissions)
 				.setTablePermissions(tablePermissions)
@@ -373,6 +378,12 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 		//
 		return orgPermissions.isClientAccess(AD_Client_ID, rw);
+	}
+	
+	@Override
+	public int getMenu_Tree_ID()
+	{
+		return menu_AD_Tree_ID;
 	}
 
 	@Override
@@ -730,36 +741,60 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String addAccessSQL(final String SQL, final String TableNameIn, final boolean fullyQualified, final boolean rw)
+	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final boolean rw)
 	{
-		final StringBuilder retSQL = new StringBuilder();
-
 		// Cut off last ORDER BY clause
-		final String orderBy;
-		final int posOrder = SQL.lastIndexOf(" ORDER BY ");
-		if (posOrder != -1)
+		final String sqlSelectFromWhere;
+		final String sqlOrderByAndOthers;
+		final int idxOrderBy = sql.lastIndexOf(" ORDER BY ");
+		if (idxOrderBy >= 0)
 		{
-			orderBy = "\n" + SQL.substring(posOrder);
-			retSQL.append(SQL.substring(0, posOrder));
+			sqlSelectFromWhere = sql.substring(0, idxOrderBy);
+			sqlOrderByAndOthers = "\n" + sql.substring(idxOrderBy);
 		}
 		else
 		{
-			orderBy = "";
-			retSQL.append(SQL);
+			sqlSelectFromWhere = sql;
+			sqlOrderByAndOthers = null;
 		}
+		
+		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, TableNameIn, fullyQualified, rw);
+		if(Check.isEmpty(sqlAccessSqlWhereClause, true))
+		{
+			logger.trace("Final SQL (no access sql applied): {}", sql);
+			return sql;
+		}
+		
+		final String sqlFinal;
+		if(sqlOrderByAndOthers == null)
+		{
+			sqlFinal = sqlSelectFromWhere + " "+sqlAccessSqlWhereClause;
+		}
+		else
+		{
+			sqlFinal = sqlSelectFromWhere + " "+sqlAccessSqlWhereClause + sqlOrderByAndOthers;
+		}
+		
+		logger.trace("Final SQL: {}", sqlFinal);
+		return sqlFinal;
+	}	// addAccessSQL
+	
+	private final String buildAccessSQL(final String sqlSelectFromWhere, final String TableNameIn, final boolean fullyQualified, final boolean rw)
+	{
+		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder(); 
 
 		// Parse SQL
-		final AccessSqlParser asp = new AccessSqlParser(retSQL.toString());
+		final AccessSqlParser asp = new AccessSqlParser(sqlSelectFromWhere);
 		final AccessSqlParser.TableInfo[] ti = asp.getTableInfo(asp.getMainSqlIndex());
 
 		// Do we have to add WHERE or AND
 		if (asp.getMainSql().indexOf(" WHERE ") == -1)
 		{
-			retSQL.append(" WHERE ");
+			sqlAcessSqlWhereClause.append(" WHERE ");
 		}
 		else
 		{
-			retSQL.append(" AND ");
+			sqlAcessSqlWhereClause.append(" AND ");
 		}
 
 		// Use First Table
@@ -779,7 +814,7 @@ class UserRolePermissions implements IUserRolePermissions
 			{
 				msg += " - #1 " + ti[0];
 			}
-			msg += "\n SQL=" + SQL;
+			msg += "\n SQL=" + sqlSelectFromWhere;
 			final AdempiereException ex = new AdempiereException(msg);
 			logger.warn(ex.getLocalizedMessage(), ex);
 			tableName = TableNameIn;
@@ -788,28 +823,28 @@ class UserRolePermissions implements IUserRolePermissions
 		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
 		{ // globalqss, bug 1662433
 			// Client Access
-			retSQL.append("\n /* security-client */ ");
+			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
 			if (fullyQualified)
 			{
-				retSQL.append(tableName).append(".");
+				sqlAcessSqlWhereClause.append(tableName).append(".");
 			}
-			retSQL.append(getClientWhere(rw));
+			sqlAcessSqlWhereClause.append(getClientWhere(rw));
 
 			// Org Access
 			if (!isAccessAllOrgs())
 			{
-				retSQL.append("\n /* security-org */ ");
-				retSQL.append(" AND ");
+				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
+				sqlAcessSqlWhereClause.append(" AND ");
 				if (fullyQualified)
 				{
-					retSQL.append(tableName).append(".");
+					sqlAcessSqlWhereClause.append(tableName).append(".");
 				}
-				retSQL.append(getOrgWhere(tableName, rw));
+				sqlAcessSqlWhereClause.append(getOrgWhere(tableName, rw));
 			}
 		}
 		else
 		{
-			retSQL.append("\n /* no security */ 1=1");
+			sqlAcessSqlWhereClause.append("\n /* no security */ 1=1");
 		}
 
 		// ** Data Access **
@@ -831,8 +866,8 @@ class UserRolePermissions implements IUserRolePermissions
 			// Data Table Access
 			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, !rw))
 			{
-				retSQL.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
-				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, retSQL);
+				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
+				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, sqlAcessSqlWhereClause);
 				break;	// no need to check further
 			}
 
@@ -861,21 +896,19 @@ class UserRolePermissions implements IUserRolePermissions
 			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, rw);
 			if (recordWhere.length() > 0)
 			{
-				retSQL.append("\n /* security-record */ AND ").append(recordWhere);
+				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
 				logger.trace("Record access: {}", recordWhere);
 			}
 		}	// for all table info
 
 		// Dependent Records (only for main SQL)
-		recordPermissions.addRecordDependentAccessSql(retSQL, asp, tableName, rw);
+		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, asp, tableName, rw);
+		
+		return sqlAcessSqlWhereClause.toString();
+	}
 
-		//
-		// ORDER BY
-		retSQL.append(orderBy);
-
-		logger.trace("Final SQL: {}", retSQL.toString());
-		return retSQL.toString();
-	}	// addAccessSQL
+	
+	
 
 	/**
 	 * VIEW - Can I view record in Table with given TableLevel. <code>

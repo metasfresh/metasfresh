@@ -22,7 +22,6 @@ package org.adempiere.ad.validationRule.impl;
  * #L%
  */
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +34,6 @@ import org.adempiere.ad.validationRule.IValidationContext;
  */
 public class PlainValidationContext implements IValidationContext
 {
-	private int windowNo;
 	private String contextTableName;
 	private String tableName;
 	private final Map<String, String> values = new HashMap<String, String>();
@@ -51,26 +49,9 @@ public class PlainValidationContext implements IValidationContext
 		values.put(variableName, value);
 	}
 
-	@Override
-	public int getWindowNo()
-	{
-		return windowNo;
-	}
-
-	public void setWindowNo(int windowNo)
-	{
-		this.windowNo = windowNo;
-	}
-
-	@Override
-	public String getContextTableName()
-	{
-		return contextTableName;
-	}
-
 	public void setContextTableName(String contextTableName)
 	{
-		this.contextTableName = contextTableName;
+		values.put(PARAMETER_ContextTableName, contextTableName);
 	}
 
 	@Override
@@ -87,8 +68,7 @@ public class PlainValidationContext implements IValidationContext
 	@Override
 	public String toString()
 	{
-		return String.format("PlainValidationContext [windowNo=%s, contextTableName=%s, tableName=%s, values=%s]", 
-				windowNo, contextTableName, tableName, values);
+		return String.format("PlainValidationContext [contextTableName=%s, tableName=%s, values=%s]", contextTableName, tableName, values);
 	}
 
 }

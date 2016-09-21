@@ -96,9 +96,17 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_SECOND);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_SECOND);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to seconds", dateTruncExpected, dateTruncActual);
+	}
+	
+	private static Date truncAndCheckMillis(final Date date, final String trunc)
+	{
+		Date dateTrunc = TimeUtil.trunc(date, trunc);
+		final long dateTruncMillis = TimeUtil.truncToMillis(date, trunc);
+		Assert.assertEquals("trunc() and truncToMillis() shall match for '" + date + "' but trunc date was '" + dateTrunc + "'", dateTruncMillis, dateTrunc.getTime());
+		return dateTrunc;
 	}
 
 	@Test
@@ -115,7 +123,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_MINUTE);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MINUTE);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to minutes", dateTruncExpected, dateTruncActual);
 	}
@@ -136,7 +144,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_HOUR);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_HOUR);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to hours", dateTruncExpected, dateTruncActual);
 	}
@@ -161,7 +169,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_DAY);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_DAY);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to day", dateTruncExpected, dateTruncActual);
 	}
@@ -189,7 +197,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_WEEK);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_WEEK);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to week", dateTruncExpected, dateTruncActual);
 	}
@@ -222,7 +230,7 @@ public class TimeUtilTest
 		final Date expected = dateFormat.parse(expectedStr);
 		final Date date = dateFormat.parse(dateStr);
 
-		final Date actual = TimeUtil.trunc(date, truncType);
+		final Date actual = truncAndCheckMillis(date, truncType);
 		final String message = "Invalid date for expectedStr=" + expectedStr + ", dateStr=" + dateStr + ", truncType=" + truncType;
 		Assert.assertEquals(message, expected, actual);
 	}
@@ -248,7 +256,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_MONTH);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MONTH);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to month", dateTruncExpected, dateTruncActual);
 	}
@@ -275,7 +283,7 @@ public class TimeUtilTest
 		cal.set(Calendar.MILLISECOND, 0);
 		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		final Date dateTruncActual = TimeUtil.trunc(date, TimeUtil.TRUNC_YEAR);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_YEAR);
 
 		Assert.assertEquals("Date " + date + " was not correctly truncated to year", dateTruncExpected, dateTruncActual);
 	}

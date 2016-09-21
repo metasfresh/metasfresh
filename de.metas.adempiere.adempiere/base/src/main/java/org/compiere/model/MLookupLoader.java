@@ -31,12 +31,15 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+
+import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
 
@@ -68,8 +71,6 @@ import de.metas.logging.LogManager;
 	private boolean allLoaded = false;
 	private boolean wasInterrupted = false;
 
-	private final long m_startTime = System.currentTimeMillis();
-
 	/**
 	 * MLoader Constructor
 	 */
@@ -78,7 +79,7 @@ import de.metas.logging.LogManager;
 		super();
 
 		threadName = "MLookupLoader-W" + lookupInfo.getWindowNo() + "-" + lookupInfo.getKeyColumnFQ();
-		log.debug("Loading: " + threadName);
+		log.debug("Loading: {}", threadName);
 
 		this.validationCtx = validationCtx;
 		this.lookupInfo = lookupInfo;
@@ -115,8 +116,7 @@ import de.metas.logging.LogManager;
 
 	private final ILookupData call0(final INamePairIterator data)
 	{
-
-		final long startTime = System.currentTimeMillis();
+		final Stopwatch duration = Stopwatch.createStarted();
 		
 		if (!data.isValid())
 		{
@@ -130,7 +130,7 @@ import de.metas.logging.LogManager;
 		// check
 		if (Thread.interrupted())
 		{
-			log.warn(threadName + ": Loader interrupted");
+			log.warn("{}: Loader interrupted", threadName);
 			this.wasInterrupted = true;
 			return this;
 		}
@@ -141,6 +141,7 @@ import de.metas.logging.LogManager;
 		hasInactiveValues = false;
 		allLoaded = true;
 
+		final INamePairPredicate postQueryFilter = lookupInfo.getValidationRule().getPostQueryFilter();
 		for (NamePair item = data.next(); item != null; item = data.next())
 		{
 			final int rows = values.size();
@@ -165,23 +166,23 @@ import de.metas.logging.LogManager;
 				hasInactiveValues = true;
 			}
 
-			if (!lookupInfo.getValidationRule().accept(validationCtx, item))
+			if (!postQueryFilter.accept(validationCtx, item))
 			{
 				continue;
 			}
 
 			values.put(item.getID(), item);
 		}
+		
+		duration.stop();
 
 		if (log.isTraceEnabled())
 		{
 			final int size = values.size();
-			log.trace(lookupInfo.getKeyColumnFQ()
-					+ " (" + lookupInfo.getAD_Column_ID() + "):"
+			log.trace(lookupInfo.getKeyColumnFQ() + ": "
 					// + " ID=" + m_info.AD_Column_ID + " " +
 					+ " - Loader complete #" + size + " - all=" + allLoaded
-					+ " - ms=" + String.valueOf(System.currentTimeMillis() - m_startTime)
-					+ " (" + String.valueOf(System.currentTimeMillis() - startTime) + ")");
+					+ " - " + duration);
 		}
 
 		return this;

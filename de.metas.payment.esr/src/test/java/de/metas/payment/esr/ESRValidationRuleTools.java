@@ -22,7 +22,6 @@ package de.metas.payment.esr;
  * #L%
  */
 
-
 import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
@@ -85,7 +84,7 @@ public final class ESRValidationRuleTools
 			final PlainValidationContext plainValidationCtx)
 	{
 		final NamePair item = mkListItem(action);
-		boolean accepted = new ESRPaymentActionValidationRule().accept(plainValidationCtx, item);
+		boolean accepted = new ESRPaymentActionValidationRule().getPostQueryFilter().accept(plainValidationCtx, item);
 		return accepted;
 	}
 
@@ -99,9 +98,11 @@ public final class ESRValidationRuleTools
 			final String action,
 			final I_ESR_ImportLine importLine)
 	{
-		boolean accepted = new ESRPaymentActionValidationRule().accept(
-				mkPlainValidationContext(importLine),
-				mkListItem(action));
+		boolean accepted = new ESRPaymentActionValidationRule()
+				.getPostQueryFilter()
+				.accept(
+						mkPlainValidationContext(importLine),
+						mkListItem(action));
 
 		return accepted;
 	}

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -104,9 +104,9 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * Picking First Window Panel
- * 
+ *
  * @author cg
- * 
+ *
  */
 public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 {
@@ -303,7 +303,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			// i've decided to postone the refreshing right after other evens are processed.
 			SwingUtilities.invokeLater(new Runnable()
 			{
-				
+
 				@Override
 				public void run()
 				{
@@ -319,6 +319,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		this.pickingTerminalPanel = basePanel;
 		this.pickingPanel = new PickingSubPanel(basePanel);
+
+		basePanel.getTerminalContext().addToDisposableComponents(this);
 	}
 
 	@Override
@@ -362,7 +364,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return i.e. parent panel
 	 */
 	public SwingPickingTerminalPanel getPickingTerminalPanel()
@@ -548,7 +550,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		}
 
 		unlockShipmentSchedules(); // task 08153: make sure we unlock *and* update the scheds we did picking on
-		
+
 		//
 		// If this window was already disposed (i.e. user closed all windows all together, e.g. on logout) then do nothing
 		if (isDisposed())
@@ -558,7 +560,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		//
 		// Put Picking Window (first window) on front and refresh the current lines
-		
+
 		//
 		// Ask parent to refresh lines
 		{
@@ -568,7 +570,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			final SwingPickingTerminalPanel parent = getPickingTerminalPanel();
 			parent.refreshLines(ResetFilters.IfNoResult);
 		}
-		
+
 		setEnabled(true);
 	}
 
@@ -951,10 +953,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if window was disposed or it's disposing
 	 */
-	private boolean isDisposed()
+	@Override
+	public boolean isDisposed()
 	{
 		if (disposed)
 		{
@@ -986,7 +989,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 			if (packageTerminal != null)
 			{
-				packageTerminal.dispose();
+				packageTerminal.dispose(); // this is not an IDisposable, so we need to deal with it here
 				onPackageTerminalClosed();
 				packageTerminal = null;
 			}

@@ -30,12 +30,15 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
@@ -923,13 +926,22 @@ public class LookupDAO implements ILookupDAO
 
 		final IValidationRule validationRule = CompositeValidationRule.compose(lookupInfoValidationRule, additionalValidationRule);
 
-		final String validation = validationRule.getPrefilterWhereClause(validationCtx);
-		if (IValidationRule.WHERECLAUSE_ERROR == validation)
+		final IStringExpression sqlWhereClauseExpr = validationRule.getPrefilterWhereClause();
+		final String sqlWhereClause;
+		if(sqlWhereClauseExpr.isNullExpression())
 		{
-			return null;
+			sqlWhereClause = "";
+		}
+		else
+		{
+			sqlWhereClause = sqlWhereClauseExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
+			if(sqlWhereClauseExpr.isNoResult(sqlWhereClause))
+			{
+				return null;
+			}
 		}
 
-		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), validation);
+		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), sqlWhereClause);
 		return sql;
 	}
 
@@ -1002,7 +1014,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		// 04617: applying the validation rule's prefilter where clause, to make sure that what we return is valid
-		final String validation;
+		String validation;
 		if (validationCtx == IValidationContext.DISABLED)
 		{
 			// NOTE: if validation is disabled we shall not add any where clause
@@ -1010,11 +1022,16 @@ public class LookupDAO implements ILookupDAO
 		}
 		else
 		{
-			validation = lookupInfo.getValidationRule().getPrefilterWhereClause(validationCtx);
+			final IStringExpression validationExpr = lookupInfo.getValidationRule().getPrefilterWhereClause();
+			validation = validationExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
+			if(validationExpr.isNoResult(validation))
+			{
+				validation = null;
+			}
 		}
 
 		final String sql;
-		if (IValidationRule.WHERECLAUSE_ERROR == validation)
+		if (validation == null)
 		{
 			sql = sqlQueryDirect;
 		}
@@ -1059,7 +1076,8 @@ public class LookupDAO implements ILookupDAO
 				}
 
 				// 04617: apply java validation rules
-				if (!lookupInfo.getValidationRule().accept(validationCtx, item))
+				final INamePairPredicate postQueryFilter = lookupInfo.getValidationRule().getPostQueryFilter();
+				if (!postQueryFilter.accept(validationCtx, item))
 				{
 					continue;
 				}

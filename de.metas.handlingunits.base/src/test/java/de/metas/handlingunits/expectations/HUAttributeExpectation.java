@@ -10,12 +10,12 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -84,7 +84,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		assertExpected(newErrorMessage(message), huAttribute);
 		return this;
 	}
-	
+
 	public HUAttributeExpectation<ParentExpectationType> assertExpected(final ErrorMessage message, final I_M_HU_Attribute huAttribute)
 	{
 		final ErrorMessage messageActual = ErrorMessage.derive(message)
@@ -185,7 +185,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		final String prefix = (message == null ? "" : message)
 				+ "\nTU Attribute Storage: " + tuAttributeStorage
 				+ "\n\n";
-		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages();
+		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
 		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
 		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
 
@@ -217,7 +217,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 		//
 		// Get VHU attribute storages
-		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages();
+		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
 		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
 		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
 
@@ -312,12 +312,12 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, getContext());
 		huAttribute.setM_HU(hu);
 		huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
-		
+
 		huAttribute.setM_Attribute(getAttributeNotNull());
 
 		Check.assumeNotNull(piAttribute, "piAttribute not null");
 		huAttribute.setM_HU_PI_Attribute(piAttribute);
-		
+
 		if (valueStringSet)
 		{
 			huAttribute.setValue(valueString);
@@ -330,7 +330,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		{
 			huAttribute.setValueDate(TimeUtil.asTimestamp(valueDate));
 		}
-		
+
 		InterfaceWrapperHelper.save(huAttribute);
 		return huAttribute;
 	}

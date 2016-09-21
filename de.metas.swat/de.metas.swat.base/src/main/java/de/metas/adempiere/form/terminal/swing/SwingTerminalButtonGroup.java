@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -56,9 +55,6 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private final ButtonGroup buttonGroup = new ButtonGroup()
 	{
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -8394244813841231487L;
 
 		private final void fireSelectionChanged(final ButtonModel selectedButtonModelOld)
@@ -108,15 +104,17 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		}
 	};
 
-	public SwingTerminalButtonGroup(final ITerminalFactory terminalFactory)
-	{
-		super();
+	private boolean disposed = false;
 
+	/* package */ SwingTerminalButtonGroup(final ITerminalFactory terminalFactory)
+	{
 		Check.assumeNotNull(terminalFactory, "terminalFactory not null");
 		this.terminalFactory = terminalFactory;
-		
+
 		final ITerminalContext terminalContext = terminalFactory.getTerminalContext();
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -153,7 +151,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		{
 			throw new IllegalArgumentException("Button value already exist");
 		}
-		
+
 		//
 		// Create Swing Button
 		final JToggleButton buttonSwing = new JToggleButton(buttonText, false);
@@ -172,7 +170,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		buttonModel2value.put(buttonModel, value);
 		buttonGroup.add(buttonSwing);
 		buttons.add(button);
-		
+
 		//
 		// Return our button
 		return button;
@@ -221,10 +219,19 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		return buttonsRO;
 	}
 
+	/**
+	 * Does nothing besides setting the internal disposed flag.
+	 */
 	@Override
 	public void dispose()
 	{
-		// TODO Auto-generated method stub
-		
+		disposed = true;
+
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 }

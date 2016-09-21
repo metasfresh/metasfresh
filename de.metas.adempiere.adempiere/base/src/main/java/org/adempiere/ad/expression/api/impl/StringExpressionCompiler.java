@@ -26,7 +26,7 @@ public final class StringExpressionCompiler extends AbstractChunkBasedExpression
 	@Override
 	protected IStringExpression createConstantExpression(final ExpressionContext context, final String expressionStr)
 	{
-		return new ConstantStringExpression(expressionStr);
+		return ConstantStringExpression.of(expressionStr);
 	}
 
 	@Override

@@ -514,7 +514,7 @@ public final class Env
 			ctx.remove(key);
 
 			// If the key we just removed exists on underlying "defaults", we are just setting it here using null marker.
-			if (ctx.getProperty(key, null) != null)
+			if (getProperty(ctx, key) != null)
 			{
 				final String nullValue = getNullPropertyValue(key);
 				ctx.setProperty(key, nullValue);
@@ -1187,6 +1187,11 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
+	
+//	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
+//	{
+//		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
+//	}	// getAD_Role_ID
 
 	public static IUserRolePermissions getUserRolePermissions()
 	{
@@ -1199,6 +1204,18 @@ public final class Env
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
+	
+	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
+	{
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
+	}
+	
+	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+	}
+
 
 	public static void resetUserRolePermissions()
 	{
@@ -1235,16 +1252,16 @@ public final class Env
 		//
 		if (!system)         	// User Preferences
 		{
-			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
+			retValue = getProperty(ctx, createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
-				retValue = ctx.getProperty(createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
+				retValue = getProperty(ctx, createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
 		}
 		else
 		// System Preferences
 		{
-			retValue = ctx.getProperty("#" + context);   				// Login setting
+			retValue = getProperty(ctx, "#" + context);   				// Login setting
 			if (retValue == null)
-				retValue = ctx.getProperty("$" + context);   			// Accounting setting
+				retValue = getProperty(ctx, "$" + context);   			// Accounting setting
 		}
 		//
 		return (retValue == null ? "" : retValue);
@@ -2114,7 +2131,7 @@ public final class Env
 
 			if (key.startsWith("#") || key.startsWith("$"))
 			{
-				final String value = ctx.getProperty(key, null);
+				final String value = getProperty(ctx, key);
 				if (!isPropertyValueNull(key, value))
 				{
 					ctxLight.put(key, value);
@@ -2187,22 +2204,9 @@ public final class Env
 	 */
 	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final Scope scope)
 	{
-		final CtxName name = CtxName.parse(context);
-		return getContext(ctx, WindowNo, TabNo, name, scope);
-	}
-
-	/**
-	 *
-	 * @param ctx
-	 * @param WindowNo
-	 * @param TabNo
-	 * @param name
-	 * @param scope
-	 * @return value or {@link #CTXVALUE_NullString}
-	 */
-	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final CtxName name, final Scope scope)
-	{
 		Check.assumeNotNull(ctx, "ctx not null");
+		
+		final CtxName name = CtxName.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
 		boolean isExplicitGlobal = name.isExplicitGlobal();
@@ -2298,6 +2302,11 @@ public final class Env
 		}
 	}
 
+	/**
+	 * @param ctx
+	 * @param context
+	 * @return string value or <code>null</code> if it does not exist
+	 */
 	private static final String getProperty(final Properties ctx, final String context)
 	{
 		if (ctx == null || context == null)
@@ -2591,6 +2600,16 @@ public final class Env
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	/**
+	 * @return value or <code>null</code> if the value was not present and value initializer was null
+	 */
+	public static <V> V get(final Properties ctx, final String propertyName)
+	{
+		@SuppressWarnings("unchecked")
+		final V value = (V)ctx.get(propertyName);
+		return value;
 	}
 
 	/**

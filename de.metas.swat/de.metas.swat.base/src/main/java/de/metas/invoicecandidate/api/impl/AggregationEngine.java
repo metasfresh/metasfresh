@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,12 +39,17 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
+
+import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -61,9 +66,12 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.product.IProductPA;
 
 public class AggregationEngine implements IAggregationEngine
 {
+	private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
+
 	//
 	// services
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
@@ -311,7 +319,33 @@ public class AggregationEngine implements IAggregationEngine
 		invoiceHeader.setDateInvoiced(ic.getDateInvoiced());
 		invoiceHeader.setDateAcct(ic.getDateAcct());
 
-		invoiceHeader.setM_PricingSystem_ID(ic.getM_PricingSystem_ID());
+		// #367 Invoice candidates invoicing Pricelist not found
+		// https://github.com/metasfresh/metasfresh/issues/367
+		// If we know the PLV, then just go with the PLV's M_PriceList_ID (new behavior).
+		// Otherwise falls back to looking up the M_PriceList_ID via M_PricingSystem, location and SOTrx (old behavior).
+		// The old behavior can fail as described by #367.
+		final int M_PriceList_ID;
+		if (ic.getM_PriceList_Version_ID() > 0)
+		{
+			M_PriceList_ID = ic.getM_PriceList_Version().getM_PriceList_ID();
+		}
+		else
+		{
+			final IProductPA productPA = Services.get(IProductPA.class);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, ic.getM_PricingSystem_ID(), ic.getBill_Location_ID(), ic.isSOTrx(), ITrx.TRXNAME_None);
+			if (pl == null)
+			{
+				throw new AdempiereException(Env.getAD_Language(ctx), ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
+						new Object[] {
+								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
+								InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class, ITrx.TRXNAME_None).getName() });
+			}
+			M_PriceList_ID = pl.getM_PriceList_ID();
+		}
+		invoiceHeader.setM_PriceList_ID(M_PriceList_ID);
+		// #367 end
 
 		// 03805: set also the currency id
 		invoiceHeader.setC_Currency_ID(ic.getC_Currency_ID());

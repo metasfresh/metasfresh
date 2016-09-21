@@ -956,7 +956,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					.getCurrentPricelistOrNull(
 							pricingSystem,
 							partnerLocation.getC_Location().getC_Country(),
-							date, isSOTrx);
+							date,
+							isSOTrx);
 
 			if (pricelist != null)
 			{

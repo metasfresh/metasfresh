@@ -67,7 +67,7 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(paymentIdStr, "1000000");
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
-		final boolean accepted = new ESRPaymentActionValidationRule().accept(plainValidationCtx, null);
+		final boolean accepted = new ESRPaymentActionValidationRule().getPostQueryFilter().accept(plainValidationCtx, null);
 
 		Assert.assertTrue("Action was validated", accepted == false);
 	}

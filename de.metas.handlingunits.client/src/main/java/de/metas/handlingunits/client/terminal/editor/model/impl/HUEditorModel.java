@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -53,7 +52,6 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.terminal.BreadcrumbKeyLayout;
 import de.metas.adempiere.form.terminal.CompositePropertiesPanelModel;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
@@ -163,10 +161,10 @@ public class HUEditorModel implements IDisposable
 	// Misc options
 	private boolean allowSelectingReadonlyKeys = false;
 
+	private boolean disposed = false;
+
 	public HUEditorModel(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		_terminalContext = terminalContext;
 
@@ -268,6 +266,8 @@ public class HUEditorModel implements IDisposable
 		propertiesPanelModel = new CompositePropertiesPanelModel(terminalContext);
 		propertiesPanelModel.setSaveChildrenOnRemove(true);
 		propertiesPanelModel.setDisposeChildrenOnRemove(true);
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	/**
@@ -294,25 +294,27 @@ public class HUEditorModel implements IDisposable
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		if (pcs != null)
+		if (isDisposed())
 		{
-			pcs.clear();
+			return; // nothing to do
 		}
+		// pcs.clear(); // not needed since pcs was created by the terminalContext
 
-		DisposableHelper.disposeAll(
-				breadcrumbKeyLayout
-				, _huKeyFilterModel
-				, handlingUnitsKeyLayout
-				, propertiesPanelModel);
+		// not needed since they added themselves as disposable components in their constructors
+		// DisposableHelper.disposeAll(breadcrumbKeyLayout, _huKeyFilterModel, handlingUnitsKeyLayout, propertiesPanelModel);
 
 		rootHUKey = null;
 		_currentKey = null;
-		if (_selectedKeyIds != null)
-		{
-			_selectedKeyIds.clear();
-		}
+		_selectedKeyIds.clear();
 
 		clearCache();
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	private void onBreadcrumbKeyPressed(final IHUKey huKey)
@@ -329,7 +331,9 @@ public class HUEditorModel implements IDisposable
 		setCurrentHUKey(huKey);
 	}
 
-	/** @return terminal context; never returns null */
+	/**
+	 * @return terminal context; never returns null
+	 */
 	public final ITerminalContext getTerminalContext()
 	{
 		return _terminalContext;
@@ -382,6 +386,11 @@ public class HUEditorModel implements IDisposable
 		return _originalTopLevelHUs;
 	}
 
+	/**
+	 *
+	 * @param huKey
+	 * @return <code>true</code> if the given <code>huKey</code> is not <code>null</code> an has children.
+	 */
 	public boolean canDetail(final IHUKey huKey)
 	{
 		if (huKey == null)
@@ -471,7 +480,9 @@ public class HUEditorModel implements IDisposable
 		return breadcrumbKeyLayout;
 	}
 
-	/** @return {@link HUFilterPropertiesModel} or <code>null</code> */
+	/**
+	 * @return {@link HUFilterPropertiesModel} or <code>null</code>
+	 */
 	public HUFilterPropertiesModel getHUKeyFilterModel()
 	{
 		return _huKeyFilterModel;
@@ -1079,6 +1090,7 @@ public class HUEditorModel implements IDisposable
 	 */
 	private void loadHUProperties(final IHUKey currentKey)
 	{
+		currentKey.getAttributeSet().assertNotDisposedTree();
 
 		//
 		// Save old models (before removing them from composite and adding the new ones and before creating the new models which are binding attributeStorage)
@@ -1088,7 +1100,6 @@ public class HUEditorModel implements IDisposable
 		// Set the new models to our composite
 		propertiesPanelModel.setChildModels(new Supplier<Collection<IPropertiesPanelModel>>()
 		{
-
 			@Override
 			public Collection<IPropertiesPanelModel> get()
 			{
@@ -1206,10 +1217,10 @@ public class HUEditorModel implements IDisposable
 		// Clear (attribute) cache before opening editor
 		keyFactory.clearCache();
 	}
-	
-	
+
 	/**
 	 * Sets Quality Inspection flag for currently selected HUs
+	 *
 	 * @task 08639
 	 */
 	public final void setQualityInspectionFlagForSelectedHUs(final boolean qualityInspectionFlag)
@@ -1217,17 +1228,25 @@ public class HUEditorModel implements IDisposable
 		for (final HUKey huKey : getSelectedHUKeys())
 		{
 			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orNull();
-			if(qualityInspectionAware == null)
+			if (qualityInspectionAware == null)
 			{
 				// skip because it's not supported
 				continue;
 			}
-			
+
 			qualityInspectionAware.setQualityInspection(qualityInspectionFlag);
 		}
-		
+
 		clearSelectedKeyIds();
 		setCurrentHUKey(getRootHUKey());
+	}
+
+	@Override
+	public String toString()
+	{
+		return "HUEditorModel [_terminalContext=" + _terminalContext + ", pcs=" + pcs + ", breadcrumbKeyLayout=" + breadcrumbKeyLayout + ", breadcrumbKeyLayoutListener=" + breadcrumbKeyLayoutListener + ", _huKeyFilterModel=" + _huKeyFilterModel + ", handlingUnitsKeyLayout=" + handlingUnitsKeyLayout + ", propertiesPanelModel=" + propertiesPanelModel + ", attributesEditableOnlyIfVHU="
+				+ attributesEditableOnlyIfVHU + ", rootHUKey=" + rootHUKey + ", _currentKey=" + _currentKey + ", changesTracker=" + changesTracker + ", _selectedKeyIds=" + _selectedKeyIds + ", displayBarcode=" + displayBarcode + ", updateHUAllocationsOnSave=" + updateHUAllocationsOnSave + ", allowSelectingReadonlyKeys=" + allowSelectingReadonlyKeys + ", disposed=" + disposed
+				+ ", _originalTopLevelHUs=" + _originalTopLevelHUs + "]";
 	}
 
 }

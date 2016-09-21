@@ -172,6 +172,8 @@ public interface IUserRolePermissions
 	Set<OrgResource> getLoginOrgs();
 
 	int getOrg_Tree_ID();
+	
+	int getMenu_Tree_ID();
 
 	boolean isShowPreference();
 	UserPreferenceLevelConstraint getPreferenceLevel();

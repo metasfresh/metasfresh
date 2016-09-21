@@ -1,6 +1,6 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -12,7 +12,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
@@ -26,17 +26,10 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
  */
 public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 {
-
-	private static final List<String> PARAMETERS = ImmutableList.of(I_M_Attribute.COLUMNNAME_AttributeValueType);
-
-	@Override
-	public boolean isImmutable()
-	{
-		return false;
-	}
+	private static final Set<String> PARAMETERS = ImmutableSet.of(I_M_Attribute.COLUMNNAME_AttributeValueType);
 
 	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public boolean accept(final IValidationContext evalCtx, final NamePair item)
 	{
 		final String valueType = evalCtx.get_ValueAsString(I_M_Attribute.COLUMNNAME_AttributeValueType);
 
@@ -84,7 +77,7 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

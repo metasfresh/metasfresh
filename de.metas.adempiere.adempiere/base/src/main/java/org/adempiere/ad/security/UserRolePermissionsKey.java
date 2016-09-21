@@ -1,5 +1,6 @@
 package org.adempiere.ad.security;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
@@ -34,11 +35,13 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public final class UserRolePermissionsKey
+@SuppressWarnings("serial")
+public final class UserRolePermissionsKey implements Serializable
 {
 	public static final UserRolePermissionsKey of(final int adRoleId, final int adUserId, final int adClientId, final Date date)
 	{
-		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, date);
+		final long dateMillis = normalizeDate(date);
+		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
 	}
 
 	public static final UserRolePermissionsKey of(final Properties ctx)
@@ -47,34 +50,89 @@ public final class UserRolePermissionsKey
 		final int adUserId = Env.getAD_User_ID(ctx);
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final Date date = Env.getDate(ctx);
-		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, date);
+		final long dateMillis = normalizeDate(date);
+		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
 	}
 
-	private static final Logger logger = LogManager.getLogger(UserRolePermissionsKey.class);
+	/**
+	 * @see #toPermissionsKeyString()
+	 * @see #toPermissionsKeyString(int, int, int, long)
+	 */
+	public static UserRolePermissionsKey fromString(final String permissionsKeyStr)
+	{
+		return new UserRolePermissionsKey(permissionsKeyStr);
+	}
+
+	public static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
+	{
+		// NOTE: keep in sync with the counterpart (i.e. the constructor)
+		return String.join("|", String.valueOf(adRoleId), String.valueOf(adUserId), String.valueOf(adClientId), String.valueOf(dateMillis));
+	}
+
+	public static final String toPermissionsKeyString(final Properties ctx)
+	{
+		final int adRoleId = Env.getAD_Role_ID(ctx);
+		final int adUserId = Env.getAD_User_ID(ctx);
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final Date date = Env.getDate(ctx);
+		final long dateMillis = normalizeDate(date);
+		return toPermissionsKeyString(adRoleId, adUserId, adClientId, dateMillis);
+	}
+
+	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsKey.class);
 
 	private final int adRoleId;
 	private final int adUserId;
 	private final int adClientId;
-	private final Date date;
+	private final long dateMillis;
 
-	private Integer _hashcode;
+	private transient Integer _hashcode;
+	private transient String _permissionsKeyStr;
 
-	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
 		super();
 		this.adRoleId = adRoleId;
 		this.adUserId = adUserId;
 		this.adClientId = adClientId;
+		this.dateMillis = dateMillis;
+	}
 
-		// Make sure we are we are caching only on day level, else would make no sense,
-		// and performance penalty would be quite big
-		// (i.e. retrieve and load and aggregate the whole shit everything we need to check something in permissions)
-		final Date dateDay = normalizeDate(date);
-		if (date == null || date.getTime() != dateDay.getTime())
+	private UserRolePermissionsKey(final String permissionsKeyStr)
+	{
+		super();
+
+		// NOTE: keep in sync with the counterpart method toPermissionsKeyString(...) !!!
+		try
 		{
-			logger.warn("For performance purpose, make sure you providing a date which is truncated on day level: {}", date);
+			final String[] list = permissionsKeyStr.split("\\|");
+			if (list.length != 4)
+			{
+				throw new IllegalArgumentException("invalid format");
+			}
+
+			adRoleId = Integer.parseInt(list[0]);
+			adUserId = Integer.parseInt(list[1]);
+			adClientId = Integer.parseInt(list[2]);
+			dateMillis = Long.parseLong(list[3]);
+			_permissionsKeyStr = permissionsKeyStr;
 		}
-		this.date = dateDay;
+		catch (final Exception e)
+		{
+			throw new IllegalArgumentException("Invalid permissionsKey string: " + permissionsKeyStr, e);
+		}
+	}
+
+	/**
+	 * @see #fromString(String)
+	 */
+	public String toPermissionsKeyString()
+	{
+		if (_permissionsKeyStr == null)
+		{
+			_permissionsKeyStr = toPermissionsKeyString(adRoleId, adUserId, adClientId, dateMillis);
+		}
+		return _permissionsKeyStr;
 	}
 
 	@Override
@@ -84,7 +142,7 @@ public final class UserRolePermissionsKey
 				.add("AD_Role_ID", adRoleId)
 				.add("AD_User_ID", adUserId)
 				.add("AD_Client_ID", adClientId)
-				.add("date", date)
+				.add("date", new Date(dateMillis))
 				.toString();
 	}
 
@@ -93,7 +151,7 @@ public final class UserRolePermissionsKey
 	{
 		if (_hashcode == null)
 		{
-			_hashcode = Objects.hash(adRoleId, adUserId, adClientId, date);
+			_hashcode = Objects.hash(adRoleId, adUserId, adClientId, dateMillis);
 		}
 		return _hashcode;
 	}
@@ -114,12 +172,22 @@ public final class UserRolePermissionsKey
 		return adRoleId == other.adRoleId
 				&& adUserId == other.adUserId
 				&& adClientId == other.adClientId
-				&& Objects.equals(date, other.date);
+				&& dateMillis == other.dateMillis;
 	}
-	
-	public static final Date normalizeDate(final Date date)
+
+	public static final long normalizeDate(final Date date)
 	{
-		return TimeUtil.trunc(date, TimeUtil.TRUNC_DAY);
+		final long dateDayMillis = TimeUtil.truncToMillis(date, TimeUtil.TRUNC_DAY);
+
+		// Make sure we are we are caching only on day level, else would make no sense,
+		// and performance penalty would be quite big
+		// (i.e. retrieve and load and aggregate the whole shit everything we need to check something in permissions)
+		if (date == null || date.getTime() != dateDayMillis)
+		{
+			logger.warn("For performance purpose, make sure you providing a date which is truncated on day level: {}", date);
+		}
+
+		return dateDayMillis;
 	}
 
 	public int getAD_Role_ID()
@@ -137,8 +205,8 @@ public final class UserRolePermissionsKey
 		return adClientId;
 	}
 
-	public Date getDate()
+	public long getDateMillis()
 	{
-		return date;
+		return dateMillis;
 	}
 }

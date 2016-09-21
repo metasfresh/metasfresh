@@ -1,27 +1,23 @@
+-- Function: dlm.archive_c_queue_data(integer, integer)
 
-
-DROP FUNCTION IF EXISTS dlm.Archive_C_Queue_Data(integer, integer);
-CREATE OR REPLACE FUNCTION dlm.Archive_C_Queue_Data(daysBack integer, limitRecords integer) 
-RETURNS TABLE(
-		Count_Workpackages_ToArchive int, 
-		Count_Queue_Element_Archived int,
-		Count_Queue_WorkPackage_Param_Archived int,
-		Count_Queue_WorkPackage_Log_Archived int,
-		Count_Queue_Workpackage_Archived int,
-		Count_Queue_Block_Archived int,
-		Remaining_ToArchive int) 
-AS $$
+-- DROP FUNCTION dlm.archive_c_queue_data(integer, integer);
+CREATE OR REPLACE FUNCTION dlm.archive_c_queue_data(
+    IN daysback integer,
+    IN limitrecords integer)
+  RETURNS TABLE(count_workpackages_toarchive integer, 
+	Count_Queue_Element_Archived_Inserted integer, 
+	Count_Queue_WorkPackage_Param_Archived_Inserted integer, 
+	Count_Queue_WorkPackage_Log_Archived_Inserted integer, 
+	Count_Queue_Workpackage_Archived_Inserted integer, 
+	Count_Queue_Block_Archived integer, 
+	remaining_toarchive integer) AS
+$BODY$
 DECLARE
 	Count_Workpackages_ToArchive int; 
-	Count_Queue_Element_Archived int;
 	Count_Queue_Element_Archived_Inserted int;
-	Count_Queue_WorkPackage_Param_Archived int;
 	Count_Queue_WorkPackage_Param_Archived_Inserted int;
-	Count_Queue_WorkPackage_Log_Archived int;
 	Count_Queue_WorkPackage_Log_Archived_Inserted int;
-	Count_Queue_Workpackage_Archived int;
 	Count_Queue_Workpackage_Archived_Inserted int;
-	Count_Queue_Block_Archived int;
 	Count_Queue_Block_Archived_Inserted int;
 	Remaining_C_Queue_Workpackage_ToArchive_All int;
 	C_Queue_Workpackage_ToArchive_All_Initial_Count int;
@@ -127,8 +123,7 @@ BEGIN
 	select * from deleted_rows;
 	
 	GET DIAGNOSTICS Count_Queue_Element_Archived_Inserted = ROW_COUNT;
-	SELECT count(1) from dlm.C_Queue_Element_Archived INTO Count_Queue_Element_Archived;
-	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Element_Archived, it now has % records', Count_Queue_Element_Archived_Inserted, Count_Queue_Element_Archived;
+	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Element_Archived', Count_Queue_Element_Archived_Inserted;
 	
 	-- Archive C_Queue_WorkPackage_Param_Archived 
 	with deleted_rows as (
@@ -140,8 +135,7 @@ BEGIN
 	select * from deleted_rows;
 	
 	GET DIAGNOSTICS Count_Queue_WorkPackage_Param_Archived_Inserted = ROW_COUNT;
-	SELECT count(1) from dlm.C_Queue_Workpackage_Param_Archived INTO Count_Queue_WorkPackage_Param_Archived;
-	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Param_Archived, it now has % records', Count_Queue_WorkPackage_Param_Archived_Inserted, Count_Queue_WorkPackage_Param_Archived;
+	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Param_Archived', Count_Queue_WorkPackage_Param_Archived_Inserted;
 
 	-- Archive C_Queue_WorkPackage_Log_Archived 
 	with deleted_rows as (
@@ -153,8 +147,7 @@ BEGIN
 	select * from deleted_rows;
 	
 	GET DIAGNOSTICS Count_Queue_WorkPackage_Log_Archived_Inserted = ROW_COUNT;
-	SELECT count(1) from dlm.C_Queue_Workpackage_Log_Archived INTO Count_Queue_WorkPackage_Log_Archived;
-	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Log_Archived, it now has % records', Count_Queue_WorkPackage_Log_Archived_Inserted, Count_Queue_WorkPackage_Log_Archived;
+	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Log_Archived', Count_Queue_WorkPackage_Log_Archived_Inserted;
 	
 	-- Archive C_Queue_Workpackages
 	with deleted_rows as (
@@ -166,8 +159,7 @@ BEGIN
 	select * from deleted_rows;
 
 	GET DIAGNOSTICS Count_Queue_Workpackage_Archived_Inserted = ROW_COUNT;
-	SELECT count(1) from dlm.C_Queue_Workpackage_Archived INTO Count_Queue_Workpackage_Archived;
-	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Archived, it now has % records', Count_Queue_Workpackage_Archived_Inserted, Count_Queue_Workpackage_Archived;
+	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Archived', Count_Queue_Workpackage_Archived_Inserted;
 		
 	-- Archive C_Queue_Blocks
 	with deleted_rows as (
@@ -181,8 +173,7 @@ BEGIN
 	select * from deleted_rows;
 
 	GET DIAGNOSTICS Count_Queue_Block_Archived_Inserted = ROW_COUNT;
-	SELECT count(1) from dlm.C_Queue_Block_Archived INTO Count_Queue_Block_Archived;
-	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Block_Archived, it now has % records', Count_Queue_Block_Archived_Inserted, Count_Queue_Block_Archived;
+	RAISE NOTICE 'Moved % records to table dlm.C_Queue_Block_Archived', Count_Queue_Block_Archived_Inserted;
 
 	-- Count remaining things to delete
 	select count(1) from dlm.C_Queue_Workpackage_ToArchive_All INTO Remaining_C_Queue_Workpackage_ToArchive_All;   
@@ -195,17 +186,21 @@ BEGIN
 	ANALYZE c_queue_workpackage_log;
 	ANALYZE c_queue_workpackage_param;
 			
-	RETURN QUERY select Count_Workpackages_ToArchive , 
-			Count_Queue_Element_Archived ,
-			Count_Queue_WorkPackage_Param_Archived ,
-			Count_Queue_WorkPackage_Log_Archived,
-			Count_Queue_Workpackage_Archived ,
-			Count_Queue_Block_Archived,
+	RETURN QUERY select Count_Workpackages_ToArchive, 
+			Count_Queue_Element_Archived_Inserted,
+			Count_Queue_WorkPackage_Param_Archived_Inserted,
+			Count_Queue_WorkPackage_Log_Archived_Inserted,
+			Count_Queue_Workpackage_Archived_Inserted,
+			Count_Queue_Block_Archived_Inserted,
 			Remaining_C_Queue_Workpackage_ToArchive_All;
 END;
-$$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION dlm.Archive_C_Queue_Data(integer, integer) IS 'Moves async wrokpackage data do and "archive"-table in the dlm schema;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION dlm.archive_c_queue_data(integer, integer)
+  OWNER TO metasfresh;
+COMMENT ON FUNCTION dlm.archive_c_queue_data(integer, integer) IS 'Moves async wrokpackage data do and "archive"-table in the dlm schema;
 Parameters:
 	daysBack: work packages older than the given number of days are moved
 	limitRecords: the chunk-size, i.e. the number of workpackages that are moved per invokaction.
