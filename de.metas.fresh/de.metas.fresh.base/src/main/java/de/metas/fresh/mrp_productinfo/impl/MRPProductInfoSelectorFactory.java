@@ -121,7 +121,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		if (shipmentSched != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
-			if (date != null)      // don't blindly assume that the sched is already initialized
+			if (date != null)       // don't blindly assume that the sched is already initialized
 			{
 				return date;
 			}
@@ -142,7 +142,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 	}
 
 	@Override
-	public IMRPProductInfoSelector createOrNull(Object model, IParams params)
+	public IMRPProductInfoSelector createOrNull(final Object model, final IParams params)
 	{
 		final String productParamKey = MRPProductInfoSelector.mkProductParamKey(model);
 		final int productID = params.getParameterAsInt(productParamKey);

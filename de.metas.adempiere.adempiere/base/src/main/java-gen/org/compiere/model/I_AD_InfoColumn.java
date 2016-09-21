@@ -17,13 +17,14 @@
 package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+
 import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_InfoColumn
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  *  @version Release 3.5.4a
  */
-public interface I_AD_InfoColumn 
+public interface I_AD_InfoColumn
 {
 
     /** TableName=AD_InfoColumn */
@@ -34,7 +35,7 @@ public interface I_AD_InfoColumn
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System 
+    /** AccessLevel = 4 - System
      */
     BigDecimal accessLevel = BigDecimal.valueOf(4);
 
@@ -414,8 +415,8 @@ public interface I_AD_InfoColumn
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
-	
-	
+
+
 	/** Column name IsTree */
     public static final String COLUMNNAME_IsTree = "IsTree";
 
@@ -436,7 +437,7 @@ public interface I_AD_InfoColumn
     public static final String COLUMNNAME_ColumnName = "ColumnName";
 	public String getColumnName();
 	public void setColumnName(String ColumnName);
-	
+
 	 /** Column name QueryCriteriaFunction */
     public static final String COLUMNNAME_QueryCriteriaFunction = "QueryCriteriaFunction";
 
@@ -449,8 +450,8 @@ public interface I_AD_InfoColumn
 	  * column used for adding a sql function to query criteria
 	  */
 	public String getQueryCriteriaFunction();
-	
-	
+
+
     public static final String COLUMNNAME_DefaultValue = "DefaultValue";
 	public void setDefaultValue (String DefaultValue);
 	public String getDefaultValue();

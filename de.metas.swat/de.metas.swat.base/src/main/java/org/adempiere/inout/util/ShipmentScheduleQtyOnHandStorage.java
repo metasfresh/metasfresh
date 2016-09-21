@@ -13,18 +13,17 @@ package org.adempiere.inout.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -427,25 +427,10 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(final IStorageQuery storageQuery)
 	{
-		final Collection<ShipmentScheduleStorageRecord> storageRecordsAll = getStorageRecords();
-		if (storageRecordsAll.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		final List<ShipmentScheduleStorageRecord> storageRecords = new ArrayList<>();
-		for (final ShipmentScheduleStorageRecord storageRecord : getStorageRecords())
-		{
-			// Skip storage records which are not matching our query
-			if (!storageQuery.matches(storageRecord))
-			{
-				continue;
-			}
-
-			storageRecords.add(storageRecord);
-		}
-
-		return storageRecords;
+		return getStorageRecords()
+				.stream()
+				.filter(storageRecord -> storageQuery.matches(storageRecord))
+				.collect(Collectors.toList());
 	}
 
 	public ShipmentScheduleStorageRecord getFirstStorageRecordsMatching(final IStorageQuery storageQuery)

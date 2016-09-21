@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.fresh.model;
 
@@ -32,7 +16,7 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1175861614L;
+	private static final long serialVersionUID = -1624532669L;
 
     /** Standard Constructor */
     public X_Fresh_QtyOnHand_Line (Properties ctx, int Fresh_QtyOnHand_Line_ID, String trxName)
@@ -42,13 +26,13 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
         {
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @DateDoc@
+			setFresh_QtyOnHand_ID (0);
+			setFresh_QtyOnHand_Line_ID (0);
 			setM_Product_ID (0);
 			setPP_Plant_ID (0);
 			setQtyCount (Env.ZERO);
 			setSeqNo (0);
 // 0
-			setFresh_QtyOnHand_ID (0);
-			setFresh_QtyOnHand_Line_ID (0);
         } */
     }
 
@@ -100,6 +84,62 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	public java.sql.Timestamp getDateDoc () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	@Override
+	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class);
+	}
+
+	@Override
+	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand)
+	{
+		set_ValueFromPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class, Fresh_QtyOnHand);
+	}
+
+	/** Set Zählbestand Einkauf (fresh).
+		@param Fresh_QtyOnHand_ID Zählbestand Einkauf (fresh)	  */
+	@Override
+	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID)
+	{
+		if (Fresh_QtyOnHand_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, Integer.valueOf(Fresh_QtyOnHand_ID));
+	}
+
+	/** Get Zählbestand Einkauf (fresh).
+		@return Zählbestand Einkauf (fresh)	  */
+	@Override
+	public int getFresh_QtyOnHand_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Einkauf-Zählbestand Datensatz.
+		@param Fresh_QtyOnHand_Line_ID Einkauf-Zählbestand Datensatz	  */
+	@Override
+	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID)
+	{
+		if (Fresh_QtyOnHand_Line_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, Integer.valueOf(Fresh_QtyOnHand_Line_ID));
+	}
+
+	/** Get Einkauf-Zählbestand Datensatz.
+		@return Einkauf-Zählbestand Datensatz	  */
+	@Override
+	public int getFresh_QtyOnHand_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -285,62 +325,6 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	public int getSeqNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class);
-	}
-
-	@Override
-	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand)
-	{
-		set_ValueFromPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class, Fresh_QtyOnHand);
-	}
-
-	/** Set Zählbestand Einkauf (fresh).
-		@param Fresh_QtyOnHand_ID Zählbestand Einkauf (fresh)	  */
-	@Override
-	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID)
-	{
-		if (Fresh_QtyOnHand_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, Integer.valueOf(Fresh_QtyOnHand_ID));
-	}
-
-	/** Get Zählbestand Einkauf (fresh).
-		@return Zählbestand Einkauf (fresh)	  */
-	@Override
-	public int getFresh_QtyOnHand_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Manual QtyOnHand Line (fresh).
-		@param Fresh_QtyOnHand_Line_ID Manual QtyOnHand Line (fresh)	  */
-	@Override
-	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID)
-	{
-		if (Fresh_QtyOnHand_Line_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, Integer.valueOf(Fresh_QtyOnHand_Line_ID));
-	}
-
-	/** Get Manual QtyOnHand Line (fresh).
-		@return Manual QtyOnHand Line (fresh)	  */
-	@Override
-	public int getFresh_QtyOnHand_Line_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_Line_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -10,12 +10,12 @@ package de.metas.storage.spi.hu.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +56,7 @@ import de.metas.storage.IStorageRecord;
 public class HUStorageEngine implements IStorageEngine
 {
 	public static final transient HUStorageEngine instance = new HUStorageEngine();
-	
+
 	private static final Logger logger = LogManager.getLogger(HUStorageEngine.class);
 
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
@@ -90,7 +90,7 @@ public class HUStorageEngine implements IStorageEngine
 	public Set<IStorageRecord> retrieveStorageRecords(final IContextAware context, final Set<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
-		
+
 		logger.debug("Retrieving storage records for {}", storageQueries);
 
 		final int queriesPerChunk = getQueriesPerChunk();
@@ -191,9 +191,10 @@ public class HUStorageEngine implements IStorageEngine
 	public IAttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
 	{
 		Check.assumeNotNull(asi, "asi not null");
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(asi);
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = huContextFactory.createMutableHUContext(contextProvider);
 		return huContext.getHUAttributeStorageFactory().getAttributeStorage(asi);
 	}
 
@@ -201,5 +202,11 @@ public class HUStorageEngine implements IStorageEngine
 	{
 		final int queriesPerChunk = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_QueriesPerChunk, DEFAULT_QueriesPerChunk);
 		return queriesPerChunk;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "HUStorageEngine []";
 	}
 }

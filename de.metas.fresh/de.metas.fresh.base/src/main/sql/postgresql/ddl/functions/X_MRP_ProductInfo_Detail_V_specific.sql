@@ -49,7 +49,7 @@ FROM
 	LEFT JOIN (
 		-- task 09473: we might have mutiple records with the same date, product and ASI, so we need to aggregate.
 		select movementdate::date as movementdate, m_product_id, M_AttributesetInstance_ID, sum(qty) AS qty 
-		from "de.metas.fresh".X_Fresh_QtyOnHand_OnDate 
+		from "de.metas.fresh".X_Fresh_QtyOnHand_OnDate -- note that this is a table, not a view. it's maintained by the trigger-function "de.metas.fresh".M_Transaction_update_X_Fresh_QtyOnHand_OnDate()
 		group by movementdate::date, m_product_id, M_AttributesetInstance_ID
 	) qoh_d ON qoh_d.movementdate = p.DateGeneral::date AND qoh_d.m_product_id = p.M_Product_ID
 		AND COALESCE(qoh_d.M_AttributesetInstance_ID,-1)=COALESCE(p.M_AttributesetInstance_ID,-1)
