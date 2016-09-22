@@ -1,28 +1,5 @@
 package org.adempiere.ad.dao.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -32,17 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLoggerMBean;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
@@ -51,16 +19,16 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
-import org.slf4j.Logger;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Stopwatch;
 
-import de.metas.logging.LogManager;
-
+@Service
+@ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
 public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStatisticsCollector
 {
-	private static final Logger logger = LogManager.getLogger(QueryStatisticsLogger.class);
-
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
 
@@ -75,49 +43,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public QueryStatisticsLogger()
 	{
 		super();
-
-		registerJMX();
-	}
-
-	private void registerJMX()
-	{
-		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		final JMXQueryStatisticsLoggerMBean jmxBean = new JMXQueryStatisticsLogger();
-		final String jmxName = getClass().getName() + ":type=Statistics";
-
-		final ObjectName name;
-		try
-		{
-			name = new ObjectName(jmxName);
-		}
-		catch (final MalformedObjectNameException e)
-		{
-			logger.warn("Unable to create ObjectName: " + jmxName, e);
-			return;
-		}
-
-		try
-		{
-			if (!mbs.isRegistered(name))
-			{
-				mbs.registerMBean(jmxBean, name);
-			}
-		}
-		catch (final InstanceAlreadyExistsException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final MBeanRegistrationException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final NotCompliantMBeanException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
 	}
 
 	@Override
@@ -172,6 +97,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector")
 	public void enable()
 	{
 		enabled = false;
@@ -182,6 +108,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector and tracing")
 	public void enableWithSqlTracing()
 	{
 		enable();
@@ -203,6 +130,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Disables statistics collector (and tracing)")
 	public void disable()
 	{
 		enabled = false;
@@ -212,6 +140,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Resets currently collected statistics and counters")
 	public void reset()
 	{
 		sql2statistics.clear();
@@ -219,6 +148,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Sets a filter for SQLs which are collected for statistics. NOTE: this is not affecting the SQL tracing.")
 	public void setFilterBy(final String filterBy)
 	{
 		if (Check.equals(this.filterBy, filterBy))
@@ -234,12 +164,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the SQL query filter")
 	public String getFilterBy()
 	{
 		return filterBy;
 	}
 
 	@Override
+	@ManagedOperation(description = "Clears the current SQL query filter, if any")
 	public void clearFilterBy()
 	{
 		setFilterBy(null);
@@ -264,6 +196,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the timestamp from when we started to collect the statistics")
 	public Date getValidFrom()
 	{
 		return validFrom;
@@ -433,6 +366,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
 	public String[] getTopQueriesAsString()
 	{
 		final List<QueryStatistics> queryStatisticsList = snapshotQueryStatisticsAsList();
