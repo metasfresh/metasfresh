@@ -45,14 +45,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 {
 	
 	public static final String ASYNC_BATCH_TYPE_INVCAND = "InvoiceCandidate";
-	public static final String ASYNC_BATCH_TYPE_INVWIZ_MASS = "InvoicingWizardMass";
-	public static final String ASYNC_BATCH_TYPE_INVWIZ_SINGLE = "InvoicingWizardSingle";
-	public static final String ASYNC_BATCH_TYPE_PDFPrinting = "PDFPrinting";
-	public static final String ASYNC_BATCH_TYPE_Neuaufnahme = "Neuaufnahme";
 	public static final String ASYNC_BATCH_TYPE_ESR = "ESRWizard";
-	public static final String ASYNC_BATCH_TYPE_BPOrgChange = "BPOrgChange";
-	public static final String ASYNC_BATCH_TYPE_VoidAndRecreateInvoice = "VoidAndRecreateInvoice";
-	public static final String ASYNC_BATCH_TYPE_TriggerVoidAndRecreateInvoice = "TriggerVoidAndRecreateInvoice";
 	public static final String ASYNC_BATCH_TYPE_DEFAULT = "Default";
 	
 	/**
