@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.letters.spi.impl;
+package de.metas.async.spi.impl;
 
 import java.util.Map;
 import java.util.Properties;
