@@ -24,8 +24,6 @@ package org.adempiere.ad.dao;
 
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
-
 /**
  * Query Statistics Logger: build up a list of top used SQL queries
  * 
@@ -34,7 +32,8 @@ import org.adempiere.util.ISingletonService;
  * @author tsa
  * 
  */
-public interface IQueryStatisticsLogger extends ISingletonService
+public interface IQueryStatisticsLogger
+// extends ISingletonService // commented out because it shall be accessed via spring @Autowired
 {
 	/**
 	 * Enable statistics logging
