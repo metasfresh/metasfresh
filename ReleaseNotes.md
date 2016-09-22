@@ -23,6 +23,7 @@ upcoming
  * #370 Material Receipt - Somtimes double click needed for weighing machine
  * #420 NPE in CalloutOrder.bPartner
  * #410 sscc label org fix
+ * #422 pricelist report do not show virtual HU
 
 # metasfresh 4.36.35 (2016-38)
 
