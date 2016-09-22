@@ -30,7 +30,7 @@ class Lookup extends Component {
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup")
         }
 
-       
+        console.log(this.state);
     }
 
     componentDidMount() {

@@ -194,11 +194,11 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
 
 export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value) {
     let payload = {};
-    
+    console.log('---API request ----')
 
     if(id === "NEW"){
         payload = [];
-        
+        console.log('NEW');
     }else{
         if(property && value !== undefined){
             payload = [{
@@ -210,7 +210,7 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
             payload = [];
         }
 
-       
+        console.log(payload);
     }
 
 
@@ -251,7 +251,8 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
         
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
 
-            
+            console.log('response ');
+            console.log(response);
 
             responsed = true;
 
@@ -273,15 +274,16 @@ function mapDataToState(data, isModal, rowId){
 
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
-                
+                console.log('new');
             }else{
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
-                        
+                        console.log('updateRowSuccess');
                     }else{
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
-                       
+                        console.log('updateDataSuccess');
+                        console.log(item2);
                     }
                 });
             }
