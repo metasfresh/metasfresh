@@ -31,7 +31,6 @@ import org.adempiere.util.ISingletonService;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
-import de.metas.letters.spi.INotifyAsyncBatch;
 
 /**
  * @author cg

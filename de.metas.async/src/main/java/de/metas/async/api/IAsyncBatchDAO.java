@@ -53,7 +53,6 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 * 
 	 * @param ctx
 	 * @param internalName
-	 * @param trxName
 	 * @return {@link I_C_Async_Batch_Type}; never returns null
 	 */
 	I_C_Async_Batch_Type retrieveAsyncBatchType(Properties ctx, String internalName);
