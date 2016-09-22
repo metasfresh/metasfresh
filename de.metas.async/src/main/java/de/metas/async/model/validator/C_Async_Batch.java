@@ -8,7 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.X_C_Async_Batch_Type;
 
@@ -29,7 +29,7 @@ public class C_Async_Batch
 		// Our batch was processed right now => notify user by sending email
 		if (asyncBatch.isProcessed() && X_C_Async_Batch_Type.NOTIFICATIONTYPE_AsyncBatchProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
 		{
-			Services.get(IAsyncBatchBL.class).sendNotifications(asyncBatch);
+			Services.get(IAsyncBatchListeners.class).notify(asyncBatch);
 		}
 	}
 
@@ -41,7 +41,7 @@ public class C_Async_Batch
 		// Our batch was not processed => notify user with note when workpackage processed
 		if (!asyncBatch.isProcessed() && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
 		{
-			Services.get(IAsyncBatchBL.class).sendNote(asyncBatch);
+			Services.get(IAsyncBatchListeners.class).notify(asyncBatch);
 		}
 	}
 

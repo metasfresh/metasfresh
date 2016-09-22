@@ -28,32 +28,19 @@ package de.metas.async.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MClient;
-import org.compiere.model.MUser;
-import org.compiere.util.CLogger;
-import org.compiere.util.EMail;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
@@ -66,9 +53,6 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.letters.model.IEMailEditor;
-import de.metas.letters.model.I_AD_BoilerPlate;
-import de.metas.letters.model.MADBoilerPlate;
 
 /**
  * @author cg
@@ -82,8 +66,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
-
-	private final IAsyncBatchListeners asyncBatchListener = Services.get(IAsyncBatchListeners.class);
 
 	@Override
 	public IAsyncBatchBuilder newAsyncBatch()
@@ -315,106 +297,74 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-//	@Override
-//	public void sendEMail(final I_C_Async_Batch asyncBatch)
-//	{
-//
-//		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-//		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
-//
-//		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-//		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
-//
-//		// do nothing is the flag for sending mail is not checked
-//		if (!asyncBatchType.isSendMail())
-//		{
-//			return;
-//		}
-//
-//		final I_AD_BoilerPlate boilerPlate = asyncBatchType.getAD_BoilerPlate();
-//		Check.assumeNotNull(boilerPlate, "Boiler plate should not be null for async batch type ! ", asyncBatchType.getC_Async_Batch_Type_ID());
-//
-//		final MADBoilerPlate text = InterfaceWrapperHelper.create(boilerPlate, MADBoilerPlate.class);
-//		if (text == null)
-//		{
-//			return; // nothing to send
-//		}
-//
-//		MADBoilerPlate.sendEMail(new IEMailEditor()
-//		{
-//			@Override
-//			public Object getBaseObject()
-//			{
-//				return InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
-//			}
-//
-//			@Override
-//			public int getAD_Table_ID()
-//			{
-//				return InterfaceWrapperHelper.getTableId(I_C_Async_Batch.class);
-//			}
-//
-//			@Override
-//			public int getRecord_ID()
-//			{
-//				return asyncBatch.getC_Async_Batch_ID();
-//			}
-//
-//			@Override
-//			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
-//			{
-//				final MClient client = LegacyAdapters.convertToPO(Services.get(IClientDAO.class).retriveClient(ctx));
-//
-//				variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
-//
-//				// try to set language; take first from partner; if does not exists, take it from client
-//				final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
-//				final I_C_BPartner partner = user.getC_BPartner();
-//				String language = "";
-//				if (partner != null && partner.getC_BPartner_ID() > 0)
-//				{
-//					language = partner.getAD_Language();
-//				}
-//				if (Check.isEmpty(language, true))
-//				{
-//					language = client.getAD_Language();
-//				}
-//				variables.put(MADBoilerPlate.VAR_AD_Language, language);
-//				//
-//				final String message = text.getTextSnippetParsed(variables);
-//				//
-//				if (Check.isEmpty(message, true))
-//					return null;
-//				//
-//
-//				// prepare mail
-//				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-//				String to = st.nextToken();
-//
-//				if (asyncBatch.getCreatedBy() > 0)
-//					to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName).getEMail();
-//				final EMail email = client.createEMail(null,
-//						to, // to
-//						text.getSubject(), // subject
-//						message, // message
-//						true);
-//				if (email == null)
-//				{
-//					throw new AdempiereException("Cannot create email. Check log.");
-//				}
-//				while (st.hasMoreTokens())
-//					email.addTo(st.nextToken());
-//
-//				// now send mail
-//				final String status = email.send();
-//
-//				if (!email.isSentOK())
-//				{
-//					throw new AdempiereException(status);
-//				}
-//
-//				return email;
-//			}
-//		}, false);
-//	}
+	@Override
+	public boolean keepAliveTimeExpired(final I_C_Async_Batch asyncBatch)
+	{
+		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
+
+		// if null or empty, keep alive for ever
+		if (Check.isEmpty(keepAliveTimeHours, true))
+		{
+			return false;
+		}
+
+		final int keepAlive = Integer.valueOf(keepAliveTimeHours);
+
+		// if 0, keep alive for ever
+		if (keepAlive == 0)
+		{
+			return false;
+		}
+
+		final Timestamp lastUpdated = asyncBatch.getUpdated();
+		final Timestamp today = SystemTime.asTimestamp();
+
+		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
+
+		if (diffHours > keepAlive)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public I_C_Queue_WorkPackage notify(final I_C_Async_Batch asyncBatch, final I_C_Queue_WorkPackage workpackage)
+	{
+		//
+		// retrieves not notified workpackages in order of the seqNo
+		final List<I_C_Queue_WorkPackage_Notified> unNotifiedWPS = asyncBatchDAO.retrieveWorkPackagesNotified(asyncBatch, false);
+
+		//
+		// if there is not package not notified below the current one, do not notify
+		int count = 0;
+		for (final I_C_Queue_WorkPackage_Notified unNotifiedWP : unNotifiedWPS)
+		{
+			// if the given workpackage is the first one and is not notified, notify
+			if (unNotifiedWP.getC_Queue_WorkPackage_ID() == workpackage.getC_Queue_WorkPackage_ID() && count == 0 && !unNotifiedWP.isNotified())
+			{
+				return workpackage;
+			}
+
+			// if the first workpackage is not notified, notify
+			if (!unNotifiedWP.isNotified() && count == 0)
+			{
+				return unNotifiedWP.getC_Queue_WorkPackage();
+			}
+
+			count++;
+		}
+
+		return null;
+
+	}
+
+	@Override
+	public void markWorckpackageNotified(final I_C_Queue_WorkPackage_Notified workpackageNotified)
+	{
+		workpackageNotified.setIsNotified(true);
+		InterfaceWrapperHelper.save(workpackageNotified);
+	}
 }

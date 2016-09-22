@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.letters.spi.INotifyAsyncBatch;
 
 /**
  * @author cg
@@ -81,15 +82,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	void enqueueAsyncBatch(I_C_Async_Batch asyncBatch);
 
-	/***
-	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by {@value #AD_SYSCONFIG_ASYNC_BOILERPLATE_ID}. If there is no such
-	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
-	 * 
-	 * @param asyncBatch
-	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
-	 */
-	void sendEMail(final I_C_Async_Batch asyncBatch);
-
 	/**
 	 * check if the keep alive time has expired for the current batch
 	 * 
@@ -97,20 +89,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	 * @return
 	 */
 	boolean keepAliveTimeExpired(I_C_Async_Batch asyncBatch);
-
-	/**
-	 * Send note to the user who created the async batch with the result
-	 * 
-	 * @param asyncBatch
-	 */
-	void sendNote(I_C_Async_Batch asyncBatch);
-
-	/**
-	 * send notifications by email or by notice system
-	 * 
-	 * @param asyncBatch
-	 */
-	void sendNotifications(I_C_Async_Batch asyncBatch);
 
 	/**
 	 * create notification records in async batch has notification of type WPP
@@ -135,4 +113,5 @@ public interface IAsyncBatchBL extends ISingletonService
 	 * @param workpackageNotified
 	 */
 	void markWorckpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
+
 }

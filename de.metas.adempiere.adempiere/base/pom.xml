@@ -19,7 +19,7 @@
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>

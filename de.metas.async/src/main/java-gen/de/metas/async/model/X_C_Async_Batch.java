@@ -170,6 +170,25 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 		return ii.intValue();
 	}
 
+	/** Set Expected.
+		@param CountExpected Expected	  */
+	@Override
+	public void setCountExpected (int CountExpected)
+	{
+		set_Value (COLUMNNAME_CountExpected, Integer.valueOf(CountExpected));
+	}
+
+	/** Get Expected.
+		@return Expected	  */
+	@Override
+	public int getCountExpected () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CountExpected);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Verarbeitet.
 		@param CountProcessed Verarbeitet	  */
 	@Override
@@ -253,6 +272,40 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastProcessed);
 	}
 
+	@Override
+	public de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_LastProcessed_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
+	}
+
+	@Override
+	public void setLastProcessed_WorkPackage(de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage)
+	{
+		set_ValueFromPO(COLUMNNAME_LastProcessed_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class, LastProcessed_WorkPackage);
+	}
+
+	/** Set LastProcessed WorkPackage.
+		@param LastProcessed_WorkPackage_ID LastProcessed WorkPackage	  */
+	@Override
+	public void setLastProcessed_WorkPackage_ID (int LastProcessed_WorkPackage_ID)
+	{
+		if (LastProcessed_WorkPackage_ID < 1) 
+			set_Value (COLUMNNAME_LastProcessed_WorkPackage_ID, null);
+		else 
+			set_Value (COLUMNNAME_LastProcessed_WorkPackage_ID, Integer.valueOf(LastProcessed_WorkPackage_ID));
+	}
+
+	/** Get LastProcessed WorkPackage.
+		@return LastProcessed WorkPackage	  */
+	@Override
+	public int getLastProcessed_WorkPackage_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LastProcessed_WorkPackage_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -270,6 +323,40 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public de.metas.async.model.I_C_Async_Batch getParent_Async_Batch() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Parent_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
+	}
+
+	@Override
+	public void setParent_Async_Batch(de.metas.async.model.I_C_Async_Batch Parent_Async_Batch)
+	{
+		set_ValueFromPO(COLUMNNAME_Parent_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class, Parent_Async_Batch);
+	}
+
+	/** Set Parent_Async_Batch_ID.
+		@param Parent_Async_Batch_ID Parent_Async_Batch_ID	  */
+	@Override
+	public void setParent_Async_Batch_ID (int Parent_Async_Batch_ID)
+	{
+		if (Parent_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_Parent_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_Async_Batch_ID, Integer.valueOf(Parent_Async_Batch_ID));
+	}
+
+	/** Get Parent_Async_Batch_ID.
+		@return Parent_Async_Batch_ID	  */
+	@Override
+	public int getParent_Async_Batch_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_Async_Batch_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Verarbeitet.
