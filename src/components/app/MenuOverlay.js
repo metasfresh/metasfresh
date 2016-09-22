@@ -97,12 +97,12 @@ class MenuOverlay extends Component {
     }
     render() {
         const {queriedResults, deepNode} = this.state;
-        const {nodeId, node, siteName} = this.props;
+        const {nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
 
         return (
             <div className="menu-overlay menu-overlay-primary">
-                <div className="menu-overlay-caption">{ (nodeData.captionBreadcrumb === "Menu") ? <span className="ico-home"> </span> : nodeData && nodeData.captionBreadcrumb}</div>
+                <div className="menu-overlay-caption">{ (index === 0) ? <span className="ico-home"> </span> : nodeData && nodeData.captionBreadcrumb}</div>
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
@@ -145,7 +145,7 @@ class MenuOverlay extends Component {
                             )}
                         </div>
                     }
-                    {nodeData.captionBreadcrumb === "Menu" && siteName !== "Sitemap" &&
+                    {index === 0 && siteName !== "Sitemap" &&
                         <div className="text-xs-right">
                           <span className="menu-overlay-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                         </div>

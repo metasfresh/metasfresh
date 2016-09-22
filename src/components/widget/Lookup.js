@@ -29,6 +29,8 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup")
         }
+
+       
     }
 
     componentDidMount() {

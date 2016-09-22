@@ -96,10 +96,10 @@ class Header extends Component {
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
                         <span
-                            className={ (!item.children.elementId || windowType ? "menu-overlay-expand " : '') + (item.children.captionBreadcrumb === "Menu" ? "ico-home" : "")}
+                            className={ (!item.children.elementId || windowType ? "menu-overlay-expand " : '') + (index === 0 ? "ico-home" : "")}
                             onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
-                            {(item.children.captionBreadcrumb === "Menu") ? "" : item && item.children && item.children.captionBreadcrumb}
+                            {(index === 0) ? "" : item && item.children && item.children.captionBreadcrumb}
                         </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
@@ -108,6 +108,7 @@ class Header extends Component {
                                 onClickOutside={e => this.handleMenuOverlay(e, "")}
                                 disableOnClickOutside={menuOverlay !== item.nodeId}
                                 siteName={siteName}
+                                index={index}
                             />
                         }
                     </span>
