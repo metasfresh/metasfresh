@@ -66,7 +66,7 @@ class Modal extends Component {
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
                                 Done
                             </span>
-                            <Indicator indicator={indicator} />
+
                         </div>
                     </div>
                     <div className="panel-modal-content js-panel-modal-content">

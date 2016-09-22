@@ -175,6 +175,8 @@ class Header extends Component {
                                     />
                                 }
 
+                                <span className="notification"><span className="notification-number">4</span></span>
+
                                 <Indicator indicator={this.props.indicator} />
 
                                 <div

@@ -23,6 +23,7 @@
 }
 
 
+
 body {
     background-color: #F8FAFB;
     color: $brand-font-color;
@@ -639,6 +640,8 @@ body {
     display: flex;
     align-items: center;
     text-align: center;
+    right: 10px;
+    position: absolute;
 }
 
 .indicator img {
@@ -910,13 +913,15 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .applyBtn {
     color: #fff;
-    background-color: #9aafbd;
-    border-color: #9aafbd;
+    background-color: $brand-success-dark-color;
+    border-color: $brand-success-dark-color;
 }
 
-.applyBtn:hover {
-    background-color: color(#9aafbd lightness(45%));
-    border-color: color(#9aafbd lightness(45%));
+.applyBtn:hover, 
+.applyBtn:focus, 
+.daterangepicker .applyBtn:active {
+    background-color: $brand-success-dark-color;
+    border-color: $brand-success-dark-color;
 }
 
 .ranges li {
@@ -981,10 +986,34 @@ th {
     width: 20px;
     height: 14px;
     min-width: 20px;
-    background: url('../images/icon-menu.png') no-repeat center;
+    background: url('../images/icon-menu.svg') no-repeat center;
     display: inline-block;
 }
 
 .header-breadcrumb > span:first-of-type > .ico-home {
     min-width: 20px;
+}
+
+.notification {
+    background: url('../images/icon-notifications.svg') no-repeat center;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    position: relative;
+}
+
+.notification-number {
+    width: 15px;
+    height: 15px;
+    background: $brand-font-color-danger;
+    color: #fff;
+    font-size: 10px;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    position: absolute;
+    top: -5px;
+    right: -5px;
 }

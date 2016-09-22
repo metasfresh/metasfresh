@@ -179,6 +179,7 @@
 .header-right-side {
     align-items: stretch;
     justify-content: flex-end;
+    align-items: center;
 }
 .header-right-side .form-group {
     height: auto;
