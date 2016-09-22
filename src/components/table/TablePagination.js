@@ -10,11 +10,8 @@ class TablePagination extends Component {
     render() {
         const {size, pageLength, selected, handleSelectAll, handleChangePage, page} = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
-        const startPoint = pages > 1 ? (pages - page <= 4 ? pages - 4 : page) : 1;
+        const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
         const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
-
-        console.log(this.props);
-        console.log('startPoint '+startPoint);
 
         let pagination = [];
         for(let i = startPoint; i <= endPoint; i++){

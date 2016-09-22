@@ -141,7 +141,7 @@ class MenuOverlay extends Component {
                         <div className="menu-overlay-node-container">
                             <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
                             {nodeData && nodeData.children.map((item, index) =>
-                                <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId ? "menu-overlay-link" : ""} onClick={ item.elementId ? e => this.handleRedirect(item.elementId) : '' }>{item.caption}</span> </span>
+                                <span className="menu-overlay-expanded-link" key={index}> {item.caption} </span>
                             )}
                         </div>
                     }
