@@ -16,7 +16,7 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1759495802L;
+	private static final long serialVersionUID = 438857873L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_Detail_MV (Properties ctx, int X_MRP_ProductInfo_Detail_MV_ID, String trxName)
@@ -26,6 +26,8 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
         {
 			setASIKey (null);
 			setDateGeneral (new Timestamp( System.currentTimeMillis() ));
+			setIsFallBack (true);
+// Y
 			setM_Product_ID (0);
 			setX_MRP_ProductInfo_Detail_MV_ID (0);
         } */
@@ -78,6 +80,66 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
 	}
 
+	/** Set IsFallBack.
+		@param IsFallBack IsFallBack	  */
+	@Override
+	public void setIsFallBack (boolean IsFallBack)
+	{
+		set_Value (COLUMNNAME_IsFallBack, Boolean.valueOf(IsFallBack));
+	}
+
+	/** Get IsFallBack.
+		@return IsFallBack	  */
+	@Override
+	public boolean isFallBack () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsFallBack);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Ausprägung Merkmals-Satz.
+		@param M_AttributeSetInstance_ID 
+		Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Ausprägung Merkmals-Satz.
+		@return Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -122,7 +184,7 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 	@Override
 	public void setQtyOnHand (java.math.BigDecimal QtyOnHand)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyOnHand, QtyOnHand);
+		set_Value (COLUMNNAME_QtyOnHand, QtyOnHand);
 	}
 
 	/** Get Bestand.

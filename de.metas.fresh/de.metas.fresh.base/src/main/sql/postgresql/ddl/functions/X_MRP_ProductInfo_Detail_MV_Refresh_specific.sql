@@ -11,7 +11,8 @@ $BODY$
     -- we don't do any ASI related filtering, because there might be an inout line with an ASI that is totally different from the order line,
     -- but still we need to change both the the X_MRP_ProductInfo_Detail_MV records for the inout and the order line
     DELETE FROM X_MRP_ProductInfo_Detail_MV 
-    WHERE DateGeneral::Date = $1 AND M_Product_ID = $2;
+    WHERE DateGeneral::Date = $1 AND M_Product_ID = $2
+		AND IsFallBack='N'; -- don''t delete fallback records. They are neutral and don't interfere with non-fallback records. However, if e.g. a date changes, the new non-fallback record will have a different date, so we need a fallback record at the "old" date
 
 	-- Insert new rows.
     INSERT INTO X_MRP_ProductInfo_Detail_MV (
@@ -25,6 +26,7 @@ $BODY$
     	m_product_id,
 		dategeneral,
 		asikey,
+		M_AttributesetInstance_ID, -- gh #213: we need one prototypical M_AttributesetInstance_ID so that later on we can constructs a storage query when computing QtyOnHand in the java code
 		PMM_QtyPromised_OnDate, -- FRESH-86
 		qtyreserved_ondate,
 		qtyordered_ondate,
@@ -45,6 +47,7 @@ $BODY$
     	m_product_id,
 		dategeneral,
 		asikey,
+		M_AttributesetInstance_ID,
 		PMM_QtyPromised_OnDate, -- FRESH-86: Qty from PMM_PurchaseCandidate
 		qtyreserved_ondate,
 		qtyordered_ondate,

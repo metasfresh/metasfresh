@@ -10,12 +10,12 @@ package de.metas.aggregation.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +43,7 @@ public class AggregationFactory implements IAggregationFactory
 {
 	/**
 	 * Programatically registered default {@link IAggregationKeyBuilder}s.
-	 * 
+	 *
 	 * To create a a key for accessing them, please use {@link #mkDefaultAggregationKey(Class, String)}.
 	 */
 	private final Map<ArrayKey, IAggregationKeyBuilder<?>> defaultAggregationKeyBuilders = new ConcurrentHashMap<>();
@@ -73,7 +73,7 @@ public class AggregationFactory implements IAggregationFactory
 		}
 
 		//
-		// Check programatically registered default
+		// Check programmatically registered default
 		{
 			final ArrayKey key = mkDefaultAggregationKey(modelClass, aggregationUsageLevel);
 			@SuppressWarnings("unchecked")

@@ -16,7 +16,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -240837614L;
+	private static final long serialVersionUID = 592773067L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_V (Properties ctx, int X_MRP_ProductInfo_V_ID, String trxName)
@@ -324,6 +324,28 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zusage Lieferant.
+		@param PMM_QtyPromised_OnDate 
+		Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_PMM_QtyPromised_OnDate, PMM_QtyPromised_OnDate);
+	}
+
+	/** Get Zusage Lieferant.
+		@return Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getPMM_QtyPromised_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PMM_QtyPromised_OnDate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Produktname.

@@ -334,6 +334,31 @@ public interface I_X_MRP_ProductInfo_V
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Zusage Lieferant.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate);
+
+	/**
+	 * Get Zusage Lieferant.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPMM_QtyPromised_OnDate();
+
+    /** Column definition for PMM_QtyPromised_OnDate */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object> COLUMN_PMM_QtyPromised_OnDate = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_V, Object>(I_X_MRP_ProductInfo_V.class, "PMM_QtyPromised_OnDate", null);
+    /** Column name PMM_QtyPromised_OnDate */
+    public static final String COLUMNNAME_PMM_QtyPromised_OnDate = "PMM_QtyPromised_OnDate";
+
+	/**
 	 * Set Produktname.
 	 * Name des Produktes
 	 *
