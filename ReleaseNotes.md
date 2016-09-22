@@ -22,6 +22,7 @@ upcoming
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
  * #370 Material Receipt - Somtimes double click needed for weighing machine
  * #420 NPE in CalloutOrder.bPartner
+ * #410 sscc label org fix
 
 # metasfresh 4.36.35 (2016-38)
 
