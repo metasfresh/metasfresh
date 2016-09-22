@@ -13,7 +13,6 @@ import org.compiere.model.MNote;
 
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.spi.IAsyncBatchListener;
 
 /**
@@ -22,22 +21,14 @@ import de.metas.async.spi.IAsyncBatchListener;
  */
 public class DefaultAsyncBatchListener implements IAsyncBatchListener
 {
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
-
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
-		// exclude case of recreate invoice and invoice wizards
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatchDAO.retrieveAsyncBatchType(ctx, de.metas.async.api.impl.AsyncBatchDAO.ASYNC_BATCH_TYPE_VoidAndRecreateInvoice);
-		final I_C_Async_Batch_Type asyncBatchTypeSingleInv = asyncBatchDAO.retrieveAsyncBatchType(ctx, de.metas.async.api.impl.AsyncBatchDAO.ASYNC_BATCH_TYPE_INVWIZ_SINGLE);
-		final I_C_Async_Batch_Type asyncBatchTypeMassInv = asyncBatchDAO.retrieveAsyncBatchType(ctx, de.metas.async.api.impl.AsyncBatchDAO.ASYNC_BATCH_TYPE_INVWIZ_MASS);
 
-		if (asyncBatch.getC_Async_Batch_Type_ID() != asyncBatchType.getC_Async_Batch_Type_ID()
-				&& asyncBatch.getC_Async_Batch_Type_ID() != asyncBatchTypeMassInv.getC_Async_Batch_Type_ID()
-				&& asyncBatch.getC_Async_Batch_Type_ID() != asyncBatchTypeSingleInv.getC_Async_Batch_Type_ID())
+		if (IAsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
 			final String msg = Services.get(IMsgBL.class).getMsg(ctx, "Notice_Async_Processed", new Object[] { asyncBatch.getName() });
 
