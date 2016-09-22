@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +65,11 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private DocumentViewsRepository documentViewsRepo;
+	
+	@Autowired
+	@Lazy
+	private IQueryStatisticsLogger statisticsLogger;
+
 
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
@@ -96,7 +100,6 @@ public class DebugRestController
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
 	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
 	{
-		final IQueryStatisticsLogger statisticsLogger = Services.get(IQueryStatisticsLogger.class);
 		if (enabled)
 		{
 			statisticsLogger.enableWithSqlTracing();
