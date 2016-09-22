@@ -152,7 +152,7 @@ public final class MenuTreeLoader
 		String caption = nodeModel.getWEBUI_NameBrowse();
 		if (Check.isEmpty(caption, true))
 		{
-			caption = "Browse " + captionBreadcrumb;
+			caption = captionBreadcrumb;
 		}
 
 		final MenuNode.Builder builder = MenuNode.builder()
