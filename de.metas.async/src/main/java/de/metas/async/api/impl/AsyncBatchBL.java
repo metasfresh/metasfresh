@@ -27,27 +27,48 @@ package de.metas.async.api.impl;
 
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MClient;
+import org.compiere.model.MUser;
+import org.compiere.util.CLogger;
+import org.compiere.util.EMail;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
+import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.model.X_C_Async_Batch_Type;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
+import de.metas.letters.model.IEMailEditor;
+import de.metas.letters.model.I_AD_BoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
 
 /**
  * @author cg
@@ -57,7 +78,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 {
 	/* package */final static int PROCESSEDTIME_OFFSET_Min = Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMin", 1);
 
+	// services
+	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
+
 	private final ReentrantLock lock = new ReentrantLock();
+
+	private final IAsyncBatchListeners asyncBatchListener = Services.get(IAsyncBatchListeners.class);
 
 	@Override
 	public IAsyncBatchBuilder newAsyncBatch()
@@ -65,9 +91,43 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return new AsyncBatchBuilder(this);
 	}
 
-	// FIXME: instead of synchronizing on AsyncBatchBL, consider increasing the value directly on the DB, in an "atomic" way, and then just refresh asyncBatch
 	@Override
-	public void increaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	public int increaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	{
+		return setAsyncBatchCountEnqueued(workPackage, +1);
+	}
+
+	@Override
+	public int decreaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	{
+		return setAsyncBatchCountEnqueued(workPackage, -1);
+	}
+
+	@Override
+	public void createNotificationRecord(final I_C_Queue_WorkPackage workPackage)
+	{
+		final int asyncBatchId = workPackage.getC_Async_Batch_ID();
+
+		if (asyncBatchId > 0)
+		{
+			final I_C_Async_Batch asyncBatch = workPackage.getC_Async_Batch();
+			final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+			if (X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
+			{
+				final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+				final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
+				
+				final I_C_Queue_WorkPackage_Notified wpNotified = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage_Notified.class, trxName);
+				wpNotified.setC_Async_Batch_ID(asyncBatchId);
+				wpNotified.setC_Queue_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
+				wpNotified.setBachWorkpackageSeqNo(workPackage.getBatchEnqueuedCount());
+				wpNotified.setIsNotified(false);
+				Services.get(IQueueDAO.class).saveInLocalTrx(wpNotified);
+			}
+		}
+	}
+
+	private int setAsyncBatchCountEnqueued(final I_C_Queue_WorkPackage workPackage, final int offset)
 	{
 		final int asyncBatchId = workPackage.getC_Async_Batch_ID();
 
@@ -86,18 +146,23 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				}
 
 				asyncBatch.setLastEnqueued(enqueued);
-				asyncBatch.setCountEnqueued(asyncBatch.getCountEnqueued() + 1);
+				int countEnqueued = asyncBatch.getCountEnqueued() + offset;
+				asyncBatch.setCountEnqueued(countEnqueued);
 				save(asyncBatch);
+				return countEnqueued;
 			}
 			finally
 			{
 				lock.unlock();
 			}
 		}
-
+		else
+		{
+			return 0;
+		}
 	}
 
-	// FIXME: instead of synchronizing on AsyncBatchBL, consider increasing the value directly on the DB, in an "atomic" way, and then just refresh asyncBatch
+
 	@Override
 	public void increaseProcessed(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -113,6 +178,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				InterfaceWrapperHelper.refresh(asyncBatch);
 				final Timestamp processed = SystemTime.asTimestamp();
 				asyncBatch.setLastProcessed(processed);
+				asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
 				asyncBatch.setCountProcessed(asyncBatch.getCountProcessed() + 1);
 				save(asyncBatch);
 			}
@@ -143,7 +209,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
-		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, prio);
+		final I_C_Queue_WorkPackage queueWorkpackage = queue.newBlock()
+														.setContext(ctx)
+														.newWorkpackage()
+														.setPriority(prio)
+														.build();
 
 		// Make sure that the watch processor is not in the same batch (because it will affect the counter which we are checking...)
 		queueWorkpackage.setC_Async_Batch(null);

@@ -1,0 +1,56 @@
+/**
+ *
+ */
+package de.metas.async.api.impl;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.spi.IAsyncBatchListener;
+
+/**
+ * @author cg
+ *
+ */
+public class AsyncBatchListeners implements IAsyncBatchListeners
+{
+
+	private final Map<String, IAsyncBatchListener> listenersList = new HashMap<String, IAsyncBatchListener>();
+
+	@Override
+	public void registerAsyncBatchNoticeListener(final IAsyncBatchListener l, final String asyncBatchType)
+	{
+		if (listenersList.containsKey(asyncBatchType))
+		{
+
+			throw new IllegalStateException(l + " has already been added");
+		}
+		else
+		{
+			listenersList.put(asyncBatchType, l);
+		}
+
+	}
+
+	@Override
+	public void applyListener(final I_C_Async_Batch asyncBatch)
+	{
+		final IAsyncBatchListener l = getListener(asyncBatch.getC_Async_Batch_Type().getInternalName());
+		l.createNotice(asyncBatch);
+	}
+
+	private IAsyncBatchListener getListener(final String ascyncBatchType)
+	{
+		IAsyncBatchListener l = listenersList.get(ascyncBatchType);
+
+		// retrieve default implementation
+		if (l == null)
+		{
+			l = listenersList.get(AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT);
+		}
+
+		return l;
+	}
+}

@@ -173,6 +173,11 @@ import de.metas.notification.INotificationBL;
 			{
 				// only mark the package as processed, when the processor indicates that it has been processed
 				markProcessed(workPackage);
+
+				//
+				// create notification record if needed
+				iAsyncBatchBL.createNotificationRecord(workPackage);
+
 				// increase processed counter
 				iAsyncBatchBL.increaseProcessed(workPackage);
 			}

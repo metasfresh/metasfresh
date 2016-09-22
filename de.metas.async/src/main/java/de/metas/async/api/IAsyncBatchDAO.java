@@ -3,6 +3,8 @@
  */
 package de.metas.async.api;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.async
@@ -30,7 +32,10 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 
 /**
  * @author cg
@@ -38,6 +43,18 @@ import de.metas.async.model.I_C_Async_Batch_Type;
  */
 public interface IAsyncBatchDAO extends ISingletonService
 {
+	
+	public static final String ASYNC_BATCH_TYPE_INVCAND = "InvoiceCandidate";
+	public static final String ASYNC_BATCH_TYPE_INVWIZ_MASS = "InvoicingWizardMass";
+	public static final String ASYNC_BATCH_TYPE_INVWIZ_SINGLE = "InvoicingWizardSingle";
+	public static final String ASYNC_BATCH_TYPE_PDFPrinting = "PDFPrinting";
+	public static final String ASYNC_BATCH_TYPE_Neuaufnahme = "Neuaufnahme";
+	public static final String ASYNC_BATCH_TYPE_ESR = "ESRWizard";
+	public static final String ASYNC_BATCH_TYPE_BPOrgChange = "BPOrgChange";
+	public static final String ASYNC_BATCH_TYPE_VoidAndRecreateInvoice = "VoidAndRecreateInvoice";
+	public static final String ASYNC_BATCH_TYPE_TriggerVoidAndRecreateInvoice = "TriggerVoidAndRecreateInvoice";
+	public static final String ASYNC_BATCH_TYPE_DEFAULT = "Default";
+	
 	/**
 	 * Retrieve async batch type by internal name which must be unique.
 	 * 
@@ -46,5 +63,39 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 * @param trxName
 	 * @return {@link I_C_Async_Batch_Type}; never returns null
 	 */
-	I_C_Async_Batch_Type retrieveAsyncBatchType(Properties ctx, String internalName);
+	I_C_Async_Batch_Type retrieveAsyncBatchType(Properties ctx, String internalName, String trxName);
+
+	/**
+	 * retrieve workpackages for async batch
+	 * 
+	 * @param asyncBatch
+	 * @return
+	 */
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch);
+
+	/**
+	 * retrieve workpackages for async batch
+	 * 
+	 * @param asyncBatch
+	 * @param processed
+	 * @return
+	 */
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch, final Boolean processed);
+
+	/**
+	 * retrieve notified workpackages fro an async batch
+	 * 
+	 * @param asyncBatch
+	 * @param notified
+	 * @return
+	 */
+	List<I_C_Queue_WorkPackage_Notified> retrieveWorkPackagesNotified(I_C_Async_Batch asyncBatch, boolean notified);
+
+	/**
+	 * fetch the notifiable record for a given workpackage
+	 * 
+	 * @param workPackage
+	 * @return
+	 */
+	I_C_Queue_WorkPackage_Notified fetchWorkPackagesNotified(I_C_Queue_WorkPackage workPackage);
 }
