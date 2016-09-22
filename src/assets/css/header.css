@@ -170,6 +170,11 @@
     z-index:300;
 }
 
+.btn-square {
+    min-width: 55px;  
+}
+
+
 .header-left-side,
 .header-right-side {
     width: calc(50% - 75px);
