@@ -185,10 +185,6 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 
 		final String action = rs.getString(I_AD_Menu.COLUMNNAME_Action);
 		info.setImageIndicator(action);
-		if (info.getAllowsChildren() || action == null)
-		{
-			return info;
-		}
 
 		final int AD_Window_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Window_ID);
 		final int AD_Process_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Process_ID);
@@ -209,6 +205,11 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		info.setWEBUI_NameBrowse(webuiNameBrowse);
 		info.setWEBUI_NameNew(webuiNameNew);
 		info.setWEBUI_NameNewBreadcrumb(webuiNameNewBreadcrumb);
+
+		if (info.getAllowsChildren() || action == null)
+		{
+			return info;
+		}
 
 		if (!isCheckRoleAccessWhileLoading())
 		{
