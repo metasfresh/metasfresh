@@ -16,6 +16,7 @@ upcoming
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
+ * #213 Add onhand qty to MRP Product Info
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
