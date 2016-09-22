@@ -25,14 +25,19 @@ class Widget extends Component {
 
 
     handlePatch = (property, value) => {
-        const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId} = this.props;
+        const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId, isAdvanced = false} = this.props;
         const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
 
+        console.log ("Widget is: " + isAdvanced)
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
+        }
+        let customWindowType = windowType
+        if(isAdvanced){
+            customWindowType += "&advanced=true"  
         }
 
         //do patch only when value is not equal state
@@ -45,7 +50,7 @@ class Widget extends Component {
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            ret = dispatch(patch(windowType, dataId, tabId, currRowId, property, value, isModal));
+            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
         }
 
         this.setState(Object.assign({}, this.state, {

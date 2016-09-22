@@ -14,11 +14,23 @@ class Modal extends Component {
         super(props);
 
         this.state = {
-          scrolled: false
+          scrolled: false,
+          isAdvanced: false
         }
 
         const {dispatch, windowType, dataId, tabId, rowId} = this.props;
         dispatch(createWindow(windowType, dataId, tabId, rowId, true));
+    }
+
+    isAdvancedEdit = () => {
+        const {windowType} = this.props
+        let isAdvanceMode = windowType.indexOf("advanced=true") != -1
+
+        this.setState(Object.assign({}, this.state, {
+            isAdvanced: isAdvanceMode
+        }))
+
+        console.log("Advanced edit? " + isAdvanceMode)
     }
 
     componentDidMount() {
@@ -30,6 +42,7 @@ class Modal extends Component {
         document.body.style.overflow = "hidden";
 
         document.querySelector('.js-panel-modal-content').addEventListener('scroll', this.handleScroll);
+        this.isAdvancedEdit()
     }
     componentWillUnmount() {
           document.querySelector('.js-panel-modal-content').removeEventListener('scroll', this.handleScroll);
@@ -57,6 +70,8 @@ class Modal extends Component {
     }
     render() {
         const {data, layout, indicator, modalTitle, tabId, rowId, dataId} = this.props;
+        const {isAdvanced} = this.state
+
         return (
             <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
@@ -78,6 +93,7 @@ class Modal extends Component {
                             tabId={tabId}
                             rowId={rowId}
                             isModal={true}
+                            isAdvanced={isAdvanced}
                         />
                     </div>
                 </div>
