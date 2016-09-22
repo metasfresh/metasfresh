@@ -14,7 +14,7 @@ public class X_C_Order_MFGWarehouse_Report extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 472075806L;
+	private static final long serialVersionUID = 1080673917L;
 
     /** Standard Constructor */
     public X_C_Order_MFGWarehouse_Report (Properties ctx, int C_Order_MFGWarehouse_Report_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_C_Order_MFGWarehouse_Report extends org.compiere.model.PO impleme
       super (ctx, C_Order_MFGWarehouse_Report_ID, trxName);
       /** if (C_Order_MFGWarehouse_Report_ID == 0)
         {
+			setC_BPartner_ID (0);
 			setC_Order_ID (0);
 			setC_Order_MFGWarehouse_Report_ID (0);
 			setDocumentType (null);

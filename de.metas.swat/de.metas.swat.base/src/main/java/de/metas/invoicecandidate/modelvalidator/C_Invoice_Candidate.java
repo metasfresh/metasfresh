@@ -311,9 +311,9 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 * 
+	 *
 	 * @param ic
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
@@ -378,7 +378,7 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-		if (ic.isProcessed() || isBackgroundProcessInProcess)
+		if (ic.isProcessed() || "Y".equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
 		}

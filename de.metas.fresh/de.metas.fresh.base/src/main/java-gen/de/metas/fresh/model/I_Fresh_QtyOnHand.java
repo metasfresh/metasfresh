@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.fresh.model;
 
 
@@ -32,7 +16,7 @@ public interface I_Fresh_QtyOnHand
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -163,6 +147,29 @@ public interface I_Fresh_QtyOnHand
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Zählbestand Einkauf (fresh).
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
+
+	/**
+	 * Get Zählbestand Einkauf (fresh).
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getFresh_QtyOnHand_ID();
+
+    /** Column definition for Fresh_QtyOnHand_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object> COLUMN_Fresh_QtyOnHand_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object>(I_Fresh_QtyOnHand.class, "Fresh_QtyOnHand_ID", null);
+    /** Column name Fresh_QtyOnHand_ID */
+    public static final String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -211,29 +218,6 @@ public interface I_Fresh_QtyOnHand
     public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object>(I_Fresh_QtyOnHand.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Zählbestand Einkauf (fresh).
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
-
-	/**
-	 * Get Zählbestand Einkauf (fresh).
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getFresh_QtyOnHand_ID();
-
-    /** Column definition for Fresh_QtyOnHand_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object> COLUMN_Fresh_QtyOnHand_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand, Object>(I_Fresh_QtyOnHand.class, "Fresh_QtyOnHand_ID", null);
-    /** Column name Fresh_QtyOnHand_ID */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
 
 	/**
 	 * Get Aktualisiert.
