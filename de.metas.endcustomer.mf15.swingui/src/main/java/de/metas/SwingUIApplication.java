@@ -30,7 +30,18 @@ import org.springframework.context.annotation.Bean;
  * #L%
  */
 
-@SpringBootApplication
+/**
+ * Swing application starter.
+ * 
+ * WARNING: please keep in sync with all other SwingUIApplications
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@SpringBootApplication( //
+		scanBasePackages = { "de.metas", "org.adempiere" } //
+		, excludeName = "de.metas.ServerBoot" // exclude the ServerBoot, just in case it's on classpath when running (usually when started from eclipse)
+)
 public class SwingUIApplication
 {
 	@Autowired
