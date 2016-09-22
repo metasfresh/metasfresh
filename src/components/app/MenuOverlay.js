@@ -31,7 +31,6 @@ class MenuOverlay extends Component {
     handleQuery = (e) => {
         const {dispatch} = this.props;
 
-
         e.preventDefault();
         if(!!e.target.value){
             this.setState(Object.assign({}, this.state, {
