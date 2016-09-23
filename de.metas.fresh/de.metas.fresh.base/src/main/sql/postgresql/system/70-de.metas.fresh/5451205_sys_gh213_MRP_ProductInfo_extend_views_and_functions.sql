@@ -332,7 +332,7 @@ TABLE (
   qtymaterialentnahme numeric,
   fresh_qtyonhand_ondate numeric,
   fresh_qtypromised numeric,
-  QtyOnHand numeric -- gh #213
+  QtyOnHand numeric, -- gh #213
   IsFallback character(1),
   GroupNames character varying[],
   PMM_QtyPromised_OnDate numeric,

@@ -51,9 +51,9 @@ ALTER TABLE x_mrp_productinfo_detail_mv
 ALTER TABLE x_mrp_productinfo_detail_mv
    ALTER COLUMN fresh_qtypromised SET DEFAULT 0;
 ALTER TABLE x_mrp_productinfo_detail_mv
-   ALTER COLUMN fresh_qtymrp SET DEFAULT 0;
-ALTER TABLE x_mrp_productinfo_detail_mv
    ALTER COLUMN groupnames SET DEFAULT '{"Keine / Leer"}';
 COMMENT ON COLUMN x_mrp_productinfo_detail_mv.qtyonhand
   IS 'null by default, to indicate that it needs to be set by javacode';
 COMMENT ON COLUMN x_mrp_productinfo_detail_mv.qtyonhand IS 'null by default, to indicate that it needs to be set by javacode';
+
+ALTER TABLE x_mrp_productinfo_detail_mv DROP COLUMN IF EXISTS fresh_qtymrp; -- this column is obsolete; instead of physically having it, we join the value from table "de.metas.fresh".x_mrp_productinfo_detail_poor_mans_mrp
