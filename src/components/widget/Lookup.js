@@ -27,19 +27,35 @@ class Lookup extends Component {
             properties: {},
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
-            mainProperty: getItemsByProperty(this.props.properties, "source", "lookup")
+            mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
+            value: ''
         }
 
-       
     }
 
     componentDidMount() {
         const {defaultValue} = this.props;
+        // console.log(this.state);
+        // this.setState(
+        //     Object.assign({}, this.state, {
+        //         value: defaultValue[0].value[Object.keys(defaultValue[0].value)[0]]
+        //     }),
+        //     () => {
+        //         console.log('state changed');
+        //         console.log(this.state.value);
+        //         console.log(defaultValue[0].value);
+
+        //         this.inputSearch.value = this.state.value;
+
+        //     }
+        // );
 
         if(!!defaultValue[0].value) {
             const init = defaultValue[0].value;
             this.inputSearch.value = init[Object.keys(init)[0]];
         }
+
+        // this.inputSearch.value = 'sdsdsd';
     }
 
     handleClickOutside = () => {

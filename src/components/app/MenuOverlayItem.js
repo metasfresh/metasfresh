@@ -4,8 +4,17 @@ class MenuOverlayItem extends Component {
     constructor(props){
         super(props);
     }
+    showQueriedChildren = (children) => {
+        // console.log("aaaa");
+        // console.log(query);
+        // caption +' > '+children[0].caption
+        // {query ? (children ? this.showQueriedChildren(caption, children) : caption ) : caption}
+
+        console.log(children);
+
+    }
     render() {
-        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect} = this.props;
+        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect, query} = this.props;
 
         return (
             <div
@@ -19,7 +28,13 @@ class MenuOverlayItem extends Component {
                     }
                     onClick={e => children ? handleClickOnFolder(e, nodeId) : handleRedirect(elementId)}
                 >
-                    {caption}
+
+
+                    {query ? (children ? children.map((item, id) => <span className="queried-result" key={id}> {caption + ' > ' + item.caption} </span>) : caption ) : caption}
+                    
+
+
+
                 </span>
             </div>
         )

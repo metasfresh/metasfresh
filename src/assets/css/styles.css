@@ -1017,3 +1017,15 @@ th {
     top: -5px;
     right: -5px;
 }
+
+.queried-result {
+    width: 100%;
+    display: block;
+}
+
+.tree-link {
+    font-size: 12px;
+    position: absolute;
+    right: 20px;
+    bottom: 15px;
+}

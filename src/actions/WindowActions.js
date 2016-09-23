@@ -194,7 +194,6 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
 
 export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value) {
     let payload = {};
-    
 
     if(id === "NEW"){
         payload = [];
@@ -210,7 +209,6 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
             payload = [];
         }
 
-       
     }
 
 
@@ -251,7 +249,6 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
         
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
 
-            
 
             responsed = true;
 
@@ -273,7 +270,7 @@ function mapDataToState(data, isModal, rowId){
 
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
-                
+
             }else{
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
@@ -281,7 +278,7 @@ function mapDataToState(data, isModal, rowId){
                         
                     }else{
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
-                       
+
                     }
                 });
             }

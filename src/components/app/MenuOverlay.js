@@ -42,6 +42,8 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
                 }))
+
+               // console.log(this.state.queriedResults);
             });
         }else{
             this.setState(Object.assign({}, this.state, {
@@ -131,6 +133,7 @@ class MenuOverlay extends Component {
                                         <MenuOverlayItem
                                             key={index}
                                             handleClickOnFolder={this.handleDeeper}
+                                            query={true}
                                             {...result}
                                         />
                                     )}
@@ -147,7 +150,7 @@ class MenuOverlay extends Component {
                     }
                     {index === 0 && siteName !== "Sitemap" &&
                         <div className="text-xs-right">
-                          <span className="menu-overlay-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
+                          <span className="menu-overlay-link tree-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                         </div>
                     }
 
