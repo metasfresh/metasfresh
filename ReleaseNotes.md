@@ -26,6 +26,7 @@ upcoming
  * #420 NPE in CalloutOrder.bPartner
  * #410 sscc label org fix
  * #422 pricelist report do not show virtual HU
+ * #331 Activating the trace log file doesn't always work
 
 # metasfresh 4.36.35 (2016-38)
 
