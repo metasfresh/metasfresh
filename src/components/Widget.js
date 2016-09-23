@@ -167,7 +167,7 @@ class Widget extends Component {
                 )
             case "Lookup":
                 return (
-                    <Lookup
+                    <Lookup  
                         recent={[]}
                         dataId={dataId}
                         properties={fields}

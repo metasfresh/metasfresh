@@ -53,7 +53,7 @@ export function getWindowBreadcrumb(id){
                         })
                     }else{
                         //root menu
-                        dispatch(rootRequest(4)).then(root => {
+                        dispatch(rootRequest(6)).then(root => {
                             node.children = root.data;
                             req += 1;
 
