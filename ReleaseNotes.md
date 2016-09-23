@@ -94,7 +94,7 @@ upcoming
  * #311 Payment Selection Exception when not able to find bpartner account
    - Added further Account seelection functionality to prevent Exception when selecting BPartner without Bank account.
  * #378 Bug in validation of field docsubtype
-   - Eliminated an issue whcih apperared in Doctype Definition when selecting a DocSubtype.
+   - Eliminated an issue which apperared in Doctype Definition when selecting a DocSubtype.
  * #262 sales and purchase tracking
    - Minor tweaks and fixes in sales and purchase tracking Report.
 
