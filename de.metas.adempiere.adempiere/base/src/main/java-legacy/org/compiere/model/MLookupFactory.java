@@ -75,7 +75,7 @@ public class MLookupFactory
 
 	/**
 	 * Create MLookup
-	 * 
+	 *
 	 * @throws AdempiereException if Lookup could not be created
 	 */
 	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
@@ -143,11 +143,11 @@ public class MLookupFactory
 	 * Get Information for Lookups based on Column_ID for Table Columns or Process Parameters.
 	 *
 	 * The SQL returns three columns:
-	 * 
+	 *
 	 * <pre>
 	 *		Key, Value, Name, IsActive	(where either key or value is null)
 	 * </pre>
-	 * 
+	 *
 	 * @param ctx context for access
 	 * @param WindowNo window no
 	 * @param Column_ID AD_Column_ID or AD_Process_Para_ID
@@ -241,7 +241,7 @@ public class MLookupFactory
 
 	/**
 	 * Creates Direct access SQL Query. Similar with regular query but without validation rules, no security and no ORDER BY.
-	 * 
+	 *
 	 * @param info
 	 * @return SELECT Key, Value, DisplayName, IsActive FROM TableName WHERE KeyColumn=?
 	 */
@@ -267,7 +267,7 @@ public class MLookupFactory
 
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
-	 * 
+	 *
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT NULL, Value, Name, IsActive FROM AD_Ref_List
 	 */
@@ -348,7 +348,7 @@ public class MLookupFactory
 
 	/**
 	 * Get Lookup SQL for List
-	 * 
+	 *
 	 * @param languageInfo report Language
 	 * @param AD_Reference_Value_ID reference value
 	 * @param linkColumnName link column name
@@ -396,7 +396,7 @@ public class MLookupFactory
 
 	/**
 	 * Get Embedded Lookup SQL for Table Lookup
-	 * 
+	 *
 	 * @param languageInfo report language
 	 * @param BaseColumn base column name
 	 * @param BaseTable base table name
@@ -417,7 +417,7 @@ public class MLookupFactory
 
 	/**************************************************************************
 	 * Get Lookup SQL for direct Table Lookup
-	 * 
+	 *
 	 * @param ctx context for access
 	 * @param ColumnName column name
 	 * @return SELECT Key, NULL, Name, IsActive from Table (fully qualified)
@@ -642,7 +642,7 @@ public class MLookupFactory
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 
-		s_cacheRefTable.put(cacheKey, lookupInfo.cloneIt());
+		s_cacheRefTable.put(cacheKey, lookupInfo.cloneIt(windowNo));
 
 		return lookupInfo;
 	}	// getLookupInfo
