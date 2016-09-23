@@ -13,6 +13,15 @@ BEGIN
 	SELECT count(9) FROM X_MRP_ProductInfo_Detail_MV mv WHERE  X_MRP_ProductInfo_Detail_MV_ID IS NULL INTO Count_NeedToUpdate;
 	RAISE NOTICE 'Need to update % records; p_maxNumber is %', Count_NeedToUpdate, p_maxNumber;
 	
+	IF (Count_NeedToUpdate <= 0)
+	THEN
+		RAISE NOTICE '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!';
+		RAISE NOTICE '!! Nothing to do for this function !!';
+		RAISE NOTICE '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!';
+		
+		RETURN Count_NeedToUpdate;
+	END IF;
+	
 	UPDATE X_MRP_ProductInfo_Detail_MV mv_outer
 	SET 
 		AD_Client_ID=d.AD_Client_ID,
