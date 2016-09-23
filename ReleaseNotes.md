@@ -65,6 +65,8 @@ upcoming
    - WebUI: Detailed precision funcionality for amount and costs/ prices elements.
  * #7 provide "grid-align" for layout elements
    - Generic alignment possibility via application dictionary used for metasfresh WebUI.
+ * #24 Breadcrumb Navigation Plural caption
+   - Added a plural caption for WebUI Breadycrumb navigation.
 
 ## Fixes
  * #411 missing index on C_OrderTax.C_Order_ID
@@ -76,12 +78,17 @@ upcoming
  * #348 Sort tabs shall consider Link column and parent link column if set
    - Fixing issue considering link and parent column when sorting.
  * #330 Process's RefreshAllAfterExecution does not work when the record was moved
+   - Eliminiating an issue when refreshing after execution of processes.
  * #327 Got NPE when completing a drafted order
+   - Fixing a Null Pointer Exception when trying to complete a drafted order document.
  * #337 ERROR: duplicate key value violates unique constraint "c_bpartner_stats_c_bpartner_id_unique" triggered from some callouts 
+   - Fixing an exception when trying to select a BPartner without valid ship location in Sales Order.
  * FRESH-257 WI1 - rendering a window with tab, one field per field type incl. editor and fieldgroup
+   - Initial WebUI Proof of Concept Task. A lot has already done since this one, even more to be expected.
  * FRESH-369 Change bpartner in order -> pricelist does not update
+   - Fixing callout issue not updateing the correct pricelist whan changing a Business Partner in Sales Order.
  * #379 Included tab randomly not working in inout and invoice
- * #24 Breadcrumb Navigation Plural caption
+   - Fixed a bug that ranomly prevented the correct rendering of included Tabs in Invoice window.
  * #12 Data not shown in SubTab
  * #311 Payment Selection Exception when not able to find bpartner account
  * #378 Bug in validation of field docsubtype
