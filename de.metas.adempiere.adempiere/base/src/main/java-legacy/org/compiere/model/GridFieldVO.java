@@ -870,7 +870,7 @@ public class GridFieldVO implements Serializable
 		//	Lookup
 		clone.AD_Val_Rule_ID = AD_Val_Rule_ID; // metas: 03271
 		clone.AD_Reference_Value_ID = AD_Reference_Value_ID;
-		clone.lookupInfo = lookupInfo == null ? null : lookupInfo.cloneIt();
+		clone.lookupInfo = lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 
 		//  Process Parameter
 		clone.isRange = isRange;

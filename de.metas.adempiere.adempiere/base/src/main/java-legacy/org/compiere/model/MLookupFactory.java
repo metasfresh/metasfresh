@@ -443,7 +443,7 @@ public class MLookupFactory
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		if (s_cacheRefTable.containsKey(cacheKey))
 		{
-			return s_cacheRefTable.get(cacheKey).cloneIt();
+			return s_cacheRefTable.get(cacheKey).cloneIt(windowNo); // gh #423
 		}
 
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
