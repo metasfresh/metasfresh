@@ -17,6 +17,7 @@ upcoming
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
  * #213 Add onhand qty to MRP Product Info
+ * #375 Jasper: extend product name on report_details
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
