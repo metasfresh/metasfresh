@@ -94,8 +94,9 @@ upcoming
  * #311 Payment Selection Exception when not able to find bpartner account
    - Added further Account seelection functionality to prevent Exception when selecting BPartner without Bank account.
  * #378 Bug in validation of field docsubtype
+   - Eiliminated an issue whcih apperared in Doctype Definition when selecting a DocSubtype.
  * #262 sales and purchase tracking
-   - minor tweaks and fixes   
+   - Minor tweaks and fixes in sales and purchase tracking Report.
 
 # metasfresh 4.35.34 (2016-37)
 
