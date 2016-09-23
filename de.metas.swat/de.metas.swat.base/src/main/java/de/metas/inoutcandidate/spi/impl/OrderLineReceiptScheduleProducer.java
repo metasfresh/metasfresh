@@ -93,7 +93,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setC_Order_ID(line.getC_Order_ID());
 			receiptSchedule.setC_OrderLine_ID(line.getC_OrderLine_ID());
 			
-			// FRESH-667
+			// #388
 			// set isPackagingMaterial according to the order line
 			receiptSchedule.setIsPackagingMaterial(line.isPackagingMaterial());
 
