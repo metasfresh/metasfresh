@@ -18,8 +18,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
-		<springfox-swagger.version>2.4.0</springfox-swagger.version>
+		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<springfox-swagger.version>2.5.0</springfox-swagger.version>
 
 		<!-- From spring-boot-dependencies -->
 		<jackson.version>2.6.5</jackson.version>
@@ -74,12 +74,20 @@
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
+			<exclusions>
+				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
+				<exclusion>
+					<groupId>de.metas.adempiere.adempiere</groupId>
+					<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
+		
 
 		<!-- Swagger -->
 		<dependency>

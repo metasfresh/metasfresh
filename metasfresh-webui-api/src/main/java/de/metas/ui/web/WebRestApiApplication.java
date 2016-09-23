@@ -100,9 +100,9 @@ public class WebRestApiApplication
 						final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 						httpProtocol.setCompression("on");
 						httpProtocol.setCompressionMinSize(256);
-						String mimeTypes = httpProtocol.getCompressableMimeTypes();
+						String mimeTypes = httpProtocol.getCompressableMimeType();
 						String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
-						httpProtocol.setCompressableMimeTypes(mimeTypesWithJson);
+						httpProtocol.setCompressableMimeType(mimeTypesWithJson);
 					}
 				});
 			}
