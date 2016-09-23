@@ -5,10 +5,18 @@ DROP VIEW IF EXISTS "de.metas.fresh".X_MRP_ProductInfo_AttributeVal_Raw_V;
 
 CREATE OR REPLACE VIEW "de.metas.fresh".X_MRP_ProductInfo_AttributeVal_Raw_V AS
 SELECT 
-	p.ad_client_id, p.ad_org_id, p.m_product_id, p.name, 
-	p.value, p.ispurchased, p.issold, p.m_product_category_id, p.isactive,
+	p.ad_client_id, 
+	p.ad_org_id, 
+	p.m_product_id, 
+	p.name, 
+	p.value, 
+	p.ispurchased, 
+	p.issold, 
+	p.m_product_category_id, 
+	p.isactive,
 	v.DateGeneral,
 	dim.GroupName,
+	SUM(COALESCE(v.QtyOnHand,0)) AS QtyOnHand, -- gh #213 note that not-fallback records might have qtyOnHand IS NULL
 	SUM(v.PMM_QtyPromised_OnDate) AS PMM_QtyPromised_OnDate, -- FRESH-86
 	SUM(v.qtyreserved_ondate) AS qtyreserved_ondate, 
 	SUM(v.qtyordered_ondate) AS qtyordered_ondate, 

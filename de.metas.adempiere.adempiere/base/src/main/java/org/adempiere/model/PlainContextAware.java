@@ -10,18 +10,17 @@ package org.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -33,13 +32,17 @@ import org.compiere.util.Env;
 
 public final class PlainContextAware implements IContextAware
 {
-	/** @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_None}. */
+	/**
+	 * @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_None}.
+	 */
 	public static final PlainContextAware createUsingOutOfTransaction(final Properties ctx)
 	{
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None);
 	}
 
-	/** @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_ThreadInherited}. */
+	/**
+	 * @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_ThreadInherited}.
+	 */
 	public static final PlainContextAware createUsingThreadInheritedTransaction(final Properties ctx)
 	{
 		return new PlainContextAware(ctx, ITrx.TRXNAME_ThreadInherited);
@@ -53,6 +56,11 @@ public final class PlainContextAware implements IContextAware
 	private final Properties ctx;
 	private final String trxName;
 
+	/**
+	 * Creates an instance with {@link ITrx#TRXNAME_None} as <code>trxName</code>.
+	 *
+	 * @param ctx
+	 */
 	public PlainContextAware(final Properties ctx)
 	{
 		this(ctx, ITrx.TRXNAME_None);
@@ -70,7 +78,7 @@ public final class PlainContextAware implements IContextAware
 
 	/**
 	 * Copy constructor
-	 * 
+	 *
 	 * @param contextProvider
 	 */
 	public PlainContextAware(final IContextAware contextProvider)
