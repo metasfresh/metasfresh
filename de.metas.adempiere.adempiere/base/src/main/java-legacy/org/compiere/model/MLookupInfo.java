@@ -153,11 +153,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 *
 	 * @return deep copy
 	 */
-	public MLookupInfo cloneIt()
+	public MLookupInfo cloneIt(final int windowNo)
 	{
 		try
 		{
 			final MLookupInfo clone = (MLookupInfo)super.clone();
+			clone.setWindowNo(windowNo);
 			return clone;
 		}
 		catch (Exception e)
