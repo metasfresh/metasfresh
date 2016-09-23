@@ -68,9 +68,13 @@ upcoming
 
 ## Fixes
  * #411 missing index on C_OrderTax.C_Order_ID
+   - Performance change. Adding index for c_ordertax.
  * #367 Invoice candidates invoicing Pricelist not found
+   - Fixing a minor issue during invoiceing. Pricelist was not found under certain circumstances.
  * #380 duplicate lines in inout
+   - Eliminating an issue when deactivating a product and adding another product with same EDI GLN.
  * #348 Sort tabs shall consider Link column and parent link column if set
+   - Fixing issue considering link and parent column when sorting.
  * #330 Process's RefreshAllAfterExecution does not work when the record was moved
  * #327 Got NPE when completing a drafted order
  * #337 ERROR: duplicate key value violates unique constraint "c_bpartner_stats_c_bpartner_id_unique" triggered from some callouts 
