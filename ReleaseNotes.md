@@ -62,7 +62,9 @@ upcoming
  * #10 implement documents filtering support
    - Providing metadata for filtering via RestAPI for example for grid view.
  * #9 provide precision for numeric layout elements
+   - WebUI: Detailed precision funcionality for amount and costs/ prices elements.
  * #7 provide "grid-align" for layout elements
+   - Generic alignment possibility via application dictionary used for metasfresh WebUI.
 
 ## Fixes
  * #411 missing index on C_OrderTax.C_Order_ID
