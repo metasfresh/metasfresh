@@ -1022,3 +1022,10 @@ th {
     width: 100%;
     display: block;
 }
+
+.tree-link {
+    font-size: 12px;
+    position: absolute;
+    right: 20px;
+    bottom: 15px;
+}

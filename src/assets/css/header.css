@@ -242,6 +242,9 @@
     width: 350px;
 
     padding: 1rem 1.2rem;
+
+    max-height: 600px;
+    overflow: hidden;
 }
 
 .menu-overlay-query .input-primary {
@@ -268,6 +271,7 @@
 .menu-overlay-primary .menu-overlay-body {
     background-color: $brand-bright-color;
     border:1px solid $brand-border-color-2;
+    position: relative;
 }
 
 .menu-overlay-caption {
