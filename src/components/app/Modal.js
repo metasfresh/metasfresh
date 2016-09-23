@@ -23,8 +23,8 @@ class Modal extends Component {
     }
 
     isAdvancedEdit = () => {
-        const {windowType} = this.props
-        let isAdvanceMode = windowType.indexOf("advanced=true") != -1
+        const {windowType} = this.props;
+        let isAdvanceMode = (windowType.indexOf("advanced=true") != -1);
 
         this.setState(Object.assign({}, this.state, {
             isAdvanced: isAdvanceMode
@@ -42,7 +42,7 @@ class Modal extends Component {
         document.body.style.overflow = "hidden";
 
         document.querySelector('.js-panel-modal-content').addEventListener('scroll', this.handleScroll);
-        this.isAdvancedEdit()
+        this.isAdvancedEdit();
     }
     componentWillUnmount() {
           document.querySelector('.js-panel-modal-content').removeEventListener('scroll', this.handleScroll);

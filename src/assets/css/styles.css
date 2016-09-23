@@ -1017,3 +1017,8 @@ th {
     top: -5px;
     right: -5px;
 }
+
+.queried-result {
+    width: 100%;
+    display: block;
+}

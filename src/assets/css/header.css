@@ -225,14 +225,19 @@
     pointer-events: all;
 }
 
-.menu-overlay-root-body{
+.menu-overlay-root-body {
     display: flex;
 }
 
 .menu-overlay-node-container {
-    width: 200px;
+    width: auto;
 
 }
+
+.menu-overlay-root-body .menu-overlay-node-container {
+    width: 220px;
+}
+
 .menu-overlay-query {
     width: 350px;
 

@@ -42,6 +42,8 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
                 }))
+
+                console.log(this.state.queriedResults);
             });
         }else{
             this.setState(Object.assign({}, this.state, {
@@ -131,6 +133,7 @@ class MenuOverlay extends Component {
                                         <MenuOverlayItem
                                             key={index}
                                             handleClickOnFolder={this.handleDeeper}
+                                            query={true}
                                             {...result}
                                         />
                                     )}

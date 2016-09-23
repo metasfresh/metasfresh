@@ -30,8 +30,6 @@ class Widget extends Component {
         let currRowId = rowId;
         let ret = null;
 
-        console.log ("Widget is: " + isAdvanced)
-
         if(rowId === "NEW"){
             currRowId = relativeDocId;
         }
