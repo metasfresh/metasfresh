@@ -90,7 +90,9 @@ upcoming
  * #379 Included tab randomly not working in inout and invoice
    - Fixed a bug that ranomly prevented the correct rendering of included Tabs in Invoice window.
  * #12 Data not shown in SubTab
+   - Adjusted the data defibned in RestAPI for Subtab content.
  * #311 Payment Selection Exception when not able to find bpartner account
+   - Added further Account seelection functionality to prevent Exception when selecting BPartner without Bank account.
  * #378 Bug in validation of field docsubtype
  * #262 sales and purchase tracking
    - minor tweaks and fixes   
