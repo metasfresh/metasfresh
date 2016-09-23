@@ -30,24 +30,37 @@ upcoming
 
 # metasfresh 4.36.35 (2016-38)
 
-this week's RC
-
 ## Features
  * #395 Add Description in Jasper Invoice Vendor
+   - Added a new row in Vendor Invoice to allow the display of optional line Text.
  * ME-46 Support Ubuntu 16.04 server with metasfresh server installer
+   - Milestone Feature: Provided a new metasfresh installer for Ubuntu 16.04
  * #369 request report
+   - Provided an excel report for quality analysis bases on dispute request history and data.
  * #361 Request change for customer service
+   - Added possibility for dispute requests
  * #377 Implement executed SQLs tracing
+   - Admin Functionality to enable better Performance Tracking of SQL.
  * #338 Get rid of legacy NOT-EQUALS operators from logic expression
+   - Getting rid of not-equals operators in logic expressions.
  * #333 All tables shall have a single column primary key
+   - Change needed for metasfresh WebUI and Rest API. All tables used in WebUI/ Rest API shall have a primary Key.
  * #21 UI Style default for elements
+   - WebUI Fallback Szenario for elements when UI Style is not explicitly set.
  * #20 Cache lookups
+   - WebUI Performance tweak. Now allowing caching for lookups.
  * #18 Optimization of root & node requests.
+   - Added limitCount to path elements to allow accurate results for Navigational structure in WebUI.
  * #16 Implement virtual document fields support
+   - New functionality for WebUI to allow fields with content computed by Business Logic.
  * #14 Layout documentSummaryElement field to be used for rendering breadcrumb info
+   - Added DocumentSummary support for breadcrumbs in metasfresh WebUI/ Rest API.
  * #13 elementPath should return path without element
+   - Possibility to return path without leaf node.
  * #11 Implement grid view support
+   - Awesome, new possibility to open Windows in grid view representation.
  * #10 implement documents filtering support
+   - Providing metadata for filtering via RestAPI for example for grid view.
  * #9 provide precision for numeric layout elements
  * #7 provide "grid-align" for layout elements
 
