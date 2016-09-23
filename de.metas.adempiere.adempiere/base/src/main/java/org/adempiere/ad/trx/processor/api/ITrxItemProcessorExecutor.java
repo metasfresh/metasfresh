@@ -42,7 +42,7 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	/**
 	 * Default exception handler used.
 	 */
-	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LogTrxItemExceptionHandler.instance;
+	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LoggerTrxItemExceptionHandler.instance;
 
 	/**
 	 * Default policy for the case that processing one item fails.

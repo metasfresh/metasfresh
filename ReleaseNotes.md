@@ -16,12 +16,17 @@ upcoming
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
+ * #213 Add onhand qty to MRP Product Info
+ * #375 Jasper: extend product name on report_details
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
  * #370 Material Receipt - Somtimes double click needed for weighing machine
  * #420 NPE in CalloutOrder.bPartner
+ * #410 sscc label org fix
+ * #422 pricelist report do not show virtual HU
+
 # metasfresh 4.36.35 (2016-38)
 
 this week's RC

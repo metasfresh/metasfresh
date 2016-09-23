@@ -100,7 +100,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -110,7 +110,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
