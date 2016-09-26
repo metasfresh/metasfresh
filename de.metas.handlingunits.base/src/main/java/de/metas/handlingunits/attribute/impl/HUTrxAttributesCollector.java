@@ -35,7 +35,6 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -80,7 +79,7 @@ import de.metas.logging.LogManager;
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return "HUTrxAttributesCollector [_disposed=" + _disposed + ", transactions=" + transactions + ", uniqueKeyIndex=" + uniqueKeyIndex + "]";
 	}
 
 	/**

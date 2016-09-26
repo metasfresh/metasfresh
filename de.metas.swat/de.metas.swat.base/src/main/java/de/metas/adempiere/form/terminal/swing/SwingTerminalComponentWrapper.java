@@ -131,4 +131,9 @@ public class SwingTerminalComponentWrapper implements IComponent, IComponentSwin
 		getExecuteBeforePainingSupport().clearExecuteBeforePaintingQueue();
 	}
 
+	@Override
+	public String toString()
+	{
+		return "SwingTerminalComponentWrapper [_component=" + _component + ", disposed=" + disposed + ", _terminalContext=" + _terminalContext + ", _executeBeforePainingSupport=" + _executeBeforePainingSupport + "]";
+	}
 }

@@ -166,12 +166,14 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 			}
 
 			// delete this instance's references in an orderly fashion
-			contextAndRefs.getLeft().deleteReferences(contextAndRefs.getRight());
+			final ITerminalContext terminalContext = contextAndRefs.getLeft();
+			final ITerminalContextReferences references = contextAndRefs.getRight();
+			terminalContext.deleteReferences(references);
 
 			//
 			// Destroy the context / terminal factory
 			final TerminalContextFactory terminalContextFactory = TerminalContextFactory.get();
-			terminalContextFactory.destroy(contextAndRefs.getLeft());
+			terminalContextFactory.destroy(terminalContext);
 			disposed = true;
 		}
 		finally

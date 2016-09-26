@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,6 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.adempiere.util.Check;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IExecuteBeforePainingSupport;
@@ -68,11 +67,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	/**
 	 * Key Button border color.
-	 * 
-	 * NOTE: this is not the selected button border color. It's the border color of all our keys. 
+	 *
+	 * NOTE: this is not the selected button border color. It's the border color of all our keys.
 	 */
 	private final Color keyBorderColor = MetalLookAndFeel.getCurrentTheme().getControlDisabled();
-	
+
 	/**
 	 * Key Button border to be used when it's not selected
 	 */
@@ -94,12 +93,18 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private POSKeyboardDispacher keyboardDispacher;
 
-	protected SwingKeyLayoutPanel(final ITerminalContext tc, final IKeyLayout keyLayout, final ITerminalKeyListener caller)
+	protected SwingKeyLayoutPanel(final ITerminalContext tc,
+			final IKeyLayout keyLayout,
+			final ITerminalKeyListener caller)
 	{
 		super(tc, keyLayout, caller);
 	}
 
-	protected SwingKeyLayoutPanel(final ITerminalContext tc, final IKeyLayout keyLayout, final ITerminalKeyListener caller, final String fixedButtonHeight, final String fixedButtonWidth)
+	protected SwingKeyLayoutPanel(final ITerminalContext tc,
+			final IKeyLayout keyLayout,
+			final ITerminalKeyListener caller,
+			final String fixedButtonHeight,
+			final String fixedButtonWidth)
 	{
 		super(tc, keyLayout, caller, fixedButtonHeight, fixedButtonWidth);
 	}
@@ -123,7 +128,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(keyboardDispacher);
 
-		panel = DisposableHelper.dispose(panel);
+		// panel = DisposableHelper.dispose(panel); disposed methods shall stay "local". 'panel' itself is disposed individually
 		cardLayout = null;
 
 		super.dispose();

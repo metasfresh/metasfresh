@@ -33,7 +33,6 @@ import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalButton;
@@ -125,17 +124,6 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		});
 
 		load();
-	}
-
-	@Override
-	protected final boolean onBeforeDispose()
-	{
-		btnEmptiesShipReceive = DisposableHelper.dispose(btnEmptiesShipReceive);
-		btnJasperPrint = DisposableHelper.dispose(btnJasperPrint);
-		btnCorrectReceivedHU = DisposableHelper.dispose(btnCorrectReceivedHU);
-		purchaseOrderPanel = DisposableHelper.dispose(purchaseOrderPanel);
-
-		return true;
 	}
 
 	@Override

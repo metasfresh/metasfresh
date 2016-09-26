@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,24 +13,21 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.compiere.apps.AEnv;
 import org.compiere.swing.CDialog;
@@ -38,10 +35,11 @@ import org.compiere.swing.CDialog;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.TerminalLoginDialog;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class SwingTerminalLoginDialog extends TerminalLoginDialog
 {
@@ -50,14 +48,14 @@ public class SwingTerminalLoginDialog extends TerminalLoginDialog
 	private class DialogListener extends WindowAdapter
 	{
 		@Override
-		public void windowClosed(WindowEvent e)
+		public void windowClosed(final WindowEvent e)
 		{
 			doExit();
 		}
-		
+
 	}
 
-	public SwingTerminalLoginDialog(ITerminalBasePanel parent)
+	public SwingTerminalLoginDialog(final ITerminalBasePanel parent)
 	{
 		super(parent);
 	}
@@ -69,7 +67,7 @@ public class SwingTerminalLoginDialog extends TerminalLoginDialog
 		dialog.addWindowListener(new DialogListener());
 		dialog.setResizable(true);
 
-		IContainer panel = getTerminalFactory().createContainer();
+		final IContainer panel = getTerminalFactory().createContainer();
 		SwingTerminalFactory.getUI(panel).setLayout(new MigLayout("ins 0 0", "[grow][grow][grow][grow]", "[nogrid, grow]"));
 		dialog.getContentPane().add((Component)panel.getComponent());
 

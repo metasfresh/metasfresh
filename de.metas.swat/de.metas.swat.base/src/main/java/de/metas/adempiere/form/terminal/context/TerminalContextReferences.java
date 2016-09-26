@@ -58,7 +58,6 @@ import de.metas.logging.LogManager;
 		this.terminalContext = terminalContext;
 	}
 
-
 	public void dispose()
 	{
 		disposeComponents();
@@ -104,13 +103,11 @@ import de.metas.logging.LogManager;
 		return keyLayoutNumeric;
 	}
 
-
 	@Override
-	public void setNumericKeyLayout(IKeyLayout keyLayoutNumeric)
+	public void setNumericKeyLayout(final IKeyLayout keyLayoutNumeric)
 	{
 		this.keyLayoutNumeric = keyLayoutNumeric;
 	}
-
 
 	@Override
 	public IKeyLayout getTextKeyLayout()
@@ -118,13 +115,11 @@ import de.metas.logging.LogManager;
 		return keyLayoutText;
 	}
 
-
 	@Override
-	public void setTextKeyLayout(IKeyLayout keyLayoutText)
+	public void setTextKeyLayout(final IKeyLayout keyLayoutText)
 	{
 		this.keyLayoutText = keyLayoutText;
 	}
-
 
 	/**
 	 * Dispose all created components
@@ -143,7 +138,7 @@ import de.metas.logging.LogManager;
 	 */
 	private void disposePropertyChangeSupports()
 	{
-		if (this.propertyChangeSupports == null)
+		if (propertyChangeSupports == null)
 		{
 			// already cleared
 			return;
@@ -154,8 +149,8 @@ import de.metas.logging.LogManager;
 		{
 			pcs.clear();
 		}
-		this.propertyChangeSupports.clear();
-		this.propertyChangeSupports = null;
+		propertyChangeSupports.clear();
+		propertyChangeSupports = null;
 
 		logger.info("Cleared {} property change supports", countAll);
 	}

@@ -1,6 +1,4 @@
-
-
-
+﻿
 DROP FUNCTION IF EXISTS X_MRP_ProductInfo_Detail_Insert_Fallback(date);
 CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_Insert_Fallback(IN DateOn date) 
 	RETURNS VOID 
@@ -8,28 +6,46 @@ CREATE OR REPLACE FUNCTION X_MRP_ProductInfo_Detail_Insert_Fallback(IN DateOn da
 $BODY$
 
 INSERT INTO X_MRP_ProductInfo_Detail_MV (
-	M_Product_ID
+	AD_Client_ID
+	,AD_Org_ID
+	,Created
+	,CreatedBy
+	,IsActive
+	,Updated
+	,UpdatedBy
+	,M_Product_ID
 	,DateGeneral
 	,ASIKey
+	,M_AttributesetInstance_ID
 	,QtyReserved_OnDate
 	,QtyOrdered_OnDate
 	,QtyOrdered_Sale_OnDate
 	,QtyMaterialentnahme 
 	,fresh_qtyonhand_ondate
 	,fresh_qtypromised
+	,QtyOnHand  -- gh #213
 	,IsFallback
 	,GroupNames
 )
 SELECT 
-	M_Product_ID
+	AD_Client_ID
+	,AD_Org_ID
+	,Created
+	,CreatedBy
+	,IsActive
+	,Updated
+	,UpdatedBy
+	,M_Product_ID
 	,DateGeneral
 	,ASIKey
+	,M_AttributesetInstance_ID
 	,QtyReserved_OnDate
 	,QtyOrdered_OnDate
 	,QtyOrdered_Sale_OnDate
 	,QtyMaterialentnahme 
 	,fresh_qtyonhand_ondate
 	,fresh_qtypromised
+	,QtyOnHand  -- gh #213	
 	,IsFallback
 	,GroupNames
 FROM X_MRP_ProductInfo_Detail_Fallback_V($1);

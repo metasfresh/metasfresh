@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,6 +44,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
@@ -66,6 +67,7 @@ import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
@@ -123,7 +125,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	protected IHUContext huContext;
 	protected IHUStorageFactory huStorageFactory;
 	protected IAttributeStorageFactory attributeStorageFactory;
-	
+
 	@Override
 	protected HUTestHelper createHUTestHelper()
 	{
@@ -133,13 +135,15 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			{
 				return ITrx.TRXNAME_None;
 			}
-			
+
 		};
 	}
 
 	@Override
 	protected void initialize()
 	{
+		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
+
 		//
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
@@ -262,7 +266,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Aggregates Picked TUs ({@link #afterAggregation_HUExpectations}) and creates Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 * 
+	 *
 	 * NOTE: in most of the cases they are LUs but not necesary.
 	 *
 	 * Also allocates the aggregated HUs to original shipment schedules ({@link #afterAggregation_ShipmentScheduleQtyPickedExpectations}).
@@ -387,7 +391,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
-		
+
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
 
 		// Process the workpackage
