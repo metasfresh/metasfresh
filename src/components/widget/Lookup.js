@@ -28,34 +28,19 @@ class Lookup extends Component {
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
-            value: ''
+            oldValue: ''
+
         }
 
     }
 
     componentDidMount() {
-        const {defaultValue} = this.props;
-        // console.log(this.state);
-        // this.setState(
-        //     Object.assign({}, this.state, {
-        //         value: defaultValue[0].value[Object.keys(defaultValue[0].value)[0]]
-        //     }),
-        //     () => {
-        //         console.log('state changed');
-        //         console.log(this.state.value);
-        //         console.log(defaultValue[0].value);
+        console.log('component did mount');
+        this.handleValueChanged();
+    }
 
-        //         this.inputSearch.value = this.state.value;
-
-        //     }
-        // );
-
-        if(!!defaultValue[0].value) {
-            const init = defaultValue[0].value;
-            this.inputSearch.value = init[Object.keys(init)[0]];
-        }
-
-        // this.inputSearch.value = 'sdsdsd';
+    componentDidUpdate() {
+        this.handleValueChanged();
     }
 
     handleClickOutside = () => {
@@ -283,6 +268,24 @@ class Lookup extends Component {
         )
     }
 
+    handleValueChanged = () => {
+        
+        const {defaultValue} = this.props;
+        const {oldValue} = this.state;
+         console.log(defaultValue[0].value);
+
+        if(!!defaultValue[0].value && this.inputSearch) {
+            const init = defaultValue[0].value;
+            let inputValue = init[Object.keys(init)[0]];
+            if(inputValue !== oldValue){
+                this.inputSearch.value = inputValue
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputValue
+                }));  
+            }    
+        }
+    }
+
     renderLookup = () => {
         return this.state.list.map((item, index) => this.getDropdownComponent(index, item) );
     }
@@ -290,6 +293,8 @@ class Lookup extends Component {
     render() {
         const {rank, readonly, properties, defaultValue, placeholder, align} = this.props;
         const {propertiesCopy} = this.state;
+
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}

@@ -197,7 +197,6 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 
     if(id === "NEW"){
         payload = [];
-        
     }else{
         if(property && value !== undefined){
             payload = [{

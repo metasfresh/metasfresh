@@ -96,7 +96,7 @@ class Header extends Component {
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
                         <span
-                            className={ (!item.children.elementId || windowType ? "menu-overlay-expand " : '') + (index === 0 ? "ico-home" : "")}
+                            className={ (!item.children.elementId ? "menu-overlay-expand " : (windowType ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
                             onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
                             {(index === 0) ? "" : item && item.children && item.children.captionBreadcrumb}

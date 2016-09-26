@@ -103,6 +103,15 @@ class MenuOverlay extends Component {
             )
         )
     }
+
+    linkClick = (item) => {
+        if(item.elementId && item.type == "newRecord") {
+            e => this.handleNewRedirect(item.elementId)   
+        } else if (item.elementId){
+            this.handleRedirect(item.elementId)
+        }
+    }
+
     render() {
         const {queriedResults, deepNode} = this.state;
         const {nodeId, node, siteName, index} = this.props;
@@ -151,7 +160,7 @@ class MenuOverlay extends Component {
                         <div className="menu-overlay-node-container">
                             <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
                             {nodeData && nodeData.children.map((item, index) =>
-                                <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId? 'menu-overlay-link' : ''} onClick={item.elementId && item.type == "newRecord" ? e => this.handleNewRedirect(item.elementId) : (item.elementId ? e => this.handleRedirect(item.elementId) : '' ) }>{item.caption}</span></span>
+                                <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId? 'menu-overlay-link' : ''} onClick={ e => this.linkClick(item) }>{item.caption}</span></span>
                             )}
                         </div>
                     }
