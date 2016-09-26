@@ -1968,9 +1968,12 @@ public final class DB
 	 */
 	public static String TO_STRING(String txt, int maxLength)
 	{
-		if (txt == null || txt.length() == 0)
+		if (txt == null
+		// || txt.length() == 0 gh #213: don't return null for the empty string, (e.g. we have X_MRP_ProductInfo_Detail.ASIKey='' which is different from NULL)
+		)
+		{
 			return "NULL";
-
+		}
 		// Length
 		String text = txt;
 		if (maxLength != 0 && text.length() > maxLength)

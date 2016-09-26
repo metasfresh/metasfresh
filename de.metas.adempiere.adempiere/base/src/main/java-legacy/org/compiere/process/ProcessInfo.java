@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
@@ -39,6 +39,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -59,8 +60,7 @@ import de.metas.logging.LogManager;
  * @author victor.perez@e-evolution.com
  * @see FR 1906632 http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1906632&group_id=176962
  */
-public class ProcessInfo implements Serializable
-		, IContextAware
+public class ProcessInfo implements Serializable, IContextAware
 {
 	/**
 	 * Constructor
@@ -92,7 +92,7 @@ public class ProcessInfo implements Serializable
 	 *
 	 * @param Title Title
 	 * @param AD_Process_ID AD_Process_ID
-	 * */
+	 */
 	public ProcessInfo(String Title, int AD_Process_ID)
 	{
 		this(Title, AD_Process_ID, 0, 0);
@@ -100,7 +100,7 @@ public class ProcessInfo implements Serializable
 
 	/** Serialization Info **/
 	static final long serialVersionUID = -1993220053515488725L;
-	
+
 	// services
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
 
@@ -167,7 +167,7 @@ public class ProcessInfo implements Serializable
 	private Throwable m_throwable = null;
 
 	private Boolean _refreshAllAfterExecution;
-	
+
 	private ITableRecordReference _recordToSelectAfterExecution = null;
 
 	/**
@@ -314,7 +314,7 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Sets if the process logs (if any) shall be displayed to user
-	 * 
+	 *
 	 * @param showProcessLogsPolicy
 	 */
 	public final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
@@ -360,7 +360,7 @@ public class ProcessInfo implements Serializable
 		{
 			return "";
 		}
-		
+
 		//
 		final StringBuilder sb = new StringBuilder();
 		SimpleDateFormat dateFormat = DisplayType.getDateFormat(DisplayType.DateTime);
@@ -441,7 +441,7 @@ public class ProcessInfo implements Serializable
 	{
 		return m_AD_Process_ID;
 	}
-	
+
 	/** Gets/Loads the underlying {@link I_AD_Process} definition */
 	private I_AD_Process getAD_ProcessOrNull()
 	{
@@ -824,16 +824,18 @@ public class ProcessInfo implements Serializable
 	}	// addLog
 
 	/**
-	 * Add to Log
+	 * Add to Log.
 	 *
 	 * @param P_ID Process ID
-	 * @param P_Date Process Date
+	 * @param P_Date Process Date if <code>null</code> then the current {@link SystemTime} is used.
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
 	public void addLog(int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
 	{
-		addLog(new ProcessInfoLog(P_ID, P_Date, P_Number, P_Msg));
+		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
+
+		addLog(new ProcessInfoLog(P_ID, timestampToUse, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -1206,23 +1208,25 @@ public class ProcessInfo implements Serializable
 		return ProcessClassInfo.of(processClass);
 	}
 
-	/** @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
+	/**
+	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+	 */
 	public boolean isRefreshAllAfterExecution()
 	{
-		if(_refreshAllAfterExecution != null)
+		if (_refreshAllAfterExecution != null)
 		{
 			return _refreshAllAfterExecution;
 		}
-		
+
 		final I_AD_Process process = getAD_ProcessOrNull();
 		if (process == null)
 		{
 			return false;
 		}
-		
+
 		return process.isRefreshAllAfterExecution();
 	}
-	
+
 	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
 	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
 	{
@@ -1239,24 +1243,22 @@ public class ProcessInfo implements Serializable
 
 	/**
 	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 * 
+	 *
 	 * @param recordToSelectAfterExecution
 	 */
 	public void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
 	{
 		this._recordToSelectAfterExecution = recordToSelectAfterExecution;
 	}
-	
+
 	/**
 	 * Display process logs to user policy
 	 */
 	public static enum ShowProcessLogs
 	{
 		/** Always display them */
-		Always,
-		/** Display them only if the process failed */
-		OnError,
-		/** Never display them */
+		Always, /** Display them only if the process failed */
+		OnError, /** Never display them */
 		Never,
 	};
 }   // ProcessInfo
