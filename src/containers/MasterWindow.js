@@ -18,8 +18,6 @@ class MasterWindow extends Component {
         super(props);
     }
 
-
-
     render() {
         const {master, connectionError, modal, breadcrumb} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
