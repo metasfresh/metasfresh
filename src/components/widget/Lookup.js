@@ -32,7 +32,6 @@ class Lookup extends Component {
 
         }
 
-        // console.log(this.state);
     }
 
     componentDidMount() {

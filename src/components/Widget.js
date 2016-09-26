@@ -16,7 +16,6 @@ class Widget extends Component {
     constructor(props) {
         super(props);
 
-        // console.log(props);
 
         this.state = {
             cachedValue: null

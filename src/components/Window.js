@@ -15,8 +15,6 @@ import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 class Window extends Component {
     constructor(props){
         super(props);
-
-        console.log('Window');
     }
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
