@@ -34,7 +34,6 @@ import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.jdesktop.swingx.JXTable;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -248,8 +247,6 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 	@Override
 	public void dispose()
 	{
-		tableScroll = DisposableHelper.dispose(tableScroll);
-
 		if (tableSwing != null)
 		{
 			tableSwing.removeAll();

@@ -46,6 +46,11 @@ public abstract class TerminalDialog implements ITerminalDialog
 	private boolean initialized = false;
 
 	/**
+	 * <b>Important</b>
+	 * <p>
+	 * If you call this constructor with <b>maintainOwnContextReferences==true</b>,
+	 * then make sure not to register the instance using {@link ITerminalContext#addToDisposableComponents(IDisposable)} later,
+	 * because it would cause a {@link StackOverflowError} when this dialog is disposed.
 	 *
 	 * @param terminalFactory
 	 * @param parent
@@ -69,6 +74,8 @@ public abstract class TerminalDialog implements ITerminalDialog
 
 		if (maintainOwnContextReferences)
 		{
+			// important: don't add ourselves as disposable components,
+			// because our own disposed method (which is also called by doOK() and doCancel() alike) calls terminalContext.deleteReferences() and that would cause a StackOverFlowError.
 			contextReferences = terminalContext.newReferences();
 		}
 		else

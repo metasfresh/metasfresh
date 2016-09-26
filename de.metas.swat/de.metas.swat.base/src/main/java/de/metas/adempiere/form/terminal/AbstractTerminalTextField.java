@@ -159,7 +159,9 @@ public abstract class AbstractTerminalTextField
 	}
 
 	/**
-	 * Trigger automatically keyboard showing
+	 * Trigger automatically keyboard showing.
+	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen
 	 */
 	protected void showKeyboard()
 	{
@@ -207,7 +209,7 @@ public abstract class AbstractTerminalTextField
 			activeKeyboard = null;
 			if (action.equals(textField.getAction()))
 			{
-				textField.setValue(oldValue.toString());
+				textField.setValue(oldValue.toString(), true); // fireEvent=true
 				textField.setText(oldValue.toString());
 			}
 			else
