@@ -269,7 +269,6 @@ function mapDataToState(data, isModal, rowId){
 
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
-
             }else{
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
@@ -277,7 +276,6 @@ function mapDataToState(data, isModal, rowId){
                         
                     }else{
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
-
                     }
                 });
             }
