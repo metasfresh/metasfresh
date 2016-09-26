@@ -35,8 +35,13 @@ class Lookup extends Component {
         // console.log(this.state);
     }
 
-    componentDidUpdate = () => {
-        this.handleValueChanged()
+    componentDidMount() {
+        console.log('component did mount');
+        this.handleValueChanged();
+    }
+
+    componentDidUpdate() {
+        this.handleValueChanged();
     }
 
     handleClickOutside = () => {
@@ -268,6 +273,7 @@ class Lookup extends Component {
         
         const {defaultValue} = this.props;
         const {oldValue} = this.state;
+         console.log(defaultValue[0].value);
 
         if(!!defaultValue[0].value && this.inputSearch) {
             const init = defaultValue[0].value;

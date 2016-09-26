@@ -194,11 +194,9 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
 
 export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value) {
     let payload = {};
-    console.log('---API request ----')
 
     if(id === "NEW"){
         payload = [];
-        console.log('NEW');
     }else{
         if(property && value !== undefined){
             payload = [{
@@ -210,7 +208,6 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
             payload = [];
         }
 
-        console.log(payload);
     }
 
 
