@@ -3,6 +3,7 @@ import axios from 'axios';
 import config from '../config';
 
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
+    query = encodeURIComponent(query);
     return (dispatch) => axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query);
 }
 

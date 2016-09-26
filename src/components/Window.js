@@ -16,7 +16,7 @@ class Window extends Component {
     constructor(props){
         super(props);
 
-        // console.log(props);
+        console.log('Window');
     }
     renderTabs = (tabs) => {
         const {type} = this.props.layout;

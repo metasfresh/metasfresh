@@ -25,6 +25,8 @@ class Widget extends Component {
 
 
     handlePatch = (property, value) => {
+        // console.log('handle Patch');
+        // console.log(value);
         const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId, isAdvanced = false} = this.props;
         const {cachedValue} = this.state;
         let currRowId = rowId;

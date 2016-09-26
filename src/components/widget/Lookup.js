@@ -36,7 +36,7 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        console.log('component did mount');
+        // console.log('component did mount');
         this.handleValueChanged();
     }
 
@@ -44,36 +44,19 @@ class Lookup extends Component {
         this.handleValueChanged();
     }
 
+    handleUpdate = () => {
+        // this.handleValueChanged();
+        // console.log('update');
+    }
+
     handleClickOutside = () => {
         this.handleBlur();
     }
 
-    componentWillMount() {
-          console.log('Component WILL MOUNT!');
-          this.handleValueChanged();
-       }
+    componentWillUnmount() {
+        this.handleUpdate();
+    }
 
-
-
-       componentWillReceiveProps(newProps) {    
-          console.log('Component WILL RECIEVE PROPS!');
-          this.handleValueChanged();
-       }
-
-       shouldComponentUpdate(newProps, newState) {
-            console.log('should update');
-          return true;
-       }
-
-       componentWillUpdate(nextProps, nextState) {
-          console.log('Component WILL UPDATE!');
-          this.handleValueChanged();
-       }
-
-       componentWillUnmount() {
-          console.log('Component WILL UNMOUNT!');
-          this.handleValueChanged();
-       }
 
     handleSelect = (select) => {
         const {
@@ -300,7 +283,7 @@ class Lookup extends Component {
         
         const {defaultValue} = this.props;
         const {oldValue} = this.state;
-         console.log(defaultValue[0].value);
+         // console.log(defaultValue[0].value);
 
         if(!!defaultValue[0].value && this.inputSearch) {
             const init = defaultValue[0].value;
@@ -321,6 +304,8 @@ class Lookup extends Component {
     render() {
         const {rank, readonly, properties, defaultValue, placeholder, align} = this.props;
         const {propertiesCopy} = this.state;
+
+        this.handleUpdate();
 
 
         return (

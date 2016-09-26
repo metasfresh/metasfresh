@@ -42,8 +42,6 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
                 }))
-
-               // console.log(this.state.queriedResults);
             });
         }else{
             this.setState(Object.assign({}, this.state, {
@@ -83,12 +81,14 @@ class MenuOverlay extends Component {
         const {dispatch} = this.props;
         this.handleClickOutside();
         dispatch(push("/window/" + elementId));
+        console.log('redirect');
     }
 
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
         this.handleClickOutside();
         dispatch(push("/window/" + elementId + "/new"));
+        console.log('redirect new');
     }
 
     renderNaviagtion = (node) => {
@@ -98,6 +98,7 @@ class MenuOverlay extends Component {
                     key={index}
                     handleClickOnFolder={this.handleDeeper}
                     handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
                     {...item}
                 />
             )
@@ -106,7 +107,7 @@ class MenuOverlay extends Component {
 
     linkClick = (item) => {
         if(item.elementId && item.type == "newRecord") {
-            e => this.handleNewRedirect(item.elementId)   
+            this.handleNewRedirect(item.elementId)   
         } else if (item.elementId){
             this.handleRedirect(item.elementId)
         }
@@ -116,7 +117,6 @@ class MenuOverlay extends Component {
         const {queriedResults, deepNode} = this.state;
         const {nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
-        console.log(nodeData);
 
         return (
             <div className="menu-overlay menu-overlay-primary">

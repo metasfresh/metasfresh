@@ -14,7 +14,7 @@ class MenuOverlayItem extends Component {
 
     }
     render() {
-        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect, query} = this.props;
+        const {nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, query} = this.props;
 
         return (
             <div
@@ -26,7 +26,7 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={e => children ? handleClickOnFolder(e, nodeId) : handleRedirect(elementId)}
+                    onClick={e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId) )}
                 >
 
 
