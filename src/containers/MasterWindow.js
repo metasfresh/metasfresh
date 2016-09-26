@@ -16,15 +16,26 @@ import Widget from '../components/Widget';
 class MasterWindow extends Component {
     constructor(props){
         super(props);
+        this.state = {
+            update: false
+        };
+    }
+
+    handleUpdateClick =()=> {
+        console.log('sss');
+        this.setState(Object.assign({}, this.state, {
+            update: !this.state.update
+        }))
+        this.forceUpdate();
     }
 
     render() {
         const {master, connectionError, modal, breadcrumb} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-
+        const{update} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
-
+        
         const docStatusData = {
             "status": findRowByPropName(master.data, "DocStatus"),
             "action": findRowByPropName(master.data, "DocAction"),
@@ -54,6 +65,7 @@ class MasterWindow extends Component {
                         tabId={modal.tabId}
                         rowId={modal.rowId}
                         modalTitle={modal.title}
+                        handleUpdateClick={e => this.handleUpdateClick()}
                      />
                  }
                 <Window
@@ -62,6 +74,7 @@ class MasterWindow extends Component {
                     rowData={master.rowData}
                     dataId={dataId}
                     isModal={false}
+                    update={update}
                 />
             </div>
         );

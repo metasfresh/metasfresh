@@ -69,7 +69,7 @@ class Modal extends Component {
         document.body.style.overflow = "auto";
     }
     render() {
-        const {data, layout, indicator, modalTitle, tabId, rowId, dataId} = this.props;
+        const {data, layout, indicator, modalTitle, tabId, rowId, dataId, handleUpdateClick} = this.props;
         const {isAdvanced} = this.state
 
         return (
@@ -78,7 +78,7 @@ class Modal extends Component {
                     <div className={"panel-modal-header " + (this.state.scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
-                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
+                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose} onMouseDown={() => handleUpdateClick()}>
                                 Done
                             </span>
 

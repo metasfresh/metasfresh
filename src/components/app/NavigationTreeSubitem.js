@@ -5,11 +5,11 @@ class NavigationTreeSubitem extends Component {
         super(props);
     }
     render() {
-        const {nodeId, elementId, caption, childArray, handleRedirect} = this.props;
+        const {nodeId, elementId, type, caption, childArray, handleRedirect, handleNewRedirect} = this.props;
 
         return (
             <div className="nav-tree-children">
-                <span className={ (childArray ? "" : "menu-overlay-link")} onClick={e => childArray ? "" : handleRedirect(elementId)}>
+                <span className={ (childArray ? "" : "menu-overlay-link")} onClick={e => childArray ? "" : (type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId) )}>
                     {caption}
                 </span>
                 <div>
@@ -17,6 +17,7 @@ class NavigationTreeSubitem extends Component {
                   <NavigationTreeSubitem
                       key={subindex}
                       handleRedirect={handleRedirect}
+                      handleNewRedirect={handleNewRedirect}
                       childArray={subitem.children}
                       {...subitem}
                   />

@@ -10,6 +10,7 @@ import {push} from 'react-router-redux';
 import {
     rootRequest,
     nodePathsRequest,
+    queryPathsRequest,
     getWindowBreadcrumb
  } from '../actions/MenuActions';
 
@@ -21,7 +22,8 @@ class NavigationTree extends Component {
             rootResults: {
               caption: "",
               children: [],
-              query: ""
+              query: "",
+              queriedResults: []
           },
           deepNode: null
         };
@@ -39,44 +41,69 @@ class NavigationTree extends Component {
         const {dispatch} = this.props;
         dispatch(rootRequest()).then(response => {
             this.setState(Object.assign({}, this.state, {
-                rootResults: response.data
-            }), 
-                ()=>{
-                console.log(this.state.rootResults);}
-            )
+                rootResults: response.data,
+                queriedResults: response.data.children
+            }))
         });
 
 
     }
 
+    handleQuery = (e) => {
+        const {dispatch} = this.props;
+        const {rootResults} = this.state;
+
+        e.preventDefault();
+        if(!!e.target.value){
+            this.setState(Object.assign({}, this.state, {
+                query: e.target.value
+            }));
+
+            dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
+
+                this.setState(Object.assign({}, this.state, {
+                    queriedResults: response.data.children
+                }))
+            });
+        }else{
+            this.setState(Object.assign({}, this.state, {
+                queriedResults: rootResults.children,
+                query: ""
+            }))
+        }
+    }
+
     handleClear = (e) => {
         e.preventDefault();
+        const {rootResults} = this.state;
 
         this.setState(Object.assign({}, this.state, {
-            query: ""
+            query: "",
+            queriedResults: rootResults.children
         }));
     }
 
     renderTree = (res) => {
       const {dispatch} = this.props;
-      const {rootResults} = this.state;
+      const {rootResults, queriedResults} = this.state;
 
       return(
         <div className="container">
             <div className="search-wrapper">
                 <div className="input-flex input-primary">
                     <i className="input-icon meta-icon-preview"/>
-                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} />
+                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
                     {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                 </div>
             </div>
             <p className="menu-overlay-header">{rootResults.caption}</p>
             <div className="column-wrapper">
-            {rootResults.children && rootResults.children.map((subitem, subindex) =>
+            {queriedResults && queriedResults.map((subitem, subindex) =>
                 <NavigationTreeItem
                     key={subindex}
                     handleRedirect={this.handleRedirect}
                     handleClickOnFolder={this.handleDeeper}
+                    handleNewRedirect={this.handleNewRedirect}
                     {...subitem}
                 />
             )}
@@ -89,8 +116,13 @@ class NavigationTree extends Component {
         const {dispatch} = this.props;
         dispatch(push("/window/" + elementId));
     }
+
+    handleNewRedirect = (elementId) => {
+        const {dispatch} = this.props;
+        dispatch(push("/window/" + elementId + "/new"));
+    }
+
     handleDeeper = (e, nodeId) => {
-        console.log('handleClickOnFolder');
         const {dispatch} = this.props;
 
         e.preventDefault();

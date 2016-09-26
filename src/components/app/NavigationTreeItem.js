@@ -7,7 +7,7 @@ class NavigationTreeItem extends Component {
         super(props);
     }
     render() {
-        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect} = this.props;
+        const {nodeId, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect} = this.props;
 
         return (
                 <div className="col-lg-12">     
@@ -20,6 +20,7 @@ class NavigationTreeItem extends Component {
                             <NavigationTreeSubitem
                                 key={subindex}
                                 handleRedirect={handleRedirect}
+                                handleNewRedirect={handleNewRedirect}
                                 childArray={subitem.children}
                                 {...subitem}
                             />
