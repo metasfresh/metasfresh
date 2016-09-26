@@ -60,8 +60,9 @@ public class TerminalContextFactory
 	private final IdentityHashSet<ITerminalContext> terminalContexts = new IdentityHashSet<ITerminalContext>();
 
 	/**
+	 * Create a new terminal context and references. to destroy a terminal context, please use {@link #destroy(ITerminalContext)}.
 	 *
-	 * @return both the newly created context and its first (and so far only one) references instance. Also see {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} on why the caller needs both.
+	 * @return both the newly created context and its first (and at this point only one) references instance. Also see {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} on why the caller needs both.
 	 */
 	public IPair<ITerminalContext, ITerminalContextReferences> createContextAndRefs()
 	{
@@ -99,45 +100,10 @@ public class TerminalContextFactory
 		return ImmutablePair.<ITerminalContext, ITerminalContextReferences> of(terminalContext, newReferences);
 	}
 
-	public ITerminalContext copy(final ITerminalContext terminalContext)
-	{
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
-
-		final TerminalContext terminalContextNew = new TerminalContext();
-		copyFrom(terminalContextNew, terminalContextNew);
-
-		//
-		// Add terminal context to current list of terminal contexts
-		terminalContexts.add(terminalContextNew);
-
-		// Return it
-		return terminalContextNew;
-	}
-
-	private final void copyFrom(final TerminalContext terminalContextNew, final ITerminalContext terminalContext)
-	{
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
-
-		terminalContextNew.setCtx(terminalContext.getCtx());
-
-		final ITerminalFactory terminalFactoryNew = terminalContext.getTerminalFactory().copy(terminalContextNew);
-		terminalContextNew.setTerminalFactory(terminalFactoryNew);
-
-		terminalContextNew.setNumericKeyLayout(terminalContext.getNumericKeyLayout());
-		terminalContextNew.setTextKeyLayout(terminalContext.getTextKeyLayout());
-
-		terminalContextNew.setWindowNo(terminalContext.getWindowNo());
-		terminalContextNew.setAD_User_ID(terminalContext.getAD_User_ID());
-
-		terminalContextNew.setDefaultFontSize(terminalContext.getDefaultFontSize());
-
-		terminalContextNew.setScreenResolution(terminalContext.getScreenResolution());
-
-		// services // don't copy them
-		// hardReferences // don't copy them
-		// propertyChangeSupports // don't copy them
-	}
-
+	/**
+	 *
+	 * @param terminalContext the context to be destroyed. If <code>null</code> this method does nothing. This method assumes the context was created with {@link #createContextAndRefs()}.
+	 */
 	public void destroy(final ITerminalContext terminalContext)
 	{
 		if (terminalContext == null)
@@ -147,12 +113,15 @@ public class TerminalContextFactory
 
 		final ITerminalContext terminalContextUnwrapped = WeakWrapper.unwrap(terminalContext);
 		Check.assumeNotNull(terminalContextUnwrapped, "terminalContextUnwrapped not null");
+		Check.assume(terminalContextUnwrapped instanceof TerminalContext, "Param 'terminalContext'={} is instanceof TerminalContext", terminalContext);
 
-		terminalContextUnwrapped.dispose();
+		final TerminalContext tcToUse = (TerminalContext)terminalContext;
+
+		tcToUse.dispose();
 
 		if (!terminalContexts.remove(terminalContextUnwrapped))
 		{
-			if (!terminalContextUnwrapped.isDisposed())
+			if (!tcToUse.isDisposed())
 			{
 				logger.warn("Cannot remove {} from internal terminal contexts list because it was not found."
 						+ "\nCurrent contexts are: {}", new Object[] { terminalContext, terminalContexts });

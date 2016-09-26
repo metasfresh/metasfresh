@@ -199,8 +199,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public IKeyLayout getNumericKeyLayout()
 	{
-				assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		assertCurrentReferencesNotNull();
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout numericKeyLayout = terminalContextReferences.getNumericKeyLayout();
@@ -223,7 +223,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public IKeyLayout getTextKeyLayout()
 	{
 		assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout textKeyLayout = terminalContextReferences.getTextKeyLayout();
@@ -428,7 +428,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	/**
 	 * Destroys all {@link ITerminalContextReferences}, including the current one.
 	 *
-	 * This method will re-initialize the {@link #currentReferences} to leave the context in a consistent state.
+	 * This method will <b>not</b> re-initialize the {@link #currentReferences}. If you want to reuse this instance, please explicitly call {@link #newReferences()}.
 	 */
 	private final void disposeAllReferences()
 	{
@@ -461,7 +461,6 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		services.clear();
 	}
 
-	@Override
 	public void dispose()
 	{
 
@@ -469,7 +468,6 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		_disposed = true;
 	}
 
-	@Override
 	public boolean isDisposed()
 	{
 		return _disposed;
