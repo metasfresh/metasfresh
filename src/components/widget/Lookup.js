@@ -47,6 +47,33 @@ class Lookup extends Component {
         this.handleBlur();
     }
 
+    componentWillMount() {
+          console.log('Component WILL MOUNT!');
+          this.handleValueChanged();
+       }
+
+
+
+       componentWillReceiveProps(newProps) {    
+          console.log('Component WILL RECIEVE PROPS!');
+          this.handleValueChanged();
+       }
+
+       shouldComponentUpdate(newProps, newState) {
+            console.log('should update');
+          return true;
+       }
+
+       componentWillUpdate(nextProps, nextState) {
+          console.log('Component WILL UPDATE!');
+          this.handleValueChanged();
+       }
+
+       componentWillUnmount() {
+          console.log('Component WILL UNMOUNT!');
+          this.handleValueChanged();
+       }
+
     handleSelect = (select) => {
         const {
             dispatch,
