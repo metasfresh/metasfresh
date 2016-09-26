@@ -89,7 +89,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -194,7 +193,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)                // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)                       // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -288,7 +287,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                       // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -412,7 +411,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final IPair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ic);
 
 			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getLeft());
-			ic.setNetAmtInvoiced(qtyAndNetAmtInvoiced.getRight());
+
+			final BigDecimal netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
+			if (netAmtInvoiced == null) // gh #428 flag the IC if we can't get NetAmtInvoiced
+			{
+				ic.setIsError(true);
+				ic.setErrorMsg("Unable to compute NetAmtInvoiced. Check UOM conversions");
+				ic.setNetAmtInvoiced(null);
+			}
+			else
+			{
+				ic.setNetAmtInvoiced(netAmtInvoiced);
+			}
+
 		}
 
 		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
@@ -426,6 +437,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Sum up 'QtyInvoiced' and 'NetAmtInvoiced'.
+	 * Note that QtyInvoiced is in the <code>M_Product.C_UOM</code>'s and <code>NetAmtInvoiced</code> in <code>C_Invoice_Candidate.Price_UOM</code>.
 	 *
 	 * @param ilas
 	 * @return
@@ -434,33 +446,47 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(ic);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		BigDecimal qtyInvoiced = BigDecimal.ZERO;
 		BigDecimal netAmtInvoiced = BigDecimal.ZERO;
 
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
-			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(ila.getC_InvoiceLine(), I_C_InvoiceLine.class);
+			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
+// @formatter:off
+//			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(ila.getC_InvoiceLine(), I_C_InvoiceLine.class);
+//			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+//
+//			if (docActionBL.isStatusOneOf(invoiceLine.getC_Invoice(),
+//					DocAction.STATUS_Completed,
+//					DocAction.STATUS_Closed,
+//					DocAction.STATUS_Reversed,
+//					DocAction.STATUS_InProgress))                     // 06162 InProgress invoices shall also be processed
+//			{
+// @formatter:on
+			qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-			final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+			//
+			// 07202: We update the net amount invoice according to price UOM.
+			final BigDecimal priceActual = ic.getPriceActual();
+			final BigDecimal rawNetAmtInvoiced = ila.getQtyInvoiced().multiply(priceActual);
 
-			if (docActionBL.isStatusOneOf(invoiceLine.getC_Invoice(),
-					DocAction.STATUS_Completed,
-					DocAction.STATUS_Closed,
-					DocAction.STATUS_Reversed,
-					DocAction.STATUS_InProgress))                 // 06162 InProgress invoices shall also be processed
+			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+
+			final BigDecimal amountInvoiced = uomConversionBL.convertFromProductUOM(ctx, ic.getM_Product(), ic.getPrice_UOM(), rawNetAmtInvoiced);
+			if (amountInvoiced == null)
 			{
-				qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
-
-				//
-				// 07202: We update the net amount invoice according to price UOM.
-				final BigDecimal priceActual = invoiceLine.getPriceActual();
-				final BigDecimal rawNetAmtInvoiced = ila.getQtyInvoiced().multiply(priceActual);
-				final boolean errorIfNotPossible = false;
-				netAmtInvoiced = netAmtInvoiced.add(
-						invoiceLineBL.calculatedQtyInPriceUOM(rawNetAmtInvoiced, invoiceLine, errorIfNotPossible));
+				logger.warn("Can't convert rawNetAmtInvoiced={} into price-UOM of ic={}; ", rawNetAmtInvoiced, ic);
+				netAmtInvoiced = null;
 			}
+			if (netAmtInvoiced != null)
+			{
+				netAmtInvoiced = netAmtInvoiced.add(amountInvoiced);
+			}
+// @formatter:off
+//			}
+// @formatter:on
 		}
 		final IPair<BigDecimal, BigDecimal> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
 		return qtyAndNetAmtInvoiced;
@@ -1225,7 +1251,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override)) // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))        // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1399,7 +1425,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)                // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)                       // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1875,7 +1901,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                       // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
