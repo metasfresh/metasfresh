@@ -20,7 +20,8 @@ class NavigationTree extends Component {
         this.state = {
             rootResults: {
               caption: "",
-              children: []
+              children: [],
+              query: ""
           },
           deepNode: null
         };
@@ -39,8 +40,21 @@ class NavigationTree extends Component {
         dispatch(rootRequest()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data
-            }))
+            }), 
+                ()=>{
+                console.log(this.state.rootResults);}
+            )
         });
+
+
+    }
+
+    handleClear = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            query: ""
+        }));
     }
 
     renderTree = (res) => {
@@ -48,7 +62,14 @@ class NavigationTree extends Component {
       const {rootResults} = this.state;
 
       return(
-        <div>
+        <div className="container">
+            <div className="search-wrapper">
+                <div className="input-flex input-primary">
+                    <i className="input-icon meta-icon-preview"/>
+                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} />
+                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                </div>
+            </div>
             <p className="menu-overlay-header">{rootResults.caption}</p>
             <div className="column-wrapper">
             {rootResults.children && rootResults.children.map((subitem, subindex) =>

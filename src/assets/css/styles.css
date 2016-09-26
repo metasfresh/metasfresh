@@ -1029,3 +1029,7 @@ th {
     right: 20px;
     bottom: 15px;
 }
+
+.search-wrapper {
+    padding-top: 20px;
+}
