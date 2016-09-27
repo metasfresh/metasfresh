@@ -27,6 +27,7 @@ upcoming
  * #410 sscc label org fix
  * #422 pricelist report do not show virtual HU
  * #331 Activating the trace log file doesn't always work
+ * #437 Old window Produktion is opened automatically by menu search
 
 # metasfresh 4.36.35 (2016-38)
 
