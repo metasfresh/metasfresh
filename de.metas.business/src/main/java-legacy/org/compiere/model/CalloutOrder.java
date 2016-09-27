@@ -1368,7 +1368,7 @@ public class CalloutOrder extends CalloutEngine
 	
 	private static interface DropShipPartnerAware
 	{
-		public int getC_BPartner_ID();
+		public int getDropShip_BPartner_ID();
 		public void setDropShip_Location_ID (int DropShip_Location_ID);
 		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
 		public void setDropShip_User_ID (int DropShip_User_ID);
@@ -1378,8 +1378,8 @@ public class CalloutOrder extends CalloutEngine
 	public String deliveryToBPartnerID(final ICalloutField calloutField)
 	{
 		final DropShipPartnerAware dropShipAware = calloutField.getModel(DropShipPartnerAware.class);
-		final int C_BPartner_ID = dropShipAware.getC_BPartner_ID();
-		if (C_BPartner_ID <= 0)
+		final int dropShipBPartnerId = dropShipAware.getDropShip_BPartner_ID();
+		if (dropShipBPartnerId <= 0)
 			return NO_ERROR;
 		String sql = "SELECT lship.C_BPartner_Location_ID,c.AD_User_ID "
 				+ " FROM C_BPartner p"
@@ -1396,12 +1396,12 @@ public class CalloutOrder extends CalloutEngine
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, C_BPartner_ID);
+			pstmt.setInt(1, dropShipBPartnerId);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				int shipTo_ID = rs.getInt("C_BPartner_Location_ID");
-				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
+				if (dropShipBPartnerId == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
 				{
 					final int locFromContextId = calloutField.getTabInfoContextAsInt("DropShip_Location_ID");
 					if (locFromContextId > 0)
@@ -1420,7 +1420,7 @@ public class CalloutOrder extends CalloutEngine
 					dropShipAware.setDropShip_Location_ID(shipTo_ID);
 
 				int contID = rs.getInt("AD_User_ID");
-				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
+				if (dropShipBPartnerId == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
 				{
 					final int tabInfoContactId= calloutField.getTabInfoContextAsInt("DropShip_User_ID");
 					if (tabInfoContactId > 0)
