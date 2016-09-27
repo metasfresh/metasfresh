@@ -1074,3 +1074,45 @@ th {
 .menu-overlay-query .menu-overlay-expand {
     border-bottom: none;
 }
+
+.menu-overlay-query .menu-overlay-link {
+    border-bottom: none;
+}
+
+/*.query-results {
+    border-bottom: 1px solid transparent;
+}
+
+.query-results:hover {
+    border-bottom: 1px solid $brand-link-color;
+}*/
+
+.query-results .query-results:hover {
+    border-bottom: none;
+}
+
+.query-clickable-group {
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+}
+
+.query-clickable-group:hover {
+    border-bottom: 1px dashed $brand-link-color;
+}
+
+.query-clickable-link {
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+}
+
+.query-clickable-link:hover {
+    border-bottom: 1px solid $brand-link-color;
+}
+
+.group-header {
+    width: 100%;
+}
+
+.header-breadcrumb .menu-overlay .menu-overlay-expand {
+    margin-left: 0 !important;
+}

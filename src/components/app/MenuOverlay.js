@@ -64,7 +64,7 @@ class MenuOverlay extends Component {
         e.preventDefault();
 
 
-        dispatch(nodePathsRequest(nodeId,4)).then(response => {
+        dispatch(nodePathsRequest(nodeId,6)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))
@@ -91,15 +91,22 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
         return (
-            node && node.children.map((item,index) =>
-                <MenuOverlayContainer
-                    key={index}
-                    handleClickOnFolder={this.handleDeeper}
-                    handleRedirect={this.handleRedirect}
-                    handleNewRedirect={this.handleNewRedirect}
-                    {...item}
-                />
-            )
+            <div className="menu-overlay-container">
+                {node.nodeId != 0 && 
+                    <p className="menu-overlay-header group-header">{node.caption}</p>
+                }
+                {node && node.children.map((item,index) =>
+                    <MenuOverlayContainer
+                        key={index}
+                        handleClickOnFolder={this.handleDeeper}
+                        handleRedirect={this.handleRedirect}
+                        handleNewRedirect={this.handleNewRedirect}
+                        parent={node}
+                        {...item}
+                    />
+                )}
+            </div>
+
         )
     }
 
@@ -147,6 +154,8 @@ class MenuOverlay extends Component {
                                         <MenuOverlayItem
                                             key={index}
                                             handleClickOnFolder={this.handleDeeper}
+                                            handleRedirect={this.handleRedirect}
+                                            handleNewRedirect={this.handleNewRedirect}
                                             query={true}
                                             {...result}
                                         />
