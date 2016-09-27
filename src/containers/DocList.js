@@ -49,6 +49,25 @@ class DocList extends Component {
         dispatch(getWindowBreadcrumb(windowType))
     }
 
+    componentWillReceiveProps(props) {
+        const {dispatch, windowType} = props;
+
+        dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                layout: response.data,
+                filters: response.data.filters
+            }), () => {
+                dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
+                    this.setState(Object.assign({}, this.state, {
+                        data: response.data
+                    }), () => {
+                        this.getView();
+                    })
+                })
+            })
+        });
+    }
+
     getView = () => {
         const {data,page} = this.state;
         const {dispatch} = this.props;

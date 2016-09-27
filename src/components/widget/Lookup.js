@@ -282,8 +282,8 @@ class Lookup extends Component {
         
         const {defaultValue} = this.props;
         const {oldValue} = this.state;
-         console.log(defaultValue[0])
-         console.log(defaultValue[0].value);
+         //console.log(defaultValue[0])
+         //console.log(defaultValue[0].value);
 
         if(!!defaultValue[0].value && this.inputSearch) {
             const init = defaultValue[0].value;
@@ -304,7 +304,7 @@ class Lookup extends Component {
     render() {
         const {rank, readonly, properties, defaultValue, placeholder, align, update, isModal} = this.props;
         const {propertiesCopy} = this.state;
-        console.log("rendering for: " + update + "modal? : " + isModal)
+        //console.log("rendering for: " + update + "modal? : " + isModal)
         this.handleUpdate();
 
         return (

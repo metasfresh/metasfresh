@@ -30,7 +30,7 @@ class Modal extends Component {
             isAdvanced: isAdvanceMode
         }))
 
-        console.log("Advanced edit? " + isAdvanceMode)
+        //console.log("Advanced edit? " + isAdvanceMode)
     }
 
     componentDidMount() {

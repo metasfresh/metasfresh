@@ -1033,3 +1033,44 @@ th {
 .search-wrapper {
     padding-top: 20px;
 }
+
+.query-results .query-results {
+    display: inline-block;
+}
+
+.query-results .menu-overlay-expanded-link {
+    display: inline;
+    margin: 0;
+}
+
+.query-results .menu-overlay-expand {
+    margin-left: 0 !important;
+}
+
+.query-caption {
+    display: inline;
+}
+
+.header-breadcrumb .menu-overlay-query .menu-overlay-expand {
+    margin-left: 0 !important;
+}
+
+.query-results .menu-overlay-expanded-link:hover {
+    border-bottom: none;
+}
+
+.query-results .menu-overlay-expand:hover {
+    border-bottom: none;
+}
+
+.query-results .menu-overlay-link:hover {
+    border-bottom: none;
+}
+
+.menu-overlay-query .menu-overlay-expand:hover {
+    border-bottom: none;
+}
+
+.menu-overlay-query .menu-overlay-expand {
+    border-bottom: none;
+}

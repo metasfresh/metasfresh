@@ -22,7 +22,7 @@ class MasterWindow extends Component {
     }
 
     handleUpdateClick =()=> {
-        console.log('sss');
+        //console.log('sss');
         this.setState(Object.assign({}, this.state, {
             update: !this.state.update
         }))

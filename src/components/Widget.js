@@ -51,8 +51,8 @@ class Widget extends Component {
 
             ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
 
-            console.log('Sending update request to backend. -------- ');
-            console.log(value);
+            //console.log('Sending update request to backend. -------- ');
+            //console.log(value);
         }
 
         this.setState(Object.assign({}, this.state, {

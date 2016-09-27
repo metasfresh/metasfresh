@@ -30,7 +30,21 @@ class MenuOverlayItem extends Component {
                 >
 
 
-                    {query ? (children ? children.map((item, id) => <span className="queried-result" key={id}> {caption + ' > ' + item.caption} </span>) : caption ) : caption}
+                    {query ? (children ? children.map(
+                        (item, id) => 
+                        
+
+                        <div key={id} className="query-results">
+                            <div className="query-caption">{caption +' > '}</div>
+                            <MenuOverlayItem
+                                query={true}
+                                {...item}
+                            />
+
+                        </div>
+                        
+
+                        ) : caption ) : caption}
                     
 
 
