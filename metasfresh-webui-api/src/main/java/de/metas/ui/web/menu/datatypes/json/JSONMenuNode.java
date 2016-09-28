@@ -73,12 +73,20 @@ public final class JSONMenuNode implements Serializable
 
 	@JsonProperty("nodeId")
 	private final String nodeId;
+	
+	@JsonProperty("parentId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String parentId;
+	
 	@JsonProperty("caption")
 	private final String caption;
+	
 	@JsonProperty("captionBreadcrumb")
 	private final String captionBreadcrumb;
+	
 	@JsonProperty("type")
 	private final JSONMenuNodeType type;
+	
 	@JsonProperty("elementId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer elementId;
@@ -87,14 +95,20 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONMenuNode> children;
 
+	@JsonProperty("matched")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean matched;
+
 	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit)
 	{
 		super();
 		nodeId = node.getId();
+		parentId = node.getParentId();
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = normalizeElementId(node.getElementId());
+		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 
 		if (depth <= 0)
 		{
@@ -120,11 +134,13 @@ public final class JSONMenuNode implements Serializable
 	{
 		super();
 		nodeId = node.getId();
+		parentId = null; // omit parentId when we are building the path!
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = normalizeElementId(node.getElementId());
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
+		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 	}
 
 	private static final Integer normalizeElementId(final int elementId)
@@ -135,31 +151,38 @@ public final class JSONMenuNode implements Serializable
 	@JsonCreator
 	private JSONMenuNode(
 			@JsonProperty("nodeId") final String nodeId //
+			, @JsonProperty("parentId") final String parentId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("captionBreadcrumb") final String captionBreadcrumb //
 			, @JsonProperty("type") final JSONMenuNodeType type //
 			, @JsonProperty("elementId") final Integer elementId //
 			, @JsonProperty("children") final List<JSONMenuNode> children //
+			, @JsonProperty("matched") final Boolean matchedByFilter //
 	)
 	{
 		super();
 		this.nodeId = nodeId;
+		this.parentId = parentId;
 		this.caption = caption;
 		this.captionBreadcrumb = captionBreadcrumb;
 		this.type = type;
 		this.elementId = elementId;
 		this.children = children == null ? ImmutableList.of() : ImmutableList.copyOf(children);
+		this.matched = matchedByFilter;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("nodeId", nodeId)
+				.add("parentId", parentId)
 				.add("caption", caption)
 				.add("captionBreadcrumb", captionBreadcrumb)
 				.add("type", type)
 				.add("elementId", elementId)
+				.add("matchedByFilter", matched)
 				.toString();
 	}
 
@@ -191,5 +214,10 @@ public final class JSONMenuNode implements Serializable
 	public List<JSONMenuNode> getChildren()
 	{
 		return children;
+	}
+	
+	public Boolean getMatched()
+	{
+		return matched;
 	}
 }

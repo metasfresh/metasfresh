@@ -70,7 +70,7 @@ public class MenuRestController
 	@RequestMapping(value = "/root", method = RequestMethod.GET)
 	public JSONMenuNode getRoot(
 			@RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth //
-			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
 		loginService.autologin();
@@ -85,7 +85,7 @@ public class MenuRestController
 	public JSONMenuNode getNode(
 			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
 			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth //
-			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
 		loginService.autologin();
@@ -128,13 +128,16 @@ public class MenuRestController
 	@RequestMapping(value = "/queryPaths", method = RequestMethod.GET)
 	public JSONMenuNode query(
 			@RequestParam(name = PARAM_NameQuery, required = true) final String nameQuery //
-			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue="0") final int childrenLimit //
+			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
+			, @RequestParam(name = "childrenInclusive", required = false, defaultValue = "false")     //
+			@ApiParam("true if groups that were matched shall be populated with it's leafs, even if those leafs are not matching")      //
+			final boolean includeLeafsIfGroupAccepted //
 	)
 	{
 		loginService.autologin();
 
 		final MenuNode rootFiltered = getMenuTree()
-				.filter(nameQuery);
+				.filter(nameQuery, includeLeafsIfGroupAccepted);
 
 		if (rootFiltered == null)
 		{

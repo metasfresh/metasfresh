@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -50,13 +52,13 @@ public final class MenuNode
 		, Window, NewRecord //
 		, Process, Report //
 	}
-
+	
 	@FunctionalInterface
 	public static interface MenuNodeFilter
 	{
 		public static enum MenuNodeFilterResolution
 		{
-			Accept, Reject, AcceptIfHasChildren
+			Accept, Reject, AcceptIfHasChildren, AcceptIfParentIsAccepted
 		}
 
 		MenuNodeFilterResolution check(MenuNode node);
@@ -69,6 +71,10 @@ public final class MenuNode
 	private final int elementId;
 	private final List<MenuNode> children;
 	private MenuNode parent;
+	
+	//
+	// Characteristics
+	private final boolean matchedByFilter;
 
 	private Integer _hashcode;
 
@@ -89,10 +95,12 @@ public final class MenuNode
 		{
 			child.parent = this;
 		}
+		
+		matchedByFilter = false;
 	}
 
 	/** Copy constructor */
-	private MenuNode(final MenuNode node, final List<MenuNode> children)
+	private MenuNode(final MenuNode node, final List<MenuNode> children, final boolean matchedByFilter)
 	{
 		super();
 		id = node.id;
@@ -106,17 +114,21 @@ public final class MenuNode
 		{
 			child.parent = this;
 		}
+		
+		this.matchedByFilter = matchedByFilter;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", id)
 				.add("caption", caption)
 				.add("type", type)
 				.add("elementId", elementId)
 				.add("children-count", children.size())
+				.add("matchedByFilter", matchedByFilter ? Boolean.TRUE : null)
 				.toString();
 	}
 
@@ -169,6 +181,11 @@ public final class MenuNode
 	{
 		return parent;
 	}
+	
+	public String getParentId()
+	{
+		return parent == null ? null : parent.getId();
+	}
 
 	public List<MenuNode> getChildren()
 	{
@@ -196,29 +213,63 @@ public final class MenuNode
 
 	public MenuNode deepCopy(final MenuNodeFilter filter)
 	{
+		final IPair<MenuNode, MenuNodeFilterResolution> nodeAndResolution = deepCopy0(filter);
+		return nodeAndResolution == null ? null : nodeAndResolution.getLeft();
+	}
+
+	private IPair<MenuNode, MenuNodeFilterResolution> deepCopy0(final MenuNodeFilter filter)
+	{
+		//
+		// Get the resolution for this node:
 		final MenuNodeFilterResolution resolution = filter.check(this);
 		if (resolution == MenuNodeFilterResolution.Reject)
 		{
 			return null;
 		}
 
+		//
+		// Check and copy it's children
 		final List<MenuNode> childrenCopy = new ArrayList<>();
+		int countAcceptedChildren = 0;
 		for (final MenuNode child : children)
 		{
-			final MenuNode childCopy = child.deepCopy(filter);
+			final IPair<MenuNode, MenuNodeFilterResolution> childCopyAndResolution = child.deepCopy0(filter);
+			if(childCopyAndResolution == null)
+			{
+				continue;
+			}
+			
+			final MenuNode childCopy = childCopyAndResolution.getLeft();
 			if (childCopy == null)
 			{
 				continue;
 			}
+			
 			childrenCopy.add(childCopy);
+			
+			final MenuNodeFilterResolution childResolution = childCopyAndResolution.getRight();
+			switch(childResolution)
+			{
+				case Accept:
+				case AcceptIfHasChildren:
+					countAcceptedChildren++;
+					break;
+				case AcceptIfParentIsAccepted:
+					// nothing to do
+					break;
+				default:
+					throw new IllegalStateException("Invalid child resolution: " + childResolution); // shall not happen
+			}
 		}
 
-		if (resolution == MenuNodeFilterResolution.AcceptIfHasChildren && childrenCopy.isEmpty())
+		if (resolution == MenuNodeFilterResolution.AcceptIfHasChildren && countAcceptedChildren == 0)
 		{
 			return null;
 		}
-
-		return new MenuNode(this, childrenCopy);
+		
+		final boolean matchedByFilter = resolution == MenuNodeFilterResolution.Accept;
+		final MenuNode thisCopy = new MenuNode(this, childrenCopy, matchedByFilter);
+		return ImmutablePair.of(thisCopy, resolution);
 	}
 
 	public boolean isRoot()
@@ -229,6 +280,11 @@ public final class MenuNode
 	public boolean isGrouppingNode()
 	{
 		return type == MenuNodeType.Group;
+	}
+	
+	public boolean isMatchedByFilter()
+	{
+		return matchedByFilter;
 	}
 
 	public static final class Builder

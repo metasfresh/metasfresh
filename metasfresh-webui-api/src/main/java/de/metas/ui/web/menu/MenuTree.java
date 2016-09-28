@@ -47,7 +47,7 @@ public final class MenuTree
 	{
 		return new MenuTree(rootNode);
 	}
-	
+
 	private static final Logger logger = LogManager.getLogger(MenuTree.class);
 
 	private final MenuNode rootNode;
@@ -136,13 +136,24 @@ public final class MenuTree
 		return path;
 	}
 
-	public MenuNode filter(final String nameQuery)
+	/**
+	 * Filters this node and its children recursively.
+	 * 
+	 * @param nameQuery
+	 * @param includeLeafsIfGroupAccepted
+	 *            <ul>
+	 *            <li><code>false</code> populate groups only with the leafs that match (default)
+	 *            <li><code>true</code> if groups that were matched shall be populated with it's leafs, even if those leafs are not matching
+	 *            </ul>
+	 * @return a new copy with all matching nodes.
+	 */
+	public MenuNode filter(final String nameQuery, final boolean includeLeafsIfGroupAccepted)
 	{
 		if (Check.isEmpty(nameQuery, true))
 		{
 			throw new IllegalArgumentException("Invalid name query '" + nameQuery + "'");
 		}
-		
+
 		final String nameQueryLC = nameQuery.toLowerCase();
 		logger.trace("Filtering using nameQueryLC={}", nameQueryLC);
 
@@ -161,10 +172,15 @@ public final class MenuTree
 						return MenuNodeFilterResolution.Accept;
 					}
 
-					if(node.isGrouppingNode())
+					if (node.isGrouppingNode())
 					{
 						logger.trace("Filter: accept node (if has children!) because does matches and it's a groupping node: {}", node);
 						return MenuNodeFilterResolution.AcceptIfHasChildren;
+					}
+					else if (includeLeafsIfGroupAccepted)
+					{
+						logger.trace("Filter: accept node if parent is accepted because does not match and we were asked to populate matching groups with its leafs: {}", node);
+						return MenuNodeFilterResolution.AcceptIfParentIsAccepted;
 					}
 					else
 					{
