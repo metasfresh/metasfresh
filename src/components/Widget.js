@@ -16,7 +16,6 @@ class Widget extends Component {
     constructor(props) {
         super(props);
 
-
         this.state = {
             cachedValue: null
         }
@@ -24,8 +23,6 @@ class Widget extends Component {
 
 
     handlePatch = (property, value) => {
-        // console.log('handle Patch');
-        // console.log(value);
         const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId, isAdvanced = false} = this.props;
         const {cachedValue} = this.state;
         let currRowId = rowId;
@@ -50,9 +47,6 @@ class Widget extends Component {
             }
 
             ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
-
-            //console.log('Sending update request to backend. -------- ');
-            //console.log(value);
         }
 
         this.setState(Object.assign({}, this.state, {
@@ -110,8 +104,9 @@ class Widget extends Component {
         }
     }
 
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align, update) => {
+    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {isModal} = this.props
+
         switch(widgetType){
             case "Date":
                 return (
@@ -184,7 +179,6 @@ class Widget extends Component {
                         rank={type}
                         onChange={this.handlePatch}
                         align={align}
-                        update={update}
                         isModal={isModal}
                     />
                 )
@@ -423,7 +417,7 @@ class Widget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, update} = this.props;
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign} = this.props;
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
@@ -431,7 +425,7 @@ class Widget extends Component {
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
                             <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign, update)}
+                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
                             </div>
                         </div>
                     </div>

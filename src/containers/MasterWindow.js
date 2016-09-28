@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import {
-    findRowByPropName
+    findRowByPropName,
+    getData
 } from '../actions/WindowActions';
 
 import Window from '../components/Window';
@@ -17,22 +18,32 @@ class MasterWindow extends Component {
     constructor(props){
         super(props);
         this.state = {
-            update: false
+            data: []
         };
     }
 
     handleUpdateClick =()=> {
-        //console.log('sss');
+        const {dispatch} = this.props;
+        const {docId, windowType} = this.props.params;
+
+        dispatch(getData(windowType, docId)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                data: response.data[0].fields
+            }))
+        });  
+    }
+
+    componentWillReceiveProps(props) {
+        const {master} = this.props;
         this.setState(Object.assign({}, this.state, {
-            update: !this.state.update
+            data: master.data
         }))
-        this.forceUpdate();
     }
 
     render() {
         const {master, connectionError, modal, breadcrumb} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const{update} = this.state;
+        const{data} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
         
@@ -69,12 +80,11 @@ class MasterWindow extends Component {
                      />
                  }
                 <Window
-                    data={master.data}
+                    data={data}
                     layout={master.layout}
                     rowData={master.rowData}
                     dataId={dataId}
                     isModal={false}
-                    update={update}
                 />
             </div>
         );

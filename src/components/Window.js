@@ -96,11 +96,11 @@ class Window extends Component {
     }
     renderElements = (elements) => {
         const {type} = this.props.layout;
-        const {data, modal, tabId,rowId, dataId, isAdvanced, update} = this.props;
-        //console.log("update is" + update);
+        const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
         return elements.map((elem, id)=> {
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, "ID").value;
+
             return (
                 <Widget
                     key={'element' + id}
@@ -112,7 +112,6 @@ class Window extends Component {
                     rowId={rowId}
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
-                    update={update}
                     {...elem} />
             )
         })

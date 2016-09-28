@@ -35,7 +35,6 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        // console.log('component did mount');
         this.handleValueChanged();
     }
 
@@ -43,19 +42,9 @@ class Lookup extends Component {
         this.handleValueChanged();
     }
 
-    handleUpdate = () => {
-        // this.handleValueChanged();
-        // console.log('update');
-    }
-
     handleClickOutside = () => {
         this.handleBlur();
     }
-
-    componentWillUnmount() {
-        this.handleUpdate();
-    }
-
 
     handleSelect = (select) => {
         const {
@@ -282,8 +271,6 @@ class Lookup extends Component {
         
         const {defaultValue} = this.props;
         const {oldValue} = this.state;
-         //console.log(defaultValue[0])
-         //console.log(defaultValue[0].value);
 
         if(!!defaultValue[0].value && this.inputSearch) {
             const init = defaultValue[0].value;
@@ -302,10 +289,8 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder, align, update, isModal} = this.props;
+        const {rank, readonly, properties, defaultValue, placeholder, align, isModal} = this.props;
         const {propertiesCopy} = this.state;
-        //console.log("rendering for: " + update + "modal? : " + isModal)
-        this.handleUpdate();
 
         return (
             <div
