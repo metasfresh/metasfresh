@@ -4,9 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
 import de.metas.rfq.IRfQConfiguration;
@@ -54,9 +52,9 @@ public class C_RfQ_Publish extends SvrProcess implements ISvrProcessPrecondition
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_C_RfQ rfq = InterfaceWrapperHelper.create(gridTab, I_C_RfQ.class);
+		final I_C_RfQ rfq = context.getModel(I_C_RfQ.class);
 		return rfqBL.isCompleted(rfq);
 	}
 

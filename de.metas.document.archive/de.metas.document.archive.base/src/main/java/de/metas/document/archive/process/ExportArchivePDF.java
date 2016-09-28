@@ -25,14 +25,9 @@ package de.metas.document.archive.process;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.MTable;
-import org.compiere.model.PO;
 import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
@@ -42,32 +37,20 @@ import de.metas.document.archive.model.I_AD_Archive;
 public class ExportArchivePDF extends SvrProcess implements ISvrProcessPrecondition
 {
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final GridField field = gridTab.getField(org.compiere.model.I_AD_Archive.COLUMNNAME_AD_Archive_ID);
-		if (field == null)
+		final Object model = context.getModel(Object.class);
+		final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IArchiveAware.class);
+		if(archiveAware == null)
 		{
-			log.debug("No AD_Archive field found for {}", gridTab);
+			log.debug("No AD_Archive field found for {}", context);
 			return false;
 		}
 
-		final Object value = field.getValue();
-		if (value == null)
-		{
-			log.debug("Null value found for {}", field);
-			return false;
-		}
-
-		if (!(value instanceof Number))
-		{
-			log.debug("Invalid value {} found for {}", new Object[] { value, field });
-			return false;
-		}
-
-		final int archiveId = ((Number)value).intValue();
+		final int archiveId = archiveAware.getAD_Archive_ID();
 		if (archiveId <= 0)
 		{
-			log.debug("No value found for {}", field);
+			log.debug("No AD_Archive_ID found for {}", archiveAware);
 			return false;
 		}
 
@@ -82,16 +65,9 @@ public class ExportArchivePDF extends SvrProcess implements ISvrProcessPrecondit
 	@Override
 	protected String doIt()
 	{
-		if (getTable_ID() <= 0 || getRecord_ID() <= 0)
-		{
-			throw new AdempiereException("No record found; getTable_ID()=" + getTable_ID() + ", getRecord_ID()=" + getRecord_ID());
-		}
-
-		final PO po = MTable.get(getCtx(), getTable_ID()).getPO(getRecord_ID(), get_TrxName());
-		Check.assumeNotNull(po, "po with AD_Table_ID=" + getTable_ID() + " and Record_ID=" + getRecord_ID() + " not null");
-
-		final IArchiveAware archiveAware = InterfaceWrapperHelper.create(po, IArchiveAware.class);
+		final IArchiveAware archiveAware = getRecord(IArchiveAware.class);
 		final I_AD_Archive archive = archiveAware.getAD_Archive();
+		Check.assumeNotNull(archive, "Parameter archive is not null");
 
 		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 		final byte[] data = archiveBL.getBinaryData(archive);

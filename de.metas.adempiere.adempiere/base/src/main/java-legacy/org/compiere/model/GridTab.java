@@ -44,6 +44,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
+import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -125,7 +126,7 @@ import de.metas.logging.MetasfreshLastError;
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
  * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
-public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord
+public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord, ISvrProcessPrecondition.PreconditionsContext
 {
 
 	/**

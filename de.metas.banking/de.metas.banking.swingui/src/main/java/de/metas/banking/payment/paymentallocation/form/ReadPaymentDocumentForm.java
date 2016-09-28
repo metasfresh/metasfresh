@@ -29,13 +29,11 @@ import java.awt.Frame;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.model.GridTab;
 import org.compiere.process.ProcessInfo;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -119,9 +117,9 @@ public class ReadPaymentDocumentForm implements FormPanel, ISvrProcessPreconditi
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(gridTab, I_C_Invoice.class);
+		final I_C_Invoice invoice = context.getModel(I_C_Invoice.class);
 		if (invoice == null)
 		{
 			return false;

@@ -24,9 +24,7 @@ package de.metas.inoutcandidate.process;
 
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -45,9 +43,9 @@ public class M_ReceiptSchedule_ReOpen extends SvrProcess implements ISvrProcessP
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.create(gridTab, I_M_ReceiptSchedule.class);
+		final I_M_ReceiptSchedule receiptSchedule = context.getModel(I_M_ReceiptSchedule.class);
 
 		// Make sure receipt schedule is already closed
 		if (!receiptScheduleBL.isClosed(receiptSchedule))

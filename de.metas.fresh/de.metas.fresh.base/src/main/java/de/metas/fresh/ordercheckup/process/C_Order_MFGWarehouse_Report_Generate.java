@@ -1,5 +1,11 @@
 package de.metas.fresh.ordercheckup.process;
 
+import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
+import org.compiere.process.SvrProcess;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -24,17 +30,10 @@ package de.metas.fresh.ordercheckup.process;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
-import org.compiere.model.I_C_Order;
-import org.compiere.process.SvrProcess;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
+import de.metas.logging.LogManager;
 
 public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements ISvrProcessPrecondition
 {
@@ -63,9 +62,9 @@ public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements 
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
+		final I_C_Order order = context.getModel(I_C_Order.class);
 
 		// Make sure this feature is enabled (sysconfig)
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_EnableProcessGear, false, order.getAD_Client_ID(), order.getAD_Org_ID()))

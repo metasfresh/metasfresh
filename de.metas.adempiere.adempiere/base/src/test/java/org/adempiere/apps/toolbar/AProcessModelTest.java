@@ -43,7 +43,7 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(GridTab gridTab)
+		public boolean isPreconditionApplicable(final PreconditionsContext context)
 		{
 			return true;
 		}
@@ -53,7 +53,7 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(GridTab gridTab)
+		public boolean isPreconditionApplicable(final PreconditionsContext context)
 		{
 			return false;
 		}
@@ -63,7 +63,7 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(GridTab gridTab)
+		public boolean isPreconditionApplicable(final PreconditionsContext context)
 		{
 			throw new RuntimeException("Test Exception");
 		}
