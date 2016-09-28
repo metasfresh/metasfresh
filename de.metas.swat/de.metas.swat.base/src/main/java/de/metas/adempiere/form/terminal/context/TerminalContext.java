@@ -144,9 +144,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	{
 		ctx = null;
 
-		//
-		// Cleanup references
-		disposeAllReferences();
+		assertAllReferencesDeleted();
+
 		disposeAllServices();
 
 		if (terminalFactory != null)
@@ -407,8 +406,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		Check.assumeNotNull(references, "Param 'reference' is not null; this={}", this);
 
 		Check.errorIf(!Util.same(currentReferences, references),
-				"Param 'references'={} is not the same as currentReferences={}; this={}",
-				references, currentReferences, this);
+				"Param 'references is not the same as currentReferences; size of referencesList={}; references={} currentReferences={}; this={}",
+				referencesList == null ? "<null>" : referencesList.size(),
+				references,
+				currentReferences,
+				this);
 
 		// Destroy given references
 		currentReferences.dispose();
@@ -425,27 +427,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		}
 	}
 
-	/**
-	 * Destroys all {@link ITerminalContextReferences}, including the current one.
-	 *
-	 * This method will <b>not</b> re-initialize the {@link #currentReferences}. If you want to reuse this instance, please explicitly call {@link #newReferences()}.
-	 */
-	private final void disposeAllReferences()
+	private final void assertAllReferencesDeleted()
 	{
-		// Iterate all references and dispose them
-		for (final TerminalContextReferences references : referencesList)
-		{
-			references.dispose();
-		}
-		referencesList.clear();
+		Check.errorIf(!referencesList.isEmpty(), "referencesList is not (yet) empty; referencesList={}", referencesList);
 
-		// Make sure current references were also destroyed
-		// We do this just to be sure we destroyed everything, even this is pointless because "current references" were contained in references list
-		if (currentReferences != null)
-		{
-			currentReferences.dispose();
-			currentReferences = null;
-		}
+		Check.errorIf(currentReferences != null, "currentReferences is not (yet) null; currentReferences={}", currentReferences);
 	}
 
 	private final void disposeAllServices()

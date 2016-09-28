@@ -98,8 +98,20 @@ public interface ITerminalFactory
 
 	ITerminalCheckboxField createTerminalCheckbox(String name);
 
+	/**
+	 * Create a panel for the given <code>keylayout</code>.
+	 *
+	 * @param keylayout
+	 * @param listener
+	 * @return
+	 */
 	ITerminalKeyPanel createTerminalKeyPanel(IKeyLayout keylayout, ITerminalKeyListener listener);
 
+	/**
+	 * Analog to {@link #createTerminalKeyPanel(IKeyLayout, ITerminalKeyListener)}, but with a {@link NullTerminalKeyListener}.
+	 * @param keylayout
+	 * @return
+	 */
 	ITerminalKeyPanel createTerminalKeyPanel(IKeyLayout keylayout);
 
 	ITerminalScrollPane createScrollPane(IComponent content);
