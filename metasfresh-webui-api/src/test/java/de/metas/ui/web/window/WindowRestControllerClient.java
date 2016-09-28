@@ -23,6 +23,7 @@ import com.google.common.base.Throwables;
 import de.metas.ui.web.window.controller.IWindowRestController;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -157,7 +158,7 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentLayoutTab viewLayout(int adWindowId, JSONViewDataType viewDataType)
+	public JSONDocumentLayoutTab viewLayout(final int adWindowId, final JSONViewDataType viewDataType)
 	{
 		final String json = httpGet("/gridLayout?type=" + adWindowId + "&viewType=" + viewDataType);
 		final JSONDocumentLayoutTab viewLayout = fromJson(json, JSONDocumentLayoutTab.class);
@@ -181,6 +182,13 @@ public class WindowRestControllerClient implements IWindowRestController
 
 	@Override
 	public void deleteView(final String viewId)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public JSONDocumentActionsList getDocumentActions(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();

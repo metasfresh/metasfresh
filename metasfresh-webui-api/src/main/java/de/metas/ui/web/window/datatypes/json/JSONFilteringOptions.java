@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -249,6 +250,11 @@ public final class JSONFilteringOptions
 	public boolean isDebugShowColumnNamesForCaption()
 	{
 		return debugShowColumnNamesForCaption;
+	}
+	
+	public boolean isProtocolDebugging()
+	{
+		return WindowConstants.isProtocolDebugging();
 	}
 
 	public Predicate<DocumentLayoutElementDescriptor> documentLayoutElementFilter()

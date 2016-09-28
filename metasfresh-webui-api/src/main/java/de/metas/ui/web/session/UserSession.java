@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
@@ -216,6 +217,11 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		// TODO: cache the permissions key
 		return UserRolePermissionsKey.of(getCtx());
+	}
+	
+	public IUserRolePermissions getUserRolePermissions()
+	{
+		return Env.getUserRolePermissions(getCtx());
 	}
 	
 	public String getDashboardUrl()

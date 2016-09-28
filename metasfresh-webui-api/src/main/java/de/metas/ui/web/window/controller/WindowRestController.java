@@ -3,6 +3,8 @@ package de.metas.ui.web.window.controller;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
@@ -24,6 +27,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -40,6 +44,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentActionsList;
+import de.metas.ui.web.window.model.DocumentActionsService;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -111,6 +117,9 @@ public class WindowRestController implements IWindowRestController
 
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
+
+	@Autowired
+	private DocumentActionsService documentActionsService;
 
 	private JSONFilteringOptions.Builder newJSONFilteringOptions()
 	{
@@ -435,5 +444,51 @@ public class WindowRestController implements IWindowRestController
 		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 		final DocumentViewResult result = view.getPage(firstRow, pageLength, orderBys);
 		return JSONDocumentViewResult.of(result);
+	}
+
+	@Override
+	@RequestMapping(value = "/documentActions", method = RequestMethod.GET)
+	public JSONDocumentActionsList getDocumentActions(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+	)
+	{
+		loginService.autologin();
+
+		final DocumentPath documentPath = DocumentPath.builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
+
+		final Document document = documentCollection.getDocument(documentPath);
+		final String tableName = document.getEntityDescriptor().getDataBinding().getTableName();
+		final DocumentActionsList documentActions = documentActionsService
+				.getDocumentActions(tableName)
+				.getApplicableActions(new PreconditionsContext()
+				{
+					@Override
+					public String toString()
+					{
+						return MoreObjects.toStringHelper(this).addValue(document).toString();
+					}
+
+					@Override
+					public String getTableName()
+					{
+						return tableName;
+					}
+
+					@Override
+					public <T> T getModel(final Class<T> modelClass)
+					{
+						return InterfaceWrapperHelper.create(document, modelClass);
+					}
+				});
+		
+		return JSONDocumentActionsList.of(documentActions, newJSONFilteringOptions().build());
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.ui.web.window.controller;
 import java.util.List;
 
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -93,4 +94,6 @@ public interface IWindowRestController
 	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength, final String orderBysListStr);
 
 	void deleteView(String viewId);
+
+	JSONDocumentActionsList getDocumentActions(int adWindowId, String idStr, String detailId, String rowIdStr);
 }
