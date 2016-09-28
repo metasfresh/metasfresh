@@ -81,6 +81,16 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 		return of(model);
 	}
+	
+	public static final ITableRecordReference of(final int adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId, recordId);
+	}
+	
+	public static final ITableRecordReference of(final String tableName, final int recordId)
+	{
+		return new TableRecordReference(tableName, recordId);
+	}
 
 	private final int adTableId;
 	private final String tableName;

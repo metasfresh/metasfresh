@@ -1,5 +1,9 @@
 package de.metas.async.spi;
 
+import java.util.List;
+
+import org.adempiere.ad.trx.api.ITrx;
+
 /*
  * #%L
  * de.metas.async
@@ -31,6 +35,7 @@ import org.adempiere.util.api.IParams;
 
 import com.google.common.base.Optional;
 
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.lock.api.ILock;
@@ -124,5 +129,10 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	public ILatchStragegy getLatchStrategy()
 	{
 		return NullLatchStrategy.INSTANCE;
+	}
+	
+	public <T> List<T> retrieveItems(final Class<T> modelType)
+	{
+		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
 	}
 }

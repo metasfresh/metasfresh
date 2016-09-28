@@ -96,11 +96,16 @@ public class MLookupFactory
 			boolean IsParent, int AD_Val_Rule_ID)
 					throws AdempiereException
 	{
-		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
-		if (info == null)
-			throw new AdempiereException("MLookup.create - no LookupInfo");
-		return new MLookup(ctx, Column_ID, info, 0);
+		final MLookupInfo lookupInfo = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+		return ofLookupInfo(ctx, lookupInfo, Column_ID);
 	}   // create
+	
+	public static final MLookup ofLookupInfo(final Properties ctx, final MLookupInfo lookupInfo, final int AD_Column_ID)
+	{
+		Check.assumeNotNull(lookupInfo, "Parameter lookupInfo is not null");
+		final int tabNo = 0;
+		return new MLookup(ctx, AD_Column_ID, lookupInfo, tabNo);
+	}
 
 	public static MLookupInfo getLookupInfo(final int WindowNo, final int Column_ID, final int AD_Reference_ID)
 	{

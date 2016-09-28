@@ -36,6 +36,13 @@
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
