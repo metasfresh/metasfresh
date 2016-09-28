@@ -1433,6 +1433,11 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 			return Optional.empty();
 		}
+		// Explicit NULL
+		else if ("null".equalsIgnoreCase(defaultValueStr.trim()))
+		{
+			return Optional.of(IStringExpression.NULL);
+		}
 		// If it's a SQL expression => compile it as SQL expression
 		else if (defaultValueStr.startsWith("@SQL="))
 		{
