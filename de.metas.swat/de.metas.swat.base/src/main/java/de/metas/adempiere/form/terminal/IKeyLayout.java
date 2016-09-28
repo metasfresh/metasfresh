@@ -31,6 +31,12 @@ import java.util.List;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
+/**
+ * A key layout contains a number of {@link ITerminalKey}s.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IKeyLayout extends IDisposable
 {
 	Integer DEFAULT_COLUMN_COUNT = 3;
