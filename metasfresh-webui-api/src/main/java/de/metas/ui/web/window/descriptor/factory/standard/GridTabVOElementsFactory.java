@@ -1392,7 +1392,13 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 	private Optional<IExpression<?>> extractDefaultValueExpression(final GridFieldVO gridFieldVO)
 	{
-		if (WindowConstants.FIELDNAME_Line.equals(gridFieldVO.getColumnName()))
+		final GridTabVO gridTabVO = getGridTabVO();
+
+		//
+		// Case: "Line" field in included tabs
+		if (WindowConstants.FIELDNAME_Line.equals(gridFieldVO.getColumnName())
+				&& gridTabVO.getTabLevel() > 0 // only on included tabs
+		)
 		{
 			return DEFAULT_VALUE_EXPRESSION_NextLineNo;
 		}
