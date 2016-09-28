@@ -82,15 +82,10 @@
 			<artifactId>de.metas.aggregation</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports</artifactId>
 		</dependency>
 
 		<!-- other 3rd party libs -->
