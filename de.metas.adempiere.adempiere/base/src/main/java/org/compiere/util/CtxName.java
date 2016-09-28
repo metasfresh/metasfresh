@@ -31,6 +31,7 @@ import java.util.Optional;
 import org.adempiere.util.Check;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -42,13 +43,17 @@ import com.google.common.collect.ImmutableList;
 public final class CtxName
 {
 	public static final String NAME_Marker = "@";
-	public static final String SEPARATOR = "/";
 	public static final String MODIFIER_Old = "old";
 	private static final List<String> MODIFIERS = ImmutableList.<String> builder()
 			.add(MODIFIER_Old)
 			.build();
 
 	public static final String VALUE_NULL = null;
+	
+	private static final String SEPARATOR = "/";
+	private static final Splitter SEPARATOR_SPLITTER = Splitter.on(SEPARATOR)
+			//.omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
+			;
 
 	public static CtxName parse(final String contextWithoutMarkers)
 	{
@@ -59,18 +64,20 @@ public final class CtxName
 
 		String name = null;
 
-		final List<String> modifiers = new ArrayList<String>();
-		final String[] tokens = contextWithoutMarkers.split(SEPARATOR);
-		for (int i = 0; i < tokens.length; i++)
+		final List<String> modifiers = new ArrayList<>();
+		boolean firstToken = true;
+		for (String token : SEPARATOR_SPLITTER.splitToList(contextWithoutMarkers))
 		{
-			if (i == 0)
+			if (firstToken)
 			{
-				name = tokens[i].trim();
+				name = token.trim();
 			}
 			else
 			{
-				modifiers.add(tokens[i]);
+				modifiers.add(token);
 			}
+			
+			firstToken = false;
 		}
 
 		final String defaultValue;
