@@ -51,8 +51,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -112,10 +112,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(final PlainContextAware plainContextAware)
+	public final Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(final IContextAware contextAware)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class, plainContextAware)
+				.createQueryBuilder(I_C_Invoice_Candidate.class, contextAware)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		queryBuilder.orderBy()
