@@ -62,4 +62,10 @@ public class UserSessionRestController
 	{
 		return userSession.getAD_Language();
 	}
+	
+	@RequestMapping(value = "/dashboardUrl", method = RequestMethod.GET)
+	public String getDashboardUrl()
+	{
+		return userSession.getDashboardUrl();
+	}
 }

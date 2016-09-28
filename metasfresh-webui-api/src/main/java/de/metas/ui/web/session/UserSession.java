@@ -66,6 +66,9 @@ public class UserSession implements InitializingBean, Serializable
 	
 	@Value("${metasfresh.webui.debug.showColumnNamesForCaption:false}")
 	private boolean default_showColumnNamesForCaption;
+	
+	@Value("${metasfresh.webui.userSession.dashboardUrl:}")
+	private String dashboardUrl;
 
 	public UserSession()
 	{
@@ -213,6 +216,11 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		// TODO: cache the permissions key
 		return UserRolePermissionsKey.of(getCtx());
+	}
+	
+	public String getDashboardUrl()
+	{
+		return dashboardUrl;
 	}
 
 	public <T extends Serializable> Object setProperty(final String name, final T value)
