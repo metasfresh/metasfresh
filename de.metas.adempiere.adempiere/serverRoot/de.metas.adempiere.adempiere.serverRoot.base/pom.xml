@@ -57,6 +57,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
+				<exclusion>
+				    <groupId>org.ow2.asm</groupId>
+   					<artifactId>asm</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<!-- in development, used to disable thymeleaf caching etc -->
