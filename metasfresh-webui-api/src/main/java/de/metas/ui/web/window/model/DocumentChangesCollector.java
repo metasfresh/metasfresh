@@ -180,7 +180,7 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public boolean collectFrom(final Document document, final ReasonSupplier reason)
+	public Set<String> collectFrom(final Document document, final ReasonSupplier reason)
 	{
 		final DocumentPath documentPath = document.getDocumentPath();
 		return documentChanges(documentPath)

@@ -96,9 +96,9 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
-	public boolean collectFrom(final Document document, final ReasonSupplier reason)
+	public Set<String> collectFrom(final Document document, final ReasonSupplier reason)
 	{
-		return false; // nothing collected
+		return ImmutableSet.of(); // nothing collected
 	}
 
 	@Override

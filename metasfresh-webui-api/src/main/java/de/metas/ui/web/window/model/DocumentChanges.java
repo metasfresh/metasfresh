@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,19 +153,19 @@ public final class DocumentChanges
 		}
 	}
 
-	/* package */boolean collectFrom(final Document document, final ReasonSupplier reason)
+	/* package */Set<String> collectFrom(final Document document, final ReasonSupplier reason)
 	{
-		boolean collected = false;
+		final Set<String> collectedFieldNames = new LinkedHashSet<>();
 
 		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
 			if (collectFrom(documentField, reason))
 			{
-				collected = true;
+				collectedFieldNames.add(documentField.getFieldName());
 			}
 		}
 
-		return collected;
+		return collectedFieldNames;
 	}
 
 	private boolean collectFrom(final IDocumentFieldView documentField, final ReasonSupplier reason)
@@ -179,6 +180,7 @@ public final class DocumentChanges
 		{
 			final Object value = documentField.getValue();
 			toEvent.setValue(value, reason);
+			collected = true;
 		}
 		else
 		{

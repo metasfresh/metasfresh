@@ -54,9 +54,9 @@ public interface IDocumentChangesCollector
 	 * Collect changes from given document (only those which were not yet collected).
 	 *
 	 * @param fromCollector
-	 * @return true if something was collected
+	 * @return set of field names which were collected
 	 */
-	boolean collectFrom(Document document, ReasonSupplier reason);
+	Set<String> collectFrom(Document document, ReasonSupplier reason);
 
 	void collectDocumentValidStatusChanged(DocumentPath documentPath, DocumentValidStatus documentValidStatus);
 

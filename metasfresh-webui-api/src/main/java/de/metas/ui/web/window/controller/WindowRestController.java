@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -237,10 +238,12 @@ public class WindowRestController implements IWindowRestController
 		if (documentPath.isNewDocument())
 		{
 			logger.debug("Checking if we collected all events for the new document");
-			final boolean somethingCollected = Execution.getCurrentDocumentChangesCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
-			if (somethingCollected)
+			final Set<String> collectedFieldNames = Execution.getCurrentDocumentChangesCollector().collectFrom(document, REASON_Value_DirectSetFromCommitAPI);
+			if (!collectedFieldNames.isEmpty())
 			{
-				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!", new Exception("StackTrace"));
+				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
+						+ "\n Collected field names were: {}" //
+						, collectedFieldNames, new Exception("StackTrace"));
 			}
 		}
 
