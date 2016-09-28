@@ -151,7 +151,7 @@ class MenuOverlay extends Component {
 
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
-                                        <DebounceInput debounceTimeout={350} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                                        <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
                                         {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                     </div>
 
