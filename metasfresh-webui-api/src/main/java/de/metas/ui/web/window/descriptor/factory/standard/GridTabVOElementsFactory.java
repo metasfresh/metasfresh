@@ -783,6 +783,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.setSqlColumnSql(sqlColumnSql)
 				.setVirtualColumn(gridFieldVO.isVirtualColumn())
 				.setValueClass(valueClass)
+				.setWidgetType(widgetType)
 				.setDisplayType(displayType)
 				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.setAD_Val_Rule_ID(AD_Val_Rule_ID)

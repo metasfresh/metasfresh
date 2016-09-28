@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentView;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -372,7 +374,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.append("(").append(orderByExpr).append(")").append(ascending ? " ASC" : " DESC")
 				.build();
 	}
-	
+
 	public IStringExpression getSqlFullOrderBy()
 	{
 		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getSqlColumnSql();
@@ -398,6 +400,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	 */
 	private static DocumentViewFieldValueLoader createDocumentViewFieldValueLoader(final String fieldName, final boolean keyColumn, final DocumentFieldValueLoader fieldValueLoader)
 	{
+		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
+		
 		final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger;
 
 		if (keyColumn)
@@ -476,6 +480,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private Class<?> valueClass;
 		private Integer displayType;
+		private DocumentFieldWidgetType widgetType;
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
 		private boolean keyColumn = false;
@@ -529,6 +534,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 					sqlColumnName //
 					, usingDisplayColumn ? displayColumnName : null // displayColumnName
 					, valueClass //
+					, widgetType //
 					, encrypted //
 					, numericKey //
 			);
@@ -554,6 +560,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				final String sqlColumnName //
 				, final String displayColumnName //
 				, final Class<?> valueClass //
+				, final DocumentFieldWidgetType widgetType //
 				, final boolean encrypted //
 				, final Boolean numericKey //
 		)
@@ -600,10 +607,23 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else if (java.math.BigDecimal.class == valueClass)
 			{
-				return (rs) -> {
-					final BigDecimal value = rs.getBigDecimal(sqlColumnName);
-					return encrypted ? decrypt(value) : value;
-				};
+				final Integer precision = widgetType.getStandardNumberPrecision();
+				if (precision != null)
+				{
+					final int precisionInt = precision;
+					return (rs) -> {
+						BigDecimal value = rs.getBigDecimal(sqlColumnName);
+						value = value == null ? null : NumberUtils.setMinimumScale(value, precisionInt);
+						return encrypted ? decrypt(value) : value;
+					};
+				}
+				else
+				{
+					return (rs) -> {
+						final BigDecimal value = rs.getBigDecimal(sqlColumnName);
+						return encrypted ? decrypt(value) : value;
+					};
+				}
 			}
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
@@ -737,6 +757,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		public Builder setValueClass(final Class<?> valueClass)
 		{
 			this.valueClass = valueClass;
+			return this;
+		}
+
+		public Builder setWidgetType(DocumentFieldWidgetType widgetType)
+		{
+			this.widgetType = widgetType;
 			return this;
 		}
 
