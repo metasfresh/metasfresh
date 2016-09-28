@@ -6,6 +6,7 @@ import Header from '../components/app/Header';
 import MenuOverlayContainer from '../components/app/MenuOverlayContainer';
 import NavigationTreeItem from '../components/app/NavigationTreeItem';
 import {push} from 'react-router-redux';
+import DebounceInput from 'react-debounce-input';
 
 import {
     rootRequest,
@@ -92,7 +93,7 @@ class NavigationTree extends Component {
             <div className="search-wrapper">
                 <div className="input-flex input-primary">
                     <i className="input-icon meta-icon-preview"/>
-                    <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                    <DebounceInput debounceTimeout={350} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
                     {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                 </div>
             </div>

@@ -4,6 +4,7 @@ import onClickOutside from 'react-onclickoutside';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 import {push} from 'react-router-redux';
+import DebounceInput from 'react-debounce-input';
 
 import {
     nodePathsRequest,
@@ -28,10 +29,14 @@ class MenuOverlay extends Component {
         const {onClickOutside} = this.props;
         onClickOutside(e);
     }
+
+
     handleQuery = (e) => {
+
         const {dispatch} = this.props;
 
         e.preventDefault();
+
         if(!!e.target.value){
             this.setState(Object.assign({}, this.state, {
                 query: e.target.value
@@ -64,7 +69,7 @@ class MenuOverlay extends Component {
         e.preventDefault();
 
 
-        dispatch(nodePathsRequest(nodeId,6)).then(response => {
+        dispatch(nodePathsRequest(nodeId,8)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))
@@ -146,7 +151,7 @@ class MenuOverlay extends Component {
 
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
-                                        <input type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                                        <DebounceInput debounceTimeout={350} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
                                         {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                     </div>
 

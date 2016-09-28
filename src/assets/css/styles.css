@@ -1079,14 +1079,6 @@ th {
     border-bottom: none;
 }
 
-/*.query-results {
-    border-bottom: 1px solid transparent;
-}
-
-.query-results:hover {
-    border-bottom: 1px solid $brand-link-color;
-}*/
-
 .query-results .query-results:hover {
     border-bottom: none;
 }
@@ -1115,4 +1107,12 @@ th {
 
 .header-breadcrumb .menu-overlay .menu-overlay-expand {
     margin-left: 0 !important;
+}
+
+.map-tree-wrapper .input-field {
+    margin-left: .3rem;
+}
+
+.map-tree-wrapper .input-primary {
+    background-color: #fff;
 }
