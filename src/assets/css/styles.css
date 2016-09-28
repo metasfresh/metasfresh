@@ -977,6 +977,11 @@ table .rdtPicker table td, .rdtPicker table th {
     border-color: $brand-color-primary;
 }
 
+.page-link {
+    min-width: 38px;
+    text-align: center;
+}
+
 
 th {
     font-weight: 500;
@@ -1115,4 +1120,32 @@ th {
 
 .map-tree-wrapper .input-primary {
     background-color: #fff;
+}
+
+.page-dots {
+    position: relative;
+}
+
+.page-dots-open {
+    padding: 6px;
+    border: 1px solid $brand-light-color;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: $brand-super-light-color;
+    text-align: center;
+    border-radius: 10px;
+    width: 80px;
+}
+
+.page-dots-open input {
+    background: #fff;
+    border: 1px solid $brand-light-color;
+    width: 100%;
+}
+
+.page-dots-open span {
+    font-weight: 500;
+    padding-bottom: 4px;
+    display: inline-block;
 }
