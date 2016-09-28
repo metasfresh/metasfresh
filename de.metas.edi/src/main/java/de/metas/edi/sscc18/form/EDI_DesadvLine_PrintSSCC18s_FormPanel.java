@@ -73,7 +73,7 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	//
 	// Models
-	private IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs;
+	private final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs;
 	private int windowNo;
 	private TerminalTableModel<IPrintableDesadvLineSSCC18Labels> desadvLinesTableModel;
 
@@ -83,6 +83,13 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 	private ITerminalCheckboxField chkSelectAll;
 	private ITerminalCheckboxField chkPrintExistingSSCCs;
 	private ITerminalTable2<IPrintableDesadvLineSSCC18Labels> desadvLinesTable;
+
+	public EDI_DesadvLine_PrintSSCC18s_FormPanel()
+	{
+		//
+		// Create Terminal Context
+		contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+	}
 
 	@Override
 	public void init(final int windowNo, final FormFrame frame) throws Exception
@@ -100,9 +107,7 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	private final void initComponentsAndLayout()
 	{
-		//
-		// Create Terminal Context
-		contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+		// set up terminal context
 		final ITerminalContext terminalContext = contextAndRefs.getLeft();
 		terminalContext.setWindowNo(windowNo);
 

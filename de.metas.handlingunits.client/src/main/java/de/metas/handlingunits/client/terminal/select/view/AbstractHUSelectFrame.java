@@ -155,6 +155,12 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 		{
 			return;
 		}
+		if (isDisposed())
+		{
+			// This method can be called by both the WindowAdapter and ITerminalContext.
+			// Therefore we need to make sure not to try and call deleteReferences() twice because the second time there will be an error.
+			return;
+		}
 
 		_disposing = true;
 		try
