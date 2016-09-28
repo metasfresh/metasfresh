@@ -12,6 +12,8 @@ import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -23,6 +25,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
+import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 /*
  * #%L
@@ -49,7 +52,7 @@ import de.metas.ui.web.base.session.UserPreference;
 @Component
 @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 @SuppressWarnings("serial")
-public class UserSession implements Serializable
+public class UserSession implements InitializingBean, Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(UserSession.class);
 
@@ -60,6 +63,9 @@ public class UserSession implements Serializable
 	private Locale locale;
 
 	private final Map<String, Object> properties = new ConcurrentHashMap<>();
+	
+	@Value("${metasfresh.webui.debug.showColumnNamesForCaption:false}")
+	private boolean default_showColumnNamesForCaption;
 
 	public UserSession()
 	{
@@ -82,10 +88,10 @@ public class UserSession implements Serializable
 		{
 			logger.warn("Failed setting the language, but moving on", e);
 		}
-
+		
 		logger.trace("User session created: {}", this);
 	}
-
+	
 	@Override
 	public String toString()
 	{
@@ -96,6 +102,14 @@ public class UserSession implements Serializable
 				.add("locale", locale)
 				.add("userPreferences", userPreference)
 				.toString();
+	}
+	
+	@Override
+	public void afterPropertiesSet() throws Exception
+	{
+		//
+		// Set initial properties
+		properties.put(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption, default_showColumnNamesForCaption);
 	}
 
 	private void writeObject(final java.io.ObjectOutputStream out) throws IOException

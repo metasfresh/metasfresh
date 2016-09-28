@@ -51,7 +51,7 @@ public final class JSONFilteringOptions
 	public static final String DEBUG_ATTRNAME = "json-options";
 
 	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
-	public static final boolean SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue = true;
+	public static final boolean SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue = false;
 
 	private final String adLanguage;
 	private final boolean showAdvancedFields;
