@@ -25,7 +25,7 @@ package de.metas.document.archive.model;
 public interface I_C_BPartner extends de.metas.order.model.I_C_BPartner
 {
 	//@formatter:off
-	// task 724
+	// task 724 ; gh #443
 	public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
 	public boolean isInvoiceEmailEnabled();
