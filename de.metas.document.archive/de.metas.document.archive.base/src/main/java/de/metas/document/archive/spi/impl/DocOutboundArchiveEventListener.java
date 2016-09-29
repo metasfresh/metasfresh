@@ -65,6 +65,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchange.setAD_Org_ID(archive.getAD_Org_ID());
 		docExchange.setAD_Table_ID(adTableId);
 		docExchange.setRecord_ID(recordId);
+		docExchange.setC_BPartner_ID(archive.getC_BPartner_ID());
 		
 		//
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
