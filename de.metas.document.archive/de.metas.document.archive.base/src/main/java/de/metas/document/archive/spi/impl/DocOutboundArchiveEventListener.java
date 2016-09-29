@@ -65,13 +65,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchange.setAD_Org_ID(archive.getAD_Org_ID());
 		docExchange.setAD_Table_ID(adTableId);
 		docExchange.setRecord_ID(recordId);
+		
 		//
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docExchange.setC_DocType_ID(doctypeID);
-		//
-		//
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(archive.getC_BPartner(), I_C_BPartner.class);
-		docExchange.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		
 		//
 		// set isInvoiceEmailEnabled
 		final Object archiveRerencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
@@ -82,6 +80,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			// in case of invoice document, enable email only if is enabled in partner
 			if (isInvoiceDocument)
 			{
+				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(archive.getC_BPartner(), I_C_BPartner.class);
 				isInvoiceEmailEnabled = bpartner.isInvoiceEmailEnabled(); 
 			}
 			else
