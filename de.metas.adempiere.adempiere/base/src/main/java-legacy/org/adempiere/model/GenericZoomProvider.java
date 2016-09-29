@@ -156,7 +156,8 @@ public class GenericZoomProvider implements IZoomProvider
 		final POInfo targetTableInfo = POInfo.getPOInfo(targetTableName);
 		if (targetTableInfo == null)
 		{
-			return MQuery.getNoRecordQuery(targetTableName, false);
+			final boolean newRecord = false;
+			return MQuery.getNoRecordQuery(targetTableName, newRecord);
 		}
 		
 		final String targetColumnName = source.getKeyColumnName();
@@ -183,18 +184,20 @@ public class GenericZoomProvider implements IZoomProvider
 
 		if (!hasTargetColumnName)
 		{
-			return MQuery.getNoRecordQuery(targetTableName, false);
+			final boolean newRecord = false;
+			return MQuery.getNoRecordQuery(targetTableName, newRecord);
 		}
 
 		final MQuery query = new MQuery();
 		if (targetTableInfo.isVirtualColumn(targetColumnName))
 		{
+			// TODO: find a way to specify restriction's ColumnName and ColumnSql
 			final String columnSql = targetTableInfo.getColumnSql(targetColumnName);
 			query.addRestriction("(" + columnSql + ") = " + source.getRecord_ID());
 		}
 		else
 		{
-			query.addRestriction(targetColumnName + "=" + source.getRecord_ID());
+			query.addRestriction(targetColumnName, MQuery.EQUAL, source.getRecord_ID());
 		}
 		query.setZoomTableName(targetTableName);
 		query.setZoomColumnName(source.getKeyColumnName());

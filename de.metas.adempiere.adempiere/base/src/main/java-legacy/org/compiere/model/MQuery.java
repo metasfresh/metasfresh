@@ -23,17 +23,20 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Query Descriptor. Maintains restrictions (WHERE clause)
@@ -366,8 +369,9 @@ public class MQuery implements Serializable
 	 * 
 	 * @param AD_Table_ID Table_ID
 	 */
-	public MQuery(int AD_Table_ID)
-	{	// Use Client Context as r/o
+	public MQuery(final int AD_Table_ID)
+	{
+		super();
 		m_TableName = MTable.getTableName(Env.getCtx(), AD_Table_ID);
 	}	// MQuery
 
@@ -481,19 +485,15 @@ public class MQuery implements Serializable
 	public void addRestriction(String ColumnName, String Operator,
 			Object Code, String InfoName, String InfoDisplay)
 	{
-		// metas: begin
 		addRestriction(ColumnName, Operator, Code, InfoName, InfoDisplay, true);
 	}
 
-	public void addRestriction(String ColumnName, String Operator, Object Code,
-			String InfoName, String InfoDisplay, boolean andCondition)
+	public void addRestriction(String ColumnName, String Operator, Object Code, String InfoName, String InfoDisplay, boolean andCondition)
 	{
-		// metas: end
-		Restriction r = new Restriction(ColumnName, Operator,
-				Code, InfoName, InfoDisplay);
-		r.andCondition = andCondition; // metas
+		Restriction r = new Restriction(ColumnName, Operator, Code, InfoName, InfoDisplay);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
-	}	// addRestriction
+	}
 
 	/**
 	 * Add Restriction
@@ -502,21 +502,20 @@ public class MQuery implements Serializable
 	 * @param Operator Operator, e.g. = != ..
 	 * @param Code Code, e.g 0, All%
 	 */
-	public void addRestriction(String ColumnName, String Operator,
-			Object Code)
+	public void addRestriction(String ColumnName, String Operator, Object Code)
 	{
-		// metas: begin
-		addRestriction(ColumnName, Operator, Code, true);
+		final boolean andCondition = true;
+		addRestriction(ColumnName, Operator, Code, andCondition);
 	}
 
 	public void addRestriction(String ColumnName, String Operator, Object Code, boolean andCondition)
 	{
-		// metas: end
-		Restriction r = new Restriction(ColumnName, Operator,
-				Code, null, null);
-		r.andCondition = andCondition; // metas
+		final String infoName = null;
+		final String infoDisplay = null;
+		Restriction r = new Restriction(ColumnName, Operator, Code, infoName, infoDisplay);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
-	}	// addRestriction
+	}
 
 	/**
 	 * Add Restriction
@@ -525,21 +524,21 @@ public class MQuery implements Serializable
 	 * @param Operator Operator, e.g. = != ..
 	 * @param Code Code, e.g 0
 	 */
-	public void addRestriction(String ColumnName, String Operator,
-			int Code)
+	public void addRestriction(String ColumnName, String Operator, int Code)
 	{
 		// metas: begin
-		addRestriction(ColumnName, Operator, Code, true);
+		final boolean andCondition = true;
+		addRestriction(ColumnName, Operator, Code, andCondition);
 	}
 
 	public void addRestriction(String ColumnName, String Operator, int Code, boolean andCondition)
 	{
-		// metas: end
-		Restriction r = new Restriction(ColumnName, Operator,
-				new Integer(Code), null, null);
-		r.andCondition = andCondition; // metas
+		final String infoName = null;
+		final String infoDisplay = null;
+		final Restriction r = new Restriction(ColumnName, Operator, Integer.valueOf(Code), infoName, infoDisplay);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
-	}	// addRestriction
+	}
 
 	/**
 	 * Add Range Restriction (BETWEEN)
@@ -555,8 +554,8 @@ public class MQuery implements Serializable
 			Object Code, Object Code_to,
 			String InfoName, String InfoDisplay, String InfoDisplay_to)
 	{
-		// metas: begin
-		addRangeRestriction(ColumnName, Code, Code_to, InfoName, InfoDisplay, InfoDisplay_to, true);
+		final boolean andCondition = true;
+		addRangeRestriction(ColumnName, Code, Code_to, InfoName, InfoDisplay, InfoDisplay_to, andCondition);
 	}
 
 	public void addRangeRestriction(String ColumnName,
@@ -564,10 +563,8 @@ public class MQuery implements Serializable
 			String InfoName, String InfoDisplay, String InfoDisplay_to,
 			boolean andCondition)
 	{
-		// metas: end
-		Restriction r = new Restriction(ColumnName, Code, Code_to,
-				InfoName, InfoDisplay, InfoDisplay_to);
-		r.andCondition = andCondition; // metas
+		final Restriction r = new Restriction(ColumnName, Code, Code_to, InfoName, InfoDisplay, InfoDisplay_to);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
 	}	// addRestriction
 
@@ -578,21 +575,19 @@ public class MQuery implements Serializable
 	 * @param Code Code, e.g 0, All%
 	 * @param Code_to Code, e.g 0, All%
 	 */
-	public void addRangeRestriction(String ColumnName,
-			Object Code, Object Code_to)
+	public void addRangeRestriction(String ColumnName, Object Code, Object Code_to)
 	{
-		// metas: begin
-		addRangeRestriction(ColumnName, Code, Code_to, true);
+		final boolean andCondition = true;
+		addRangeRestriction(ColumnName, Code, Code_to, andCondition);
 	}
 
-	public void addRangeRestriction(String ColumnName,
-			Object Code, Object Code_to,
-			boolean andCondition)
+	public void addRangeRestriction(String ColumnName, Object Code, Object Code_to, boolean andCondition)
 	{
-		// metas: end
-		Restriction r = new Restriction(ColumnName, Code, Code_to,
-				null, null, null);
-		r.andCondition = andCondition; // metas
+		final String infoName = null;
+		final String infoDisplay = null;
+		final String infoDisplayTo = null;
+		final Restriction r = new Restriction(ColumnName, Code, Code_to, infoName, infoDisplay, infoDisplayTo);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
 	}	// addRestriction
 
@@ -601,7 +596,7 @@ public class MQuery implements Serializable
 	 * 
 	 * @param r Restriction
 	 */
-	protected void addRestriction(Restriction r)
+	private void addRestriction(final Restriction r)
 	{
 		m_list.add(r);
 	}	// addRestriction
@@ -613,20 +608,22 @@ public class MQuery implements Serializable
 	 */
 	public void addRestriction(String whereClause)
 	{
-		// metas: begin
-		addRestriction(whereClause, true);
+		final boolean andCondition = true;
+		addRestriction(whereClause, andCondition);
 	}
 
 	public void addRestriction(String whereClause, boolean andCondition)
 	{
-		// metas: end
-		if (whereClause == null || whereClause.trim().length() == 0)
+		if(Check.isEmpty(whereClause, true))
+		{
 			return;
-		Restriction r = new Restriction(whereClause);
-		r.andCondition = andCondition; // metas
+		}
+		
+		final Restriction r = new Restriction(whereClause);
+		r.setAndCondition(andCondition);
 		m_list.add(r);
 		m_newRecord = whereClause.equals(NEWRECORD);
-	}	// addRestriction
+	}
 
 	/**
 	 * New Record Query
@@ -660,12 +657,12 @@ public class MQuery implements Serializable
 		if (qualified && (m_TableName == null || m_TableName.length() == 0))
 			qualified = false;
 		//
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < m_list.size(); i++)
 		{
-			Restriction r = (Restriction)m_list.get(i);
+			Restriction r = m_list.get(i);
 			if (i != 0)
-				sb.append(r.andCondition ? " AND " : " OR ");
+				sb.append(r.isAndCondition() ? " AND " : " OR ");
 			if (qualified)
 				sb.append(r.getSQL(m_TableName));
 			else
@@ -681,15 +678,15 @@ public class MQuery implements Serializable
 	 */
 	public String getInfo()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (m_TableName != null)
 			sb.append(m_TableName).append(": ");
 		//
 		for (int i = 0; i < m_list.size(); i++)
 		{
-			Restriction r = (Restriction)m_list.get(i);
+			Restriction r = m_list.get(i);
 			if (i != 0)
-				sb.append(r.andCondition ? " AND " : " OR ");
+				sb.append(r.isAndCondition() ? " AND " : " OR ");
 			//
 			sb.append(r.getInfoName())
 					.append(r.getInfoOperator())
@@ -706,10 +703,10 @@ public class MQuery implements Serializable
 	 */
 	public String getWhereClause(int index)
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (index >= 0 && index < m_list.size())
 		{
-			Restriction r = (Restriction)m_list.get(index);
+			Restriction r = m_list.get(index);
 			sb.append(r.getSQL(null));
 		}
 		return sb.toString();
@@ -732,7 +729,7 @@ public class MQuery implements Serializable
 	 */
 	public boolean isActive()
 	{
-		return m_list.size() != 0;
+		return !m_list.isEmpty();
 	}	// isActive
 
 	/**
@@ -765,8 +762,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.ColumnName;
+		Restriction r = m_list.get(index);
+		return r.getColumnName();
 	}	// getColumnName
 
 	/**
@@ -775,12 +772,15 @@ public class MQuery implements Serializable
 	 * @param index index
 	 * @param ColumnName new column name
 	 */
-	protected void setColumnName(int index, String ColumnName)
+	protected void setColumnName(final int index, final String ColumnName)
 	{
 		if (index < 0 || index >= m_list.size())
+		{
+			s_log.warn("No query restriction found for index={} in {}. Skip setting ColumnName={}", index, this, ColumnName);
 			return;
-		Restriction r = (Restriction)m_list.get(index);
-		r.ColumnName = ColumnName;
+		}
+		final Restriction r = m_list.get(index);
+		r.setColumnName(ColumnName);
 	}	// setColumnName
 
 	/**
@@ -793,8 +793,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.Operator;
+		Restriction r = m_list.get(index);
+		return r.getOperator();
 	}	// getOperator
 
 	/**
@@ -807,8 +807,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.Code;
+		Restriction r = m_list.get(index);
+		return r.getCode();
 	}	// getCode
 	
 	public Object getCodeTo(int index)
@@ -817,8 +817,8 @@ public class MQuery implements Serializable
 		{
 			return null;
 		}
-		Restriction r = (Restriction)m_list.get(index);
-		return r.Code_to;
+		Restriction r = m_list.get(index);
+		return r.getCodeTo();
 
 	}
 
@@ -832,8 +832,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.InfoDisplay;
+		Restriction r = m_list.get(index);
+		return r.getInfoDisplay();
 	}	// getOperator
 
 	/**
@@ -846,8 +846,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.InfoDisplay_to;
+		Restriction r = m_list.get(index);
+		return r.getInfoDisplayTo();
 	}	// getOperator
 
 	/**
@@ -860,8 +860,8 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
-		return r.InfoName;
+		Restriction r = m_list.get(index);
+		return r.getInfoName();
 	}	// getInfoName
 
 	/**
@@ -874,7 +874,7 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
+		Restriction r = m_list.get(index);
 		return r.getInfoOperator();
 	}	// getInfoOperator
 
@@ -888,7 +888,7 @@ public class MQuery implements Serializable
 	{
 		if (index < 0 || index >= m_list.size())
 			return null;
-		Restriction r = (Restriction)m_list.get(index);
+		Restriction r = m_list.get(index);
 		return r.getInfoDisplayAll();
 	}	// getInfoDisplay
 
@@ -900,7 +900,7 @@ public class MQuery implements Serializable
 	// metas
 	public boolean isAndCondition(int index)
 	{
-		return m_list.get(index).andCondition;
+		return m_list.get(index).isAndCondition();
 	}
 
 	/**
@@ -951,7 +951,7 @@ public class MQuery implements Serializable
 		newQuery.m_zoomColumn = m_zoomColumn;
 		newQuery.m_zoomValue = m_zoomValue;
 		for (int i = 0; i < m_list.size(); i++)
-			newQuery.addRestriction((Restriction)m_list.get(i));
+			newQuery.addRestriction(m_list.get(i));
 		return newQuery;
 	}	// clone
 
@@ -1092,7 +1092,7 @@ public class MQuery implements Serializable
 /*****************************************************************************
  * Query Restriction
  */
-class Restriction implements Serializable
+/*package*/final class Restriction implements Serializable
 {
 	/**
 	 * 
@@ -1108,37 +1108,21 @@ class Restriction implements Serializable
 	 * @param infoName Display Name
 	 * @param infoDisplay Display of Code (Lookup)
 	 */
-	Restriction(String columnName, String operator,
-			Object code, String infoName, String infoDisplay)
+	Restriction(final String columnName, final String operator, final Object code, final String infoName, final String infoDisplay)
 	{
-		this.ColumnName = columnName.trim();
+		super();
+		this.columnName = columnName.trim();
 		if (infoName != null)
-			InfoName = infoName;
+			this.infoName = infoName;
 		else
-			InfoName = ColumnName;
+			this.infoName = columnName;
 		//
-		this.Operator = operator;
-		// Boolean
-		if (code instanceof Boolean)
-			Code = ((Boolean)code).booleanValue() ? "Y" : "N";
-		else if (code instanceof KeyNamePair)
-			Code = new Integer(((KeyNamePair)code).getKey());
-		else if (code instanceof ValueNamePair)
-			Code = ((ValueNamePair)code).getValue();
-		else
-			Code = code;
-		// clean code
-		if (Code instanceof String)
-		{
-			if (Code.toString().startsWith("'"))
-				Code = Code.toString().substring(1);
-			if (Code.toString().endsWith("'"))
-				Code = Code.toString().substring(0, Code.toString().length() - 2);
-		}
-		if (infoDisplay != null)
-			InfoDisplay = infoDisplay.trim();
-		else if (code != null)
-			InfoDisplay = code.toString();
+		this.operator = operator;
+
+		this.code = normalizeCode(code);
+		this.infoDisplay = buildInfoDisplay(infoDisplay, this.code);
+		
+		this.directWhereClause = null;
 	}	// Restriction
 
 	/**
@@ -1151,26 +1135,17 @@ class Restriction implements Serializable
 	 * @param infoDisplay Display of Code (Lookup)
 	 * @param infoDisplay_to Display of Code (Lookup)
 	 */
-	Restriction(String columnName,
-			Object code, Object code_to,
-			String infoName, String infoDisplay, String infoDisplay_to)
+	Restriction(final String columnName //
+			, final Object code, final Object code_to //
+			, final String infoName //
+			, final String infoDisplay, final String infoDisplay_to //
+			)
 	{
 		this(columnName, MQuery.BETWEEN, code, infoName, infoDisplay);
 
 		// Code_to
-		Code_to = code_to;
-		if (Code_to instanceof String)
-		{
-			if (Code_to.toString().startsWith("'"))
-				Code_to = Code_to.toString().substring(1);
-			if (Code_to.toString().endsWith("'"))
-				Code_to = Code_to.toString().substring(0, Code_to.toString().length() - 2);
-		}
-		// InfoDisplay_to
-		if (infoDisplay_to != null)
-			InfoDisplay_to = infoDisplay_to.trim();
-		else if (Code_to != null)
-			InfoDisplay_to = Code_to.toString();
+		this.codeTo = normalizeCode(code_to);
+		this.infoDisplayTo = buildInfoDisplay(infoDisplay_to, this.codeTo);
 	}	// Restriction
 
 	/**
@@ -1181,27 +1156,71 @@ class Restriction implements Serializable
 	Restriction(final String whereClause)
 	{
 		super();
-		this.DircetWhereClause = whereClause;
+		
+		this.columnName = null;
+		this.infoName = null;
+		this.operator = null;
+		this.code = null;
+		this.infoDisplay = null;
+		
+		this.directWhereClause = whereClause;
 	}	// Restriction
 
 	/** Direct Where Clause */
-	protected String DircetWhereClause = null;
+	private final String directWhereClause;
 	/** Column Name */
-	protected String ColumnName;
+	private String columnName;
 	/** Name */
-	protected String InfoName;
+	private final String infoName;
 	/** Operator */
-	protected String Operator;
+	private final String operator;
 	/** SQL Where Code */
-	protected Object Code;
-	/** Info */
-	protected String InfoDisplay;
+	private final Object code;
+	/** {@link #code}'s user friendly representation */
+	private final String infoDisplay;
 	/** SQL Where Code To */
-	protected Object Code_to;
-	/** Info To */
-	protected String InfoDisplay_to;
+	private Object codeTo;
+	/** {@link #codeTo}'s user friendly representation */
+	private String infoDisplayTo;
 	/** And/Or Condition */
-	protected boolean andCondition = true;
+	private boolean andCondition = true;
+	
+	private static final Object normalizeCode(final Object code)
+	{
+		Object codeNorm;
+		if (code instanceof Boolean)
+			codeNorm = DisplayType.toBooleanString((Boolean)code);
+		else if (code instanceof KeyNamePair)
+			codeNorm = new Integer(((KeyNamePair)code).getKey());
+		else if (code instanceof ValueNamePair)
+			codeNorm = ((ValueNamePair)code).getValue();
+		else
+			codeNorm = code;
+		
+		// clean code
+		if (codeNorm instanceof String)
+		{
+			String codeNormStr = codeNorm.toString();
+			if (codeNormStr.startsWith("'"))
+				codeNormStr = codeNormStr.substring(1);
+			if (codeNormStr.endsWith("'"))
+				codeNormStr = codeNormStr.substring(0, codeNormStr.length() - 2);
+			
+			codeNorm = codeNormStr;
+		}
+
+		return codeNorm;
+	}
+	
+	private static final String buildInfoDisplay(final String infoDisplay, final Object code)
+	{
+		if (infoDisplay != null)
+			return infoDisplay.trim();
+		else if (code != null)
+			return code.toString();
+		else
+			return null;
+	}
 
 	/**
 	 * Return SQL construct for this restriction
@@ -1211,25 +1230,25 @@ class Restriction implements Serializable
 	 */
 	public String getSQL(String tableName)
 	{
-		if (DircetWhereClause != null)
+		if (directWhereClause != null)
 		{
-			return DircetWhereClause;
+			return directWhereClause;
 		}
 		//
 
-		String operatorToUse = Operator;
-		Object code_ToUse = Code;
-		Object codeTo_ToUse = Code_to;
-		String columnNameToUse = ColumnName;
+		String operatorToUse = operator;
+		Object code_ToUse = code;
+		Object codeTo_ToUse = codeTo;
+		String columnNameToUse = columnName;
 
-		if (MQuery.BETWEEN.equals(Operator) && Code instanceof String)
+		if (MQuery.BETWEEN.equals(operator) && code instanceof String)
 		{
-			if (Code.toString().trim().isEmpty())
+			if (code.toString().trim().isEmpty())
 			{
 				operatorToUse = MQuery.LESS_EQUAL;
-				code_ToUse = Code_to;
+				code_ToUse = codeTo;
 			}
-			if (Code_to instanceof String && Code_to.toString().trim().isEmpty())
+			if (codeTo instanceof String && codeTo.toString().trim().isEmpty())
 			{
 				operatorToUse = MQuery.GREATER_EQUAL;
 			}
@@ -1249,7 +1268,7 @@ class Restriction implements Serializable
 			}
 		}
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (MQuery.LIKE_I.equals(operatorToUse) || MQuery.NOT_LIKE_I.equals(operatorToUse)
 				|| (code_ToUse instanceof String && MQuery.BETWEEN.equals(operatorToUse))) // task 08757: also add the UPPER in case of BETWEEN operator
 		{
@@ -1258,8 +1277,8 @@ class Restriction implements Serializable
 		if (tableName != null && tableName.length() > 0)
 		{
 			// Assumes - REPLACE(INITCAP(variable),'s','X') or UPPER(variable)
-			int pos = ColumnName.lastIndexOf('(') + 1;	// including (
-			int end = ColumnName.indexOf(')');
+			int pos = columnName.lastIndexOf('(') + 1;	// including (
+			int end = columnName.indexOf(')');
 			// We have a Function in the ColumnName
 			if (pos != -1 && end != -1)
 			{
@@ -1270,7 +1289,7 @@ class Restriction implements Serializable
 					// (CASE WHEN coalesce(Bill_BPartner_ID,0) = coalesce(C_BPartner_ID,0) THEN ''Y'' ELSE ''N'' END)
 					// before this fix, in this case we had error ; something like : "Index was outside the bounds"
 
-					String finalColumnName = new String(ColumnName);
+					String finalColumnName = new String(columnName);
 					// set the real end
 					end = finalColumnName.lastIndexOf(')');
 					// strip the general brackets
@@ -1301,19 +1320,19 @@ class Restriction implements Serializable
 				else
 				{
 
-					columnNameToUse = new StringBuffer().append(ColumnName.substring(0, pos))
-							.append(tableName).append(".").append(ColumnName.substring(pos, end))
-							.append(ColumnName.substring(end)).toString();
+					columnNameToUse = new StringBuilder().append(columnName.substring(0, pos))
+							.append(tableName).append(".").append(columnName.substring(pos, end))
+							.append(columnName.substring(end)).toString();
 				}
 			}
 			else
 			{
-				columnNameToUse = new StringBuffer().append(tableName).append(".").append(ColumnName).toString();
+				columnNameToUse = new StringBuilder().append(tableName).append(".").append(columnName).toString();
 			}
 		}
 		else
 		{
-			columnNameToUse = ColumnName;
+			columnNameToUse = columnName;
 		}
 
 		if (codeTo_ToUse instanceof Timestamp)
@@ -1321,7 +1340,7 @@ class Restriction implements Serializable
 			// make sure if we deal with a timestamp the columnname is also truncated
 			if (truncValue != null)
 			{
-				columnNameToUse = new StringBuffer()
+				columnNameToUse = new StringBuilder()
 						.append(" date_trunc")
 						.append(" ( '")
 						.append(truncValue)
@@ -1388,7 +1407,7 @@ class Restriction implements Serializable
 			{
 				//sb.append(DB.TO_DATE((Timestamp)code_ToUse));
 				sb.append(" TIMESTAMP '")
-				.append((Timestamp)code_ToUse)
+				.append(code_ToUse)
 				.append("' ");
 			}
 			else
@@ -1403,9 +1422,9 @@ class Restriction implements Serializable
 				sb.append(" AND ");
 				if (codeTo_ToUse instanceof String)
 				{
-					final int codeToLength = ((String)Code_to).length();
+					final int codeToLength = ((String)codeTo).length();
 					sb.append("UPPER( SUBSTRING (")
-							.append(ColumnName + ",")
+							.append(columnName + ",")
 							.append(" 1,")
 							.append(codeToLength) //
 							.append(") )")
@@ -1419,7 +1438,7 @@ class Restriction implements Serializable
 					//sb.append(DB.TO_DATE((Timestamp)codeTo_ToUse));
 					
 					sb.append(" TIMESTAMP '")
-					.append((Timestamp)codeTo_ToUse)
+					.append(codeTo_ToUse)
 					.append("' ");
 				}
 				else
@@ -1465,7 +1484,27 @@ class Restriction implements Serializable
 	public String toString()
 	{
 		return getSQL(null);
-	}	// toString
+	}
+	
+	public boolean isAndCondition()
+	{
+		return andCondition;
+	}
+	
+	/*package*/void setAndCondition(boolean andCondition)
+	{
+		this.andCondition = andCondition;
+	}
+	
+	public String getColumnName()
+	{
+		return columnName;
+	}
+	
+	/*package*/void setColumnName(String columnName)
+	{
+		this.columnName = columnName;
+	}
 
 	/**
 	 * Get Info Name
@@ -1474,8 +1513,13 @@ class Restriction implements Serializable
 	 */
 	public String getInfoName()
 	{
-		return InfoName;
+		return infoName;
 	}	// getInfoName
+	
+	public String getOperator()
+	{
+		return operator;
+	}
 
 	/**
 	 * Get Info Operator
@@ -1486,10 +1530,10 @@ class Restriction implements Serializable
 	{
 		for (int i = 0; i < MQuery.OPERATORS.length; i++)
 		{
-			if (MQuery.OPERATORS[i].getValue().equals(Operator))
+			if (MQuery.OPERATORS[i].getValue().equals(operator))
 				return MQuery.OPERATORS[i].getName();
 		}
-		return Operator;
+		return operator;
 	}	// getInfoOperator
 
 	/**
@@ -1499,10 +1543,30 @@ class Restriction implements Serializable
 	 */
 	public String getInfoDisplayAll()
 	{
-		if (InfoDisplay_to == null)
-			return InfoDisplay;
-		StringBuffer sb = new StringBuffer(InfoDisplay);
-		sb.append(" - ").append(InfoDisplay_to);
+		if (infoDisplayTo == null)
+			return infoDisplay;
+		StringBuilder sb = new StringBuilder(infoDisplay);
+		sb.append(" - ").append(infoDisplayTo);
 		return sb.toString();
 	}	// getInfoDisplay
+	
+	public Object getCode()
+	{
+		return code;
+	}
+	
+	public String getInfoDisplay()
+	{
+		return infoDisplay;
+	}
+	
+	public Object getCodeTo()
+	{
+		return codeTo;
+	}
+	
+	public String getInfoDisplayTo()
+	{
+		return infoDisplayTo;
+	}
 }	// Restriction

@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -49,6 +48,8 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -441,7 +442,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
 
-		return Collections.singletonList(ZoomInfoFactory.ZoomInfo.of(windowId, query, display));
+		return ImmutableList.of(ZoomInfoFactory.ZoomInfo.of(windowId, query, display));
 	}
 
 	@Deprecated
@@ -453,6 +454,8 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	private MQuery mkQuery(final IZoomSource source, final I_AD_Ref_Table refTable)
 	{
+		// FIXME: avoid direct SQL where clause because it's not friendly with webui
+		
 		final StringBuilder queryWhereClause = new StringBuilder();
 		final String refTableWhereClause = refTable.getWhereClause();
 		if (!Check.isEmpty(refTableWhereClause))

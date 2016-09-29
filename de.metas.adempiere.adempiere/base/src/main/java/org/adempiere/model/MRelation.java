@@ -239,7 +239,6 @@ public class MRelation extends X_AD_Relation
 		});
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> List<T> retrieveDestinations(final Properties ctx, final I_AD_RelationType type, final int sourceTableId, final int sourceRecordId, final String trxName)
 	{
 		if (!type.isExplicit())
