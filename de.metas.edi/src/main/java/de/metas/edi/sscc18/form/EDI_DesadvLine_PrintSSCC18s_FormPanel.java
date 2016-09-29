@@ -13,15 +13,14 @@ package de.metas.edi.sscc18.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -32,17 +31,18 @@ import java.util.Properties;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.ITerminalCheckboxField;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
@@ -73,7 +73,7 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	//
 	// Models
-	private ITerminalContext terminalContext;
+	private final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs;
 	private int windowNo;
 	private TerminalTableModel<IPrintableDesadvLineSSCC18Labels> desadvLinesTableModel;
 
@@ -83,6 +83,13 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 	private ITerminalCheckboxField chkSelectAll;
 	private ITerminalCheckboxField chkPrintExistingSSCCs;
 	private ITerminalTable2<IPrintableDesadvLineSSCC18Labels> desadvLinesTable;
+
+	public EDI_DesadvLine_PrintSSCC18s_FormPanel()
+	{
+		//
+		// Create Terminal Context
+		contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+	}
 
 	@Override
 	public void init(final int windowNo, final FormFrame frame) throws Exception
@@ -100,9 +107,8 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	private final void initComponentsAndLayout()
 	{
-		//
-		// Create Terminal Context
-		terminalContext = TerminalContextFactory.get().createContextAndRefs().getLeft();
+		// set up terminal context
+		final ITerminalContext terminalContext = contextAndRefs.getLeft();
 		terminalContext.setWindowNo(windowNo);
 
 		final ITerminalFactory terminalFactory = terminalContext.getTerminalFactory();
@@ -241,16 +247,16 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 		_disposing = true;
 		try
 		{
+			final ITerminalContext terminaContext = contextAndRefs.getLeft();
+			final ITerminalContextReferences references = contextAndRefs.getRight();
+			terminaContext.deleteReferences(references);
+
+			TerminalContextFactory.get().destroy(terminaContext);
+
 			if (frame != null)
 			{
 				frame.dispose();
 			}
-
-			DisposableHelper.disposeAll(
-					desadvLinesTable, desadvLinesTableModel
-					, chkSelectAll, chkPrintExistingSSCCs
-					);
-
 			_disposed = true;
 		}
 		finally

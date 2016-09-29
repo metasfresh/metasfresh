@@ -103,7 +103,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 			huQueryBuilder.addHUStatusToInclude(huStatus);
 		}
 
-		// consider only HUs which are *not* in an after-picking locator (08123)
+		// by default, consider only HUs which are *not* in an after-picking locator (08123)
 		huQueryBuilder.setExcludeAfterPickingLocator(true);
 	}
 
@@ -422,5 +422,12 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 			_availableAttributeIds = huStorageBL.getAvailableAttributeIds(Env.getCtx());
 		}
 		return _availableAttributeIds;
+	}
+
+	@Override
+	public IStorageQuery setExcludeAfterPickingLocator(final boolean excludeAfterPickingLocator)
+	{
+		huQueryBuilder.setExcludeAfterPickingLocator(excludeAfterPickingLocator);
+		return this;
 	}
 }

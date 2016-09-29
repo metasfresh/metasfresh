@@ -4,7 +4,7 @@ drop function if exists report.fresh_PriceList_Details_Report(numeric, numeric, 
 
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_alt_pricelist_version_id numeric, IN p_ad_language character varying)
   RETURNS TABLE(bp_value text, bp_name text, productcategory text, m_product_id integer, value text, customerproductnumber text, productname text, isseasonfixedprice character, itemproductname character varying, qtycuspertu numeric, packingmaterialname text, pricestd numeric, altpricestd numeric, hasaltprice integer, uomsymbol text, uom_x12de355 text, attributes text, m_productprice_id integer, m_productprice_attribute_id integer, m_hu_pi_item_product_id integer) AS
-$BODY$
+$$
 --
 	SELECT
 		bp.value AS BP_Value,
@@ -51,8 +51,6 @@ $BODY$
 		plc.attributes,
 		plc.ItemProductName
 --
-$BODY$
-  LANGUAGE sql STABLE
-  COST 100
-  ROWS 1000;
+$$
+  LANGUAGE sql STABLE;
 

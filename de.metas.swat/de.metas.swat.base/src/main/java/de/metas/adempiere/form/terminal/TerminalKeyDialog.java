@@ -66,7 +66,6 @@ public abstract class TerminalKeyDialog
 
 	protected TerminalKeyDialog(final ITerminalTextField textField)
 	{
-		super();
 		this.textField = textField;
 		this.tc = textField.getTerminalContext();
 

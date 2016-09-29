@@ -79,7 +79,7 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 
 	/**
-	 * Sets if the executor shall use transaction savepoints internally.
+	 * See {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)}.
 	 *
 	 * @param useTrxSavepoints
 	 * @deprecated please use {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)} instead.

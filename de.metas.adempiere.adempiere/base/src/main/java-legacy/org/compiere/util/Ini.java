@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -54,7 +54,9 @@ import de.metas.logging.LogManager;
  * @author Jorg Janke
  * @version $Id$
  *
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 1658127 ] Select charset encoding on import <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 1658127 ] Select charset encoding on import
+ *         <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  */
 public final class Ini implements Serializable
 {
@@ -78,9 +80,10 @@ public final class Ini implements Serializable
 	/** Trace Level */
 	public static final String P_TRACELEVEL = "TraceLevel";
 	private static final String DEFAULT_TRACELEVEL = "WARNING";
-	/** Trace to File */
-	public static final String P_TRACEFILE = "TraceFile";
-	private static final boolean DEFAULT_TRACEFILE = Boolean.getBoolean(P_TRACEFILE);
+	/** Trace to File (Y/N). */
+	public static final String P_TRACEFILE_ENABLED = "TraceFile";
+	private static final boolean DEFAULT_TRACEFILE_ENABLED = false;
+
 	/** Language */
 	public static final String P_LANGUAGE = "Language";
 	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
@@ -201,7 +204,7 @@ public final class Ini implements Serializable
 			.put(P_UID, DEFAULT_UID)
 			.put(P_PWD, DEFAULT_PWD)
 			.put(P_TRACELEVEL, DEFAULT_TRACELEVEL)
-			.put(P_TRACEFILE, DisplayType.toBooleanString(DEFAULT_TRACEFILE))
+			.put(P_TRACEFILE_ENABLED, DisplayType.toBooleanString(DEFAULT_TRACEFILE_ENABLED))
 			.put(P_LANGUAGE, DEFAULT_LANGUAGE)
 			.put(P_INI, DEFAULT_INI)
 			.put(P_CONNECTION, DEFAULT_CONNECTION)
@@ -389,10 +392,10 @@ public final class Ini implements Serializable
 			tempDir = "";
 		checkProperty(P_TEMP_DIR, tempDir);
 
-		if (System.getProperty(P_TRACEFILE) != null)
+		if (System.getProperty(P_TRACEFILE_ENABLED) != null)
 		{
-			final boolean traceFileEnabled = Boolean.valueOf(System.getProperty(P_TRACEFILE));
-			checkProperty(P_TRACEFILE, DisplayType.toBooleanString(traceFileEnabled));
+			final boolean traceFileEnabled = Boolean.valueOf(System.getProperty(P_TRACEFILE_ENABLED));
+			checkProperty(P_TRACEFILE_ENABLED, DisplayType.toBooleanString(traceFileEnabled));
 		}
 	}
 

@@ -52,6 +52,7 @@ import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel.SelectionMode;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
@@ -574,17 +575,17 @@ public abstract class AbstractHUSelectModel implements IDisposable
 			throw new AdempiereException("@" + AbstractHUSelectModel.MSG_ErrorNoDocumentLineSelected + "@");
 		}
 
-		//
-		// Create HU Editor Model
-		final HUEditorModel huEditorModel = createHUEditorModel(selectedRows, editorCallback);
-		if (huEditorModel == null)
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			// NOTE: we consider that "createHUEditorModel" explicitly said that we shall do nothing
-			return;
-		}
+			//
+			// Create HU Editor Model
+			final HUEditorModel huEditorModel = createHUEditorModel(selectedRows, editorCallback);
+			if (huEditorModel == null)
+			{
+				// NOTE: we consider that "createHUEditorModel" explicitly said that we shall do nothing
+				return;
+			}
 
-		try
-		{
 			//
 			// Call the actual UI Editor and wait for it's answer
 			final boolean edited = editorCallback.editHUs(huEditorModel);
@@ -604,11 +605,9 @@ public abstract class AbstractHUSelectModel implements IDisposable
 				processRows(selectedRows, huEditorModel);
 			}
 		}
-		finally
+		catch (Exception e)
 		{
-			// Dispose the HU Editor model even if there was some error, because from this point on it's not needed anymore.
-			// More, this will make sure all listeners will be decoupled.
-			huEditorModel.dispose();
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		//

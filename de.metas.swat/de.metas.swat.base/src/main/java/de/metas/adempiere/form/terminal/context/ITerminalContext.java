@@ -184,15 +184,6 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	 */
 	void setScreenResolution(Dimension screenResolution);
 
-	void dispose();
-
-	/**
-	 *
-	 * @return true if this context was already disposed
-	 * @see #dispose()
-	 */
-	boolean isDisposed();
-
 	/**
 	 * Creates a new {@link WeakPropertyChangeSupport} instance, using current {@link ITerminalContextReferences}.
 	 *
@@ -227,17 +218,16 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	 * <p>
 	 * A common use case when you will want to create a set of references is for example when you want to open a child window.
 	 * When that child window is closed, you want to make sure all components created in that window are destroyed.
-	 * But only those, you don't want to destroy the components which were created in the main window.
+	 * But you want to destroy <b>only</b> those child window's components and not the components which were created in the main window.
 	 * <p>
-	 * It often makes sense to call this method in a <code>try-with-resources</code> statement since {@link ITerminalContextReferences} implements {@link AutoCloseable}.
-	 *
+	 * It makes sense to call this method in a <code>try-with-resources</code> statement whenever possible, since {@link ITerminalContextReferences} implements {@link AutoCloseable}.
 	 *
 	 * @return newly created references instance
 	 */
 	ITerminalContextReferences newReferences();
 
 	/**
-	 * Destroy currentReferences instance and sets a new current ones one (stack-like).
+	 * Destroy currentReferences instance and sets a new current one (stack-like).
 	 * <p>
 	 * Hint: if possible, don't use this method directly, but rather call {@link #newReferences()} in conjunction if a <code>try-with-resources</code> statement.
 	 *

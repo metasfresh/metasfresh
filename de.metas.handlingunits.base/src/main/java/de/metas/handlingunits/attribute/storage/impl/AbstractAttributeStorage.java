@@ -677,7 +677,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 */
 	private final void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
 	{
-		Check.assumeNotNull(propagationContext, "propagationContext not null for " + this);
+		Check.assumeNotNull(propagationContext, "propagationContext not null for {}", this);
 
 		//
 		// Avoid recursion in case value was already updated somewhere before this invocation
