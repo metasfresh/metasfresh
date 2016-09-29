@@ -86,6 +86,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 		// @formatter:on
 	};
 
+	/**
+	 * Note: the super-constructor registers itself as disposable component.
+	 *
+	 * @param terminalContext
+	 */
 	public CompositePropertiesPanelModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);

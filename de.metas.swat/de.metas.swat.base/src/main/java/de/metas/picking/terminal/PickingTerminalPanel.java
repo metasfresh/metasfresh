@@ -163,6 +163,13 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 	@Override
 	public void dispose()
 	{
+		if(isDisposed())
+		{
+			// This method might be called by both the swing framework and ITerminalContext.
+			// Therefore we need to make sure not to try and call deleteReferences() twice because the second time there will be an error.
+			return;
+		}
+
 		getTerminalContext().deleteReferences(terminalContextAndRefs.getRight());
 
 		final TerminalContextFactory terminalContextFactory = TerminalContextFactory.get();

@@ -32,13 +32,13 @@ import de.metas.logging.LogManager;
  * @author tsa
  * 
  */
-public final class LogTrxItemExceptionHandler implements ITrxItemExceptionHandler
+public final class LoggerTrxItemExceptionHandler implements ITrxItemExceptionHandler
 {
-	public static final LogTrxItemExceptionHandler instance = new LogTrxItemExceptionHandler();
+	public static final LoggerTrxItemExceptionHandler instance = new LoggerTrxItemExceptionHandler();
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	
-	private LogTrxItemExceptionHandler()
+	private LoggerTrxItemExceptionHandler()
 	{
 		super();
 	}

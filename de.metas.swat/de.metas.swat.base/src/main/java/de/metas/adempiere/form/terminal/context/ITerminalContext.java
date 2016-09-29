@@ -184,15 +184,6 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	 */
 	void setScreenResolution(Dimension screenResolution);
 
-	void dispose();
-
-	/**
-	 *
-	 * @return true if this context was already disposed
-	 * @see #dispose()
-	 */
-	boolean isDisposed();
-
 	/**
 	 * Creates a new {@link WeakPropertyChangeSupport} instance, using current {@link ITerminalContextReferences}.
 	 *

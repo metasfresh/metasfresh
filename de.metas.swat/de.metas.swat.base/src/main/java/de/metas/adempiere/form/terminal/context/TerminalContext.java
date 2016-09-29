@@ -144,9 +144,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	{
 		ctx = null;
 
-		//
-		// Cleanup references
-		disposeAllReferences();
+		assertAllReferencesDeleted();
+
 		disposeAllServices();
 
 		if (terminalFactory != null)
@@ -199,8 +198,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public IKeyLayout getNumericKeyLayout()
 	{
-				assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		assertCurrentReferencesNotNull();
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout numericKeyLayout = terminalContextReferences.getNumericKeyLayout();
@@ -223,7 +222,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public IKeyLayout getTextKeyLayout()
 	{
 		assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout textKeyLayout = terminalContextReferences.getTextKeyLayout();
@@ -407,8 +406,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		Check.assumeNotNull(references, "Param 'reference' is not null; this={}", this);
 
 		Check.errorIf(!Util.same(currentReferences, references),
-				"Param 'references'={} is not the same as currentReferences={}; this={}",
-				references, currentReferences, this);
+				"Param 'references is not the same as currentReferences; size of referencesList={}; references={} currentReferences={}; this={}",
+				referencesList == null ? "<null>" : referencesList.size(),
+				references,
+				currentReferences,
+				this);
 
 		// Destroy given references
 		currentReferences.dispose();
@@ -425,27 +427,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		}
 	}
 
-	/**
-	 * Destroys all {@link ITerminalContextReferences}, including the current one.
-	 *
-	 * This method will re-initialize the {@link #currentReferences} to leave the context in a consistent state.
-	 */
-	private final void disposeAllReferences()
+	private final void assertAllReferencesDeleted()
 	{
-		// Iterate all references and dispose them
-		for (final TerminalContextReferences references : referencesList)
-		{
-			references.dispose();
-		}
-		referencesList.clear();
+		Check.errorIf(!referencesList.isEmpty(), "referencesList is not (yet) empty; referencesList={}", referencesList);
 
-		// Make sure current references were also destroyed
-		// We do this just to be sure we destroyed everything, even this is pointless because "current references" were contained in references list
-		if (currentReferences != null)
-		{
-			currentReferences.dispose();
-			currentReferences = null;
-		}
+		Check.errorIf(currentReferences != null, "currentReferences is not (yet) null; currentReferences={}", currentReferences);
 	}
 
 	private final void disposeAllServices()
@@ -461,7 +447,6 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		services.clear();
 	}
 
-	@Override
 	public void dispose()
 	{
 
@@ -469,7 +454,6 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		_disposed = true;
 	}
 
-	@Override
 	public boolean isDisposed()
 	{
 		return _disposed;

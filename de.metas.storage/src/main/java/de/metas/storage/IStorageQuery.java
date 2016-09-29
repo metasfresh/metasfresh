@@ -10,12 +10,12 @@ package de.metas.storage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,8 +50,8 @@ public interface IStorageQuery
 	IStorageQuery addWarehouse(I_M_Warehouse warehouse);
 
 	/**
-	 * Adds given attribute filter.
-	 * 
+	 * Add another attribute filter, <b>if</b> the given <code>attribute</code> is relevant according to the respective storage engine implementation.
+	 *
 	 * @param attribute
 	 * @param attributeValueType
 	 * @param attributeValue
@@ -60,17 +60,17 @@ public interface IStorageQuery
 	IStorageQuery addAttribute(I_M_Attribute attribute, String attributeValueType, Object attributeValue);
 
 	/**
-	 * Adds all attributes (that are allowed to be used in storage querying) from given attribute set.
-	 * 
+	 * Add all attributes (that are allowed to be used in storage querying) from given attribute set.
+	 *
 	 * NOTE: depends on implementation, it could be that not all attributes will be added but only the considered ones.
-	 * 
+	 *
 	 * @param attributeSet
 	 * @return this
 	 */
 	IStorageQuery addAttributes(IAttributeSet attributeSet);
 
 	/**
-	 * 
+	 *
 	 * @param storageRecord
 	 * @return true if given record was matched by this query
 	 */

@@ -13,7 +13,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
 
-import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -21,7 +20,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -70,8 +68,9 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		super.initialize();
 
 		// Logging
-		LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
-		LogManager.setLoggerLevel(LogManager.getLogger(de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder.class), Level.TRACE);
+		// only set to trace if there are problems to debug
+		// LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
+		// LogManager.setLoggerLevel(LogManager.getLogger(de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder.class), Level.TRACE);
 
 		attribute = helper.createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 	}

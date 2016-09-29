@@ -10,12 +10,12 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,7 @@ import org.junit.runner.Description;
 
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
-public abstract class AbstractHUTest // NOPMD by tsa on 6/9/13 12:12 PM
+public abstract class AbstractHUTest
 {
 	protected I_C_UOM uomEach;
 	protected I_C_UOM uomKg;
@@ -94,10 +94,7 @@ public abstract class AbstractHUTest // NOPMD by tsa on 6/9/13 12:12 PM
 	 */
 	protected I_M_Attribute attr_WeightTareAdjust;
 
-	// protected I_M_Attribute attr_InvalidPropagation;
 	protected I_M_Attribute attr_AttributeNotFound;
-
-	// protected I_M_Attribute attr_InheritValueNoParent;
 
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_QualityDiscountPercent}
@@ -171,7 +168,7 @@ public abstract class AbstractHUTest // NOPMD by tsa on 6/9/13 12:12 PM
 		attr_QualityDiscountPercent = helper.attr_QualityDiscountPercent;
 		attr_QualityNotice = helper.attr_QualityNotice;
 		attr_SubProducerBPartner = helper.attr_SubProducerBPartner;
-		
+
 		attr_LotNumberDate = helper.attr_LotNumberDate;
 
 		uomEach = helper.uomEach;

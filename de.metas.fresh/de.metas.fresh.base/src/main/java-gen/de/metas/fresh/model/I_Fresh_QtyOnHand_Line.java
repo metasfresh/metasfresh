@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.fresh.model;
 
 
@@ -32,7 +16,7 @@ public interface I_Fresh_QtyOnHand_Line
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -163,6 +147,56 @@ public interface I_Fresh_QtyOnHand_Line
     public static final String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
+	 * Set Zählbestand Einkauf (fresh).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
+
+	/**
+	 * Get Zählbestand Einkauf (fresh).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getFresh_QtyOnHand_ID();
+
+	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand();
+
+	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand);
+
+    /** Column definition for Fresh_QtyOnHand_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand> COLUMN_Fresh_QtyOnHand_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_ID", de.metas.fresh.model.I_Fresh_QtyOnHand.class);
+    /** Column name Fresh_QtyOnHand_ID */
+    public static final String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
+
+	/**
+	 * Set Einkauf-Zählbestand Datensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID);
+
+	/**
+	 * Get Einkauf-Zählbestand Datensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getFresh_QtyOnHand_Line_ID();
+
+    /** Column definition for Fresh_QtyOnHand_Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Fresh_QtyOnHand_Line_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_Line_ID", null);
+    /** Column name Fresh_QtyOnHand_Line_ID */
+    public static final String COLUMNNAME_Fresh_QtyOnHand_Line_ID = "Fresh_QtyOnHand_Line_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -279,7 +313,9 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProductGroup (java.lang.String ProductGroup);
 
 	/**
@@ -304,7 +340,9 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProductName (java.lang.String ProductName);
 
 	/**
@@ -373,56 +411,6 @@ public interface I_Fresh_QtyOnHand_Line
     public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Set Zählbestand Einkauf (fresh).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
-
-	/**
-	 * Get Zählbestand Einkauf (fresh).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getFresh_QtyOnHand_ID();
-
-	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand();
-
-	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand);
-
-    /** Column definition for Fresh_QtyOnHand_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand> COLUMN_Fresh_QtyOnHand_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_ID", de.metas.fresh.model.I_Fresh_QtyOnHand.class);
-    /** Column name Fresh_QtyOnHand_ID */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
-
-	/**
-	 * Set Manual QtyOnHand Line (fresh).
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID);
-
-	/**
-	 * Get Manual QtyOnHand Line (fresh).
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getFresh_QtyOnHand_Line_ID();
-
-    /** Column definition for Fresh_QtyOnHand_Line_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Fresh_QtyOnHand_Line_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_Line_ID", null);
-    /** Column name Fresh_QtyOnHand_Line_ID */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_Line_ID = "Fresh_QtyOnHand_Line_ID";
 
 	/**
 	 * Get Aktualisiert.
