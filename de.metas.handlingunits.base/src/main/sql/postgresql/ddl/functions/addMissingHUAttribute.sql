@@ -68,8 +68,7 @@ END;
 $BODY$
 	LANGUAGE plpgsql VOLATILE
 	COST 100;
-ALTER FUNCTION "de.metas.handlingunits".addMissingHUAttribute(varchar)
-OWNER TO adempiere;
+
 
 
 
