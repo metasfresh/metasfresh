@@ -60,3 +60,10 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET EntityType='de.metas.document.archive',Updated=TO_TIMESTAMP('2016-09-29 12:16:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557307
 ;
+
+-- 29.09.2016 14:26
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE C_BPartner ADD IsInvoiceEmailEnabled CHAR(1) DEFAULT 'Y' CHECK (IsInvoiceEmailEnabled IN ('Y','N')) NOT NULL
+;
+
+
