@@ -17,7 +17,9 @@ class MenuOverlay extends Component {
             queriedResults: [],
             query: "",
             deepNode: null,
-            path: ""
+            deepSubNode: null,
+            path: "",
+            subPath: ""
         };
     }
     browseWholeTree = () => {
@@ -63,10 +65,26 @@ class MenuOverlay extends Component {
             }))
         })
     }
+    handleSubDeeper = (nodeId) => {
+        const {dispatch} = this.props;
+        dispatch(nodePathsRequest(nodeId,8)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                deepSubNode: response.data
+            }))
+
+            console.log(response.data);
+        })
+    }
     handleClickBack = (e) => {
         e.preventDefault();
         this.setState(Object.assign({}, this.state, {
             deepNode: null
+        }))
+    }
+    handleSubClickBack = (e) => {
+        e.preventDefault();
+        this.setState(Object.assign({}, this.state, {
+            deepSubNode: null
         }))
     }
     handleRedirect = (elementId) => {
@@ -80,7 +98,6 @@ class MenuOverlay extends Component {
         dispatch(push("/window/" + elementId + "/new"));
     }
     handlePath = (nodeId) => {
-        console.log('handle path');
         const {dispatch} = this.props;
         dispatch(pathRequest(nodeId)).then(response => {
             this.setState(Object.assign({}, this.state, {
@@ -88,9 +105,26 @@ class MenuOverlay extends Component {
             }))
         });
     }
-    componentWillMount(){
-
+    handleSubPath = (nodeId) => {
+        const {dispatch} = this.props;
+        dispatch(pathRequest(nodeId)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                subPath: response.data
+            }))
+        });
     }
+
+    renderSubPath = (path) => {
+        
+	   return(
+		<span>{path.children != undefined? path.children.map((index, id) => 
+			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span> 
+				
+			): path.captionBreadcrumb 
+		}</span>
+	   )
+    }
+
     renderPath = (path) => {
         
 	   return(
@@ -101,6 +135,7 @@ class MenuOverlay extends Component {
 		}</span>
 	   )
     }
+
     renderNaviagtion = (node) => {
     	const {path} = this.state;
 
@@ -125,15 +160,28 @@ class MenuOverlay extends Component {
             </div>
         )
     }
+
+    renderSubnavigation = (nodeData) => {
+        return(
+            <div>
+                {nodeData && nodeData.children.map((item, index) =>
+                    <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId? 'menu-overlay-link' : 'menu-overlay-expand'} onClick={ e => this.linkClick(item) }>{item.caption}</span></span>
+                )}
+            </div>
+        )
+    }
+
     linkClick = (item) => {
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)   
-        } else if (item.elementId){
+        } else if (item.elementId && item.type == "window"){
             this.handleRedirect(item.elementId)
+        } else if (item.type == "group"){
+            this.handleSubDeeper(item.nodeId);
         }
     }
     render() {
-        const {queriedResults, deepNode} = this.state;
+        const {queriedResults, deepNode, deepSubNode} = this.state;
         const {nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
         return (
@@ -165,6 +213,7 @@ class MenuOverlay extends Component {
                                             handleRedirect={this.handleRedirect}
                                             handleNewRedirect={this.handleNewRedirect}
                                             query={true}
+                                            handlePath={this.handlePath}
                                             {...result}
                                         />
                                     )}
@@ -173,10 +222,18 @@ class MenuOverlay extends Component {
                         </div> :
                         //NOT ROOT
                         <div className="menu-overlay-node-container">
+
+                            {deepSubNode &&
+                                <div>
+                                    <span className="menu-overlay-link" onClick={e => this.handleSubClickBack(e)}>&lt; Back</span>
+                                </div>
+                            }
+                        
+                           
+
+
                             <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
-                            {nodeData && nodeData.children.map((item, index) =>
-                                <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId? 'menu-overlay-link' : ''} onClick={ e => this.linkClick(item) }>{item.caption}</span></span>
-                            )}
+                            {this.renderSubnavigation(deepSubNode ? deepSubNode : nodeData)}
                         </div>
                     }
                     {index === 0 && siteName !== "Sitemap" &&

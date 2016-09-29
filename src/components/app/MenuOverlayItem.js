@@ -26,9 +26,17 @@ class MenuOverlayItem extends Component {
             handleClickOnFolder(e, nodeId)
         }
     }
+
+    onMouseDown = (type, nodeId) => {
+        const {handlePath} = this.props;
+
+        if(type === 'group'){
+            handlePath(nodeId)
+        }
+    }
+
     render() {
         const {nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
-
 
         return (
             <div
@@ -43,7 +51,7 @@ class MenuOverlayItem extends Component {
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
                     onClick={query? '' : e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId) )}
-                    onMouseDown={ e => children ? handlePath(nodeId) : ''}
+                    onMouseDown={ e => children ? handlePath(nodeId) : ''} 
                 >
                 {caption}
                 </span>
@@ -53,7 +61,7 @@ class MenuOverlayItem extends Component {
             { query &&
                <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")} 
                 onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }
-                onMouseDown={ type === 'group' ? () => handlePath(nodeId) : ''}
+                onMouseDown={ e => this.onMouseDown(type, nodeId)} 
                > 
                     {children ? children.map(
                         (item, id) => 
@@ -78,12 +86,6 @@ class MenuOverlayItem extends Component {
 
                </span>
             }
-
-
-                
-
-
-
             </div>
         )
     }
