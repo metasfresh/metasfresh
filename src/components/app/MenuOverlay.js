@@ -5,14 +5,11 @@ import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
-
 import {
     nodePathsRequest,
     queryPathsRequest,
     pathRequest
  } from '../../actions/MenuActions';
-
-
 class MenuOverlay extends Component {
     constructor(props){
         super(props);
@@ -31,21 +28,14 @@ class MenuOverlay extends Component {
         const {onClickOutside} = this.props;
         onClickOutside(e);
     }
-
-
     handleQuery = (e) => {
-
         const {dispatch} = this.props;
-
         e.preventDefault();
-
         if(!!e.target.value){
             this.setState(Object.assign({}, this.state, {
                 query: e.target.value
             }));
-
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
-
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
                 }))
@@ -59,7 +49,6 @@ class MenuOverlay extends Component {
     }
     handleClear = (e) => {
         e.preventDefault();
-
         this.setState(Object.assign({}, this.state, {
             query: "",
             queriedResults: []
@@ -67,10 +56,7 @@ class MenuOverlay extends Component {
     }
     handleDeeper = (e, nodeId) => {
         const {dispatch} = this.props;
-
         e.preventDefault();
-
-
         dispatch(nodePathsRequest(nodeId,8)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
@@ -79,7 +65,6 @@ class MenuOverlay extends Component {
     }
     handleClickBack = (e) => {
         e.preventDefault();
-
         this.setState(Object.assign({}, this.state, {
             deepNode: null
         }))
@@ -89,25 +74,25 @@ class MenuOverlay extends Component {
         this.handleClickOutside();
         dispatch(push("/window/" + elementId));
     }
-
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
         this.handleClickOutside();
         dispatch(push("/window/" + elementId + "/new"));
     }
-
     handlePath = (nodeId) => {
+        console.log('handle path');
         const {dispatch} = this.props;
         dispatch(pathRequest(nodeId)).then(response => {
-
             this.setState(Object.assign({}, this.state, {
                 path: response.data
             }))
         });
     }
+    componentWillMount(){
 
-
+    }
     renderPath = (path) => {
+        
 	   return(
 		<span>{path.children != undefined? path.children.map((index, id) => 
 			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span> 
@@ -116,18 +101,14 @@ class MenuOverlay extends Component {
 		}</span>
 	   )
     }
-
     renderNaviagtion = (node) => {
     	const {path} = this.state;
-    	
-    	this.handlePath(node.nodeId);
+
         return (
             <div className="menu-overlay-container">
                 {node.nodeId != 0 && 
                     <p className="menu-overlay-header group-header">
-
                     {this.renderPath(path)}
-
                     </p>
                 }
                 {node && node.children.map((item,index) =>
@@ -136,15 +117,14 @@ class MenuOverlay extends Component {
                         handleClickOnFolder={this.handleDeeper}
                         handleRedirect={this.handleRedirect}
                         handleNewRedirect={this.handleNewRedirect}
+                        handlePath={this.handlePath}
                         parent={node}
                         {...item}
                     />
                 )}
             </div>
-
         )
     }
-
     linkClick = (item) => {
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)   
@@ -152,19 +132,16 @@ class MenuOverlay extends Component {
             this.handleRedirect(item.elementId)
         }
     }
-
     render() {
         const {queriedResults, deepNode} = this.state;
         const {nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
-
         return (
             <div className="menu-overlay menu-overlay-primary">
                 <div className="menu-overlay-caption">{ (index === 0) ? <span className="ico-home"> </span> : nodeData && nodeData.captionBreadcrumb}</div>
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
-
                         <div>
                             {deepNode &&
                                 <div>
@@ -172,19 +149,15 @@ class MenuOverlay extends Component {
                                 </div>
                             }
                             <div className="menu-overlay-root-body">
-
                                 <div className="menu-overlay-container">
                                     {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
                                 </div>
-
                                 <div className="menu-overlay-query">
-
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
                                         <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
                                         {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                     </div>
-
                                     {queriedResults && queriedResults.map((result, index) =>
                                         <MenuOverlayItem
                                             key={index}
@@ -211,17 +184,13 @@ class MenuOverlay extends Component {
                           <span className="menu-overlay-link tree-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                         </div>
                     }
-
                 </div>
             </div>
         )
     }
 }
-
 MenuOverlay.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
-
 MenuOverlay = connect()(onClickOutside(MenuOverlay));
-
 export default MenuOverlay

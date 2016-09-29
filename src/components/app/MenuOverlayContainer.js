@@ -7,7 +7,7 @@ class MenuOverlayContainer extends Component {
 	}
 
 	render() {
-		const {children, elementId, caption, type, handleClickOnFolder,handleRedirect, handleNewRedirect} = this.props;
+		const {children, elementId, caption, type, handleClickOnFolder,handleRedirect, handleNewRedirect, handlePath} = this.props;
 		return (
 			<div className="menu-overlay-node-container">
 				{type==='group' &&
@@ -32,6 +32,7 @@ class MenuOverlayContainer extends Component {
 						handleClickOnFolder={handleClickOnFolder}
 						handleRedirect={handleRedirect}
 						handleNewRedirect={handleNewRedirect}
+						handlePath={handlePath}
 						{...subitem}
 					/>
 				)}

@@ -27,7 +27,7 @@ class MenuOverlayItem extends Component {
         }
     }
     render() {
-        const {nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, query} = this.props;
+        const {nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
 
 
         return (
@@ -43,6 +43,7 @@ class MenuOverlayItem extends Component {
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
                     onClick={query? '' : e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId) )}
+                    onMouseDown={ e => children ? handlePath(nodeId) : ''}
                 >
                 {caption}
                 </span>
@@ -50,7 +51,10 @@ class MenuOverlayItem extends Component {
             }
 
             { query &&
-               <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")} onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }> 
+               <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")} 
+                onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }
+                onMouseDown={ type === 'group' ? () => handlePath(nodeId) : ''}
+               > 
                     {children ? children.map(
                         (item, id) => 
                         
@@ -61,6 +65,7 @@ class MenuOverlayItem extends Component {
                                 handleClickOnFolder={handleClickOnFolder}
                                 handleRedirect={handleRedirect}
                                 handleNewRedirect={handleNewRedirect}
+                                handlePath={handlePath}
                                 query={true}
                                 {...item}
                             />
