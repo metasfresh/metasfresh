@@ -1613,7 +1613,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
 
 		return DocumentQueryFilterDescriptor.builder()
-				.setId(field.getColumnName())
+				.setFilterId(field.getColumnName())
 				.setDisplayName(field.getHeaderTrls())
 				.setFrequentUsed(false)
 				.addParameter(DocumentQueryFilterParamDescriptor.builder()

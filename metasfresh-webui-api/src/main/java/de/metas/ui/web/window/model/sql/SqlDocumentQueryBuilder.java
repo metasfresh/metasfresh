@@ -189,7 +189,7 @@ class SqlDocumentQueryBuilder
 		// Key column
 		if (query.isRecordIdSet())
 		{
-			final String sqlKeyColumnName = entityBinding.getSqlKeyColumnName();
+			final String sqlKeyColumnName = entityBinding.getKeyColumnName();
 			if (sqlKeyColumnName == null)
 			{
 				throw new AdempiereException("Failed building where clause for " + query + " because there is no Key Column defined in " + entityBinding);

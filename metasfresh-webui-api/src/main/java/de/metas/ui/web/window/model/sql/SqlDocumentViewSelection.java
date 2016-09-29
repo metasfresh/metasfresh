@@ -326,9 +326,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
 
-			final String sqlTableName = dataBinding.getSqlTableName();
+			final String sqlTableName = dataBinding.getTableName();
 			final String sqlTableAlias = dataBinding.getSqlTableAlias();
-			final String keyColumnNameFQ = dataBinding.getSqlKeyColumnName();
+			final String keyColumnNameFQ = dataBinding.getKeyColumnName();
 			if (keyColumnNameFQ == null)
 			{
 				throw new DBException("No key column found in " + dataBinding);
@@ -403,9 +403,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
 
-			final String sqlTableName = dataBinding.getSqlTableName();
+			final String sqlTableName = dataBinding.getTableName();
 			final String sqlTableAlias = dataBinding.getSqlTableAlias();
-			final String keyColumnName = dataBinding.getSqlKeyColumnName();
+			final String keyColumnName = dataBinding.getKeyColumnName();
 			if (keyColumnName == null)
 			{
 				throw new DBException("No key column found in " + dataBinding);

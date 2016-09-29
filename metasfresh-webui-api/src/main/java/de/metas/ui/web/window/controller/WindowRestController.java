@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -32,6 +33,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -49,6 +51,7 @@ import de.metas.ui.web.window.model.DocumentActionsService;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -120,6 +123,9 @@ public class WindowRestController implements IWindowRestController
 
 	@Autowired
 	private DocumentActionsService documentActionsService;
+
+	@Autowired
+	private DocumentReferencesService documentReferencesService;
 
 	private JSONFilteringOptions.Builder newJSONFilteringOptions()
 	{
@@ -302,12 +308,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.setDetailId(detailId)
-				.setRowId(rowIdStr)
-				.build();
+		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final LookupValuesList lookupValues = document.getFieldLookupValuesForQuery(fieldName, query);
@@ -326,12 +327,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.setDetailId(detailId)
-				.setRowId(rowIdStr)
-				.build();
+		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final LookupValuesList lookupValues = document.getFieldLookupValues(fieldName);
@@ -457,12 +453,7 @@ public class WindowRestController implements IWindowRestController
 	{
 		loginService.autologin();
 
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.setDetailId(detailId)
-				.setRowId(rowIdStr)
-				.build();
+		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final String tableName = document.getEntityDescriptor().getDataBinding().getTableName();
@@ -488,7 +479,26 @@ public class WindowRestController implements IWindowRestController
 						return InterfaceWrapperHelper.create(document, modelClass);
 					}
 				});
-		
+
 		return JSONDocumentActionsList.of(documentActions, newJSONFilteringOptions().build());
 	}
+
+	@Override
+	@RequestMapping(value = "/documentReferences", method = RequestMethod.GET)
+	public JSONDocumentReferencesList getDocumentReferences(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+	)
+	{
+		loginService.autologin();
+
+		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
+
+		final Document document = documentCollection.getDocument(documentPath);
+		final List<ZoomInfo> zoomInfos = documentReferencesService.getDocumentReferences(document);
+		return JSONDocumentReferencesList.of(zoomInfos, newJSONFilteringOptions().build());
+	}
+
 }

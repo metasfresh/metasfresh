@@ -1,10 +1,13 @@
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
+import org.compiere.model.MQuery;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -37,6 +40,31 @@ public final class DocumentQueryFilter
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+	
+	public static DocumentQueryFilter of(final MQuery mquery)
+	{
+		final List<DocumentQueryFilterParam> parameters = new ArrayList<>();
+		for(int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
+		{
+			final DocumentQueryFilterParam param = DocumentQueryFilterParam.of(mquery, i);
+			parameters.add(param);
+		}
+		
+		final String filterId;
+		if (parameters.size() == 1)
+		{
+			filterId = parameters.get(0).getFieldName();
+		}
+		else
+		{
+			filterId = "MQuery-" + UUID.randomUUID(); // FIXME: find a better filterId
+		}
+		
+		return builder()
+				.setFilterId(filterId)
+				.setParameters(parameters)
+				.build();
 	}
 
 	private final String filterId;

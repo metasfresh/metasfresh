@@ -58,6 +58,25 @@ public final class DocumentPath
 		return new DocumentPath(adWindowId, documentId);
 	}
 
+	/**
+	 * Creates the path of a single document (root document or included document).
+	 * 
+	 * @param adWindowId
+	 * @param idStr
+	 * @param detailId
+	 * @param rowIdStr
+	 * @return single document path (root document or included document).
+	 */
+	public static final DocumentPath singleDocumentPath(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	{
+		return builder()
+				.setAD_Window_ID(adWindowId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
+	}
+
 	private final int adWindowId;
 	private final DocumentId documentId;
 	private final String detailId;

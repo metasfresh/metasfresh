@@ -31,8 +31,7 @@ public class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDa
 {
 	public static final POJODocumentEntityDataBindingDescriptor ofClass(final Class<?> modelClass)
 	{
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		return new POJODocumentEntityDataBindingDescriptor(modelClass, tableName);
+		return new POJODocumentEntityDataBindingDescriptor(modelClass);
 	}
 	
 	public static final Class<?> getModelClass(final Document document)
@@ -43,12 +42,14 @@ public class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDa
 
 	private final Class<?> modelClass;
 	private final String tableName;
+	private final String keyColumnName;
 
-	public POJODocumentEntityDataBindingDescriptor(final Class<?> modelClass, final String tableName)
+	private POJODocumentEntityDataBindingDescriptor(final Class<?> modelClass)
 	{
 		super();
 		this.modelClass = modelClass;
-		this.tableName = tableName;
+		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		this.keyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelClass);
 	}
 	
 	public Class<?> getModelClass()
@@ -60,5 +61,11 @@ public class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDa
 	public String getTableName()
 	{
 		return tableName;
+	}
+	
+	@Override
+	public String getKeyColumnName()
+	{
+		return keyColumnName;
 	}
 }

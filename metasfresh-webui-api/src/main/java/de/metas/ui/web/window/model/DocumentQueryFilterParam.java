@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.model.MQuery;
 
 import com.google.common.base.MoreObjects;
 
@@ -31,6 +33,33 @@ public class DocumentQueryFilterParam
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static DocumentQueryFilterParam of(final MQuery mquery, final int restrictionIndex)
+	{
+		try
+		{
+			final String fieldName = mquery.getColumnName(restrictionIndex);
+			final String operator = mquery.getOperator(restrictionIndex);
+			final boolean range = MQuery.BETWEEN.equals(operator);
+			final Object value = mquery.getCode(restrictionIndex);
+			final Object valueTo = mquery.getCodeTo(restrictionIndex);
+
+			return builder()
+					.setFieldName(fieldName)
+					.setValue(value)
+					.setValueTo(valueTo)
+					// TODO .setOperator(OperatorType)
+					.setRange(range)
+					.build();
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentQueryFilterParam.class
+					+ "\n MQuery: " + mquery
+					+ "\n Restriction index: " + restrictionIndex //
+					, ex);
+		}
 	}
 
 	private final String fieldName;

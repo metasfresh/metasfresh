@@ -41,7 +41,7 @@ public final class DocumentQueryFilterDescriptor
 		return new Builder();
 	}
 
-	private final String id;
+	private final String filterId;
 	private final ITranslatableString displayNameTrls;
 	private final List<DocumentQueryFilterParamDescriptor> parameters;
 	private final boolean frequentUsed;
@@ -50,8 +50,8 @@ public final class DocumentQueryFilterDescriptor
 	{
 		super();
 
-		id = builder.id;
-		Check.assumeNotEmpty(id, "id is not empty");
+		filterId = builder.filterId;
+		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
 		displayNameTrls = ImmutableTranslatableString.ofMap(builder.displayNameTrls);
 		parameters = ImmutableList.copyOf(builder.parameters);
@@ -63,14 +63,14 @@ public final class DocumentQueryFilterDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("id", id)
+				.add("filterId", filterId)
 				.add("parameters", parameters)
 				.toString();
 	}
 
-	public String getId()
+	public String getFilterId()
 	{
-		return id;
+		return filterId;
 	}
 
 	public String getDisplayName(final String adLanguage)
@@ -90,7 +90,7 @@ public final class DocumentQueryFilterDescriptor
 
 	public static final class Builder
 	{
-		private String id;
+		private String filterId;
 		private Map<String, String> displayNameTrls;
 		private final List<DocumentQueryFilterParamDescriptor> parameters = new ArrayList<>();
 		private boolean frequentUsed;
@@ -105,9 +105,9 @@ public final class DocumentQueryFilterDescriptor
 			return new DocumentQueryFilterDescriptor(this);
 		}
 
-		public Builder setId(final String id)
+		public Builder setFilterId(final String filterId)
 		{
-			this.id = id;
+			this.filterId = filterId;
 			return this;
 		}
 

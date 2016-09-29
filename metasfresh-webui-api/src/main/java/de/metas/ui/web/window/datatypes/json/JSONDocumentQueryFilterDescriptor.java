@@ -71,7 +71,7 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 	private JSONDocumentQueryFilterDescriptor(final DocumentQueryFilterDescriptor filter, final String adLanguage)
 	{
 		super();
-		filterId = filter.getId();
+		filterId = filter.getFilterId();
 		caption = filter.getDisplayName(adLanguage);
 		frequentUsed = filter.isFrequentUsed();
 		parameters = JSONDocumentQueryFilterParamDescriptor.ofList(filter.getParameters(), adLanguage);

@@ -159,13 +159,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.toString();
 	}
 
-	public String getSqlTableName()
-	{
-		return sqlTableName;
-	}
-
 	@Override
-	@JsonIgnore
 	public String getTableName()
 	{
 		return sqlTableName;
@@ -183,7 +177,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return POInfo.getPOInfo(sqlTableName);
 	}
 
-	public String getSqlKeyColumnName()
+	@Override
+	public String getKeyColumnName()
 	{
 		return sqlKeyColumnName;
 	}

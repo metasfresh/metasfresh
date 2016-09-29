@@ -54,6 +54,17 @@ public class JSONDocumentQueryFilter
 				.setParameters(JSONDocumentQueryFilterParam.unwrapList(jsonFilter.getParameters()))
 				.build();
 	}
+	
+	public static final JSONDocumentQueryFilter of(final DocumentQueryFilter filter)
+	{
+		final String filterId = filter.getFilterId();
+		final List<JSONDocumentQueryFilterParam> jsonParameters = filter.getParameters()
+				.stream()
+				.map(filterParam->JSONDocumentQueryFilterParam.of(filterParam))
+				.collect(GuavaCollectors.toImmutableList());
+		
+		return new JSONDocumentQueryFilter(filterId, jsonParameters);
+	}
 
 	@JsonProperty("filterId")
 	private final String filterId;

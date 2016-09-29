@@ -55,6 +55,11 @@ public class JSONDocumentQueryFilterParam
 				.setValueTo(jsonFilterParam.getValueTo())
 				.build();
 	}
+	
+	public static final JSONDocumentQueryFilterParam of(final DocumentQueryFilterParam filterParam)
+	{
+		return new JSONDocumentQueryFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
+	}
 
 	@JsonProperty("field")
 	private final String field;
@@ -66,7 +71,7 @@ public class JSONDocumentQueryFilterParam
 	private final Object valueTo;
 
 	@JsonCreator
-	public JSONDocumentQueryFilterParam(
+	private JSONDocumentQueryFilterParam(
 			@JsonProperty("field") final String field //
 			, @JsonProperty("value") final Object value //
 			, @JsonProperty("valueTo") final Object valueTo //

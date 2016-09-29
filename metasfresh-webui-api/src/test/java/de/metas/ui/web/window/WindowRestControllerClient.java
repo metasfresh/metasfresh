@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -189,6 +190,13 @@ public class WindowRestControllerClient implements IWindowRestController
 
 	@Override
 	public JSONDocumentActionsList getDocumentActions(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public JSONDocumentReferencesList getDocumentReferences(int adWindowId, String idStr, String detailId, String rowIdStr)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
