@@ -1130,12 +1130,14 @@ th {
     padding: 6px;
     border: 1px solid $brand-light-color;
     position: absolute;
-    bottom: 0;
-    right: 0;
+    bottom: calc(100% + 10px);
+    left: 0;
+    margin-left: -26px;
     background-color: $brand-super-light-color;
     text-align: center;
     border-radius: 10px;
     width: 80px;
+        
 }
 
 .page-dots-open input {
@@ -1148,4 +1150,8 @@ th {
     font-weight: 500;
     padding-bottom: 4px;
     display: inline-block;
+}
+
+.page-link {
+    float: none;
 }

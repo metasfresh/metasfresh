@@ -4,15 +4,67 @@ import React, { Component } from 'react';
 class TablePagination extends Component {
     constructor(props){
         super(props);
+        this.state = {
+            firstDotsState: false,
+            secondDotsState: false,
+            value: ''
+        }
 
     }
 
-    handleGoToPage = () => {
-        console.log('go to page');
+    handleValue = (e) => {
+        e.preventDefault();
+        if(!!e.target.value){
+            this.setState(Object.assign({}, this.state, {
+                value: e.target.value
+            }));
+        } else {
+            this.setState(Object.assign({}, this.state, {
+                value: ""
+            }))
+        }
     }
 
-    renderFirstPartPagination = (pagination, page, pages) => {
+    handleSubmit = (e, value, pages) => {
         const {handleChangePage} = this.props;
+        if(e.key === "Enter"){
+            e.preventDefault();
+
+            if(value <= pages && value > 0){
+
+                handleChangePage(value);
+
+                this.setState(Object.assign({}, this.state, {
+                    value: '',
+                    secondDotsState: false,
+                    firstDotsState: false
+                }));
+            }
+            
+        }
+    }
+
+    handleFirstDotsState = () => {
+        const {firstDotsState} = this.state;
+        this.setState(
+            Object.assign({}, this.state, {
+                firstDotsState: !firstDotsState
+            })
+        );
+    }
+
+    handleSecondDotsState = () => {
+        const {secondDotsState} = this.state;
+        this.setState(
+            Object.assign({}, this.state, {
+                secondDotsState: !secondDotsState
+            })
+        );
+    }
+
+    renderFirstPartPagination = (pagination, pages) => {
+        const {handleChangePage} = this.props;
+        const {firstDotsState, secondDotsState, value} = this.state;
         pagination.push(
             <li className="page-item" key={1} onClick={() => handleChangePage(1)}>
                 <a className="page-link">{1}</a>
@@ -20,8 +72,14 @@ class TablePagination extends Component {
             </li>
         );
         pagination.push(
-            <li className="page-item page-dots" key={0} onClick={() => this.handleGoToPage()}>
-                <a className="page-link">{'...'}</a>
+            <li className="page-item page-dots" key={0}>
+                { firstDotsState &&
+                <div className="page-dots-open">
+                    <span>Go to page</span>
+                    <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
+                </div> 
+                }
+                <a className="page-link" onClick={() => this.handleFirstDotsState()}>{'...'}</a>
                 {}
             </li>
         );
@@ -29,14 +87,17 @@ class TablePagination extends Component {
 
     renderLastPartPagination = (pagination, pages) => {
         const {handleChangePage} = this.props;
-        console.log('pages: '+pages);
+        const {firstDotsState, secondDotsState, value} = this.state;
+
         pagination.push(
-            <li className="page-item page-dots" key={99990} onClick={() => this.handleGoToPage()}>
+            <li className="page-item page-dots" key={99990}>
+                { secondDotsState &&
                 <div className="page-dots-open">
                     <span>Go to page</span>
-                    <input type="text" />
-                </div>
-                <a className="page-link">{'...'}</a>
+                    <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
+                </div> 
+                }
+                <a className="page-link" onClick={() => this.handleSecondDotsState()}>{'...'}</a>
                 {}
             </li>
         );
@@ -65,123 +126,24 @@ class TablePagination extends Component {
         const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
         const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
 
-        console.log(pages);
-        console.log(page);
 
         let pagination = [];
 
         if(pages < 8 ) {
-            {
                 this.renderPaginationContent(pagination, page, 1, pages-1);
-            }
         } else {
             if(page <= 4) {
-                // for(let i = 1; i <= 5; i++){
-                //     pagination.push(
-                //         <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => handleChangePage(i)}>
-                //             <a className="page-link">{i}</a>
-                //             {}
-                //         </li>
-                //     );
-                // }
-                {
-                    this.renderPaginationContent(pagination, page, 1, 5);
-                    this.renderLastPartPagination(pagination, pages);
-                }
-                // pagination.push(
-                //     <li className="page-item" key={99990} onClick={() => this.handleGoToPage()}>
-                //         <a className="page-link">{'...'}</a>
-                //         {}
-                //     </li>
-                // );
-                // pagination.push(
-                //     <li className="page-item" key={9999} onClick={() => handleChangePage(pages)}>
-                //         <a className="page-link">{pages}</a>
-                //         {}
-                //     </li>
-                // );
-                
-
-
+                this.renderPaginationContent(pagination, page, 1, 5);
+                this.renderLastPartPagination(pagination, pages);
             } else if(page > pages - 4) {
-
-                // pagination.push(
-                //     <li className="page-item" key={1} onClick={() => handleChangePage(1)}>
-                //         <a className="page-link">{1}</a>
-                //         {}
-                //     </li>
-                // );
-                // pagination.push(
-                //     <li className="page-item" key={0} onClick={() => this.handleGoToPage()}>
-                //         <a className="page-link">{'...'}</a>
-                //         {}
-                //     </li>
-                // );
-
-                // for(let i = pages-4; i <= pages; i++){
-                //     pagination.push(
-                //         <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => handleChangePage(i)}>
-                //             <a className="page-link">{i}</a>
-                //             {}
-                //         </li>
-                //     );
-                // }
-
-                {
-                    this.renderFirstPartPagination(pagination, pages);
-                    this.renderPaginationContent(pagination, page, pages-4, pages);
-                }
+                this.renderFirstPartPagination(pagination, pages);
+                this.renderPaginationContent(pagination, page, pages-4, pages);
             } else {
-                // pagination.push(
-                //     <li className="page-item" key={1} onClick={() => handleChangePage(1)}>
-                //         <a className="page-link">{1}</a>
-                //         {}
-                //     </li>
-                // );
-                // pagination.push(
-                //     <li className="page-item" key={0} onClick={() => this.handleGoToPage()}>
-                //         <a className="page-link">{'...'}</a>
-                //         {}
-                //     </li>
-                // );
-
-                // for(let i = page-1; i <= page+1; i++){
-                //     pagination.push(
-                //         <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => handleChangePage(i)}>
-                //             <a className="page-link">{i}</a>
-                //             {}
-                //         </li>
-                //     );
-                // }
-
-                // pagination.push(
-                //     <li className="page-item" key={99990} onClick={() => handleGoToPage()}>
-                //         <a className="page-link">{'...'}</a>
-                //         {}
-                //     </li>
-                // );
-                // pagination.push(
-                //     <li className="page-item" key={9999} onClick={() => handleChangePage(pages)}>
-                //         <a className="page-link">{pages}</a>
-                //         {}
-                //     </li>
-                // );
-
                 this.renderFirstPartPagination(pagination, pages);
                 this.renderPaginationContent(pagination, page, page-1, page+1);
                 this.renderLastPartPagination(pagination, pages);
             }
         }
-
-        // for(let i = startPoint; i <= endPoint; i++){
-        //     pagination.push(
-        //         <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => handleChangePage(i)}>
-        //             <a className="page-link">{i}</a>
-        //         </li>
-        //     );
-        // }
-
-
 
         return (
             <div>
