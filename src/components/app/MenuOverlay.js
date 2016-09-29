@@ -8,7 +8,8 @@ import DebounceInput from 'react-debounce-input';
 
 import {
     nodePathsRequest,
-    queryPathsRequest
+    queryPathsRequest,
+    pathRequest
  } from '../../actions/MenuActions';
 
 
@@ -18,7 +19,8 @@ class MenuOverlay extends Component {
         this.state = {
             queriedResults: [],
             query: "",
-            deepNode: null
+            deepNode: null,
+            path: ""
         };
     }
     browseWholeTree = () => {
@@ -94,11 +96,39 @@ class MenuOverlay extends Component {
         dispatch(push("/window/" + elementId + "/new"));
     }
 
+    handlePath = (nodeId) => {
+        const {dispatch} = this.props;
+        dispatch(pathRequest(nodeId)).then(response => {
+
+            this.setState(Object.assign({}, this.state, {
+                path: response.data
+            }))
+        });
+    }
+
+
+    renderPath = (path) => {
+	   return(
+		<span>{path.children != undefined? path.children.map((index, id) => 
+			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span> 
+				
+			): path.captionBreadcrumb 
+		}</span>
+	   )
+    }
+
     renderNaviagtion = (node) => {
+    	const {path} = this.state;
+    	
+    	this.handlePath(node.nodeId);
         return (
             <div className="menu-overlay-container">
                 {node.nodeId != 0 && 
-                    <p className="menu-overlay-header group-header">{node.caption}</p>
+                    <p className="menu-overlay-header group-header">
+
+                    {this.renderPath(path)}
+
+                    </p>
                 }
                 {node && node.children.map((item,index) =>
                     <MenuOverlayContainer

@@ -12,6 +12,9 @@ export function setBreadcrumb(breadcrumb){
 }
 
 // THUNK ACTIONS
+export function pathRequest(nodeId) {
+    return dispatch => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
+}
 
 export function nodePathsRequest(nodeId, limit) {
     return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
