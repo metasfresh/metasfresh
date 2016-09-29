@@ -93,14 +93,14 @@ public class CalloutOrder extends CalloutEngine
 
 		// No Drop Ship other than Standard
 		final boolean dataCopy = calloutField.isRecordCopyingMode(); // 05291
-		if (!docSubType.equals(MOrder.DocSubType_Standard) && !dataCopy)
+		if (!MOrder.DocSubType_Standard.equals(docSubType) && !dataCopy)
 		{
 			order.setIsDropShip(false);
 		}
 
 		//
 		// Delivery Rule
-		if (docSubType.equals(MOrder.DocSubType_POS))
+		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
 			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
 		}
@@ -118,9 +118,9 @@ public class CalloutOrder extends CalloutEngine
 		// }
 
 		// Invoice Rule
-		if (docSubType.equals(MOrder.DocSubType_POS)
-				|| docSubType.equals(MOrder.DocSubType_Prepay)
-				|| docSubType.equals(MOrder.DocSubType_OnCredit))
+		if (MOrder.DocSubType_POS.equals(docSubType)
+				|| MOrder.DocSubType_Prepay.equals(docSubType)
+				|| MOrder.DocSubType_OnCredit.equals(docSubType))
 		{
 			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 		}
@@ -130,7 +130,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		// Payment Rule - POS Order
-		if (docSubType.equals(MOrder.DocSubType_POS))
+		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
 			order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 		}
@@ -154,8 +154,8 @@ public class CalloutOrder extends CalloutEngine
 		// it is a POS or Credit Order (i.e. defaults from Standard
 		// BPartner)
 		// This re-reads the Rules and applies them.
-		if (docSubType.equals(MOrder.DocSubType_POS)
-				|| docSubType.equals(MOrder.DocSubType_Prepay))  // not
+		if (MOrder.DocSubType_POS.equals(docSubType)
+				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
 		{
 			// for POS/PrePay
 			;
@@ -174,16 +174,16 @@ public class CalloutOrder extends CalloutEngine
 					{
 						if (IsSOTrx
 								// No Cash/Check/Transfer:
-								&& (paymentRule.equals(X_C_Order.PAYMENTRULE_Cash)
-										|| paymentRule.equals(X_C_Order.PAYMENTRULE_Check)
-										|| paymentRule.equals("U") // FIXME: we no longer have this PaymentRule... so drop it from here
+								&& (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)
+										|| X_C_Order.PAYMENTRULE_Check.equals(paymentRule)
+										|| "U".equals(paymentRule) // FIXME: we no longer have this PaymentRule... so drop it from here
 										)
 							)
 						{
 							// for SO_Trx
 							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
-						if (!IsSOTrx && (paymentRule.equals(X_C_Order.PAYMENTRULE_Cash)))  // No Cash for PO_Trx
+						if (!IsSOTrx && (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)))  // No Cash for PO_Trx
 						{
 							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
@@ -665,9 +665,9 @@ public class CalloutOrder extends CalloutEngine
 				String OrderType = order.getOrderType();
 				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
 				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
-				if (OrderType.equals(MOrder.DocSubType_Prepay))
+				if (MOrder.DocSubType_Prepay.equals(OrderType))
 					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
+				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
 					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 				else
 				{
@@ -1152,7 +1152,7 @@ public class CalloutOrder extends CalloutEngine
 			orderLine.setQtyOrdered(QtyOrdered);
 			setUOMConversion(calloutField, false);
 		}
-		else if (columnName.equals(I_C_OrderLine.COLUMNNAME_C_UOM_ID))
+		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
 			final int C_UOM_From_ID = ((Integer)calloutField.getOldValue()).intValue();
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
@@ -1188,7 +1188,7 @@ public class CalloutOrder extends CalloutEngine
 			// metas us1064 end
 		}
 		// QtyEntered changed - calculate QtyOrdered
-		else if (columnName.equals(I_C_OrderLine.COLUMNNAME_QtyEntered))
+		else if (I_C_OrderLine.COLUMNNAME_QtyEntered.equals(columnName))
 		{
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
@@ -1208,7 +1208,7 @@ public class CalloutOrder extends CalloutEngine
 			orderLine.setQtyOrdered(QtyOrdered);
 		}
 		// QtyOrdered changed - calculate QtyEntered (should not happen)
-		else if (columnName.equals(I_C_OrderLine.COLUMNNAME_QtyOrdered))
+		else if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(columnName))
 		{
 			int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyOrdered = orderLine.getQtyOrdered();
@@ -1351,9 +1351,7 @@ public class CalloutOrder extends CalloutEngine
 		if (evalCreditstatus)
 		{
 			String creditStatus = rs.getString("SOCreditStatus");
-			dontCheck = creditLimit == 0
-					|| X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck
-							.equals(creditStatus);
+			dontCheck = creditLimit == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
 		}
 		else
 		{
