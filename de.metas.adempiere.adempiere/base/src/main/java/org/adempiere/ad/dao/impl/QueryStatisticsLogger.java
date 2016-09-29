@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
@@ -15,7 +17,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
@@ -108,7 +109,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
-	@ManagedOperation(description = "Enables statistics collector and tracing")
+	@ManagedOperation(description = "Enables statistics collector and console tracing of executed SQLs")
 	public void enableWithSqlTracing()
 	{
 		enable();
@@ -357,19 +358,20 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
-	private List<QueryStatistics> snapshotQueryStatisticsAsList()
+	private List<QueryStatistics> snapshotQueryStatisticsAsMutableList()
 	{
 		return sql2statistics.values()
 				.stream()
 				.map(stat -> stat.copy())
-				.collect(GuavaCollectors.toImmutableList());
+				//.collect(GuavaCollectors.toImmutableList()); // we want to sort it in getTopQueriesAsString(), so let's have it mutable :-)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	@Override
 	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
 	public String[] getTopQueriesAsString()
 	{
-		final List<QueryStatistics> queryStatisticsList = snapshotQueryStatisticsAsList();
+		final List<QueryStatistics> queryStatisticsList = snapshotQueryStatisticsAsMutableList();
 		if (queryStatisticsList.isEmpty())
 		{
 			return new String[] {};
