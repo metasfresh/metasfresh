@@ -317,7 +317,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	}
 
 	/**
-	 * Load Model to View
+	 * Evaluates the module and set the enabled status of different buttons.
 	 */
 	private void load()
 	{
