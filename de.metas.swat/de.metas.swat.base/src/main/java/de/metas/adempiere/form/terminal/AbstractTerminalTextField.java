@@ -162,7 +162,11 @@ public abstract class AbstractTerminalTextField
 	/**
 	 * Trigger automatically keyboard showing.
 	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
-	 * When creating another (not-swing) implementation, please make sure that doesn't happen
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen.
+	 * <p>
+	 * Note: the keyboard is created with its own a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+	 * registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+	 * Otherwise, future key events to other text fields of our panel would update "our" text field.
 	 */
 	protected void showKeyboard()
 	{
@@ -211,7 +215,6 @@ public abstract class AbstractTerminalTextField
 				activeKeyboard.activate();
 			}
 			activeKeyboard = null;
-
 
 			if (TerminalKeyDialog.ACTION_Cancel.equals(textField.getAction()))
 			{
