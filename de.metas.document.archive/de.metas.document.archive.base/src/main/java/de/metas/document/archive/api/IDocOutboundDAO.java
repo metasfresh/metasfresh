@@ -34,7 +34,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 
-public interface IArchiveDAO extends ISingletonService
+public interface IDocOutboundDAO extends ISingletonService
 {
 	/**
 	 * Retrieve all <b>active</b> {@link I_C_Doc_Outbound_Config}s for <b>all</b> clients.

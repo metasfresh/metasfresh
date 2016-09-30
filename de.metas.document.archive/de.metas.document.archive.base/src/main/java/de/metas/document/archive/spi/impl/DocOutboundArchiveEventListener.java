@@ -36,6 +36,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -125,7 +126,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 
-		I_C_Doc_Outbound_Log docExchange = Services.get(de.metas.document.archive.api.IArchiveDAO.class).retrieveLog(archive);
+		I_C_Doc_Outbound_Log docExchange = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
 
 		if (docExchange == null)
 		{
