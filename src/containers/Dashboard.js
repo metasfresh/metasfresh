@@ -4,21 +4,38 @@ import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 
 import {
-    getWindowBreadcrumb
+    getWindowBreadcrumb,
+    getDashboardLink
  } from '../actions/MenuActions';
 
 export class Dashboard extends Component {
     constructor(props){
         super(props);
+        this.state = {
+            link: ''
+        };
     }
 
     componentDidMount = () => {
         const {dispatch} = this.props;
         dispatch(getWindowBreadcrumb("143"));
+        this.getDashboardLink();
+    }
+
+    getDashboardLink = () => {
+        const {dispatch} = this.props;
+        dispatch(getDashboardLink()).then(response => {
+                this.setState(Object.assign({}, this.state, {
+                    link: response.data
+                }))
+        });
+
+        console.log(this.state.link);
     }
 
     render() {
         const {breadcrumb} = this.props;
+        const {link} = this.state;
         return (
             <div>
                 <Header
@@ -27,6 +44,7 @@ export class Dashboard extends Component {
                 />
                 <OrderList />
                 <div className="header-sticky-distance"/>
+                <iframe className="dashboard" src={link}></iframe>
             </div>
         );
     }

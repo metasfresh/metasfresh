@@ -12,6 +12,10 @@ export function setBreadcrumb(breadcrumb){
 }
 
 // THUNK ACTIONS
+export function getDashboardLink() {
+    return dispatch => axios.get(config.API_URL + '/userSession/dashboardUrl');
+}
+
 export function pathRequest(nodeId) {
     return dispatch => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
 }

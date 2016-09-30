@@ -83,8 +83,11 @@ class Header extends Component {
             scrolled: false
         }))
       }
+    }
 
-
+    handleDashboardLink = () => {
+        const {dispatch} = this.props;
+        dispatch(push("/"));
     }
 
     renderBreadcrumb = () => {
@@ -162,7 +165,7 @@ class Header extends Component {
                                 {this.renderBreadcrumb()}
                             </div>
                             <div className="header-center">
-                                <img src={logo} className="header-logo"/>
+                                <img src={logo} className="header-logo pointer" onClick={() => this.handleDashboardLink()} />
                             </div>
                             <div className="header-right-side">
                                 {docStatus &&
