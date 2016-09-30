@@ -5,11 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -29,9 +29,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -40,7 +38,7 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final class FindPanelSearchField
+final class FindPanelSearchField implements IUserQueryField
 {
 	public static final Map<String, FindPanelSearchField> createMapIndexedByColumnName(final GridField[] gridFields)
 	{
@@ -72,6 +70,20 @@ final class FindPanelSearchField
 
 		return searchFields;
 	}
+	
+	public static final FindPanelSearchField castToFindPanelSearchField(final IUserQueryField field)
+	{
+		return (FindPanelSearchField)field;
+	}
+	
+	public static final boolean isSelectionColumn(final IUserQueryField field)
+	{
+		if(field instanceof FindPanelSearchField)
+		{
+			return ((FindPanelSearchField)field).isSelectionColumn();
+		}
+		return false;
+	}
 
 	/** Maximum allowed number of columns for a text field component displayed in simple search tab */
 	static final int MAX_TEXT_FIELD_COLUMNS = 20;
@@ -79,19 +91,6 @@ final class FindPanelSearchField
 	// services
 	private static final transient Logger logger = LogManager.getLogger(FindPanelSearchField.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
-
-	public static final Comparator<FindPanelSearchField> COMPARATOR_ByDisplayName = new Comparator<FindPanelSearchField>()
-	{
-		@Override
-		public int compare(final FindPanelSearchField o1, final FindPanelSearchField o2)
-		{
-			if (o1 == o2)
-			{
-				return 0;
-			}
-			return o1.getDisplayName().compareTo(o2.getDisplayName());
-		}
-	};
 
 	/** Reference ID for Yes/No */
 	private static final int AD_REFERENCE_ID_YESNO = 319;
@@ -153,6 +152,7 @@ final class FindPanelSearchField
 		return getDisplayName();
 	}
 
+	@Override
 	public String getColumnName()
 	{
 		return gridField.getColumnName();
@@ -163,6 +163,7 @@ final class FindPanelSearchField
 		return gridField.isSelectionColumn();
 	}
 
+	@Override
 	public String getDisplayName()
 	{
 		if (_displayName == null)
@@ -188,8 +189,10 @@ final class FindPanelSearchField
 		return _displayName;
 	}
 
-	public String getColumnSQL(final boolean withAS)
+	@Override
+	public String getColumnSQL()
 	{
+		final boolean withAS = false;
 		return gridField.getColumnSQL(withAS);
 	}
 
@@ -264,60 +267,7 @@ final class FindPanelSearchField
 		return swingEditorFactory.getLabel(gridField);
 	}
 
-	public Object parseValueFromString(final String valueStr)
-	{
-		if (valueStr == null)
-		{
-			return null;
-		}
-
-		final int dt = getDisplayType();
-		try
-		{
-			// Return Integer
-			if (dt == DisplayType.Integer || DisplayType.isID(dt) && getColumnName().endsWith("_ID"))
-			{
-				final int i = Integer.parseInt(valueStr);
-				return new Integer(i);
-			}
-			// Return BigDecimal
-			else if (DisplayType.isNumeric(dt))
-			{
-				return DisplayType.getNumberFormat(dt).parse(valueStr);
-			}
-			// Return Timestamp
-			else if (DisplayType.isDate(dt))
-			{
-				long time = 0;
-				try
-				{
-					time = DisplayType.getDateFormat_JDBC().parse(valueStr).getTime();
-					return new Timestamp(time);
-				}
-				catch (final Exception e)
-				{
-					logger.error(valueStr + "(" + valueStr.getClass() + ")" + e);
-					time = DisplayType.getDateFormat(dt).parse(valueStr).getTime();
-				}
-				return new Timestamp(time);
-			}
-			else if (dt == DisplayType.YesNo)
-			{
-				return DisplayType.toBoolean(valueStr);
-			}
-			else
-			{
-				return valueStr;
-			}
-		}
-		catch (final Exception ex)
-		{
-			logger.error("Object=" + valueStr, ex);
-			return null;
-		}
-
-	}
-
+	@Override
 	public Object convertValueToFieldType(final Object valueObj)
 	{
 		if (valueObj == null)
@@ -390,6 +340,28 @@ final class FindPanelSearchField
 		return valueObj;
 	}
 
+	@Override
+	public final String getValueDisplay(final Object value)
+	{
+		String infoDisplay = value == null ? "" : value.toString();
+		if (isLookup())
+		{
+			final Lookup lookup = getLookup();
+			if (lookup != null)
+			{
+				infoDisplay = lookup.getDisplay(value);
+			}
+		}
+		else if (getDisplayType() == DisplayType.YesNo)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			infoDisplay = msgBL.getMsg(Env.getCtx(), infoDisplay);
+		}
+		
+		return infoDisplay;
+	}
+
+	@Override
 	public boolean matchesColumnName(final String columnName)
 	{
 		if (columnName == null || columnName.isEmpty())
@@ -431,13 +403,13 @@ final class FindPanelSearchField
 	 */
 	public String getSubCategoryWhereClause(final int productCategoryId)
 	{
-		final String columnSQL = getColumnSQL(false);
+		final String columnSQL = getColumnSQL();
 		// if a node with this id is found later in the search we have a loop in the tree
 		int subTreeRootParentId = 0;
 		final StringBuilder retString = new StringBuilder(" (" + columnSQL + ") IN (");
 
 		final String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
-		final Vector<SimpleTreeNode> categories = new Vector<SimpleTreeNode>(100);
+		final List<SimpleTreeNode> categories = new ArrayList<>();
 		Statement stmt = null;
 		ResultSet rs = null;
 		try
@@ -483,7 +455,7 @@ final class FindPanelSearchField
 	 * @return comma separated list of category ids
 	 * @throws AdempiereException if a loop is detected
 	 */
-	private static String getSubCategoriesString(final int productCategoryId, final Vector<SimpleTreeNode> categories, final int loopIndicatorId)
+	private static String getSubCategoriesString(final int productCategoryId, final List<SimpleTreeNode> categories, final int loopIndicatorId)
 	{
 		String ret = "";
 		final Iterator<SimpleTreeNode> iter = categories.iterator();

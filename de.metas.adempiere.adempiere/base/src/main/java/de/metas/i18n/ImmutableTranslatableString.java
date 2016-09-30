@@ -63,6 +63,15 @@ public final class ImmutableTranslatableString implements ITranslatableString
 
 		return new ImmutableTranslatableString(trlMap, EMPTY.defaultValue);
 	}
+	
+	public static final ImmutableTranslatableString constant(final String value)
+	{
+		if(value == null || value.isEmpty())
+		{
+			return EMPTY;
+		}
+		return new ImmutableTranslatableString(ImmutableMap.of(), value);
+	}
 
 	public static final Builder builder()
 	{
@@ -139,7 +148,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("trls", trlMap)
+				.add("trls", trlMap.isEmpty() ? null : trlMap)
 				.add("default", defaultValue)
 				.toString();
 	}

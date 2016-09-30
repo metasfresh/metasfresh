@@ -76,13 +76,13 @@ final class FindValueEditor extends AbstractCellEditor implements TableCellEdito
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(table, rowIndex);
+		final IUserQueryRestriction row = getRow(table, rowIndex);
 
 		//
 		// Update valueTo enabled
 		isValueToEnabled = isValueToColumn && row.isBinaryOperator();
 
-		final FindPanelSearchField searchField = row.getSearchField();
+		final FindPanelSearchField searchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 		if (searchField == null)
 		{
 			// shall not happen
@@ -117,7 +117,7 @@ final class FindValueEditor extends AbstractCellEditor implements TableCellEdito
 		return isValueDisplayed();
 	}
 
-	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	private IUserQueryRestriction getRow(final JTable table, final int viewRowIndex)
 	{
 		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
 		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);

@@ -53,8 +53,8 @@ class FindOperatorCellEditor extends FindCellEditor
 	{
 		final CComboBox<ValueNamePair> editor = getEditor();
 
-		final FindAdvancedSearchTableModelRow row = getRow(table, viewRowIndex);
-		final FindPanelSearchField searchField = row.getSearchField();
+		final IUserQueryRestriction row = getRow(table, viewRowIndex);
+		final FindPanelSearchField searchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 
 		if (searchField != null)
 		{
@@ -87,7 +87,7 @@ class FindOperatorCellEditor extends FindCellEditor
 		}
 	}
 
-	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	private IUserQueryRestriction getRow(final JTable table, final int viewRowIndex)
 	{
 		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
 		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);
