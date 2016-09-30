@@ -47,6 +47,12 @@ class DocList extends Component {
         });
 
         dispatch(getWindowBreadcrumb(windowType))
+
+        console.log(this.state.layout);
+        console.log(this.state.filters);
+        console.log(this.state.data);
+
+
     }
 
     componentWillReceiveProps(props) {

@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
 import MenuOverlayItem from './MenuOverlayItem';
+import {connect} from 'react-redux';
+
+import {
+    getWindowBreadcrumb
+ } from '../../actions/MenuActions';
 
 class MenuOverlayContainer extends Component {
 	constructor(props){
 		super(props);
+	}
+
+	handleClick = () => {
+		const {dispatch, handleRedirect, elementId} = this.props;
+		handleRedirect(elementId);
+		dispatch(getWindowBreadcrumb(elementId));
 	}
 
 	render() {
@@ -18,7 +29,7 @@ class MenuOverlayContainer extends Component {
 
 					<span
 						className="menu-overlay-link"
-						onClick={ e => type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId)}
+						onClick={ e => type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick()}
 					>
 						{caption}
 					</span>
@@ -40,5 +51,34 @@ class MenuOverlayContainer extends Component {
 		)
 	}
 }
+
+function mapStateToProps(state) {
+    const { windowHandler, menuHandler } = state;
+    const {
+        master,
+        connectionError,
+        modal
+    } = windowHandler || {
+        master: {},
+        connectionError: false,
+        modal: false
+    }
+
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
+    return {
+        master,
+        connectionError,
+        breadcrumb,
+        modal
+    }
+}
+
+MenuOverlayContainer = connect(mapStateToProps)(MenuOverlayContainer);
 
 export default MenuOverlayContainer
