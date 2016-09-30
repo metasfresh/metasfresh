@@ -26,8 +26,11 @@ this week's RC
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
+   - Addes further policies for InvoiceCandidate processing.
  * #213 Add onhand qty to MRP Product Info
+   - Added a new column in MRP Product Info to now show the Handling Unit Storage On Hand Quantity.
  * #375 Jasper: extend product name on report_details
+   - Extension of name Field in Jasper Report (report_details).
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
