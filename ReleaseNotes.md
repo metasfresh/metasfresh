@@ -31,13 +31,21 @@ this week's RC
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
+   - Making sure that statistics in MRP Product Info are updated also after quick complete and reactivate of sales and purchase orders.
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
+   - Ensured that Purchase Order Candidates are aggregated to 1 Purchase Order per Vendor when triggered.
  * #370 Material Receipt - Somtimes double click needed for weighing machine
+   - Fixing a bug that occured on  certain Windows clients with connected weighing machines.
  * #420 NPE in CalloutOrder.bPartner
+   - Eliminated a Null Pointer Exception in Sales Order Callout CalloutOrder.bPartner
  * #410 sscc label org fix
+   - Fixed a minor issue in SSCC Label to load the correct Orgabnisation and Logo when generated and printed.
  * #422 pricelist report do not show virtual HU
+   - Fixed the pricelist report to also show virtual HU.
  * #331 Activating the trace log file doesn't always work
+   - Stabilized the new trace log feature. Here switching on/ off visibility.
  * #437 Old window Produktion is opened automatically by menu search
+   - Fixed the autocall in menu search.
 
 # metasfresh 4.36.35 (2016-38)
 
