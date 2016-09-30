@@ -24,8 +24,8 @@ export function elementPathRequest(pathType, elementId) {
     return dispatch => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
 }
 
-export function queryPathsRequest(query, limit) {
-    return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : ""));
+export function queryPathsRequest(query, limit, child) {
+    return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : "") + (child ? '&childrenInclusive=true':''));
 }
 
 export function rootRequest(limit) {

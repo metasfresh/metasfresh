@@ -71,8 +71,6 @@ class MenuOverlay extends Component {
             this.setState(Object.assign({}, this.state, {
                 deepSubNode: response.data
             }))
-
-            console.log(response.data);
         })
     }
     handleClickBack = (e) => {
@@ -178,10 +176,11 @@ class MenuOverlay extends Component {
             this.handleRedirect(item.elementId)
         } else if (item.type == "group"){
             this.handleSubDeeper(item.nodeId);
+            this.handleSubPath(item.nodeId);
         }
     }
     render() {
-        const {queriedResults, deepNode, deepSubNode} = this.state;
+        const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
         const {nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
         return (
@@ -229,10 +228,15 @@ class MenuOverlay extends Component {
                                 </div>
                             }
                         
+                             {deepSubNode && 
+                                <p className="menu-overlay-header">{this.renderSubPath(subPath)}</p>
+                            }
                            
 
-
-                            <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
+                            {!deepSubNode && 
+                                <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
+                            }
+                            
                             {this.renderSubnavigation(deepSubNode ? deepSubNode : nodeData)}
                         </div>
                     }

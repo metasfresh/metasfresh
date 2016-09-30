@@ -60,7 +60,7 @@ class NavigationTree extends Component {
                 query: e.target.value
             }));
 
-            dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
+            dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
 
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: response.data.children
@@ -72,6 +72,7 @@ class NavigationTree extends Component {
                 query: ""
             }))
         }
+
     }
 
     handleClear = (e) => {
