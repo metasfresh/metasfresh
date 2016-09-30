@@ -26,7 +26,7 @@ this week's RC
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
-   - Addes further policies for InvoiceCandidate processing.
+   - Added further policies for InvoiceCandidate processing.
  * #213 Add onhand qty to MRP Product Info
    - Added a new column in MRP Product Info to now show the Handling Unit Storage On Hand Quantity.
  * #375 Jasper: extend product name on report_details
@@ -38,9 +38,9 @@ this week's RC
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
    - Ensured that Purchase Order Candidates are aggregated to 1 Purchase Order per Vendor when triggered.
  * #370 Material Receipt - Somtimes double click needed for weighing machine
-   - Fixing a bug that occured on  certain Windows clients with connected weighing machines.
+   - Fixing a bug that occured on certain Windows clients with connected weighing machines.
  * #420 NPE in CalloutOrder.bPartner
-   - Eliminated a Null Pointer Exception in Sales Order Callout CalloutOrder.bPartner
+   - Eliminated a Null Pointer Exception in Sales Order Callout CalloutOrder.bPartner.
  * #410 sscc label org fix
    - Fixed a minor issue in SSCC Label to load the correct Orgabnisation and Logo when generated and printed.
  * #422 pricelist report do not show virtual HU
