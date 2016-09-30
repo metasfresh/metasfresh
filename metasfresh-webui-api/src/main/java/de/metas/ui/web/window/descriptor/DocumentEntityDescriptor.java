@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -15,7 +16,9 @@ import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -583,11 +586,11 @@ public class DocumentEntityDescriptor
 		private CalloutExecutor buildCalloutExecutorFactory(Collection<DocumentFieldDescriptor> fields)
 		{
 			final String tableName = this.TableName;
-			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder(); 
+			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder();
 			for (final DocumentFieldDescriptor field : fields)
 			{
 				final List<IDocumentFieldCallout> fieldCallouts = field.getCallouts();
-				if(fieldCallouts.isEmpty())
+				if (fieldCallouts.isEmpty())
 				{
 					continue;
 				}
@@ -595,12 +598,12 @@ public class DocumentEntityDescriptor
 				for (final IDocumentFieldCallout fieldCallout : fieldCallouts)
 				{
 					final Set<String> dependsOnFieldNames = fieldCallout.getDependsOnFieldNames();
-					if(dependsOnFieldNames.isEmpty())
+					if (dependsOnFieldNames.isEmpty())
 					{
 						logger.warn("Callout {} has no dependencies. Skipped from adding to entity descriptor.\n Target: {} \n Source: {}", fieldCallout, this, field);
 						continue;
 					}
-					
+
 					for (final String dependsOnFieldName : dependsOnFieldNames)
 					{
 						entityCalloutProviderBuilder.addCallout(tableName, dependsOnFieldName, fieldCallout);
@@ -615,8 +618,45 @@ public class DocumentEntityDescriptor
 			final ICalloutProvider defaultCalloutProvider = calloutExecutorBuilder.getDefaultCalloutProvider();
 			final ICalloutProvider calloutProvider = CompositeCalloutProvider.compose(defaultCalloutProvider, entityCalloutProvider);
 			calloutExecutorBuilder.setCalloutProvider(calloutProvider);
-			
+
 			return calloutExecutorBuilder.build();
 		}
+
+		private final DocumentQueryFilterDescriptorsProvider createFiltersProvider()
+		{
+			final ImmutableDocumentQueryFilterDescriptorsProvider standardFieldFilters = ImmutableDocumentQueryFilterDescriptorsProvider.of(getFields()
+					.values()
+					.stream()
+					.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
+					.map(field -> createFilter(field))
+					.collect(Collectors.toList()));
+
+			final int adTabId = this.AD_Tab_ID;
+			final String tableName = getOrBuildDataBinding().getTableName();
+			final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			final Collection<DocumentFieldDescriptor> fields = getFields().values();
+			final UserQueryDocumentQueryFilterDescriptorsProvider userQueryFilters = new UserQueryDocumentQueryFilterDescriptorsProvider(adTabId, adTableId, fields);
+			
+			return CompositeDocumentQueryFilterDescriptorsProvider.of(standardFieldFilters, userQueryFilters);
+		}
+
+		private final DocumentQueryFilterDescriptor createFilter(final DocumentFieldDescriptor field)
+		{
+			final DocumentFieldWidgetType widgetType = field.getWidgetType();
+			final boolean rangeParameter = widgetType.isRangeFilteringSupported();
+
+			return DocumentQueryFilterDescriptor.builder()
+					.setFilterId(field.getFieldName())
+					// .setDisplayName(field.getN) // TODO
+					.setFrequentUsed(false)
+					.addParameter(DocumentQueryFilterParamDescriptor.builder()
+							// .setDisplayName(field.getHeaderTrls()) // TODO
+							.setFieldName(field.getFieldName())
+							.setWidgetType(widgetType)
+							.setRangeParameter(rangeParameter)
+							.build())
+					.build();
+		}
+
 	}
 }

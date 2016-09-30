@@ -41,16 +41,16 @@ public final class DocumentQueryFilter
 	{
 		return new Builder();
 	}
-	
+
 	public static DocumentQueryFilter of(final MQuery mquery)
 	{
 		final List<DocumentQueryFilterParam> parameters = new ArrayList<>();
-		for(int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
+		for (int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
 		{
 			final DocumentQueryFilterParam param = DocumentQueryFilterParam.of(mquery, i);
 			parameters.add(param);
 		}
-		
+
 		final String filterId;
 		if (parameters.size() == 1)
 		{
@@ -60,7 +60,7 @@ public final class DocumentQueryFilter
 		{
 			filterId = "MQuery-" + UUID.randomUUID(); // FIXME: find a better filterId
 		}
-		
+
 		return builder()
 				.setFilterId(filterId)
 				.setParameters(parameters)
@@ -89,12 +89,12 @@ public final class DocumentQueryFilter
 				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
 	}
-	
+
 	public String getFilterId()
 	{
 		return filterId;
 	}
-	
+
 	public List<DocumentQueryFilterParam> getParameters()
 	{
 		return parameters;
@@ -124,6 +124,16 @@ public final class DocumentQueryFilter
 		public Builder setParameters(final List<DocumentQueryFilterParam> parameters)
 		{
 			this.parameters = parameters;
+			return this;
+		}
+
+		public Builder addParameter(final DocumentQueryFilterParam parameter)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+			parameters.add(parameter);
 			return this;
 		}
 	}

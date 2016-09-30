@@ -366,6 +366,9 @@ public class WindowRestController implements IWindowRestController
 		}
 	}
 
+	/**
+	 * Create view
+	 */
 	@Override
 	@RequestMapping(value = "/view", method = RequestMethod.PUT)
 	public JSONDocumentViewResult createView(

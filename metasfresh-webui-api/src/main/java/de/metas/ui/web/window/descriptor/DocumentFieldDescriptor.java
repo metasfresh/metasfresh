@@ -106,6 +106,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		, AdvancedField //
 		, SideListField //
 		, GridViewField //
+		, AllowFiltering //
 	};
 
 	@JsonProperty("characteristics")
@@ -311,7 +312,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	private static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
+	public static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
 	{
 		if (value == null)
 		{

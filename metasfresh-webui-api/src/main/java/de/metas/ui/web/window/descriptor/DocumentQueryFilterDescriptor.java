@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
 /*
  * #%L
@@ -44,6 +45,7 @@ public final class DocumentQueryFilterDescriptor
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
 	private final List<DocumentQueryFilterParamDescriptor> parameters;
+	private final List<DocumentQueryFilterParam> internalParameters;
 	private final boolean frequentUsed;
 
 	private DocumentQueryFilterDescriptor(final Builder builder)
@@ -53,8 +55,11 @@ public final class DocumentQueryFilterDescriptor
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
-		displayNameTrls = ImmutableTranslatableString.ofMap(builder.displayNameTrls);
+		displayNameTrls = builder.displayNameTrls;
+		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
+
 		parameters = ImmutableList.copyOf(builder.parameters);
+		internalParameters = ImmutableList.copyOf(builder.internalParameters);
 		frequentUsed = builder.frequentUsed;
 	}
 
@@ -64,7 +69,8 @@ public final class DocumentQueryFilterDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("filterId", filterId)
-				.add("parameters", parameters)
+				.add("parameters", parameters.isEmpty() ? null : parameters)
+				.add("internalParameters", internalParameters.isEmpty() ? null : internalParameters)
 				.toString();
 	}
 
@@ -83,6 +89,11 @@ public final class DocumentQueryFilterDescriptor
 		return parameters;
 	}
 
+	public List<DocumentQueryFilterParam> getInternalParameters()
+	{
+		return internalParameters;
+	}
+
 	public boolean isFrequentUsed()
 	{
 		return frequentUsed;
@@ -91,8 +102,9 @@ public final class DocumentQueryFilterDescriptor
 	public static final class Builder
 	{
 		private String filterId;
-		private Map<String, String> displayNameTrls;
+		private ITranslatableString displayNameTrls;
 		private final List<DocumentQueryFilterParamDescriptor> parameters = new ArrayList<>();
+		private final List<DocumentQueryFilterParam> internalParameters = new ArrayList<>();
 		private boolean frequentUsed;
 
 		private Builder()
@@ -113,6 +125,12 @@ public final class DocumentQueryFilterDescriptor
 
 		public Builder setDisplayName(final Map<String, String> displayNameTrls)
 		{
+			this.displayNameTrls = ImmutableTranslatableString.ofMap(displayNameTrls);
+			return this;
+		}
+
+		public Builder setDisplayName(final ITranslatableString displayNameTrls)
+		{
 			this.displayNameTrls = displayNameTrls;
 			return this;
 		}
@@ -126,6 +144,12 @@ public final class DocumentQueryFilterDescriptor
 		public Builder addParameter(final DocumentQueryFilterParamDescriptor parameter)
 		{
 			parameters.add(parameter);
+			return this;
+		}
+
+		public Builder addInternalParameter(final DocumentQueryFilterParam parameter)
+		{
+			internalParameters.add(parameter);
 			return this;
 		}
 	}

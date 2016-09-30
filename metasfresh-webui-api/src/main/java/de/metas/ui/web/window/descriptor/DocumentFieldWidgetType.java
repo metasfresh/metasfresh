@@ -1,5 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Set;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -66,6 +71,10 @@ public enum DocumentFieldWidgetType
 	//
 	;
 
+	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime);
+	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
+	private static final Set<DocumentFieldWidgetType> TYPES_WithRageFilteringSupport = Sets.immutableEnumSet(Iterables.concat(TYPES_Date, TYPES_Numeric));
+
 	private final LayoutAlign gridAlign;
 
 	private DocumentFieldWidgetType(final LayoutAlign gridAlign)
@@ -83,11 +92,11 @@ public enum DocumentFieldWidgetType
 	{
 		return gridAlign;
 	}
-	
+
 	public final Integer getStandardNumberPrecision()
 	{
 		// FIXME: hardcoded standard number precision
-		
+
 		switch (this)
 		{
 			case Integer:
@@ -98,5 +107,10 @@ public enum DocumentFieldWidgetType
 			default:
 				return null;
 		}
+	}
+
+	public final boolean isRangeFilteringSupported()
+	{
+		return TYPES_WithRageFilteringSupport.contains(this);
 	}
 }

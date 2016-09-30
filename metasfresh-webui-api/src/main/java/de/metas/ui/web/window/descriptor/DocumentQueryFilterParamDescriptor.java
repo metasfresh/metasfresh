@@ -40,7 +40,7 @@ public class DocumentQueryFilterParamDescriptor
 	
 	private final String fieldName;
 	private final DocumentFieldWidgetType widgetType;
-	private final ITranslatableString displayNameTrls;
+	private final ITranslatableString displayName;
 	private final boolean rangeParameter;
 
 	private DocumentQueryFilterParamDescriptor(final Builder builder)
@@ -53,7 +53,9 @@ public class DocumentQueryFilterParamDescriptor
 		widgetType = builder.widgetType;
 		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
 
-		displayNameTrls = ImmutableTranslatableString.ofMap(builder.displayNameTrls);
+		displayName = builder.displayName;
+		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
+		
 		rangeParameter = builder.rangeParameter;
 	}
 
@@ -80,7 +82,7 @@ public class DocumentQueryFilterParamDescriptor
 
 	public String getDisplayName(final String adLanguage)
 	{
-		return displayNameTrls.translate(adLanguage);
+		return displayName.translate(adLanguage);
 	}
 
 	public boolean isRangeParameter()
@@ -92,7 +94,7 @@ public class DocumentQueryFilterParamDescriptor
 	{
 		private String fieldName;
 		private DocumentFieldWidgetType widgetType;
-		private Map<String, String> displayNameTrls;
+		private ITranslatableString displayName;
 		private boolean rangeParameter;
 
 		private Builder()
@@ -119,7 +121,13 @@ public class DocumentQueryFilterParamDescriptor
 
 		public Builder setDisplayName(final Map<String, String> displayNameTrls)
 		{
-			this.displayNameTrls = displayNameTrls;
+			this.displayName = ImmutableTranslatableString.ofMap(displayNameTrls);
+			return this;
+		}
+
+		public Builder setDisplayName(final String displayName)
+		{
+			this.displayName = ImmutableTranslatableString.constant(displayName);
 			return this;
 		}
 

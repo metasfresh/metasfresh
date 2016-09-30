@@ -46,6 +46,7 @@ public class DocumentQueryFilterParam
 			final Object valueTo = mquery.getCodeTo(restrictionIndex);
 
 			return builder()
+					// TODO: set Join AND/OR
 					.setFieldName(fieldName)
 					.setValue(value)
 					.setValueTo(valueTo)
