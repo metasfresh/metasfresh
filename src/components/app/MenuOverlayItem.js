@@ -1,4 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import {connect} from 'react-redux';
+
+import {
+    getWindowBreadcrumb
+ } from '../../actions/MenuActions';
 
 class MenuOverlayItem extends Component {
     constructor(props){
@@ -21,7 +26,7 @@ class MenuOverlayItem extends Component {
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
         } else if (type === 'window') {
-            handleRedirect(elementId)
+            this.handleClick(elementId)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
         }
@@ -35,8 +40,24 @@ class MenuOverlayItem extends Component {
         }
     }
 
+    renderBreadcrumb = (elementId) => {
+        const {dispatch, dis} = this.props;
+        if(dispatch){
+            dispatch(getWindowBreadcrumb(elementId));
+        } else {
+            dis(getWindowBreadcrumb(elementId));
+        }
+        
+    }
+
+    handleClick = (elementId) => {
+        const {handleRedirect} = this.props;
+        handleRedirect(elementId); 
+        this.renderBreadcrumb(elementId)
+    }
+
     render() {
-        const {nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
+        const {dis, dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
 
         return (
             <div
@@ -50,7 +71,7 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={query? '' : e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : handleRedirect(elementId) )}
+                    onClick={query? '' : e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick(elementId) )}
                     onMouseDown={ e => children ? handlePath(nodeId) : ''} 
                 >
                 {caption}
@@ -74,6 +95,7 @@ class MenuOverlayItem extends Component {
                                 handleRedirect={handleRedirect}
                                 handleNewRedirect={handleNewRedirect}
                                 handlePath={handlePath}
+                                dis={dis}
                                 query={true}
                                 {...item}
                             />
@@ -90,5 +112,35 @@ class MenuOverlayItem extends Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    const { windowHandler, menuHandler } = state;
+    const {
+        master,
+        connectionError,
+        modal
+    } = windowHandler || {
+        master: {},
+        connectionError: false,
+        modal: false
+    }
+
+
+    const {
+        breadcrumb
+    } = menuHandler || {
+        breadcrumb: {}
+    }
+
+    return {
+        master,
+        connectionError,
+        breadcrumb,
+        modal
+    }
+}
+
+
+MenuOverlayItem = connect(mapStateToProps)(MenuOverlayItem);
 
 export default MenuOverlayItem

@@ -8,7 +8,8 @@ import DebounceInput from 'react-debounce-input';
 import {
     nodePathsRequest,
     queryPathsRequest,
-    pathRequest
+    pathRequest,
+    getWindowBreadcrumb
  } from '../../actions/MenuActions';
 class MenuOverlay extends Component {
     constructor(props){
@@ -170,10 +171,12 @@ class MenuOverlay extends Component {
     }
 
     linkClick = (item) => {
+        const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)   
         } else if (item.elementId && item.type == "window"){
             this.handleRedirect(item.elementId)
+            dispatch(getWindowBreadcrumb(item.elementId));
         } else if (item.type == "group"){
             this.handleSubDeeper(item.nodeId);
             this.handleSubPath(item.nodeId);
@@ -181,7 +184,7 @@ class MenuOverlay extends Component {
     }
     render() {
         const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
-        const {nodeId, node, siteName, index} = this.props;
+        const {dispatch, nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
         return (
             <div className="menu-overlay menu-overlay-primary">
@@ -213,6 +216,7 @@ class MenuOverlay extends Component {
                                             handleNewRedirect={this.handleNewRedirect}
                                             query={true}
                                             handlePath={this.handlePath}
+                                            dis={dispatch}
                                             {...result}
                                         />
                                     )}

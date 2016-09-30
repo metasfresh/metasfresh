@@ -71,6 +71,7 @@ class Header extends Component {
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
     }
+
     handleScroll = (event) => {
       let scrollTop = event.srcElement.body.scrollTop;
 
@@ -93,6 +94,7 @@ class Header extends Component {
     renderBreadcrumb = () => {
         const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
         const {menuOverlay} = this.state;
+
         return (
             <span className="header-breadcrumb">
                 {breadcrumb && breadcrumb.map((item, index) =>
