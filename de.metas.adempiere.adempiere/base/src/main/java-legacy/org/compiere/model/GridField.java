@@ -1744,7 +1744,7 @@ public class GridField
 		{
 			final Properties ctx = getGridFieldContext();
 			m_backupValue = Env.getContext(ctx, m_vo.WindowNo, m_vo.getColumnName());
-			if (LogManager.isLevelFinest())
+			if (log.isTraceEnabled())
 				log.trace("Backup " + m_vo.WindowNo + "|" + m_vo.getColumnName() + "=" + m_backupValue);
 			m_isBackupValue = true;
 		}
