@@ -48,6 +48,8 @@ import de.metas.logging.LogManager;
 	private IKeyLayout keyLayoutNumeric;
 	private IKeyLayout keyLayoutText;
 
+	private boolean referencesClosed;
+
 	/**
 	 *
 	 * @param terminalContext
@@ -158,12 +160,26 @@ import de.metas.logging.LogManager;
 	@Override
 	public String toString()
 	{
-		return "TerminalContextReferences [propertyChangeSupports=" + propertyChangeSupports + ", _disposableComponents=" + _disposableComponents + "]";
+		return "TerminalContextReferences [referencesClosed=" + referencesClosed + ", propertyChangeSupports=" + propertyChangeSupports + ", _disposableComponents=" + _disposableComponents + "]";
 	}
 
 	@Override
 	public void close()
 	{
 		terminalContext.deleteReferences(this);
+	}
+
+	/**
+	 * Not to be mixed up with the {@link AutoCloseable} method {@link #close()}.<br>
+	 * See {@link ITerminalContext#closeCurrentReferences()} for what this is about.
+	 */
+	/* package */ void closeReferences()
+	{
+		referencesClosed = true;
+	}
+
+	boolean isReferencesClosed()
+	{
+		return referencesClosed;
 	}
 }

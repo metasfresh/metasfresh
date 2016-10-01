@@ -10,24 +10,45 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.37.36 (2016-39)
+# metasfresh 4.38.36 (2016-40)
 
 upcoming
 
 ## Features
+ * #395 Add Description in Jasper Invoice Vendor
+   - Added a new row in to allow the display of optional line text in further invoices
+
+## Fixes
+
+# metasfresh 4.37.36 (2016-39)
+
+this week's RC
+
+## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
+   - Added further policies for InvoiceCandidate processing.
  * #213 Add onhand qty to MRP Product Info
+   - Added a new column in MRP Product Info to now show the Handling Unit Storage On Hand Quantity.
  * #375 Jasper: extend product name on report_details
+   - Extension of name Field in Jasper Report (report_details).
 
 ## Fixes
  * #409 MRP Product Info might leave back stale entries after fast changes
+   - Making sure that statistics in MRP Product Info are updated also after quick complete and reactivate of sales and purchase orders.
  * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
+   - Ensured that Purchase Order Candidates are aggregated to 1 Purchase Order per Vendor when triggered.
  * #370 Material Receipt - Somtimes double click needed for weighing machine
+   - Fixing a bug that occured on certain Windows clients with connected weighing machines.
  * #420 NPE in CalloutOrder.bPartner
+   - Eliminated a Null Pointer Exception in Sales Order Callout CalloutOrder.bPartner.
  * #410 sscc label org fix
+   - Fixed a minor issue in SSCC Label to load the correct Orgabnisation and Logo when generated and printed.
  * #422 pricelist report do not show virtual HU
+   - Fixed the pricelist report to also show virtual HU.
  * #331 Activating the trace log file doesn't always work
+   - Stabilized the new trace log feature. Here switching on/ off visibility.
  * #437 Old window Produktion is opened automatically by menu search
+   - Fixed the autocall in menu search.
 
 # metasfresh 4.36.35 (2016-38)
 
