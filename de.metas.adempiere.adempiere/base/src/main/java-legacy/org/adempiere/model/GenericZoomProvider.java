@@ -26,6 +26,7 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -169,8 +170,8 @@ public class GenericZoomProvider implements IZoomProvider
 				&& targetTableInfo.hasColumnName("Record_ID"))
 		{
 			final MQuery query = new MQuery(targetTableName);
-			query.addRestriction("AD_Table_ID", MQuery.EQUAL, source.getAD_Table_ID());
-			query.addRestriction("Record_ID", MQuery.EQUAL, source.getRecord_ID());
+			query.addRestriction("AD_Table_ID", Operator.EQUAL, source.getAD_Table_ID());
+			query.addRestriction("Record_ID", Operator.EQUAL, source.getRecord_ID());
 			query.setZoomTableName(targetTableName);
 			//query.setZoomColumnName(po.get_KeyColumns()[0]);
 			query.setZoomValue(source.getRecord_ID());
@@ -197,7 +198,7 @@ public class GenericZoomProvider implements IZoomProvider
 		}
 		else
 		{
-			query.addRestriction(targetColumnName, MQuery.EQUAL, source.getRecord_ID());
+			query.addRestriction(targetColumnName, Operator.EQUAL, source.getRecord_ID());
 		}
 		query.setZoomTableName(targetTableName);
 		query.setZoomColumnName(source.getKeyColumnName());

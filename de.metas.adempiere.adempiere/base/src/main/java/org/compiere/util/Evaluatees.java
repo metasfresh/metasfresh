@@ -81,6 +81,12 @@ public final class Evaluatees
 		return new EvaluateeCtx(ctx, windowNo, onlyWindow);
 	}
 
+	public static final Evaluatee ofCtx(final Properties ctx)
+	{
+		final boolean onlyWindow = false;
+		return new EvaluateeCtx(ctx, Env.WINDOW_None, onlyWindow);
+	}
+
 	public static final Evaluatee2 compose(final Evaluatee... evaluatees)
 	{
 		Check.assumeNotEmpty(evaluatees, "evaluatees not empty");

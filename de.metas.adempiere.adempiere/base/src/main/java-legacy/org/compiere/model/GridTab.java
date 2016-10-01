@@ -65,6 +65,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -3979,13 +3980,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				if (queryColumn.endsWith("_ID"))
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							new Integer(Env.getContextAsInt(ctx, getWindowNo(), queryColumn)),
 							infoName, infoDisplay);
 				}
 				else
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							Env.getContext(ctx, getWindowNo(), queryColumn),
 							infoName, infoDisplay);
 				}

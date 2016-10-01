@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
 
@@ -35,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_PrintFormat;
 import org.compiere.util.CCache;
@@ -44,8 +43,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
+import de.metas.logging.LogManager;
 
 /**
  *	AD_PrintFormat - Print Format Model.
@@ -344,7 +345,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		if (m_translationViewLanguage != null && query != null && query.getTableName().toUpperCase().endsWith("_V"))
 		{
 			query.setTableName(query.getTableName() + "t");
-			query.addRestriction("AD_Language", MQuery.EQUAL, m_translationViewLanguage);
+			query.addRestriction("AD_Language", Operator.EQUAL, m_translationViewLanguage);
 		}
 	}	//	setTranslationViewQuery
 

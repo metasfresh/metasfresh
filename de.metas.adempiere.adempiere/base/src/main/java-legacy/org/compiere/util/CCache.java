@@ -205,6 +205,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	private final int initialCapacity;
 	/** Expire after minutes */
 	private final int expireMinutes;
+	public static final int EXPIREMINUTES_Never = 0;
 	/** Just reset */
 	private boolean m_justReset = true;
 

@@ -25,6 +25,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PrintInfo;
@@ -285,7 +286,7 @@ public class InvoicePrint extends SvrProcess
 				format.setTranslationLanguage(language);
 				//	query
 				MQuery query = new MQuery("C_Invoice_Header_v");
-				query.addRestriction("C_Invoice_ID", MQuery.EQUAL, new Integer(C_Invoice_ID));
+				query.addRestriction("C_Invoice_ID", Operator.EQUAL, new Integer(C_Invoice_ID));
 
 				//	Engine
 				PrintInfo info = new PrintInfo(

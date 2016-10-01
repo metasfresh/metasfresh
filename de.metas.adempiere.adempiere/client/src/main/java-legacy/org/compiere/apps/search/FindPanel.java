@@ -32,8 +32,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -45,10 +43,6 @@ import javax.swing.RootPaneContainer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorUI;
@@ -59,7 +53,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.StatusBar;
-import org.compiere.apps.search.FindAdvancedSearchTableModelRow.Join;
+import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.grid.GridController;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
@@ -67,6 +61,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.GridTabMaxRowsRestrictionChecker;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -76,14 +71,16 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Find/Search Records. Based on AD_Find for persistency, query is build to restrict info
@@ -121,10 +118,11 @@ public final class FindPanel extends CPanel implements ActionListener
 		m_tableName = builder.getTableName();
 		m_whereExtended = builder.getWhereExtended();
 		_columnName2searchFields = FindPanelSearchField.createMapIndexedByColumnName(builder.getFindFields());
-		userQueriesRepository = FindUserQueryRepository.builder()
+		userQueriesRepository = UserQueryRepository.builder()
 				.setSearchFields(_columnName2searchFields.values())
 				.setAD_Tab_ID(adTabId)
 				.setAD_Table_ID(adTableId)
+				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
 				.build();
 		drawSmallButtons = builder.isSmall();
 		embedded = builder.isEmbedded();
@@ -191,7 +189,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	private final String m_whereExtended;
 	/** Available search Fields */
 	private final Map<String, FindPanelSearchField> _columnName2searchFields;
-	private FindUserQueryRepository userQueriesRepository;
+	private UserQueryRepository userQueriesRepository;
 	private final IUserRolePermissions role;
 	private final GridTabMaxRowsRestrictionChecker maxRowsChecker;
 	/** Resulting query */
@@ -409,7 +407,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	private void initFind()
 	{
 		// Get Info from target Tab
-		for (final FindPanelSearchField searchField : getAvailableSearchFields())
+		for (final IUserQueryField searchField : getAvailableSearchFields())
 		{
 			final String columnName = searchField.getColumnName();
 
@@ -467,7 +465,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 		//
 		// Add remaining fields to simple search panel
-		for (final FindPanelSearchField searchField : getAvailableSearchFields())
+		for (final IUserQueryField searchField : getAvailableSearchFields())
 		{
 			final String columnName = searchField.getColumnName();
 			if (!columnName.equals("Value")
@@ -475,7 +473,7 @@ public final class FindPanel extends CPanel implements ActionListener
 					&& !columnName.equals("DocumentNo")
 					&& !columnName.equals("Description")
 					&& !columnName.equals("Search")
-					&& (searchField.isSelectionColumn() || columnName.indexOf("Name") != -1))
+					&& (FindPanelSearchField.isSelectionColumn(searchField) || columnName.indexOf("Name") != -1))
 			{
 				addSelectionColumn(searchField);
 				hasEditors = true;
@@ -513,10 +511,11 @@ public final class FindPanel extends CPanel implements ActionListener
 	 * 
 	 * @param searchField field
 	 */
-	private void addSelectionColumn(final FindPanelSearchField searchField)
+	private void addSelectionColumn(final IUserQueryField searchField)
 	{
+		final FindPanelSearchField findPanelSearchField = FindPanelSearchField.castToFindPanelSearchField(searchField);
 		// Editor
-		final VEditor editor = searchField.createEditor(false);
+		final VEditor editor = findPanelSearchField.createEditor(false);
 		if (editor == null)
 		{
 			return; // shall not happen
@@ -530,7 +529,7 @@ public final class FindPanel extends CPanel implements ActionListener
 			((CTextField)editor).addActionListener(this);
 		}
 		
-		final CLabel label = searchField.createEditorLabel();
+		final CLabel label = findPanelSearchField.createEditorLabel();
 
 		//
 		addSimpleSearchField(label, swingEditorFactory.getEditorComponent(editor));
@@ -664,7 +663,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		final MQuery query;
 		if(template != null)
 		{
-			query = new MQuery(template);
+			query = template.deepCopy();
 		}
 		else
 		{
@@ -683,15 +682,15 @@ public final class FindPanel extends CPanel implements ActionListener
 			return;
 		}
 		
-		final List<FindAdvancedSearchTableModelRow> rows = userQueriesRepository.parseUserQuery(selectedUserQueryName);
-		if (rows == null)
+		final IUserQuery userQuery = userQueriesRepository.getUserQueryByName(selectedUserQueryName);
+		if(userQuery == null)
 		{
 			return;
 		}
 
 		advancedTable.stopEditor(false);
 		final FindAdvancedSearchTableModel model = advancedTable.getModel();
-		model.setRows(rows);
+		model.setRows(userQuery.getRestrictions());
 	}
 
 	/**
@@ -771,8 +770,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				log.debug(ColumnName + "=" + value);
 
 				final FindPanelSearchField field = getSearchFieldByColumnName(ColumnName);
-				final boolean isProductCategoryField = field.isProductCategoryField();
-				final String ColumnSQL = field.getColumnSQL(false);
+				final String ColumnSQL = field.getColumnSQL();
 
 				// metas-2009_0021_AP1_CR064: begin
 				if (value instanceof String
@@ -781,18 +779,9 @@ public final class FindPanel extends CPanel implements ActionListener
 				{
 					FindHelper.addStringRestriction(m_query, ColumnSQL, (String)value, ColumnName, true); // metas
 				}
-				// metas: commented
-				// if (value.toString().indexOf('%') != -1)
-				// m_query.addRestriction(ColumnSQL, MQuery.LIKE_I, value.toString(), ColumnName, ved.getDisplay());
-				// metas-2009_0021_AP1_CR064: end
-				else if (isProductCategoryField && value instanceof Integer)
-				{
-					final int productCategoryId = ((Integer)value).intValue();
-					m_query.addRestriction(field.getSubCategoryWhereClause(productCategoryId));
-				}
 				else
 				{
-					m_query.addRestriction(ColumnSQL, MQuery.EQUAL, value, ColumnName, veditor.getDisplay());
+					m_query.addRestriction(ColumnSQL, Operator.EQUAL, value, ColumnName, veditor.getDisplay());
 				}
 			}
 		} // editors
@@ -886,7 +875,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	{
 		advancedTable.stopEditor(true);
 		
-		final List<FindAdvancedSearchTableModelRow> rows = advancedTable.getModel().getRows();
+		final List<IUserQueryRestriction> rows = advancedTable.getModel().getRows();
 
 		//
 		final MQuery queryToSave = createNewQuery(null);
@@ -1253,11 +1242,11 @@ public final class FindPanel extends CPanel implements ActionListener
 			return;
 		}
 
-		final List<FindAdvancedSearchTableModelRow> rows = new ArrayList<>();
+		final List<IUserQueryRestriction> rows = new ArrayList<>();
 		for (int i = 0; i < query.getRestrictionCount(); i++)
 		{
 			String columnName = query.getColumnName(i);
-			final String operatorStr = query.getOperator(i);
+			final Operator operator = query.getOperator(i);
 			final Object value = query.getCode(i);
 			final Object valueTo = query.getCodeTo(i);
 			final boolean andCondition = query.isAndCondition(i);
@@ -1321,25 +1310,17 @@ public final class FindPanel extends CPanel implements ActionListener
 			//
 			// Add to advanced table
 			{
-				final FindAdvancedSearchTableModelRow row = new FindAdvancedSearchTableModelRow();
+				final IUserQueryRestriction row = IUserQueryRestriction.newInstance();
 				row.setJoin(andCondition ? Join.AND : Join.OR);
 
-				FindPanelSearchField searchField = getSearchFieldByColumnName(columnName);
+				IUserQueryField searchField = getSearchFieldByColumnName(columnName);
 				if (searchField == null)
 				{
 					// Use the InfoName when adding the criteria. It will also give the correct name for column sqls (08880)
 					searchField = getSearchFieldByColumnName(query.getInfoName(i));
 				}
 				row.setSearchField(searchField);
-
-				for (ValueNamePair vnp : MQuery.OPERATORS)
-				{
-					if (vnp.getValue().equals(operatorStr))
-					{
-						row.setOperator(vnp);
-						break;
-					}
-				}
+				row.setOperator(operator);
 
 				//
 				// GridField field = getTargetMField(columnName);

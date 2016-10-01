@@ -22,15 +22,17 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Request Type Model
@@ -510,7 +512,7 @@ public class MRequestType extends X_R_RequestType
 		String pColumn = "M_Product_ID";
 		//
 		MQuery query = new MQuery("R_Request");
-		query.addRestriction("R_RequestType_ID", "=", getR_RequestType_ID());
+		query.addRestriction("R_RequestType_ID", Operator.EQUAL, getR_RequestType_ID());
 		//
 		String where = null;
 		if (R_Status_ID != 0)

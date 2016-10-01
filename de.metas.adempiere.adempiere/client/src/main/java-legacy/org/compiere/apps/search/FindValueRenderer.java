@@ -18,8 +18,6 @@ package org.compiere.apps.search;
 
 import java.awt.Component;
 import java.awt.Insets;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
@@ -28,10 +26,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VHeaderRenderer;
-import org.compiere.model.Lookup;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Renderer for Find 'Value' Column. The value is how it would be used in a query, i.e. with '' for strings
@@ -89,15 +88,16 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 	@Override
 	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(table, rowIndex);
+		final IUserQueryRestriction row = getRow(table, rowIndex);
 
 		//
 		// Column
-		currentSearchField = row.getSearchField();
+		currentSearchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 
 		//
 		// Update valueTo enabled
-		currentIsValueToEnabled = isValueToColumn && row.isBinaryOperator();
+		final Operator operator = row.getOperator();
+		currentIsValueToEnabled = isValueToColumn && operator != null && operator.isRangeOperator();
 		final boolean valueDisplayed = isEnabled();
 
 		//
@@ -228,15 +228,7 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 		// Lookup
 		else if (DisplayType.isLookup(displayType) && currentSearchField != null)
 		{
-			final Lookup lookup = currentSearchField.getLookup();
-			if (lookup != null)
-			{
-				return lookup.getDisplay(value);
-			}
-			else
-			{
-				return "";
-			}
+			return currentSearchField.getValueDisplay(value);
 		}
 		// other
 		else
@@ -245,9 +237,9 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 		}
 	}
 
-	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	private IUserQueryRestriction getRow(final JTable table, final int viewRowIndex)
 	{
-		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
+		final FindAdvancedSearchTableModel model = FindAdvancedSearchTableModel.cast(table.getModel());
 		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);
 		return model.getRow(modelRowIndex);
 	}

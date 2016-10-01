@@ -33,6 +33,7 @@ import org.compiere.grid.ed.VNumber;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -357,7 +358,7 @@ public class InfoPayment extends Info
 		if (C_Payment_ID == null)
 			return;
 		MQuery query = new MQuery("C_Payment");
-		query.addRestriction("C_Payment_ID", MQuery.EQUAL, C_Payment_ID);
+		query.addRestriction("C_Payment_ID", Operator.EQUAL, C_Payment_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("C_Payment", fIsReceipt.isSelected());
 		zoom (AD_WindowNo, query);

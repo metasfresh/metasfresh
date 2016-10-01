@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JTable;
@@ -35,7 +36,7 @@ class FindColumnNameCellEditor extends FindCellEditor implements TableCellRender
 	@Override
 	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column)
 	{
-		final String valueToDisplay = value == null ? "" : ((FindPanelSearchField)value).getDisplayName();
+		final String valueToDisplay = value == null ? "" : FindPanelSearchField.castToFindPanelSearchField(value).getDisplayNameTrl();
 		return defaultRenderer.getTableCellRendererComponent(table, valueToDisplay, isSelected, hasFocus, row, column);
 	}
 
@@ -59,7 +60,7 @@ class FindColumnNameCellEditor extends FindCellEditor implements TableCellRender
 				@Override
 				protected String renderToString(final FindPanelSearchField value)
 				{
-					return value == null ? "" : value.getDisplayName();
+					return value == null ? "" : value.getDisplayNameTrl();
 				}
 			});
 
@@ -81,7 +82,7 @@ class FindColumnNameCellEditor extends FindCellEditor implements TableCellRender
 			if (availableSearchFields != null)
 			{
 				final List<FindPanelSearchField> availableSearchFieldsList = new ArrayList<>(availableSearchFields);
-				Collections.sort(availableSearchFieldsList, FindPanelSearchField.COMPARATOR_ByDisplayName);
+				Collections.sort(availableSearchFieldsList, Comparator.comparing(FindPanelSearchField::getDisplayNameTrl));
 				editor.setModel(new ListComboBoxModel<FindPanelSearchField>(availableSearchFieldsList));
 			}
 		}

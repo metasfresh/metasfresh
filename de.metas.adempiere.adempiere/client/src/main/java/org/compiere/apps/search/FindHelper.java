@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import org.adempiere.db.DBConstants;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.util.Permutation;
@@ -56,16 +57,16 @@ public final class FindHelper
 		final String valueStr = prepareSearchString(value, false);
 		if (valueStr == null)
 		{
-			query.addRestriction("UPPER(" + columnName + ")", MQuery.EQUAL, null, infoName, value);
+			query.addRestriction("UPPER(" + columnName + ")", Operator.EQUAL, null, infoName, value);
 		}
 		else if (valueStr.indexOf('%') == -1)
 		{
 			String valueSQL = "UPPER(" + DB.TO_STRING(valueStr) + ")";
-			query.addRestriction("UPPER(" + columnName + ")", MQuery.EQUAL, valueSQL, infoName, value);
+			query.addRestriction("UPPER(" + columnName + ")", Operator.EQUAL, valueSQL, infoName, value);
 		}
 		else
 		{
-			query.addRestriction(columnName, MQuery.LIKE_I, valueStr, infoName, value);
+			query.addRestriction(columnName, Operator.LIKE_I, valueStr, infoName, value);
 		}
 	}
 
@@ -92,7 +93,7 @@ public final class FindHelper
 			while (itr.hasNext())
 			{
 				value = ("%" + itr.next() + "%").replace(" ", "%");
-				query.addRestriction(COLUMNNAME_Search, MQuery.LIKE_I, value, infoName, value, true);
+				query.addRestriction(COLUMNNAME_Search, Operator.LIKE_I, value, infoName, value, true);
 			}
 		}
 		else
@@ -102,7 +103,7 @@ public final class FindHelper
 			// metas-2009_0021_AP1_CR064: end
 			if (!value.endsWith("%"))
 				value += "%";
-			query.addRestriction(COLUMNNAME_Search, MQuery.LIKE_I, value, infoName, value);
+			query.addRestriction(COLUMNNAME_Search, Operator.LIKE_I, value, infoName, value);
 		}
 	}
 
