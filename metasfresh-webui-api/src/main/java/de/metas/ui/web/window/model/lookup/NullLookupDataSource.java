@@ -5,7 +5,11 @@ import java.util.List;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
@@ -30,26 +34,49 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-public interface LookupDataSource
+public final class NullLookupDataSource implements LookupDataSource
 {
-	int FIRST_ROW = 0;
-	int DEFAULT_PageLength = 10;
+	public static final transient NullLookupDataSource instance = new NullLookupDataSource();
 
-	LookupValuesList findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength);
-
-	default LookupValuesList findEntities(final Evaluatee ctx, final String filter)
+	private NullLookupDataSource()
 	{
-		return findEntities(ctx, filter, FIRST_ROW, DEFAULT_PageLength);
+		super();
 	}
 
-	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
-
-	default LookupValuesList findEntities(final Evaluatee ctx)
+	@Override
+	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
-		return findEntities(ctx, DEFAULT_PageLength);
+		return LookupValuesList.EMPTY;
 	}
 
-	LookupValue findById(Object id);
+	@Override
+	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	{
+		return LookupValuesList.EMPTY;
+	}
 
-	List<CCacheStats> getCacheStats();
+	@Override
+	public LookupValue findById(final Object id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+
+		if (id instanceof Integer)
+		{
+			return IntegerLookupValue.unknown((int)id);
+		}
+		else
+		{
+			return StringLookupValue.unknown(id.toString());
+		}
+	}
+
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of();
+	}
+
 }

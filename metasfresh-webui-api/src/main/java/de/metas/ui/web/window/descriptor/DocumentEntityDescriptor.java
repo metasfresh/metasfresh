@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,6 +34,8 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProviderFactory;
 
 /*
  * #%L
@@ -110,6 +113,9 @@ public class DocumentEntityDescriptor
 	@JsonIgnore
 	private final CalloutExecutor calloutExecutorFactory;
 
+	@JsonIgnore
+	private final DocumentFilterDescriptorsProvider filtersProvider;
+
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
@@ -141,6 +147,8 @@ public class DocumentEntityDescriptor
 		id = String.valueOf(builder.AD_Tab_ID);
 
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
+
+		filtersProvider = builder.createFiltersProvider();
 	}
 
 	@JsonCreator
@@ -283,12 +291,17 @@ public class DocumentEntityDescriptor
 		return includedEntitiesByDetailId.values();
 	}
 
-	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId)
+	/**
+	 *
+	 * @param detailId
+	 * @return included {@link DocumentEntityDescriptor}; never returns null
+	 */
+	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId) throws NoSuchElementException
 	{
 		final DocumentEntityDescriptor includedEntityDescriptor = includedEntitiesByDetailId.get(detailId);
 		if (includedEntityDescriptor == null)
 		{
-			throw new IllegalArgumentException("No included entity found for detailId=" + detailId + " in " + this);
+			throw new NoSuchElementException("No included entity found for detailId=" + detailId + " in " + this);
 		}
 		return includedEntityDescriptor;
 	}
@@ -340,6 +353,11 @@ public class DocumentEntityDescriptor
 	public ICalloutExecutor createCalloutExecutor()
 	{
 		return calloutExecutorFactory.newInstanceSharingMasterData();
+	}
+
+	public DocumentFilterDescriptorsProvider getFiltersProvider()
+	{
+		return filtersProvider;
 	}
 
 	public static final class Builder
@@ -550,9 +568,9 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setTableName(String tableName)
+		public Builder setTableName(final String tableName)
 		{
-			this.TableName = tableName;
+			TableName = tableName;
 			return this;
 		}
 
@@ -580,14 +598,14 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private CalloutExecutor buildCalloutExecutorFactory(Collection<DocumentFieldDescriptor> fields)
+		private CalloutExecutor buildCalloutExecutorFactory(final Collection<DocumentFieldDescriptor> fields)
 		{
-			final String tableName = this.TableName;
-			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder(); 
+			final String tableName = TableName;
+			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder();
 			for (final DocumentFieldDescriptor field : fields)
 			{
 				final List<IDocumentFieldCallout> fieldCallouts = field.getCallouts();
-				if(fieldCallouts.isEmpty())
+				if (fieldCallouts.isEmpty())
 				{
 					continue;
 				}
@@ -595,12 +613,12 @@ public class DocumentEntityDescriptor
 				for (final IDocumentFieldCallout fieldCallout : fieldCallouts)
 				{
 					final Set<String> dependsOnFieldNames = fieldCallout.getDependsOnFieldNames();
-					if(dependsOnFieldNames.isEmpty())
+					if (dependsOnFieldNames.isEmpty())
 					{
 						logger.warn("Callout {} has no dependencies. Skipped from adding to entity descriptor.\n Target: {} \n Source: {}", fieldCallout, this, field);
 						continue;
 					}
-					
+
 					for (final String dependsOnFieldName : dependsOnFieldNames)
 					{
 						entityCalloutProviderBuilder.addCallout(tableName, dependsOnFieldName, fieldCallout);
@@ -615,8 +633,16 @@ public class DocumentEntityDescriptor
 			final ICalloutProvider defaultCalloutProvider = calloutExecutorBuilder.getDefaultCalloutProvider();
 			final ICalloutProvider calloutProvider = CompositeCalloutProvider.compose(defaultCalloutProvider, entityCalloutProvider);
 			calloutExecutorBuilder.setCalloutProvider(calloutProvider);
-			
+
 			return calloutExecutorBuilder.build();
+		}
+
+		private final DocumentFilterDescriptorsProvider createFiltersProvider()
+		{
+			final int adTabId = AD_Tab_ID;
+			final String tableName = getOrBuildDataBinding().getTableName();
+			final Collection<DocumentFieldDescriptor> fields = getFields().values();
+			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
 		}
 	}
 }

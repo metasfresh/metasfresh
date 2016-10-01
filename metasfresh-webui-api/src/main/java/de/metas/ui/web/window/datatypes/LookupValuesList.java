@@ -3,8 +3,10 @@ package de.metas.ui.web.window.datatypes;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -42,8 +44,16 @@ public final class LookupValuesList
 {
 	public static final LookupValuesList of(final List<LookupValue> values, final Map<String, String> debugProperties)
 	{
+		if((values == null || values.isEmpty())
+				&& (debugProperties == null || debugProperties.isEmpty()))
+		{
+			return EMPTY;
+		}
+		
 		return new LookupValuesList(values, debugProperties);
 	}
+	
+	public static final LookupValuesList EMPTY = new LookupValuesList(ImmutableList.of(), ImmutableMap.of());
 
 	private final Map<Object, LookupValue> values;
 	private final transient ImmutableMap<String, String> debugProperties;
@@ -115,5 +125,10 @@ public final class LookupValuesList
 	public LookupValue getById(final Object id)
 	{
 		return values.get(id);
+	}
+	
+	public final <T> T transform(Function<LookupValuesList, T> transformation)
+	{
+		return transformation.apply(this);
 	}
 }

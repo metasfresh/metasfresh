@@ -149,11 +149,6 @@ public final class JSONDocumentViewResult implements Serializable
 		return viewId;
 	}
 
-	public int getAD_Window_ID()
-	{
-		return AD_Window_ID;
-	}
-
 	public Long getSize()
 	{
 		return size;

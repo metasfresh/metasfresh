@@ -9,10 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
-import de.metas.ui.web.debug.DebugRestController;
-import de.metas.ui.web.menu.MenuRestController;
-import de.metas.ui.web.session.UserSessionRestController;
-import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.WebRestApiApplication;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -51,7 +48,7 @@ public class SwaggerConfig
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
-				.apis(basePackages(WindowRestController.class, MenuRestController.class, UserSessionRestController.class, DebugRestController.class))
+				.apis(basePackages(WebRestApiApplication.class))
 				.paths(PathSelectors.any())
 				.build();
 	}
@@ -63,6 +60,11 @@ public class SwaggerConfig
 		{
 			final String packageName = clazz.getPackage().getName();
 			predicates.add(RequestHandlerSelectors.basePackage(packageName));
+		}
+		
+		if(predicates.size() == 1)
+		{
+			return predicates.iterator().next();
 		}
 
 		return Predicates.or(predicates);

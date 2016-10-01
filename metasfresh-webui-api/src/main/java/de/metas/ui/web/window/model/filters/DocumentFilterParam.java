@@ -1,8 +1,9 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.model.filters;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
@@ -28,53 +29,58 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
-public class DocumentQueryFilterParam
+public class DocumentFilterParam
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static DocumentQueryFilterParam of(final MQuery mquery, final int restrictionIndex)
+	public static DocumentFilterParam of(final MQuery mquery, final int restrictionIndex)
 	{
 		try
 		{
+			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
 			final String fieldName = mquery.getColumnName(restrictionIndex);
-			final String operator = mquery.getOperator(restrictionIndex);
-			final boolean range = MQuery.BETWEEN.equals(operator);
+			final Operator operator = mquery.getOperator(restrictionIndex);
 			final Object value = mquery.getCode(restrictionIndex);
 			final Object valueTo = mquery.getCodeTo(restrictionIndex);
 
 			return builder()
+					.setJoinAnd(joinAnd)
 					.setFieldName(fieldName)
+					.setOperator(operator)
 					.setValue(value)
 					.setValueTo(valueTo)
-					// TODO .setOperator(OperatorType)
-					.setRange(range)
 					.build();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentQueryFilterParam.class
+			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentFilterParam.class
 					+ "\n MQuery: " + mquery
 					+ "\n Restriction index: " + restrictionIndex //
 					, ex);
 		}
 	}
 
+	private final boolean joinAnd;
 	private final String fieldName;
-	private final boolean range;
+	private final Operator operator;
 	private final Object value;
 	private final Object valueTo;
 
-	private DocumentQueryFilterParam(final Builder builder)
+	private DocumentFilterParam(final Builder builder)
 	{
 		super();
+
+		joinAnd = builder.joinAnd;
 
 		fieldName = builder.fieldName;
 		Check.assumeNotNull(fieldName, "Parameter fieldName is not null");
 
-		range = builder.range;
+		operator = builder.operator;
+		Check.assumeNotNull(operator, "Parameter operator is not null");
+
 		value = builder.value;
 		valueTo = builder.valueTo;
 	}
@@ -83,11 +89,17 @@ public class DocumentQueryFilterParam
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("join", joinAnd ? "AND" : "OR")
 				.add("fieldName", fieldName)
-				.add("range", range)
+				.add("operator", operator)
 				.add("value", value)
 				.add("valueTo", valueTo)
 				.toString();
+	}
+
+	public boolean isJoinAnd()
+	{
+		return joinAnd;
 	}
 
 	public String getFieldName()
@@ -95,9 +107,9 @@ public class DocumentQueryFilterParam
 		return fieldName;
 	}
 
-	public boolean isRange()
+	public Operator getOperator()
 	{
-		return range;
+		return operator;
 	}
 
 	public Object getValue()
@@ -112,8 +124,9 @@ public class DocumentQueryFilterParam
 
 	public static final class Builder
 	{
+		private boolean joinAnd = true;
 		private String fieldName;
-		private boolean range;
+		private Operator operator = Operator.EQUAL;
 		private Object value;
 		private Object valueTo;
 
@@ -122,9 +135,15 @@ public class DocumentQueryFilterParam
 			super();
 		}
 
-		public DocumentQueryFilterParam build()
+		public DocumentFilterParam build()
 		{
-			return new DocumentQueryFilterParam(this);
+			return new DocumentFilterParam(this);
+		}
+
+		public Builder setJoinAnd(final boolean joinAnd)
+		{
+			this.joinAnd = joinAnd;
+			return this;
 		}
 
 		public Builder setFieldName(final String fieldName)
@@ -133,9 +152,16 @@ public class DocumentQueryFilterParam
 			return this;
 		}
 
-		public Builder setRange(final boolean range)
+		public Builder setOperator(final Operator operator)
 		{
-			this.range = range;
+			Check.assumeNotNull(operator, "Parameter operator is not null");
+			this.operator = operator;
+			return this;
+		}
+
+		public Builder setOperator()
+		{
+			operator = valueTo != null ? Operator.BETWEEN : Operator.EQUAL;
 			return this;
 		}
 

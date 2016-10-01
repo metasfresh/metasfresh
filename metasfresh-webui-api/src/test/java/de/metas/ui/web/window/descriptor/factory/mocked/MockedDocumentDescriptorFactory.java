@@ -140,7 +140,9 @@ public class MockedDocumentDescriptorFactory implements DocumentDescriptorFactor
 														//
 														;
 
-		layoutBuilder.setSideList(DocumentLayoutSideListDescriptor.builder().build());
+		layoutBuilder.setSideList(DocumentLayoutSideListDescriptor.builder()
+				.setAD_Window_ID(AD_Window_ID)
+				.build());
 
 		return DocumentDescriptor.builder()
 				.setLayout(layoutBuilder.build())

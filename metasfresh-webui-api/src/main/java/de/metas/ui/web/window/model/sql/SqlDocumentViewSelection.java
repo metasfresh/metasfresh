@@ -377,7 +377,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			// WHERE clause (from query)
 			if (!sqlWhereClause.isNullExpression())
 			{
-				sqlBuilder.append(" AND (").append(sqlWhereClause).append(")");
+				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
 				sqlParams.addAll(sqlWhereClauseParams);
 			}
 

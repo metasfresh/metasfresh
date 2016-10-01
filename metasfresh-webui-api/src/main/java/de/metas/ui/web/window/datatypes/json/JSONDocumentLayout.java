@@ -16,6 +16,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -46,14 +47,14 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {
-	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentLayout(layout, jsonFilteringOpts);
+		return new JSONDocumentLayout(layout, jsonOpts);
 	}
 
-	public static final JSONDocumentLayout ofDetailTab(final int adWindowId, final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocumentLayout ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentLayout(adWindowId, detailLayout, jsonFilteringOpts);
+		return new JSONDocumentLayout(detailLayout, jsonOpts);
 	}
 
 	/** i.e. AD_Window_ID */
@@ -86,7 +87,7 @@ public final class JSONDocumentLayout implements Serializable
 
 	@JsonProperty("filters")
 	@JsonInclude(Include.NON_EMPTY)
-	private final List<JSONDocumentQueryFilterDescriptor> filters;
+	private final List<JSONDocumentFilterDescriptor> filters;
 
 	@JsonProperty("emptyResultText")
 	@JsonInclude(Include.NON_EMPTY)
@@ -101,13 +102,14 @@ public final class JSONDocumentLayout implements Serializable
 
 	/**
 	 * Header layout constructor
-	 * 
+	 *
 	 * @param layout
 	 * @param jsonOpts
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
 	{
 		super();
+
 		type = String.valueOf(layout.getAD_Window_ID());
 		tabid = null;
 		documentNoElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentNoElement(), jsonOpts);
@@ -136,7 +138,7 @@ public final class JSONDocumentLayout implements Serializable
 			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonOpts);
 		}
 
-		filters = JSONDocumentQueryFilterDescriptor.ofList(layout.getFilters(), jsonOpts.getAD_Language());
+		filters = null;
 
 		emptyResultText = null;
 		emptyResultHint = null;
@@ -152,29 +154,34 @@ public final class JSONDocumentLayout implements Serializable
 	 * From detail tab constructor.
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	private JSONDocumentLayout(final int adWindowId, final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 
-		final String adLanguage = jsonFilteringOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAD_Language();
 
-		type = String.valueOf(adWindowId);
-		tabid = detailLayout.getDetailId();
+		type = String.valueOf(detailLayout.getAD_Window_ID());
+
+		final String detailId = detailLayout.getDetailId();
+		tabid = detailId;
+
 		documentNoElement = null;
 		documentSummaryElement = null;
 		docActionElement = null;
-		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonFilteringOpts);
-		tabs = ImmutableList.of();
-		filters = JSONDocumentQueryFilterDescriptor.ofList(detailLayout.getFilters(), adLanguage);
+
+		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonOpts);
+		tabs = ImmutableList.of(); // no tabs for included tab
+
+		filters = null;
 
 		emptyResultText = detailLayout.getEmptyResultText(adLanguage);
 		emptyResultHint = detailLayout.getEmptyResultHint(adLanguage);
 
 		if (WindowConstants.isProtocolDebugging())
 		{
-			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
+			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 		}
 	}
 
@@ -187,7 +194,7 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
-			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
+			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty("emptyResultText") final String emptyResultText //
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 
@@ -254,7 +261,7 @@ public final class JSONDocumentLayout implements Serializable
 		return tabs;
 	}
 
-	public List<JSONDocumentQueryFilterDescriptor> getFilters()
+	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
 	}

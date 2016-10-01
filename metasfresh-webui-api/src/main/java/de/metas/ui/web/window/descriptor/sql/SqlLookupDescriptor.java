@@ -61,8 +61,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return new Builder();
 	}
 
+	public static final SqlLookupDescriptor cast(final LookupDescriptor lookupDescriptor)
+	{
+		return (SqlLookupDescriptor)lookupDescriptor;
+	}
+
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
-	// public static final CtxName SQL_PARAM_ValidationRuleSql = CtxName.parse("SqlValidationRule");
 	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
 	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
@@ -94,9 +98,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		sqlForFetchingDisplayNameByIdExpression = builder.sqlForFetchingDisplayNameByIdExpression;
 		entityTypeIndex = builder.entityTypeIndex;
 
-		final IValidationRule validationRule = builder.validationRule;
-		postQueryPredicate = validationRule.getPostQueryFilter();
-		Check.assumeNotNull(postQueryPredicate, "Parameter postQueryPredicate is not null");
+		postQueryPredicate = builder.getPostQueryPredicate();
 
 		numericKey = builder.numericKey;
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
@@ -160,6 +162,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				;
 	}
 
+	@Override
 	public boolean isNumericKey()
 	{
 		return numericKey;
@@ -194,6 +197,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return entityTypeIndex;
 	}
 
+	@Override
 	public Set<String> getDependsOnFieldNames()
 	{
 		return dependsOnFieldNames;
@@ -204,6 +208,14 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return postQueryPredicate;
 	}
 
+	@Override
+	public boolean hasParameters()
+	{
+		return !getSqlForFetchingExpression().getParameters().isEmpty()
+				|| !getPostQueryPredicate().getParameters().isEmpty();
+	}
+
+	@Override
 	public boolean isHighVolume()
 	{
 		return highVolume;
@@ -216,6 +228,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private Integer displayType;
 		private Integer AD_Reference_Value_ID;
 		private Integer AD_Val_Rule_ID;
+		private LookupScope scope = LookupScope.DocumentField;
 
 		//
 		// Built/prepared values
@@ -275,7 +288,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			//
 			// WHERE
-			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo);
+			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo, scope);
 
 			//
 			// ORDER BY
@@ -319,7 +332,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			final CompositeStringExpression.Builder sqlWhereFinal = IStringExpression.composer();
 			{
 				// Validation Rule's WHERE
-				final IStringExpression validationRuleWhereClause = validationRule.getPrefilterWhereClause();
+				final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(validationRule, scope);
 				if (!validationRuleWhereClause.isNullExpression())
 				{
 					sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -364,7 +377,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 		}
 
-		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo)
+		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final LookupScope scope)
 		{
 			final String tableName = lookupInfo.getTableName();
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
@@ -379,7 +392,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 
 			// Validation Rule's WHERE
-			final IStringExpression validationRuleWhereClause = lookupInfo.getValidationRule().getPrefilterWhereClause();
+			final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(lookupInfo.getValidationRule(), scope);
 			if (!validationRuleWhereClause.isNullExpression())
 			{
 				sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -395,6 +408,23 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
 
 			return sqlWhereFinal.build();
+		}
+
+		private static final IStringExpression buildSqlWhereClauseFromValidationRule(final IValidationRule validationRule, final LookupScope scope)
+		{
+			final IStringExpression validationRuleWhereClause = validationRule.getPrefilterWhereClause();
+			if (validationRuleWhereClause.isNullExpression())
+			{
+				return IStringExpression.NULL;
+			}
+
+			if (scope == LookupScope.DocumentFilter && !validationRuleWhereClause.getParameters().isEmpty())
+			{
+				// don't add the validation rule if it has parameters
+				return IStringExpression.NULL;
+			}
+
+			return validationRuleWhereClause;
 		}
 
 		private final IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
@@ -432,6 +462,22 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			return sqlForFetchingDisplayNameById;
 		}
 
+		private INamePairPredicate getPostQueryPredicate()
+		{
+			final INamePairPredicate postQueryPredicate = validationRule.getPostQueryFilter();
+			if (postQueryPredicate == null)
+			{
+				return INamePairPredicate.NULL;
+			}
+
+			if (scope == LookupScope.DocumentFilter && !postQueryPredicate.getParameters().isEmpty())
+			{
+				return INamePairPredicate.NULL;
+			}
+
+			return postQueryPredicate;
+		}
+
 		public Builder setColumnName(final String columnName)
 		{
 			this.columnName = columnName;
@@ -459,6 +505,13 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private boolean isHighVolume()
 		{
 			return DisplayType.TableDir != displayType && DisplayType.Table != displayType && DisplayType.List != displayType && DisplayType.Button != displayType;
+		}
+
+		public Builder setScope(final LookupScope scope)
+		{
+			Check.assumeNotNull(scope, "Parameter scope is not null");
+			this.scope = scope;
+			return this;
 		}
 	}
 }

@@ -27,11 +27,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
 /*
  * #%L
@@ -168,7 +168,7 @@ public class WindowRestControllerClient implements IWindowRestController
 	}
 
 	@Override
-	public JSONDocumentViewResult createView(final int adWindowId, final JSONViewDataType viewDataType, final int firstRow, final int pageLength, final List<JSONDocumentQueryFilter> jsonFilters)
+	public JSONDocumentViewResult createView(final int adWindowId, final JSONViewDataType viewDataType, final int firstRow, final int pageLength, final List<JSONDocumentFilter> jsonFilters)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();

@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.Comparator;
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
  * #%L
@@ -54,31 +54,22 @@ public final class LookupDataSourceFactory
 
 	private LookupDataSource createLookupDataSource(final LookupDescriptor lookupDescriptor)
 	{
-		if (lookupDescriptor instanceof SqlLookupDescriptor)
+		Check.assumeNotNull(lookupDescriptor, "Parameter lookupDescriptor is not null");
+		
+		final LookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(lookupDescriptor);
+
+		final LookupDataSource lookupDataSource;
+		if (!lookupDescriptor.isHighVolume() && !lookupDescriptor.hasParameters())
 		{
-			final SqlLookupDescriptor sqlLookupDescriptor = (SqlLookupDescriptor)lookupDescriptor;
-
-			final GenericSqlLookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(sqlLookupDescriptor);
-
-			final LookupDataSource lookupDataSource;
-			if (!sqlLookupDescriptor.isHighVolume()
-					&& sqlLookupDescriptor.getSqlForFetchingExpression().getParameters().isEmpty()
-					&& sqlLookupDescriptor.getPostQueryPredicate().getParameters().isEmpty())
-			{
-				lookupDataSource = FullyCachedLookupDataSource.of(fetcher);
-			}
-			else
-			{
-				lookupDataSource = PartitionCachedLookupDataSource.of(fetcher);
-			}
-
-			logger.debug("Creating lookup data source for {}: {}", lookupDescriptor, lookupDataSource);
-			return lookupDataSource;
+			lookupDataSource = FullyCachedLookupDataSource.of(fetcher);
 		}
 		else
 		{
-			throw new IllegalArgumentException("Unsupported lookup descriptor type: " + lookupDescriptor);
+			lookupDataSource = PartitionCachedLookupDataSource.of(fetcher);
 		}
+
+		logger.debug("Creating lookup data source for {}: {}", lookupDescriptor, lookupDataSource);
+		return lookupDataSource;
 	}
 
 	public List<CCacheStats> getCacheStats()

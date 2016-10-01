@@ -23,7 +23,6 @@ import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.Integ
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -63,8 +62,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -178,8 +175,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	private final Set<String> advancedFieldNames = new HashSet<>();
 	private final Set<String> layout_SideList_fieldNames = new HashSet<>();
 	private final Set<String> layout_GridView_fieldNames = new HashSet<>();
-	//
-	private List<DocumentQueryFilterDescriptor> _documentFilters;
 
 	public GridTabVOElementsFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
@@ -246,6 +241,11 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	private GridTabVO getGridTabVO()
 	{
 		return _gridTabVO;
+	}
+	
+	private int getAD_Window_ID()
+	{
+		return getGridTabVO().getAD_Window_ID();
 	}
 
 	private GridFieldVO getGridFieldVOById(final int adFieldId)
@@ -584,7 +584,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.setDescriptionTrls(detailTab.getDescriptionTrls())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.addFilters(documentFilters())
 				.addElements(layoutElements);
 
 		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
@@ -702,7 +701,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		return _documentFieldBuilders.computeIfAbsent(gridFieldVO.getColumnName(), (columnName) -> createDocumentField(gridFieldVO));
 	}
 
-	public DocumentFieldDescriptor.Builder createDocumentField(final GridFieldVO gridFieldVO)
+	private final DocumentFieldDescriptor.Builder createDocumentField(final GridFieldVO gridFieldVO)
 	{
 		// From entry data-binding:
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindingsBuilder = documentEntryDataBinding();
@@ -795,6 +794,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder()
 				.setFieldName(sqlColumnName)
+				.setCaption(gridFieldVO.getHeaderTrls())
 				.setDetailId(detailId)
 				//
 				.setKey(keyColumn)
@@ -811,6 +811,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.addCharacteristicIfTrue(advancedFieldNames.contains(fieldName), Characteristic.AdvancedField)
 				.addCharacteristicIfTrue(keyColumn || layout_SideList_fieldNames.contains(fieldName), Characteristic.SideListField)
 				.addCharacteristicIfTrue(keyColumn || layout_GridView_fieldNames.contains(fieldName), Characteristic.GridViewField)
+				.addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
@@ -935,10 +936,14 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 	private static DocumentFieldWidgetType extractWidgetType(final GridFieldVO gridFieldVO)
 	{
+		final String columnName = gridFieldVO.getColumnName();
 		final int displayType = gridFieldVO.getDisplayType();
+		return extractWidgetType(columnName, displayType);
 
-		//
-		//
+	}
+
+	private static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType)
+	{
 		if (displayType == DisplayType.List)
 		{
 			return DocumentFieldWidgetType.List;
@@ -1021,7 +1026,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		//
 		else if (displayType == DisplayType.YesNo)
 		{
-			final String columnName = gridFieldVO.getColumnName();
 			if (COLUMNNAMES_Switch.contains(columnName))
 			{
 				return DocumentFieldWidgetType.Switch;
@@ -1040,7 +1044,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		//
 		else
 		{
-			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of " + gridFieldVO);
+			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of columnName=" + columnName);
 		}
 	}
 
@@ -1573,6 +1577,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		logger.trace("Generating layout side list for {}", uiSections);
 
 		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder()
+				.setAD_Window_ID(getAD_Window_ID())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
@@ -1592,37 +1597,36 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		return layoutSideListBuilder.build();
 	}
 
-	public final List<DocumentQueryFilterDescriptor> documentFilters()
-	{
-		if (_documentFilters == null)
-		{
-			_documentFilters = getGridTabVO()
-					.getFields()
-					.stream()
-					.filter(field -> field.isSelectionColumn())
-					.map(field -> documentFilter(field))
-					.filter(filter -> filter != null)
-					.collect(GuavaCollectors.toImmutableList());
-		}
-		return _documentFilters;
-	}
-
-	private final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
-	{
-		final int displayType = field.getDisplayType();
-		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
-
-		return DocumentQueryFilterDescriptor.builder()
-				.setFilterId(field.getColumnName())
-				.setDisplayName(field.getHeaderTrls())
-				.setFrequentUsed(false)
-				.addParameter(DocumentQueryFilterParamDescriptor.builder()
-						.setDisplayName(field.getHeaderTrls())
-						.setFieldName(field.getColumnName())
-						.setWidgetType(getWidgetType(field))
-						.setRangeParameter(rangeParameter)
-						.build())
-				.build();
-	}
-
+//	public final List<DocumentQueryFilterDescriptor> documentFilters()
+//	{
+//		if (_documentFilters == null)
+//		{
+//			_documentFilters = getGridTabVO()
+//					.getFields()
+//					.stream()
+//					.filter(field -> field.isSelectionColumn())
+//					.map(field -> documentFilter(field))
+//					.filter(filter -> filter != null)
+//					.collect(GuavaCollectors.toImmutableList());
+//		}
+//		return _documentFilters;
+//	}
+//
+//	private final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
+//	{
+//		final int displayType = field.getDisplayType();
+//		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
+//
+//		return DocumentQueryFilterDescriptor.builder()
+//				.setFilterId(field.getColumnName())
+//				.setDisplayName(field.getHeaderTrls())
+//				.setFrequentUsed(false)
+//				.addParameter(DocumentQueryFilterParamDescriptor.builder()
+//						.setDisplayName(field.getHeaderTrls())
+//						.setFieldName(field.getColumnName())
+//						.setWidgetType(getWidgetType(field))
+//						.setRangeParameter(rangeParameter)
+//						.build())
+//				.build();
+//	}
 }

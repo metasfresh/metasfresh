@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 
 /*
  * #%L
@@ -69,7 +73,7 @@ public final class DocumentDescriptor
 	 *         <li>included descriptor if detailId is not null
 	 *         </ul>
 	 */
-	public DocumentEntityDescriptor getEntityDescriptor(final String detailId)
+	public DocumentEntityDescriptor getEntityDescriptor(@Nullable final String detailId)
 	{
 		if (detailId == null || detailId.isEmpty())
 		{
@@ -79,6 +83,25 @@ public final class DocumentDescriptor
 		{
 			return entityDescriptor.getIncludedEntityByDetailId(detailId);
 		}
+	}
+	
+	/**
+	 * @param detailId detailId or null
+	 * @return
+	 * 		<ul>
+	 *         <li>root entity's filters if detailId is null
+	 *         <li>included entity's filters if detailId is not null
+	 *         </ul>
+	 */
+	public DocumentFilterDescriptorsProvider getDocumentFiltersProvider(@Nullable final String detailId)
+	{
+		return getEntityDescriptor(detailId).getFiltersProvider();
+	}
+
+	/** @return root entity's filters */
+	public DocumentFilterDescriptorsProvider getDocumentFiltersProvider()
+	{
+		return getEntityDescriptor(null).getFiltersProvider();
 	}
 
 	public static final class Builder

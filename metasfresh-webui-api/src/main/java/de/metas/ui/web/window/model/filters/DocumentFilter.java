@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.model.filters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,22 +35,22 @@ import com.google.common.collect.ImmutableList;
  */
 
 @Immutable
-public final class DocumentQueryFilter
+public final class DocumentFilter
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
-	
-	public static DocumentQueryFilter of(final MQuery mquery)
+
+	public static DocumentFilter of(final MQuery mquery)
 	{
-		final List<DocumentQueryFilterParam> parameters = new ArrayList<>();
-		for(int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
+		final List<DocumentFilterParam> parameters = new ArrayList<>();
+		for (int i = 0, restrictionsCount = mquery.getRestrictionCount(); i < restrictionsCount; i++)
 		{
-			final DocumentQueryFilterParam param = DocumentQueryFilterParam.of(mquery, i);
+			final DocumentFilterParam param = DocumentFilterParam.of(mquery, i);
 			parameters.add(param);
 		}
-		
+
 		final String filterId;
 		if (parameters.size() == 1)
 		{
@@ -60,7 +60,7 @@ public final class DocumentQueryFilter
 		{
 			filterId = "MQuery-" + UUID.randomUUID(); // FIXME: find a better filterId
 		}
-		
+
 		return builder()
 				.setFilterId(filterId)
 				.setParameters(parameters)
@@ -68,9 +68,9 @@ public final class DocumentQueryFilter
 	}
 
 	private final String filterId;
-	private final List<DocumentQueryFilterParam> parameters;
+	private final List<DocumentFilterParam> parameters;
 
-	private DocumentQueryFilter(final Builder builder)
+	private DocumentFilter(final Builder builder)
 	{
 		super();
 
@@ -89,13 +89,13 @@ public final class DocumentQueryFilter
 				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
 	}
-	
+
 	public String getFilterId()
 	{
 		return filterId;
 	}
-	
-	public List<DocumentQueryFilterParam> getParameters()
+
+	public List<DocumentFilterParam> getParameters()
 	{
 		return parameters;
 	}
@@ -103,16 +103,16 @@ public final class DocumentQueryFilter
 	public static final class Builder
 	{
 		private String filterId;
-		private List<DocumentQueryFilterParam> parameters;
+		private List<DocumentFilterParam> parameters;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public DocumentQueryFilter build()
+		public DocumentFilter build()
 		{
-			return new DocumentQueryFilter(this);
+			return new DocumentFilter(this);
 		}
 
 		public Builder setFilterId(final String filterId)
@@ -121,9 +121,19 @@ public final class DocumentQueryFilter
 			return this;
 		}
 
-		public Builder setParameters(final List<DocumentQueryFilterParam> parameters)
+		public Builder setParameters(final List<DocumentFilterParam> parameters)
 		{
 			this.parameters = parameters;
+			return this;
+		}
+
+		public Builder addParameter(final DocumentFilterParam parameter)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+			parameters.add(parameter);
 			return this;
 		}
 	}
