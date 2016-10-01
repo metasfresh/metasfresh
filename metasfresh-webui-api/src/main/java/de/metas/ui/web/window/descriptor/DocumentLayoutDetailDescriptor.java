@@ -47,6 +47,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private final int AD_Window_ID;
 	private final String detailId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -55,18 +56,16 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private final List<DocumentQueryFilterDescriptor> filters;
-
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
 		super();
+		AD_Window_ID = builder.AD_Window_ID;
 		detailId = builder.getDetailId();
 		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
 		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
-		filters = ImmutableList.copyOf(builder.filters);
 	}
 
 	@Override
@@ -77,8 +76,12 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 				.add("detailId", detailId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
-				.add("filters", filters)
 				.toString();
+	}
+	
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
 	}
 
 	public String getDetailId()
@@ -116,13 +119,9 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
-	public List<DocumentQueryFilterDescriptor> getFilters()
-	{
-		return filters;
-	}
-
 	public static final class Builder
 	{
+		public Integer AD_Window_ID;
 		private String detailId;
 		private String caption;
 		private Map<String, String> captionTrls;
@@ -132,7 +131,6 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private ITranslatableString emptyResultHint;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
-		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
 
 		private Builder()
 		{
@@ -159,8 +157,13 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.add("detailId", detailId)
 					.add("caption", caption)
 					.add("elements-count", elementBuilders.size())
-					.add("filters-count", filters.size())
 					.toString();
+		}
+		
+		public Builder setAD_Window_ID(final int AD_Window_ID)
+		{
+			this.AD_Window_ID = AD_Window_ID;
+			return this;
 		}
 
 		public Builder setDetailId(final String detailId)
@@ -259,17 +262,6 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		{
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
 			return elementBuilder != null && elementBuilder.isAdvancedField();
-		}
-
-		public Builder addFilters(final List<DocumentQueryFilterDescriptor> filters)
-		{
-			if (filters == null || filters.isEmpty())
-			{
-				return this;
-			}
-
-			this.filters.addAll(filters);
-			return this;
 		}
 	}
 

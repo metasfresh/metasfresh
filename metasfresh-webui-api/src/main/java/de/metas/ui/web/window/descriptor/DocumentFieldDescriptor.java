@@ -28,6 +28,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -72,6 +74,8 @@ public final class DocumentFieldDescriptor implements Serializable
 	/** Internal field name (aka ColumnName) */
 	@JsonProperty("fieldName")
 	private final String fieldName;
+	@JsonProperty("caption")
+	private final ITranslatableString caption;
 	/** Detail ID or null if this is a field in main sections */
 	@JsonProperty("detailId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -131,6 +135,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		super();
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
+		caption = builder.getCaption();
 		detailId = builder.detailId;
 
 		key = builder.key;
@@ -210,6 +215,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public String getFieldName()
 	{
 		return fieldName;
+	}
+	
+	public ITranslatableString getCaption()
+	{
+		return caption;
 	}
 
 	public String getDetailId()
@@ -447,6 +457,13 @@ public final class DocumentFieldDescriptor implements Serializable
 						return valueConv;
 					}
 				}
+				else if (StringLookupValue.class == fromType)
+				{
+					final StringLookupValue stringLookupValue = (StringLookupValue)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)IntegerLookupValue.of(stringLookupValue);
+					return valueConv;
+				}
 			}
 			else if (StringLookupValue.class == targetType)
 			{
@@ -506,6 +523,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private DocumentFieldDescriptor _fieldBuilt;
 
 		private String fieldName;
+		private ITranslatableString caption;
 		public String detailId;
 
 		private boolean key = false;
@@ -527,6 +545,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
+
 
 		private Builder()
 		{
@@ -567,6 +586,22 @@ public final class DocumentFieldDescriptor implements Serializable
 			assertNotBuilt();
 			this.fieldName = fieldName;
 			return this;
+		}
+		
+		public Builder setCaption(final Map<String, String> captionTrls)
+		{
+			this.caption = ImmutableTranslatableString.ofMap(captionTrls);
+			return this;
+		}
+		
+		private ITranslatableString getCaption()
+		{
+			if (caption != null)
+			{
+				return caption;
+			}
+			
+			return ImmutableTranslatableString.constant(fieldName);
 		}
 
 		public Builder setDetailId(final String detailId)

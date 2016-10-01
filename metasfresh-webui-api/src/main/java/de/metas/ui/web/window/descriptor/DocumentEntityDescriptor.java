@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -16,9 +16,8 @@ import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
+import org.compiere.model.MQuery.Operator;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -31,6 +30,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -113,6 +113,9 @@ public class DocumentEntityDescriptor
 	@JsonIgnore
 	private final CalloutExecutor calloutExecutorFactory;
 
+	@JsonIgnore
+	private final DocumentQueryFilterDescriptorsProvider filtersProvider;
+
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
@@ -144,6 +147,8 @@ public class DocumentEntityDescriptor
 		id = String.valueOf(builder.AD_Tab_ID);
 
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
+
+		filtersProvider = builder.createFiltersProvider();
 	}
 
 	@JsonCreator
@@ -286,12 +291,17 @@ public class DocumentEntityDescriptor
 		return includedEntitiesByDetailId.values();
 	}
 
-	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId)
+	/**
+	 * 
+	 * @param detailId
+	 * @return included {@link DocumentEntityDescriptor}; never returns null
+	 */
+	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId) throws NoSuchElementException
 	{
 		final DocumentEntityDescriptor includedEntityDescriptor = includedEntitiesByDetailId.get(detailId);
 		if (includedEntityDescriptor == null)
 		{
-			throw new IllegalArgumentException("No included entity found for detailId=" + detailId + " in " + this);
+			throw new NoSuchElementException("No included entity found for detailId=" + detailId + " in " + this);
 		}
 		return includedEntityDescriptor;
 	}
@@ -343,6 +353,11 @@ public class DocumentEntityDescriptor
 	public ICalloutExecutor createCalloutExecutor()
 	{
 		return calloutExecutorFactory.newInstanceSharingMasterData();
+	}
+
+	public DocumentQueryFilterDescriptorsProvider getFiltersProvider()
+	{
+		return filtersProvider;
 	}
 
 	public static final class Builder
@@ -624,37 +639,41 @@ public class DocumentEntityDescriptor
 
 		private final DocumentQueryFilterDescriptorsProvider createFiltersProvider()
 		{
-			final ImmutableDocumentQueryFilterDescriptorsProvider standardFieldFilters = ImmutableDocumentQueryFilterDescriptorsProvider.of(getFields()
-					.values()
+			final Collection<DocumentFieldDescriptor> fields = getFields().values();
+
+			//
+			// Standard field filters: filters created from document fields which are flagged with AllowFiltering
+			final ImmutableDocumentQueryFilterDescriptorsProvider standardFieldFilters = fields
 					.stream()
 					.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
 					.map(field -> createFilter(field))
-					.collect(Collectors.toList()));
+					.collect(ImmutableDocumentQueryFilterDescriptorsProvider.collector());
 
+			//
+			// User query filters: filters created from user queries
 			final int adTabId = this.AD_Tab_ID;
 			final String tableName = getOrBuildDataBinding().getTableName();
-			final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-			final Collection<DocumentFieldDescriptor> fields = getFields().values();
-			final UserQueryDocumentQueryFilterDescriptorsProvider userQueryFilters = new UserQueryDocumentQueryFilterDescriptorsProvider(adTabId, adTableId, fields);
-			
-			return CompositeDocumentQueryFilterDescriptorsProvider.of(standardFieldFilters, userQueryFilters);
+			final UserQueryDocumentQueryFilterDescriptorsProvider userQueryFilters = new UserQueryDocumentQueryFilterDescriptorsProvider(adTabId, tableName, fields);
+
+			//
+			return CompositeDocumentQueryFilterDescriptorsProvider.of(userQueryFilters, standardFieldFilters);
 		}
 
 		private final DocumentQueryFilterDescriptor createFilter(final DocumentFieldDescriptor field)
 		{
+			final ITranslatableString displayName = field.getCaption();
+			final String fieldName = field.getFieldName();
 			final DocumentFieldWidgetType widgetType = field.getWidgetType();
-			final boolean rangeParameter = widgetType.isRangeFilteringSupported();
 
 			return DocumentQueryFilterDescriptor.builder()
-					.setFilterId(field.getFieldName())
-					// .setDisplayName(field.getN) // TODO
+					.setFilterId(fieldName)
+					.setDisplayName(displayName)
 					.setFrequentUsed(false)
 					.addParameter(DocumentQueryFilterParamDescriptor.builder()
-							// .setDisplayName(field.getHeaderTrls()) // TODO
-							.setFieldName(field.getFieldName())
+							.setDisplayName(displayName)
+							.setFieldName(fieldName)
 							.setWidgetType(widgetType)
-							.setRangeParameter(rangeParameter)
-							.build())
+							.setOperator(Operator.EQUAL))
 					.build();
 		}
 

@@ -14,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
@@ -71,7 +72,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Properties ctx = Env.getCtx(); // TODO
+		final Properties ctx = Env.getCtx(); // TODO get rid of ctx
 		final int windowNo = 0; // TODO: get rid of WindowNo from GridWindowVO
 		final int AD_Menu_ID = 0; // N/A
 		final boolean loadAllLanguages = true;
@@ -88,13 +89,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		// Layout: Create UI sections from main tab
 		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVOElementsFactory.MAIN_TabNo);
 		final GridTabVOElementsFactory mainTabFactory = new GridTabVOElementsFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
-
 		{
 			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
 			layoutBuilder.setGridView(mainTabFactory.layoutDetail());
 			layoutBuilder.setAdvancedView(mainTabFactory.layoutAdvancedView());
 			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
-			layoutBuilder.addFilters(mainTabFactory.documentFilters());
 
 			// Set special field names
 			final SpecialFieldsCollector specialFieldsCollector = mainTabFactory.getSpecialFieldsCollector();
@@ -113,7 +112,8 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(GridTabVOElementsFactory.MAIN_TabNo))
 		{
 			final GridTabVOElementsFactory detailTabFactory = new GridTabVOElementsFactory(gridWindowVO, detailTabVO, mainTabVO);
-			layoutBuilder.addDetailIfValid(detailTabFactory.layoutDetail());
+			DocumentLayoutDetailDescriptor.Builder layoutDetail = detailTabFactory.layoutDetail();
+			layoutBuilder.addDetailIfValid(layoutDetail);
 
 			//
 			// Fields mapping

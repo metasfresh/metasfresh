@@ -25,6 +25,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
@@ -51,9 +52,9 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
-	public static final GenericSqlLookupDataSourceFetcher of(final SqlLookupDescriptor sqlLookupDescriptor)
+	public static final GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
 	{
-		return new GenericSqlLookupDataSourceFetcher(sqlLookupDescriptor);
+		return new GenericSqlLookupDataSourceFetcher(lookupDescriptor);
 	}
 
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
@@ -66,17 +67,21 @@ class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 	private final IStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final INamePairPredicate postQueryPredicate;
 
-	private GenericSqlLookupDataSourceFetcher(final SqlLookupDescriptor sqlLookupDescriptor)
+	private GenericSqlLookupDataSourceFetcher(final LookupDescriptor lookupDescriptor)
 	{
 		super();
-		Preconditions.checkNotNull(sqlLookupDescriptor);
-		lookupTableName = sqlLookupDescriptor.getTableName();
-		numericKey = sqlLookupDescriptor.isNumericKey();
-		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 
+		Preconditions.checkNotNull(lookupDescriptor);
+		lookupTableName = lookupDescriptor.getTableName();
+		numericKey = lookupDescriptor.isNumericKey();
+
+		//
+		// SqlLookupDescriptor specific
+		// NOTE: don't store a reference to our descriptor, just extract what we need!
+		final SqlLookupDescriptor sqlLookupDescriptor = SqlLookupDescriptor.cast(lookupDescriptor);
+		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
 		sqlForFetchingDisplayNameByIdExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression();
-
 		postQueryPredicate = sqlLookupDescriptor.getPostQueryPredicate();
 	}
 

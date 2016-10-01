@@ -4,16 +4,23 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.compiere.apps.search.IUserQuery;
 import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
-import org.compiere.util.ValueNamePair;
+import org.compiere.model.MQuery.Operator;
 
+import com.google.common.base.MoreObjects;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.model.DocumentQueryFilterParam;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 
 /*
  * #%L
@@ -41,9 +48,11 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 {
 	private final UserQueryRepository repository;
 
-	public UserQueryDocumentQueryFilterDescriptorsProvider(final int adTabId, final int adTableId, final Collection<DocumentFieldDescriptor> fields)
+	public UserQueryDocumentQueryFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
 		super();
+
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		final List<IUserQueryField> searchFields = fields
 				.stream()
@@ -86,34 +95,54 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 				.setDisplayName(userQuery.getCaption())
 				.setFrequentUsed(false);
 
-		for (final IUserQueryRestriction queryRestriction : userQuery.getSegments())
+		if (WindowConstants.isProtocolDebugging())
 		{
-			final boolean isParameter = true; // TODO queryRestriction.isParameter();
+			filter.putDebugProperty("userQuery", userQuery.toString());
+		}
 
-			final Join join = queryRestriction.getJoin(); // TODO join
-			final IUserQueryField searchField = queryRestriction.getSearchField();
+		for (final IUserQueryRestriction queryRestriction : userQuery.getRestrictions())
+		{
+			final Join join = queryRestriction.getJoin();
+			final UserQueryField searchField = UserQueryField.cast(queryRestriction.getSearchField());
 			final String fieldName = searchField.getColumnName();
-			final boolean isRange = queryRestriction.isBinaryOperator();
-			final ValueNamePair operator = queryRestriction.getOperator(); // TODO operator
+			final Operator operator = queryRestriction.getOperator();
+			final Object value = queryRestriction.getValue();
+			final Object valueTo = queryRestriction.getValueTo();
+
+			final boolean isParameter;
+			if (operator.isRangeOperator())
+			{
+				isParameter = value == null || valueTo == null;
+			}
+			else
+			{
+				isParameter = value == null;
+			}
+
 			if (isParameter)
 			{
-				final String displayName = searchField.getDisplayName();
-				final DocumentFieldWidgetType widgetType = UserQueryField.getWidgetType(searchField);
+				final ITranslatableString displayName = searchField.getDisplayName();
+				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
+				final LookupDescriptor lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentQueryFilterParamDescriptor.builder()
+						.setJoinAnd(join == Join.AND)
 						.setDisplayName(displayName)
 						.setFieldName(fieldName)
 						.setWidgetType(widgetType)
-						.setRangeParameter(isRange)
-						.build());
+						.setOperator(operator)
+						.setDefaultValue(value)
+						.setDefaultValueTo(valueTo)
+						.setLookupDescriptor(lookupDescriptor));
 			}
 			else
 			{
 				filter.addInternalParameter(DocumentQueryFilterParam.builder()
+						.setJoinAnd(join == Join.AND)
 						.setFieldName(fieldName)
-						.setRange(isRange)
-						.setValue(queryRestriction.getValue())
-						.setValueTo(queryRestriction.getValueTo())
+						.setOperator(operator)
+						.setValue(value)
+						.setValueTo(valueTo)
 						.build());
 			}
 		}
@@ -128,22 +157,36 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 			return new UserQueryField(field);
 		}
 
-		public static final DocumentFieldWidgetType getWidgetType(final IUserQueryField userQueryField)
+		public static final UserQueryField cast(final IUserQueryField userQueryField)
 		{
-			return ((UserQueryField)userQueryField).getWidgetType();
+			return (UserQueryField)userQueryField;
 		}
 
 		private final String fieldName;
+		private final ITranslatableString displayName;
 		private final DocumentFieldWidgetType widgetType;
 		private final Class<?> valueClass;
+		private final LookupDescriptor lookupDescriptor;
 
 		private UserQueryField(final DocumentFieldDescriptor field)
 		{
 			super();
 			// NOTE: don't store the reference to "field" because we want to make this class as light as possible
 			fieldName = field.getFieldName();
+			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
 			valueClass = field.getValueClass();
+
+			final DocumentFieldDataBindingDescriptor fieldDataBinding = field.getDataBinding().orElse(null);
+			lookupDescriptor = fieldDataBinding == null ? null : fieldDataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper("documentField")
+					.addValue(fieldName)
+					.toString();
 		}
 
 		@Override
@@ -153,10 +196,9 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 		}
 
 		@Override
-		public String getDisplayName()
+		public ITranslatableString getDisplayName()
 		{
-			// TODO introduce field.getCaption()
-			return null;
+			return displayName;
 		}
 
 		@Override
@@ -179,8 +221,12 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 		@Override
 		public Object convertValueToFieldType(final Object valueObj)
 		{
-			final LookupDataSource lookupDataSource = null;
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, valueClass, lookupDataSource);
+			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, valueClass, NullLookupDataSource.instance);
+		}
+
+		public LookupDescriptor getLookupDescriptor()
+		{
+			return lookupDescriptor;
 		}
 	}
 }

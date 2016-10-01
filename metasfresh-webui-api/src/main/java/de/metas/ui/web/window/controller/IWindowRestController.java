@@ -82,8 +82,10 @@ public interface IWindowRestController
 			, String fieldName//
 	);
 
+	@Deprecated
 	JSONDocumentLayoutTab viewLayout(int adWindowId,final JSONViewDataType viewDataType);
 
+	@Deprecated
 	JSONDocumentViewResult createView(
 			int adWindowId //
 			, final JSONViewDataType viewDataType //
@@ -92,8 +94,10 @@ public interface IWindowRestController
 			, List<JSONDocumentQueryFilter> jsonFilters //
 	);
 
+	@Deprecated
 	JSONDocumentViewResult browseView(String viewId, int firstRow, int pageLength, final String orderBysListStr);
 
+	@Deprecated
 	void deleteView(String viewId);
 
 	JSONDocumentActionsList getDocumentActions(int adWindowId, String idStr, String detailId, String rowIdStr);

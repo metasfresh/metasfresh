@@ -2,7 +2,6 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.adempiere.util.GuavaCollectors;
 
@@ -12,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryFilter;
 import de.metas.ui.web.window.model.DocumentQueryFilterParam;
@@ -40,8 +40,7 @@ import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
 public class JSONDocumentQueryFilter
 {
-	@Deprecated
-	public static List<DocumentQueryFilter> unwrapList(final List<JSONDocumentQueryFilter> jsonFilters)
+	public static List<DocumentQueryFilter> unwrapList(final List<JSONDocumentQueryFilter> jsonFilters, final DocumentQueryFilterDescriptorsProvider filterDescriptorProvider)
 	{
 		if (jsonFilters == null || jsonFilters.isEmpty())
 		{
@@ -49,61 +48,77 @@ public class JSONDocumentQueryFilter
 		}
 		return jsonFilters
 				.stream()
-				.map(jsonFilter -> unwrap(jsonFilter))
+				.map(jsonFilter -> unwrap(jsonFilter, filterDescriptorProvider))
 				.filter(filter -> filter != null)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final DocumentQueryFilter unwrap(final JSONDocumentQueryFilter jsonFilter)
+	public static final DocumentQueryFilter unwrap(final JSONDocumentQueryFilter jsonFilter, final DocumentQueryFilterDescriptorsProvider filterDescriptorProvider)
+	{
+		final String filterId = jsonFilter.getFilterId();
+		final DocumentQueryFilterDescriptor filterDescriptor = filterDescriptorProvider.getByFilterIdOrNull(filterId);
+
+		// Ad-hoc filters (e.g. zoom references)
+		if (filterDescriptor == null)
+		{
+			return unwrapAsGenericFilter(jsonFilter);
+		}
+		// Filter with descriptor
+		else
+		{
+			return unwrapUsingDescriptor(jsonFilter, filterDescriptor);
+		}
+	}
+
+	private static DocumentQueryFilter unwrapAsGenericFilter(final JSONDocumentQueryFilter jsonFilter)
 	{
 		return DocumentQueryFilter.builder()
 				.setFilterId(jsonFilter.getFilterId())
-				.setParameters(JSONDocumentQueryFilterParam.unwrapList(jsonFilter.getParameters()))
+				.setParameters(jsonFilter.getParameters()
+						.stream()
+						.map(jsonParam -> DocumentQueryFilterParam.builder()
+								.setFieldName(jsonParam.getParameterName())
+								.setValue(jsonParam.getValue())
+								.setValueTo(jsonParam.getValueTo())
+								.setOperator()
+								.build())
+						.collect(GuavaCollectors.toImmutableList()))
 				.build();
 	}
 
-	public static List<DocumentQueryFilter> unwrapList(final List<JSONDocumentQueryFilter> jsonFilters, Function<String, DocumentQueryFilterDescriptor> descriptorProvider)
+	private static DocumentQueryFilter unwrapUsingDescriptor(final JSONDocumentQueryFilter jsonFilter, final DocumentQueryFilterDescriptor filterDescriptor)
 	{
-		if (jsonFilters == null || jsonFilters.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		return jsonFilters
-				.stream()
-				.map(jsonFilter -> unwrap(jsonFilter, descriptorProvider))
-				.filter(filter -> filter != null)
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	public static final DocumentQueryFilter unwrap(final JSONDocumentQueryFilter jsonFilter, Function<String, DocumentQueryFilterDescriptor> descriptorProvider)
-	{
-		final String filterId = jsonFilter.getFilterId();
-		final DocumentQueryFilterDescriptor descriptor = descriptorProvider.apply(filterId);
 		final DocumentQueryFilter.Builder filter = DocumentQueryFilter.builder()
-				.setFilterId(filterId);
+				.setFilterId(jsonFilter.getFilterId());
 
-		final Map<String, JSONDocumentQueryFilterParam> jsonParams = Maps.uniqueIndex(jsonFilter.getParameters(), jsonParam -> jsonParam.getField());
+		final Map<String, JSONDocumentQueryFilterParam> jsonParams = Maps.uniqueIndex(jsonFilter.getParameters(), jsonParam -> jsonParam.getParameterName());
 
-		for (final DocumentQueryFilterParamDescriptor paramDescriptor : descriptor.getParameters())
+		for (final DocumentQueryFilterParamDescriptor paramDescriptor : filterDescriptor.getParameters())
 		{
-			final String fieldName = paramDescriptor.getFieldName();
-			final JSONDocumentQueryFilterParam jsonParam = jsonParams.get(fieldName);
+			final String parameterName = paramDescriptor.getParameterName();
+			final JSONDocumentQueryFilterParam jsonParam = jsonParams.get(parameterName);
+			if (jsonParam == null)
+			{
+				throw new IllegalArgumentException("Parameter '" + parameterName + "' was not provided");
+			}
+
 			final Object value = jsonParam.getValue();
 			final Object valueTo = jsonParam.getValueTo();
 			filter.addParameter(DocumentQueryFilterParam.builder()
-					.setFieldName(fieldName)
-					.setRange(paramDescriptor.isRangeParameter())
+					.setFieldName(paramDescriptor.getFieldName())
+					.setOperator(paramDescriptor.getOperator())
 					.setValue(value)
 					.setValueTo(valueTo)
 					.build());
 		}
 
-		for (final DocumentQueryFilterParam internalParam : descriptor.getInternalParameters())
+		for (final DocumentQueryFilterParam internalParam : filterDescriptor.getInternalParameters())
 		{
 			filter.addParameter(internalParam);
 		}
 
 		return filter.build();
+
 	}
 
 	public static final JSONDocumentQueryFilter of(final DocumentQueryFilter filter)

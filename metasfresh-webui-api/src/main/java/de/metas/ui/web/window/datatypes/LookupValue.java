@@ -138,7 +138,12 @@ public abstract class LookupValue
 		{
 			return new StringLookupValue(value, displayName);
 		}
-		
+
+		public static final StringLookupValue unknown(final String value)
+		{
+			return new StringLookupValue(value, "<" + value + ">");
+		}
+
 		private Integer idInt; // lazy
 
 		private StringLookupValue(final String id, final String displayName)
@@ -163,7 +168,21 @@ public abstract class LookupValue
 		{
 			return new IntegerLookupValue(id, displayName);
 		}
-		
+
+		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
+		{
+			if(stringLookupValue == null)
+			{
+				return null;
+			}
+			return new IntegerLookupValue(stringLookupValue.getIdAsInt(), stringLookupValue.getDisplayName());
+		}
+
+		public static final IntegerLookupValue unknown(final int id)
+		{
+			return new IntegerLookupValue(id, "<" + id + ">");
+		}
+
 		private IntegerLookupValue(final int id, final String displayName)
 		{
 			super(id, displayName);

@@ -1,13 +1,19 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -44,9 +50,11 @@ public final class DocumentQueryFilterDescriptor
 
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
-	private final List<DocumentQueryFilterParamDescriptor> parameters;
+	private final Map<String, DocumentQueryFilterParamDescriptor> parametersByName;
 	private final List<DocumentQueryFilterParam> internalParameters;
 	private final boolean frequentUsed;
+
+	private final Map<String, Object> debugProperties;
 
 	private DocumentQueryFilterDescriptor(final Builder builder)
 	{
@@ -58,9 +66,11 @@ public final class DocumentQueryFilterDescriptor
 		displayNameTrls = builder.displayNameTrls;
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
 
-		parameters = ImmutableList.copyOf(builder.parameters);
+		parametersByName = builder.buildParameters();
 		internalParameters = ImmutableList.copyOf(builder.internalParameters);
 		frequentUsed = builder.frequentUsed;
+
+		debugProperties = builder.debugProperties == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.debugProperties);
 	}
 
 	@Override
@@ -69,7 +79,7 @@ public final class DocumentQueryFilterDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("filterId", filterId)
-				.add("parameters", parameters.isEmpty() ? null : parameters)
+				.add("parameters", parametersByName.isEmpty() ? null : parametersByName.values())
 				.add("internalParameters", internalParameters.isEmpty() ? null : internalParameters)
 				.toString();
 	}
@@ -84,9 +94,19 @@ public final class DocumentQueryFilterDescriptor
 		return displayNameTrls.translate(adLanguage);
 	}
 
-	public List<DocumentQueryFilterParamDescriptor> getParameters()
+	public Collection<DocumentQueryFilterParamDescriptor> getParameters()
 	{
-		return parameters;
+		return parametersByName.values();
+	}
+
+	public DocumentQueryFilterParamDescriptor getParameterByName(final String parameterName)
+	{
+		final DocumentQueryFilterParamDescriptor parameter = parametersByName.get(parameterName);
+		if (parameter == null)
+		{
+			throw new NoSuchElementException("Parameter '" + parameterName + "' not found in " + this);
+		}
+		return parameter;
 	}
 
 	public List<DocumentQueryFilterParam> getInternalParameters()
@@ -99,13 +119,20 @@ public final class DocumentQueryFilterDescriptor
 		return frequentUsed;
 	}
 
+	public Map<String, Object> getDebugProperties()
+	{
+		return debugProperties;
+	}
+
 	public static final class Builder
 	{
 		private String filterId;
 		private ITranslatableString displayNameTrls;
-		private final List<DocumentQueryFilterParamDescriptor> parameters = new ArrayList<>();
+		private final List<DocumentQueryFilterParamDescriptor.Builder> parameters = new ArrayList<>();
 		private final List<DocumentQueryFilterParam> internalParameters = new ArrayList<>();
 		private boolean frequentUsed;
+
+		private Map<String, Object> debugProperties = null;
 
 		private Builder()
 		{
@@ -115,6 +142,29 @@ public final class DocumentQueryFilterDescriptor
 		public DocumentQueryFilterDescriptor build()
 		{
 			return new DocumentQueryFilterDescriptor(this);
+		}
+
+		private Map<String, DocumentQueryFilterParamDescriptor> buildParameters()
+		{
+			final Map<String, Integer> nextParamIndexByFieldName = new HashMap<>();
+			return parameters
+					.stream()
+					.peek((paramBuilder) -> {
+						final String fieldName = paramBuilder.getFieldName();
+						final Integer nextParamIndex = nextParamIndexByFieldName.get(fieldName);
+						if (nextParamIndex == null)
+						{
+							paramBuilder.setParameterName(fieldName);
+							nextParamIndexByFieldName.put(fieldName, 2);
+						}
+						else
+						{
+							paramBuilder.setParameterName(fieldName + nextParamIndex);
+							nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
+						}
+					})
+					.map(paramBuilder -> paramBuilder.build())
+					.collect(GuavaCollectors.toImmutableMapByKey(param -> param.getParameterName()));
 		}
 
 		public Builder setFilterId(final String filterId)
@@ -141,7 +191,7 @@ public final class DocumentQueryFilterDescriptor
 			return this;
 		}
 
-		public Builder addParameter(final DocumentQueryFilterParamDescriptor parameter)
+		public Builder addParameter(final DocumentQueryFilterParamDescriptor.Builder parameter)
 		{
 			parameters.add(parameter);
 			return this;
@@ -150,6 +200,17 @@ public final class DocumentQueryFilterDescriptor
 		public Builder addInternalParameter(final DocumentQueryFilterParam parameter)
 		{
 			internalParameters.add(parameter);
+			return this;
+		}
+
+		public Builder putDebugProperty(final String name, final Object value)
+		{
+			Check.assumeNotEmpty(name, "name is not empty");
+			if (debugProperties == null)
+			{
+				debugProperties = new LinkedHashMap<>();
+			}
+			debugProperties.put("debug-" + name, value);
 			return this;
 		}
 	}

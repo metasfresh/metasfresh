@@ -1,9 +1,15 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -41,26 +47,39 @@ public class ImmutableDocumentQueryFilterDescriptorsProvider implements Document
 		return new ImmutableDocumentQueryFilterDescriptorsProvider(descriptors);
 	}
 
+	public static final Collector<DocumentQueryFilterDescriptor, ?, ImmutableDocumentQueryFilterDescriptorsProvider> collector()
+	{
+		final Supplier<List<DocumentQueryFilterDescriptor>> supplier = ArrayList::new;
+		final BiConsumer<List<DocumentQueryFilterDescriptor>, DocumentQueryFilterDescriptor> accumulator = (list, filter) -> list.add(filter);
+		final BinaryOperator<List<DocumentQueryFilterDescriptor>> combiner = (list1, list2) -> {
+			list1.addAll(list2);
+			return list1;
+		};
+		final Function<List<DocumentQueryFilterDescriptor>, ImmutableDocumentQueryFilterDescriptorsProvider> finisher = ImmutableDocumentQueryFilterDescriptorsProvider::of;
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 	private static final ImmutableDocumentQueryFilterDescriptorsProvider NULL = new ImmutableDocumentQueryFilterDescriptorsProvider(ImmutableList.of());
 
-	private final Map<String, DocumentQueryFilterDescriptor> descriptors;
+	private final Map<String, DocumentQueryFilterDescriptor> descriptorsByFilterId;
 
 	public ImmutableDocumentQueryFilterDescriptorsProvider(final List<DocumentQueryFilterDescriptor> descriptors)
 	{
 		super();
-		this.descriptors = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());
+		descriptorsByFilterId = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());
 	}
 
 	@Override
 	public Collection<DocumentQueryFilterDescriptor> getAll()
 	{
-		return descriptors.values();
+		return descriptorsByFilterId.values();
 	}
 
 	@Override
 	public DocumentQueryFilterDescriptor getByFilterIdOrNull(final String filterId) throws NoSuchElementException
 	{
-		final DocumentQueryFilterDescriptor descriptor = descriptors.get(filterId);
+		final DocumentQueryFilterDescriptor descriptor = descriptorsByFilterId.get(filterId);
 		return descriptor;
 	}
 

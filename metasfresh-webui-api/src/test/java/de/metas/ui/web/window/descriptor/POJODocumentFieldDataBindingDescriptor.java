@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
@@ -16,18 +17,17 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor
 {
@@ -37,8 +37,8 @@ public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldData
 	}
 
 	private final String columnName;
-	
-	private POJODocumentFieldDataBindingDescriptor(String columnName)
+
+	private POJODocumentFieldDataBindingDescriptor(final String columnName)
 	{
 		super();
 		this.columnName = columnName;
@@ -51,7 +51,13 @@ public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldData
 	}
 
 	@Override
-	public LookupDataSource createLookupDataSource()
+	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
+	{
+		return null;
+	}
+
+	@Override
+	public LookupDataSource createLookupDataSource(final LookupScope scope)
 	{
 		return null;
 	}

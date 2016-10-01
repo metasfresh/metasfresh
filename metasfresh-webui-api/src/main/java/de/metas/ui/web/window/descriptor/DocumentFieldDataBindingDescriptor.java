@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
@@ -35,6 +36,8 @@ public interface DocumentFieldDataBindingDescriptor
 
 	Collection<String> getLookupValuesDependsOnFieldNames();
 
-	LookupDataSource createLookupDataSource();
+	LookupDescriptor getLookupDescriptor(LookupScope scope);
+
+	LookupDataSource createLookupDataSource(LookupScope scope);
 
 }

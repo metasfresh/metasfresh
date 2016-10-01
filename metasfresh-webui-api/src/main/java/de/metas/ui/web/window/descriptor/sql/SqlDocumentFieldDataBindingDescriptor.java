@@ -8,10 +8,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.Functions;
 import org.adempiere.util.NumberUtils;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
@@ -29,6 +31,8 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.model.DocumentView;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -96,7 +100,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@JsonProperty("sqlColumnSql")
 	private final IStringExpression sqlColumnSql;
 	@JsonProperty("virtualColumn")
-	private boolean virtualColumn;
+	private final boolean virtualColumn;
 	@JsonProperty("keyColumn")
 	private final boolean keyColumn;
 	@JsonProperty("parentLinkColumn")
@@ -112,7 +116,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private transient DocumentViewFieldValueLoader _documentViewFieldValueLoader; // lazy
 
 	@JsonIgnore
-	private final SqlLookupDescriptor sqlLookupDescriptor;
+	private final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
 
 	@JsonIgnore
 	private final boolean usingDisplayColumn;
@@ -156,7 +160,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		documentFieldValueLoader = builder.documentFieldValueLoader;
 		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
 
-		sqlLookupDescriptor = builder.sqlLookupDescriptor;
+		lookupDescriptorProvider = builder.sqlLookupDescriptorProvider;
 		usingDisplayColumn = builder.usingDisplayColumn;
 		displayColumnName = builder.displayColumnName;
 		displayColumnSqlExpression = builder.displayColumnSqlExpression;
@@ -183,7 +187,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			, @JsonProperty("sqlTableAlias") final String sqlTableAlias //
 			, @JsonProperty("sqlColumnName") final String sqlColumnName //
 			, @JsonProperty("sqlColumnSql") final IStringExpression sqlColumnSql //
-			, @JsonProperty("virtualColumn") boolean virtualColumn //
+			, @JsonProperty("virtualColumn") final boolean virtualColumn //
 			, @JsonProperty("keyColumn") final boolean keyColumn //
 			, @JsonProperty("parentLinkColumn") final boolean parentLinkColumn //
 			, @JsonProperty("encrypted") final boolean encrypted //
@@ -308,14 +312,21 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
-	public LookupDataSource createLookupDataSource()
+	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
 	{
-		if (sqlLookupDescriptor == null)
+		return lookupDescriptorProvider.apply(scope);
+	}
+
+	@Override
+	public LookupDataSource createLookupDataSource(final LookupScope scope)
+	{
+		final LookupDescriptor lookupDescriptor = getLookupDescriptor(scope);
+		if (lookupDescriptor == null)
 		{
 			return null;
 		}
 
-		return LookupDataSourceFactory.instance.getLookupDataSource(sqlLookupDescriptor);
+		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 
 	}
 
@@ -323,11 +334,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@Override
 	public Collection<String> getLookupValuesDependsOnFieldNames()
 	{
-		if (sqlLookupDescriptor == null)
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+		if (lookupDescriptor == null)
 		{
 			return ImmutableSet.of();
 		}
-		return sqlLookupDescriptor.getDependsOnFieldNames();
+		return lookupDescriptor.getDependsOnFieldNames();
 	}
 
 	/**
@@ -401,7 +413,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	private static DocumentViewFieldValueLoader createDocumentViewFieldValueLoader(final String fieldName, final boolean keyColumn, final DocumentFieldValueLoader fieldValueLoader)
 	{
 		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
-		
+
 		final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger;
 
 		if (keyColumn)
@@ -491,7 +503,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private int orderByPriority;
 
 		// Built values
-		private SqlLookupDescriptor sqlLookupDescriptor;
+		private Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider;
 		private boolean usingDisplayColumn;
 		private String displayColumnName;
 		private IStringExpression displayColumnSqlExpression;
@@ -509,16 +521,18 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 			//
 			// Lookup descriptor
-			sqlLookupDescriptor = buildSqlLookupDescriptor();
+			sqlLookupDescriptorProvider = sqlLookupDescriptorProvider();
 
 			//
 			// Display column
-			if (sqlLookupDescriptor != null)
+			final LookupDescriptor lookupDescriptor = sqlLookupDescriptorProvider.apply(LookupScope.DocumentField);
+			if (lookupDescriptor != null)
 			{
 				usingDisplayColumn = true;
 				displayColumnName = sqlColumnName + "$Display";
-				displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlTableAlias + "." + sqlColumnName);
-				numericKey = sqlLookupDescriptor.isNumericKey();
+				final String sqlColumnNameFQ = sqlTableAlias + "." + sqlColumnName;
+				displayColumnSqlExpression = SqlLookupDescriptor.cast(lookupDescriptor).getSqlForFetchingDisplayNameByIdExpression(sqlColumnNameFQ);
+				numericKey = lookupDescriptor.isNumericKey();
 			}
 			else
 			{
@@ -733,25 +747,37 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setVirtualColumn(boolean virtualColumn)
+		public Builder setVirtualColumn(final boolean virtualColumn)
 		{
 			this.virtualColumn = virtualColumn;
 			return this;
 		}
 
-		private SqlLookupDescriptor buildSqlLookupDescriptor()
+		private Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider()
+		{
+			return sqlLookupDescriptorProvider(sqlColumnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
+		}
+
+		private static Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider(
+				final String sqlColumnName //
+				, final int displayType //
+				, final int AD_Reference_Value_ID //
+				, final int AD_Val_Rule_ID //
+		)
 		{
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
-				return SqlLookupDescriptor.builder()
+				return Functions.memoizing(scope -> SqlLookupDescriptor.builder()
 						.setColumnName(sqlColumnName)
 						.setDisplayType(displayType)
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
-						.build();
+						.setScope(scope)
+						.build());
 			}
-			return null;
+			return scope -> null;
+
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
@@ -760,7 +786,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setWidgetType(DocumentFieldWidgetType widgetType)
+		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
 			this.widgetType = widgetType;
 			return this;

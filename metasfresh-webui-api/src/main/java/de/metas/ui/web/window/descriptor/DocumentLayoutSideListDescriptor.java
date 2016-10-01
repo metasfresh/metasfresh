@@ -44,6 +44,7 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private final int AD_Window_ID;
 	private final ITranslatableString emptyResultText;
 	private final ITranslatableString emptyResultHint;
 	private final List<DocumentLayoutElementDescriptor> elements;
@@ -51,6 +52,7 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 	private DocumentLayoutSideListDescriptor(final Builder builder)
 	{
 		super();
+		AD_Window_ID = builder.AD_Window_ID;
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
@@ -63,6 +65,11 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 				.omitNullValues()
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
+	}
+	
+	public int getAD_Window_ID()
+	{
+		return AD_Window_ID;
 	}
 
 	public String getEmptyResultText(final String adLanguage)
@@ -87,6 +94,8 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 
 	public static final class Builder
 	{
+		public Integer AD_Window_ID;
+
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
 		private ITranslatableString emptyResultText;
@@ -116,6 +125,12 @@ public class DocumentLayoutSideListDescriptor implements Serializable
 			return MoreObjects.toStringHelper(this)
 					.add("elements-count", elementBuilders.size())
 					.toString();
+		}
+		
+		public Builder setAD_Window_ID(final int AD_Window_ID)
+		{
+			this.AD_Window_ID = AD_Window_ID;
+			return this;
 		}
 
 		public Builder setEmptyResultText(final ITranslatableString emptyResultText)

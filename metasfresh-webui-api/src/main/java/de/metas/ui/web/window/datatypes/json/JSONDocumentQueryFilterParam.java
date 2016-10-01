@@ -1,12 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
-
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
@@ -34,35 +29,13 @@ import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 
 public class JSONDocumentQueryFilterParam
 {
-	public static List<DocumentQueryFilterParam> unwrapList(final List<JSONDocumentQueryFilterParam> jsonFilterParams)
-	{
-		if (jsonFilterParams == null || jsonFilterParams.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		return jsonFilterParams
-				.stream()
-				.map(jsonFilter -> unwrap(jsonFilter))
-				.filter(filter -> filter != null)
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	private static final DocumentQueryFilterParam unwrap(final JSONDocumentQueryFilterParam jsonFilterParam)
-	{
-		return DocumentQueryFilterParam.builder()
-				.setFieldName(jsonFilterParam.getField())
-				.setValue(jsonFilterParam.getValue())
-				.setValueTo(jsonFilterParam.getValueTo())
-				.build();
-	}
-	
 	public static final JSONDocumentQueryFilterParam of(final DocumentQueryFilterParam filterParam)
 	{
 		return new JSONDocumentQueryFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
 	}
 
-	@JsonProperty("field")
-	private final String field;
+	@JsonProperty("parameterName")
+	private final String parameterName;
 
 	@JsonProperty("value")
 	private final Object value;
@@ -72,20 +45,20 @@ public class JSONDocumentQueryFilterParam
 
 	@JsonCreator
 	private JSONDocumentQueryFilterParam(
-			@JsonProperty("field") final String field //
+			@JsonProperty("parameterName") final String parameterName //
 			, @JsonProperty("value") final Object value //
 			, @JsonProperty("valueTo") final Object valueTo //
 	)
 	{
 		super();
-		this.field = field;
+		this.parameterName = parameterName;
 		this.value = value;
 		this.valueTo = valueTo;
 	}
 
-	public String getField()
+	public String getParameterName()
 	{
-		return field;
+		return parameterName;
 	}
 
 	public Object getValue()

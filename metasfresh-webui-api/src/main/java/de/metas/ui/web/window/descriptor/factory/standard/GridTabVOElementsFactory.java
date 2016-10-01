@@ -23,11 +23,7 @@ import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.Integ
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.apps.search.IUserQuery;
-import org.compiere.apps.search.IUserQueryRestriction;
-import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -41,7 +37,6 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -67,14 +62,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
-import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 /*
@@ -183,8 +175,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	private final Set<String> advancedFieldNames = new HashSet<>();
 	private final Set<String> layout_SideList_fieldNames = new HashSet<>();
 	private final Set<String> layout_GridView_fieldNames = new HashSet<>();
-	//
-	private List<DocumentQueryFilterDescriptor> _documentFilters;
 
 	public GridTabVOElementsFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
@@ -251,6 +241,11 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	private GridTabVO getGridTabVO()
 	{
 		return _gridTabVO;
+	}
+	
+	private int getAD_Window_ID()
+	{
+		return getGridTabVO().getAD_Window_ID();
 	}
 
 	private GridFieldVO getGridFieldVOById(final int adFieldId)
@@ -589,7 +584,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				.setDescriptionTrls(detailTab.getDescriptionTrls())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.addFilters(documentFilters())
 				.addElements(layoutElements);
 
 		layout_GridView_fieldNames.addAll(layoutDetail.getFieldNames());
@@ -800,6 +794,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder()
 				.setFieldName(sqlColumnName)
+				.setCaption(gridFieldVO.getHeaderTrls())
 				.setDetailId(detailId)
 				//
 				.setKey(keyColumn)
@@ -1582,6 +1577,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		logger.trace("Generating layout side list for {}", uiSections);
 
 		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder()
+				.setAD_Window_ID(getAD_Window_ID())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
@@ -1601,89 +1597,36 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 		return layoutSideListBuilder.build();
 	}
 
-	public final List<DocumentQueryFilterDescriptor> documentFilters()
-	{
-		if (_documentFilters == null)
-		{
-			_documentFilters = getGridTabVO()
-					.getFields()
-					.stream()
-					.filter(field -> field.isSelectionColumn())
-					.map(field -> documentFilter(field))
-					.filter(filter -> filter != null)
-					.collect(GuavaCollectors.toImmutableList());
-
-//			final UserQueryRepository userQueriesRepository = UserQueryRepository.builder()
-//					.setAD_Tab_ID(getGridTabVO().getAD_Tab_ID())
-//					.setAD_Table_ID(getGridTabVO().getAD_Table_ID())
-//					// TODO .setSearchFields(searchFields)
-//					.build();
-//			final IUserQuery userQuery = userQueriesRepository.parseUserQuery("aa");
-//			DocumentQueryFilterDescriptor f = documentFilter(userQuery);
-//			// TODO do something with them!
-			
-		}
-		return _documentFilters;
-	}
-
-	private final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
-	{
-		final int displayType = field.getDisplayType();
-		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
-
-		return DocumentQueryFilterDescriptor.builder()
-				.setFilterId(field.getColumnName())
-				.setDisplayName(field.getHeaderTrls())
-				.setFrequentUsed(false)
-				.addParameter(DocumentQueryFilterParamDescriptor.builder()
-						.setDisplayName(field.getHeaderTrls())
-						.setFieldName(field.getColumnName())
-						.setWidgetType(getWidgetType(field))
-						.setRangeParameter(rangeParameter)
-						.build())
-				.build();
-	}
-
-	private final DocumentQueryFilterDescriptor documentFilter(final IUserQuery userQuery)
-	{
-		final DocumentQueryFilterDescriptor.Builder filter = DocumentQueryFilterDescriptor.builder()
-				.setFilterId("userquery-" + userQuery.getId())
-				.setDisplayName(userQuery.getCaption())
-				.setFrequentUsed(false);
-
-		for (IUserQueryRestriction queryRestriction : userQuery.getSegments())
-		{
-			final boolean isParameter = true; // TODO queryRestriction.isParameter();
-
-			final Join join = queryRestriction.getJoin(); // TODO join
-			final String fieldName = queryRestriction.getSearchField().getColumnName();
-			final boolean isRange = queryRestriction.isBinaryOperator();
-			final ValueNamePair operator = queryRestriction.getOperator(); // TODO operator
-			if (isParameter)
-			{
-				final String displayName = queryRestriction.getSearchField().getDisplayName();
-				final int displayType = queryRestriction.getSearchField().getDisplayType();
-				final DocumentFieldWidgetType widgetType = extractWidgetType(fieldName, displayType);
-
-				filter.addParameter(DocumentQueryFilterParamDescriptor.builder()
-						.setDisplayName(displayName)
-						.setFieldName(fieldName)
-						.setWidgetType(widgetType)
-						.setRangeParameter(isRange)
-						.build());
-			}
-			else
-			{
-				filter.addInternalParameter(DocumentQueryFilterParam.builder()
-						.setFieldName(fieldName)
-						.setRange(isRange)
-						.setValue(queryRestriction.getValue())
-						.setValueTo(queryRestriction.getValueTo())
-						.build());
-			}
-		}
-		
-		return filter.build();
-	}
-
+//	public final List<DocumentQueryFilterDescriptor> documentFilters()
+//	{
+//		if (_documentFilters == null)
+//		{
+//			_documentFilters = getGridTabVO()
+//					.getFields()
+//					.stream()
+//					.filter(field -> field.isSelectionColumn())
+//					.map(field -> documentFilter(field))
+//					.filter(filter -> filter != null)
+//					.collect(GuavaCollectors.toImmutableList());
+//		}
+//		return _documentFilters;
+//	}
+//
+//	private final DocumentQueryFilterDescriptor documentFilter(final GridFieldVO field)
+//	{
+//		final int displayType = field.getDisplayType();
+//		final boolean rangeParameter = DisplayType.isDate(displayType) || DisplayType.isNumeric(displayType);
+//
+//		return DocumentQueryFilterDescriptor.builder()
+//				.setFilterId(field.getColumnName())
+//				.setDisplayName(field.getHeaderTrls())
+//				.setFrequentUsed(false)
+//				.addParameter(DocumentQueryFilterParamDescriptor.builder()
+//						.setDisplayName(field.getHeaderTrls())
+//						.setFieldName(field.getColumnName())
+//						.setWidgetType(getWidgetType(field))
+//						.setRangeParameter(rangeParameter)
+//						.build())
+//				.build();
+//	}
 }

@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.model.DocumentFieldChange;
@@ -37,7 +38,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * JSON filtering options: provide different options and filters to be used when the API responses are converted to JSON.
+ * JSON context: provide different options and filters to be used when the API responses are converted to JSON.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -48,11 +49,10 @@ public final class JSONFilteringOptions
 	{
 		return new Builder();
 	}
-	
+
 	public static final String DEBUG_ATTRNAME = "json-options";
 
 	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
-	public static final boolean SESSION_ATTR_ShowColumnNamesForCaption_DefaulValue = false;
 
 	private final String adLanguage;
 	private final boolean showAdvancedFields;
@@ -220,10 +220,10 @@ public final class JSONFilteringOptions
 	private JSONFilteringOptions(final Builder builder)
 	{
 		super();
-		adLanguage = builder.adLanguage;
+		adLanguage = builder.userSession.getAD_Language();
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
-		debugShowColumnNamesForCaption = builder.debugShowColumnNamesForCaption;
+		debugShowColumnNamesForCaption = builder.userSession.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
 	}
 
 	@Override
@@ -236,22 +236,22 @@ public final class JSONFilteringOptions
 				.add("debugShowColumnNamesForCaption", debugShowColumnNamesForCaption)
 				.toString();
 	}
-	
+
 	public String getAD_Language()
 	{
 		return adLanguage;
 	}
-	
+
 	public boolean isShowAdvancedFields()
 	{
 		return showAdvancedFields;
 	}
-	
+
 	public boolean isDebugShowColumnNamesForCaption()
 	{
 		return debugShowColumnNamesForCaption;
 	}
-	
+
 	public boolean isProtocolDebugging()
 	{
 		return WindowConstants.isProtocolDebugging();
@@ -313,10 +313,9 @@ public final class JSONFilteringOptions
 
 	public static final class Builder
 	{
-		public String adLanguage;
+		private UserSession userSession;
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
-		private boolean debugShowColumnNamesForCaption;
 
 		private Builder()
 		{
@@ -327,10 +326,10 @@ public final class JSONFilteringOptions
 		{
 			return new JSONFilteringOptions(this);
 		}
-		
-		public Builder setAD_Language(String adLanguage)
+
+		public Builder setUserSession(final UserSession userSession)
 		{
-			this.adLanguage = adLanguage;
+			this.userSession = userSession;
 			return this;
 		}
 
@@ -343,12 +342,6 @@ public final class JSONFilteringOptions
 		public Builder setDataFieldsList(final String dataFieldsListStr)
 		{
 			this.dataFieldsListStr = dataFieldsListStr;
-			return this;
-		}
-		
-		public Builder setDebugShowColumnNamesForCaption(boolean debugShowColumnNamesForCaption)
-		{
-			this.debugShowColumnNamesForCaption = debugShowColumnNamesForCaption;
 			return this;
 		}
 	}

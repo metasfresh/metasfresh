@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,26 +43,32 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutTab implements Serializable
 {
-	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonOpts)
 	{
-		final Integer adWindowId = null; // not needed
+		final Collection<DocumentQueryFilterDescriptor> filters = null;
 		return details.stream()
-				.map(detail -> of(adWindowId, detail, jsonFilteringOpts))
+				.map(detail -> of(detail, filters, jsonOpts))
 				.filter(jsonDetail -> jsonDetail.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutTab of(final Integer adWindowId, final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
+	public static JSONDocumentLayoutTab of(
+			final DocumentLayoutDetailDescriptor detail //
+			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final JSONFilteringOptions jsonOpts //
+	)
 	{
-		return new JSONDocumentLayoutTab(adWindowId, detail, jsonFilteringOpts);
-	}
-	
-	public static final JSONDocumentLayoutTab ofSideListLayout(final int adWindowId, final DocumentLayoutSideListDescriptor sideListLayout, final List<DocumentQueryFilterDescriptor> filters,
-			final JSONFilteringOptions jsonFilteringOpts)
-	{
-		return new JSONDocumentLayoutTab(adWindowId, sideListLayout, filters, jsonFilteringOpts);
+		return new JSONDocumentLayoutTab(detail, filters, jsonOpts);
 	}
 
+	public static final JSONDocumentLayoutTab ofSideListLayout(
+			final DocumentLayoutSideListDescriptor sideListLayout //
+			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final JSONFilteringOptions jsonOpts //
+	)
+	{
+		return new JSONDocumentLayoutTab(sideListLayout, filters, jsonOpts);
+	}
 
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
@@ -99,21 +103,49 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentQueryFilterDescriptor> filters;
 
-	private JSONDocumentLayoutTab(@Nullable final Integer adWindowId, final DocumentLayoutDetailDescriptor detail, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutTab(
+			final DocumentLayoutDetailDescriptor detail //
+			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final JSONFilteringOptions jsonOpts //
+	)
 	{
 		super();
-		type = adWindowId == null ? null : String.valueOf(adWindowId);
-		tabid = detail.getDetailId();
 
-		final String adLanguage = jsonFilteringOpts.getAD_Language();
+		type = String.valueOf(detail.getAD_Window_ID());
+
+		final String detailId = detail.getDetailId();
+		tabid = detailId;
+
+		final String adLanguage = jsonOpts.getAD_Language();
 		caption = detail.getCaption(adLanguage);
 		description = detail.getDescription(adLanguage);
 		emptyResultText = detail.getEmptyResultText(adLanguage);
 		emptyResultHint = detail.getEmptyResultHint(adLanguage);
 
-		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonFilteringOpts);
+		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
 
-		filters = JSONDocumentQueryFilterDescriptor.ofList(detail.getFilters(), jsonFilteringOpts.getAD_Language());
+		this.filters = JSONDocumentQueryFilterDescriptor.ofCollection(filters, jsonOpts);
+	}
+
+	private JSONDocumentLayoutTab(
+			final DocumentLayoutSideListDescriptor sideListLayout //
+			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final JSONFilteringOptions jsonOpts //
+	)
+	{
+		super();
+		type = String.valueOf(sideListLayout.getAD_Window_ID());
+		tabid = null; // n/a
+
+		final String adLanguage = jsonOpts.getAD_Language();
+		caption = null; // n/a
+		description = null; // n/a
+		emptyResultText = sideListLayout.getEmptyResultText(adLanguage);
+		emptyResultHint = sideListLayout.getEmptyResultHint(adLanguage);
+
+		elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonOpts);
+
+		this.filters = JSONDocumentQueryFilterDescriptor.ofCollection(filters, jsonOpts);
 	}
 
 	@JsonCreator
@@ -139,22 +171,6 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-	}
-
-	public JSONDocumentLayoutTab(int adWindowId, DocumentLayoutSideListDescriptor sideListLayout, List<DocumentQueryFilterDescriptor> filters, JSONFilteringOptions jsonFilteringOpts)
-	{
-		super();
-		this.type = String.valueOf(adWindowId);
-		this.tabid = null; // n/a
-
-		final String adLanguage = jsonFilteringOpts.getAD_Language();
-		this.caption = null; // n/a
-		this.description = null; // n/a
-		this.emptyResultText = sideListLayout.getEmptyResultText(adLanguage);
-		this.emptyResultHint = sideListLayout.getEmptyResultHint(adLanguage);
-
-		this.elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonFilteringOpts);
-		this.filters = JSONDocumentQueryFilterDescriptor.ofList(filters, adLanguage);
 	}
 
 	@Override

@@ -1,14 +1,17 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 
 /*
@@ -36,61 +39,89 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
 @SuppressWarnings("serial")
 public final class JSONDocumentQueryFilterParamDescriptor implements Serializable
 {
-	public static List<JSONDocumentQueryFilterParamDescriptor> ofList(final List<DocumentQueryFilterParamDescriptor> params, final String adLanguage)
+	public static List<JSONDocumentQueryFilterParamDescriptor> ofCollection(final Collection<DocumentQueryFilterParamDescriptor> params, final JSONFilteringOptions jsonOpts)
 	{
 		return params.stream()
-				.map(filter -> of(filter, adLanguage))
+				.map(filter -> of(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final JSONDocumentQueryFilterParamDescriptor of(final DocumentQueryFilterParamDescriptor param, final String adLanguage)
+	private static final JSONDocumentQueryFilterParamDescriptor of(final DocumentQueryFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentQueryFilterParamDescriptor(param, adLanguage);
+		return new JSONDocumentQueryFilterParamDescriptor(param, jsonOpts);
 	}
 
 	@JsonProperty("caption")
 	private final String caption;
 
-	@JsonProperty("field")
-	private final String field;
-
+	@JsonProperty("parameterName")
+	private final String parameterName;
+	
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
 
 	@JsonProperty("range")
 	private final boolean rangeParameter;
 
-	private JSONDocumentQueryFilterParamDescriptor(final DocumentQueryFilterParamDescriptor param, final String adLanguage)
+	@JsonProperty("defaultValue")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Object defaultValue;
+	@JsonProperty("defaultValueTo")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Object defaultValueTo;
+
+	private JSONDocumentQueryFilterParamDescriptor(final DocumentQueryFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
 	{
 		super();
-		caption = param.getDisplayName(adLanguage);
-		field = param.getFieldName();
+
+		parameterName = param.getParameterName();
+
+		if (jsonOpts.isDebugShowColumnNamesForCaption())
+		{
+			caption = parameterName;
+		}
+		else
+		{
+			final String adLanguage = jsonOpts.getAD_Language();
+			caption = param.getDisplayName(adLanguage);
+		}
+
 		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
-		rangeParameter = param.isRangeParameter();
+		rangeParameter = param.getOperator().isRangeOperator();
+
+		defaultValue = Values.valueToJsonObject(param.getDefaultValue());
+		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
 	}
 
 	@JsonCreator
 	private JSONDocumentQueryFilterParamDescriptor(
 			@JsonProperty("caption") final String caption //
-			, @JsonProperty("field") final String field //
+			, @JsonProperty("parameterName") final String parameterName //
 			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
-			, @JsonProperty("range") final boolean range //
+			, @JsonProperty("range") final boolean rangeParameter //
+			, @JsonProperty("defaultValue") final Object defaultValue //
+			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
 	)
 	{
 		this.caption = caption;
-		this.field = field;
+		this.parameterName = parameterName;
 		this.widgetType = widgetType;
-		rangeParameter = range;
+		this.rangeParameter = rangeParameter;
+		this.defaultValue = defaultValue;
+		this.defaultValueTo = defaultValueTo;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("caption", caption)
-				.add("field", field)
+				.add("parameterName", parameterName)
 				.add("widgetType", widgetType)
 				.add("rangeParameter", rangeParameter)
+				.add("defaultValue", defaultValue)
+				.add("defaultValueTo", defaultValueTo)
 				.toString();
 	}
 
@@ -98,10 +129,10 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 	{
 		return caption;
 	}
-
-	public String getField()
+	
+	public String getParameterName()
 	{
-		return field;
+		return parameterName;
 	}
 
 	public JSONLayoutWidgetType getWidgetType()
@@ -112,5 +143,15 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 	public boolean isRangeParameter()
 	{
 		return rangeParameter;
+	}
+
+	public Object getDefaultValue()
+	{
+		return defaultValue;
+	}
+
+	public Object getDefaultValueTo()
+	{
+		return defaultValueTo;
 	}
 }

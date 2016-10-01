@@ -73,9 +73,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/** Side list layout */
 	private final DocumentLayoutSideListDescriptor sideList;
 
-	/** Filters */
-	private final List<DocumentQueryFilterDescriptor> filters;
-
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
 
@@ -88,11 +85,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 		docActionElement = builder.docActionElement;
 
 		sections = ImmutableList.copyOf(builder.buildSections());
-		gridView = builder.gridView.build();
-		advancedView = builder.advancedView.build();
+		gridView = builder.gridView
+				.setAD_Window_ID(AD_Window_ID)
+				.build();
+		advancedView = builder.advancedView
+				.setAD_Window_ID(AD_Window_ID)
+				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
 		sideList = builder.getSideList();
-		filters = builder.getFilters();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -182,11 +182,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return sideList;
 	}
 
-	public List<DocumentQueryFilterDescriptor> getFilters()
-	{
-		return filters;
-	}
-
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
@@ -208,7 +203,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
 		private DocumentLayoutSideListDescriptor sideList;
-		private final List<DocumentQueryFilterDescriptor> filters = new ArrayList<>();
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
@@ -276,7 +270,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 		{
 			return detailsBuilders
 					.stream()
-					.map(detailBuilder -> detailBuilder.build())
+					.map(detailBuilder -> detailBuilder
+							.setAD_Window_ID(AD_Window_ID)
+							.build())
 					.filter(detail -> detail.hasElements())
 					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
 		}
@@ -400,17 +396,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		public Builder setStopwatch(final Stopwatch stopwatch)
 		{
 			this.stopwatch = stopwatch;
-			return this;
-		}
-
-		private List<DocumentQueryFilterDescriptor> getFilters()
-		{
-			return ImmutableList.copyOf(filters);
-		}
-
-		public Builder addFilters(final List<DocumentQueryFilterDescriptor> filters)
-		{
-			this.filters.addAll(filters);
 			return this;
 		}
 	}

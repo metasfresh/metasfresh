@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
@@ -39,22 +40,21 @@ public class DocumentQueryFilterParam
 	{
 		try
 		{
+			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
 			final String fieldName = mquery.getColumnName(restrictionIndex);
-			final String operator = mquery.getOperator(restrictionIndex);
-			final boolean range = MQuery.BETWEEN.equals(operator);
+			final Operator operator = mquery.getOperator(restrictionIndex);
 			final Object value = mquery.getCode(restrictionIndex);
 			final Object valueTo = mquery.getCodeTo(restrictionIndex);
 
 			return builder()
-					// TODO: set Join AND/OR
+					.setJoinAnd(joinAnd)
 					.setFieldName(fieldName)
+					.setOperator(operator)
 					.setValue(value)
 					.setValueTo(valueTo)
-					// TODO .setOperator(OperatorType)
-					.setRange(range)
 					.build();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentQueryFilterParam.class
 					+ "\n MQuery: " + mquery
@@ -63,8 +63,9 @@ public class DocumentQueryFilterParam
 		}
 	}
 
+	private final boolean joinAnd;
 	private final String fieldName;
-	private final boolean range;
+	private final Operator operator;
 	private final Object value;
 	private final Object valueTo;
 
@@ -72,10 +73,14 @@ public class DocumentQueryFilterParam
 	{
 		super();
 
+		joinAnd = builder.joinAnd;
+
 		fieldName = builder.fieldName;
 		Check.assumeNotNull(fieldName, "Parameter fieldName is not null");
 
-		range = builder.range;
+		operator = builder.operator;
+		Check.assumeNotNull(operator, "Parameter operator is not null");
+
 		value = builder.value;
 		valueTo = builder.valueTo;
 	}
@@ -84,11 +89,17 @@ public class DocumentQueryFilterParam
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("join", joinAnd ? "AND" : "OR")
 				.add("fieldName", fieldName)
-				.add("range", range)
+				.add("operator", operator)
 				.add("value", value)
 				.add("valueTo", valueTo)
 				.toString();
+	}
+
+	public boolean isJoinAnd()
+	{
+		return joinAnd;
 	}
 
 	public String getFieldName()
@@ -96,9 +107,9 @@ public class DocumentQueryFilterParam
 		return fieldName;
 	}
 
-	public boolean isRange()
+	public Operator getOperator()
 	{
-		return range;
+		return operator;
 	}
 
 	public Object getValue()
@@ -113,8 +124,9 @@ public class DocumentQueryFilterParam
 
 	public static final class Builder
 	{
+		private boolean joinAnd = true;
 		private String fieldName;
-		private boolean range;
+		private Operator operator = Operator.EQUAL;
 		private Object value;
 		private Object valueTo;
 
@@ -128,15 +140,28 @@ public class DocumentQueryFilterParam
 			return new DocumentQueryFilterParam(this);
 		}
 
+		public Builder setJoinAnd(final boolean joinAnd)
+		{
+			this.joinAnd = joinAnd;
+			return this;
+		}
+
 		public Builder setFieldName(final String fieldName)
 		{
 			this.fieldName = fieldName;
 			return this;
 		}
 
-		public Builder setRange(final boolean range)
+		public Builder setOperator(final Operator operator)
 		{
-			this.range = range;
+			Check.assumeNotNull(operator, "Parameter operator is not null");
+			this.operator = operator;
+			return this;
+		}
+
+		public Builder setOperator()
+		{
+			operator = valueTo != null ? Operator.BETWEEN : Operator.EQUAL;
 			return this;
 		}
 

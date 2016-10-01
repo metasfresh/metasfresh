@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Set;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,5 +26,18 @@ package de.metas.ui.web.window.descriptor;
 
 public interface LookupDescriptor
 {
+	public static enum LookupScope
+	{
+		DocumentField, DocumentFilter
+	}
+
 	String getTableName();
+
+	boolean isHighVolume();
+
+	boolean hasParameters();
+
+	boolean isNumericKey();
+
+	Set<String> getDependsOnFieldNames();
 }
