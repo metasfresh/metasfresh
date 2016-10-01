@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.ui.web.window.model.DocumentQueryFilterParam;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L
@@ -41,22 +41,22 @@ import de.metas.ui.web.window.model.DocumentQueryFilterParam;
  * #L%
  */
 
-public final class DocumentQueryFilterDescriptor
+public final class DocumentFilterDescriptor
 {
-	public static final Builder builder()
+	static final Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
-	private final Map<String, DocumentQueryFilterParamDescriptor> parametersByName;
-	private final List<DocumentQueryFilterParam> internalParameters;
+	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
+	private final List<DocumentFilterParam> internalParameters;
 	private final boolean frequentUsed;
 
 	private final Map<String, Object> debugProperties;
 
-	private DocumentQueryFilterDescriptor(final Builder builder)
+	private DocumentFilterDescriptor(final Builder builder)
 	{
 		super();
 
@@ -94,14 +94,14 @@ public final class DocumentQueryFilterDescriptor
 		return displayNameTrls.translate(adLanguage);
 	}
 
-	public Collection<DocumentQueryFilterParamDescriptor> getParameters()
+	public Collection<DocumentFilterParamDescriptor> getParameters()
 	{
 		return parametersByName.values();
 	}
 
-	public DocumentQueryFilterParamDescriptor getParameterByName(final String parameterName)
+	public DocumentFilterParamDescriptor getParameterByName(final String parameterName)
 	{
-		final DocumentQueryFilterParamDescriptor parameter = parametersByName.get(parameterName);
+		final DocumentFilterParamDescriptor parameter = parametersByName.get(parameterName);
 		if (parameter == null)
 		{
 			throw new NoSuchElementException("Parameter '" + parameterName + "' not found in " + this);
@@ -109,7 +109,7 @@ public final class DocumentQueryFilterDescriptor
 		return parameter;
 	}
 
-	public List<DocumentQueryFilterParam> getInternalParameters()
+	public List<DocumentFilterParam> getInternalParameters()
 	{
 		return internalParameters;
 	}
@@ -128,8 +128,8 @@ public final class DocumentQueryFilterDescriptor
 	{
 		private String filterId;
 		private ITranslatableString displayNameTrls;
-		private final List<DocumentQueryFilterParamDescriptor.Builder> parameters = new ArrayList<>();
-		private final List<DocumentQueryFilterParam> internalParameters = new ArrayList<>();
+		private final List<DocumentFilterParamDescriptor.Builder> parameters = new ArrayList<>();
+		private final List<DocumentFilterParam> internalParameters = new ArrayList<>();
 		private boolean frequentUsed;
 
 		private Map<String, Object> debugProperties = null;
@@ -139,12 +139,12 @@ public final class DocumentQueryFilterDescriptor
 			super();
 		}
 
-		public DocumentQueryFilterDescriptor build()
+		public DocumentFilterDescriptor build()
 		{
-			return new DocumentQueryFilterDescriptor(this);
+			return new DocumentFilterDescriptor(this);
 		}
 
-		private Map<String, DocumentQueryFilterParamDescriptor> buildParameters()
+		private Map<String, DocumentFilterParamDescriptor> buildParameters()
 		{
 			final Map<String, Integer> nextParamIndexByFieldName = new HashMap<>();
 			return parameters
@@ -191,13 +191,13 @@ public final class DocumentQueryFilterDescriptor
 			return this;
 		}
 
-		public Builder addParameter(final DocumentQueryFilterParamDescriptor.Builder parameter)
+		public Builder addParameter(final DocumentFilterParamDescriptor.Builder parameter)
 		{
 			parameters.add(parameter);
 			return this;
 		}
 
-		public Builder addInternalParameter(final DocumentQueryFilterParam parameter)
+		public Builder addInternalParameter(final DocumentFilterParam parameter)
 		{
 			internalParameters.add(parameter);
 			return this;

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.window.model.filters;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -29,14 +29,14 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
-public class DocumentQueryFilterParam
+public class DocumentFilterParam
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static DocumentQueryFilterParam of(final MQuery mquery, final int restrictionIndex)
+	public static DocumentFilterParam of(final MQuery mquery, final int restrictionIndex)
 	{
 		try
 		{
@@ -56,7 +56,7 @@ public class DocumentQueryFilterParam
 		}
 		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentQueryFilterParam.class
+			throw new AdempiereException("Failed converting MQuery's restriction to " + DocumentFilterParam.class
 					+ "\n MQuery: " + mquery
 					+ "\n Restriction index: " + restrictionIndex //
 					, ex);
@@ -69,7 +69,7 @@ public class DocumentQueryFilterParam
 	private final Object value;
 	private final Object valueTo;
 
-	private DocumentQueryFilterParam(final Builder builder)
+	private DocumentFilterParam(final Builder builder)
 	{
 		super();
 
@@ -135,9 +135,9 @@ public class DocumentQueryFilterParam
 			super();
 		}
 
-		public DocumentQueryFilterParam build()
+		public DocumentFilterParam build()
 		{
-			return new DocumentQueryFilterParam(this);
+			return new DocumentFilterParam(this);
 		}
 
 		public Builder setJoinAnd(final boolean joinAnd)

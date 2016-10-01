@@ -12,9 +12,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -45,7 +46,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 {
 	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonOpts)
 	{
-		final Collection<DocumentQueryFilterDescriptor> filters = null;
+		final Collection<DocumentFilterDescriptor> filters = null;
 		return details.stream()
 				.map(detail -> of(detail, filters, jsonOpts))
 				.filter(jsonDetail -> jsonDetail.hasElements())
@@ -54,7 +55,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 	public static JSONDocumentLayoutTab of(
 			final DocumentLayoutDetailDescriptor detail //
-			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONFilteringOptions jsonOpts //
 	)
 	{
@@ -63,7 +64,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 	public static final JSONDocumentLayoutTab ofSideListLayout(
 			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONFilteringOptions jsonOpts //
 	)
 	{
@@ -101,11 +102,11 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentQueryFilterDescriptor> filters;
+	private final List<JSONDocumentFilterDescriptor> filters;
 
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutDetailDescriptor detail //
-			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONFilteringOptions jsonOpts //
 	)
 	{
@@ -124,12 +125,12 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
 
-		this.filters = JSONDocumentQueryFilterDescriptor.ofCollection(filters, jsonOpts);
+		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 	}
 
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentQueryFilterDescriptor> filters //
+			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONFilteringOptions jsonOpts //
 	)
 	{
@@ -145,7 +146,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonOpts);
 
-		this.filters = JSONDocumentQueryFilterDescriptor.ofCollection(filters, jsonOpts);
+		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 	}
 
 	@JsonCreator
@@ -157,7 +158,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("emptyResultText") final String emptyResultText //
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
-			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
+			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 	)
 	{
 		super();
@@ -220,7 +221,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 		return !elements.isEmpty();
 	}
 
-	public List<JSONDocumentQueryFilterDescriptor> getFilters()
+	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
 	}

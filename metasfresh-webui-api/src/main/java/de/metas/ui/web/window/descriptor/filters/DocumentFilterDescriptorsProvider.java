@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -25,15 +25,30 @@ import java.util.NoSuchElementException;
  * #L%
  */
 
-public interface DocumentQueryFilterDescriptorsProvider
+/**
+ * Document filter descriptors provider
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface DocumentFilterDescriptorsProvider
 {
-	Collection<DocumentQueryFilterDescriptor> getAll();
+	/**
+	 * @return all available filter descriptors
+	 */
+	Collection<DocumentFilterDescriptor> getAll();
 
-	DocumentQueryFilterDescriptor getByFilterIdOrNull(final String filterId);
+	/**
+	 * @return filter descriptor or <code>null</code>
+	 */
+	DocumentFilterDescriptor getByFilterIdOrNull(final String filterId);
 
-	default DocumentQueryFilterDescriptor getByFilterId(final String filterId) throws NoSuchElementException
+	/**
+	 * @return filter descriptor
+	 */
+	default DocumentFilterDescriptor getByFilterId(final String filterId) throws NoSuchElementException
 	{
-		final DocumentQueryFilterDescriptor filterDescriptor = getByFilterIdOrNull(filterId);
+		final DocumentFilterDescriptor filterDescriptor = getByFilterIdOrNull(filterId);
 		if (filterDescriptor == null)
 		{
 			throw new NoSuchElementException("Filter '" + filterId + "' was not found in " + this);

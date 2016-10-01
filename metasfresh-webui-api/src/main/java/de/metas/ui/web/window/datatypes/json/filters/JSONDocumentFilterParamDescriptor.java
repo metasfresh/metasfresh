@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.datatypes.json.filters;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -12,7 +12,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
+import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 /*
  * #%L
@@ -37,18 +39,18 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterParamDescriptor;
  */
 
 @SuppressWarnings("serial")
-public final class JSONDocumentQueryFilterParamDescriptor implements Serializable
+/* package */final class JSONDocumentFilterParamDescriptor implements Serializable
 {
-	public static List<JSONDocumentQueryFilterParamDescriptor> ofCollection(final Collection<DocumentQueryFilterParamDescriptor> params, final JSONFilteringOptions jsonOpts)
+	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONFilteringOptions jsonOpts)
 	{
 		return params.stream()
 				.map(filter -> of(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final JSONDocumentQueryFilterParamDescriptor of(final DocumentQueryFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentQueryFilterParamDescriptor(param, jsonOpts);
+		return new JSONDocumentFilterParamDescriptor(param, jsonOpts);
 	}
 
 	@JsonProperty("caption")
@@ -56,7 +58,7 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 
 	@JsonProperty("parameterName")
 	private final String parameterName;
-	
+
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
 
@@ -70,7 +72,7 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValueTo;
 
-	private JSONDocumentQueryFilterParamDescriptor(final DocumentQueryFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 
@@ -94,7 +96,7 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 	}
 
 	@JsonCreator
-	private JSONDocumentQueryFilterParamDescriptor(
+	private JSONDocumentFilterParamDescriptor(
 			@JsonProperty("caption") final String caption //
 			, @JsonProperty("parameterName") final String parameterName //
 			, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType //
@@ -129,7 +131,7 @@ public final class JSONDocumentQueryFilterParamDescriptor implements Serializabl
 	{
 		return caption;
 	}
-	
+
 	public String getParameterName()
 	{
 		return parameterName;

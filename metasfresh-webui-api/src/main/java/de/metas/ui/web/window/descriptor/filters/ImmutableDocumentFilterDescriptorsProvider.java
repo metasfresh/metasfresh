@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +13,8 @@ import java.util.stream.Collector;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+
+import groovy.transform.Immutable;
 
 /*
  * #%L
@@ -36,50 +38,51 @@ import com.google.common.collect.Maps;
  * #L%
  */
 
-public class ImmutableDocumentQueryFilterDescriptorsProvider implements DocumentQueryFilterDescriptorsProvider
+@Immutable
+final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static final ImmutableDocumentQueryFilterDescriptorsProvider of(final List<DocumentQueryFilterDescriptor> descriptors)
+	public static final ImmutableDocumentFilterDescriptorsProvider of(final List<DocumentFilterDescriptor> descriptors)
 	{
 		if (descriptors == null || descriptors.isEmpty())
 		{
 			return NULL;
 		}
-		return new ImmutableDocumentQueryFilterDescriptorsProvider(descriptors);
+		return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
 	}
 
-	public static final Collector<DocumentQueryFilterDescriptor, ?, ImmutableDocumentQueryFilterDescriptorsProvider> collector()
+	public static final Collector<DocumentFilterDescriptor, ?, ImmutableDocumentFilterDescriptorsProvider> collector()
 	{
-		final Supplier<List<DocumentQueryFilterDescriptor>> supplier = ArrayList::new;
-		final BiConsumer<List<DocumentQueryFilterDescriptor>, DocumentQueryFilterDescriptor> accumulator = (list, filter) -> list.add(filter);
-		final BinaryOperator<List<DocumentQueryFilterDescriptor>> combiner = (list1, list2) -> {
+		final Supplier<List<DocumentFilterDescriptor>> supplier = ArrayList::new;
+		final BiConsumer<List<DocumentFilterDescriptor>, DocumentFilterDescriptor> accumulator = (list, filter) -> list.add(filter);
+		final BinaryOperator<List<DocumentFilterDescriptor>> combiner = (list1, list2) -> {
 			list1.addAll(list2);
 			return list1;
 		};
-		final Function<List<DocumentQueryFilterDescriptor>, ImmutableDocumentQueryFilterDescriptorsProvider> finisher = ImmutableDocumentQueryFilterDescriptorsProvider::of;
+		final Function<List<DocumentFilterDescriptor>, ImmutableDocumentFilterDescriptorsProvider> finisher = ImmutableDocumentFilterDescriptorsProvider::of;
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	private static final ImmutableDocumentQueryFilterDescriptorsProvider NULL = new ImmutableDocumentQueryFilterDescriptorsProvider(ImmutableList.of());
+	private static final ImmutableDocumentFilterDescriptorsProvider NULL = new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of());
 
-	private final Map<String, DocumentQueryFilterDescriptor> descriptorsByFilterId;
+	private final Map<String, DocumentFilterDescriptor> descriptorsByFilterId;
 
-	public ImmutableDocumentQueryFilterDescriptorsProvider(final List<DocumentQueryFilterDescriptor> descriptors)
+	public ImmutableDocumentFilterDescriptorsProvider(final List<DocumentFilterDescriptor> descriptors)
 	{
 		super();
 		descriptorsByFilterId = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());
 	}
 
 	@Override
-	public Collection<DocumentQueryFilterDescriptor> getAll()
+	public Collection<DocumentFilterDescriptor> getAll()
 	{
 		return descriptorsByFilterId.values();
 	}
 
 	@Override
-	public DocumentQueryFilterDescriptor getByFilterIdOrNull(final String filterId) throws NoSuchElementException
+	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId) throws NoSuchElementException
 	{
-		final DocumentQueryFilterDescriptor descriptor = descriptorsByFilterId.get(filterId);
+		final DocumentFilterDescriptor descriptor = descriptorsByFilterId.get(filterId);
 		return descriptor;
 	}
 

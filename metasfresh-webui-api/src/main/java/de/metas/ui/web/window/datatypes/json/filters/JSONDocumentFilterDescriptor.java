@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.datatypes.json.filters;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -18,7 +18,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
+import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
  * #%L
@@ -43,9 +44,9 @@ import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
  */
 
 @SuppressWarnings("serial")
-public final class JSONDocumentQueryFilterDescriptor implements Serializable
+public final class JSONDocumentFilterDescriptor implements Serializable
 {
-	public static List<JSONDocumentQueryFilterDescriptor> ofCollection(@Nullable final Collection<DocumentQueryFilterDescriptor> filters, final JSONFilteringOptions jsonOpts)
+	public static List<JSONDocumentFilterDescriptor> ofCollection(@Nullable final Collection<DocumentFilterDescriptor> filters, final JSONFilteringOptions jsonOpts)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -53,7 +54,7 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 		}
 
 		return filters.stream()
-				.map(filter -> new JSONDocumentQueryFilterDescriptor(filter, jsonOpts))
+				.map(filter -> new JSONDocumentFilterDescriptor(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -68,27 +69,27 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 
 	@JsonProperty("parameters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentQueryFilterParamDescriptor> parameters;
+	private final List<JSONDocumentFilterParamDescriptor> parameters;
 
 	private final Map<String, Object> debugProperties;
 
-	private JSONDocumentQueryFilterDescriptor(final DocumentQueryFilterDescriptor filter, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentFilterDescriptor(final DocumentFilterDescriptor filter, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 		filterId = filter.getFilterId();
 		caption = filter.getDisplayName(jsonOpts.getAD_Language());
 		frequentUsed = filter.isFrequentUsed();
-		parameters = JSONDocumentQueryFilterParamDescriptor.ofCollection(filter.getParameters(), jsonOpts);
+		parameters = JSONDocumentFilterParamDescriptor.ofCollection(filter.getParameters(), jsonOpts);
 
 		debugProperties = filter.getDebugProperties();
 	}
 
 	@JsonCreator
-	private JSONDocumentQueryFilterDescriptor(
+	private JSONDocumentFilterDescriptor(
 			@JsonProperty("filterId") final String filterId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("frequent") final boolean frequentUsed //
-			, @JsonProperty("parameters") final List<JSONDocumentQueryFilterParamDescriptor> parameters //
+			, @JsonProperty("parameters") final List<JSONDocumentFilterParamDescriptor> parameters //
 	)
 	{
 		this.filterId = filterId;
@@ -126,7 +127,7 @@ public final class JSONDocumentQueryFilterDescriptor implements Serializable
 		return frequentUsed;
 	}
 
-	public List<JSONDocumentQueryFilterParamDescriptor> getParameters()
+	public List<JSONDocumentFilterParamDescriptor> getParameters()
 	{
 		return parameters;
 	}

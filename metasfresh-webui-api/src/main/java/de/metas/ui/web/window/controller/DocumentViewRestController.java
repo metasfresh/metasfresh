@@ -19,11 +19,11 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -31,9 +31,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentQueryFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentViewResult;
@@ -120,7 +120,7 @@ public class DocumentViewRestController
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-		final Collection<DocumentQueryFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
+		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
 
 		final JSONFilteringOptions jsonOpts = newJSONFilteringOptions().build();
 
@@ -150,7 +150,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
+			, @RequestBody final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
 		loginService.autologin();
@@ -166,11 +166,11 @@ public class DocumentViewRestController
 			throw new IllegalStateException("No fields were found for " + PARAM_ViewDataType + ": " + viewDataType + "(required field characteristic: " + requiredFieldCharacteristic + ")");
 		}
 
-		final DocumentQueryFilterDescriptorsProvider filterDescriptorProvider = entityDescriptor.getFiltersProvider();
+		final DocumentFilterDescriptorsProvider filterDescriptorProvider = entityDescriptor.getFiltersProvider();
 
 		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
 				.setViewFields(fields)
-				.addFilters(JSONDocumentQueryFilter.unwrapList(jsonFilters, filterDescriptorProvider))
+				.addFilters(JSONDocumentFilter.unwrapList(jsonFilters, filterDescriptorProvider))
 				.build();
 
 		final IDocumentViewSelection view = documentViewsRepo.createView(query);

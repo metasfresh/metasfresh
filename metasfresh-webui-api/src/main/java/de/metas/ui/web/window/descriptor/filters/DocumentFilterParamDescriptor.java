@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery.Operator;
@@ -7,6 +7,8 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 
@@ -32,9 +34,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
  * #L%
  */
 
-public class DocumentQueryFilterParamDescriptor
+public class DocumentFilterParamDescriptor
 {
-	public static final Builder builder()
+	static final Builder builder()
 	{
 		return new Builder();
 	}
@@ -51,7 +53,7 @@ public class DocumentQueryFilterParamDescriptor
 
 	private final LookupDescriptor lookupDescriptor;
 
-	private DocumentQueryFilterParamDescriptor(final Builder builder)
+	private DocumentFilterParamDescriptor(final Builder builder)
 	{
 		super();
 		
@@ -155,9 +157,9 @@ public class DocumentQueryFilterParamDescriptor
 			super();
 		}
 
-		/* package */DocumentQueryFilterParamDescriptor build()
+		/* package */DocumentFilterParamDescriptor build()
 		{
-			return new DocumentQueryFilterParamDescriptor(this);
+			return new DocumentFilterParamDescriptor(this);
 		}
 
 		public Builder setJoinAnd(boolean joinAnd)

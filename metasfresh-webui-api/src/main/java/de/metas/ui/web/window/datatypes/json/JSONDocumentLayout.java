@@ -16,6 +16,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -86,7 +87,7 @@ public final class JSONDocumentLayout implements Serializable
 
 	@JsonProperty("filters")
 	@JsonInclude(Include.NON_EMPTY)
-	private final List<JSONDocumentQueryFilterDescriptor> filters;
+	private final List<JSONDocumentFilterDescriptor> filters;
 
 	@JsonProperty("emptyResultText")
 	@JsonInclude(Include.NON_EMPTY)
@@ -193,7 +194,7 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
 			, @JsonProperty("sections") final List<JSONDocumentLayoutSection> sections //
 			, @JsonProperty("tabs") final List<JSONDocumentLayoutTab> tabs //
-			, @JsonProperty("filters") final List<JSONDocumentQueryFilterDescriptor> filters //
+			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty("emptyResultText") final String emptyResultText //
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 
@@ -260,7 +261,7 @@ public final class JSONDocumentLayout implements Serializable
 		return tabs;
 	}
 
-	public List<JSONDocumentQueryFilterDescriptor> getFilters()
+	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
 	}

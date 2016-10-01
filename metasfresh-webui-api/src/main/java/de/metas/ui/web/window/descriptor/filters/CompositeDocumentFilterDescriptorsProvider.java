@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,23 +29,23 @@ import com.google.common.collect.ImmutableList;
  * #L%
  */
 
-class CompositeDocumentQueryFilterDescriptorsProvider implements DocumentQueryFilterDescriptorsProvider
+class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static CompositeDocumentQueryFilterDescriptorsProvider of(final DocumentQueryFilterDescriptorsProvider... providers)
+	public static CompositeDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptorsProvider... providers)
 	{
-		return new CompositeDocumentQueryFilterDescriptorsProvider(providers);
+		return new CompositeDocumentFilterDescriptorsProvider(providers);
 	}
-	
-	private final List<DocumentQueryFilterDescriptorsProvider> providers;
 
-	private CompositeDocumentQueryFilterDescriptorsProvider(final DocumentQueryFilterDescriptorsProvider... providers)
+	private final List<DocumentFilterDescriptorsProvider> providers;
+
+	private CompositeDocumentFilterDescriptorsProvider(final DocumentFilterDescriptorsProvider... providers)
 	{
 		super();
 		this.providers = ImmutableList.copyOf(providers);
 	}
 
 	@Override
-	public Collection<DocumentQueryFilterDescriptor> getAll()
+	public Collection<DocumentFilterDescriptor> getAll()
 	{
 		return providers
 				.stream()
@@ -56,7 +56,7 @@ class CompositeDocumentQueryFilterDescriptorsProvider implements DocumentQueryFi
 	}
 
 	@Override
-	public DocumentQueryFilterDescriptor getByFilterIdOrNull(final String filterId)
+	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
 		return providers
 				.stream()

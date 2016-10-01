@@ -17,7 +17,6 @@ import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.GuavaCollectors;
-import org.compiere.model.MQuery.Operator;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,12 +29,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProviderFactory;
 
 /*
  * #%L
@@ -114,7 +114,7 @@ public class DocumentEntityDescriptor
 	private final CalloutExecutor calloutExecutorFactory;
 
 	@JsonIgnore
-	private final DocumentQueryFilterDescriptorsProvider filtersProvider;
+	private final DocumentFilterDescriptorsProvider filtersProvider;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -292,7 +292,7 @@ public class DocumentEntityDescriptor
 	}
 
 	/**
-	 * 
+	 *
 	 * @param detailId
 	 * @return included {@link DocumentEntityDescriptor}; never returns null
 	 */
@@ -355,7 +355,7 @@ public class DocumentEntityDescriptor
 		return calloutExecutorFactory.newInstanceSharingMasterData();
 	}
 
-	public DocumentQueryFilterDescriptorsProvider getFiltersProvider()
+	public DocumentFilterDescriptorsProvider getFiltersProvider()
 	{
 		return filtersProvider;
 	}
@@ -568,9 +568,9 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setTableName(String tableName)
+		public Builder setTableName(final String tableName)
 		{
-			this.TableName = tableName;
+			TableName = tableName;
 			return this;
 		}
 
@@ -598,9 +598,9 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private CalloutExecutor buildCalloutExecutorFactory(Collection<DocumentFieldDescriptor> fields)
+		private CalloutExecutor buildCalloutExecutorFactory(final Collection<DocumentFieldDescriptor> fields)
 		{
-			final String tableName = this.TableName;
+			final String tableName = TableName;
 			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder();
 			for (final DocumentFieldDescriptor field : fields)
 			{
@@ -637,45 +637,12 @@ public class DocumentEntityDescriptor
 			return calloutExecutorBuilder.build();
 		}
 
-		private final DocumentQueryFilterDescriptorsProvider createFiltersProvider()
+		private final DocumentFilterDescriptorsProvider createFiltersProvider()
 		{
-			final Collection<DocumentFieldDescriptor> fields = getFields().values();
-
-			//
-			// Standard field filters: filters created from document fields which are flagged with AllowFiltering
-			final ImmutableDocumentQueryFilterDescriptorsProvider standardFieldFilters = fields
-					.stream()
-					.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
-					.map(field -> createFilter(field))
-					.collect(ImmutableDocumentQueryFilterDescriptorsProvider.collector());
-
-			//
-			// User query filters: filters created from user queries
-			final int adTabId = this.AD_Tab_ID;
+			final int adTabId = AD_Tab_ID;
 			final String tableName = getOrBuildDataBinding().getTableName();
-			final UserQueryDocumentQueryFilterDescriptorsProvider userQueryFilters = new UserQueryDocumentQueryFilterDescriptorsProvider(adTabId, tableName, fields);
-
-			//
-			return CompositeDocumentQueryFilterDescriptorsProvider.of(userQueryFilters, standardFieldFilters);
+			final Collection<DocumentFieldDescriptor> fields = getFields().values();
+			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
 		}
-
-		private final DocumentQueryFilterDescriptor createFilter(final DocumentFieldDescriptor field)
-		{
-			final ITranslatableString displayName = field.getCaption();
-			final String fieldName = field.getFieldName();
-			final DocumentFieldWidgetType widgetType = field.getWidgetType();
-
-			return DocumentQueryFilterDescriptor.builder()
-					.setFilterId(fieldName)
-					.setDisplayName(displayName)
-					.setFrequentUsed(false)
-					.addParameter(DocumentQueryFilterParamDescriptor.builder()
-							.setDisplayName(displayName)
-							.setFieldName(fieldName)
-							.setWidgetType(widgetType)
-							.setOperator(Operator.EQUAL))
-					.build();
-		}
-
 	}
 }

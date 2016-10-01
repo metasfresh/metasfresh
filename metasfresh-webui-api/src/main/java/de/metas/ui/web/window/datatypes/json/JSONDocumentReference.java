@@ -6,7 +6,8 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.model.DocumentQueryFilter;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -54,7 +55,7 @@ public class JSONDocumentReference
 	@JsonProperty("documentsCount")
 	private final int documentsCount;
 	@JsonProperty("filter")
-	private final JSONDocumentQueryFilter filter;
+	private final JSONDocumentFilter filter;
 
 	private JSONDocumentReference(final ZoomInfo zoomInfo, final JSONFilteringOptions jsonOpts)
 	{
@@ -63,8 +64,8 @@ public class JSONDocumentReference
 		documentType = String.valueOf(zoomInfo.getAD_Window_ID());
 		documentsCount = zoomInfo.getRecordCount();
 
-		final DocumentQueryFilter filter = DocumentQueryFilter.of(zoomInfo.getQuery());
-		this.filter = JSONDocumentQueryFilter.of(filter);
+		final DocumentFilter filter = DocumentFilter.of(zoomInfo.getQuery());
+		this.filter = JSONDocumentFilter.of(filter);
 	}
 
 	public String getCaption()
@@ -82,7 +83,7 @@ public class JSONDocumentReference
 		return documentsCount;
 	}
 
-	public JSONDocumentQueryFilter getFilter()
+	public JSONDocumentFilter getFilter()
 	{
 		return filter;
 	}

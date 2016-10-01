@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,8 +18,12 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
-import de.metas.ui.web.window.model.DocumentQueryFilterParam;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 
 /*
@@ -44,11 +48,11 @@ import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
  * #L%
  */
 
-public class UserQueryDocumentQueryFilterDescriptorsProvider implements DocumentQueryFilterDescriptorsProvider
+final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private final UserQueryRepository repository;
 
-	public UserQueryDocumentQueryFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
+	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
 		super();
 
@@ -68,18 +72,18 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 	}
 
 	@Override
-	public Collection<DocumentQueryFilterDescriptor> getAll()
+	public Collection<DocumentFilterDescriptor> getAll()
 	{
 		return getAllByFilterId().values();
 	}
 
 	@Override
-	public DocumentQueryFilterDescriptor getByFilterIdOrNull(final String filterId)
+	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
 		return getAllByFilterId().get(filterId);
 	}
 
-	private final Map<String, DocumentQueryFilterDescriptor> getAllByFilterId()
+	private final Map<String, DocumentFilterDescriptor> getAllByFilterId()
 	{
 		// TODO: caching
 		return repository.getUserQueries()
@@ -88,9 +92,9 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 				.collect(GuavaCollectors.toImmutableMapByKey(filter -> filter.getFilterId()));
 	}
 
-	private static final DocumentQueryFilterDescriptor createFilterDescriptor(final IUserQuery userQuery)
+	private static final DocumentFilterDescriptor createFilterDescriptor(final IUserQuery userQuery)
 	{
-		final DocumentQueryFilterDescriptor.Builder filter = DocumentQueryFilterDescriptor.builder()
+		final DocumentFilterDescriptor.Builder filter = DocumentFilterDescriptor.builder()
 				.setFilterId("userquery-" + userQuery.getId())
 				.setDisplayName(userQuery.getCaption())
 				.setFrequentUsed(false);
@@ -125,7 +129,7 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
 				final LookupDescriptor lookupDescriptor = searchField.getLookupDescriptor();
 
-				filter.addParameter(DocumentQueryFilterParamDescriptor.builder()
+				filter.addParameter(DocumentFilterParamDescriptor.builder()
 						.setJoinAnd(join == Join.AND)
 						.setDisplayName(displayName)
 						.setFieldName(fieldName)
@@ -137,7 +141,7 @@ public class UserQueryDocumentQueryFilterDescriptorsProvider implements Document
 			}
 			else
 			{
-				filter.addInternalParameter(DocumentQueryFilterParam.builder()
+				filter.addInternalParameter(DocumentFilterParam.builder()
 						.setJoinAnd(join == Join.AND)
 						.setFieldName(fieldName)
 						.setOperator(operator)

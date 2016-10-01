@@ -1,9 +1,11 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.datatypes.json.filters;
+
+import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.window.model.DocumentQueryFilterParam;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L
@@ -27,11 +29,12 @@ import de.metas.ui.web.window.model.DocumentQueryFilterParam;
  * #L%
  */
 
-public class JSONDocumentQueryFilterParam
+@SuppressWarnings("serial")
+final class JSONDocumentFilterParam implements Serializable
 {
-	public static final JSONDocumentQueryFilterParam of(final DocumentQueryFilterParam filterParam)
+	/* package */static final JSONDocumentFilterParam of(final DocumentFilterParam filterParam)
 	{
-		return new JSONDocumentQueryFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
+		return new JSONDocumentFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
 	}
 
 	@JsonProperty("parameterName")
@@ -44,7 +47,7 @@ public class JSONDocumentQueryFilterParam
 	private final Object valueTo;
 
 	@JsonCreator
-	private JSONDocumentQueryFilterParam(
+	private JSONDocumentFilterParam(
 			@JsonProperty("parameterName") final String parameterName //
 			, @JsonProperty("value") final Object value //
 			, @JsonProperty("valueTo") final Object valueTo //

@@ -7,11 +7,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 
 /*
  * #%L
@@ -91,7 +91,7 @@ public interface IWindowRestController
 			, final JSONViewDataType viewDataType //
 			, int firstRow //
 			, int pageLength //
-			, List<JSONDocumentQueryFilter> jsonFilters //
+			, List<JSONDocumentFilter> jsonFilters //
 	);
 
 	@Deprecated

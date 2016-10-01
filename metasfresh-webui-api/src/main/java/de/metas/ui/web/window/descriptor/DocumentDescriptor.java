@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -91,13 +93,13 @@ public final class DocumentDescriptor
 	 *         <li>included entity's filters if detailId is not null
 	 *         </ul>
 	 */
-	public DocumentQueryFilterDescriptorsProvider getDocumentFiltersProvider(@Nullable final String detailId)
+	public DocumentFilterDescriptorsProvider getDocumentFiltersProvider(@Nullable final String detailId)
 	{
 		return getEntityDescriptor(detailId).getFiltersProvider();
 	}
 
 	/** @return root entity's filters */
-	public DocumentQueryFilterDescriptorsProvider getDocumentFiltersProvider()
+	public DocumentFilterDescriptorsProvider getDocumentFiltersProvider()
 	{
 		return getEntityDescriptor(null).getFiltersProvider();
 	}

@@ -17,9 +17,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQuery;
-import de.metas.ui.web.window.model.DocumentQueryFilter;
-import de.metas.ui.web.window.model.DocumentQueryFilterParam;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
+import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 /*
  * #%L
@@ -236,7 +236,7 @@ class SqlDocumentQueryBuilder
 	}
 
 	/** Build document filters where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final List<DocumentQueryFilter> filters)
+	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final List<DocumentFilter> filters)
 	{
 		if (filters.isEmpty())
 		{
@@ -245,7 +245,7 @@ class SqlDocumentQueryBuilder
 
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
-		for (final DocumentQueryFilter filter : query.getFilters())
+		for (final DocumentFilter filter : query.getFilters())
 		{
 			final IStringExpression sqlFilter = buildSqlWhereClause(sqlParams, filter);
 			if (sqlFilter.isNullExpression())
@@ -261,11 +261,11 @@ class SqlDocumentQueryBuilder
 	}
 
 	/** Build document filter where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilter filter)
+	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilter filter)
 	{
 		final CompositeStringExpression.Builder sql = IStringExpression.composer();
 
-		for (final DocumentQueryFilterParam filterParam : filter.getParameters())
+		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
 			final IStringExpression sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
 			if (sqlFilterParam.isNullExpression())
@@ -281,7 +281,7 @@ class SqlDocumentQueryBuilder
 	}
 
 	/** Build document filter parameter where clause */
-	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentQueryFilterParam filterParam)
+	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilterParam filterParam)
 	{
 		final String fieldName = filterParam.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);

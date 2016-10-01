@@ -30,12 +30,12 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentQueryFilter;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -342,7 +342,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody final List<JSONDocumentQueryFilter> jsonFilters //
+			, @RequestBody final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
 		return documentViewController.createView(adWindowId, viewDataType, firstRow, pageLength, jsonFilters);

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -65,7 +66,7 @@ public final class DocumentQuery
 	private final int recordId;
 	private final Document parentDocument;
 
-	private final List<DocumentQueryFilter> filters;
+	private final List<DocumentFilter> filters;
 	private final List<DocumentQueryOrderBy> orderBys;
 
 	private final int firstRow;
@@ -184,7 +185,7 @@ public final class DocumentQuery
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 
-	public List<DocumentQueryFilter> getFilters()
+	public List<DocumentFilter> getFilters()
 	{
 		return filters;
 	}
@@ -214,7 +215,7 @@ public final class DocumentQuery
 		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private int recordId = -1;
-		public List<DocumentQueryFilter> filters = null;
+		public List<DocumentFilter> filters = null;
 		public List<DocumentQueryOrderBy> orderBys = null;
 		private int firstRow = -1;
 		private int pageLength = -1;
@@ -243,7 +244,7 @@ public final class DocumentQuery
 			return this;
 		}
 
-		public Builder addFilter(final DocumentQueryFilter filter)
+		public Builder addFilter(final DocumentFilter filter)
 		{
 			Check.assumeNotNull(filter, "Parameter filter is not null");
 
@@ -255,7 +256,7 @@ public final class DocumentQuery
 			return this;
 		}
 
-		public Builder addFilters(final List<DocumentQueryFilter> filtersToAdd)
+		public Builder addFilters(final List<DocumentFilter> filtersToAdd)
 		{
 			if (filtersToAdd == null || filtersToAdd.isEmpty())
 			{
