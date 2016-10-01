@@ -18,10 +18,10 @@ import org.adempiere.util.Services;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -246,7 +246,7 @@ public class UserQueryRepository
 	{
 		final IUserQueryRestriction row = new UserQueryRestriction();
 		row.setJoin(Join.AND);
-		row.setOperator(MQuery.OPERATORS[MQuery.EQUAL_INDEX]);
+		row.setOperator(Operator.EQUAL);
 
 		final String[] fields = segment.split(Pattern.quote(FIELD_SEPARATOR));
 		for (int j = 0; j < fields.length; j++)
@@ -266,13 +266,10 @@ public class UserQueryRepository
 			}
 			else if (j == INDEX_OPERATOR)
 			{
-				for (final ValueNamePair vnp : MQuery.OPERATORS)
+				final Operator operator = Operator.forCodeOrNull(fields[j]);
+				if(operator != null)
 				{
-					if (vnp.getValue().equals(fields[j]))
-					{
-						row.setOperator(vnp);
-						break;
-					}
+					row.setOperator(operator);
 				}
 			}
 			else if (j == INDEX_VALUE || j == INDEX_VALUE2)
@@ -330,18 +327,16 @@ public class UserQueryRepository
 				continue;
 			}
 			final String columnName = field.getColumnName();
-			final String columnDisplayName = field.getDisplayName();
+			final String columnDisplayName = field.getDisplayName().translate(Env.getAD_Language(getCtx()));
 			final String columnSql = field.getColumnSQL();
 
 			//
 			// Operator
-			final ValueNamePair operatorVNP = row.getOperator();
-			if (operatorVNP == null)
+			final Operator operator = row.getOperator();
+			if (operator == null)
 			{
 				continue;
 			}
-			final String operatorSql = operatorVNP.getValue();
-			final boolean isBinaryOperator = row.isBinaryOperator();
 
 			//
 			// Value
@@ -360,7 +355,7 @@ public class UserQueryRepository
 			//
 			// Value2
 			Object valueTo = null;
-			if (isBinaryOperator)
+			if (operator.isRangeOperator())
 			{
 				valueTo = row.getValueTo();
 				if (valueTo == null)
@@ -382,7 +377,7 @@ public class UserQueryRepository
 			}
 			else
 			{
-				query.addRestriction(columnSql, operatorSql, valueConverted, columnDisplayName, valueDisplay, andCondition);
+				query.addRestriction(columnSql, operator, valueConverted, columnDisplayName, valueDisplay, andCondition);
 			}
 
 			//
@@ -393,7 +388,7 @@ public class UserQueryRepository
 			}
 			userQueryCode.append(joinOperator.getCode())
 					.append(FIELD_SEPARATOR).append(columnName)
-					.append(FIELD_SEPARATOR).append(operatorSql)
+					.append(FIELD_SEPARATOR).append(operator.getCode())
 					.append(FIELD_SEPARATOR).append(value.toString())
 					.append(FIELD_SEPARATOR).append(valueTo != null ? valueTo.toString() : "");
 		}

@@ -54,6 +54,7 @@ import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
@@ -259,7 +260,7 @@ public class MRPInfoWindow extends InfoSimple
 			final Timestamp datePromised = getDatePromisedParameter();
 
 			final MQuery query = new MQuery(I_Fresh_QtyOnHand.Table_Name);
-			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, MQuery.EQUAL, datePromised);
+			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, Operator.EQUAL, datePromised);
 			query.setRecordCount(1);
 			final int AD_WindowNo = getAD_Window_ID(I_Fresh_QtyOnHand.Table_Name, true);
 			zoom(AD_WindowNo, query);

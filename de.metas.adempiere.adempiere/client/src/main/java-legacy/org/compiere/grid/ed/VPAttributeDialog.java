@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -81,6 +79,7 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MLot;
 import org.compiere.model.MLotCtl;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSerNoCtl;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -91,15 +90,17 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -987,7 +988,7 @@ public class VPAttributeDialog extends CDialog
 		if (pp != null)
 			M_Lot_ID = pp.getKey();
 		MQuery zoomQuery = new MQuery("M_Lot");
-		zoomQuery.addRestriction("M_Lot_ID", MQuery.EQUAL, M_Lot_ID);
+		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

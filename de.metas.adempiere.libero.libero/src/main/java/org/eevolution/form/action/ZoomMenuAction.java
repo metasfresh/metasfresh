@@ -207,8 +207,7 @@ public class ZoomMenuAction extends PopupAction {
 		String tablename = tableName;
 		int tableid = tableID;
 		
-		MQuery query = new MQuery();
-		query.setTableName(tablename);
+		MQuery query = new MQuery(tablename);
 
 		AWindow window = new AWindow();
 		if (window.initWindow(tableid, query)) {

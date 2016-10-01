@@ -18,8 +18,6 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -37,6 +35,7 @@ import org.compiere.apps.StatusBar;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.plaf.CompiereColor;
@@ -50,10 +49,13 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Generate custom form panel
@@ -305,7 +307,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 						MPrintFormat format = genForm.getPrintFormat();
 						MTable table = MTable.get(Env.getCtx(),format.getAD_Table_ID());
 						MQuery query = new MQuery(table.getTableName());
-						query.addRestriction(table.getTableName() + "_ID", MQuery.EQUAL, Record_ID);
+						query.addRestriction(table.getTableName() + "_ID", Operator.EQUAL, Record_ID);
 						//	Engine
 						PrintInfo info = new PrintInfo(table.getTableName(),table.get_Table_ID(), Record_ID);               
 						ReportEngine re = new ReportEngine(Env.getCtx(), format, query, info);

@@ -2,6 +2,8 @@ package org.compiere.apps.search;
 
 import java.util.Objects;
 
+import de.metas.i18n.ITranslatableString;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,7 +35,10 @@ public interface IUserQueryField
 
 	String getColumnName();
 
-	String getDisplayName();
+	/**
+	 * @return display name; never null
+	 */
+	ITranslatableString getDisplayName();
 
 	String getColumnSQL();
 

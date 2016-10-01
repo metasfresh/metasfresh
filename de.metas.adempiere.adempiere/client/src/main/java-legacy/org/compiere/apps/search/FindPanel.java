@@ -61,6 +61,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.GridTabMaxRowsRestrictionChecker;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -73,7 +74,6 @@ import org.compiere.swing.ListComboBoxModel;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
@@ -663,7 +663,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		final MQuery query;
 		if(template != null)
 		{
-			query = new MQuery(template);
+			query = template.deepCopy();
 		}
 		else
 		{
@@ -690,7 +690,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 		advancedTable.stopEditor(false);
 		final FindAdvancedSearchTableModel model = advancedTable.getModel();
-		model.setRows(userQuery.getSegments());
+		model.setRows(userQuery.getRestrictions());
 	}
 
 	/**
@@ -781,7 +781,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				}
 				else
 				{
-					m_query.addRestriction(ColumnSQL, MQuery.EQUAL, value, ColumnName, veditor.getDisplay());
+					m_query.addRestriction(ColumnSQL, Operator.EQUAL, value, ColumnName, veditor.getDisplay());
 				}
 			}
 		} // editors
@@ -1246,7 +1246,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		for (int i = 0; i < query.getRestrictionCount(); i++)
 		{
 			String columnName = query.getColumnName(i);
-			final String operatorStr = query.getOperator(i);
+			final Operator operator = query.getOperator(i);
 			final Object value = query.getCode(i);
 			final Object valueTo = query.getCodeTo(i);
 			final boolean andCondition = query.isAndCondition(i);
@@ -1320,15 +1320,7 @@ public final class FindPanel extends CPanel implements ActionListener
 					searchField = getSearchFieldByColumnName(query.getInfoName(i));
 				}
 				row.setSearchField(searchField);
-
-				for (ValueNamePair vnp : MQuery.OPERATORS)
-				{
-					if (vnp.getValue().equals(operatorStr))
-					{
-						row.setOperator(vnp);
-						break;
-					}
-				}
+				row.setOperator(operator);
 
 				//
 				// GridField field = getTargetMField(columnName);

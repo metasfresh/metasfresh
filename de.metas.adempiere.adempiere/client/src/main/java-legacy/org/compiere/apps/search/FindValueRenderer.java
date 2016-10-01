@@ -26,6 +26,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VHeaderRenderer;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -95,7 +96,8 @@ final class FindValueRenderer extends DefaultTableCellRenderer
 
 		//
 		// Update valueTo enabled
-		currentIsValueToEnabled = isValueToColumn && row.isBinaryOperator();
+		final Operator operator = row.getOperator();
+		currentIsValueToEnabled = isValueToColumn && operator != null && operator.isRangeOperator();
 		final boolean valueDisplayed = isEnabled();
 
 		//

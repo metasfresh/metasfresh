@@ -34,5 +34,5 @@ public interface IUserQuery
 	
 	ITranslatableString getCaption();
 	
-	List<IUserQueryRestriction> getSegments();
+	List<IUserQueryRestriction> getRestrictions();
 }

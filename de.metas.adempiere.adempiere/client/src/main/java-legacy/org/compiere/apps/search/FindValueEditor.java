@@ -26,6 +26,7 @@ import javax.swing.table.TableCellEditor;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
+import org.compiere.model.MQuery.Operator;
 
 /**
  * Cell editor for Find Value/ValueTo fields. Editor depends on Column setting. Has to save entries how they are used in the query, i.e. '' for strings.
@@ -80,7 +81,8 @@ final class FindValueEditor extends AbstractCellEditor implements TableCellEdito
 
 		//
 		// Update valueTo enabled
-		isValueToEnabled = isValueToColumn && row.isBinaryOperator();
+		final Operator operator = row.getOperator();
+		isValueToEnabled = isValueToColumn && operator != null && operator.isRangeOperator();
 
 		final FindPanelSearchField searchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 		if (searchField == null)

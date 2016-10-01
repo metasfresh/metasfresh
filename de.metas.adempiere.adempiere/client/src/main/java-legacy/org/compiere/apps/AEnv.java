@@ -65,6 +65,7 @@ import org.compiere.grid.ed.Calendar;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
@@ -703,7 +704,7 @@ public final class AEnv
 		AWindow frame = new AWindow();
 		// metas: begin: 01880
 		final MQuery query = new MQuery(TableName);
-		query.addRestriction(TableName + "_ID", MQuery.EQUAL, Record_ID);
+		query.addRestriction(TableName + "_ID", Operator.EQUAL, Record_ID);
 		query.setZoomTableName(TableName);
 		query.setZoomColumnName(TableName + "_ID");
 		query.setZoomValue(Record_ID);
@@ -944,8 +945,8 @@ public final class AEnv
 		if (AD_Table_ID != 0 && Record_ID != 0)
 		{
 			query = new MQuery("AD_WF_Process");
-			query.addRestriction("AD_Table_ID", MQuery.EQUAL, AD_Table_ID);
-			query.addRestriction("Record_ID", MQuery.EQUAL, Record_ID);
+			query.addRestriction("AD_Table_ID", Operator.EQUAL, AD_Table_ID);
+			query.addRestriction("Record_ID", Operator.EQUAL, Record_ID);
 		}
 		//
 		AWindow frame = new AWindow();

@@ -47,6 +47,7 @@ import java.util.Properties;
 import javax.sql.RowSet;
 
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
@@ -162,7 +163,7 @@ public class PrintBOM extends SvrProcess
 		pf.setTranslationLanguage(language);
 		// query
 		MQuery query = MQuery.get(getCtx(), AD_PInstance_ID, X_RV_PP_Product_BOMLine_Table_Name);
-		query.addRestriction("AD_PInstance_ID", MQuery.EQUAL, AD_PInstance_ID);
+		query.addRestriction("AD_PInstance_ID", Operator.EQUAL, AD_PInstance_ID);
 
 		PrintInfo info = new PrintInfo(X_RV_PP_Product_BOMLine_Table_Name, 
 				X_RV_PP_Product_BOMLine_Table_ID, getRecord_ID());

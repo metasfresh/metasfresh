@@ -30,6 +30,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 
 /**
@@ -71,7 +73,7 @@ final class FindPanelSearchField implements IUserQueryField
 		return searchFields;
 	}
 	
-	public static final FindPanelSearchField castToFindPanelSearchField(final IUserQueryField field)
+	public static final FindPanelSearchField castToFindPanelSearchField(final Object field)
 	{
 		return (FindPanelSearchField)field;
 	}
@@ -96,7 +98,8 @@ final class FindPanelSearchField implements IUserQueryField
 	private static final int AD_REFERENCE_ID_YESNO = 319;
 
 	private final GridField gridField;
-	private String _displayName;
+	private ITranslatableString _displayName;
+	private final String adLanguage;
 
 	private FindPanelSearchField(final GridField gridField)
 	{
@@ -143,13 +146,15 @@ final class FindPanelSearchField implements IUserQueryField
 		// TODO: handle the case of lookup fields with validation rules
 
 		this.gridField = new GridField(vo);
+		
+		this.adLanguage = Env.getAD_Language(Env.getCtx());
 	}
 
 	@Override
 	public String toString()
 	{
 		// VERY IMPORTANT: if we are not doing this, using this class in a CComboBox with auto-completion enabled will fail!
-		return getDisplayName();
+		return getDisplayName().translate(adLanguage);
 	}
 
 	@Override
@@ -164,7 +169,7 @@ final class FindPanelSearchField implements IUserQueryField
 	}
 
 	@Override
-	public String getDisplayName()
+	public ITranslatableString getDisplayName()
 	{
 		if (_displayName == null)
 		{
@@ -183,10 +188,15 @@ final class FindPanelSearchField implements IUserQueryField
 				header += " (ID)";
 			}
 
-			_displayName = header;
+			_displayName = ImmutableTranslatableString.constant(header);
 		}
 
 		return _displayName;
+	}
+	
+	public String getDisplayNameTrl()
+	{
+		return getDisplayName().translate(adLanguage);
 	}
 
 	@Override

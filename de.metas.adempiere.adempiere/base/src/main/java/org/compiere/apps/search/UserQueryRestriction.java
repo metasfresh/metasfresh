@@ -1,7 +1,6 @@
 package org.compiere.apps.search;
 
-import org.compiere.model.MQuery;
-import org.compiere.util.ValueNamePair;
+import org.compiere.model.MQuery.Operator;
 
 import com.google.common.base.MoreObjects;
 
@@ -31,7 +30,7 @@ final class UserQueryRestriction implements IUserQueryRestriction
 {
 	private Join join = Join.AND;
 	private IUserQueryField searchField;
-	private ValueNamePair operator = MQuery.OPERATORS[MQuery.EQUAL_INDEX];
+	private Operator operator = Operator.EQUAL;
 	private Object value;
 	private Object valueTo;
 
@@ -39,6 +38,7 @@ final class UserQueryRestriction implements IUserQueryRestriction
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("join", join)
 				.add("searchField", searchField)
 				.add("operator", operator)
@@ -72,13 +72,13 @@ final class UserQueryRestriction implements IUserQueryRestriction
 	}
 
 	@Override
-	public ValueNamePair getOperator()
+	public Operator getOperator()
 	{
 		return operator;
 	}
 
 	@Override
-	public void setOperator(final ValueNamePair operator)
+	public void setOperator(final Operator operator)
 	{
 		this.operator = operator;
 	}

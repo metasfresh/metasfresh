@@ -41,6 +41,7 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MGroup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
@@ -199,7 +200,7 @@ public class CallCenterModel
 		MQuery query = new MQuery(m_mTab.getTableName());
 		if (m_R_Group_ID != R_Group_AllBundles)
 		{
-			query.addRestriction(I_RV_R_Group_Prospect.COLUMNNAME_R_Group_ID, MQuery.EQUAL, m_R_Group_ID);
+			query.addRestriction(I_RV_R_Group_Prospect.COLUMNNAME_R_Group_ID, Operator.EQUAL, m_R_Group_ID);
 		}
 		if (m_isShowOnlyDue)
 		{
@@ -228,7 +229,7 @@ public class CallCenterModel
 			//
 			if (contact != null)
 			{
-				query.addRestriction(I_R_RequestUpdate.COLUMNNAME_R_Request_ID, MQuery.EQUAL, contact.getR_Request_ID());
+				query.addRestriction(I_R_RequestUpdate.COLUMNNAME_R_Request_ID, Operator.EQUAL, contact.getR_Request_ID());
 			}
 			else
 			{
@@ -245,9 +246,9 @@ public class CallCenterModel
 			//
 			if (contact != null)
 			{
-				query.addRestriction(I_R_Request.COLUMNNAME_C_BPartner_ID, MQuery.EQUAL, contact.getC_BPartner_ID());
-				query.addRestriction(I_R_Request.COLUMNNAME_R_Request_ID, MQuery.NOT_EQUAL, contact.getR_Request_ID());
-				query.addRestriction(I_R_Request.COLUMNNAME_R_RequestType_ID, MQuery.EQUAL, getDefault_RequestType_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_C_BPartner_ID, Operator.EQUAL, contact.getC_BPartner_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_R_Request_ID, Operator.NOT_EQUAL, contact.getR_Request_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_R_RequestType_ID, Operator.EQUAL, getDefault_RequestType_ID());
 			}
 			else
 			{
@@ -264,8 +265,8 @@ public class CallCenterModel
 			MQuery query = new MQuery(m_mTabInterestArea.getTableName());
 			if (contact != null)
 			{
-				query.addRestriction(I_R_ContactInterest.COLUMNNAME_AD_User_ID, MQuery.EQUAL, contact.getAD_User_ID());
-				query.addRestriction(I_R_ContactInterest.COLUMNNAME_IsActive, MQuery.EQUAL, "Y");
+				query.addRestriction(I_R_ContactInterest.COLUMNNAME_AD_User_ID, Operator.EQUAL, contact.getAD_User_ID());
+				query.addRestriction(I_R_ContactInterest.COLUMNNAME_IsActive, Operator.EQUAL, "Y");
 			}
 			else
 			{

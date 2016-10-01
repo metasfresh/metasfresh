@@ -1,7 +1,6 @@
 package org.compiere.apps.search;
 
-import org.compiere.model.MQuery;
-import org.compiere.util.ValueNamePair;
+import org.compiere.model.MQuery.Operator;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -73,15 +72,9 @@ public interface IUserQueryRestriction
 	//@formatter:on
 
 	//@formatter:off
-	void setOperator(ValueNamePair operator);
-	ValueNamePair getOperator();
+	void setOperator(Operator operator);
+	Operator getOperator();
 	//@formatter:on
-
-	default boolean isBinaryOperator()
-	{
-		final ValueNamePair operator = getOperator();
-		return operator != null && operator.equals(MQuery.OPERATORS[MQuery.BETWEEN_INDEX]);
-	}
 
 	//@formatter:off
 	Object getValue();

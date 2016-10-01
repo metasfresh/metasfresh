@@ -82,6 +82,7 @@ import org.compiere.model.MPInstancePara;
 import org.compiere.model.MPrivateAccess;
 import org.compiere.model.MProcess;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.print.MPrintFormat;
@@ -103,6 +104,7 @@ import org.compiere.util.Trx;
 import org.eevolution.model.MDDOrder;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -677,7 +679,7 @@ public class VOrderDistribution extends CPanel
 					int M_Movement_ID = ids[i];
 					MPrintFormat format = MPrintFormat.get(Env.getCtx(), MPrintFormat.getPrintFormat_ID("Inventory Move Hdr (Example)", MMovement.Table_ID,  0), false);
 					MQuery query = new MQuery(MMovement.Table_Name);
-					query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, MQuery.EQUAL, M_Movement_ID);
+					query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, Operator.EQUAL, M_Movement_ID);
 
 					//	Engine
 					PrintInfo info = new PrintInfo(MMovement.Table_Name,MMovement.Table_ID, M_Movement_ID);               

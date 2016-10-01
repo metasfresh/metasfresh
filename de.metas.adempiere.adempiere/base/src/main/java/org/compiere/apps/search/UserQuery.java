@@ -29,7 +29,7 @@ import de.metas.i18n.ImmutableTranslatableString;
  * #L%
  */
 
-class UserQuery implements IUserQuery
+/*package*/final class UserQuery implements IUserQuery
 {
 	public static final UserQuery of(final int id, final String caption, final int adUserId, final List<IUserQueryRestriction> segments)
 	{
@@ -39,14 +39,15 @@ class UserQuery implements IUserQuery
 	private final int id;
 	private final int adUserId;
 	private final ITranslatableString caption;
-	private final List<IUserQueryRestriction> segments;
+	private final List<IUserQueryRestriction> restrictions;
 
-	private UserQuery(final int id, final String caption, final int adUserId, final List<IUserQueryRestriction> segments)
+	private UserQuery(final int id, final String caption, final int adUserId, final List<IUserQueryRestriction> restrictions)
 	{
+		super();
 		this.id = id;
 		this.adUserId = adUserId;
 		this.caption = ImmutableTranslatableString.constant(caption);
-		this.segments = segments;
+		this.restrictions = restrictions;
 	}
 
 	@Override
@@ -56,7 +57,7 @@ class UserQuery implements IUserQuery
 				.add("id", id)
 				.add("caption", caption)
 				.add("adUserId", adUserId)
-				.add("segments", segments)
+				.add("restrictions", restrictions)
 				.toString();
 	}
 
@@ -65,13 +66,13 @@ class UserQuery implements IUserQuery
 	{
 		return id;
 	}
-	
+
 	@Override
 	public ITranslatableString getCaption()
 	{
 		return caption;
 	}
-	
+
 	@Override
 	public int getAD_User_ID()
 	{
@@ -79,8 +80,8 @@ class UserQuery implements IUserQuery
 	}
 
 	@Override
-	public List<IUserQueryRestriction> getSegments()
+	public List<IUserQueryRestriction> getRestrictions()
 	{
-		return segments;
+		return restrictions;
 	}
 }

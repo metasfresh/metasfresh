@@ -10,8 +10,8 @@ import javax.swing.table.TableModel;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
 
 /**
  * Advanced search table model.
@@ -186,7 +186,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		}
 		else if (INDEX_OPERATOR == columnIndex)
 		{
-			final ValueNamePair operator = (ValueNamePair)value;
+			final Operator operator = Operator.cast(value);
 			row.setOperator(operator);
 		}
 		else if (INDEX_VALUE == columnIndex)

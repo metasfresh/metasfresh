@@ -32,10 +32,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
@@ -58,6 +54,7 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MDocType;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSysConfig;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
@@ -71,6 +68,9 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.jdesktop.swingx.JXTaskPane;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Search Product and return selection
@@ -1092,7 +1092,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		// AEnv.zoom(MProduct.Table_ID, M_Product_ID.intValue(), true); // SO
 
 		MQuery query = new MQuery("M_Product");
-		query.addRestriction("M_Product_ID", MQuery.EQUAL, M_Product_ID);
+		query.addRestriction("M_Product_ID", Operator.EQUAL, M_Product_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("M_Product", true); // SO
 		zoom(AD_WindowNo, query);
