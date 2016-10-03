@@ -34,7 +34,16 @@ public interface ICalloutRecord
 
 	int getAD_Tab_ID();
 
+	/**
+	 * @return underlying model
+	 */
 	<T> T getModel(Class<T> modelClass);
+	
+	/**
+	 * @return underlying model as it was before starting to change it
+	 * @see #getModel(Class)
+	 */
+	<T> T getModelBeforeChanges(Class<T> modelClass);
 
 	Object getValue(String columnName);
 

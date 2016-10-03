@@ -2149,15 +2149,6 @@ public class GridField
 	}
 
 	@Override
-	public <T> T getModel(final Class<T> modelClass)
-	{
-		final ICalloutRecord calloutRecord = getCalloutRecord();
-		final T model = calloutRecord.getModel(modelClass);
-		Check.assumeNotNull(model, "model not null");
-		return model;
-	}
-
-	@Override
 	public int getTabNo()
 	{
 		return m_vo.TabNo;

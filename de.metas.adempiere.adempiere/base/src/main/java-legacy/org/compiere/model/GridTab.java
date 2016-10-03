@@ -2786,6 +2786,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		return InterfaceWrapperHelper.create(this, modelClass);
 	}
+	
+	@Override
+	public <T> T getModelBeforeChanges(final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.createOld(this, modelClass);
+	}
 
 	/**
 	 * Get Key ID of row
