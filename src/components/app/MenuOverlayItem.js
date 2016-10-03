@@ -41,23 +41,19 @@ class MenuOverlayItem extends Component {
     }
 
     renderBreadcrumb = (elementId) => {
-        const {dispatch, dis} = this.props;
-        if(dispatch){
-            dispatch(getWindowBreadcrumb(elementId));
-        } else {
-            dis(getWindowBreadcrumb(elementId));
-        }
-        
+        const {dispatch} = this.props;
+
+        dispatch(getWindowBreadcrumb(elementId));
     }
 
     handleClick = (elementId) => {
         const {handleRedirect} = this.props;
-        handleRedirect(elementId); 
+        handleRedirect(elementId);
         this.renderBreadcrumb(elementId)
     }
 
     render() {
-        const {dis, dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
+        const {dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
 
         return (
             <div
@@ -72,7 +68,7 @@ class MenuOverlayItem extends Component {
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
                     onClick={query? '' : e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick(elementId) )}
-                    onMouseDown={ e => children ? handlePath(nodeId) : ''} 
+                    onMouseDown={ e => children ? handlePath(nodeId) : ''}
                 >
                 {caption}
                 </span>
@@ -80,13 +76,13 @@ class MenuOverlayItem extends Component {
             }
 
             { query &&
-               <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")} 
+               <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")}
                 onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }
-                onMouseDown={ e => this.onMouseDown(type, nodeId)} 
-               > 
+                onMouseDown={ e => this.onMouseDown(type, nodeId)}
+               >
                     {children ? children.map(
-                        (item, id) => 
-                        
+                        (item, id) =>
+
 
                         <div key={id} className="query-results" >
                             <div className="query-caption">{caption +' / '}</div>
@@ -95,13 +91,12 @@ class MenuOverlayItem extends Component {
                                 handleRedirect={handleRedirect}
                                 handleNewRedirect={handleNewRedirect}
                                 handlePath={handlePath}
-                                dis={dis}
                                 query={true}
                                 {...item}
                             />
 
                         </div>
-                        
+
 
                         ) : caption}
 
@@ -140,6 +135,9 @@ function mapStateToProps(state) {
     }
 }
 
+MenuOverlayItem.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
 
 MenuOverlayItem = connect(mapStateToProps)(MenuOverlayItem);
 
