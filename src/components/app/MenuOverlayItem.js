@@ -108,37 +108,10 @@ class MenuOverlayItem extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
-    const {
-        master,
-        connectionError,
-        modal
-    } = windowHandler || {
-        master: {},
-        connectionError: false,
-        modal: false
-    }
-
-
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: {}
-    }
-
-    return {
-        master,
-        connectionError,
-        breadcrumb,
-        modal
-    }
-}
-
 MenuOverlayItem.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-MenuOverlayItem = connect(mapStateToProps)(MenuOverlayItem);
+MenuOverlayItem = connect()(MenuOverlayItem);
 
 export default MenuOverlayItem
