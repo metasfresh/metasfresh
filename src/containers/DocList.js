@@ -24,7 +24,9 @@ class DocList extends Component {
             page: 1,
             data: {},
             layout: {},
-            filters: {}
+            filters: {},
+            sortingAsc: false,
+            sortingField: ''
         }
     }
 
@@ -59,14 +61,47 @@ class DocList extends Component {
         });
     }
 
-    getView = () => {
+    getView = (ascending, field) => {
         const {data,page} = this.state;
         const {dispatch} = this.props;
+
+        // console.log('ascending ' + ascending);
+
+        let sortingQuery = '';
+
+        this.setState(
+            Object.assign({}, this.state, {
+                sortingAsc: ascending
+            })
+        );
+
+        this.setState(
+            Object.assign({}, this.state, {
+                sortingField: field
+            })
+        );
+
+
+        if(field && ascending) {
+            sortingQuery = '+' + field;
+            // this.setState(
+            //     Object.assign({}, this.state, {
+            //         page: 1
+            //     })
+            // );
+        } else if(field && !ascending) {
+            sortingQuery = '-' + field;
+            // this.setState(
+            //     Object.assign({}, this.state, {
+            //         page: 1
+            //     })
+            // );
+        }
 
         // console.log('view id:');
         // console.log(data.viewId);
 
-        dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
+        dispatch(browseViewRequest(data.viewId, page, 20, sortingQuery)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))
@@ -77,6 +112,10 @@ class DocList extends Component {
 
     handleChangePage = (index) => {
         const {data, page} = this.state;
+        const {sortingAsc, sortingField} = this.state;
+
+        // console.log('a ' +sortingAsc + ' b ' + sortingField);
+
         let currentPage = page;
         switch(index){
             case "up":
@@ -93,40 +132,9 @@ class DocList extends Component {
             this.setState(Object.assign({}, this.state, {
                 page: parseInt(currentPage)
             }), ()=>{
-                this.getView();
+                this.getView(sortingAsc, sortingField);
             });
         }
-    }
-
-    sort = (ascending, field) => {
-        
-        // console.log(ascending);
-        let sortingQuery = '';
-
-        if(ascending) {
-            
-            sortingQuery = '+' + field;
-            // console.log(sortingQuery);
-        } else {
-            
-            sortingQuery = '-' + field;
-
-            // console.log(sortingQuery);
-        }
-        
-        const {data,page} = this.state;
-        const {dispatch} = this.props;
-
-        // console.log('view id:');
-        // console.log(data.viewId);
-
-        dispatch(browseViewRequest(data.viewId, 1, 20, sortingQuery )).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }))
-        });
-
-        // console.log(this.state.data);
     }
 
     render() {
@@ -139,7 +147,6 @@ class DocList extends Component {
                 <div>
                     <Header breadcrumb={breadcrumb} />
                     <div className="container header-sticky-distance">
-                        <button onClick={() => this.sort()}>sorting</button>
                         <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                             <button
                                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
@@ -172,7 +179,7 @@ class DocList extends Component {
                                 page={page}
                                 mainTable={true}
                                 updateDocList={this.updateData}
-                                sort={this.sort}
+                                sort={this.getView}
                                 orderBy={data.orderBy}
                             />
                         </div>
