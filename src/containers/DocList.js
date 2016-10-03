@@ -150,6 +150,7 @@ class DocList extends Component {
                                 pageLength={20}
                                 handleChangePage={this.handleChangePage}
                                 page={page}
+                                mainTable={true}
                             />
                         </div>
                     </div>

@@ -33,6 +33,8 @@ class TableContextMenu extends Component {
     handleDelete = () => {
         const {dispatch,  tabId, type, docId, selected} = this.props;
 
+        console.log(selected);
+
         this.setState(update(this.state, {
           prompt: {
               open: {$set: true}
@@ -78,7 +80,8 @@ class TableContextMenu extends Component {
 
 
     render() {
-        const {isDisplayed, x, y, blur, selected, dispatch} = this.props;
+        const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
+        console.log(mainTable);
         const style = {
             left: this.props.x,
             top: this.props.y,
@@ -95,7 +98,7 @@ class TableContextMenu extends Component {
                 tabIndex="0" style={style}
                 onBlur={blur}
             >
-                {isSelectedOne && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
+                {isSelectedOne && !mainTable && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
                     <i className="meta-icon-edit" /> Advanced edit
                 </div>}
 
