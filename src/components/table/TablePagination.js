@@ -130,7 +130,11 @@ class TablePagination extends Component {
         let pagination = [];
 
         if(pages < 8 ) {
-                this.renderPaginationContent(pagination, page, 1, pages-1);
+            if(pages <= 0){
+                this.renderPaginationContent(pagination, page, 1, 1);
+            } else {
+                this.renderPaginationContent(pagination, page, 1, pages);
+            }
         } else {
             if(page <= 4) {
                 this.renderPaginationContent(pagination, page, 1, 5);

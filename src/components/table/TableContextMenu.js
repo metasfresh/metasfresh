@@ -52,25 +52,37 @@ class TableContextMenu extends Component {
 
 
     handlePromptSubmitClick = () => {
-       const {dispatch,  tabId, type, docId, selected, deselect} = this.props;
+       const {dispatch,  tabId, type, docId, selected, deselect, mainTable, updateDocList} = this.props;
         this.setState(update(this.state, {
           prompt: {
               open: {$set: false}
           }
         }))
 
-        // dispatch(deleteData(type, docId, tabId, selected)).then(
-        //     () => {
-        //         dispatch(deleteLocal(tabId, selected, "master"))
-        //     }
-        // )
-
-        dispatch(deleteData(type, docId, tabId, selected))
+        if(mainTable){
+          if(selected.length>1){
+            for(let i=0;i<selected.length;i++){
+              dispatch(deleteData(type, selected[i]));
+            }
+            updateDocList();
+            deselect();
+          } else {
+            dispatch(deleteData(type, selected))
+            .then(response => {
+               updateDocList();
+            }).then(response => {
+                deselect();
+            });
+          }
+          
+        } else {
+          dispatch(deleteData(type, docId, tabId, selected))
             .then(response => {
                 dispatch(deleteLocal(tabId, selected, "master"))
             }).then(response => {
                 deselect();
             });
+        }
 
         this.props.blur();
 
@@ -78,7 +90,7 @@ class TableContextMenu extends Component {
 
 
     render() {
-        const {isDisplayed, x, y, blur, selected, dispatch} = this.props;
+        const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
         const style = {
             left: this.props.x,
             top: this.props.y,
@@ -95,7 +107,7 @@ class TableContextMenu extends Component {
                 tabIndex="0" style={style}
                 onBlur={blur}
             >
-                {isSelectedOne && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
+                {isSelectedOne && !mainTable && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
                     <i className="meta-icon-edit" /> Advanced edit
                 </div>}
 
