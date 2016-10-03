@@ -74,4 +74,7 @@ ALTER TABLE C_Doc_Outbound_Log ADD IsInvoiceEmailEnabled CHAR(1) DEFAULT 'Y' CHE
 ALTER TABLE C_BPartner ADD IsInvoiceEmailEnabled CHAR(1) DEFAULT 'Y' CHECK (IsInvoiceEmailEnabled IN ('Y','N')) NOT NULL
 ;
 
+---------------------
+
+
 

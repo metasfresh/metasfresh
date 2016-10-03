@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1842671222L;
+	private static final long serialVersionUID = -561544905L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, int C_Doc_Outbound_Log_ID, String trxName)
@@ -24,8 +24,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
         {
 			setAD_Table_ID (0);
 			setC_Doc_Outbound_Log_ID (0);
-			setIsInvoiceEmailEnabled (true);
-// Y
 			setRecord_ID (0);
         } */
     }
@@ -370,27 +368,30 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return false;
 	}
 
+	/** 
+	 * IsInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISINVOICEEMAILENABLED_No = "N";
 	/** Set Invoice Email Enabled.
 		@param IsInvoiceEmailEnabled Invoice Email Enabled	  */
 	@Override
-	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled)
+	public void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled)
 	{
-		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, Boolean.valueOf(IsInvoiceEmailEnabled));
+
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
 	}
 
 	/** Get Invoice Email Enabled.
 		@return Invoice Email Enabled	  */
 	@Override
-	public boolean isInvoiceEmailEnabled () 
+	public java.lang.String getIsInvoiceEmailEnabled () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInvoiceEmailEnabled);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
 	/** Set Anz. PDF.

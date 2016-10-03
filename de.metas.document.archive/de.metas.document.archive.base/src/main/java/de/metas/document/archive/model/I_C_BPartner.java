@@ -27,7 +27,21 @@ public interface I_C_BPartner extends de.metas.order.model.I_C_BPartner
 	//@formatter:off
 	// task 724 ; gh #443
 	public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
-	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
-	public boolean isInvoiceEmailEnabled();
+	/**
+	 * Get IsInvoiceEmailEnabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsInvoiceEmailEnabled();
+	/**
+	 * Set IsInvoiceEmailEnabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled);
 	//@formatter:on
 }
