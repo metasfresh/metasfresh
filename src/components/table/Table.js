@@ -335,10 +335,10 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable, updateDocList, sort} = this.props;
+        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable, updateDocList, sort, orderBy} = this.props;
         const {x, y, contextMenu, selected, listenOnKeys} = this.state;
 
-        console.log(this.props.cols);
+        // console.log(this.props.cols);
 
         return (
             <div>
@@ -375,7 +375,7 @@ class Table extends Component {
                                 onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
                             >
                                 <thead>
-                                    <TableHeader cols={cols} mainTable={mainTable} sort={sort} />
+                                    <TableHeader cols={cols} mainTable={mainTable} sort={sort} orderBy={orderBy} />
                                 </thead>
                                 <tbody>
                                     {this.renderTableBody()}

@@ -17,12 +17,23 @@ class TableHeader extends Component {
         }
     }
     renderSorting = (field) => {
-        const {sort} = this.props;
-        console.log('sorting rendered ' + field);
+        const {sort,display, orderBy} = this.props;
+        // console.log('ordered By ');
+        // console.log(orderBy );
+        let sorting = {};
+
+        orderBy && orderBy.map((item, index) => {
+            
+            if(field == item.fieldName){
+                sorting.name = item.fieldName;
+                sorting.asc = item.ascending;
+            }
+        })
+
         return (
             <div className="sort-menu">
-                <span className="sort" onClick={() => sort(true, field)}>asc</span>
-                <span onClick={() => sort(false, field)}>desc</span>
+                    <span className={sorting.name && sorting.asc ? 'sort' : ''} onClick={() => sort(true, field)}>asc</span>
+                    <span className={sorting.name && !sorting.asc ? 'sort' : ''} onClick={() => sort(false, field)}>desc</span>
             </div>
             
         )
@@ -42,8 +53,8 @@ class TableHeader extends Component {
     }
     render() {
         const {cols, mainTable} = this.props;
-        console.log('cols');
-        console.log(cols);
+        // console.log('cols');
+        // console.log(cols);
         return (
             <tr>
                 {this.renderCols(cols, mainTable)}

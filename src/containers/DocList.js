@@ -92,8 +92,8 @@ class DocList extends Component {
         const {data,page} = this.state;
         const {dispatch} = this.props;
 
-        console.log('view id:');
-        console.log(data.viewId);
+        // console.log('view id:');
+        // console.log(data.viewId);
 
         dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
             this.setState(Object.assign({}, this.state, {
@@ -101,7 +101,7 @@ class DocList extends Component {
             }))
         });
 
-        console.log(this.state.data);
+        // console.log(this.state.data);
     }
 
     handleChangePage = (index) => {
@@ -129,25 +129,25 @@ class DocList extends Component {
 
     sort = (ascending, field) => {
         
-        console.log(ascending);
+        // console.log(ascending);
         let sortingQuery = '';
 
         if(ascending) {
             
             sortingQuery = '+' + field;
-            console.log(sortingQuery);
+            // console.log(sortingQuery);
         } else {
             
             sortingQuery = '-' + field;
 
-            console.log(sortingQuery);
+            // console.log(sortingQuery);
         }
         
         const {data,page} = this.state;
         const {dispatch} = this.props;
 
-        console.log('view id:');
-        console.log(data.viewId);
+        // console.log('view id:');
+        // console.log(data.viewId);
 
         dispatch(browseViewRequest(data.viewId, 1, 20, sortingQuery )).then((response) => {
             this.setState(Object.assign({}, this.state, {
@@ -155,12 +155,13 @@ class DocList extends Component {
             }))
         });
 
-        console.log(this.state.data);
+        // console.log(this.state.data);
     }
 
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
         const {layout, data, page} = this.state;
+        // console.log(this.state.data);
         if( layout && data) {
 
             return (
@@ -201,6 +202,7 @@ class DocList extends Component {
                                 mainTable={true}
                                 updateDocList={this.updateData}
                                 sort={this.sort}
+                                orderBy={data.orderBy}
                             />
                         </div>
                     </div>
