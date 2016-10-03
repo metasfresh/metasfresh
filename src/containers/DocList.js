@@ -92,11 +92,16 @@ class DocList extends Component {
         const {data,page} = this.state;
         const {dispatch} = this.props;
 
+        console.log('view id:');
+        console.log(data.viewId);
+
         dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))
         });
+
+        console.log(this.state.data);
     }
 
     handleChangePage = (index) => {
@@ -122,6 +127,37 @@ class DocList extends Component {
         }
     }
 
+    sort = (ascending, field) => {
+        
+        console.log(ascending);
+        let sortingQuery = '';
+
+        if(ascending) {
+            
+            sortingQuery = '+' + field;
+            console.log(sortingQuery);
+        } else {
+            
+            sortingQuery = '-' + field;
+
+            console.log(sortingQuery);
+        }
+        
+        const {data,page} = this.state;
+        const {dispatch} = this.props;
+
+        console.log('view id:');
+        console.log(data.viewId);
+
+        dispatch(browseViewRequest(data.viewId, 1, 20, sortingQuery )).then((response) => {
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
+        });
+
+        console.log(this.state.data);
+    }
+
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
         const {layout, data, page} = this.state;
@@ -131,6 +167,7 @@ class DocList extends Component {
                 <div>
                     <Header breadcrumb={breadcrumb} />
                     <div className="container header-sticky-distance">
+                        <button onClick={() => this.sort()}>sorting</button>
                         <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                             <button
                                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
@@ -163,6 +200,7 @@ class DocList extends Component {
                                 page={page}
                                 mainTable={true}
                                 updateDocList={this.updateData}
+                                sort={this.sort}
                             />
                         </div>
                     </div>

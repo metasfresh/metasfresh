@@ -16,7 +16,18 @@ class TableHeader extends Component {
             return 'th-sm';
         }
     }
-    renderCols = (cols) => {
+    renderSorting = (field) => {
+        const {sort} = this.props;
+        console.log('sorting rendered ' + field);
+        return (
+            <div className="sort-menu">
+                <span className="sort" onClick={() => sort(true, field)}>asc</span>
+                <span onClick={() => sort(false, field)}>desc</span>
+            </div>
+            
+        )
+    }
+    renderCols = (cols, mainTable) => {
         return cols && cols.map((item, index) =>
             <th
                 key={index}
@@ -25,14 +36,17 @@ class TableHeader extends Component {
                 }
             >
                 {item.caption}
+                {mainTable ? this.renderSorting(item.fields[0].field) : ''}
             </th>
         );
     }
     render() {
-        const {cols} = this.props;
+        const {cols, mainTable} = this.props;
+        console.log('cols');
+        console.log(cols);
         return (
             <tr>
-                {this.renderCols(cols)}
+                {this.renderCols(cols, mainTable)}
             </tr>
         )
     }
