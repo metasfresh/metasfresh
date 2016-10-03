@@ -917,8 +917,8 @@ table .rdtPicker table td, .rdtPicker table th {
     border-color: $brand-success-dark-color;
 }
 
-.applyBtn:hover, 
-.applyBtn:focus, 
+.applyBtn:hover,
+.applyBtn:focus,
 .daterangepicker .applyBtn:active {
     background-color: $brand-success-dark-color;
     border-color: $brand-success-dark-color;
@@ -988,11 +988,16 @@ th {
 }
 
 .ico-home {
-    width: 20px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     min-width: 20px;
-    background: url('../images/icon-menu.svg') no-repeat center;
     display: inline-block;
+    position: relative;
+    top:2px;
+}
+
+.ico-home i:before {
+    font-size: 15px;
 }
 
 .header-breadcrumb > span:first-of-type > .ico-home {
@@ -1000,9 +1005,10 @@ th {
 }
 
 .notification {
-    background: url('../images/icon-notifications.svg') no-repeat center;
     width: 20px;
     height: 20px;
+    font-size: 18px;
+    color: $brand-link-color;
     display: inline-block;
     position: relative;
 }
@@ -1137,7 +1143,7 @@ th {
     text-align: center;
     border-radius: 10px;
     width: 80px;
-        
+
 }
 
 .page-dots-open input {

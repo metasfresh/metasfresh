@@ -104,7 +104,7 @@ class Header extends Component {
                             className={ (!item.children.elementId ? "menu-overlay-expand " : (windowType ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
                             onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
-                            {(index === 0) ? "" : item && item.children && item.children.captionBreadcrumb}
+                            {(index === 0) ? <i className="meta-icon-menu" /> : item && item.children && item.children.captionBreadcrumb}
                         </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
@@ -181,7 +181,7 @@ class Header extends Component {
                                     />
                                 }
 
-                                <span className="notification"><span className="notification-number">4</span></span>
+                                <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>
 
                                 <Indicator indicator={this.props.indicator} />
 

@@ -114,23 +114,23 @@ class MenuOverlay extends Component {
     }
 
     renderSubPath = (path) => {
-        
+
 	   return(
-		<span>{path.children != undefined? path.children.map((index, id) => 
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span> 
-				
-			): path.captionBreadcrumb 
+		<span>{path.children != undefined? path.children.map((index, id) =>
+			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+
+			): path.captionBreadcrumb
 		}</span>
 	   )
     }
 
     renderPath = (path) => {
-        
+
 	   return(
-		<span>{path.children != undefined? path.children.map((index, id) => 
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span> 
-				
-			): path.captionBreadcrumb 
+		<span>{path.children != undefined? path.children.map((index, id) =>
+			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+
+			): path.captionBreadcrumb
 		}</span>
 	   )
     }
@@ -140,7 +140,7 @@ class MenuOverlay extends Component {
 
         return (
             <div className="menu-overlay-container">
-                {node.nodeId != 0 && 
+                {node.nodeId != 0 &&
                     <p className="menu-overlay-header group-header">
                     {this.renderPath(path)}
                     </p>
@@ -173,7 +173,7 @@ class MenuOverlay extends Component {
     linkClick = (item) => {
         const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
-            this.handleNewRedirect(item.elementId)   
+            this.handleNewRedirect(item.elementId)
         } else if (item.elementId && item.type == "window"){
             this.handleRedirect(item.elementId)
             dispatch(getWindowBreadcrumb(item.elementId));
@@ -188,7 +188,7 @@ class MenuOverlay extends Component {
         const nodeData = node.children;
         return (
             <div className="menu-overlay menu-overlay-primary">
-                <div className="menu-overlay-caption">{ (index === 0) ? <span className="ico-home"> </span> : nodeData && nodeData.captionBreadcrumb}</div>
+                <div className="menu-overlay-caption">{ (index === 0) ? <span className="ico-home"><i className="meta-icon-menu" /></span> : nodeData && nodeData.captionBreadcrumb}</div>
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
@@ -231,16 +231,16 @@ class MenuOverlay extends Component {
                                     <span className="menu-overlay-link" onClick={e => this.handleSubClickBack(e)}>&lt; Back</span>
                                 </div>
                             }
-                        
-                             {deepSubNode && 
+
+                             {deepSubNode &&
                                 <p className="menu-overlay-header">{this.renderSubPath(subPath)}</p>
                             }
-                           
 
-                            {!deepSubNode && 
+
+                            {!deepSubNode &&
                                 <p className="menu-overlay-header">{nodeData && nodeData.caption}</p>
                             }
-                            
+
                             {this.renderSubnavigation(deepSubNode ? deepSubNode : nodeData)}
                         </div>
                     }
