@@ -25,15 +25,13 @@ package org.adempiere.uom.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMBL;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -45,12 +43,13 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 public class UOMConversionBL implements IUOMConversionBL
@@ -60,7 +59,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public IUOMConversionContext createConversionContext(final I_M_Product product)
 	{
-		return new UOMConversionContext(product);
+		return IUOMConversionContext.of(product);
 	}
 
 	@Override
@@ -294,9 +293,12 @@ public class UOMConversionBL implements IUOMConversionBL
 		final int uomFromID = uomFrom.getC_UOM_ID();
 		final int uomToID = uomTo.getC_UOM_ID();
 
-		final ArrayKey key = new ArrayKey(uomFromID, uomToID);
-
+		final ArrayKey key = mkGenericRatesKey(uomFromID, uomToID);
 		final BigDecimal multiplyRate = conversions.get(key);
+		if(multiplyRate == null)
+		{
+			throw new NoUOMConversionException(-1, uomFromID, uomToID);
+		}
 
 		final int precision = useStdPrecision ? uomTo.getStdPrecision() : uomTo.getCostingPrecision();
 
@@ -326,7 +328,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		BigDecimal rate = getRateForConversionFromProductUOM(ctx, product, uomDest);
 		if (rate != null)
 		{
-			if (Env.ONE.compareTo(rate) == 0)
+			if (BigDecimal.ONE.compareTo(rate) == 0)
 			{
 				return qtyToConvert;
 			}
@@ -377,7 +379,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// nothing to do
 		if (uomFromId == uomToId)
 		{
-			return Env.ONE;
+			return BigDecimal.ONE;
 		}
 
 		//
@@ -385,9 +387,9 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		final Map<ArrayKey, BigDecimal> conversions = getRates(ctx);
 
-		final ArrayKey key = mkGenericRatesKey(uomFromId, uomToId);
+		final ArrayKey conversionKey = mkGenericRatesKey(uomFromId, uomToId);
 
-		rate = conversions.get(key);
+		rate = conversions.get(conversionKey);
 
 		if (rate != null)
 		{
@@ -408,13 +410,12 @@ public class UOMConversionBL implements IUOMConversionBL
 	 * 
 	 * @param ctx context
 	 */
-	@Cached(cacheName = I_C_UOM_Conversion.Table_Name
-			+ "#by#GenericConversions",
+	@Cached(cacheName = I_C_UOM_Conversion.Table_Name + "#by#GenericConversions",
 			expireMinutes = Cached.EXPIREMINUTES_Never)
 	Map<ArrayKey, BigDecimal> getRates(@CacheCtx final Properties ctx)
 	{
 		// Here the conversions will be mapped
-		Map<ArrayKey, BigDecimal> conversionsMap = new HashMap<>();
+		final ImmutableMap.Builder<ArrayKey, BigDecimal> conversionsMap = ImmutableMap.builder();
 
 		final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionDAO.class).retrieveGenericConversions(ctx);
 		for (final I_C_UOM_Conversion conversion : conversions)
@@ -422,14 +423,14 @@ public class UOMConversionBL implements IUOMConversionBL
 			final int fromUOMId = conversion.getC_UOM_ID();
 			final int toUOMId = conversion.getC_UOM_To_ID();
 
-			final ArrayKey key = mkGenericRatesKey(fromUOMId, toUOMId);
+			final ArrayKey directConversionKey = mkGenericRatesKey(fromUOMId, toUOMId);
 
 			//
 			// Add fromUOMId -> toUOMId conversion (using multiply rate)
 			final BigDecimal multiplyRate = conversion.getMultiplyRate();
 			if (multiplyRate.signum() != 0)
 			{
-				conversionsMap.put(key, multiplyRate);
+				conversionsMap.put(directConversionKey, multiplyRate);
 			}
 
 			//
@@ -438,16 +439,22 @@ public class UOMConversionBL implements IUOMConversionBL
 			if (divideRate.signum() == 0 && multiplyRate.signum() != 0)
 			{
 				// In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
-				divideRate = Env.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
+				divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
 			}
+			
+			final ArrayKey reversedConversionKey = mkGenericRatesKey(toUOMId, fromUOMId);
 			if (divideRate != null && divideRate.signum() != 0)
 			{
-				conversionsMap.put(mkGenericRatesKey(toUOMId, fromUOMId), divideRate);
+				conversionsMap.put(reversedConversionKey, divideRate);
+			}
+			else
+			{
+				logger.warn("Not considering product conversion rate {} because divide rate was not determined from {}", reversedConversionKey, conversion);
 			}
 		}
 
-		return conversionsMap;
-	}	// getRatess
+		return conversionsMap.build();
+	}
 
 	/**
 	 * Get rate to convert a qty from the stocking UOM of the given <code>M_Product_ID</code>'s product to the given <code>C_UOM_Dest_ID</code> to.
@@ -579,7 +586,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		BigDecimal rate = getRateForConversionToProductUOM(ctx, product, uomSource);
 		if (rate != null)
 		{
-			if (Env.ONE.compareTo(rate) == 0)
+			if (BigDecimal.ONE.compareTo(rate) == 0)
 			{
 				return qtyToConvert;
 			}
@@ -636,18 +643,17 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal deriveRate(
-			Properties ctx,
-			I_C_UOM uomFrom,
-			I_C_UOM uomTo)
+			final Properties ctx,
+			final I_C_UOM uomFrom,
+			final I_C_UOM uomTo)
 	{
 
 		final int uomFromID = uomFrom.getC_UOM_ID();
-
 		final int uomToID = uomTo.getC_UOM_ID();
 
 		if (uomFromID == uomToID)
 		{
-			return Env.ONE;
+			return BigDecimal.ONE;
 		}
 		// get Info
 

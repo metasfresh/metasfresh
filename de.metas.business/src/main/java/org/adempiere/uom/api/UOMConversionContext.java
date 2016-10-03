@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package org.adempiere.uom.api;
 
 /*
  * #%L
