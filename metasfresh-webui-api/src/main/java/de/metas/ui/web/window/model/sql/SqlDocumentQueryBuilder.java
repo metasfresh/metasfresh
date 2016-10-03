@@ -203,7 +203,7 @@ class SqlDocumentQueryBuilder
 
 		//
 		// Parent link where clause (if any)
-		final String sqlParentLinkColumnName = entityBinding.getSqlParentLinkColumnName();
+		final String sqlParentLinkColumnName = entityBinding.getParentLinkColumnName();
 		if (sqlParentLinkColumnName != null)
 		{
 			if (query.isParentLinkIdSet())
@@ -287,7 +287,7 @@ class SqlDocumentQueryBuilder
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 
 		final POInfo poInfo = entityBinding.getPOInfo();
-		final IStringExpression sqlColumnExpr = fieldBinding.getSqlColumnSql();
+		final IStringExpression sqlColumnExpr = fieldBinding.getColumnSql();
 		final String columnName = fieldBinding.getColumnName();
 		final Class<?> targetClass = poInfo.getColumnClass(columnName);
 		final Operator operator = filterParam.getOperator();

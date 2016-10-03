@@ -67,4 +67,11 @@ public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldData
 	{
 		return ImmutableList.of();
 	}
+
+	@Override
+	public boolean isMandatory()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

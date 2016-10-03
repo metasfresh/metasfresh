@@ -383,7 +383,7 @@ public class WindowRestController implements IWindowRestController
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final String tableName = document.getEntityDescriptor().getDataBinding().getTableName();
+		final String tableName = document.getEntityDescriptor().getTableName();
 		final DocumentActionsList documentActions = documentActionsService
 				.getDocumentActions(tableName)
 				.getApplicableActions(new PreconditionsContext()

@@ -13,15 +13,11 @@ import java.util.function.Function;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.util.Check;
-import org.adempiere.util.Functions;
 import org.adempiere.util.NumberUtils;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -78,6 +74,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		}
 
 		final DocumentFieldDataBindingDescriptor descriptor = optionalDescriptor.get();
+		return castOrNull(descriptor);
+	}
+	
+	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final DocumentFieldDataBindingDescriptor descriptor)
+	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
 			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
@@ -86,59 +87,32 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return null;
 	}
 
+
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentFieldDataBindingDescriptor.class);
 
-	@JsonProperty("fieldName")
 	private final String fieldName;
 
-	@JsonProperty("sqlTableName")
 	private final String sqlTableName;
-	@JsonProperty("sqlTableAlias")
 	private final String sqlTableAlias;
-	@JsonProperty("sqlColumnName")
 	private final String sqlColumnName;
-	@JsonProperty("sqlColumnSql")
 	private final IStringExpression sqlColumnSql;
-	@JsonProperty("virtualColumn")
 	private final boolean virtualColumn;
-	@JsonProperty("keyColumn")
+	private final boolean mandatory;
 	private final boolean keyColumn;
-	@JsonProperty("parentLinkColumn")
-	private final boolean parentLinkColumn;
-	@JsonProperty("encrypted")
-	private final boolean encrypted;
 
-	@JsonProperty("valueClass")
 	private final Class<?> valueClass;
-	@JsonIgnore
 	private final DocumentFieldValueLoader documentFieldValueLoader;
-	@JsonIgnore
 	private transient DocumentViewFieldValueLoader _documentViewFieldValueLoader; // lazy
 
-	@JsonIgnore
 	private final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
 
-	@JsonIgnore
 	private final boolean usingDisplayColumn;
-	@JsonIgnore
 	private final String displayColumnName;
-	@JsonIgnore
 	private final IStringExpression displayColumnSqlExpression;
-	@JsonIgnore
 	private final Boolean numericKey;
 
-	@JsonIgnore
 	private final int defaultOrderByPriority;
-	@JsonIgnore
 	private final boolean defaultOrderByAscending;
-
-	// required for JSON serialization/deserialization
-	@JsonProperty("displayType")
-	private final int displayType;
-	@JsonProperty("AD_Reference_Value_ID")
-	private final int AD_Reference_Value_ID;
-	@JsonProperty("AD_Val_Rule_ID")
-	private final int AD_Val_Rule_ID;
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
@@ -150,9 +124,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlColumnName = builder.sqlColumnName;
 		sqlColumnSql = builder.sqlColumnSql;
 		virtualColumn = builder.virtualColumn;
+		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
-		parentLinkColumn = builder.parentLinkColumn;
-		encrypted = builder.encrypted;
 
 		valueClass = builder.valueClass;
 		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
@@ -160,7 +133,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		documentFieldValueLoader = builder.documentFieldValueLoader;
 		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
 
-		lookupDescriptorProvider = builder.sqlLookupDescriptorProvider;
+		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
 		usingDisplayColumn = builder.usingDisplayColumn;
 		displayColumnName = builder.displayColumnName;
 		displayColumnSqlExpression = builder.displayColumnSqlExpression;
@@ -172,45 +145,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			defaultOrderByPriority = builder.orderByPriority;
 			defaultOrderByAscending = builder.orderByAscending;
 		}
-
-		//
-		// required for JSON serialization/deserialization
-		displayType = builder.displayType;
-		AD_Reference_Value_ID = builder.AD_Reference_Value_ID;
-		AD_Val_Rule_ID = builder.AD_Val_Rule_ID;
-	}
-
-	@JsonCreator
-	private SqlDocumentFieldDataBindingDescriptor(
-			@JsonProperty("fieldName") final String fieldName //
-			, @JsonProperty("sqlTableName") final String sqlTableName //
-			, @JsonProperty("sqlTableAlias") final String sqlTableAlias //
-			, @JsonProperty("sqlColumnName") final String sqlColumnName //
-			, @JsonProperty("sqlColumnSql") final IStringExpression sqlColumnSql //
-			, @JsonProperty("virtualColumn") final boolean virtualColumn //
-			, @JsonProperty("keyColumn") final boolean keyColumn //
-			, @JsonProperty("parentLinkColumn") final boolean parentLinkColumn //
-			, @JsonProperty("encrypted") final boolean encrypted //
-			, @JsonProperty("valueClass") final Class<?> valueClass //
-			, @JsonProperty("displayType") final int displayType //
-			, @JsonProperty("AD_Reference_Value_ID") final int AD_Reference_Value_ID //
-			, @JsonProperty("AD_Val_Rule_ID") final int AD_Val_Rule_ID //
-	)
-	{
-		this(new Builder()
-				.setFieldName(fieldName)
-				.setSqlTableName(sqlTableName)
-				.setSqlTableAlias(sqlTableAlias)
-				.setSqlColumnName(sqlColumnName)
-				.setSqlColumnSql(sqlColumnSql)
-				.setVirtualColumn(virtualColumn)
-				.setKeyColumn(keyColumn)
-				.setParentLinkColumn(parentLinkColumn)
-				.setEncrypted(encrypted)
-				.setValueClass(valueClass)
-				.setDisplayType(displayType)
-				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
-				.setAD_Val_Rule_ID(AD_Val_Rule_ID));
 	}
 
 	@Override
@@ -228,23 +162,17 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return fieldName;
 	}
 
-	public String getSqlTableName()
+	public String getTableName()
 	{
 		return sqlTableName;
 	}
 
-	public String getSqlTableAlias()
+	public String getTableAlias()
 	{
 		return sqlTableAlias;
 	}
 
-	public String getSqlColumnName()
-	{
-		return sqlColumnName;
-	}
-
 	@Override
-	@JsonIgnore
 	public String getColumnName()
 	{
 		return sqlColumnName;
@@ -253,7 +181,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	/**
 	 * @return ColumnName or a SQL string expression in case {@link #isVirtualColumn()}
 	 */
-	public IStringExpression getSqlColumnSql()
+	public IStringExpression getColumnSql()
 	{
 		return sqlColumnSql;
 	}
@@ -264,6 +192,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public boolean isVirtualColumn()
 	{
 		return virtualColumn;
+	}
+	
+	@Override
+	public boolean isMandatory()
+	{
+		return mandatory;
 	}
 
 	public Class<?> getValueClass()
@@ -279,16 +213,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public boolean isKeyColumn()
 	{
 		return keyColumn;
-	}
-
-	public boolean isParentLinkColumn()
-	{
-		return parentLinkColumn;
-	}
-
-	public boolean isEncrypted()
-	{
-		return encrypted;
 	}
 
 	public boolean isUsingDisplayColumn()
@@ -330,7 +254,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	}
 
-	@JsonIgnore
 	@Override
 	public Collection<String> getLookupValuesDependsOnFieldNames()
 	{
@@ -344,9 +267,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	/**
 	 * @return true if this field has ORDER BY instructions
-	 * @see #getSqlOrderBy()
 	 */
-	@JsonIgnore
 	public boolean isDefaultOrderBy()
 	{
 		return defaultOrderByPriority != 0;
@@ -376,7 +297,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	 */
 	public final IStringExpression buildSqlFullOrderBy(final boolean ascending)
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getSqlColumnSql();
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getColumnSql();
 		if (orderByExpr.isNullExpression())
 		{
 			return orderByExpr;
@@ -389,7 +310,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	public IStringExpression getSqlFullOrderBy()
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getSqlColumnSql();
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : getColumnSql();
 		return orderByExpr;
 	}
 
@@ -488,22 +409,20 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private String sqlTableAlias;
 		private String sqlColumnName;
 		private IStringExpression sqlColumnSql;
+		
 		private Boolean virtualColumn;
+		private Boolean mandatory;
 
 		private Class<?> valueClass;
-		private Integer displayType;
 		private DocumentFieldWidgetType widgetType;
-		private int AD_Reference_Value_ID = -1;
-		private int AD_Val_Rule_ID = -1;
 		private boolean keyColumn = false;
-		private boolean parentLinkColumn = false;
 		private boolean encrypted = false;
 
 		private boolean orderByAscending;
-		private int orderByPriority;
+		private int orderByPriority = 0;
 
 		// Built values
-		private Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider;
+		private Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
 		private boolean usingDisplayColumn;
 		private String displayColumnName;
 		private IStringExpression displayColumnSqlExpression;
@@ -521,11 +440,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 			//
 			// Lookup descriptor
-			sqlLookupDescriptorProvider = sqlLookupDescriptorProvider();
+			final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider = getLookupDescriptorProvider();
 
 			//
 			// Display column
-			final LookupDescriptor lookupDescriptor = sqlLookupDescriptorProvider.apply(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
 			if (lookupDescriptor != null)
 			{
 				usingDisplayColumn = true;
@@ -723,27 +642,27 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setSqlTableName(final String sqlTableName)
+		public Builder setTableName(final String tableName)
 		{
-			this.sqlTableName = sqlTableName;
+			this.sqlTableName = tableName;
 			return this;
 		}
 
-		public Builder setSqlTableAlias(final String sqlTableAlias)
+		public Builder setTableAlias(final String tableAlias)
 		{
-			this.sqlTableAlias = sqlTableAlias;
+			this.sqlTableAlias = tableAlias;
 			return this;
 		}
 
-		public Builder setSqlColumnName(final String sqlColumnName)
+		public Builder setColumnName(final String columnName)
 		{
-			this.sqlColumnName = sqlColumnName;
+			this.sqlColumnName = columnName;
 			return this;
 		}
 
-		public Builder setSqlColumnSql(final IStringExpression sqlColumnSql)
+		public Builder setColumnSql(final IStringExpression columnSql)
 		{
-			this.sqlColumnSql = sqlColumnSql;
+			this.sqlColumnSql = columnSql;
 			return this;
 		}
 
@@ -752,32 +671,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			this.virtualColumn = virtualColumn;
 			return this;
 		}
-
-		private Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider()
+		
+		public Builder setMandatory(final boolean mandatory)
 		{
-			return sqlLookupDescriptorProvider(sqlColumnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
-		}
-
-		private static Function<LookupScope, LookupDescriptor> sqlLookupDescriptorProvider(
-				final String sqlColumnName //
-				, final int displayType //
-				, final int AD_Reference_Value_ID //
-				, final int AD_Val_Rule_ID //
-		)
-		{
-			if (DisplayType.isAnyLookup(displayType)
-					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
-			{
-				return Functions.memoizing(scope -> SqlLookupDescriptor.builder()
-						.setColumnName(sqlColumnName)
-						.setDisplayType(displayType)
-						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
-						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
-						.setScope(scope)
-						.build());
-			}
-			return scope -> null;
-
+			this.mandatory = mandatory;
+			return this;
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
@@ -792,33 +690,9 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		public Builder setDisplayType(final int displayType)
-		{
-			this.displayType = displayType;
-			return this;
-		}
-
-		public Builder setAD_Reference_Value_ID(final int AD_Reference_Value_ID)
-		{
-			this.AD_Reference_Value_ID = AD_Reference_Value_ID;
-			return this;
-		}
-
-		public Builder setAD_Val_Rule_ID(final int AD_Val_Rule_ID)
-		{
-			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
-			return this;
-		}
-
 		public Builder setKeyColumn(final boolean keyColumn)
 		{
 			this.keyColumn = keyColumn;
-			return this;
-		}
-
-		public Builder setParentLinkColumn(final boolean parentLinkColumn)
-		{
-			this.parentLinkColumn = parentLinkColumn;
 			return this;
 		}
 
@@ -846,6 +720,18 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				orderByAscending = false;
 			}
 			return this;
+		}
+		
+		public Builder setLookupDescriptorProvider(Function<LookupScope, LookupDescriptor> lookupDescriptorProvider)
+		{
+			this.lookupDescriptorProvider = lookupDescriptorProvider;
+			return this;
+		}
+		
+		private Function<LookupScope, LookupDescriptor> getLookupDescriptorProvider()
+		{
+			Check.assumeNotNull(lookupDescriptorProvider, "Parameter lookupDescriptorProvider is not null");
+			return lookupDescriptorProvider;
 		}
 	}
 }

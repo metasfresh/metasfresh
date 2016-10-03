@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,16 +11,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -31,12 +28,14 @@ import com.google.common.collect.Sets;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
@@ -64,44 +63,30 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 @SuppressWarnings("serial")
 public final class DocumentFieldDescriptor implements Serializable
 {
-	public static final Builder builder()
+	public static final Builder builder(final String fieldName)
 	{
-		return new Builder();
+		return new Builder(fieldName);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldDescriptor.class);
 
 	/** Internal field name (aka ColumnName) */
-	@JsonProperty("fieldName")
 	private final String fieldName;
-	@JsonProperty("caption")
 	private final ITranslatableString caption;
 	/** Detail ID or null if this is a field in main sections */
-	@JsonProperty("detailId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
 
 	/** Is this the key field ? */
-	@JsonProperty("key")
 	private final boolean key;
-	@JsonProperty("parentLink")
 	private final boolean parentLink;
-	@JsonProperty("virtualField")
 	private final boolean virtualField;
-	@JsonProperty("calculated")
 	private final boolean calculated;
 
-	@JsonProperty("widgetType")
 	private final DocumentFieldWidgetType widgetType;
 
-	@JsonProperty("valueClass")
 	private final Class<?> valueClass;
 
-	// @JsonProperty("defaultValueExpression")
-	@JsonIgnore                 // FIXME: JSON serialization/deserialization of optional defaultValueExpression
 	private final Optional<IExpression<?>> defaultValueExpression;
-
-	@JsonIgnore                 // FIXME: JSON serialization/deserialization of callouts
 	private final List<IDocumentFieldCallout> callouts;
 
 	public static enum Characteristic
@@ -111,24 +96,22 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SideListField //
 		, GridViewField //
 		, AllowFiltering //
+		//
+		, SpecialField_DocumentNo //
+		, SpecialField_DocStatus //
+		, SpecialField_DocAction //
+		, SpecialField_DocumentSummary //
 	};
 
-	@JsonProperty("characteristics")
 	private final Set<Characteristic> characteristics;
 
-	@JsonProperty("readonlyLogic")
 	private final ILogicExpression readonlyLogic;
-	@JsonProperty("alwaysUpdateable")
 	private final boolean alwaysUpdateable;
-	@JsonProperty("displayLogic")
 	private final ILogicExpression displayLogic;
-	@JsonProperty("mandatoryLogic")
 	private final ILogicExpression mandatoryLogic;
 
-	@JsonProperty("data-binding")
 	private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
 
-	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
 	private DocumentFieldDescriptor(final Builder builder)
@@ -136,9 +119,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		super();
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
-		detailId = builder.detailId;
+		detailId = builder.getDetailId();
 
-		key = builder.key;
+		key = builder.isKey();
 		parentLink = builder.parentLink;
 		virtualField = builder.virtualField;
 		calculated = builder.calculated;
@@ -150,53 +133,16 @@ public final class DocumentFieldDescriptor implements Serializable
 		defaultValueExpression = Preconditions.checkNotNull(builder.defaultValueExpression, "defaultValueExpression not null");
 
 		characteristics = Sets.immutableEnumSet(builder.characteristics);
-		readonlyLogic = builder.readonlyLogic;
+		readonlyLogic = builder.getReadonlyLogicEffective();
 		alwaysUpdateable = builder.alwaysUpdateable;
 		displayLogic = builder.displayLogic;
-		mandatoryLogic = builder.mandatoryLogic;
+		mandatoryLogic = builder.getMandatoryLogicEffective();
 
 		dataBinding = builder.getDataBinding();
 
 		dependencies = builder.buildDependencies();
 
 		callouts = ImmutableList.copyOf(builder.callouts);
-	}
-
-	@JsonCreator
-	private DocumentFieldDescriptor(
-			@JsonProperty("fieldName") final String fieldName //
-			, @JsonProperty("detailId") final String detailId //
-			, @JsonProperty("key") final boolean key //
-			, @JsonProperty("parentLink") final boolean parentLink //
-			, @JsonProperty("virtualField") final boolean virtualField //
-			, @JsonProperty("calculated") final boolean calculated //
-			, @JsonProperty("widgetType") final DocumentFieldWidgetType widgetType //
-			, @JsonProperty("valueClass") final Class<?> valueClass //
-	// , @JsonProperty("defaultValueExpression") final IStringExpression defaultValueExpression //
-	, @JsonProperty("characteristics") final Set<Characteristic> characteristics //
-	, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
-	, @JsonProperty("alwaysUpdateable") final boolean alwaysUpdateable //
-	, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
-	, @JsonProperty("mandatoryLogic") final ILogicExpression mandatoryLogic //
-	, @JsonProperty("data-binding") final DocumentFieldDataBindingDescriptor dataBinding //
-	)
-	{
-		this(new Builder()
-				.setFieldName(fieldName)
-				.setDetailId(detailId)
-				.setKey(key)
-				.setParentLink(parentLink)
-				.setVirtualField(virtualField)
-				.setCalculated(calculated)
-				.setWidgetType(widgetType)
-				.setValueClass(valueClass)
-				// .setDefaultValueExpression(defaultValueExpression)
-				.addCharacteristics(characteristics)
-				.setReadonlyLogic(readonlyLogic)
-				.setAlwaysUpdateable(alwaysUpdateable)
-				.setDisplayLogic(displayLogic)
-				.setMandatoryLogic(mandatoryLogic)
-				.setDataBinding(dataBinding));
 	}
 
 	@Override
@@ -216,7 +162,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return fieldName;
 	}
-	
+
 	public ITranslatableString getCaption()
 	{
 		return caption;
@@ -517,14 +463,29 @@ public final class DocumentFieldDescriptor implements Serializable
 		return callouts;
 	}
 
+	/**
+	 * Builder
+	 */
 	public static final class Builder
 	{
+		/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
+		private static final ILogicExpression LOGICEXPRESSION_NotActive;
+		/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
+		private static final ILogicExpression LOGICEXPRESSION_Processed;
+
+		static
+		{
+			final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+			LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
+			LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
+		}
 
 		private DocumentFieldDescriptor _fieldBuilt;
 
-		private String fieldName;
+		private final String fieldName;
 		private ITranslatableString caption;
-		public String detailId;
+		private ITranslatableString description;
+		public String _detailId;
 
 		private boolean key = false;
 		private boolean parentLink = false;
@@ -532,24 +493,29 @@ public final class DocumentFieldDescriptor implements Serializable
 		private boolean calculated;
 
 		private DocumentFieldWidgetType widgetType;
+		private LookupSource lookupSource;
 		public Class<?> valueClass;
 
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
 		private final Set<Characteristic> characteristics = new TreeSet<>();
-		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _entityReadonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _readonlyLogicEffective = null;
 		private boolean alwaysUpdateable;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
-		private ILogicExpression mandatoryLogic = ILogicExpression.FALSE;
+		private ILogicExpression _mandatoryLogic = ILogicExpression.FALSE;
+		private ILogicExpression _mandatoryLogicEffective = null;
 
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
-
-		private Builder()
+		private Builder(final String fieldName)
 		{
 			super();
+			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
+			this.fieldName = fieldName;
 		}
 
 		@Override
@@ -558,7 +524,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("name", fieldName)
-					.add("detailId", detailId)
+					.add("detailId", _detailId)
 					.add("widgetType", widgetType)
 					.add("characteristics", characteristics.isEmpty() ? null : characteristics)
 					.toString();
@@ -581,34 +547,52 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 		}
 
-		public Builder setFieldName(final String fieldName)
+		public String getFieldName()
 		{
-			assertNotBuilt();
-			this.fieldName = fieldName;
-			return this;
-		}
-		
-		public Builder setCaption(final Map<String, String> captionTrls)
-		{
-			this.caption = ImmutableTranslatableString.ofMap(captionTrls);
-			return this;
-		}
-		
-		private ITranslatableString getCaption()
-		{
-			if (caption != null)
-			{
-				return caption;
-			}
-			
-			return ImmutableTranslatableString.constant(fieldName);
+			return fieldName;
 		}
 
-		public Builder setDetailId(final String detailId)
+		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
+		{
+			caption = ImmutableTranslatableString.ofMap(captionTrls, defaultCaption);
+			return this;
+		}
+
+		public ITranslatableString getCaption()
+		{
+			if (caption == null)
+			{
+				return ImmutableTranslatableString.constant(fieldName);
+			}
+
+			return caption;
+		}
+
+		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
+		{
+			description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			return this;
+		}
+
+		public ITranslatableString getDescription()
+		{
+			if (description == null)
+			{
+				return ImmutableTranslatableString.constant("");
+			}
+			return description;
+		}
+
+		/* package */Builder setDetailId(final String detailId)
 		{
 			assertNotBuilt();
-			this.detailId = Strings.emptyToNull(detailId);
+			this._detailId = Strings.emptyToNull(detailId);
 			return this;
+		}
+
+		private String getDetailId()
+		{
+			return _detailId;
 		}
 
 		public Builder setKey(final boolean key)
@@ -618,6 +602,11 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public boolean isKey()
+		{
+			return key;
+		}
+
 		public Builder setParentLink(final boolean parentLink)
 		{
 			assertNotBuilt();
@@ -625,11 +614,21 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public boolean isParentLink()
+		{
+			return parentLink;
+		}
+
 		public Builder setVirtualField(final boolean virtualField)
 		{
 			assertNotBuilt();
 			this.virtualField = virtualField;
 			return this;
+		}
+
+		public boolean isVirtualField()
+		{
+			return virtualField;
 		}
 
 		public Builder setCalculated(final boolean calculated)
@@ -644,6 +643,22 @@ public final class DocumentFieldDescriptor implements Serializable
 			assertNotBuilt();
 			this.widgetType = widgetType;
 			return this;
+		}
+
+		public DocumentFieldWidgetType getWidgetType()
+		{
+			return widgetType;
+		}
+
+		public Builder setLookupSource(final LookupSource lookupSource)
+		{
+			this.lookupSource = lookupSource;
+			return this;
+		}
+
+		public LookupSource getLookupSource()
+		{
+			return lookupSource;
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
@@ -669,31 +684,138 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		public Builder addCharacteristic(final Characteristic c)
 		{
+			assertNotBuilt();
 			characteristics.add(c);
 			return this;
+		}
+
+		public boolean hasCharacteristic(final Characteristic c)
+		{
+			return characteristics.contains(c);
 		}
 
 		public Builder addCharacteristicIfTrue(final boolean test, final Characteristic c)
 		{
 			if (test)
 			{
-				characteristics.add(c);
+				addCharacteristic(c);
 			}
 
 			return this;
 		}
 
-		private Builder addCharacteristics(final Collection<Characteristic> characteristics)
+		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)
 		{
-			characteristics.addAll(characteristics);
-			return this;
+			_entityReadonlyLogic = entityReadonlyLogic;
+		}
+
+		private ILogicExpression getEntityReadonlyLogic()
+		{
+			return _entityReadonlyLogic;
 		}
 
 		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
-			this.readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
+			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
 			return this;
+		}
+
+		public ILogicExpression getReadonlyLogic()
+		{
+			return _readonlyLogic;
+		}
+
+		private ILogicExpression getReadonlyLogicEffective()
+		{
+			if (_readonlyLogicEffective == null)
+			{
+				_readonlyLogicEffective = buildReadonlyLogicEffective();
+			}
+			return _readonlyLogicEffective;
+		}
+
+		private ILogicExpression buildReadonlyLogicEffective()
+		{
+			if(isParentLink())
+			{
+				return ILogicExpression.TRUE;
+			}
+			
+			if (isVirtualField())
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			if (isKey())
+			{
+				return ILogicExpression.TRUE;
+			}
+			
+			// If the tab is always readonly, we can assume any field in that tab is readonly
+			final ILogicExpression entityReadonlyLogic = getEntityReadonlyLogic();
+			if (entityReadonlyLogic.isConstantTrue())
+			{
+				return ILogicExpression.TRUE;
+			}
+
+
+			// Case: DocumentNo special field not be readonly
+			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
+			{
+				return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
+			}
+			
+			// Case: DocAction
+			if (hasCharacteristic(Characteristic.SpecialField_DocAction))
+			{
+				return ILogicExpression.FALSE;
+			}
+
+			final ILogicExpression fieldReadonlyLogic = getReadonlyLogic();
+			if (fieldReadonlyLogic.isConstantTrue())
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			final String fieldName = getFieldName();
+			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
+			{
+				// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
+				return ILogicExpression.TRUE;
+			}
+
+			if (hasCharacteristic(Characteristic.SpecialField_DocStatus))
+			{
+				// NOTE: DocStatus field shall always be readonly
+				return ILogicExpression.TRUE;
+			}
+
+			ILogicExpression readonlyLogic = fieldReadonlyLogic;
+			// FIXME: not sure if using tabReadonlyLogic here is OK, because the tab logic shall be applied to parent tab!
+			if (!entityReadonlyLogic.isConstantFalse())
+			{
+				readonlyLogic = entityReadonlyLogic.or(fieldReadonlyLogic);
+			}
+
+			//
+			// Consider field readonly if the row is not active
+			// .. and this property is not the IsActive flag.
+			if (!WindowConstants.FIELDNAME_IsActive.equals(fieldName))
+			{
+				readonlyLogic = LOGICEXPRESSION_NotActive.or(readonlyLogic);
+			}
+
+			//
+			// Consider field readonly if the row is processed.
+			// In case we deal with an AlwaysUpdateable field, this logic do not apply.
+			final boolean alwaysUpdateable = isAlwaysUpdateable();
+			if (!alwaysUpdateable)
+			{
+				readonlyLogic = LOGICEXPRESSION_Processed.or(readonlyLogic);
+			}
+
+			return readonlyLogic;
 		}
 
 		public Builder setAlwaysUpdateable(final boolean alwaysUpdateable)
@@ -703,6 +825,11 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public boolean isAlwaysUpdateable()
+		{
+			return alwaysUpdateable;
+		}
+
 		public Builder setDisplayLogic(final ILogicExpression displayLogic)
 		{
 			assertNotBuilt();
@@ -710,11 +837,104 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public ILogicExpression getDisplayLogic()
+		{
+			return displayLogic;
+		}
+
+		public boolean isPossiblePublicField()
+		{
+			// Always publish the key columns, else the client won't know what to talk about ;)
+			if (isKey())
+			{
+				return true;
+			}
+
+			// If display logic is not constant then we don't know if this field will be ever visible
+			// so we are publishing it
+			if (!displayLogic.isConstant())
+			{
+				return true;
+			}
+
+			// Publish this field only if it's displayed
+			return displayLogic.isConstantTrue();
+		}
+
 		public Builder setMandatoryLogic(final ILogicExpression mandatoryLogic)
 		{
 			assertNotBuilt();
-			this.mandatoryLogic = Preconditions.checkNotNull(mandatoryLogic);
+			_mandatoryLogic = Preconditions.checkNotNull(mandatoryLogic);
 			return this;
+		}
+
+		public ILogicExpression getMandatoryLogic()
+		{
+			return _mandatoryLogic;
+		}
+
+		private ILogicExpression getMandatoryLogicEffective()
+		{
+			if (_mandatoryLogicEffective == null)
+			{
+				_mandatoryLogicEffective = buildMandatoryLogicEffective();
+			}
+			return _mandatoryLogicEffective;
+		}
+
+		private final ILogicExpression buildMandatoryLogicEffective()
+		{
+			if (isParentLink())
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			final String fieldName = getFieldName();
+			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
+			{
+				// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
+				return ILogicExpression.FALSE;
+			}
+
+			if (isVirtualField())
+			{
+				return ILogicExpression.FALSE;
+			}
+
+			// FIXME: hardcoded M_AttributeSetInstance_ID mandatory logic = false
+			// Reason: even if we set it's default value to "0" some callouts are setting it to NULL,
+			// and then the document saving API is failing because it considers this column as NOT filled.
+			if (WindowConstants.FIELDNAME_M_AttributeSetInstance_ID.equals(fieldName))
+			{
+				return ILogicExpression.FALSE;
+			}
+
+			// Corner case:
+			// e.g. C_Order.M_Shipper_ID has AD_Field.IsMandatory=Y, AD_Field.IsDisplayed=N, AD_Column.IsMandatory=N
+			// => we need to NOT enforce setting it because it's not needed, user cannot change it and it might be no callouts to set it.
+			// Else, we won't be able to save our document.
+			final boolean publicField = hasCharacteristic(Characteristic.PublicField);
+			final ILogicExpression mandatoryLogic = getMandatoryLogic();
+			final boolean mandatory = mandatoryLogic.isConstantTrue();
+			final DocumentFieldDataBindingDescriptor fieldDataBinding = getDataBinding().orElse(null);
+			final boolean mandatoryDB = fieldDataBinding != null && fieldDataBinding.isMandatory();
+			if (!publicField && mandatory && !mandatoryDB)
+			{
+				return ILogicExpression.FALSE;
+			}
+
+			// Case: DocumentNo special field shall always be mandatory
+			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			if (mandatory)
+			{
+				return ILogicExpression.TRUE;
+			}
+
+			return mandatoryLogic;
 		}
 
 		public Builder setDataBinding(final DocumentFieldDataBindingDescriptor dataBinding)
@@ -731,10 +951,10 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{
-			DocumentFieldDependencyMap.Builder dependencyMapBuilder = DocumentFieldDependencyMap.builder()
-					.add(fieldName, readonlyLogic.getParameters(), DependencyType.ReadonlyLogic)
-					.add(fieldName, displayLogic.getParameters(), DependencyType.DisplayLogic)
-					.add(fieldName, mandatoryLogic.getParameters(), DependencyType.MandatoryLogic);
+			final DocumentFieldDependencyMap.Builder dependencyMapBuilder = DocumentFieldDependencyMap.builder()
+					.add(fieldName, getReadonlyLogicEffective().getParameters(), DependencyType.ReadonlyLogic)
+					.add(fieldName, getDisplayLogic().getParameters(), DependencyType.DisplayLogic)
+					.add(fieldName, getMandatoryLogicEffective().getParameters(), DependencyType.MandatoryLogic);
 
 			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
 			if (dataBinding != null)

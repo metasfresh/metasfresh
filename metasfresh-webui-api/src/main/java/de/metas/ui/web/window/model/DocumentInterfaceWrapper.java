@@ -129,7 +129,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		final String interfaceTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (interfaceTableName != null)
 		{
-			final String documentTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+			final String documentTableName = document.getEntityDescriptor().getTableName();
 			if (!interfaceTableName.equals(documentTableName))
 			{
 				throw new AdempiereException("Interface " + modelClass + " (tableName=" + interfaceTableName + ") is not compatible with " + document + " (tableName=" + documentTableName + ")");
@@ -575,7 +575,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return null;
 		}
 
-		final String parentTableName = parentDocument.getEntityDescriptor().getDataBinding().getTableName();
+		final String parentTableName = parentDocument.getEntityDescriptor().getTableName();
 		if (!modelTableName.equals(parentTableName))
 		{
 			logger.warn("Failed fetching the parent link document because parent document's table name ({}) is not matching the expected table name ({})", parentTableName, modelTableName);

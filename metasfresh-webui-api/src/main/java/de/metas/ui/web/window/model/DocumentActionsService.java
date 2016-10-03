@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -62,22 +61,18 @@ public class DocumentActionsService
 		final List<I_AD_Process> adProcesses = Services.get(IADProcessDAO.class).retrieveProcessesForTable(ctx, adTableId);
 
 		final List<DocumentAction> documentActions = new ArrayList<>(adProcesses.size());
-		for (final Iterator<I_AD_Process> it = adProcesses.iterator(); it.hasNext();)
+		for (final I_AD_Process adProcess : adProcesses)
 		{
-			final I_AD_Process adProcess = it.next();
-
 			// Filter out processes on which we don't have access
 			final Boolean accessRW = role.checkProcessAccess(adProcess.getAD_Process_ID());
 			if (accessRW == null)
 			{
 				logger.debug("Removing process {} because user has no access at all to it", adProcess);
-				it.remove();
 				continue;
 			}
 			else if (!accessRW)
 			{
 				logger.debug("Removing process {} because user has only readonly access to it", adProcess);
-				it.remove();
 				continue;
 			}
 
@@ -90,12 +85,11 @@ public class DocumentActionsService
 
 	private DocumentAction createDocumentAction(final I_AD_Process adProcess)
 	{
-		final IModelTranslationMap modelTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
-
+		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 		return DocumentAction.builder()
 				.setActionId(adProcess.getAD_Process_ID())
-				.setCaption(modelTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
-				.setDescription(modelTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
+				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
+				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
 				.setType(extractType(adProcess))
 				.setPreconditionsClass(extractPreconditionsClassOrNull(adProcess))
 				.build();

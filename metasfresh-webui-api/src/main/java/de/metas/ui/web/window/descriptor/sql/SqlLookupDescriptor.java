@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -14,6 +15,7 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
+import org.adempiere.util.Functions;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -245,8 +247,34 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			super();
 		}
-
-		public SqlLookupDescriptor build()
+		
+		public Function<LookupScope, LookupDescriptor> buildProvider()
+		{
+			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
+		}
+		
+		private static Function<LookupScope, LookupDescriptor> buildProvider(
+				final String sqlColumnName //
+				, final int displayType //
+				, final int AD_Reference_Value_ID //
+				, final int AD_Val_Rule_ID //
+				)
+		{
+			if (DisplayType.isAnyLookup(displayType)
+					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
+			{
+				return Functions.memoizing(scope -> SqlLookupDescriptor.builder()
+						.setColumnName(sqlColumnName)
+						.setDisplayType(displayType)
+						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
+						.setScope(scope)
+						.build());
+			}
+			return scope -> null;
+		}
+		
+		private SqlLookupDescriptor build()
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
 
@@ -507,7 +535,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			return DisplayType.TableDir != displayType && DisplayType.Table != displayType && DisplayType.List != displayType && DisplayType.Button != displayType;
 		}
 
-		public Builder setScope(final LookupScope scope)
+		private Builder setScope(final LookupScope scope)
 		{
 			Check.assumeNotNull(scope, "Parameter scope is not null");
 			this.scope = scope;

@@ -22,9 +22,6 @@ import org.compiere.model.I_T_Query_Selection;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -77,39 +74,28 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
 	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 
-	@JsonProperty("sqlTableName")
 	private final String sqlTableName;
-	@JsonProperty("sqlTableAlias")
 	private final String sqlTableAlias;
-	@JsonIgnore
 	private final String sqlKeyColumnName;
-	@JsonProperty("sqlParentLinkColumnName")
 	private final String sqlParentLinkColumnName;
 
-	@JsonIgnore
 	private final ICachedStringExpression sqlSelectAllFrom;
-
-	@JsonIgnore
 	private final ICachedStringExpression sqlPagedSelectAllFrom;
-
-	@JsonProperty("sqlWhereClause")
 	private final ICachedStringExpression sqlWhereClause;
-	@JsonIgnore
 	private final List<DocumentQueryOrderBy> orderBys;
 
-	@JsonProperty("fields")
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> fieldsByFieldName;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
 		super();
-		sqlTableName = builder.getSqlTableName();
+		sqlTableName = builder.getTableName();
 		Check.assumeNotEmpty(sqlTableName, "sqlTableName is not empty");
 
-		sqlTableAlias = builder.getSqlTableAlias();
+		sqlTableAlias = builder.getTableAlias();
 		Check.assumeNotEmpty(sqlTableAlias, "sqlTableAlias is not empty");
 
-		sqlKeyColumnName = builder.getSqlKeyColumnName();
+		sqlKeyColumnName = builder.getKeyColumnName();
 
 		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
@@ -123,26 +109,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.caching();
 
 		orderBys = ImmutableList.copyOf(builder.getOrderBysList());
-	}
-
-	@JsonCreator
-	private SqlDocumentEntityDataBindingDescriptor(
-			@JsonProperty("sqlTableName") final String sqlTableName//
-			, @JsonProperty("sqlTableAlias") final String sqlTableAlias//
-			, @JsonProperty("sqlParentLinkColumnName") final String sqlParentLinkColumnName//
-			, @JsonProperty("sqlWhereClause") final IStringExpression sqlWhereClause//
-			, @JsonProperty("fields") final List<SqlDocumentFieldDataBindingDescriptor> fields //
-	)
-	{
-		this(new Builder()
-				.setSqlTableName(sqlTableName)
-				.setSqlTableAlias(sqlTableAlias)
-				// key
-				.setSqlParentLinkColumnName(sqlParentLinkColumnName)
-				.setSqlWhereClauseExpression(sqlWhereClause)
-				.addFields(fields)
-		//
-		);
 	}
 
 	@Override
@@ -165,12 +131,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlTableName;
 	}
 
-	public String getSqlTableAlias()
+	public String getTableAlias()
 	{
 		return sqlTableAlias;
 	}
 
-	@JsonIgnore
 	public POInfo getPOInfo()
 	{
 		// NOTE: don't cache it here because it might change dynamically and it would be so nice to support that case...
@@ -183,7 +148,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlKeyColumnName;
 	}
 
-	public String getSqlParentLinkColumnName()
+	public String getParentLinkColumnName()
 	{
 		return sqlParentLinkColumnName;
 	}
@@ -299,7 +264,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private SqlDocumentEntityDataBindingDescriptor _built = null;
 
 		private String _sqlTableName;
-		private String _sqlTableAlias;
+		private String _tableAlias;
 		private String _sqlParentLinkColumnName;
 		private String _sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
@@ -392,8 +357,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private final IStringExpression buildSqlSelectValue(final SqlDocumentFieldDataBindingDescriptor sqlField)
 		{
-			final IStringExpression columnSqlExpr = sqlField.getSqlColumnSql();
-			final String columnName = sqlField.getSqlColumnName();
+			final IStringExpression columnSqlExpr = sqlField.getColumnSql();
+			final String columnName = sqlField.getColumnName();
 
 			final boolean isVirtualColumn = sqlField.isVirtualColumn();
 			if (isVirtualColumn)
@@ -405,15 +370,15 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			else
 			{
 				return IStringExpression.composer()
-						.append(getSqlTableName()).append(".").append(columnSqlExpr).append(" AS ").append(columnName)
+						.append(getTableName()).append(".").append(columnSqlExpr).append(" AS ").append(columnName)
 						.build();
 			}
 		}
 
 		private final IStringExpression buildSqlSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
-			final String sqlTableName = getSqlTableName();
-			final String sqlTableAlias = getSqlTableAlias();
+			final String sqlTableName = getTableName();
+			final String sqlTableAlias = getTableAlias();
 
 			final IStringExpression sqlInnerExpr = IStringExpression.composer()
 					.append("SELECT ")
@@ -439,9 +404,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private final IStringExpression buildSqlPagedSelect(final List<IStringExpression> sqlSelectValuesList, final List<IStringExpression> sqlSelectDisplayNamesList)
 		{
-			final String sqlTableName = getSqlTableName();
-			final String sqlTableAlias = getSqlTableAlias();
-			final String sqlKeyColumnName = getSqlKeyColumnName();
+			final String sqlTableName = getTableName();
+			final String sqlTableAlias = getTableAlias();
+			final String sqlKeyColumnName = getKeyColumnName();
 
 			// NOTE: we don't need access SQL here because we assume the records were already filtered
 
@@ -496,7 +461,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			final String sqlWhereClausePrepared = _sqlWhereClause.trim()
 					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
 					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
-					.replace(getSqlTableName() + ".", getSqlTableAlias() + ".") //
+					.replace(getTableName() + ".", getTableAlias() + ".") //
 					;
 
 			final IStringExpression sqlWhereClauseExpr = Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
@@ -515,45 +480,45 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
-		public Builder setSqlTableName(final String sqlTableName)
+		public Builder setTableName(final String sqlTableName)
 		{
 			assertNotBuilt();
 			_sqlTableName = sqlTableName;
 			return this;
 		}
 
-		public String getSqlTableName()
+		public String getTableName()
 		{
 			return _sqlTableName;
 		}
 
-		private Builder setSqlTableAlias(final String sqlTableAlias)
+		private Builder setTableAlias(final String sqlTableAlias)
 		{
 			assertNotBuilt();
-			_sqlTableAlias = sqlTableAlias;
+			_tableAlias = sqlTableAlias;
 			return this;
 		}
 
-		public Builder setSqlTableAliasFromDetailId(final String detailId)
+		public Builder setTableAliasFromDetailId(final String detailId)
 		{
 			if (detailId == null)
 			{
-				setSqlTableAlias(TABLEALIAS_Master);
+				setTableAlias(TABLEALIAS_Master);
 			}
 			else
 			{
-				setSqlTableAlias("d" + detailId.trim());
+				setTableAlias("d" + detailId.trim());
 			}
 
 			return this;
 		}
 
-		public String getSqlTableAlias()
+		public String getTableAlias()
 		{
-			return _sqlTableAlias;
+			return _tableAlias;
 		}
 
-		public Builder setSqlParentLinkColumnName(final String sqlParentLinkColumnName)
+		public Builder setParentLinkColumnName(final String sqlParentLinkColumnName)
 		{
 			assertNotBuilt();
 			_sqlParentLinkColumnName = sqlParentLinkColumnName;
@@ -573,19 +538,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		private Builder setSqlWhereClauseExpression(final IStringExpression sqlWhereClauseExpression)
-		{
-			assertNotBuilt();
-			_sqlWhereClauseExpression = sqlWhereClauseExpression;
-			return this;
-		}
-
 		public Builder addField(final DocumentFieldDataBindingDescriptor field)
 		{
 			assertNotBuilt();
 			Preconditions.checkNotNull(field, "field");
 
-			final SqlDocumentFieldDataBindingDescriptor sqlField = (SqlDocumentFieldDataBindingDescriptor)field;
+			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.castOrNull(field);
 			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
 
 			if (sqlField.isKeyColumn())
@@ -597,25 +555,14 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		private Builder addFields(final List<SqlDocumentFieldDataBindingDescriptor> fields)
-		{
-			if (fields == null || fields.isEmpty())
-			{
-				return this;
-			}
-
-			fields.stream().forEach(field -> addField(field));
-			return this;
-		}
-
 		private Map<String, SqlDocumentFieldDataBindingDescriptor> getFieldsByFieldName()
 		{
 			return _fieldsByFieldName;
 		}
 
-		private String getSqlKeyColumnName()
+		private String getKeyColumnName()
 		{
-			return _keyField == null ? null : _keyField.getSqlColumnName();
+			return _keyField == null ? null : _keyField.getColumnName();
 		}
 	}
 }

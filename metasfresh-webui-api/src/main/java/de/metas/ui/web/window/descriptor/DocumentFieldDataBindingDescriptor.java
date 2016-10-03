@@ -40,4 +40,7 @@ public interface DocumentFieldDataBindingDescriptor
 
 	LookupDataSource createLookupDataSource(LookupScope scope);
 
+	/** @return true if mandatory in underlying database/repository */
+	boolean isMandatory();
+
 }

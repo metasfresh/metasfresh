@@ -190,7 +190,7 @@ public final class DocumentEvaluatee implements Evaluatee
 		
 		if(IValidationContext.PARAMETER_ContextTableName.equals(variableName))
 		{
-			return Optional.of(_document.getEntityDescriptor().getDataBinding().getTableName());
+			return Optional.of(_document.getEntityDescriptor().getTableName());
 		}
 
 		//

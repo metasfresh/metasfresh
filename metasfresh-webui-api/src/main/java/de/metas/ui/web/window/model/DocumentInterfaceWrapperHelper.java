@@ -122,7 +122,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	public String getModelTableNameOrNull(final Object model)
 	{
 		final Document document = DocumentInterfaceWrapper.getDocument(model);
-		return document.getEntityDescriptor().getDataBinding().getTableName();
+		return document.getEntityDescriptor().getTableName();
 	}
 
 	@Override
@@ -240,10 +240,10 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 			throw new AdempiereException("Cannot extract " + Document.class + " from " + model);
 		}
 
-		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+		final String tableName = document.getEntityDescriptor().getTableName();
 		final boolean checkCache = false;
 		@SuppressWarnings("unchecked")
-		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
+		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), tableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
 		return po;
 	}
 }

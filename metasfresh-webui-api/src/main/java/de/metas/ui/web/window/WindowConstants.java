@@ -63,6 +63,9 @@ public final class WindowConstants
 	public static final String FIELDNAME_Line = "Line";
 	public static final Set<String> FIELDNAMES_CreatedUpdated = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 	
+	public static final String FIELDNAME_DocumentSummary = "V$DocumentSummary";
+
+	
 	public static final String CONTEXTVAR_NextLineNo = "CtxVar_NextLineNo";
 
 	private WindowConstants()

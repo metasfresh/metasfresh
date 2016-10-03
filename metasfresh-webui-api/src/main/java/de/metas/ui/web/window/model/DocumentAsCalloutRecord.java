@@ -68,7 +68,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 	public String getTableName()
 	{
 		final Document document = getDocument();
-		return document.getEntityDescriptor().getDataBinding().getTableName();
+		return document.getEntityDescriptor().getTableName();
 	}
 	
 	@Override

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -69,12 +68,11 @@ public class DocumentReferencesService
 			super();
 			ctx = document.getCtx();
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-			final DocumentEntityDataBindingDescriptor dataBinding = entityDescriptor.getDataBinding();
 			adWindowId = entityDescriptor.getAD_Window_ID();
-			tableName = dataBinding.getTableName();
+			tableName = entityDescriptor.getTableName();
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = document.getDocumentId().toInt();
-			keyColumnName = dataBinding.getKeyColumnName();
+			keyColumnName = entityDescriptor.getIdFieldName();
 			keyColumnNames = keyColumnName == null ? ImmutableList.of() : ImmutableList.of(keyColumnName);
 		}
 

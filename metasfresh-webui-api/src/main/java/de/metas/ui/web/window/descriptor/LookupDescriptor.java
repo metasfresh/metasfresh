@@ -2,6 +2,9 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.Set;
 
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -40,4 +43,9 @@ public interface LookupDescriptor
 	boolean isNumericKey();
 
 	Set<String> getDependsOnFieldNames();
+	
+	default Class<?> getValueClass()
+	{
+		return isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;
+	}
 }

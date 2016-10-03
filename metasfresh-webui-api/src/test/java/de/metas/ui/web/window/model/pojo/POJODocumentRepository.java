@@ -95,7 +95,7 @@ public class POJODocumentRepository implements DocumentsRepository
 	private List<Object> retrieveModels(final DocumentQuery query, final int limit)
 	{
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
-		final String tableName = entityDescriptor.getDataBinding().getTableName();
+		final String tableName = entityDescriptor.getTableName();
 
 		final List<Object> result = new ArrayList<>();
 		for (final Object model : POJOLookupMap.get().getRawRecords(tableName))

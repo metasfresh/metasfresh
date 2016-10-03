@@ -327,7 +327,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
 
 			final String sqlTableName = dataBinding.getTableName();
-			final String sqlTableAlias = dataBinding.getSqlTableAlias();
+			final String sqlTableAlias = dataBinding.getTableAlias();
 			final String keyColumnNameFQ = dataBinding.getKeyColumnName();
 			if (keyColumnNameFQ == null)
 			{
@@ -404,7 +404,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
 
 			final String sqlTableName = dataBinding.getTableName();
-			final String sqlTableAlias = dataBinding.getSqlTableAlias();
+			final String sqlTableAlias = dataBinding.getTableAlias();
 			final String keyColumnName = dataBinding.getKeyColumnName();
 			if (keyColumnName == null)
 			{

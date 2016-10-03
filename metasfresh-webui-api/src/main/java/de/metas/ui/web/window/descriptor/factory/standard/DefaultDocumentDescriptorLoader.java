@@ -87,47 +87,38 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		//
 		// Layout: Create UI sections from main tab
-		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVOElementsFactory.MAIN_TabNo);
-		final GridTabVOElementsFactory mainTabFactory = new GridTabVOElementsFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
+		final GridTabVO mainTabVO = gridWindowVO.getTab(DocumentDescriptorsFactory.MAIN_TabNo);
+		final LayoutFactory rootLayoutFactory = new LayoutFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
 		{
-			layoutBuilder.addSections(mainTabFactory.layoutSectionsList());
-			layoutBuilder.setGridView(mainTabFactory.layoutDetail());
-			layoutBuilder.setAdvancedView(mainTabFactory.layoutAdvancedView());
-			layoutBuilder.setSideList(mainTabFactory.layoutSideList());
-
+			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());
+			layoutBuilder.setGridView(rootLayoutFactory.layoutDetail());
+			layoutBuilder.setAdvancedView(rootLayoutFactory.layoutAdvancedView());
+			layoutBuilder.setSideList(rootLayoutFactory.layoutSideList());
+			
 			// Set special field names
-			final SpecialFieldsCollector specialFieldsCollector = mainTabFactory.getSpecialFieldsCollector();
 			layoutBuilder
-					.setDocumentNoElement(specialFieldsCollector.buildDocumentNoElementAndConsume())
-					.setDocumentSummaryElement(specialFieldsCollector.buildDocumentSummaryElement())
-					.setDocActionElement(specialFieldsCollector.buildDocActionElementAndConsume());
-
-			//
-			// Fields mapping & data binding
-			mainTabFactory.documentFields();
+					.setDocumentNoElement(rootLayoutFactory.createSpecialElement_DocumentNo())
+					.setDocumentSummaryElement(rootLayoutFactory.createSpecialElement_DocumentSummary())
+					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
 		//
 		// Layout: Create UI details from child tabs
-		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(GridTabVOElementsFactory.MAIN_TabNo))
+		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(mainTabVO.getTabNo()))
 		{
-			final GridTabVOElementsFactory detailTabFactory = new GridTabVOElementsFactory(gridWindowVO, detailTabVO, mainTabVO);
-			DocumentLayoutDetailDescriptor.Builder layoutDetail = detailTabFactory.layoutDetail();
+			final LayoutFactory detailLayoutFactory = new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
+			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();
 			layoutBuilder.addDetailIfValid(layoutDetail);
 
-			//
-			// Fields mapping
-			detailTabFactory.documentFields();
-
-			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailTabFactory.documentEntity();
-			mainTabFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
+			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailLayoutFactory.documentEntity();
+			rootLayoutFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
 		}
 
 		//
 		// Build & return the final descriptor
 		final DocumentDescriptor descriptor = documentBuilder
 				.setLayout(layoutBuilder.build())
-				.setEntityDescriptor(mainTabFactory.documentEntity().build())
+				.setEntityDescriptor(rootLayoutFactory.documentEntity().build())
 				.build();
 		logger.trace("Descriptor loaded: {}", descriptor);
 		return descriptor;

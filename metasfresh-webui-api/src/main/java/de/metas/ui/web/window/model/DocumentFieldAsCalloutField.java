@@ -87,7 +87,7 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	@Override
 	public String getTableName()
 	{
-		return getDocument().getEntityDescriptor().getDataBinding().getTableName();
+		return getDocument().getEntityDescriptor().getTableName();
 	}
 
 	@Override

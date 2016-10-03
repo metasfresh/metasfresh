@@ -2,7 +2,6 @@ package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
@@ -73,8 +71,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		super();
 
 		internalName = builder.internalName;
-		caption = ImmutableTranslatableString.ofMap(builder.captionTrls, builder.caption);
-		description = ImmutableTranslatableString.ofMap(builder.descriptionTrls, builder.description);
+		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
+		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
 
 		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
 		widgetType = builder.widgetType;
@@ -168,10 +166,8 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.Builder.class);
 
 		private String internalName;
-		private String caption;
-		private Map<String, String> captionTrls;
-		private String description;
-		private Map<String, String> descriptionTrls;
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private DocumentFieldWidgetType widgetType;
 		private LayoutType layoutType;
 		private boolean gridElement = false;
@@ -241,27 +237,15 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setCaption(final String caption)
+		public Builder setCaption(final ITranslatableString caption)
 		{
-			this.caption = Strings.emptyToNull(caption);
+			this.caption = caption;
 			return this;
 		}
 
-		public Builder setCaptionTrls(final Map<String, String> captionTrls)
+		public Builder setDescription(final ITranslatableString description)
 		{
-			this.captionTrls = captionTrls;
-			return this;
-		}
-
-		public Builder setDescription(final String description)
-		{
-			this.description = Strings.emptyToNull(description);
-			return this;
-		}
-
-		public Builder setDescriptionTrls(final Map<String, String> descriptionTrls)
-		{
-			this.descriptionTrls = descriptionTrls;
+			this.description = description;
 			return this;
 		}
 

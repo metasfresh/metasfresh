@@ -830,6 +830,7 @@ public final class Document
 
 		setValue(documentField, value, reason);
 
+		// FIXME: hardcoded DocAction processing
 		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName))
 		{
 			processDocAction();
@@ -1059,8 +1060,9 @@ public final class Document
 		else if (DependencyType.LookupValues == triggeringDependencyType)
 		{
 			final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
+			final boolean lookupValuesStaledOld = documentField.isLookupValuesStale();
 			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
-			if (lookupValuesStaled)
+			if (lookupValuesStaled && !lookupValuesStaledOld)
 			{
 				documentChangesCollector.collectLookupValuesStaled(documentField, reason);
 			}

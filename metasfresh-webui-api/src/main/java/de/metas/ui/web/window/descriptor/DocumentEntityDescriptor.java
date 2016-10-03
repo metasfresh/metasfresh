@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -19,16 +19,13 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -66,54 +63,34 @@ public class DocumentEntityDescriptor
 		return new Builder();
 	}
 
-	@JsonIgnore
 	private final String id;
 
-	@JsonProperty("detailId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailId;
 
-	@JsonProperty("allow-new")
 	private final ILogicExpression allowCreateNewLogic;
-	@JsonProperty("allow-delete")
 	private final ILogicExpression allowDeleteLogic;
-	@JsonProperty("displayLogic")
 	private final ILogicExpression displayLogic;
 
-	@JsonProperty("fields")
 	private final Map<String, DocumentFieldDescriptor> fields;
-	@JsonIgnore
 	private final DocumentFieldDescriptor idField;
 
-	@JsonProperty("included-entities")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId;
 
-	@JsonProperty("data-binding")
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
-	@JsonIgnore
 	private final DocumentFieldDependencyMap dependencies;
 
 	// Legacy
-	@JsonProperty("AD_Window_ID")
 	private final int AD_Window_ID;
-	@JsonProperty("AD_Tab_ID")
 	private final int AD_Tab_ID;
-	@JsonProperty("tableName")
 	private final String tableName;
-	@JsonProperty("tabNo")
 	private final int tabNo;
-	@JsonProperty("IsSOTrx")
 	private final boolean isSOTrx;
 
-	@JsonIgnore
 	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
 
-	@JsonIgnore
 	private final CalloutExecutor calloutExecutorFactory;
 
-	@JsonIgnore
 	private final DocumentFilterDescriptorsProvider filtersProvider;
 
 	private DocumentEntityDescriptor(final Builder builder)
@@ -139,7 +116,7 @@ public class DocumentEntityDescriptor
 		// legacy:
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
-		tableName = Preconditions.checkNotNull(builder.TableName, "TableName shall be set");
+		tableName = builder.getTableName();
 		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 
@@ -149,42 +126,6 @@ public class DocumentEntityDescriptor
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 
 		filtersProvider = builder.createFiltersProvider();
-	}
-
-	@JsonCreator
-	private DocumentEntityDescriptor(
-			@JsonProperty("detaildId") final String detailId //
-			, @JsonProperty("allow-new") final ILogicExpression allowCreateNewLogic //
-			, @JsonProperty("allow-delete") final ILogicExpression allowDeleteLogic //
-			, @JsonProperty("readonlyLogic") final ILogicExpression readonlyLogic //
-			, @JsonProperty("displayLogic") final ILogicExpression displayLogic //
-			, @JsonProperty("fields") final List<DocumentFieldDescriptor> fields //
-			, @JsonProperty("included-entities") final Map<String, DocumentEntityDescriptor> includedEntities //
-			, @JsonProperty("data-binding") final DocumentEntityDataBindingDescriptor dataBinding //
-	// legacy:
-	, @JsonProperty("AD_Window_ID") final int AD_Window_ID //
-	, @JsonProperty("AD_Tab_ID") final int AD_Tab_ID //
-	, @JsonProperty("tableName") final String tableName //
-	, @JsonProperty("tabNo") final int tabNo //
-	, @JsonProperty("isSOTrx") final boolean isSOTrx //
-	)
-	{
-		this(new Builder()
-				.setDetailId(detailId)
-				//
-				.setAllowCreateNewLogic(allowCreateNewLogic)
-				.setAllowDeleteLogic(allowDeleteLogic)
-				.setDisplayLogic(displayLogic)
-				//
-				.addFields(fields)
-				.addIncludedEntities(includedEntities == null ? ImmutableList.of() : includedEntities.values())
-				.setDataBinding(dataBinding)
-				// legacy:
-				.setAD_Window_ID(AD_Window_ID)
-				.setAD_Tab_ID(AD_Tab_ID)
-				.setTabNo(tabNo)
-				.setTableName(tableName)
-				.setIsSOTrx(isSOTrx));
 	}
 
 	@Override
@@ -251,6 +192,11 @@ public class DocumentEntityDescriptor
 		return idField;
 	}
 
+	public String getIdFieldName()
+	{
+		return idField == null ? null : idField.getFieldName();
+	}
+
 	public Collection<DocumentFieldDescriptor> getFields()
 	{
 		return fields.values();
@@ -285,7 +231,6 @@ public class DocumentEntityDescriptor
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	@JsonIgnore
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
 	{
 		return includedEntitiesByDetailId.values();
@@ -317,14 +262,12 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
-	@JsonIgnore
 	public int getAD_Window_ID()
 	{
 		return AD_Window_ID;
 	}
 
 	// legacy
-	@JsonIgnore
 	public int getAD_Tab_ID()
 	{
 		return AD_Tab_ID;
@@ -337,14 +280,12 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
-	@JsonIgnore
 	public String getTableName()
 	{
 		return tableName;
 	}
 
 	// legacy
-	@JsonIgnore
 	public boolean isSOTrx()
 	{
 		return isSOTrx;
@@ -366,11 +307,14 @@ public class DocumentEntityDescriptor
 
 		private boolean _built = false;
 
-		private final List<Object> _fieldsOrBuilders = new ArrayList<>();
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString description = ImmutableTranslatableString.empty();
+
+		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
 		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
-		private Object _dataBindingOrBuilder;
+		private DocumentEntityDataBindingDescriptorBuilder _dataBinding;
 
 		private String detailId;
 		private boolean detailIdSet;
@@ -378,12 +322,13 @@ public class DocumentEntityDescriptor
 		private ILogicExpression allowCreateNewLogic = ILogicExpression.TRUE;
 		private ILogicExpression allowDeleteLogic = ILogicExpression.TRUE;
 		private ILogicExpression displayLogic = ILogicExpression.TRUE;
+		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 
 		// Legacy
 		private Integer AD_Window_ID;
 		private Integer AD_Tab_ID;
 		private Integer tabNo;
-		private String TableName;
+		private String _tableName;
 		private Boolean isSOTrx;
 
 		private Builder()
@@ -414,36 +359,52 @@ public class DocumentEntityDescriptor
 		{
 			this.detailId = detailId;
 			detailIdSet = true;
+
+			updateFieldBuilders(fieldBuilder -> fieldBuilder.setDetailId(detailId));
+
 			return this;
+		}
+
+		public String getDetailId()
+		{
+			Check.assume(detailIdSet, "detailId set");
+			return detailId;
+		}
+
+		private final void assertFieldsNotBuilt()
+		{
+			assertNotBuilt();
+			Check.assumeNull(_fields, "Fields not already built");
 		}
 
 		public Builder addField(final DocumentFieldDescriptor.Builder fieldBuilder)
 		{
-			assertNotBuilt();
+			assertFieldsNotBuilt();
 
-			Preconditions.checkNotNull(fieldBuilder, "fieldBuilder not null");
-			_fieldsOrBuilders.add(fieldBuilder);
+			//
+			// Update field from entity
+			fieldBuilder
+					.setDetailId(getDetailId())
+					.setEntityReadonlyLogic(getReadonlyLogic());
+
+			// Add field
+			_fieldBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+
 			return this;
 		}
 
-		public Builder addField(final DocumentFieldDescriptor field)
+		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
-			assertNotBuilt();
-
-			Preconditions.checkNotNull(field, "field not null");
-
-			_fieldsOrBuilders.add(field);
-			return this;
+			return _fieldBuilders.get(fieldName);
 		}
 
-		public Builder addFields(final List<DocumentFieldDescriptor> fields)
+		private final void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
 		{
-			if (fields == null || fields.isEmpty())
-			{
-				return this;
-			}
-			fields.stream().forEach(this::addField);
-			return this;
+			assertFieldsNotBuilt();
+
+			_fieldBuilders.values()
+					.stream()
+					.forEach(fieldUpdater);
 		}
 
 		public DocumentFieldDescriptor getIdField()
@@ -473,27 +434,13 @@ public class DocumentEntityDescriptor
 		{
 			if (_fields == null)
 			{
-				_fields = _fieldsOrBuilders.stream()
-						.map(Builder::getOrBuildField)
+				_fields = _fieldBuilders
+						.values()
+						.stream()
+						.map(fieldBuilder -> fieldBuilder.getOrBuild())
 						.collect(GuavaCollectors.toImmutableMapByKey(field -> field.getFieldName()));
 			}
 			return _fields;
-		}
-
-		private static DocumentFieldDescriptor getOrBuildField(final Object fieldOrBuilder)
-		{
-			if (fieldOrBuilder instanceof DocumentFieldDescriptor.Builder)
-			{
-				return ((DocumentFieldDescriptor.Builder)fieldOrBuilder).getOrBuild();
-			}
-			else if (fieldOrBuilder instanceof DocumentFieldDescriptor)
-			{
-				return (DocumentFieldDescriptor)fieldOrBuilder;
-			}
-			else
-			{
-				throw new IllegalArgumentException("Unknown field or builder: " + fieldOrBuilder);
-			}
 		}
 
 		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
@@ -504,43 +451,23 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private Builder addIncludedEntities(final Collection<DocumentEntityDescriptor> includedEntities)
-		{
-			if (includedEntities == null)
-			{
-				return this;
-			}
-			includedEntities.stream().forEach(this::addIncludedEntity);
-			return this;
-		}
-
-		public Builder setDataBinding(final DocumentEntityDataBindingDescriptor dataBinding)
-		{
-			_dataBindingOrBuilder = dataBinding;
-			return this;
-		}
-
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
 		{
-			_dataBindingOrBuilder = dataBindingBuilder;
+			_dataBinding = dataBindingBuilder;
 			return this;
+		}
+
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> builderType)
+		{
+			@SuppressWarnings("unchecked")
+			final T dataBindingBuilder = (T)_dataBinding;
+			return dataBindingBuilder;
 		}
 
 		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
 		{
-			Preconditions.checkNotNull(_dataBindingOrBuilder, "dataBindingOrBuilder");
-			if (_dataBindingOrBuilder instanceof DocumentEntityDataBindingDescriptor)
-			{
-				return (DocumentEntityDataBindingDescriptor)_dataBindingOrBuilder;
-			}
-			else if (_dataBindingOrBuilder instanceof DocumentEntityDataBindingDescriptorBuilder)
-			{
-				return ((DocumentEntityDataBindingDescriptorBuilder)_dataBindingOrBuilder).getOrBuild();
-			}
-			else
-			{
-				throw new IllegalStateException("Unknown dataBinding type: " + _dataBindingOrBuilder);
-			}
+			Preconditions.checkNotNull(_dataBinding, "dataBinding");
+			return _dataBinding.getOrBuild();
 		}
 
 		private DocumentFieldDependencyMap buildDependencies()
@@ -554,6 +481,11 @@ public class DocumentEntityDescriptor
 		{
 			this.AD_Window_ID = AD_Window_ID;
 			return this;
+		}
+		
+		public int getAD_Window_ID()
+		{
+			return AD_Window_ID;
 		}
 
 		public Builder setAD_Tab_ID(final int AD_Tab_ID)
@@ -570,8 +502,36 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(final String tableName)
 		{
-			TableName = tableName;
+			_tableName = tableName;
 			return this;
+		}
+
+		public String getTableName()
+		{
+			Check.assumeNotEmpty(_tableName, "tableName shall be set");
+			return _tableName;
+		}
+
+		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
+		{
+			caption = ImmutableTranslatableString.ofMap(captionTrls, defaultCaption);
+			return this;
+		}
+
+		public ITranslatableString getCaption()
+		{
+			return caption;
+		}
+
+		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
+		{
+			description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			return this;
+		}
+
+		public ITranslatableString getDescription()
+		{
+			return description;
 		}
 
 		public Builder setIsSOTrx(final boolean isSOTrx)
@@ -598,9 +558,28 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public ILogicExpression getDisplayLogic()
+		{
+			return displayLogic;
+		}
+
+		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
+		{
+			Check.assumeNotNull(readonlyLogic, "Parameter readonlyLogic is not null");
+			this.readonlyLogic = readonlyLogic;
+			updateFieldBuilders(fieldBuilder -> fieldBuilder.setEntityReadonlyLogic(readonlyLogic));
+			return this;
+		}
+
+		public ILogicExpression getReadonlyLogic()
+		{
+			return readonlyLogic;
+		}
+
 		private CalloutExecutor buildCalloutExecutorFactory(final Collection<DocumentFieldDescriptor> fields)
 		{
-			final String tableName = TableName;
+			final String tableName = getTableName();
+
 			final ImmutablePlainCalloutProvider.Builder entityCalloutProviderBuilder = ImmutablePlainCalloutProvider.builder();
 			for (final DocumentFieldDescriptor field : fields)
 			{
@@ -640,7 +619,7 @@ public class DocumentEntityDescriptor
 		private final DocumentFilterDescriptorsProvider createFiltersProvider()
 		{
 			final int adTabId = AD_Tab_ID;
-			final String tableName = getOrBuildDataBinding().getTableName();
+			final String tableName = getTableName();
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
 		}
