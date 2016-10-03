@@ -315,7 +315,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 		boolean changes = false;
 		for (final IDocumentFieldView documentField : document.getFieldViews())
 		{
-			if (!isNew && !documentField.hasChanges())
+			if (!isNew && !documentField.hasChangesToSave())
 			{
 				logger.trace("Skip setting PO value because document field has no changes: {}", documentField);
 				continue;

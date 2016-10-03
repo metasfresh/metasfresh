@@ -52,6 +52,7 @@ import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
 
 /*
  * #%L
@@ -129,11 +130,6 @@ public final class Document
 	// Misc
 	private DocumentEvaluatee _evaluatee; // lazy
 	private Map<String, Object> _dynAttributes = null; // lazy
-
-	public static enum FieldInitializationMode
-	{
-		NewDocument, Refresh, Load,
-	}
 
 	@FunctionalInterface
 	public static interface FieldValueSupplier
@@ -236,13 +232,13 @@ public final class Document
 	}
 
 	/** copy constructor */
-	private Document(final Document from, final Document parentDocumentCopy, final boolean writable)
+	private Document(final Document from, final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		super();
 		documentRepository = from.documentRepository;
 		entityDescriptor = from.entityDescriptor;
 		windowNo = from.windowNo;
-		_writable = writable;
+		_writable = copyMode.isWritable();
 
 		_new = from._new;
 		_valid = from._valid;
@@ -269,7 +265,7 @@ public final class Document
 			IDocumentField parentLinkField = null;
 			for (final IDocumentField fieldOrig : from.fieldsByName.values())
 			{
-				final IDocumentField fieldCopy = fieldOrig.copy(this);
+				final IDocumentField fieldCopy = fieldOrig.copy(this, copyMode);
 				final String fieldName = fieldCopy.getFieldName();
 				fieldsBuilder.put(fieldName, fieldCopy);
 
@@ -295,7 +291,7 @@ public final class Document
 			{
 				final String detailId = e.getKey();
 				final IncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
-				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this);
+				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
 
 				includedDocuments.put(detailId, includedDocumentsForDetailIdCopy);
 			}
@@ -408,7 +404,7 @@ public final class Document
 			if (initialValue != FieldValueSupplier.NO_VALUE)
 			{
 				valueOld = documentField.getValue();
-				documentField.setInitialValue(initialValue);
+				documentField.setInitialValue(initialValue, mode);
 			}
 
 			valueSet = true;
@@ -561,24 +557,35 @@ public final class Document
 			return FieldValueSupplier.NO_VALUE;
 		}
 	}
+	
+	/* package */static enum CopyMode
+	{
+		CheckOutWritable(true)
+		, CheckInReadonly(false)
+		;
+		
+		private final boolean writable;
 
-	public Document copyWritable()
+		CopyMode(final boolean writable)
+		{
+			this.writable = writable;
+		}
+		
+		public boolean isWritable()
+		{
+			return writable;
+		}
+	}
+	
+	/* package */Document copy(final CopyMode copyMode)
 	{
 		final Document parentDocumentCopy = Document.NULL;
-		final boolean writable = true;
-		return new Document(this, parentDocumentCopy, writable);
+		return new Document(this, parentDocumentCopy, copyMode);
 	}
 
-	public Document copyReadonly()
+	/* package */public Document copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
-		final Document parentDocumentCopy = Document.NULL;
-		final boolean writable = false;
-		return new Document(this, parentDocumentCopy, writable);
-	}
-
-	/* package */public Document copy(final Document parentDocumentCopy)
-	{
-		return new Document(this, parentDocumentCopy, parentDocumentCopy.isWritable());
+		return new Document(this, parentDocumentCopy, copyMode);
 	}
 
 	/* package */final void assertWritable()
@@ -1282,7 +1289,7 @@ public final class Document
 		// Check document fields
 		for (final IDocumentField documentField : getFields())
 		{
-			if (documentField.hasChanges())
+			if (documentField.hasChangesToSave())
 			{
 				logger.trace("Considering document has changes because {} is changed", documentField);
 				changes = true;

@@ -84,6 +84,14 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 		final Document document = getDocument();
 		return DocumentInterfaceWrapper.wrap(document, modelClass);
 	}
+	
+	@Override
+	public <T> T getModelBeforeChanges(final Class<T> modelClass)
+	{
+		final Document document = getDocument();
+		return DocumentInterfaceWrapper.wrapUsingOldValues(document, modelClass);
+	}
+
 
 	@Override
 	public Object getValue(final String columnName)

@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.model.Document.CopyMode;
 
 /*
  * #%L
@@ -32,6 +33,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 /*package*/interface IDocumentField extends IDocumentFieldView
 {
+	public static enum FieldInitializationMode
+	{
+		NewDocument, Refresh, Load,
+	}
 
 	@Override
 	DocumentFieldDescriptor getDescriptor();
@@ -68,14 +73,26 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 		return getDescriptor().isCalculated();
 	}
 
+	/**
+	 * Checks if this field was changed until it was saved. i.e. compares {@link #getValue()} with {@link #getInitialValue()}.
+	 */
+	@Override
+	boolean hasChangesToSave();
+
 	@Override
 	Object getInitialValue();
 
 	/**
+	 * @param initialValue initial value / last saved value
+	 * @param mode initialization mode
+	 */
+	void setInitialValue(Object initialValue, FieldInitializationMode mode);
+
+	/**
+	 * Set field's current value.
+	 * 
 	 * @param value
 	 */
-	void setInitialValue(Object value);
-
 	void setValue(Object value);
 
 	@Override
@@ -158,9 +175,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 	 */
 	DocumentValidStatus getValid();
 
-	@Override
-	boolean hasChanges();
-
-	IDocumentField copy(Document document);
+	IDocumentField copy(Document document, CopyMode copyMode);
 
 }

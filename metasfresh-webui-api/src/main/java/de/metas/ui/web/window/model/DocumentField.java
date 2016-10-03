@@ -19,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
+import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 /*
@@ -57,6 +58,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	//
 	// State
 	private Object _initialValue;
+	private Object _valueOnCheckout;
 	private Object _value;
 
 	private static final LogicExpressionResult MANDATORY_InitialValue = LogicExpressionResult.namedConstant("mandatory-initial", false);
@@ -81,7 +83,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	/** copy constructor */
-	protected DocumentField(final DocumentField from, final Document document)
+	protected DocumentField(final DocumentField from, final Document document, final CopyMode copyMode)
 	{
 		super();
 		descriptor = from.descriptor;
@@ -95,26 +97,41 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		_readonly = from._readonly;
 		_displayed = from._displayed;
 		_valid = from._valid;
+
+		switch (copyMode)
+		{
+			case CheckInReadonly:
+				_valueOnCheckout = _value;
+				break;
+			case CheckOutWritable:
+				_valueOnCheckout = _initialValue;
+				break;
+			default:
+				break;
+
+		}
 	}
 
 	@Override
 	public String toString()
 	{
+		// NOTE: try keeping this string short...
+		
 		return MoreObjects.toStringHelper(this)
 				.add("fieldName", getFieldName())
-				.add("documentPath", getDocumentPath())
+				// .add("documentPath", getDocumentPath())
 				.add("value", _value)
 				.add("initalValue", _initialValue)
-				.add("mandatory", _mandatory)
-				.add("readonly", _readonly)
-				.add("displayed", _displayed)
+				// .add("mandatory", _mandatory)
+				// .add("readonly", _readonly)
+				// .add("displayed", _displayed)
 				.toString();
 	}
 
 	@Override
-	public DocumentField copy(final Document document)
+	public DocumentField copy(final Document document, final CopyMode copyMode)
 	{
-		return new DocumentField(this, document);
+		return new DocumentField(this, document, copyMode);
 	}
 
 	@Override
@@ -136,26 +153,30 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	/**
-	 * @param value
+	 * @param initialValue
 	 */
 	@Override
-	public void setInitialValue(final Object value)
+	public void setInitialValue(final Object initialValue, final FieldInitializationMode mode)
 	{
-		final Object valueNew = convertToValueClassAndCorrect(value);
+		final Object initialValueConv = convertToValueClassAndCorrect(initialValue);
 		if (logger.isTraceEnabled())
 		{
-			logger.trace("setInitialValue: {} = {}", getFieldName(), valueNew);
+			logger.trace("setInitialValue: {} = {} ({})", getFieldName(), initialValueConv, mode);
 		}
-		_initialValue = valueNew;
+		_initialValue = initialValueConv;
+
+		//
+		// Update old value too
+		_valueOnCheckout = initialValueConv;
 
 		//
 		// Update the current value too, if needed
 		final Object valueOld = _value;
-		if (DataTypes.equals(valueNew, valueOld))
+		if (DataTypes.equals(initialValueConv, valueOld))
 		{
 			return;
 		}
-		_value = valueNew;
+		_value = initialValueConv;
 
 		//
 		// Set valid state to Staled
@@ -225,8 +246,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public Object getOldValue()
 	{
-		// TODO to implement. "getOldValue" is mainly needed for ICalloutField and DocumentInterfaceWrapper
-		return getValue();
+		return _valueOnCheckout;
 	}
 
 	private Object convertToValueClass(final Object value)
@@ -347,7 +367,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		}
 
 		lookupValuesStaled = true;
-		logger.trace("Marked {} as staled (triggeringFieldName={})", this, triggeringFieldName);
+		logger.trace("Marked lookup values as staled (->{}): {}", triggeringFieldName, this);
 
 		return true;
 	}
@@ -433,7 +453,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	@Override
-	public boolean hasChanges()
+	public boolean hasChangesToSave()
 	{
 		return !DataTypes.equals(_value, _initialValue);
 	}

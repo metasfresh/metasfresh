@@ -180,7 +180,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 			return false;
 		}
 
-		return field.hasChanges();
+		return field.hasChangesToSave();
 	}
 
 	@Override
@@ -205,7 +205,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 				continue;
 			}
 
-			if (field.hasChanges())
+			if (field.hasChangesToSave())
 			{
 				return true;
 			}

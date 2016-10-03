@@ -109,12 +109,6 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	}
 
 	@Override
-	public <T> T getModel(final Class<T> modelClass)
-	{
-		return getCalloutRecord().getModel(modelClass);
-	}
-
-	@Override
 	public int getWindowNo()
 	{
 		return getDocument().getWindowNo();

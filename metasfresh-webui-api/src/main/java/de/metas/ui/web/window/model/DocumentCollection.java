@@ -26,6 +26,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+import de.metas.ui.web.window.model.Document.CopyMode;
 
 /*
  * #%L
@@ -172,7 +173,7 @@ public class DocumentCollection
 		else
 		{
 			final Document rootDocument = getRootDocument(documentPath);
-			rootDocumentWritable = rootDocument.copyWritable();
+			rootDocumentWritable = rootDocument.copy(CopyMode.CheckOutWritable);
 		}
 
 		//
@@ -262,7 +263,7 @@ public class DocumentCollection
 		//
 		// Add the saved and changed document back to index
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
-		final Document rootDocumentReadonly = rootDocument.copyReadonly();
+		final Document rootDocumentReadonly = rootDocument.copy(CopyMode.CheckInReadonly);
 		documents.put(rootDocumentKey, rootDocumentReadonly);
 	}
 
@@ -282,7 +283,7 @@ public class DocumentCollection
 		}
 		else if (documentPath.hasIncludedDocuments())
 		{
-			final Document rootDocument = getRootDocument(documentPath).copyWritable();
+			final Document rootDocument = getRootDocument(documentPath).copy(CopyMode.CheckOutWritable);
 			rootDocument.deleteIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds());
 			commit(rootDocument);
 		}

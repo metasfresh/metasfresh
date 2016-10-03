@@ -45,7 +45,7 @@ public interface IDocumentFieldView
 	boolean isKey();
 	boolean isCalculated();
 	boolean isVirtualField();
-	boolean hasChanges();
+	boolean hasChangesToSave();
 	//@formatter:on
 
 	//@formatter:off
@@ -65,10 +65,9 @@ public interface IDocumentFieldView
 	//@formatter:on
 
 	//@formatter:off
-	Object getInitialValue();
-	//@formatter:on
-
-	//@formatter:off
+	/**
+	 * @return field's current value
+	 */
 	Object getValue();
 	Object getValueAsJsonObject();
 	boolean getValueAsBoolean();
@@ -76,7 +75,13 @@ public interface IDocumentFieldView
 	<T> T getValueAs(final Class<T> returnType);
 	//@formatter:on
 
-	//@formatter:off
+	/**
+	 * @return initial value / last saved value
+	 */
+	Object getInitialValue();
+
+	/**
+	 * @return old value (i.e. the value as it was when the document was checked out from repository/documents collection)
+	 */
 	Object getOldValue();
-	//@formatter:on
 }

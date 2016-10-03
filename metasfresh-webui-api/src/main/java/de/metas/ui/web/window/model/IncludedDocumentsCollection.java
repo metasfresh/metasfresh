@@ -22,6 +22,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
+import de.metas.ui.web.window.model.Document.CopyMode;
 
 /*
  * #%L
@@ -67,7 +68,7 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 	}
 
 	/** copy constructor */
-	private IncludedDocumentsCollection(final IncludedDocumentsCollection from, final Document parentDocumentCopy)
+	private IncludedDocumentsCollection(final IncludedDocumentsCollection from, final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		super();
 		parentDocument = Preconditions.checkNotNull(parentDocumentCopy);
@@ -79,10 +80,10 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		// Copy documents map
 		for (final Map.Entry<DocumentId, Document> e : from.documents.entrySet())
 		{
-			final DocumentId documentId = e.getKey();
-			final Document documentOrig = e.getValue();
-			final Document documentCopy = documentOrig.copy(parentDocumentCopy);
-			documents.put(documentId, documentCopy);
+			final DocumentId includedDocumentId = e.getKey();
+			final Document includedDocumentOrig = e.getValue();
+			final Document includedDocumentCopy = includedDocumentOrig.copy(parentDocumentCopy, copyMode);
+			documents.put(includedDocumentId, includedDocumentCopy);
 		}
 	}
 
@@ -289,9 +290,9 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 		fullyLoaded = true;
 	}
 
-	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy)
+	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
-		return new IncludedDocumentsCollection(this, parentDocumentCopy);
+		return new IncludedDocumentsCollection(this, parentDocumentCopy, copyMode);
 	}
 
 	/* package */DocumentValidStatus checkAndGetValidStatus()
