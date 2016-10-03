@@ -335,7 +335,7 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable} = this.props;
+        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable, updateDocList} = this.props;
         const {x, y, contextMenu, selected, listenOnKeys} = this.state;
 
         return (
@@ -353,6 +353,7 @@ class Table extends Component {
                             selected={selected}
                             deselect={() => this.deselectAllProducts()}
                             mainTable={mainTable}
+                            updateDocList={updateDocList}
                         />
                         {!readonly && <div className="row">
                             <div className="col-xs-12">

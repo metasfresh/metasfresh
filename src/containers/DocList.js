@@ -47,12 +47,6 @@ class DocList extends Component {
         });
 
         dispatch(getWindowBreadcrumb(windowType))
-
-        console.log(this.state.layout);
-        console.log(this.state.filters);
-        console.log(this.state.data);
-
-
     }
 
     componentWillReceiveProps(props) {
@@ -72,9 +66,26 @@ class DocList extends Component {
                 })
             })
         });
+ 
+    }
 
+    updateData = () => {
+        const {dispatch, windowType} = this.props;
 
-        
+        dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                layout: response.data,
+                filters: response.data.filters
+            }), () => {
+                dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
+                    this.setState(Object.assign({}, this.state, {
+                        data: response.data
+                    }), () => {
+                        this.getView();
+                    })
+                })
+            })
+        });
     }
 
     getView = () => {
@@ -151,6 +162,7 @@ class DocList extends Component {
                                 handleChangePage={this.handleChangePage}
                                 page={page}
                                 mainTable={true}
+                                updateDocList={this.updateData}
                             />
                         </div>
                     </div>
