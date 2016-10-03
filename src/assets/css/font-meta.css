@@ -131,3 +131,9 @@
 .meta-icon-right:before {
   content: "\45";
 }
+.meta-icon-listing-down:before {
+  content: "\46";
+}
+.meta-icon-listing-up:before {
+  content: "\47";
+}
