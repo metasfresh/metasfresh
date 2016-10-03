@@ -1154,18 +1154,22 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
-			final int C_UOM_From_ID = ((Integer)calloutField.getOldValue()).intValue();
-			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
+			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
+			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
+			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
+			
+			
+			BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
+				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
 				QtyEntered = QtyEntered1;
 				orderLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal QtyOrdered = MUOMConversion.convert(C_UOM_From_ID, C_UOM_To_ID, QtyEntered, true); // StdPrecision=true
+			BigDecimal QtyOrdered = uomConverter.convertQty(QtyEntered1, uomFrom, uomTo);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;
