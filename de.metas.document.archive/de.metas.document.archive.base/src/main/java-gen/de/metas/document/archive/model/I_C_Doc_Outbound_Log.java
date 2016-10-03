@@ -439,20 +439,20 @@ public interface I_C_Doc_Outbound_Log
 	/**
 	 * Set Invoice Email Enabled.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled);
+	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
 
 	/**
 	 * Get Invoice Email Enabled.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIsInvoiceEmailEnabled();
+	public boolean isInvoiceEmailEnabled();
 
     /** Column definition for IsInvoiceEmailEnabled */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsInvoiceEmailEnabled = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "IsInvoiceEmailEnabled", null);

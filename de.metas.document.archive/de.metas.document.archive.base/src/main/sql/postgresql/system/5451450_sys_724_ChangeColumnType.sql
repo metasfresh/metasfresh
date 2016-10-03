@@ -57,30 +57,3 @@ set IsInvoiceEmailEnabled = null;
 
 
 
-
--- 03.10.2016 13:41
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=319, DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2016-10-03 13:41:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555107
-;
-
-
-
-COMMIT;
-
-
--- 03.10.2016 13:41
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_doc_outbound_log','IsInvoiceEmailEnabled','CHAR(1)',null,'NULL')
-;
-
--- 03.10.2016 13:41
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_doc_outbound_log','IsInvoiceEmailEnabled',null,'NULL',null)
-;
-
-
-
-update c_doc_outbound_log
-set IsInvoiceEmailEnabled = null;
-
-
