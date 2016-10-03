@@ -68,6 +68,11 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	{
 		return ConstantTranslatableString.of(value);
 	}
+	
+	public static final ITranslatableString empty()
+	{
+		return ConstantTranslatableString.EMPTY;
+	}
 
 	public static final Builder builder()
 	{
