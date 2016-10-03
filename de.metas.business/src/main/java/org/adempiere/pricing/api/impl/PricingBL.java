@@ -361,7 +361,7 @@ public class PricingBL implements IPricingBL
 			aggregatedPricingRule.addPricingRule(rule);
 		}
 
-		logger.info("aggregatedPricingRule: " + aggregatedPricingRule);
+		logger.debug("aggregatedPricingRule: {}", aggregatedPricingRule);
 		return aggregatedPricingRule;
 	}
 
