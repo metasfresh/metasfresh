@@ -32,12 +32,11 @@ import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.apache.commons.lang.BooleanUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -79,14 +78,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final Object archiveRerencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
 		if (archiveRerencedModel != null)
 		{
-			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archive, I_C_Invoice.class);
+			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class);
 			final Boolean matchingisInvoiceEmailEnabled;
 			// in case of invoice document, enable email only if is enabled in partner
 			if (isInvoiceDocument)
 			{
 				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(archive.getC_BPartner(), I_C_BPartner.class);
-				final String isInvoiceEmailEnabled = bpartner.getIsInvoiceEmailEnabled();
-				matchingisInvoiceEmailEnabled = isInvoiceEmailEnabled == null ? null : BooleanUtils.toBoolean(isInvoiceEmailEnabled);
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveRerencedModel, I_C_Invoice.class);
+				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
+				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
 				
 			}
 			else
