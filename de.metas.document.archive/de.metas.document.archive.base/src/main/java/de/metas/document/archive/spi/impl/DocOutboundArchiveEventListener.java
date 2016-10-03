@@ -32,8 +32,10 @@ import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.apache.commons.lang.BooleanUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -78,21 +80,22 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		if (archiveRerencedModel != null)
 		{
 			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archive, I_C_Invoice.class);
-			final String isInvoiceEmailEnabled;
+			final Boolean matchingisInvoiceEmailEnabled;
 			// in case of invoice document, enable email only if is enabled in partner
 			if (isInvoiceDocument)
 			{
 				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(archive.getC_BPartner(), I_C_BPartner.class);
-				isInvoiceEmailEnabled = bpartner.getIsInvoiceEmailEnabled();
+				final String isInvoiceEmailEnabled = bpartner.getIsInvoiceEmailEnabled();
+				matchingisInvoiceEmailEnabled = isInvoiceEmailEnabled == null ? null : BooleanUtils.toBoolean(isInvoiceEmailEnabled);
 				
 			}
 			else
 			{
-				// set by defalt on Y for all other documents
-				isInvoiceEmailEnabled = null;
+				// set by defualt on Y for all other documents
+				matchingisInvoiceEmailEnabled = Boolean.TRUE;
 			}
 			 
-			docExchange.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
+			docExchange.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
 		}
 
 		
