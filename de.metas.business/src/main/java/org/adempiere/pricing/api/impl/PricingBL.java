@@ -88,7 +88,7 @@ public class PricingBL implements IPricingBL
 		}
 		else
 		{
-			pricingCtx.setQty(Env.ONE);
+			pricingCtx.setQty(BigDecimal.ONE);
 		}
 		pricingCtx.setSOTrx(isSOTrx);
 		pricingCtx.setC_UOM_ID(C_UOM_ID);

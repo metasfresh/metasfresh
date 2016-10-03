@@ -34,10 +34,8 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
