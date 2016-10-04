@@ -15,6 +15,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
+import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.Lookup;
@@ -219,8 +220,9 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		}
 
 		//
-		// Check if is a Process Parameter
-		if (gridField.getVO().isProcessParameter())
+		// Check if is a Process Parameter/Form field
+		final GridFieldVO gridFieldVO = gridField.getVO();
+		if (gridFieldVO.isProcessParameter() || gridFieldVO.isFormField())
 		{
 			final IValidationContext evalCtx = createValidationContext(ctx, gridField.getWindowNo(), Env.TAB_None, tableName);
 			return evalCtx;

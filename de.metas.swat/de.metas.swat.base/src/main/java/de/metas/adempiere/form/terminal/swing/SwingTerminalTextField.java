@@ -102,8 +102,6 @@ import net.miginfocom.swing.MigLayout;
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			onFocusLost(); // make sure that direct edits to the text component are not lost in case the onscreen-keyboard-dialog is opend and canceled.
-
 			// show keyboard now!
 			showKeyboard();
 		}
@@ -677,6 +675,7 @@ import net.miginfocom.swing.MigLayout;
 
 	/**
 	 * Execute focus lost event: commit edit, set text and fire {@link ITerminalTextField#PROPERTY_FocusLost}.
+	 *
 	 */
 	private final void onFocusLost()
 	{
