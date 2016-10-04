@@ -245,15 +245,19 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		final boolean alwaysUpdateable;
 		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
 		final LookupSource lookupSourceType;
+		final ILogicExpression readonlyLogic;
 
 		if (isParentLinkColumn)
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = Integer.class;
-			defaultValueExpression = Optional.empty();
 			alwaysUpdateable = false;
+			
 			lookupDescriptorProvider = (scope) -> null;
 			lookupSourceType = null;
+			
+			defaultValueExpression = Optional.empty();
+			readonlyLogic = ConstantLogicExpression.TRUE;
 		}
 		else
 		{
@@ -273,6 +277,14 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			lookupSourceType = lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(gridFieldVO, valueClass);
+			if(gridFieldVO.isReadOnly())
+			{
+				readonlyLogic = ConstantLogicExpression.TRUE;
+			}
+			else
+			{
+				readonlyLogic = gridFieldVO.getReadOnlyLogic();
+			}
 		}
 
 		//
@@ -320,7 +332,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.addCharacteristicIfTrue(keyColumn, Characteristic.GridViewField)
 				.addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
 				//
-				.setReadonlyLogic(gridFieldVO.getReadOnlyLogic())
+				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
