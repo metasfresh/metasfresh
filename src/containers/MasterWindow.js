@@ -64,6 +64,7 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     windowType={type}
                     breadcrumb={breadcrumb}
+                    showSidelist={true}
                 />
                 {connectionError && <ErrorScreen />}
                 {modal.visible &&

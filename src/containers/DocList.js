@@ -26,6 +26,7 @@ class DocList extends Component {
             layout: {},
             filters: {},
             sortingAsc: false,
+            test: 'aaa',
             sortingField: ''
         }
     }
@@ -61,25 +62,63 @@ class DocList extends Component {
         });
     }
 
-    getView = (ascending, field) => {
+    getView = () => {
         const {data,page} = this.state;
+
+        this.getData(data.viewId, page, 20);
+    }
+
+    getData = (id, page, pages, sortingQuery) => {
+        const {data} = this.state;
         const {dispatch} = this.props;
 
+        dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
+            this.setState(Object.assign({}, this.state, {
+                data: response.data
+            }))
+        });
+    }
+
+    sortData = (ascending, field) => {
+        const {sortingAsc, sortingField, test} = this.state;
         // console.log('ascending ' + ascending);
+        const {data,page} = this.state;
 
         let sortingQuery = '';
 
+
+        this.setState({sortingAsc: ascending}, function () {
+            // console.log(this.state.sortingAsc);
+        });
+
+
+
+        
+
         this.setState(
             Object.assign({}, this.state, {
-                sortingAsc: ascending
-            })
+                test: 'bbb'
+            }), ()=> {
+                // console.log(test);
+            }
         );
+
+        // this.setState(
+        //     Object.assign({}, this.state, {
+        //         sortingAsc: ascending
+        //     }), ()=> {
+        //         console.log(sortingAsc);
+        //     }
+        // );
 
         this.setState(
             Object.assign({}, this.state, {
                 sortingField: field
             })
         );
+
+        // console.log('sort data');
+        // console.log(sortingAsc + ' ' + sortingField);
 
 
         if(field && ascending) {
@@ -101,13 +140,7 @@ class DocList extends Component {
         // console.log('view id:');
         // console.log(data.viewId);
 
-        dispatch(browseViewRequest(data.viewId, page, 20, sortingQuery)).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }))
-        });
-
-        // console.log(this.state.data);
+        this.getData(data.viewId, page, 20, sortingQuery);
     }
 
     handleChangePage = (index) => {
@@ -179,7 +212,7 @@ class DocList extends Component {
                                 page={page}
                                 mainTable={true}
                                 updateDocList={this.updateData}
-                                sort={this.getView}
+                                sort={this.sortData}
                                 orderBy={data.orderBy}
                             />
                         </div>
