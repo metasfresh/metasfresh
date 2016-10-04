@@ -498,7 +498,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	}
 
 	/**
-	 * Rollback current chunk's transaction.
+	 * Rollback current chunk's transaction if there is a savepoint (see {@link #setUseTrxSavepoints(boolean)}) or if we have a local transaction.
 	 *
 	 * If something went wrong this method will throw an exception right away, exception which will stop entire batch processing.
 	 */

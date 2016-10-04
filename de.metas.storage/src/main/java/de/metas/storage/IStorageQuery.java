@@ -13,19 +13,19 @@ package de.metas.storage;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
@@ -75,4 +75,13 @@ public interface IStorageQuery
 	 * @return true if given record was matched by this query
 	 */
 	boolean matches(IStorageRecord storageRecord);
+
+	/**
+	 * Set if we shall exclude the after picking locators (i.e. where {@link I_M_Locator#isAfterPickingLocator()} returns <code>true</code>).<br>
+	 * By default, after picking locators are excluded
+	 *
+	 * @param excludeAfterPickingLocator
+	 * @return this
+	 */
+	IStorageQuery setExcludeAfterPickingLocator(boolean excludeAfterPickingLocator);
 }

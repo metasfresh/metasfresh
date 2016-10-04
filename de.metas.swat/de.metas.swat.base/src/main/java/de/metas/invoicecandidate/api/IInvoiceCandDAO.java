@@ -33,7 +33,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
@@ -354,19 +354,24 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void save(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
-	 * Returns all invoice candidates that have Processed='N'
+	 * Return all invoice candidates that have Processed='N'
 	 *
-	 * @param plainContextAware
+	 * @param contextAware
 	 * @return
 	 */
-	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(PlainContextAware plainContextAware);
+	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(IContextAware contextAware);
 
+	/**
+	 * Invalidate all ICs that have the given <code>aggregation</code> as either their <code>HeaderAggregationKeyBuilder_ID</code> or <code>LineAggregationKeyBuilder_ID</code>.
+	 *
+	 * @param aggregation
+	 */
 	void invalidateCandsForAggregationBuilder(I_C_Aggregation aggregation);
 
 	int deleteInvoiceDetails(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Deletes given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
+	 * Delete given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
 	 *
 	 * @param ic
 	 */

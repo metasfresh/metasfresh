@@ -235,6 +235,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			statisticsCollectorCurrent = null;
 		}
 
+		boolean calloutAddedActivesList = false;
 		try
 		{
 			if (executionBlackListIds.contains(calloutId))
@@ -245,8 +246,8 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 			//
 			// Add the callout to active running callouts list
-			final boolean added = activeCalloutInstances.add(callout);
-			if (!added)
+			calloutAddedActivesList = activeCalloutInstances.add(callout);
+			if (!calloutAddedActivesList)
 			{
 				// callout is already running => don't run it again because it will introduce a loop
 				statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusSkipped("already active", "active callouts: " + activeCalloutInstances);
@@ -310,7 +311,10 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 			//
 			// Remove callout from currently running callouts list
-			activeCalloutInstances.remove(callout);
+			if(calloutAddedActivesList)
+			{
+				activeCalloutInstances.remove(callout);
+			}
 		}
 	}
 

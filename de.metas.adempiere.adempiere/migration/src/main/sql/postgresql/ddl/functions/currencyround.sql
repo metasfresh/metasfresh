@@ -57,5 +57,4 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION currencyround(numeric, numeric, character varying)
-  OWNER TO adempiere;
+

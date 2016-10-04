@@ -217,7 +217,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 	}
 
 	/**
-	 * Uses the storage engine to get the overall on hand quantity for the given <code>selector</code>
+	 * Uses the storage engine to get the overall on hand quantity for the given <code>selector</code>. Note that this includes already picked quantities.
 	 *
 	 * @param ctx
 	 * @param selector
@@ -233,6 +233,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, selector.getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.setExcludeAfterPickingLocator(false) // for the overall qty on hand, we do want *all* the storages, also those that are already picked.
 				.addProduct(product);
 
 		if (selector.getM_AttributeSetInstance_ID() > 0)

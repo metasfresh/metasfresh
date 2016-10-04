@@ -32,6 +32,7 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.logging.LogManager;
 
 /**
@@ -161,7 +162,11 @@ public abstract class AbstractTerminalTextField
 	/**
 	 * Trigger automatically keyboard showing.
 	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
-	 * When creating another (not-swing) implementation, please make sure that doesn't happen
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen.
+	 * <p>
+	 * Note: the keyboard is created with its own a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+	 * registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+	 * Otherwise, future key events to other text fields of our panel would update "our" text field.
 	 */
 	protected void showKeyboard()
 	{
@@ -193,21 +198,25 @@ public abstract class AbstractTerminalTextField
 		{
 			logger.debug("Show keyboard");
 			final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
-
-			activeKeyboard = factories.create(ITerminalKeyDialog.class, textField);
-			if (activeKeyboard == null)
-			{
-				activeKeyboard = getTerminalFactory().createTerminalKeyDialog(textField);
-			}
-
 			final Object oldValue = textField.getText();
 
-			// Show Keybord and wait until user closes it (by pressing OK or Cancel)
-			activeKeyboard.activate();
+			// we need a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+			// registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+			// otherwise, future key event to other text fields of our panel would update the current 'textField'.
+			try (final ITerminalContextReferences references = getTerminalContext().newReferences())
+			{
+				activeKeyboard = factories.create(ITerminalKeyDialog.class, textField);
+				if (activeKeyboard == null)
+				{
+					activeKeyboard = getTerminalFactory().createTerminalKeyDialog(textField);
+				}
 
-			final String action = TerminalKeyDialog.ACTION_Cancel;
+				// Show Keybord and wait until user closes it (by pressing OK or Cancel)
+				activeKeyboard.activate();
+			}
 			activeKeyboard = null;
-			if (action.equals(textField.getAction()))
+
+			if (TerminalKeyDialog.ACTION_Cancel.equals(textField.getAction()))
 			{
 				textField.setValue(oldValue.toString(), true); // fireEvent=true
 				textField.setText(oldValue.toString());
@@ -290,4 +299,11 @@ public abstract class AbstractTerminalTextField
 	{
 		return fontSize;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "AbstractTerminalTextField [title=" + title + ", displayType=" + displayType + ", showKeyboardButton=" + showKeyboardButton + ", activeKeyboard=" + activeKeyboard + ", action=" + action + ", fontSize=" + fontSize + ", format=" + format + ", keyLayout=" + keyLayout + "]";
+	}
+
 }

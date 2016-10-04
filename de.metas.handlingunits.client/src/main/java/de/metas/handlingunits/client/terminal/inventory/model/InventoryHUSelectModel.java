@@ -166,7 +166,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 	protected void onWarehouseKeyPressed(final WarehouseKey key)
 	{
 		getVendorKeyLayout().getKeyLayoutSelectionModel().onKeySelected(null);
-		getBPartnerLocationKeyLayout().setKeysFromBPartnerLocations(null); // make sure BParter Location Keys are cleared
+		getBPartnerLocationKeyLayout().createAndSetKeysFromBPartnerLocations(null); // make sure BParter Location Keys are cleared
 		refreshBPartnerKeysIfNeeded(true, null); // no extra filter needed
 	}
 
@@ -365,7 +365,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 
 		if (!isDisplayVendorKeys())
 		{
-			bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(null);
+			bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(null);
 			return;
 		}
 
@@ -375,7 +375,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		final int bpartnerId = getC_BPartner_ID();
 		if (bpartnerId <= 0)
 		{
-			bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(null);
+			bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(null);
 			return;
 		}
 
@@ -401,7 +401,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		final List<I_C_BPartner_Location> bpartnerLocations = bpLocationsAggregate.aggregate();
 
 		// Set loaded BPartner Locations to our BPartner Location Key Layout
-		bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(bpartnerLocations);
+		bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(bpartnerLocations);
 	}
 
 	public final BPartnerLocationKeyLayout getBPartnerLocationKeyLayout()

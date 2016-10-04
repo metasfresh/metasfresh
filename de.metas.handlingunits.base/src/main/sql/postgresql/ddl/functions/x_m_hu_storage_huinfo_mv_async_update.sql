@@ -34,8 +34,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION x_m_hu_storage_huinfo_mv_async_update()
-  OWNER TO adempiere;
+
   
 COMMENT ON FUNCTION x_m_hu_storage_huinfo_mv_async_update()
   IS 'See task 07919';

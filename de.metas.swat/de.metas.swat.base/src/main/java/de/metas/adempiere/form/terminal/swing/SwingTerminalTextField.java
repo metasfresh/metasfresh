@@ -54,7 +54,6 @@ import javax.swing.text.JTextComponent;
 
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -710,12 +709,5 @@ import net.miginfocom.swing.MigLayout;
 		tabKeyAsFocusLostDispatcher = new TabKeyAsFocusLostDispatcher();
 		KeyboardFocusManager.getCurrentKeyboardFocusManager()
 				.addKeyEventDispatcher(tabKeyAsFocusLostDispatcher);
-	}
-
-	@Override
-	public String toString()
-	{
-		final boolean multiLine = false;
-		return ObjectUtils.toString(this, multiLine);
 	}
 }
