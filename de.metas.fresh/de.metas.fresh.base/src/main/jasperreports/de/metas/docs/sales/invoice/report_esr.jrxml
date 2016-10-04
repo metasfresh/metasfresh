@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-04T17:50:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_esr" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9ad91fd2-2369-44ef-8fdd-a6b2c907244c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -52,24 +54,24 @@ FROM
 		LEFT JOIN (
 			SELECT	rn.referenceNo, rnd.Record_ID
 			FROM	C_ReferenceNo_Doc rnd
-				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
-			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
-				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference')
+				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y') AND rnd.isActive = 'Y'
 		) rn ON i.C_Invoice_ID = rn.Record_ID
 
 		LEFT JOIN (
 			SELECT	rn.referenceNo, rnd.Record_ID
 			FROM	C_ReferenceNo_Doc rnd
-				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
-			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice')
-				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber')
+				LEFT JOIN C_ReferenceNo rn	ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+			WHERE	AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+				AND rn.C_ReferenceNo_Type_ID = (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber' AND isActive = 'Y') AND rnd.isActive = 'Y'
 		) cl ON i.C_Invoice_ID = cl.Record_ID
 
-		LEFT JOIN AD_Org o		ON i.AD_Org_ID = o.AD_Org_ID
-		LEFT JOIN C_BPartner bp 	ON o.AD_Org_ID = bp.AD_OrgBP_ID
-		LEFT JOIN C_BP_Bankaccount bpb ON bp.C_BPartner_ID = bpb.C_BPartner_ID AND bpb.IsEsrAccount='Y'
+		LEFT JOIN AD_Org o		ON i.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
+		LEFT JOIN C_BPartner bp 	ON o.AD_Org_ID = bp.AD_OrgBP_ID AND bp.isActive = 'Y'
+		LEFT JOIN C_BP_Bankaccount bpb ON bp.C_BPartner_ID = bpb.C_BPartner_ID AND bpb.IsEsrAccount='Y' AND bpb.isActive = 'Y'
 	WHERE
-		i.C_Invoice_ID = $P{c_invoice_id}
+		i.C_Invoice_ID = $P{c_invoice_id} AND i.isActive = 'Y'
 	ORDER BY
 		bpb.IsDefaultESR DESC, bpb.C_BP_BankAccount_ID
 	) x
@@ -97,91 +99,91 @@ FROM
 	<detail>
 		<band height="297" splitType="Stretch">
 			<textField>
-				<reportElement uuid="e19b4fb3-80d1-4f94-9be4-bbd34f3d224b" mode="Transparent" x="159" y="239" width="413" height="14"/>
+				<reportElement mode="Transparent" x="159" y="239" width="413" height="14" uuid="e19b4fb3-80d1-4f94-9be4-bbd34f3d224b"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{codeline}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e396ee7a-608c-4c45-ac18-ede609806c13" mode="Transparent" x="19" y="31" width="137" height="64"/>
+				<reportElement mode="Transparent" x="19" y="31" width="137" height="64" uuid="e396ee7a-608c-4c45-ac18-ede609806c13"/>
 				<textElement markup="none">
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiver}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9a9c1f27-f7a8-492b-8c2d-624403da6ffd" mode="Transparent" x="182" y="31" width="137" height="64"/>
+				<reportElement mode="Transparent" x="182" y="31" width="137" height="64" uuid="9a9c1f27-f7a8-492b-8c2d-624403da6ffd"/>
 				<textElement>
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{receiver}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="5f53f09a-4700-4333-aaf1-de2ad3cab337" mode="Transparent" x="342" y="95" width="224" height="13"/>
+				<reportElement mode="Transparent" x="342" y="95" width="224" height="13" uuid="5f53f09a-4700-4333-aaf1-de2ad3cab337"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="OCRB" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{referenceno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="99e5a5c2-b328-44d0-a81a-2b370c8a0dab" mode="Transparent" x="355" y="146" width="137" height="64"/>
+				<reportElement mode="Transparent" x="355" y="146" width="137" height="64" uuid="99e5a5c2-b328-44d0-a81a-2b370c8a0dab"/>
 				<textElement>
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c05f2848-e44e-4bc4-adfe-19b7e1a18d55" mode="Transparent" x="204" y="115" width="94" height="13"/>
+				<reportElement mode="Transparent" x="204" y="115" width="94" height="13" uuid="c05f2848-e44e-4bc4-adfe-19b7e1a18d55"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b8e75c03-1423-4960-ac64-6673cd9a0304" mode="Transparent" x="32" y="115" width="94" height="13"/>
+				<reportElement mode="Transparent" x="32" y="115" width="94" height="13" uuid="b8e75c03-1423-4960-ac64-6673cd9a0304"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="5ba1b633-db57-459b-bccb-4928e4591d47" mode="Transparent" x="12" y="183" width="155" height="11"/>
+				<reportElement mode="Transparent" x="12" y="183" width="155" height="11" uuid="5ba1b633-db57-459b-bccb-4928e4591d47"/>
 				<textElement markup="none">
 					<font fontName="OCRB" size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{referenceno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="d22cea99-69ad-4feb-86cb-9e0712461603" mode="Transparent" x="13" y="196" width="137" height="64"/>
+				<reportElement mode="Transparent" x="13" y="196" width="137" height="64" uuid="d22cea99-69ad-4feb-86cb-9e0712461603"/>
 				<textElement>
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0">
-				<reportElement uuid="f4d9a06b-e97f-4d39-b4f9-144a0378ad66" mode="Transparent" x="239" y="140" width="46" height="14"/>
+				<reportElement mode="Transparent" x="239" y="140" width="46" height="14" uuid="f4d9a06b-e97f-4d39-b4f9-144a0378ad66"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{truncategrandtotal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="00">
-				<reportElement uuid="0e952737-6dc4-4c0e-aecd-41ff403cd576" mode="Transparent" x="310" y="140" width="30" height="14"/>
+				<reportElement mode="Transparent" x="310" y="140" width="30" height="14" uuid="0e952737-6dc4-4c0e-aecd-41ff403cd576"/>
 				<textElement markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotaldecimal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="00">
-				<reportElement uuid="afb33356-6c5a-41b2-9bd0-da24f1f7230c" mode="Transparent" x="137" y="140" width="30" height="14"/>
+				<reportElement mode="Transparent" x="137" y="140" width="30" height="14" uuid="afb33356-6c5a-41b2-9bd0-da24f1f7230c"/>
 				<textElement markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotaldecimal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0">
-				<reportElement uuid="73e0c16f-02e4-45db-8e1c-d5a0203e20b6" mode="Transparent" x="66" y="140" width="46" height="14"/>
+				<reportElement mode="Transparent" x="66" y="140" width="46" height="14" uuid="73e0c16f-02e4-45db-8e1c-d5a0203e20b6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="OCRB" size="10"/>
 				</textElement>
