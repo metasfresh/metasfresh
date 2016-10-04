@@ -16,7 +16,29 @@ class TableHeader extends Component {
             return 'th-sm';
         }
     }
-    renderCols = (cols) => {
+    renderSorting = (field) => {
+        const {sort,display, orderBy} = this.props;
+        // console.log('ordered By ');
+        // console.log(orderBy );
+        let sorting = {};
+
+        orderBy && orderBy.map((item, index) => {
+            
+            if(field == item.fieldName){
+                sorting.name = item.fieldName;
+                sorting.asc = item.ascending;
+            }
+        })
+
+        return (
+            <div className="sort-menu">
+                    <span className={sorting.name && sorting.asc ? 'sort' : ''} onClick={() => sort(true, field)}><i className="meta-icon-listing-up" /></span>
+                    <span className={sorting.name && !sorting.asc ? 'sort' : ''} onClick={() => sort(false, field)}><i className="meta-icon-listing-down" /></span>
+            </div>
+            
+        )
+    }
+    renderCols = (cols, mainTable) => {
         return cols && cols.map((item, index) =>
             <th
                 key={index}
@@ -25,14 +47,17 @@ class TableHeader extends Component {
                 }
             >
                 {item.caption}
+                {mainTable ? this.renderSorting(item.fields[0].field) : ''}
             </th>
         );
     }
     render() {
-        const {cols} = this.props;
+        const {cols, mainTable} = this.props;
+        // console.log('cols');
+        // console.log(cols);
         return (
             <tr>
-                {this.renderCols(cols)}
+                {this.renderCols(cols, mainTable)}
             </tr>
         )
     }

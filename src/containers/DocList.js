@@ -24,7 +24,9 @@ class DocList extends Component {
             page: 1,
             data: {},
             layout: {},
-            filters: {}
+            filters: {},
+            sortingAsc: false,
+            sortingField: ''
         }
     }
 
@@ -59,19 +61,61 @@ class DocList extends Component {
         });
     }
 
-    getView = () => {
+    getView = (ascending, field) => {
         const {data,page} = this.state;
         const {dispatch} = this.props;
 
-        dispatch(browseViewRequest(data.viewId, page, 20)).then((response) => {
+        // console.log('ascending ' + ascending);
+
+        let sortingQuery = '';
+
+        this.setState(
+            Object.assign({}, this.state, {
+                sortingAsc: ascending
+            })
+        );
+
+        this.setState(
+            Object.assign({}, this.state, {
+                sortingField: field
+            })
+        );
+
+
+        if(field && ascending) {
+            sortingQuery = '+' + field;
+            // this.setState(
+            //     Object.assign({}, this.state, {
+            //         page: 1
+            //     })
+            // );
+        } else if(field && !ascending) {
+            sortingQuery = '-' + field;
+            // this.setState(
+            //     Object.assign({}, this.state, {
+            //         page: 1
+            //     })
+            // );
+        }
+
+        // console.log('view id:');
+        // console.log(data.viewId);
+
+        dispatch(browseViewRequest(data.viewId, page, 20, sortingQuery)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))
         });
+
+        // console.log(this.state.data);
     }
 
     handleChangePage = (index) => {
         const {data, page} = this.state;
+        const {sortingAsc, sortingField} = this.state;
+
+        // console.log('a ' +sortingAsc + ' b ' + sortingField);
+
         let currentPage = page;
         switch(index){
             case "up":
@@ -88,7 +132,7 @@ class DocList extends Component {
             this.setState(Object.assign({}, this.state, {
                 page: parseInt(currentPage)
             }), ()=>{
-                this.getView();
+                this.getView(sortingAsc, sortingField);
             });
         }
     }
@@ -96,6 +140,7 @@ class DocList extends Component {
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
         const {layout, data, page} = this.state;
+        // console.log(this.state.data);
         if( layout && data) {
 
             return (
@@ -134,6 +179,8 @@ class DocList extends Component {
                                 page={page}
                                 mainTable={true}
                                 updateDocList={this.updateData}
+                                sort={this.getView}
+                                orderBy={data.orderBy}
                             />
                         </div>
                     </div>

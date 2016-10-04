@@ -1181,3 +1181,26 @@ body {
 #root > div {
     height: 100%;
 }
+
+.sort-menu {
+    display: inline-block;
+    /*float: right;*/
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.sort-menu span {
+    width: 100%;
+    display: block;
+    cursor: pointer;
+    color: $brand-font-color;
+}
+
+.sort-menu .sort {
+    color: white;
+}
+
+th {
+    position: relative;
+}
