@@ -13,15 +13,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -56,14 +52,13 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * #L%
  */
 
-@Repository
-@Profile(WebRestApiApplication.PROFILE_Test)
-@Primary
-public class POJODocumentRepository implements DocumentsRepository
+public final class POJODocumentsRepository implements DocumentsRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(POJODocumentRepository.class);
+	public static final transient POJODocumentsRepository instance = new POJODocumentsRepository();
+	
+	private static final transient Logger logger = LogManager.getLogger(POJODocumentsRepository.class);
 
-	public POJODocumentRepository()
+	private POJODocumentsRepository()
 	{
 		super();
 	}
@@ -147,7 +142,6 @@ public class POJODocumentRepository implements DocumentsRepository
 	{
 		final int documentId = getNextId(entityDescriptor);
 		return Document.builder()
-				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setDocumentIdSupplier(() -> documentId)
@@ -158,7 +152,6 @@ public class POJODocumentRepository implements DocumentsRepository
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final Object fromModel)
 	{
 		return Document.builder()
-				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setDocumentIdSupplier(() -> retrieveDocumentId(entityDescriptor.getIdField(), fromModel))

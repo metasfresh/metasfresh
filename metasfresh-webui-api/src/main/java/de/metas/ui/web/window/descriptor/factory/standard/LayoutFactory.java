@@ -88,7 +88,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	//
 	// Parameters
-	private final DocumentDescriptorsFactory descriptorsFactory;
+	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
 	private final int _adWindowId;
 
 	//
@@ -99,7 +99,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	public LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
 		super();
-		descriptorsFactory = new DocumentDescriptorsFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
+		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
 		_adWindowId = descriptorsFactory.documentEntity().getAD_Window_ID();
 
 		//

@@ -56,9 +56,6 @@ public class DocumentCollection
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 
-	@Autowired
-	private DocumentsRepository documentsRepository;
-
 	private final LoadingCache<DocumentKey, Document> documents = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<DocumentKey, Document>()
 			{
@@ -131,6 +128,7 @@ public class DocumentCollection
 
 		final int adWindowId = documentPath.getAD_Window_ID();
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(adWindowId);
+		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
 		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
@@ -234,8 +232,8 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
-		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt());
-		final Document document = documentsRepository.retriveDocument(query);
+		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt())
+				.retriveDocumentOrNull();
 		if (document == null)
 		{
 			throw new DocumentNotFoundException(documentKey);
@@ -274,7 +272,7 @@ public class DocumentCollection
 			final Document rootDocument = getRootDocument(documentPath);
 			if (!rootDocument.isNew())
 			{
-				documentsRepository.delete(rootDocument);
+				rootDocument.deleteFromRepository();
 			}
 
 			// Remove it from index

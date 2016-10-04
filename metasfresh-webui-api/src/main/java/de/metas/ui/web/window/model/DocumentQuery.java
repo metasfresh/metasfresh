@@ -62,6 +62,7 @@ public final class DocumentQuery
 		return builder(entityDescriptor).setRecordId(recordId).build();
 	}
 
+	private final DocumentsRepository documentsRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int recordId;
 	private final Document parentDocument;
@@ -79,6 +80,7 @@ public final class DocumentQuery
 	private DocumentQuery(final Builder builder)
 	{
 		super();
+		documentsRepository = builder.getDocumentsRepository();
 		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
@@ -107,6 +109,16 @@ public final class DocumentQuery
 				.toString();
 	}
 
+	public Document retriveDocumentOrNull()
+	{
+		return documentsRepository.retriveDocument(this);
+	}
+	
+	public List<Document> retriveDocuments()
+	{
+		return documentsRepository.retriveDocuments(this);
+	}
+	
 	private Properties getCtx()
 	{
 		return Env.getCtx();
@@ -230,6 +242,22 @@ public final class DocumentQuery
 		public DocumentQuery build()
 		{
 			return new DocumentQuery(this);
+		}
+		
+		public Document retriveDocumentOrNull()
+		{
+			return build().retriveDocumentOrNull();
+		}
+		
+		public List<Document> retriveDocuments()
+		{
+			return build().retriveDocuments();
+		}
+
+
+		private DocumentsRepository getDocumentsRepository()
+		{
+			return entityDescriptor.getDataBinding().getDocumentsRepository();
 		}
 
 		public Builder setRecordId(final int recordId)

@@ -43,6 +43,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
@@ -96,7 +97,6 @@ public final class Document
 
 	//
 	// Descriptors & paths
-	private final DocumentsRepository documentRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final int windowNo;
 	private final DocumentPath documentPath;
@@ -124,7 +124,7 @@ public final class Document
 	//
 	// Parent & children
 	private final Document _parentDocument;
-	private final Map<String, IncludedDocumentsCollection> includedDocuments;
+	private final Map<DetailId, IncludedDocumentsCollection> includedDocuments;
 
 	//
 	// Misc
@@ -146,7 +146,6 @@ public final class Document
 	private Document(final Builder builder)
 	{
 		super();
-		documentRepository = Preconditions.checkNotNull(builder.documentRepository, "documentRepository");
 		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
 		_parentDocument = builder.parentDocument;
 		documentPath = builder.getDocumentPath();
@@ -195,10 +194,10 @@ public final class Document
 		//
 		// Create included documents containers
 		{
-			final ImmutableMap.Builder<String, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
 			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 			{
-				final String detailId = includedEntityDescriptor.getDetailId();
+				final DetailId detailId = includedEntityDescriptor.getDetailId();
 				final IncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
 				includedDocuments.put(detailId, includedDocumentsForDetailId);
 			}
@@ -235,7 +234,6 @@ public final class Document
 	private Document(final Document from, final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		super();
-		documentRepository = from.documentRepository;
 		entityDescriptor = from.entityDescriptor;
 		windowNo = from.windowNo;
 		_writable = copyMode.isWritable();
@@ -286,10 +284,10 @@ public final class Document
 		//
 		// Copy included documents containers
 		{
-			final ImmutableMap.Builder<String, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
-			for (final Map.Entry<String, IncludedDocumentsCollection> e : from.includedDocuments.entrySet())
+			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			for (final Map.Entry<DetailId, IncludedDocumentsCollection> e : from.includedDocuments.entrySet())
 			{
-				final String detailId = e.getKey();
+				final DetailId detailId = e.getKey();
 				final IncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
 				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
 
@@ -557,26 +555,24 @@ public final class Document
 			return FieldValueSupplier.NO_VALUE;
 		}
 	}
-	
+
 	/* package */static enum CopyMode
 	{
-		CheckOutWritable(true)
-		, CheckInReadonly(false)
-		;
-		
+		CheckOutWritable(true), CheckInReadonly(false);
+
 		private final boolean writable;
 
 		CopyMode(final boolean writable)
 		{
 			this.writable = writable;
 		}
-		
+
 		public boolean isWritable()
 		{
 			return writable;
 		}
 	}
-	
+
 	/* package */Document copy(final CopyMode copyMode)
 	{
 		final Document parentDocumentCopy = Document.NULL;
@@ -644,9 +640,9 @@ public final class Document
 		return windowNo;
 	}
 
-	/* package */DocumentsRepository getDocumentRepository()
+	private DocumentsRepository getDocumentRepository()
 	{
-		return documentRepository;
+		return entityDescriptor.getDataBinding().getDocumentsRepository();
 	}
 
 	public DocumentEntityDescriptor getEntityDescriptor()
@@ -884,7 +880,7 @@ public final class Document
 
 		//
 		// Refresh it
-		documentRepository.refresh(this);
+		refreshFromRepository();
 	}
 
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
@@ -969,7 +965,7 @@ public final class Document
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating readonly logic {} for {}", readonlyLogic, documentField, e);
+			logger.warn("Failed evaluating readonly logic {} for {}. Preserving {}", readonlyLogic, documentField, documentField.getReadonly(), e);
 		}
 	}
 
@@ -985,7 +981,7 @@ public final class Document
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating mandatory logic {} for {}", mandatoryLogic, documentField, e);
+			logger.warn("Failed evaluating mandatory logic {} for {}. Preserving {}", mandatoryLogic, documentField, documentField.getMandatory(), e);
 		}
 	}
 
@@ -1001,7 +997,7 @@ public final class Document
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating display logic {} for {}", displayLogic, documentField, e);
+			logger.warn("Failed evaluating display logic {} for {}. Preserving {}", displayLogic, documentField, documentField.getDisplayed(), e);
 			displayed = LogicExpressionResult.FALSE;
 		}
 
@@ -1100,20 +1096,21 @@ public final class Document
 
 	}
 
-	public Document getIncludedDocument(final String detailId, final DocumentId rowId)
+	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);
 	}
 
-	public List<Document> getIncludedDocuments(final String detailId)
+	public List<Document> getIncludedDocuments(final DetailId detailId)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments();
 	}
 
-	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final String detailId)
+	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
 	{
+		Check.assumeNotNull(detailId, "Parameter detailId is not null");
 		final IncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
 		{
@@ -1122,13 +1119,13 @@ public final class Document
 		return includedDocumentsForDetailId;
 	}
 
-	public Document createIncludedDocument(final String detailId)
+	/* package */ Document createIncludedDocument(final DetailId detailId)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
 	}
 
-	public void deleteIncludedDocuments(final String detailId, final Set<DocumentId> rowIds)
+	/* package */ void deleteIncludedDocuments(final DetailId detailId, final Set<DocumentId> rowIds)
 	{
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);
@@ -1327,6 +1324,7 @@ public final class Document
 	{
 		//
 		// Update parent link field
+		// TODO: i think this is no longer needed since we preallocate the IDs
 		final Document parentDocument = getParentDocument();
 		if (parentLinkField != null && parentDocument != null)
 		{
@@ -1381,6 +1379,16 @@ public final class Document
 		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
 	}
 
+	/* package */void deleteFromRepository()
+	{
+		getDocumentRepository().delete(this);
+	}
+
+	/* package */void refreshFromRepository()
+	{
+		getDocumentRepository().refresh(this);
+	}
+
 	public ICalloutRecord asCalloutRecord()
 	{
 		if (_calloutRecord == null)
@@ -1392,7 +1400,6 @@ public final class Document
 
 	public static final class Builder
 	{
-		private DocumentsRepository documentRepository;
 		private DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
@@ -1431,12 +1438,6 @@ public final class Document
 		private DocumentField buildField(final DocumentFieldDescriptor descriptor, final Document document)
 		{
 			return new DocumentField(descriptor, document);
-		}
-
-		public Builder setDocumentRepository(final DocumentsRepository documentRepository)
-		{
-			this.documentRepository = documentRepository;
-			return this;
 		}
 
 		public Builder setEntityDescriptor(final DocumentEntityDescriptor entityDescriptor)

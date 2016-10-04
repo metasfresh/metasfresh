@@ -87,7 +87,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		//
 		// Layout: Create UI sections from main tab
-		final GridTabVO mainTabVO = gridWindowVO.getTab(DocumentDescriptorsFactory.MAIN_TabNo);
+		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
 		final LayoutFactory rootLayoutFactory = new LayoutFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
 		{
 			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());

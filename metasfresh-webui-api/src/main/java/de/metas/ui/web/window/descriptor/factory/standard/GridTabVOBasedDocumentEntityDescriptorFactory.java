@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -30,7 +31,9 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
+import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 /*
  * #%L
@@ -54,13 +57,13 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
  * #L%
  */
 
-/*package */class DocumentDescriptorsFactory
+/*package */class GridTabVOBasedDocumentEntityDescriptorFactory
 {
 	// Services
-	private static final Logger logger = LogManager.getLogger(DocumentDescriptorsFactory.class);
+	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-
-	/* package */static final int MAIN_TabNo = 0;
+	
+	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
 	private final Map<Integer, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
@@ -70,7 +73,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	// State
 	private final Builder _documentEntryBuilder;
 
-	public DocumentDescriptorsFactory(final GridTabVO gridTabVO, final GridTabVO parentTabVO, final boolean isSOTrx)
+	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO, final GridTabVO parentTabVO, final boolean isSOTrx)
 	{
 		super();
 
@@ -155,8 +158,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 	{
 		final String tableName = gridTabVO.getTableName();
 
-		final int tabNo = gridTabVO.getTabNo();
-		final String detailId = tabNo == MAIN_TabNo ? null : String.valueOf(tabNo);
+		final DetailId detailId = DetailId.fromTabNoOrNull(gridTabVO.getTabNo());
 
 		//
 		// Entity Data binding
@@ -165,6 +167,7 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 			logger.warn("Ignoring SQL order by for {}. See https://github.com/metasfresh/metasfresh/issues/412.", gridTabVO);
 		}
 		final SqlDocumentEntityDataBindingDescriptor.Builder dataBinding = SqlDocumentEntityDataBindingDescriptor.builder()
+				.setDocumentsRepository(documentsRepository)
 				.setTableName(tableName)
 				.setTableAliasFromDetailId(detailId)
 				.setParentLinkColumnName(extractParentLinkColumnName(gridTabVO, parentTabVO))
@@ -195,7 +198,6 @@ import de.metas.ui.web.window.model.ExpressionDocumentFieldCallout;
 				//
 				.setAD_Window_ID(gridTabVO.getAD_Window_ID()) // legacy
 				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
-				.setTabNo(tabNo) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
 				;

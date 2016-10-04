@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
@@ -74,7 +73,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final String fieldName;
 	private final ITranslatableString caption;
 	/** Detail ID or null if this is a field in main sections */
-	private final String detailId;
+	private final DetailId detailId;
 
 	/** Is this the key field ? */
 	private final boolean key;
@@ -168,7 +167,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		return caption;
 	}
 
-	public String getDetailId()
+	public DetailId getDetailId()
 	{
 		return detailId;
 	}
@@ -485,7 +484,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private final String fieldName;
 		private ITranslatableString caption;
 		private ITranslatableString description;
-		public String _detailId;
+		public DetailId _detailId;
 
 		private boolean key = false;
 		private boolean parentLink = false;
@@ -583,14 +582,14 @@ public final class DocumentFieldDescriptor implements Serializable
 			return description;
 		}
 
-		/* package */Builder setDetailId(final String detailId)
+		/* package */Builder setDetailId(final DetailId detailId)
 		{
 			assertNotBuilt();
-			this._detailId = Strings.emptyToNull(detailId);
+			this._detailId = detailId;
 			return this;
 		}
 
-		private String getDetailId()
+		private DetailId getDetailId()
 		{
 			return _detailId;
 		}

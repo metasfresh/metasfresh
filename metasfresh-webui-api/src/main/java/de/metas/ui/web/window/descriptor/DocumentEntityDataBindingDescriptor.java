@@ -2,6 +2,8 @@ package de.metas.ui.web.window.descriptor;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.metas.ui.web.window.model.DocumentsRepository;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -27,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentEntityDataBindingDescriptor
 {
+	DocumentsRepository getDocumentsRepository();
+	
 	String getTableName();
 
 	String getKeyColumnName();
@@ -35,5 +39,4 @@ public interface DocumentEntityDataBindingDescriptor
 	{
 		DocumentEntityDataBindingDescriptor getOrBuild();
 	}
-
 }

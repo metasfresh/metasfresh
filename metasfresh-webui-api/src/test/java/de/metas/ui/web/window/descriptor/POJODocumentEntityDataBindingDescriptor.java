@@ -1,8 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.pojo.POJODocumentsRepository;
 
 /*
  * #%L
@@ -27,11 +30,11 @@ import de.metas.ui.web.window.model.Document;
  */
 
 
-public class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor
+public final class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor
 {
 	public static final POJODocumentEntityDataBindingDescriptor ofClass(final Class<?> modelClass)
 	{
-		return new POJODocumentEntityDataBindingDescriptor(modelClass);
+		return new POJODocumentEntityDataBindingDescriptor(POJODocumentsRepository.instance, modelClass);
 	}
 	
 	public static final Class<?> getModelClass(final Document document)
@@ -40,16 +43,27 @@ public class POJODocumentEntityDataBindingDescriptor implements DocumentEntityDa
 		return entityDescriptor.getModelClass();
 	}
 
+	private final POJODocumentsRepository documentsRepository;
 	private final Class<?> modelClass;
 	private final String tableName;
 	private final String keyColumnName;
 
-	private POJODocumentEntityDataBindingDescriptor(final Class<?> modelClass)
+	private POJODocumentEntityDataBindingDescriptor(final POJODocumentsRepository documentsRepository, final Class<?> modelClass)
 	{
 		super();
+		
+		Check.assumeNotNull(documentsRepository, "Parameter documentsRepository is not null");
+		this.documentsRepository = documentsRepository;
+		
 		this.modelClass = modelClass;
 		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		this.keyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelClass);
+	}
+	
+	@Override
+	public DocumentsRepository getDocumentsRepository()
+	{
+		return documentsRepository;
 	}
 	
 	public Class<?> getModelClass()

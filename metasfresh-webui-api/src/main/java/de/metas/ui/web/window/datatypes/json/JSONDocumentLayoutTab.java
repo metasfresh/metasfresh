@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
@@ -114,8 +115,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		type = String.valueOf(detail.getAD_Window_ID());
 
-		final String detailId = detail.getDetailId();
-		tabid = detailId;
+		final DetailId detailId = detail.getDetailId();
+		tabid = DetailId.toJson(detailId);
 
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = detail.getCaption(adLanguage);

@@ -27,9 +27,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentsRepository;
 
 /*
  * #%L
@@ -74,6 +76,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
 	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 
+	private final DocumentsRepository documentsRepository;
 	private final String sqlTableName;
 	private final String sqlTableAlias;
 	private final String sqlKeyColumnName;
@@ -89,6 +92,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
 		super();
+		
+		this.documentsRepository = builder.getDocumentsRepository();
+		
 		sqlTableName = builder.getTableName();
 		Check.assumeNotEmpty(sqlTableName, "sqlTableName is not empty");
 
@@ -123,6 +129,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.add("orderBys", orderBys)
 				.add("fields", fieldsByFieldName.isEmpty() ? null : fieldsByFieldName.values())
 				.toString();
+	}
+
+	@Override
+	public DocumentsRepository getDocumentsRepository()
+	{
+		return documentsRepository;
 	}
 
 	@Override
@@ -263,6 +275,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		private SqlDocumentEntityDataBindingDescriptor _built = null;
 
+		private DocumentsRepository documentsRepository;
 		private String _sqlTableName;
 		private String _tableAlias;
 		private String _sqlParentLinkColumnName;
@@ -479,6 +492,20 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(GuavaCollectors.toImmutableList());
 		}
+		
+		public Builder setDocumentsRepository(final DocumentsRepository documentsRepository)
+		{
+			assertNotBuilt();
+			this.documentsRepository = documentsRepository;
+			return this;
+		}
+		
+		private DocumentsRepository getDocumentsRepository()
+		{
+			Check.assumeNotNull(documentsRepository, "Parameter documentsRepository is not null");
+			return documentsRepository;
+		}
+
 
 		public Builder setTableName(final String sqlTableName)
 		{
@@ -499,7 +526,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		public Builder setTableAliasFromDetailId(final String detailId)
+		public Builder setTableAliasFromDetailId(final DetailId detailId)
 		{
 			if (detailId == null)
 			{
@@ -507,7 +534,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			}
 			else
 			{
-				setTableAlias("d" + detailId.trim());
+				setTableAlias(detailId.getTableAlias());
 			}
 
 			return this;

@@ -291,7 +291,7 @@ class SqlDocumentQueryBuilder
 		final String columnName = fieldBinding.getColumnName();
 		final Class<?> targetClass = poInfo.getColumnClass(columnName);
 		final Operator operator = filterParam.getOperator();
-		final Object sqlValue = SqlDocumentRepository.convertValueToPO(filterParam.getValue(), columnName, targetClass);
+		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(filterParam.getValue(), columnName, targetClass);
 
 		switch (operator)
 		{
@@ -347,7 +347,7 @@ class SqlDocumentQueryBuilder
 			}
 			case BETWEEN:
 			{
-				final Object sqlValueTo = SqlDocumentRepository.convertValueToPO(filterParam.getValueTo(), columnName, targetClass);
+				final Object sqlValueTo = SqlDocumentsRepository.convertValueToPO(filterParam.getValueTo(), columnName, targetClass);
 				return buildSqlWhereClause_Between(sqlColumnExpr, sqlValue, sqlValueTo, sqlParams);
 			}
 			default:

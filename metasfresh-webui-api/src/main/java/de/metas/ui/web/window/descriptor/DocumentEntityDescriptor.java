@@ -63,9 +63,10 @@ public class DocumentEntityDescriptor
 		return new Builder();
 	}
 
+	
 	private final String id;
-
-	private final String detailId;
+	
+	private final DetailId detailId;
 
 	private final ILogicExpression allowCreateNewLogic;
 	private final ILogicExpression allowDeleteLogic;
@@ -74,7 +75,7 @@ public class DocumentEntityDescriptor
 	private final Map<String, DocumentFieldDescriptor> fields;
 	private final DocumentFieldDescriptor idField;
 
-	private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId;
+	private final Map<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
@@ -84,7 +85,6 @@ public class DocumentEntityDescriptor
 	private final int AD_Window_ID;
 	private final int AD_Tab_ID;
 	private final String tableName;
-	private final int tabNo;
 	private final boolean isSOTrx;
 
 	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
@@ -93,10 +93,11 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFilterDescriptorsProvider filtersProvider;
 
+
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
-
+		
 		if (!builder.detailIdSet)
 		{
 			throw new IllegalArgumentException("detailId was not set to " + builder);
@@ -117,7 +118,6 @@ public class DocumentEntityDescriptor
 		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
 		tableName = builder.getTableName();
-		tabNo = builder.tabNo;
 		isSOTrx = builder.isSOTrx;
 
 		//
@@ -167,7 +167,7 @@ public class DocumentEntityDescriptor
 		return id;
 	}
 
-	public String getDetailId()
+	public DetailId getDetailId()
 	{
 		return detailId;
 	}
@@ -274,12 +274,6 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
-	public int getTabNo()
-	{
-		return tabNo;
-	}
-
-	// legacy
 	public String getTableName()
 	{
 		return tableName;
@@ -306,17 +300,17 @@ public class DocumentEntityDescriptor
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 
 		private boolean _built = false;
-
+		
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 
 		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
 		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
-		private final Map<String, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final Map<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding;
 
-		private String detailId;
+		private DetailId detailId;
 		private boolean detailIdSet;
 
 		private ILogicExpression allowCreateNewLogic = ILogicExpression.TRUE;
@@ -327,9 +321,9 @@ public class DocumentEntityDescriptor
 		// Legacy
 		private Integer AD_Window_ID;
 		private Integer AD_Tab_ID;
-		private Integer tabNo;
 		private String _tableName;
 		private Boolean isSOTrx;
+
 
 		private Builder()
 		{
@@ -338,10 +332,7 @@ public class DocumentEntityDescriptor
 
 		public DocumentEntityDescriptor build()
 		{
-			if (_built)
-			{
-				throw new IllegalStateException("Already built: " + this);
-			}
+			assertNotBuilt();
 			_built = true;
 
 			return new DocumentEntityDescriptor(this);
@@ -354,8 +345,8 @@ public class DocumentEntityDescriptor
 				throw new IllegalStateException("Already built: " + this);
 			}
 		}
-
-		public Builder setDetailId(final String detailId)
+		
+		public Builder setDetailId(final DetailId detailId)
 		{
 			this.detailId = detailId;
 			detailIdSet = true;
@@ -365,7 +356,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public String getDetailId()
+		public DetailId getDetailId()
 		{
 			Check.assume(detailIdSet, "detailId set");
 			return detailId;
@@ -445,8 +436,8 @@ public class DocumentEntityDescriptor
 
 		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
 		{
-			final String detailId = includedEntity.getDetailId();
-			Check.assumeNotEmpty(detailId, "detailId is not empty for {}", includedEntity);
+			final DetailId detailId = includedEntity.getDetailId();
+			Check.assumeNotNull(detailId, "detailId is not null for {}", includedEntity);
 			includedEntitiesByDetailId.put(detailId, includedEntity);
 			return this;
 		}
@@ -491,12 +482,6 @@ public class DocumentEntityDescriptor
 		public Builder setAD_Tab_ID(final int AD_Tab_ID)
 		{
 			this.AD_Tab_ID = AD_Tab_ID;
-			return this;
-		}
-
-		public Builder setTabNo(final int tabNo)
-		{
-			this.tabNo = tabNo;
 			return this;
 		}
 

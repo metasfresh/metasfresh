@@ -112,7 +112,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 	public void dataRefresh()
 	{
 		final Document document = getDocument();
-		document.getDocumentRepository().refresh(document);
+		document.refreshFromRepository();
 	}
 
 	@Override
@@ -120,7 +120,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 	{
 		// NOTE: there is no "All" concept here, so we are just refreshing this document
 		final Document document = getDocument();
-		document.getDocumentRepository().refresh(document);
+		document.refreshFromRepository();
 	}
 
 	@Override

@@ -101,11 +101,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 				.toString();
 	}
 
-	private DocumentsRepository getDocumentsRepository()
-	{
-		return parentDocument.getDocumentRepository();
-	}
-
 	public synchronized Document getDocumentById(final DocumentId id)
 	{
 		if (id == null || id.isNew())
@@ -164,7 +159,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		assertWritable();
 		assertNewDocumentAllowed();
 
-		final Document document = getDocumentsRepository().createNewDocument(entityDescriptor, parentDocument);
+		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, parentDocument);
 
 		final DocumentId documentId = document.getDocumentId();
 		documents.put(documentId, document);
@@ -245,12 +241,10 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
 		}
 
-		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+		final Document document = DocumentQuery.builder(entityDescriptor)
 				.setRecordId(id.toInt())
 				.setParentDocument(parentDocument)
-				.build();
-
-		final Document document = getDocumentsRepository().retriveDocument(query);
+				.retriveDocumentOrNull();
 		if (document == null)
 		{
 			return null;
@@ -268,11 +262,9 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private final void loadAll()
 	{
-		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+		final List<Document> documentsNew = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.build();
-
-		final List<Document> documentsNew = getDocumentsRepository().retriveDocuments(query);
+				.retriveDocuments();
 
 		clearDocumentsExceptNewOnes();
 
@@ -342,8 +334,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 		assertWritable();
 
-		final DocumentsRepository documentsRepository = getDocumentsRepository();
-
 		for (final DocumentId rowId : rowIds)
 		{
 			final Document document = getDocumentById(rowId);
@@ -351,7 +341,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 			if (!document.isNew())
 			{
-				documentsRepository.delete(document);
+				document.deleteFromRepository();
 			}
 
 			documents.remove(document.getDocumentId());

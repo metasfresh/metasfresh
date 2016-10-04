@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
@@ -258,7 +259,8 @@ public final class JSONDocument implements Serializable
 		}
 		else if (documentPath.isSingleIncludedDocument())
 		{
-			tabid = documentPath.getDetailId();
+			final DetailId detailId = documentPath.getDetailId();
+			tabid = DetailId.toJson(detailId);
 			rowId = documentPath.getSingleRowId().toJson();
 		}
 		else

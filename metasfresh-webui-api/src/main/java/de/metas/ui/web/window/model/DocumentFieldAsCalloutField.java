@@ -10,6 +10,7 @@ import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 
 /*
@@ -117,7 +118,8 @@ final class DocumentFieldAsCalloutField implements ICalloutField
 	@Override
 	public int getTabNo()
 	{
-		return getDocument().getEntityDescriptor().getTabNo();
+		final DetailId detailId = getDocument().getEntityDescriptor().getDetailId();
+		return DetailId.getTabNo(detailId);
 	}
 
 	@Override

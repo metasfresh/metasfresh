@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import io.swagger.annotations.ApiModel;
@@ -164,8 +165,8 @@ public final class JSONDocumentLayout implements Serializable
 
 		type = String.valueOf(detailLayout.getAD_Window_ID());
 
-		final String detailId = detailLayout.getDetailId();
-		tabid = detailId;
+		final DetailId detailId = detailLayout.getDetailId();
+		tabid = DetailId.toJson(detailId);
 
 		documentNoElement = null;
 		documentSummaryElement = null;

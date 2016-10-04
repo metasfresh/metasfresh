@@ -25,7 +25,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
 
@@ -76,17 +75,31 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Repository
-public class SqlDocumentRepository implements DocumentsRepository
+public final class SqlDocumentsRepository implements DocumentsRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(SqlDocumentRepository.class);
+	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
+	
+	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
 	private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
 
-	/* package */ SqlDocumentRepository()
+	private SqlDocumentsRepository()
 	{
 		super();
 	}
+	
+	private final void assertThisRepository(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
+		if (documentsRepository != this)
+		{
+			// shall not happen
+			throw new IllegalArgumentException("Entity descriptor's repository is invalid: " + entityDescriptor
+					+ "\n Expected: " + this
+					+ "\n But it was: " + documentsRepository);
+		}
+	}
+	
 
 	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
@@ -114,6 +127,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 		logger.debug("Retrieving records: query={}, limit={}", query, limit);
 
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		assertThisRepository(entityDescriptor);
 		final Document parentDocument = query.getParentDocument();
 
 		final List<Object> sqlParams = new ArrayList<>();
@@ -176,9 +190,10 @@ public class SqlDocumentRepository implements DocumentsRepository
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
+		assertThisRepository(entityDescriptor);
+		
 		final int documentId = getNextId(entityDescriptor);
 		return Document.builder()
-				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setDocumentIdSupplier(() -> documentId)
@@ -203,7 +218,6 @@ public class SqlDocumentRepository implements DocumentsRepository
 		}
 
 		return Document.builder()
-				.setDocumentRepository(this)
 				.setEntityDescriptor(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setDocumentIdSupplier(documentIdSupplier)
@@ -249,6 +263,8 @@ public class SqlDocumentRepository implements DocumentsRepository
 	@Override
 	public void refresh(final Document document)
 	{
+		assertThisRepository(document.getEntityDescriptor());
+		
 		refresh(document, document.getDocumentIdAsInt());
 	}
 
@@ -298,6 +314,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 	public void save(final Document document)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		assertThisRepository(document.getEntityDescriptor());
 
 		//
 		// Load the PO / Create new PO instance
@@ -589,6 +606,7 @@ public class SqlDocumentRepository implements DocumentsRepository
 	public void delete(final Document document)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		assertThisRepository(document.getEntityDescriptor());
 
 		if (document.isNew())
 		{

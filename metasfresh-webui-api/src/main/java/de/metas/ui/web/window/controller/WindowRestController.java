@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -36,6 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -126,7 +126,7 @@ public class WindowRestController implements IWindowRestController
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	public JSONDocumentLayout layout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
@@ -140,7 +140,8 @@ public class WindowRestController implements IWindowRestController
 				.setShowAdvancedFields(advanced)
 				.build();
 
-		if (Strings.isNullOrEmpty(detailId))
+		final DetailId detailId = DetailId.fromJson(detailIdStr);
+		if (detailId == null)
 		{
 			return JSONDocumentLayout.ofHeaderLayout(layout, jsonOpts);
 		}
@@ -156,7 +157,7 @@ public class WindowRestController implements IWindowRestController
 	public List<JSONDocument> data(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
 			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
@@ -167,7 +168,7 @@ public class WindowRestController implements IWindowRestController
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
 				.setDocumentId(idStr)
-				.setDetailId(detailId)
+				.setDetailId(detailIdStr)
 				.setRowId(rowIdStr)
 				.allowNullRowId()
 				.build();
@@ -186,7 +187,7 @@ public class WindowRestController implements IWindowRestController
 	public List<JSONDocument> commit(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
 			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
@@ -197,7 +198,7 @@ public class WindowRestController implements IWindowRestController
 				.setAD_Window_ID(adWindowId)
 				.setDocumentId(idStr)
 				.allowNewDocumentId()
-				.setDetailId(detailId)
+				.setDetailId(detailIdStr)
 				.setRowId(rowIdStr)
 				.allowNewRowId()
 				.build();
@@ -257,7 +258,7 @@ public class WindowRestController implements IWindowRestController
 	public List<JSONDocument> delete(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
+			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
 			, @RequestParam(name = PARAM_RowId, required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
@@ -266,7 +267,7 @@ public class WindowRestController implements IWindowRestController
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
 				.setDocumentId(idStr)
-				.setDetailId(detailId)
+				.setDetailId(detailIdStr)
 				.setRowIdsList(rowIdsListStr)
 				.build();
 

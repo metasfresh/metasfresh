@@ -6,11 +6,10 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
 /*
@@ -79,7 +78,7 @@ public final class DocumentPath
 
 	private final int adWindowId;
 	private final DocumentId documentId;
-	private final String detailId;
+	private final DetailId detailId;
 	private final Set<DocumentId> rowIds;
 	private final DocumentId singleRowId;
 
@@ -96,7 +95,7 @@ public final class DocumentPath
 		singleRowId = null;
 	}
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final Set<DocumentId> rowIds)
+	private DocumentPath(final int adWindowId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
 	{
 		super();
 		this.adWindowId = adWindowId;
@@ -121,7 +120,7 @@ public final class DocumentPath
 		}
 	}
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId, final String detailId, final DocumentId singleRowId)
+	private DocumentPath(final int adWindowId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
 	{
 		super();
 		this.adWindowId = adWindowId;
@@ -205,7 +204,7 @@ public final class DocumentPath
 		return documentId != null && documentId.isNew();
 	}
 
-	public String getDetailId()
+	public DetailId getDetailId()
 	{
 		return detailId;
 	}
@@ -269,9 +268,9 @@ public final class DocumentPath
 		return !rowIds.isEmpty();
 	}
 
-	public DocumentPath createChildPath(final String detailId, final int rowIdInt)
+	public DocumentPath createChildPath(final DetailId detailId, final int rowIdInt)
 	{
-		if (detailId == null || detailId.isEmpty())
+		if (detailId == null)
 		{
 			throw new IllegalArgumentException("detailId must be not empty");
 		}
@@ -289,7 +288,7 @@ public final class DocumentPath
 		private int adWindowId;
 		private DocumentId documentId;
 		private boolean documentId_allowNew = false;
-		private String detailId;
+		private DetailId detailId;
 		private final Set<DocumentId> rowIds = new LinkedHashSet<>();
 		private boolean rowId_allowNull = false;
 		private boolean rowId_allowNew = false;
@@ -375,16 +374,9 @@ public final class DocumentPath
 			return this;
 		}
 
-		public Builder setDetailId(final String detailId)
+		public Builder setDetailId(final String detailIdStr)
 		{
-			if (Check.isEmpty(detailId, true))
-			{
-				this.detailId = null;
-			}
-			else
-			{
-				this.detailId = detailId;
-			}
+			this.detailId = DetailId.fromJson(detailIdStr);
 			return this;
 		}
 

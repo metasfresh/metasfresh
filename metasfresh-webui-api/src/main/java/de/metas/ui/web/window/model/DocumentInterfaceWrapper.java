@@ -219,7 +219,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		final Document document = getDocument(model);
 		if (document != null)
 		{
-			document.getDocumentRepository().refresh(document);
+			document.refreshFromRepository();
 		}
 		else
 		{
@@ -607,7 +607,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	public static void save(final Object model)
 	{
 		final Document document = getDocument(model);
-		document.getDocumentRepository().save(document);
+		document.saveIfHasChanges();
 	}
 
 	/**

@@ -46,7 +46,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	}
 
 	private final int AD_Window_ID;
-	private final String detailId;
+	private final DetailId detailId;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 	private final ITranslatableString emptyResultText;
@@ -82,7 +82,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return AD_Window_ID;
 	}
 
-	public String getDetailId()
+	public DetailId getDetailId()
 	{
 		return detailId;
 	}
@@ -120,7 +120,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	public static final class Builder
 	{
 		public Integer AD_Window_ID;
-		private String detailId;
+		private DetailId detailId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 		private ITranslatableString emptyResultText;
@@ -162,13 +162,13 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setDetailId(final String detailId)
+		public Builder setDetailId(final DetailId detailId)
 		{
 			this.detailId = detailId;
 			return this;
 		}
 
-		public String getDetailId()
+		public DetailId getDetailId()
 		{
 			return detailId;
 		}

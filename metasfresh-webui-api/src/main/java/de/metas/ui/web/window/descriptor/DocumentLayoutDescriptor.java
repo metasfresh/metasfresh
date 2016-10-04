@@ -68,7 +68,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	private final DocumentLayoutDetailDescriptor advancedView;
 
 	/** Single row layout: included tabs */
-	private final Map<String, DocumentLayoutDetailDescriptor> details;
+	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
 	/** Side list layout */
 	private final DocumentLayoutSideListDescriptor sideList;
@@ -166,7 +166,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	 * @return detail
 	 * @throws DocumentLayoutDetailNotFoundException
 	 */
-	public DocumentLayoutDetailDescriptor getDetail(final String detailId)
+	public DocumentLayoutDetailDescriptor getDetail(final DetailId detailId)
 	{
 		final DocumentLayoutDetailDescriptor detail = details.get(detailId);
 		if (detail == null)
@@ -266,7 +266,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return true;
 		}
 
-		private Map<String, DocumentLayoutDetailDescriptor> buildDetails()
+		private Map<DetailId, DocumentLayoutDetailDescriptor> buildDetails()
 		{
 			return detailsBuilders
 					.stream()

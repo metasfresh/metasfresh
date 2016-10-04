@@ -25,6 +25,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -183,7 +184,7 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName) && hasParent())
 		{
-			final String detailId = _document.getEntityDescriptor().getDetailId();
+			final DetailId detailId = _document.getEntityDescriptor().getDetailId();
 			final int nextLineNo = _document.getParentDocument().getIncludedDocumentsCollection(detailId).getNextLineNo();
 			return Optional.of(nextLineNo);
 		}
