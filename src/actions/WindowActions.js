@@ -3,7 +3,11 @@ import axios from 'axios';
 import config from '../config';
 import {push, replace} from 'react-router-redux';
 
-import {getWindowBreadcrumb} from './MenuActions';
+import {
+    getWindowBreadcrumb,
+    getRelatedDocuments,
+    setReferences
+} from './MenuActions';
 
 
 export function initLayoutSuccess(layout, scope) {
@@ -131,6 +135,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
         if(docId == "new"){
             docId = "NEW";
         }
+
         // this chain is really important,
         // to do not re-render widgets on init
         dispatch(initWindow(windowType, docId, tabId, rowId))
@@ -152,6 +157,9 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
+                    dispatch(getRelatedDocuments(windowType, docId)).then((response) => {
+                        dispatch(setReferences(response.data.references));
+                    })
                 }
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))
@@ -237,15 +245,15 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
                     time = 999;
                     if(responsed){
                         dispatch(indicatorState('saved'));
-                 
+
                     } else {
                         timeoutLoop();
                     }
-                }, time);                
-            }    
+                }, time);
+            }
             timeoutLoop();
 
-        
+
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
 
 
@@ -273,7 +281,7 @@ function mapDataToState(data, isModal, rowId){
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
-                        
+
                     }else{
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
                     }

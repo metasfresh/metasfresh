@@ -30,7 +30,7 @@ class MasterWindow extends Component {
             this.setState(Object.assign({}, this.state, {
                 data: response.data[0].fields
             }))
-        });  
+        });
     }
 
     componentWillReceiveProps(props) {
@@ -41,12 +41,12 @@ class MasterWindow extends Component {
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb} = this.props;
+        const {master, connectionError, modal, breadcrumb, references} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const{data} = this.state;
+        const {data} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
-        
+
         const docStatusData = {
             "status": findRowByPropName(master.data, "DocStatus"),
             "action": findRowByPropName(master.data, "DocAction"),
@@ -64,6 +64,7 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     windowType={type}
                     breadcrumb={breadcrumb}
+                    references={references}
                     showSidelist={true}
                 />
                 {connectionError && <ErrorScreen />}
@@ -97,6 +98,7 @@ MasterWindow.propTypes = {
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
+    references: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
@@ -112,17 +114,19 @@ function mapStateToProps(state) {
         modal: false
     }
 
-
     const {
-        breadcrumb
+        breadcrumb,
+        references
     } = menuHandler || {
-        breadcrumb: {}
+        references: [],
+        breadcrumb: []
     }
 
     return {
         master,
         connectionError,
         breadcrumb,
+        references,
         modal
     }
 }

@@ -18,8 +18,12 @@ class Subheader extends Component {
     openModal = (windowType) => {
         this.props.dispatch(openModal("Advanced edit", windowType));
     }
+    handleReferenceClick = (type, filters) => {
+        const {dispatch} = this.props;
+        dispatch(push("/window/" + type));
+    }
     render() {
-        const { windowType, onClick } = this.props;
+        const { windowType, onClick, references } = this.props;
         return (
             <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container">
@@ -45,21 +49,22 @@ class Subheader extends Component {
                                 <div className="subheader-item">Geschaftspartnerbeziehung erstellen</div>
                             </div>
                             <div className=" subheader-column">
-                                <div className="subheader-header">Reports</div>
-                                <div className="subheader-item"><i className="meta-icon-generate-1" /> Generate new raport</div>
-                                <div className="subheader-break" />
-                                <div className="subheader-item"> <i className="meta-icon-report-1" /> 14/06/2016 14:13</div>
-                                <div className="subheader-item"> <i className="meta-icon-report-1" /> 14/06/2016 14:09</div>
-                                <div className="subheader-item"> <i className="meta-icon-report-1" /> 13/06/2016 09:36</div>
+                                <div>
+                                    <div className="subheader-header">Referenced documents</div>
+                                    <div className="subheader-break" />
+                                    { references && references.map((item, key) =>
+                                        <div
+                                            className="subheader-item"
+                                            onClick={() => this.handleReferenceClick(item.documentType, item.filters)}
+                                            key={key}
+                                        >
+                                            {item.caption}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className=" subheader-column">
-                                <div className="subheader-header">Attachments</div>
-                                <div className="subheader-item"><i className="meta-icon-generate-1" /> Generate new raport</div>
-                                <div className="subheader-break" />
-                                <div className="subheader-item"> <i className="meta-icon-file" /> file_name.jpg</div>
-                                <div className="subheader-item"> <i className="meta-icon-file" /> file_name.jpg</div>
-                                <div className="subheader-item"> <i className="meta-icon-file" /> file_name.jpg</div>
-                                <div className="subheader-item"> <i className="meta-icon-file" /> file_name.jpg</div>
+                            <div className="subheader-column">
+
                             </div>
                         </div>
                     </div>
@@ -76,10 +81,7 @@ class Subheader extends Component {
 Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
-function mapStateToProps(state) {
-    return {
-    }
-}
-Subheader = connect(mapStateToProps)(Subheader);
+
+Subheader = connect()(Subheader);
 
 export default Subheader;
