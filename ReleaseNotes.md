@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.38.36 (2016-40)
+# metasfresh 4.38.37 (2016-40)
 
 this week's RC
 
@@ -19,7 +19,8 @@ this week's RC
    - Added a new row in to allow the display of optional line text in further invoices
 
 ## Fixes
-
+ * #451 OCRB not available in JVM but needed for ESR page
+ 
 # metasfresh 4.37.36 (2016-39)
 
 ## Features
