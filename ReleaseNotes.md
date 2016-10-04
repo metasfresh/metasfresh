@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.38.36 (2016-40)
 
-upcoming
+this week's RC
 
 ## Features
  * #395 Add Description in Jasper Invoice Vendor
@@ -21,8 +21,6 @@ upcoming
 ## Fixes
 
 # metasfresh 4.37.36 (2016-39)
-
-this week's RC
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor
