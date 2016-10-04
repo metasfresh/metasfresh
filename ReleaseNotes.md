@@ -20,6 +20,8 @@ this week's RC
 
 ## Fixes
  * #451 OCRB not available in JVM but needed for ESR page
+ * #431 QtyTU does not update in wareneingang pos
+ * #436 Single lookup/list value for mandatory field is not automatically set
  
 # metasfresh 4.37.36 (2016-39)
 
