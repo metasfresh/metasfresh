@@ -1204,3 +1204,7 @@ body {
 th {
     position: relative;
 }
+
+.rotate-90 {
+    transform: rotate(180deg);
+}

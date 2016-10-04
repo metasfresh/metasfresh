@@ -397,6 +397,7 @@ class Table extends Component {
                             size={size}
                             selected={selected}
                             page={page}
+                            orderBy={orderBy}
                         />
                     </div>
                 </div>}

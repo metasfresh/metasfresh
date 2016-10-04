@@ -32,8 +32,8 @@ class TableHeader extends Component {
 
         return (
             <div className="sort-menu">
-                    <span className={sorting.name && sorting.asc ? 'sort' : ''} onClick={() => sort(true, field)}><i className="meta-icon-listing-up" /></span>
-                    <span className={sorting.name && !sorting.asc ? 'sort' : ''} onClick={() => sort(false, field)}><i className="meta-icon-listing-down" /></span>
+                    <span className={sorting.name && sorting.asc ? 'sort' : '' + 'rotate-90'} onClick={() => sort(true, field, true)}><i className="meta-icon-chevron-1" /></span>
+                    <span className={sorting.name && !sorting.asc ? 'sort' : ''} onClick={() => sort(false, field, true)}><i className="meta-icon-chevron-1" /></span>
             </div>
             
         )

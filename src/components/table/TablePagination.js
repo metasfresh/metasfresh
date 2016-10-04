@@ -121,7 +121,7 @@ class TablePagination extends Component {
     }
 
     render() {
-        const {size, pageLength, selected, handleSelectAll, handleChangePage, page} = this.props;
+        const {size, pageLength, selected, handleSelectAll, handleChangePage, page, orderBy} = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
         const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
         const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
@@ -159,7 +159,7 @@ class TablePagination extends Component {
 
                     <div className="items-row-2 pagination-part">
                         <div>
-                            <div>Sorting by <b>DocNo</b> (1163-1200)</div>
+                            <div>Sorting by <b>{orderBy ? orderBy[0].fieldName : ''}</b> (1163-1200)</div>
                             <div>Total items {size}</div>
                         </div>
                         <div>
