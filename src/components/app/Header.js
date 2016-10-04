@@ -146,7 +146,7 @@ class Header extends Component {
     }
 
     render() {
-        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb} = this.props;
+        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist} = this.props;
         const {isSubheaderShow, isOrderListShow, indicator, menuOverlay} = this.state;
 
         return (
@@ -185,12 +185,14 @@ class Header extends Component {
 
                                 <Indicator indicator={this.props.indicator} />
 
-                                <div
-                                    className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
-                                    onClick={e => this.handleBackdropClick(this.handleOrderListToggle)}
-                                >
-                                    {isOrderListShow ? <i className="meta-icon-close-1" />: <i className="meta-icon-list" />}
-                                </div>
+                                {showSidelist && 
+                                    <div
+                                        className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
+                                        onClick={e => this.handleBackdropClick(this.handleOrderListToggle)}
+                                    >
+                                    <i className="meta-icon-list" />
+                                    </div> 
+                                }
                             </div>
                         </div>
                     </div>
