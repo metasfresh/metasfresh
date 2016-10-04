@@ -25,7 +25,6 @@ package org.compiere.apps.search;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -58,16 +57,22 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import com.jgoodies.looks.Options;
 
+import de.metas.logging.LogManager;
+
 /**
- * @author Santhosh Kumar T - santhosh@in.fiorano.com <li>Initial contribution - http ://www.jroller.com/santhosh/date/20050620#file_path_autocompletion
- * @author Teo Sarca <li>added timed triggering <li>refactored <li>friendly database lookup
- * @author Cristina Ghita , www.arhipac.ro <li>refactored
+ * @author Santhosh Kumar T - santhosh@in.fiorano.com
+ *         <li>Initial contribution - http ://www.jroller.com/santhosh/date/20050620#file_path_autocompletion
+ * @author Teo Sarca
+ *         <li>added timed triggering
+ *         <li>refactored
+ *         <li>friendly database lookup
+ * @author Cristina Ghita , www.arhipac.ro
+ *         <li>refactored
  */
 public abstract class FieldAutoCompleter implements MouseListener
 {
@@ -82,28 +87,22 @@ public abstract class FieldAutoCompleter implements MouseListener
 	public static final int DEFAULT_MaxItems = 7;
 	private int m_maxItems = DEFAULT_MaxItems;
 
-	protected final Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(FieldAutoCompleter.class);
 
 	@SuppressWarnings("rawtypes")
-	final JList listBox = new JList();
+	private final JList listBox = new JList();
 
-	final protected JTextComponent textBox;
-	final Color bgColorDefault;
-	final Color bgColorNotMatched = new Color(230, 200, 200);
-	final private JPopupMenu popup = new JPopupMenu();
+	private final JTextComponent textBox;
+	
+	private final Color bgColorDefault;
+	private final Color bgColorNotMatched = new Color(230, 200, 200);
+	private final JPopupMenu popup = new JPopupMenu();
 
-	private final Timer timer = new Timer(PopupDelayMillis,
-			new ActionListener()
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					showPopup();
-				}
-			});
+	private final Timer timer = new Timer(PopupDelayMillis, e -> showPopup());
 
 	public FieldAutoCompleter(final JTextComponent comp)
 	{
+		super();
 		textBox = comp;
 		bgColorDefault = textBox.getBackground();
 		textBox.putClientProperty(AUTOCOMPLETER, this);
@@ -122,15 +121,13 @@ public abstract class FieldAutoCompleter implements MouseListener
 
 		if (textBox instanceof JTextField)
 		{
-			textBox.registerKeyboardAction(showAction, KeyStroke.getKeyStroke(
-					KeyEvent.VK_DOWN, 0), JComponent.WHEN_FOCUSED);
+			textBox.registerKeyboardAction(showAction, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), JComponent.WHEN_FOCUSED);
 			textBox.getDocument().addDocumentListener(documentListener);
 		}
 
-		textBox.registerKeyboardAction(upAction, KeyStroke.getKeyStroke(
-				KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
-		textBox.registerKeyboardAction(hidePopupAction, KeyStroke.getKeyStroke(
-				KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
+		textBox.registerKeyboardAction(upAction, KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
+		textBox.registerKeyboardAction(hidePopupAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
+
 		popup.addPopupMenuListener(new PopupMenuListener()
 		{
 			@Override
@@ -141,8 +138,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 			@Override
 			public void popupMenuWillBecomeInvisible(final PopupMenuEvent e)
 			{
-				textBox.unregisterKeyboardAction(KeyStroke.getKeyStroke(
-						KeyEvent.VK_ENTER, 0));
+				textBox.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 			}
 
 			@Override
@@ -153,16 +149,14 @@ public abstract class FieldAutoCompleter implements MouseListener
 		listBox.setRequestFocusEnabled(false);
 	}
 
+	@SuppressWarnings("serial")
 	private static final Action acceptAction = new AbstractAction()
 	{
-		private static final long serialVersionUID = -3950389799318995148L;
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
 			final JComponent tf = (JComponent)e.getSource();
-			final FieldAutoCompleter completer = (FieldAutoCompleter)tf
-					.getClientProperty(AUTOCOMPLETER);
+			final FieldAutoCompleter completer = (FieldAutoCompleter)tf.getClientProperty(AUTOCOMPLETER);
 			if (!completer.isEnabled())
 			{
 				return;
@@ -186,8 +180,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 			}
 			else
 			{
-				completer
-						.acceptedListItem(completer.listBox.getSelectedValue());
+				completer.acceptedListItem(completer.listBox.getSelectedValue());
 			}
 		}
 	};
@@ -312,10 +305,9 @@ public abstract class FieldAutoCompleter implements MouseListener
 		textBox.putClientProperty(Options.SELECT_ON_FOCUS_GAIN_KEY, Boolean.TRUE);
 	}
 
-	static Action showAction = new AbstractAction()
+	@SuppressWarnings("serial")
+	private static Action showAction = new AbstractAction()
 	{
-		private static final long serialVersionUID = 8868536979000734628L;
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
@@ -336,16 +328,14 @@ public abstract class FieldAutoCompleter implements MouseListener
 		}
 	};
 
+	@SuppressWarnings("serial")
 	private static final Action upAction = new AbstractAction()
 	{
-		private static final long serialVersionUID = 2200136359410394434L;
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
 			final JComponent tf = (JComponent)e.getSource();
-			final FieldAutoCompleter completer = (FieldAutoCompleter)tf
-					.getClientProperty(AUTOCOMPLETER);
+			final FieldAutoCompleter completer = (FieldAutoCompleter)tf.getClientProperty(AUTOCOMPLETER);
 			if (tf.isEnabled() && completer.isEnabled())
 			{
 				if (completer.popup.isVisible())
@@ -356,16 +346,14 @@ public abstract class FieldAutoCompleter implements MouseListener
 		}
 	};
 
+	@SuppressWarnings("serial")
 	private static final Action hidePopupAction = new AbstractAction()
 	{
-		private static final long serialVersionUID = -5683983067872135654L;
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
 			final JComponent tf = (JComponent)e.getSource();
-			final FieldAutoCompleter completer = (FieldAutoCompleter)tf
-					.getClientProperty(AUTOCOMPLETER);
+			final FieldAutoCompleter completer = (FieldAutoCompleter)tf.getClientProperty(AUTOCOMPLETER);
 			if (tf.isEnabled() && completer.isEnabled())
 			{
 				completer.popup.setVisible(false);
@@ -648,14 +636,30 @@ public abstract class FieldAutoCompleter implements MouseListener
 		return m_maxItems;
 	}
 
-	public String getText()
+	public final String getText()
 	{
 		return textBox.getText();
 	}
-
-	public boolean isEnabled()
+	
+	protected final int getTextCaretPosition()
 	{
-		return true;
+		return textBox.getCaretPosition();
+	}
+	
+	protected final void setTextCaretPosition(final int caretPosition)
+	{
+		textBox.setCaretPosition(caretPosition);
+	}
+	
+	protected final void setText(final String text)
+	{
+		textBox.setText(text);
+	}
+
+	public final boolean isEnabled()
+	{
+		final boolean textBoxHasFocus = textBox.isFocusOwner();
+		return textBoxHasFocus;
 	}
 
 	public void setPopupMinimumChars(final int popupMinimumChars)

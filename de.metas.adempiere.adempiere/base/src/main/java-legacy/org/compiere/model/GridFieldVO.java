@@ -525,7 +525,6 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   //  initStdField
 
-
 	/**************************************************************************
 	 *  Private constructor.
 	 *  @param ctx context
@@ -562,7 +561,8 @@ public class GridFieldVO implements Serializable
 	public final boolean tabReadOnly;
 
 	/** Is Process Parameter        */
-	private boolean      isProcess = false;
+	private boolean isProcess = false;
+	private boolean isFormField = false;
 
 	/**
 	 * Is Process Parameter To.
@@ -588,8 +588,8 @@ public class GridFieldVO implements Serializable
 	private int          displayType = 0;
 	/**	Table ID		*/
 	private int          AD_Table_ID = 0;
-	/**	Clumn ID		*/
-	public int          AD_Column_ID = 0;
+	/**	Column ID */
+	private int AD_Column_ID = 0;
 	/** Field ID */
 	public int AD_Field_ID = 0; // metas
 	private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
@@ -627,7 +627,7 @@ public class GridFieldVO implements Serializable
 	/**	Field Only		*/
 	private boolean      IsFieldOnly = false;
 	/**	Display Encryption	*/
-	public boolean      IsEncryptedField = false;
+	private boolean IsEncryptedField = false;
 	/**	Storage Encryption	*/
 	public boolean      IsEncryptedColumn = false;
 	/**	Find Selection		*/
@@ -671,7 +671,7 @@ public class GridFieldVO implements Serializable
 	/**	Validation rule */
 	private int AD_Val_Rule_ID = -1; // metas: 03271
 	/**	Reference Value			*/
-	public int			AD_Reference_Value_ID = 0;
+	private int AD_Reference_Value_ID = 0;
 
 	/**	Process Parameter Range		*/
 	public boolean      isRange = false;
@@ -816,6 +816,7 @@ public class GridFieldVO implements Serializable
 		//
 		clone.isProcess = false;
 		clone.isProcessParameterTo = false;
+		clone.isFormField = false;
 		//  Database Fields
 		clone.ColumnName = ColumnName;
 		clone.ColumnSQL = ColumnSQL;
@@ -1047,6 +1048,11 @@ public class GridFieldVO implements Serializable
 	{
 		return AD_Column_ID;
 	}
+	
+	public void setAD_Column_ID(final int AD_Column_ID)
+	{
+		this.AD_Column_ID = AD_Column_ID;
+	}
 
 	public int getSeqNo()
 	{
@@ -1091,6 +1097,17 @@ public class GridFieldVO implements Serializable
 	public boolean isProcessParameter()
 	{
 		return isProcess;
+	}
+	
+	/** @return true if this is a custom form field */
+	public boolean isFormField()
+	{
+		return isFormField;
+	}
+	
+	public void setFormField(final boolean isFormField)
+	{
+		this.isFormField = isFormField;
 	}
 
 	public boolean isCalculated()
@@ -1303,6 +1320,11 @@ public class GridFieldVO implements Serializable
 		return IsReadOnly;
 	}
 	
+	public void setIsReadOnly(final boolean readonly)
+	{
+		this.IsReadOnly = readonly;
+	}
+	
 	public boolean isUpdateable()
 	{
 		return IsUpdateable;
@@ -1321,6 +1343,16 @@ public class GridFieldVO implements Serializable
 	public boolean isKey()
 	{
 		return IsKey;
+	}
+	
+	public boolean isEncryptedField()
+	{
+		return IsEncryptedField;
+	}
+	
+	public void setIsEncryptedField(final boolean isEncryptedField)
+	{
+		this.IsEncryptedField = isEncryptedField;
 	}
 	
 	public boolean isEncryptedColumn()
