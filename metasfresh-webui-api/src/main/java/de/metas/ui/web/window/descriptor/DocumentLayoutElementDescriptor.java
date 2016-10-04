@@ -335,7 +335,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return fieldsBuilders.containsKey(fieldName);
 		}
 
-		public Builder setConsumed()
+		private Builder setConsumed()
 		{
 			consumed = true;
 			return this;

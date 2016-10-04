@@ -31,10 +31,6 @@ public interface DocumentEntityDataBindingDescriptor
 {
 	DocumentsRepository getDocumentsRepository();
 	
-	String getTableName();
-
-	String getKeyColumnName();
-
 	interface DocumentEntityDataBindingDescriptorBuilder
 	{
 		DocumentEntityDataBindingDescriptor getOrBuild();

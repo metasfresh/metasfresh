@@ -137,7 +137,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return documentsRepository;
 	}
 
-	@Override
 	public String getTableName()
 	{
 		return sqlTableName;
@@ -154,7 +153,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return POInfo.getPOInfo(sqlTableName);
 	}
 
-	@Override
 	public String getKeyColumnName()
 	{
 		return sqlKeyColumnName;

@@ -65,12 +65,6 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 
-	// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
-	private static final ITranslatableString HARDCODED_FIELD_EMPTY_TEXT = ImmutableTranslatableString.builder()
-			.setDefaultValue("none")
-			.put("de_DE", "leer")
-			.put("de_CH", "leer")
-			.build();
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
@@ -459,7 +453,6 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
 				.setLookupSource(field.getLookupSource())
-				.setEmptyText(HARDCODED_FIELD_EMPTY_TEXT)
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField));
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);

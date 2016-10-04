@@ -135,11 +135,18 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementFieldDescriptor.Builder.class);
 
+		// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
+		private static final ITranslatableString HARDCODED_FIELD_EMPTY_TEXT = ImmutableTranslatableString.builder()
+				.setDefaultValue("none")
+				.put("de_DE", "leer")
+				.put("de_CH", "leer")
+				.build();
+
 		private String internalName;
 		private final String fieldName;
 		private LookupSource lookupSource;
 		private FieldType fieldType;
-		private ITranslatableString emptyText;
+		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
 		private boolean consumed = false;
 
@@ -232,7 +239,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return publicField;
 		}
 
-		public Builder setConsumed()
+		private Builder setConsumed()
 		{
 			consumed = true;
 			return this;
@@ -245,6 +252,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		public Builder setEmptyText(ITranslatableString emptyText)
 		{
+			Check.assumeNotNull(emptyText, "Parameter emptyText is not null");
 			this.emptyText = emptyText;
 			return this;
 		}

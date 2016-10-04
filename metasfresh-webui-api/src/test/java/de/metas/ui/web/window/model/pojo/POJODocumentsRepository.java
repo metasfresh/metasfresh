@@ -65,7 +65,8 @@ public final class POJODocumentsRepository implements DocumentsRepository
 
 	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final String tableName = entityDescriptor.getDataBinding().getTableName();
+		final POJODocumentEntityDataBindingDescriptor dataBinding = POJODocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+		final String tableName = dataBinding.getTableName();
 		return POJOLookupMap.get().nextId(tableName);
 	}
 

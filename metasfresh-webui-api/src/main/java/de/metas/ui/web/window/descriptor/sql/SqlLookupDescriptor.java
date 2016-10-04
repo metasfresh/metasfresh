@@ -29,7 +29,9 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import groovy.transform.Immutable;
 
@@ -89,6 +91,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 	private final boolean highVolume;
 	private final boolean numericKey;
+	private final LookupSource lookupSourceType;
+
 	private final Set<String> dependsOnFieldNames;
 
 	private SqlLookupDescriptor(final Builder builder)
@@ -103,8 +107,10 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		postQueryPredicate = builder.getPostQueryPredicate();
 
 		numericKey = builder.numericKey;
-		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 		highVolume = builder.isHighVolume();
+		lookupSourceType = builder.getLookupSourceType();
+
+		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 	}
 
 	@Override
@@ -132,6 +138,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				highVolume,
 				numericKey
 		// dependsOnFieldNames // not needed because it's computed
+		// lookupSourceType // not needed because it's computed
 		);
 	}
 
@@ -161,7 +168,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				&& highVolume == other.highVolume
 				&& numericKey == other.numericKey
 				// && Objects.equals(dependsOnFieldNames, other.dependsOnFieldNames) // not needed because it's computed
-				;
+				// lookupSourceType // not needed because it's computed
+		;
 	}
 
 	@Override
@@ -223,6 +231,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return highVolume;
 	}
 
+	@Override
+	public LookupSource getLookupSourceType()
+	{
+		return lookupSourceType;
+	}
+
 	public static final class Builder
 	{
 		// Parameters
@@ -247,18 +261,18 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			super();
 		}
-		
+
 		public Function<LookupScope, LookupDescriptor> buildProvider()
 		{
 			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
-		
+
 		private static Function<LookupScope, LookupDescriptor> buildProvider(
 				final String sqlColumnName //
 				, final int displayType //
 				, final int AD_Reference_Value_ID //
 				, final int AD_Val_Rule_ID //
-				)
+		)
 		{
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
@@ -273,7 +287,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 			return scope -> null;
 		}
-		
+
 		private SqlLookupDescriptor build()
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
@@ -540,6 +554,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			Check.assumeNotNull(scope, "Parameter scope is not null");
 			this.scope = scope;
 			return this;
+		}
+
+		private LookupSource getLookupSourceType()
+		{
+			return DescriptorsFactoryHelper.extractLookupSource(displayType, AD_Reference_Value_ID);
 		}
 	}
 }

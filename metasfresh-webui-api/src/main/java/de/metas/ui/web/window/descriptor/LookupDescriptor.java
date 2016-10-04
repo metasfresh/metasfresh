@@ -4,6 +4,7 @@ import java.util.Set;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 
 /*
  * #%L
@@ -38,12 +39,14 @@ public interface LookupDescriptor
 
 	boolean isHighVolume();
 
+	LookupSource getLookupSourceType();
+
 	boolean hasParameters();
 
 	boolean isNumericKey();
 
 	Set<String> getDependsOnFieldNames();
-	
+
 	default Class<?> getValueClass()
 	{
 		return isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;

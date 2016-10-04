@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.Document;
@@ -104,7 +105,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		final String tableName = entityDescriptor.getDataBinding().getTableName();
+		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+		final String tableName = dataBinding.getTableName();
 		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
 		if (nextId <= 0)
 		{
@@ -364,7 +366,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	private PO retrieveOrCreatePO(final Document document)
 	{
-		final String sqlTableName = document.getEntityDescriptor().getDataBinding().getTableName();
+		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(document.getEntityDescriptor().getDataBinding());
+		final String sqlTableName = dataBinding.getTableName();
 
 		//
 		// Load the PO / Create new PO instance

@@ -42,6 +42,11 @@ public final class POJODocumentEntityDataBindingDescriptor implements DocumentEn
 		final POJODocumentEntityDataBindingDescriptor entityDescriptor = (POJODocumentEntityDataBindingDescriptor)document.getEntityDescriptor().getDataBinding();
 		return entityDescriptor.getModelClass();
 	}
+	
+	public static final POJODocumentEntityDataBindingDescriptor cast(final DocumentEntityDataBindingDescriptor dataBinding)
+	{
+		return (POJODocumentEntityDataBindingDescriptor)dataBinding;
+	}
 
 	private final POJODocumentsRepository documentsRepository;
 	private final Class<?> modelClass;
@@ -71,13 +76,11 @@ public final class POJODocumentEntityDataBindingDescriptor implements DocumentEn
 		return modelClass;
 	}
 
-	@Override
 	public String getTableName()
 	{
 		return tableName;
 	}
 	
-	@Override
 	public String getKeyColumnName()
 	{
 		return keyColumnName;

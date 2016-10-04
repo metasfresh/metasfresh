@@ -26,6 +26,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -243,6 +244,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
 		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
+		final LookupSource lookupSourceType;
 
 		if (isParentLinkColumn)
 		{
@@ -251,6 +253,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			defaultValueExpression = Optional.empty();
 			alwaysUpdateable = false;
 			lookupDescriptorProvider = (scope) -> null;
+			lookupSourceType = null;
 		}
 		else
 		{
@@ -267,6 +270,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
 			valueClass = DescriptorsFactoryHelper.getValueClass(displayType, lookupDescriptor);
+			lookupSourceType = lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(gridFieldVO, valueClass);
 		}
@@ -305,7 +309,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setParentLink(isParentLinkColumn)
 				//
 				.setWidgetType(widgetType)
-				.setLookupSource(DescriptorsFactoryHelper.extractLookupSource(gridFieldVO.getDisplayType(), gridFieldVO.getAD_Reference_Value_ID()))
+				.setLookupSource(lookupSourceType)
 				.setValueClass(dataBinding.getValueClass())
 				.setVirtualField(dataBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
