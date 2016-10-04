@@ -27,9 +27,9 @@
 		<runner.java.options>-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true</runner.java.options>
 
 		<runner.bat.defaultAdempiereHome>%~dp0\..</runner.bat.defaultAdempiereHome>
-				
-		<runner.bat.classpath>%ADEMPIERE_HOME%\lib\jp.osdn.ocra.jar;%ADEMPIERE_HOME%\lib\jp.osdn.ocrb.jar;%ADEMPIERE_HOME%\lib\${mainJar}</runner.bat.classpath>
-		<runner.sh.classpath>$ADEMPIERE_HOME/lib/jp.osdn.ocra.jar:$ADEMPIERE_HOME/lib/jp.osdn.ocrb.jar:$ADEMPIERE_HOME/lib/${mainJar}</runner.sh.classpath>
+		
+		<runner.bat.classpath>%ADEMPIERE_HOME%\lib\${mainJar}</runner.bat.classpath>
+		<runner.sh.classpath>$ADEMPIERE_HOME/lib/${mainJar}</runner.sh.classpath>
 	</properties>
 
 	<dependencyManagement>
