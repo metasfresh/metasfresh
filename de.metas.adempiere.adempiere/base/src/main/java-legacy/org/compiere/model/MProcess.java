@@ -27,6 +27,9 @@ import org.adempiere.util.ProcessUtil;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Process Model
@@ -44,6 +47,8 @@ public class MProcess extends X_AD_Process
 	 *
 	 */
 	private static final long serialVersionUID = 2404724380401712390L;
+
+	private static final Logger log = LogManager.getLogger(MProcess.class);
 
 
 	/**
@@ -210,7 +215,7 @@ public class MProcess extends X_AD_Process
 	 *	see ProcessCtl.startProcess
 	 *  @return true if success
 	 */
-	private boolean startProcess (String ProcedureName, ProcessInfo processInfo, ITrx trx)
+	private static boolean startProcess (String ProcedureName, ProcessInfo processInfo, ITrx trx)
 	{
 		int AD_PInstance_ID = processInfo.getAD_PInstance_ID();
 		//  execute on this thread/connection

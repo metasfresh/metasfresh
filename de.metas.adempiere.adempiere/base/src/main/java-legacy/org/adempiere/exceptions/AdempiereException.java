@@ -108,7 +108,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	 * @param throwable
 	 * @return cause or throwable; never returns null
 	 */
-	protected static final Throwable extractCause(final Throwable throwable)
+	public static final Throwable extractCause(final Throwable throwable)
 	{
 		final Throwable cause = throwable.getCause();
 		if (cause == null)

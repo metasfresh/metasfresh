@@ -129,12 +129,11 @@ public class MPrintFormat extends X_AD_PrintFormat
 	 * 	Set Language
 	 *  @param language language
 	 */
-	public void setLanguage(Language language)
+	public void setLanguage(final Language language)
 	{
 		if (language != null)
 		{
 			m_language = language;
-		//	log.debug("setLanguage - " + language);
 		}
 		m_translationViewLanguage = null;
 	}	//	getLanguage
