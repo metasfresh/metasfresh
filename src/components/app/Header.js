@@ -92,7 +92,7 @@ class Header extends Component {
     }
 
     renderBreadcrumb = () => {
-        const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
+        const {breadcrumb, windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
         const {menuOverlay} = this.state;
 
         return (
@@ -198,7 +198,7 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader open={isSubheaderShow} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
+                <Subheader open={isSubheaderShow} dataId={dataId} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
                 <OrderList open={isOrderListShow} />
 
             </div>

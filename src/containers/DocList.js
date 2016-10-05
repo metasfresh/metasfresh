@@ -38,12 +38,12 @@ class DocList extends Component {
     }
 
     componentWillReceiveProps(props) {
-        const {dispatch, windowType} = props;
+        const {dispatch, windowType, globalGridFilter} = props;
 
-        this.updateData();
+        this.updateData(globalGridFilter);
     }
 
-    updateData = () => {
+    updateData = (filter) => {
         const {dispatch, windowType} = this.props;
 
         dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
@@ -52,7 +52,7 @@ class DocList extends Component {
                 filters: response.data.filters
             }), () => {
 
-                dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
+                dispatch(createViewRequest(windowType, "grid", 20, !!filter ? [filter] : [])).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -177,7 +177,10 @@ class DocList extends Component {
         if( layout && data) {
             return (
                 <div>
-                    <Header breadcrumb={breadcrumb} />
+                    <Header
+                        breadcrumb={breadcrumb}
+                        windowType={windowType}
+                    />
                     <div className="container header-sticky-distance">
                         <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                             <button
@@ -237,16 +240,19 @@ function mapStateToProps(state) {
     }
 
     const {
-        breadcrumb
+        breadcrumb,
+        globalGridFilter
     } = menuHandler || {
-        breadcrumb: []
+        breadcrumb: [],
+        globalGridFilter: null
     }
 
     return {
         master,
         connectionError,
         breadcrumb,
-        modal
+        modal,
+        globalGridFilter
     }
 }
 
