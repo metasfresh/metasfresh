@@ -1183,28 +1183,40 @@ body {
 }
 
 .sort-menu {
-    display: inline-block;
-    position: absolute;
-    right: 0;
-    top: 0;
-    line-height: 10px;
-    padding: 10px 0;
     cursor: pointer;
     width: 100%;
-    text-align: right;
+    line-height: 22px;
+    vertical-align: middle;
 }
 
-.sort-menu span {
-    width: 100%;
-    display: block;
+.sort-menu .sort-ico {
+    height: 15px;
     cursor: pointer;
     color: $brand-font-color;
     opacity: 0;
+    display: inline-block;
+    padding: 0 10px;
+    vertical-align: middle;
+}
+
+.sort-menu .th-caption {
+    color: white;
+    vertical-align: middle;
 }
 
 .sort-menu .sort {
     color: white;
     opacity: 1;
+}
+
+.sort-menu:hover {
+    .th-caption {
+       color: $brand-font-color; 
+       text-decoration: underline;
+    }
+    .sort-ico {
+        color: $brand-font-color;
+    }   
 }
 
 th {

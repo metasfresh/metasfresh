@@ -26,13 +26,14 @@ class TablePagination extends Component {
     }
 
     handleSubmit = (e, value, pages) => {
-        const {handleChangePage} = this.props;
+        const {handleChangePage, deselect} = this.props;
         if(e.key === "Enter"){
             e.preventDefault();
 
             if(value <= pages && value > 0){
 
                 handleChangePage(value);
+                deselect();
 
                 this.setState(Object.assign({}, this.state, {
                     value: '',
@@ -66,7 +67,7 @@ class TablePagination extends Component {
         const {handleChangePage} = this.props;
         const {firstDotsState, secondDotsState, value} = this.state;
         pagination.push(
-            <li className="page-item" key={1} onClick={() => handleChangePage(1)}>
+            <li className="page-item" key={1} onClick={() => {handleChangePage(1); deselect()} }>
                 <a className="page-link">{1}</a>
                 {}
             </li>
@@ -86,7 +87,7 @@ class TablePagination extends Component {
     }
 
     renderLastPartPagination = (pagination, pages) => {
-        const {handleChangePage} = this.props;
+        const {handleChangePage, deselect} = this.props;
         const {firstDotsState, secondDotsState, value} = this.state;
 
         pagination.push(
@@ -102,7 +103,7 @@ class TablePagination extends Component {
             </li>
         );
         pagination.push(
-            <li className="page-item" key={9999} onClick={() => handleChangePage(pages)}>
+            <li className="page-item" key={9999} onClick={() => {handleChangePage(pages); deselect()} }>
                 <a className="page-link">{pages}</a>
                 {}
             </li>
@@ -110,10 +111,10 @@ class TablePagination extends Component {
     }
 
     renderPaginationContent = (pagination, page, start, end) => {
-        const {handleChangePage} = this.props;
+        const {handleChangePage, deselect} = this.props;
         for(let i = start; i <= end; i++){
             pagination.push(
-                <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => handleChangePage(i)}>
+                <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => {handleChangePage(i); deselect()} }>
                     <a className="page-link">{i}</a>
                 </li>
             );
@@ -121,7 +122,7 @@ class TablePagination extends Component {
     }
 
     render() {
-        const {size, pageLength, selected, handleSelectAll, handleChangePage, page, orderBy} = this.props;
+        const {size, pageLength, selected, handleSelectAll, handleChangePage, page, orderBy, deselect} = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
         const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
         const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
@@ -159,14 +160,13 @@ class TablePagination extends Component {
 
                     <div className="items-row-2 pagination-part">
                         <div>
-                            <div>Sorting by <b>{orderBy ? orderBy[0].fieldName : ''}</b> (1163-1200)</div>
                             <div>Total items {size}</div>
                         </div>
                         <div>
                             <nav>
                                 <ul className="pagination pointer">
                                     <li className="page-item">
-                                        <a className="page-link" onClick={() => handleChangePage("down")}>
+                                        <a className="page-link" onClick={() => { handleChangePage("down"); deselect()} }>
                                             <span>&laquo;</span>
                                         </a>
                                     </li>
@@ -174,7 +174,7 @@ class TablePagination extends Component {
                                     {pagination}
 
                                     <li className={"page-item "}>
-                                        <a className="page-link" onClick={() => handleChangePage("up")}>
+                                        <a className="page-link" onClick={() => {handleChangePage("up"); deselect()} }>
                                             <span>&raquo;</span>
                                         </a>
                                     </li>

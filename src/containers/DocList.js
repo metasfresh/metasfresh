@@ -141,6 +141,7 @@ class DocList extends Component {
         const {layout, data, page} = this.state;
         const {dispatch, windowType, breadcrumb} = this.props;
 
+
         if( layout && data) {
             return (
                 <div>

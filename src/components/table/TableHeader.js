@@ -17,8 +17,8 @@ class TableHeader extends Component {
         }
     }
     
-    renderSorting = (field) => {
-        const {sort,display, orderBy} = this.props;
+    renderSorting = (field, caption) => {
+        const {sort,display, orderBy, deselect} = this.props;
         let sorting = {};
 
         orderBy && orderBy.map((item, index) => {
@@ -30,8 +30,9 @@ class TableHeader extends Component {
         })
 
         return (
-            <div className="sort-menu" onClick={() => sort(!sorting.asc, field, true)}>
-                    <span className={sorting.name && sorting.asc ? 'sort rotate-90' : (sorting.name && !sorting.asc) ? 'sort' : ''}><i className="meta-icon-chevron-1" /></span>
+            <div className="sort-menu" onClick={() => {sort(!sorting.asc, field, true); deselect()} }>
+                <span className="th-caption">{caption}</span>
+                <span className={sorting.name && sorting.asc ? 'sort rotate-90 sort-ico' : (sorting.name && !sorting.asc) ? 'sort sort-ico' : 'sort-ico'}><i className="meta-icon-chevron-1" /></span>
             </div>
             
         )
@@ -44,8 +45,8 @@ class TableHeader extends Component {
                     this.getSizeClass(item.widgetType)
                 }
             >
-                {item.caption}
-                {mainTable ? this.renderSorting(item.fields[0].field) : ''}
+                {!mainTable ? item.caption: ''}
+                {mainTable ? this.renderSorting(item.fields[0].field, item.caption) : ''}
             </th>
         );
     }

@@ -367,7 +367,7 @@ class Table extends Component {
                                 onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
                             >
                                 <thead>
-                                    <TableHeader cols={cols} mainTable={mainTable} sort={sort} orderBy={orderBy} />
+                                    <TableHeader cols={cols} mainTable={mainTable} sort={sort} orderBy={orderBy} deselect={this.deselectAllProducts} />
                                 </thead>
                                 <tbody>
                                     {this.renderTableBody()}
@@ -390,6 +390,7 @@ class Table extends Component {
                             selected={selected}
                             page={page}
                             orderBy={orderBy}
+                            deselect={this.deselectAllProducts}
                         />
                     </div>
                 </div>}
