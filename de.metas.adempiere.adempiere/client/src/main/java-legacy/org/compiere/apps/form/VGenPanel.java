@@ -368,16 +368,6 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		return isEnabled();
 	}   //  isUILocked
 	
-	/**
-	 *  Method to be executed async.
-	 *  Called from the Worker
-	 *  @param pi ProcessInfo
-	 */
-	@Override
-	public void executeASync (ProcessInfo pi)
-	{
-	}   //  executeASync
-	
 	public CPanel getParameterPanel()
 	{
 		return selNorthPanel;

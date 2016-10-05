@@ -1080,16 +1080,4 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	{
 		return this.isEnabled();
 	} // isUILocked
-
-	/**
-	 * Method to be executed async. Called from the Worker
-	 * 
-	 * @param pi
-	 *            ProcessInfo
-	 */
-	@Override
-	public void executeASync(ProcessInfo pi)
-	{
-	} // executeASync
-
 } // VInOutGen

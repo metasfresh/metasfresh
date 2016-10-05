@@ -1092,12 +1092,6 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public void executeASync(final org.compiere.process.ProcessInfo processInfo)
-	{
-		// nothing
-	}
-
-	@Override
 	public void stateChanged(final ChangeEvent e)
 	{
 		// nothing

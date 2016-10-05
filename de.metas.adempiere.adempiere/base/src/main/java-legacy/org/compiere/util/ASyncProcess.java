@@ -57,12 +57,4 @@ public interface ASyncProcess
 	 *  @return true, if UI is locked
 	 */
 	boolean isUILocked();
-
-	/**
-	 *  Method to be executed async.
-	 *  Called from the Worker
-	 *  @param pi ProcessInfo
-	 */
-	public void executeASync (ProcessInfo pi);
-
 }   //  ASyncProcess

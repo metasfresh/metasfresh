@@ -737,15 +737,4 @@ public class VOrderDistribution extends CPanel
 	{
 		return this.isEnabled();
 	}   //  isUILocked
-
-	/**
-	 *  Method to be executed async.
-	 *  Called from the Worker
-	 *  @param pi ProcessInfo
-	 */
-	@Override
-	public void executeASync (ProcessInfo pi)
-	{
-	}   //  executeASync
-
 }	//	VOrderDistribution

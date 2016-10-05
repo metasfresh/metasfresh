@@ -3243,18 +3243,6 @@ public class APanel extends CPanel
 	}   // isLoacked
 
 	/**
-	 * Method to be executed async.
-	 * Called from the ASyncProcess worker
-	 * 
-	 * @param pi process info
-	 */
-	@Override
-	public void executeASync(ProcessInfo pi)
-	{
-		log.info("-");
-	}   // executeASync
-
-	/**
 	 * Get Current Tab
 	 * 
 	 * @return current tab

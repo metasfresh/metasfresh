@@ -535,17 +535,6 @@ public class ProcessDialog extends CFrame
 		return m_isLocked;
 	}   // isLoacked
 
-	/**
-	 * Method to be executed async. Called from the ASyncProcess worker
-	 * 
-	 * @param pi process info
-	 */
-	@Override
-	public void executeASync(ProcessInfo pi)
-	{
-		log.info("-");
-	}   // executeASync
-
 	/**************************************************************************
 	 * Optional Processing Task
 	 */
