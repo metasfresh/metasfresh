@@ -83,8 +83,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			// in case of invoice document, enable email only if is enabled in partner
 			if (isInvoiceDocument)
 			{
-				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(archive.getC_BPartner(), I_C_BPartner.class);
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
+				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
 				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
 				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
 				
