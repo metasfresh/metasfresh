@@ -16,13 +16,13 @@ class TableHeader extends Component {
             return 'th-sm';
         }
     }
-    
+
     renderSorting = (field) => {
         const {sort,display, orderBy} = this.props;
         let sorting = {};
 
         orderBy && orderBy.map((item, index) => {
-            
+
             if(field == item.fieldName){
                 sorting.name = item.fieldName;
                 sorting.asc = item.ascending;
@@ -33,7 +33,7 @@ class TableHeader extends Component {
             <div className="sort-menu" onClick={() => sort(!sorting.asc, field, true)}>
                     <span className={sorting.name && sorting.asc ? 'sort rotate-90' : (sorting.name && !sorting.asc) ? 'sort' : ''}><i className="meta-icon-chevron-1" /></span>
             </div>
-            
+
         )
     }
     renderCols = (cols, mainTable) => {
