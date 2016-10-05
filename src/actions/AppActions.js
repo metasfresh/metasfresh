@@ -32,3 +32,10 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
 export function createViewRequest(windowType, viewType, pageLength, filters){
     return (dispatch) => axios.put(config.API_URL + '/window/view?type=' + windowType + '&viewType=' + viewType, filters);
 }
+
+export function notificationState(state){
+    return {
+        type: types.CHANGE_NOTIFICATION_STATE,
+        state: state
+    }
+}

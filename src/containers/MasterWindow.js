@@ -6,12 +6,17 @@ import {
     getData
 } from '../actions/WindowActions';
 
+import {
+    notificationState
+} from '../actions/AppActions';
+
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
 import Header from '../components/app/Header';
 import OrderList from '../components/app/OrderList';
 import ErrorScreen from '../components/app/ErrorScreen';
 import Widget from '../components/Widget';
+import NotificationHandler from '../components/app/NotificationHandler';
 
 
 class MasterWindow extends Component {
@@ -31,6 +36,12 @@ class MasterWindow extends Component {
                 data: response.data[0].fields
             }))
         });
+    }
+
+    fireNotification = () => {
+        const {dispatch} = this.props;
+
+        dispatch(notificationState('true'));
     }
 
     componentWillReceiveProps(props) {
@@ -88,6 +99,9 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                 />
+
+                <NotificationHandler />
+
             </div>
         );
     }

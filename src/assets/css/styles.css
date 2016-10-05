@@ -1218,3 +1218,32 @@ th {
 .sort.rotate-90 {
     text-align: left;
 }
+
+.notification-handler {
+    position: fixed;
+    top: 55px;
+    right: 0;
+    width: 320px;
+    z-index: 300;
+    text-align: right;
+    padding: 10px;
+}
+
+.notification-item {
+    text-align: left;
+    width: 100%;
+    display: inline-block;
+    border: 2px solid red;
+    border-radius: 5px;
+}
+
+.notification-header {
+    background: red;
+    color: white;
+    padding: 5px;
+}
+
+.notification-content {
+    background: white;
+    padding: 5px;
+}

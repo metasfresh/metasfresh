@@ -171,32 +171,19 @@ class NavigationTree extends Component {
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
     const {
-        master,
-        connectionError,
-        modal
-    } = windowHandler || {
-        master: {},
-        connectionError: false,
-        modal: false
-    }
-
-
-    const {
         breadcrumb
     } = menuHandler || {
-        breadcrumb: {}
+        breadcrumb: []
     }
 
     return {
-        master,
-        connectionError,
-        breadcrumb,
-        modal
+        breadcrumb
     }
 }
 
 NavigationTree.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    breadcrumb: PropTypes.array.isRequired
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);
