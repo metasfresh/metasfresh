@@ -146,7 +146,6 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			{
 				logger.debug("this-ID={}, isEventDispatchThread={}; within setChildModels() with childModel #{} = {}; this={}",
 						System.identityHashCode(this), SwingUtilities.isEventDispatchThread(), counter++, childModel, this);
-				counter++;
 				onBeforeChildAdd(childModel);
 			}
 
