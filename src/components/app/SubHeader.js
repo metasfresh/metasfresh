@@ -48,6 +48,7 @@ class Subheader extends Component {
                             </div>
                             <div className=" subheader-column">
                                 <div className="subheader-header">Actions</div>
+                                <div className="subheader-break" />
                                 <div className="subheader-item">Auftrag aus Angebot</div>
                                 <div className="subheader-item">Bestellkontrolle zum Auf</div>
                                 <div className="subheader-item">Generate PO from Sales order</div>
@@ -57,7 +58,7 @@ class Subheader extends Component {
                                 <div>
                                     <div className="subheader-header">Referenced documents</div>
                                     <div className="subheader-break" />
-                                    { references && references.map((item, key) =>
+                                    { references ? references.map((item, key) =>
                                         <div
                                             className="subheader-item"
                                             onClick={() => this.handleReferenceClick(item.documentType, item.filter)}
@@ -65,7 +66,7 @@ class Subheader extends Component {
                                         >
                                             {item.caption}
                                         </div>
-                                    )}
+                                    ) : <div className="subheader-item subheader-item-disabled">There is no referenced document</div>}
                                 </div>
                             </div>
                             <div className="subheader-column">

@@ -136,12 +136,14 @@
     width: 100%;
     display: block;
     padding: .75rem 1.25rem;
-    cursor: pointer;
     text-decoration: none !important;
-
 }
 
-.subheader-item:hover {
+.subheader-item:not(.subheader-item-disabled){
+    cursor: pointer;
+}
+
+.subheader-item:not(.subheader-item-disabled):hover {
     background-color: $brand-color-primary;
     color: #fff;
 }
@@ -171,7 +173,7 @@
 }
 
 .btn-square {
-    min-width: 55px;  
+    min-width: 55px;
 }
 
 
