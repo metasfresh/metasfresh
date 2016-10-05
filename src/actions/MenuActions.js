@@ -17,6 +17,13 @@ export function setReferences(references){
     }
 }
 
+export function setFilter(filter){
+    return {
+        type: types.SET_GLOBAL_GRID_FILTER,
+        filter: filter
+    }
+}
+
 // THUNK ACTIONS
 export function getDashboardLink() {
     return dispatch => axios.get(config.API_URL + '/userSession/dashboardUrl');

@@ -40,7 +40,7 @@ class TablePagination extends Component {
                     firstDotsState: false
                 }));
             }
-            
+
         }
     }
 
@@ -77,7 +77,7 @@ class TablePagination extends Component {
                 <div className="page-dots-open">
                     <span>Go to page</span>
                     <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
-                </div> 
+                </div>
                 }
                 <a className="page-link" onClick={() => this.handleFirstDotsState()}>{'...'}</a>
                 {}
@@ -95,7 +95,7 @@ class TablePagination extends Component {
                 <div className="page-dots-open">
                     <span>Go to page</span>
                     <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
-                </div> 
+                </div>
                 }
                 <a className="page-link" onClick={() => this.handleSecondDotsState()}>{'...'}</a>
                 {}

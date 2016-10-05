@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 
-class OrderList extends Component {
+class SideList extends Component {
     constructor(props) {
         super(props);
     }
     renderTableBody = () => {
-        // return this.props.orderList.map((order) => {
+        // return this.props.SideList.map((order) => {
         //     return (
         //         <tr key={order.id}>
         //             <td>{order.id}</td>
@@ -52,4 +52,4 @@ class OrderList extends Component {
     }
 }
 
-export default OrderList
+export default SideList

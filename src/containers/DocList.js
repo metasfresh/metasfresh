@@ -22,9 +22,9 @@ class DocList extends Component {
 
         this.state = {
             page: 1,
-            data: {},
-            layout: {},
-            filters: {},
+            data: null,
+            layout: null,
+            filters: null,
             sortingAsc: false,
             sortingField: ''
         }
@@ -32,17 +32,19 @@ class DocList extends Component {
 
     componentDidMount = () => {
         const {dispatch, windowType} = this.props;
-
         dispatch(getWindowBreadcrumb(windowType))
     }
 
     componentWillReceiveProps(props) {
-        const {dispatch, windowType} = props;
-
-        this.updateData();
+        const {dispatch, windowType, globalGridFilter} = props;
+        this.updateData(globalGridFilter);
     }
 
-    updateData = () => {
+    shouldComponentUpdate(nextProps, nextState) {
+        return nextState.layout && nextState.data && nextState.filters;
+    }
+
+    updateData = (filter) => {
         const {dispatch, windowType} = this.props;
 
         dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
@@ -51,7 +53,7 @@ class DocList extends Component {
                 filters: response.data.filters
             }), () => {
 
-                dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
+                dispatch(createViewRequest(windowType, "grid", 20, !!filter ? [filter] : [])).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -94,7 +96,7 @@ class DocList extends Component {
                         sortingField: field
                     }), () => {
                         if(startPage){
-                           this.handleChangePage(1); 
+                           this.handleChangePage(1);
                         }
                     }
                 );
@@ -107,7 +109,7 @@ class DocList extends Component {
             sortingQuery = '-' + field;
         }
 
-        this.getData(data.viewId, page, 20, sortingQuery); 
+        this.getData(data.viewId, page, 20, sortingQuery);
     }
 
     handleChangePage = (index) => {
@@ -136,13 +138,16 @@ class DocList extends Component {
     }
 
     render() {
+        const {layout, data, page} = this.state;
         const {dispatch, windowType, breadcrumb} = this.props;
-        const {layout, data, page, sortingField} = this.state;
-        
+
         if( layout && data) {
             return (
                 <div>
-                    <Header breadcrumb={breadcrumb} />
+                    <Header
+                        breadcrumb={breadcrumb}
+                        windowType={windowType}
+                    />
                     <div className="container header-sticky-distance">
                         <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                             <button
@@ -189,35 +194,27 @@ class DocList extends Component {
     }
 }
 
+DocList.propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    breadcrumb: PropTypes.array.isRequired
+}
+
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
-    const {
-        master,
-        connectionError,
-        modal
-    } = windowHandler || {
-        master: {},
-        connectionError: false,
-        modal: false
-    }
+    const { menuHandler } = state;
 
     const {
-        breadcrumb
+        breadcrumb,
+        globalGridFilter
     } = menuHandler || {
-        breadcrumb: []
+        breadcrumb: [],
+        globalGridFilter: {}
     }
 
     return {
-        master,
-        connectionError,
         breadcrumb,
-        modal
+        globalGridFilter
     }
 }
-
-DocList.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
 
 DocList = connect(mapStateToProps)(DocList)
 

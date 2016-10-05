@@ -8,7 +8,7 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
 import Widget from '../Widget';
-import OrderList from '../app/OrderList';
+import SideList from '../app/SideList';
 import Indicator from './Indicator';
 import MenuOverlay from './MenuOverlay';
 
@@ -23,7 +23,7 @@ class Header extends Component {
 
         this.state = {
             isSubheaderShow: false,
-            isOrderListShow: false,
+            isSideListShow: false,
             indicator: 'saved',
             menuOverlay: null,
             scrolled: false
@@ -38,17 +38,17 @@ class Header extends Component {
     handleSubheaderOpen = () => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: !this.state.isSubheaderShow}));
     }
-    handleOrderListToggle = () => {
-        this.setState(Object.assign({}, this.state, {isOrderListShow: !this.state.isOrderListShow}));
+    handleSideListToggle = () => {
+        this.setState(Object.assign({}, this.state, {isSideListShow: !this.state.isSideListShow}));
     }
-    handleCloseOrderList= (callback) => {
-        this.setState(Object.assign({}, this.state, {isOrderListShow: false}), callback);
+    handleCloseSideList= (callback) => {
+        this.setState(Object.assign({}, this.state, {isSideListShow: false}), callback);
     }
     handleBackdropClick = (callback) => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
     }
     handleMenuOverlay = (e, nodeId) => {
-        const {isSubheaderShow, isOrderListShow} = this.state;
+        const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
 
         let toggelBreadcrumb = () => {
@@ -58,8 +58,8 @@ class Header extends Component {
         }
         if(isSubheaderShow){
             this.handleBackdropClick(toggelBreadcrumb);
-        }else if(isOrderListShow){
-            this.handleCloseOrderList(toggelBreadcrumb);
+        }else if(isSideListShow){
+            this.handleCloseSideList(toggelBreadcrumb);
         }else{
             toggelBreadcrumb();
         }
@@ -92,7 +92,7 @@ class Header extends Component {
     }
 
     renderBreadcrumb = () => {
-        const {breadcrumb,windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
+        const {breadcrumb, windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
         const {menuOverlay} = this.state;
 
         return (
@@ -147,18 +147,18 @@ class Header extends Component {
 
     render() {
         const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references} = this.props;
-        const {isSubheaderShow, isOrderListShow, indicator, menuOverlay} = this.state;
+        const {isSubheaderShow, isSideListShow, indicator, menuOverlay} = this.state;
 
         return (
             <div>
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
-                {(isOrderListShow) ? <div className="backdrop" onClick={e => this.handleCloseOrderList(false)}></div> : null}
+                {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded " + (this.state.scrolled ? "header-shadow": "")}>
                     <div className="container">
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={e => this.handleCloseOrderList(this.handleSubheaderOpen)}
+                                    onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
                                     className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default btn-subheader-open btn-header-open" : "btn-meta-primary")}
                                 >
                                     <i className="meta-icon-more" />
@@ -187,8 +187,8 @@ class Header extends Component {
 
                                 {showSidelist &&
                                     <div
-                                        className={"btn-square btn-header side-panel-toggle " + (isOrderListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
-                                        onClick={e => this.handleBackdropClick(this.handleOrderListToggle)}
+                                        className={"btn-square btn-header side-panel-toggle " + (isSideListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
+                                        onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
                                     >
                                     <i className="meta-icon-list" />
                                     </div>
@@ -198,8 +198,8 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader open={isSubheaderShow} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
-                <OrderList open={isOrderListShow} />
+                <Subheader open={isSubheaderShow} dataId={dataId} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
+                <SideList open={isSideListShow} />
 
             </div>
         )
