@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Header from '../components/app/Header';
-import OrderList from '../components/app/OrderList';
 
 import {
     getWindowBreadcrumb,
@@ -29,8 +28,6 @@ export class Dashboard extends Component {
                     link: response.data
                 }))
         });
-
-        console.log(this.state.link);
     }
 
     render() {
@@ -42,28 +39,15 @@ export class Dashboard extends Component {
                     breadcrumb={breadcrumb.slice(0,1)}
                     siteName = {"Dashboard"}
                 />
-                <OrderList />
                 <div className="header-sticky-distance"/>
                 <iframe className="dashboard" src={link}></iframe>
             </div>
         );
     }
-
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler } = state;
-    const {
-        master,
-        connectionError,
-        modal
-    } = windowHandler || {
-        master: {},
-        connectionError: false,
-        modal: false
-    }
-
-
+    const {menuHandler } = state;
     const {
         breadcrumb
     } = menuHandler || {
@@ -71,15 +55,13 @@ function mapStateToProps(state) {
     }
 
     return {
-        master,
-        connectionError,
-        breadcrumb,
-        modal
+        breadcrumb
     }
 }
 
 Dashboard.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    breadcrumb: PropTypes.object.isRequired
 };
 
 Dashboard = connect(mapStateToProps)(Dashboard);

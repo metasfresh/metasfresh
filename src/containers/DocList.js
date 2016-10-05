@@ -140,7 +140,6 @@ class DocList extends Component {
     render() {
         const {layout, data, page} = this.state;
         const {dispatch, windowType, breadcrumb} = this.props;
-        console.log("docList render");
 
         if( layout && data) {
             return (
