@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-16T11:10:45 -->
+<!-- 2016-10-05T16:48:12 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9965000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -36,12 +38,12 @@
 FROM
 	M_InOutLine iol
 	-- Product and its translation
-	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
-	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $P{ad_language}
-	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $P{ad_language} AND pt.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID  AND pc.isActive = 'Y'
 	-- Unit of measurement & its translation
-	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
-	LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $P{ad_language}
+	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID  AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $P{ad_language} AND uomt.isActive = 'Y'
 	-- Attributes
 	LEFT OUTER JOIN
 	(
@@ -64,18 +66,18 @@ FROM
 					M_InOutLine iol
 					LEFT OUTER JOIN M_HU_PI_Item_Product pi ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
 					LEFT OUTER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) ))
-						AND asgn.Record_ID = iol.M_InOutLine_ID
+						AND asgn.Record_ID = iol.M_InOutLine_ID AND asgn.isActive = 'Y'
 					LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
 					LEFT OUTER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
 				WHERE
 					COALESCE ( pi.name, pifb.name ) != 'VirtualPI'
-					AND iol.M_InOut_ID = $P{RECORD_ID}
+					AND iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
 			) x
 		GROUP BY M_InOutLine_ID
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Get RMA and Reversal infos
-	LEFT OUTER JOIN M_RMALine rl ON iol.M_RMALine_ID = rl.M_RMALine_ID
-	LEFT OUTER JOIN M_RMA r ON rl.M_RMA_ID = r.M_RMA_ID
+	LEFT OUTER JOIN M_RMALine rl ON iol.M_RMALine_ID = rl.M_RMALine_ID AND rl.isActive = 'Y'
+	LEFT OUTER JOIN M_RMA r ON rl.M_RMA_ID = r.M_RMA_ID AND r.isActive = 'Y'
 	LEFT OUTER JOIN (
 		SELECT
 			iol.M_InOutLine_ID,
@@ -86,40 +88,40 @@ FROM
 		FROM
 			M_InOutLine iol
 			-- Reversal line - Direct
-			LEFT OUTER JOIN M_InOutLine rdl ON iol.ReversalLine_ID = rdl.M_InOutLine_ID
-			LEFT OUTER JOIN M_InOut rd ON rdl.M_InOut_ID = rd.M_InOut_ID
+			LEFT OUTER JOIN M_InOutLine rdl ON iol.ReversalLine_ID = rdl.M_InOutLine_ID AND rdl.isActive = 'Y'
+			LEFT OUTER JOIN M_InOut rd ON rdl.M_InOut_ID = rd.M_InOut_ID AND rd.isActive = 'Y'
 			-- Reversal line - All InOuts for the original order of the reversal line
 			LEFT OUTER JOIN (
 				SELECT DISTINCT
 					ol.C_Order_ID, rdl_all.M_InOut_ID
 				FROM
 					M_InOutLine rdl_all
-					INNER JOIN M_ReceiptSchedule_Alloc rsa ON rdl_all.M_InOutLine_ID = rsa.M_InOutLine_ID
-					INNER JOIN M_ReceiptSchedule rs ON rsa.M_ReceiptSchedule_ID = rs.M_ReceiptSchedule_ID
-					INNER JOIN C_Orderline ol ON rs.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND rs.Record_ID = ol.C_OrderLine_ID
+					INNER JOIN M_ReceiptSchedule_Alloc rsa ON rdl_all.M_InOutLine_ID = rsa.M_InOutLine_ID AND rsa.isActive = 'Y'
+					INNER JOIN M_ReceiptSchedule rs ON rsa.M_ReceiptSchedule_ID = rs.M_ReceiptSchedule_ID AND rs.isActive = 'Y'
+					INNER JOIN C_Orderline ol ON rs.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND rs.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
 				WHERE
-					ol.C_Order_ID IS NOT NULL
+					ol.C_Order_ID IS NOT NULL AND rdl_all.isActive = 'Y'
 			) o ON rd.M_InOut_ID = o.M_InOut_ID
-			LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID
-			LEFT OUTER JOIN M_ReceiptSchedule ors ON ors.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND ors.Record_ID = ol.C_OrderLine_ID
-			LEFT OUTER JOIN M_ReceiptSchedule_Alloc orsa ON ors.M_ReceiptSchedule_ID = orsa.M_ReceiptSchedule_ID
-			LEFT OUTER JOIN M_InOutLine ordl ON orsa.M_InOutLine_ID = ordl.M_InOutLine_ID
+			LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
+			LEFT OUTER JOIN M_ReceiptSchedule ors ON ors.AD_Table_ID = (SELECT Get_Table_ID ('C_OrderLine')) AND ors.Record_ID = ol.C_OrderLine_ID AND ors.isActive = 'Y'
+			LEFT OUTER JOIN M_ReceiptSchedule_Alloc orsa ON ors.M_ReceiptSchedule_ID = orsa.M_ReceiptSchedule_ID AND orsa.isActive = 'Y'
+			LEFT OUTER JOIN M_InOutLine ordl ON orsa.M_InOutLine_ID = ordl.M_InOutLine_ID AND ordl.isActive = 'Y'
 			-- No ReversalLine - Only RMA
-			LEFT OUTER JOIN M_RMALine rl ON iol.M_RMALine_ID = rl.M_RMALine_ID
-			LEFT OUTER JOIN M_InOutLine riol ON rl.M_InOutLine_ID = riol.M_InOutLine_ID
-			LEFT OUTER JOIN M_RMA r ON rl.M_RMA_ID = r.M_RMA_ID
+			LEFT OUTER JOIN M_RMALine rl ON iol.M_RMALine_ID = rl.M_RMALine_ID AND rl.isActive = 'Y'
+			LEFT OUTER JOIN M_InOutLine riol ON rl.M_InOutLine_ID = riol.M_InOutLine_ID AND riol.isActive = 'Y'
+			LEFT OUTER JOIN M_RMA r ON rl.M_RMA_ID = r.M_RMA_ID AND r.isActive = 'Y'
 			-- Get actual In Out
-			INNER JOIN M_InOut fio ON COALESCE ( ordl.M_InOut_ID, rd.M_InOut_ID, riol.M_InOut_ID, r.InOut_ID) = fio.M_InOut_ID
-			INNER JOIN C_DocType dt ON fio.C_DocType_ID  = dt.C_DocType_ID
-			LEFT OUTER JOIN C_DocType_Trl dtt ON fio.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language}
+			INNER JOIN M_InOut fio ON COALESCE ( ordl.M_InOut_ID, rd.M_InOut_ID, riol.M_InOut_ID, r.InOut_ID) = fio.M_InOut_ID AND fio.isActive = 'Y'
+			INNER JOIN C_DocType dt ON fio.C_DocType_ID  = dt.C_DocType_ID AND dt.isActive = 'Y'
+			LEFT OUTER JOIN C_DocType_Trl dtt ON fio.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language} AND dtt.isActive = 'Y'
 		WHERE
-			iol.M_InOut_ID = $P{RECORD_ID}
+			iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
 		GROUP BY
 			iol.M_InOutLine_ID
 	) io ON iol.M_InOutLine_ID = io.M_InOutLine_ID
 WHERE
-	iol.M_InOut_ID = $P{RECORD_ID}
-	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
+	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
 GROUP BY
 	Attributes,
 	COALESCE( pt.Name, p.name ),
