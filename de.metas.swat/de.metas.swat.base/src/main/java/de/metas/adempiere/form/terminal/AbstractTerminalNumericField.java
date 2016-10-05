@@ -34,7 +34,6 @@ import java.text.Format;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -64,7 +63,7 @@ public abstract class AbstractTerminalNumericField
 
 	protected String constraints = SwingTerminalFactory.BUTTON_Constraints;
 
-	private BigDecimal increment = Env.ONE;
+	private BigDecimal increment = BigDecimal.ONE;
 
 	@Override
 	public void setMinusRO(final boolean ro)
@@ -108,6 +107,9 @@ public abstract class AbstractTerminalNumericField
 		}
 	}
 
+	/**
+	 * Note: does not care for "ValueChanged" or "TextChanged" events from our inner text component. That's fine because those are generally coming from within this very component
+	 */
 	private final PropertyChangeListener numberChangeListener = new PropertyChangeListener()
 	{
 		@Override
@@ -168,7 +170,7 @@ public abstract class AbstractTerminalNumericField
 
 		initComponents();
 		initUI();
-		setValue(Env.ZERO, false);
+		setValue(BigDecimal.ZERO, false);
 	}
 
 	protected AbstractTerminalNumericField(final ITerminalContext tc, final String name, final int displayType, final boolean withButtons, final boolean withLabel, final String constr)
@@ -283,7 +285,7 @@ public abstract class AbstractTerminalNumericField
 			else
 			{
 				log.info("Invalid Format '{}' to be used to convert text '{}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
-				return Env.ZERO;
+				return BigDecimal.ZERO;
 			}
 		}
 		catch (final Exception e)
@@ -335,7 +337,7 @@ public abstract class AbstractTerminalNumericField
 		final BigDecimal valueNew;
 		if (value == null)
 		{
-			valueNew = Env.ZERO;
+			valueNew = BigDecimal.ZERO;
 		}
 		else
 		{
@@ -361,6 +363,7 @@ public abstract class AbstractTerminalNumericField
 		//
 		// Actually setting the new value
 		fNumber.setText(valueNew.toString());
+
 		this._valueOld = valueNew;
 
 		//
