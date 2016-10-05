@@ -125,7 +125,8 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}", System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
+		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}",
+				System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
 
 		// Case: valueOld=valueNew=null
 		if (valueOld == valueNew)
