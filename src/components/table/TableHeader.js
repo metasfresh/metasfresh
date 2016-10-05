@@ -16,14 +16,9 @@ class TableHeader extends Component {
             return 'th-sm';
         }
     }
-
-    //<span className={sorting.name && sorting.asc ? 'sort rotate-90' : '' + 'rotate-90'} onClick={() => sort(true, field, true)}><i className="meta-icon-chevron-1" /></span>
-    //<span className={sorting.name && !sorting.asc ? 'sort' : ''} onClick={() => sort(false, field, true)}><i className="meta-icon-chevron-1" /></span>
     
     renderSorting = (field) => {
         const {sort,display, orderBy} = this.props;
-        // console.log('ordered By ');
-        // console.log(orderBy );
         let sorting = {};
 
         orderBy && orderBy.map((item, index) => {
@@ -34,7 +29,6 @@ class TableHeader extends Component {
             }
         })
 
-    
         return (
             <div className="sort-menu" onClick={() => sort(!sorting.asc, field, true)}>
                     <span className={sorting.name && sorting.asc ? 'sort rotate-90' : (sorting.name && !sorting.asc) ? 'sort' : ''}><i className="meta-icon-chevron-1" /></span>
@@ -57,8 +51,6 @@ class TableHeader extends Component {
     }
     render() {
         const {cols, mainTable} = this.props;
-        // console.log('cols');
-        // console.log(cols);
         return (
             <tr>
                 {this.renderCols(cols, mainTable)}
