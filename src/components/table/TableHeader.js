@@ -22,7 +22,7 @@ class TableHeader extends Component {
         let sorting = {};
 
         orderBy && orderBy.map((item, index) => {
-            
+
             if(field == item.fieldName){
                 sorting.name = item.fieldName;
                 sorting.asc = item.ascending;
@@ -34,7 +34,7 @@ class TableHeader extends Component {
                 <span className="th-caption">{caption}</span>
                 <span className={sorting.name && sorting.asc ? 'sort rotate-90 sort-ico' : (sorting.name && !sorting.asc) ? 'sort sort-ico' : 'sort-ico'}><i className="meta-icon-chevron-1" /></span>
             </div>
-            
+
         )
     }
     renderCols = (cols, mainTable) => {

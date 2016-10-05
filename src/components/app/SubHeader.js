@@ -35,9 +35,9 @@ class Subheader extends Component {
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column" onClick = {onClick}>
-                                <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
+                                {windowType && <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New
-                                </div>
+                                </div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>}
                                 <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
                                 <div className="subheader-item"><i className="meta-icon-message" /> Send message</div>

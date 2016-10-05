@@ -41,7 +41,7 @@ class DocList extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return nextState.layout && nextState.data && nextState.filters;
+        return !!nextState.layout && !!nextState.data && !!nextState.filters;
     }
 
     updateData = (filter) => {

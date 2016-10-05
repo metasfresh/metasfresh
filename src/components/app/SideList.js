@@ -4,6 +4,9 @@ class SideList extends Component {
     constructor(props) {
         super(props);
     }
+    componentDidMount = () => {
+
+    }
     renderTableBody = () => {
         // return this.props.SideList.map((order) => {
         //     return (

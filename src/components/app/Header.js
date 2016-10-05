@@ -200,7 +200,6 @@ class Header extends Component {
 
                 <Subheader open={isSubheaderShow} dataId={dataId} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
                 <SideList open={isSideListShow} />
-
             </div>
         )
     }

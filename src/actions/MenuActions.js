@@ -49,6 +49,14 @@ export function rootRequest(limit) {
     return dispatch => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
+export function getRootBreadcrumb() {
+    return dispatch => {
+        dispatch(rootRequest(6)).then(root => {
+            dispatch(setBreadcrumb([{nodeId: "0", children: root.data}]));
+        });
+    }
+}
+
 export function getWindowBreadcrumb(id){
     return dispatch => {
         dispatch(elementPathRequest("window", id)).then(response => {
