@@ -51,7 +51,7 @@ function mapStateToProps(state) {
     const {
         breadcrumb
     } = menuHandler || {
-        breadcrumb: {}
+        breadcrumb: []
     }
 
     return {
@@ -61,7 +61,7 @@ function mapStateToProps(state) {
 
 Dashboard.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.object.isRequired
+    breadcrumb: PropTypes.array.isRequired
 };
 
 Dashboard = connect(mapStateToProps)(Dashboard);
