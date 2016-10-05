@@ -1,16 +1,5 @@
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU;
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU
-(
-	MovementQty numeric,
-	Name Character Varying,
-	UOMSymbol Character Varying (10)
-);
-
-
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU AS
 $$
 SELECT

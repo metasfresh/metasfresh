@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-07-08T08:25:01 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T16:12:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout_without_prices_customer_specific/report" uuid="24208fd1-eaa1-4f8e-a2aa-22ed9c4e6234">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -29,14 +31,14 @@ FROM
 			THEN '<br><br><br>'
 			ELSE ''
 		END || dt.documentnote 	as textcenter,
-		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y') as language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
 		io.m_inout_id		as m_inout_id,
 		'docnote' 		as tag,
 		3			as position
 	FROM
 		m_inout io
-		LEFT JOIN c_doctype dt 		ON io.c_doctype_id 	= dt.c_doctype_id
-
+		LEFT JOIN c_doctype dt 		ON io.c_doctype_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE io.isActive = 'Y'
 	UNION
 ---------------------------------------------------------------------------------------------
 	--Docnote TRL
@@ -52,8 +54,8 @@ FROM
 		3			as position
 	FROM
 		m_inout io
-		LEFT JOIN c_doctype_trl dt 	ON io.c_doctype_id 	= dt.c_doctype_id
-
+		LEFT JOIN c_doctype_trl dt 	ON io.c_doctype_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE io.isActive = 'Y'
 	UNION
 ---------------------------------------------------------------------------------------------
 	--Descriptionbottom
@@ -66,6 +68,7 @@ FROM
 		2			as position
 	FROM
 		m_inout io
+	WHERE io.isActive = 'Y'
 	)footer
 WHERE
 	footer.m_inout_id = $P{m_inout_id}
