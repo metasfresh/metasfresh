@@ -221,12 +221,6 @@ class Table extends Component {
 
     }
     handleRightClick = (e, id) => {
-        // const {selected} = this.state;
-        // if(selected.length < 1) {
-        //   this.selectProduct(id);
-        // }
-
-
         const {selected} = this.state;
         const isAnySelected = selected.length > 0;
 
@@ -338,8 +332,6 @@ class Table extends Component {
         const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable, updateDocList, sort, orderBy} = this.props;
         const {x, y, contextMenu, selected, listenOnKeys} = this.state;
 
-        // console.log(this.props.cols);
-
         return (
             <div>
                 <div className="row">
@@ -397,6 +389,7 @@ class Table extends Component {
                             size={size}
                             selected={selected}
                             page={page}
+                            orderBy={orderBy}
                         />
                     </div>
                 </div>}

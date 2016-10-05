@@ -1184,10 +1184,14 @@ body {
 
 .sort-menu {
     display: inline-block;
-    /*float: right;*/
     position: absolute;
     right: 0;
     top: 0;
+    line-height: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+    width: 100%;
+    text-align: right;
 }
 
 .sort-menu span {
@@ -1195,12 +1199,22 @@ body {
     display: block;
     cursor: pointer;
     color: $brand-font-color;
+    opacity: 0;
 }
 
 .sort-menu .sort {
     color: white;
+    opacity: 1;
 }
 
 th {
     position: relative;
+}
+
+.rotate-90 {
+    transform: rotate(180deg);
+}
+
+.sort.rotate-90 {
+    text-align: left;
 }

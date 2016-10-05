@@ -26,7 +26,6 @@ class DocList extends Component {
             layout: {},
             filters: {},
             sortingAsc: false,
-            test: 'aaa',
             sortingField: ''
         }
     }
@@ -80,75 +79,40 @@ class DocList extends Component {
         });
     }
 
-    sortData = (ascending, field) => {
-        const {sortingAsc, sortingField, test} = this.state;
-        // console.log('ascending ' + ascending);
+    sortData = (ascending, field, startPage) => {
+        const {sortingAsc, sortingField} = this.state;
         const {data,page} = this.state;
 
         let sortingQuery = '';
 
-
-        this.setState({sortingAsc: ascending}, function () {
-            // console.log(this.state.sortingAsc);
-        });
-
-
-
-
-
         this.setState(
             Object.assign({}, this.state, {
-                test: 'bbb'
-            }), ()=> {
-                // console.log(test);
+                sortingAsc: ascending
+            }), () => {
+                this.setState(
+                    Object.assign({}, this.state, {
+                        sortingField: field
+                    }), () => {
+                        if(startPage){
+                           this.handleChangePage(1); 
+                        }
+                    }
+                );
             }
         );
 
-        // this.setState(
-        //     Object.assign({}, this.state, {
-        //         sortingAsc: ascending
-        //     }), ()=> {
-        //         console.log(sortingAsc);
-        //     }
-        // );
-
-        this.setState(
-            Object.assign({}, this.state, {
-                sortingField: field
-            })
-        );
-
-        // console.log('sort data');
-        // console.log(sortingAsc + ' ' + sortingField);
-
-
         if(field && ascending) {
             sortingQuery = '+' + field;
-            // this.setState(
-            //     Object.assign({}, this.state, {
-            //         page: 1
-            //     })
-            // );
         } else if(field && !ascending) {
             sortingQuery = '-' + field;
-            // this.setState(
-            //     Object.assign({}, this.state, {
-            //         page: 1
-            //     })
-            // );
         }
 
-        // console.log('view id:');
-        // console.log(data.viewId);
-
-        this.getData(data.viewId, page, 20, sortingQuery);
+        this.getData(data.viewId, page, 20, sortingQuery); 
     }
 
     handleChangePage = (index) => {
         const {data, page} = this.state;
         const {sortingAsc, sortingField} = this.state;
-
-        // console.log('a ' +sortingAsc + ' b ' + sortingField);
 
         let currentPage = page;
         switch(index){
@@ -166,14 +130,15 @@ class DocList extends Component {
             this.setState(Object.assign({}, this.state, {
                 page: parseInt(currentPage)
             }), ()=>{
-                this.getView(sortingAsc, sortingField);
+                this.sortData(sortingAsc, sortingField);
             });
         }
     }
 
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
-        const {layout, data, page} = this.state;
+        const {layout, data, page, sortingField} = this.state;
+        
         if( layout && data) {
             return (
                 <div>
