@@ -29,8 +29,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.spi.impl.rules.Discount;
-import org.adempiere.pricing.spi.impl.rules.PriceList;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -40,7 +38,6 @@ import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.tax.api.ITaxBL;
 
@@ -54,6 +51,9 @@ public class CalloutInvoice extends CalloutEngine
 {
 	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
+	private static final String CTX_UOMConversion = "UOMConversion";
+
+	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
 	/**
 	 * Invoice Header - DocType.
@@ -453,15 +453,15 @@ public class CalloutInvoice extends CalloutEngine
 			invoiceLine.setC_Charge(null);
 			return "ChargeExclusively";
 		}
-		
+
 		invoiceLine.setM_AttributeSetInstance(null);
 		invoiceLine.setS_ResourceAssignment_ID(-1);
 		invoiceLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
-		
+
 		invoiceLine.setPrice_UOM_ID(IUOMDAO.C_UOM_ID_Each); // 07216: Make sure price UOM is also filled.
 
 		calloutField.putContext(CTX_DiscountSchema, false);
-		
+
 		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -477,7 +477,7 @@ public class CalloutInvoice extends CalloutEngine
 				invoiceLine.setPriceLimit(BigDecimal.ZERO);
 				invoiceLine.setPriceList(BigDecimal.ZERO);
 				invoiceLine.setDiscount(BigDecimal.ZERO);
-			
+
 			}
 		}
 		catch (SQLException e)
@@ -597,14 +597,15 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-		
+
 		final Properties ctx = calloutField.getCtx();
-		
+
 		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = calloutField.getModel(de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		
+		final boolean isSOTrx = invoice.isSOTrx();
+
 		// instance of de.metas.adempiere.model.I_C_InvoiceLine, needed for columns not existing in the original version
-		//final de.metas.adempiere.model.I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
+		// final de.metas.adempiere.model.I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final boolean isManualPrice = invoiceLine.isManualPrice();
 
 		// log.warn("amt - init");
@@ -613,21 +614,21 @@ public class CalloutInvoice extends CalloutEngine
 		final int priceListID = invoice.getM_PriceList_ID();
 		final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
 		final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListID);
-				
-		// get values		
+
+		// get values
 		final BigDecimal qtyEntered = invoiceLine.getQtyEntered();
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-	
+		BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
+
 		log.debug("QtyEntered=" + qtyEntered + ", Invoiced=" + qtyInvoiced + ", UOM=" + uomToID);
-		
+
 		//
-		
+
 		BigDecimal priceEntered = invoiceLine.getPriceEntered();
 		BigDecimal priceActual = invoiceLine.getPriceActual();
-		//BigDecimal Discount = invoiceLine.getDiscount();
+		// final BigDecimal Discount = invoiceLine.getDiscount();
 		BigDecimal priceLimit = invoiceLine.getPriceLimit();
 		BigDecimal priceList = invoiceLine.getPriceList();
-		
+
 		log.debug("PriceList=" + priceList + ", Limit=" + priceLimit + ", Precision=" + stdPrecision);
 		log.debug("PriceEntered=" + priceEntered + ", Actual=" + priceActual); // + ", Discount=" + Discount);
 
@@ -635,40 +636,37 @@ public class CalloutInvoice extends CalloutEngine
 		invoiceLine.setLine_CreditMemoReason(invoice.getCreditMemoReason());
 		// metas
 
-		// TODO: Use UpdatePrices here (invoiceLineBL)
+		// TODO: Use UpdatePrices HERE
+
+		final String columnName = calloutField.getColumnName();
+		final boolean isDiscountSchema = calloutField.getContextAsBoolean(CTX_DiscountSchema);
+
 		// Qty changed - recalc price
-				if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName)
-						|| I_C_OrderLine.COLUMNNAME_QtyEntered.equals(changedColumnName)
-						|| I_C_OrderLine.COLUMNNAME_M_Product_ID.equals(changedColumnName))
-				// && !"N".equals(Env.getContext(ctx, WindowNo, CTX_DiscountSchema))
-				{
-					updatePrices(orderLine);
-					PriceEntered = orderLine.getPriceEntered();
-					PriceActual = orderLine.getPriceActual();
-					Discount = orderLine.getDiscount();
-					PriceLimit = orderLine.getPriceLimit();
-					PriceList = orderLine.getPriceList();
-				}
-				
-		// Qty changed - recalc price
-		if ((mField.getColumnName().equals("QtyInvoiced")
-				|| mField.getColumnName().equals("QtyEntered")
-				|| mField.getColumnName().equals("M_Product_ID"))
-				&& !"N".equals(Env.getContext(ctx, WindowNo, CTX_DiscountSchema)))
+		if ((columnName.equals("QtyInvoiced")
+				|| columnName.equals("QtyEntered")
+				|| columnName.equals("M_Product_ID"))
+				&& !isDiscountSchema)
 		{
 			// task 08908
 			// Do not change a thing if the price is manual, except for the case the product changes
-			if (mField.getColumnName().equals("M_Product_ID") || !isManualPrice)
+			if (columnName.equals("M_Product_ID") || !isManualPrice)
 			{
-				int C_BPartner_ID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
-				if (mField.getColumnName().equals("QtyEntered"))
-					QtyInvoiced = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID,
-							C_UOM_To_ID, QtyEntered);
-				if (QtyInvoiced == null)
-					QtyInvoiced = QtyEntered;
-				boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
-				MProductPricing pp = new MProductPricing(M_Product_ID, C_BPartner_ID, QtyInvoiced, IsSOTrx);
-				pp.setM_PriceList_ID(M_PriceList_ID);
+				final int bPartnerID = invoice.getC_BPartner_ID();
+
+				if (columnName.equals("QtyEntered"))
+				{
+					qtyInvoiced = MUOMConversion.convertFromProductUOM(ctx, productID,
+							uomToID, qtyEntered);
+				}
+
+				if (qtyInvoiced == null)
+				{
+					qtyInvoiced = qtyEntered;
+				}
+
+				// TODO: PricingBL
+				MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
+				pp.setM_PriceList_ID(priceListID);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
 				// enable the pricing engine to find the PLV
@@ -681,44 +679,50 @@ public class CalloutInvoice extends CalloutEngine
 				// PriceEntered = pp.getPriceStd();
 				// metas us1064
 				log.debug("amt - QtyChanged -> PriceActual=" + pp.mkPriceStdMinusDiscount()
-						+ ", PriceEntered=" + PriceEntered + ", Discount=" + pp.getDiscount());
+						+ ", PriceEntered=" + priceEntered + ", Discount=" + pp.getDiscount());
 
-				PriceActual = pp.mkPriceStdMinusDiscount();
-				mTab.setValue("PriceActual", PriceActual); // 08763 align the behavior to that of order line
+				priceActual = pp.mkPriceStdMinusDiscount();
+				invoiceLine.setPriceActual(priceActual); // 08763 align the behavior to that of order line
 				// metas us1064 end
 				// mTab.setValue("Discount", pp.getDiscount());
-				mTab.setValue("PriceEntered", PriceActual); // 08763 align the behavior to that of order line
-				Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pp.isDiscountSchema());
+				invoiceLine.setPriceEntered(priceActual); // 08763 align the behavior to that of order line
+
+				calloutField.putContext(CTX_DiscountSchema, pp.isDiscountSchema());
 			}
 		}
-		else if (mField.getColumnName().equals("PriceActual"))
+		else if (columnName.equals("PriceActual"))
 		{
-			PriceActual = (BigDecimal)value;
-			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, PriceActual);
-			if (PriceEntered == null)
-				PriceEntered = PriceActual;
+			priceActual = (BigDecimal)value;
+			priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
+					uomToID, priceActual);
+
+			if (priceEntered == null)
+			{
+				priceEntered = priceActual;
+			}
 			//
-			log.debug("amt - PriceActual=" + PriceActual
-					+ " -> PriceEntered=" + PriceEntered);
-			mTab.setValue("PriceEntered", PriceEntered);
+			log.debug("amt - PriceActual=" + priceActual
+					+ " -> PriceEntered=" + priceEntered);
+
+			invoiceLine.setPriceEntered(priceEntered);
 
 		}
-		else if (mField.getColumnName().equals("PriceEntered"))
+		else if (columnName.equals("PriceEntered"))
 		{
-			PriceEntered = (BigDecimal)value;
+			priceEntered = (BigDecimal)value;
 
 			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			PriceActual = PriceEntered.setScale(StdPrecision, RoundingMode.HALF_UP);
+			priceActual = priceEntered.setScale(stdPrecision, RoundingMode.HALF_UP);
 			//
-			log.debug("amt - PriceEntered=" + PriceEntered
-					+ " -> PriceActual=" + PriceActual);
-			mTab.setValue("PriceActual", PriceActual);
+			log.debug("amt - PriceEntered=" + priceEntered
+					+ " -> PriceActual=" + priceActual);
+
+			invoiceLine.setPriceActual(priceActual);
 		}
 
 		/*
 		 * Discount entered - Calculate Actual/Entered
-		 * if (mField.getColumnName().equals("Discount"))
+		 * if (columnName.equals("Discount"))
 		 * {
 		 * PriceActual = new BigDecimal ((100.0 - Discount.doubleValue()) / 100.0 * PriceList.doubleValue());
 		 * if (PriceActual.scale() > StdPrecision)
@@ -746,65 +750,76 @@ public class CalloutInvoice extends CalloutEngine
 		 */
 
 		// Check PriceLimit
-		String epl = Env.getContext(ctx, WindowNo, CTX_EnforcePriceLimit);
-		boolean enforce = Env.isSOTrx(ctx, WindowNo) && epl != null && epl.equals("Y");
+		final boolean enforcePriceLimit = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
+
+		boolean enforce = enforcePriceLimit && isSOTrx;
+
 		if (enforce && Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_OverwritePriceLimit))
 			enforce = false;
 		// Check Price Limit?
-		if (enforce && PriceLimit.doubleValue() != 0.0
-				&& PriceActual.compareTo(PriceLimit) < 0
+		if (enforce && priceLimit.doubleValue() != 0.0
+				&& priceActual.compareTo(priceLimit) < 0
 				&& !isManualPrice // do not change anything if the price is manual
 		)
 		{
-			PriceActual = PriceLimit;
-			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, PriceLimit);
-			if (PriceEntered == null)
-				PriceEntered = PriceLimit;
-			log.debug("amt =(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
-			mTab.setValue("PriceActual", PriceLimit);
-			mTab.setValue("PriceEntered", PriceEntered);
-			mTab.fireDataStatusEEvent("UnderLimitPrice", "", false);
-			// Repeat Discount calc
-			if (PriceList.intValue() != 0)
+			priceActual = priceLimit;
+			priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
+					uomToID, priceLimit);
+
+			if (priceEntered == null)
 			{
-				Discount = new BigDecimal((PriceList.doubleValue() - PriceActual.doubleValue()) / PriceList.doubleValue() * 100.0);
-				if (Discount.scale() > 2)
-					Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-				// mTab.setValue ("Discount", Discount);
+				priceEntered = priceLimit;
 			}
+			log.debug("amt =(under) PriceEntered=" + priceEntered + ", Actual" + priceLimit);
+
+			invoiceLine.setPriceActual(priceLimit);
+			invoiceLine.setPriceEntered(priceEntered);
+			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
+
+			// Repeat Discount calc
+			// if (priceList.intValue() != 0)
+			// {
+			// discount = new BigDecimal((priceList.doubleValue() - priceActual.doubleValue()) / priceList.doubleValue() * 100.0);
+			// if (Discount.scale() > 2)
+			// Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+			// // mTab.setValue ("Discount", Discount);
+			// }
 		}
 
 		// Line Net Amt
-		BigDecimal LineNetAmt = QtyInvoiced.multiply(PriceActual);
-		if (LineNetAmt.scale() > StdPrecision)
-			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-		log.info("amt = LineNetAmt=" + LineNetAmt);
-		mTab.setValue("LineNetAmt", LineNetAmt);
+		BigDecimal lineNetAmt = qtyInvoiced.multiply(priceActual);
+		if (lineNetAmt.scale() > stdPrecision)
+		{
+			lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
+		}
+		log.info("amt = LineNetAmt=" + lineNetAmt);
+
+		invoiceLine.setLineNetAmt(lineNetAmt);
 
 		// Calculate Tax Amount for PO
-		boolean IsSOTrx = DisplayType.toBoolean(Env.getContext(Env.getCtx(), WindowNo, "IsSOTrx"));
-		if (!IsSOTrx)
+
+		// TODO: Use BL for this
+		if (!isSOTrx)
 		{
-			BigDecimal TaxAmt = BigDecimal.ZERO; // teo_sarca: [ 1656829 ] Problem when there is not tax selected in vendor invoice
-			if (mField.getColumnName().equals("TaxAmt"))
+			BigDecimal taxAmt = BigDecimal.ZERO; // teo_sarca: [ 1656829 ] Problem when there is not tax selected in vendor invoice
+			if (columnName.equals("TaxAmt"))
 			{
-				TaxAmt = (BigDecimal)mTab.getValue("TaxAmt");
+				taxAmt = invoiceLine.getTaxAmt(); // (BigDecimal)mTab.getValue("TaxAmt");
 			}
 			else
 			{
-				Integer taxID = (Integer)mTab.getValue("C_Tax_ID");
-				if (taxID != null && taxID > 0)
+				final I_C_Tax tax = invoiceLine.getC_Tax();
+
+				if (tax != null)
 				{
-					final int C_Tax_ID = taxID.intValue();
-					final I_C_Tax tax = new MTax(ctx, C_Tax_ID, null);
+
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, LineNetAmt, taxIncluded, StdPrecision);
-					mTab.setValue("TaxAmt", TaxAmt);
+					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, stdPrecision);
+					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}
 			// Add it up
-			mTab.setValue("LineTotalAmt", LineNetAmt.add(TaxAmt));
+			invoiceLine.setLineNetAmt(lineNetAmt.add(taxAmt));
 		}
 
 		return "";
@@ -835,120 +850,164 @@ public class CalloutInvoice extends CalloutEngine
 	 */
 	public String qty(final ICalloutField calloutField)
 	{
-		if (isCalloutActive() || value == null)
-			return "";
+		if (isCalloutActive() || calloutField.getValue() == null)
+		{
+			return NO_ERROR;
+		}
 
-		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
+		final String columnName = calloutField.getColumnName();
+
+		final I_C_InvoiceLine invoiceLine = calloutField.getModel(I_C_InvoiceLine.class);
+
 		// instance of de.metas.adempiere.model.I_C_InvoiceLine, needed for columns not existing in the original version
 		final de.metas.adempiere.model.I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final boolean isManualPrice = il.isManualPrice();
 
-		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		// log.warn("qty - init - M_Product_ID=" + M_Product_ID);
-		BigDecimal QtyInvoiced, QtyEntered, PriceActual, PriceEntered;
+		int productID = invoiceLine.getM_Product_ID();
 
+		// log.warn("qty - init - M_Product_ID=" + M_Product_ID);
+		BigDecimal qtyInvoiced, qtyEntered, priceActual, priceEntered;
+
+		final Properties ctx = calloutField.getCtx();
 		// No Product
-		if (M_Product_ID == 0)
+		if (productID <= 0)
 		{
-			QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
-			mTab.setValue("QtyInvoiced", QtyEntered);
+			qtyEntered = invoiceLine.getQtyEntered();
+			invoiceLine.setQtyInvoiced(qtyEntered);
 		}
+
 		// UOM Changed - convert from Entered -> Product
-		else if (mField.getColumnName().equals("C_UOM_ID"))
+		else if (columnName.equals("C_UOM_ID"))
 		{
-			int C_UOM_To_ID = ((Integer)value).intValue();
-			QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
-			if (QtyEntered.compareTo(QtyEntered1) != 0)
+			final int uomToID = invoiceLine.getC_UOM_ID();
+
+			qtyEntered = invoiceLine.getQtyEntered();
+			BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
+
+			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
-						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
-				QtyEntered = QtyEntered1;
-				mTab.setValue("QtyEntered", QtyEntered);
+				log.debug("Corrected QtyEntered Scale UOM=" + uomToID
+						+ "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
+				qtyEntered = qtyEnteredScaled;
+				invoiceLine.setQtyEntered(qtyEntered);
 			}
-			QtyInvoiced = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
-			if (QtyInvoiced == null)
-				QtyInvoiced = QtyEntered;
-			boolean conversion = QtyEntered.compareTo(QtyInvoiced) != 0;
+
+			qtyInvoiced = MUOMConversion.convertToProductUOM(ctx, productID,
+					uomToID, qtyEntered);
+			if (qtyInvoiced == null)
+			{
+				qtyInvoiced = qtyEntered;
+			}
+
+			boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
 
 			// do not change anything if manual price
 			if (!isManualPrice)
 			{
-				PriceActual = (BigDecimal)mTab.getValue("PriceActual");
-				PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-						C_UOM_To_ID, PriceActual);
-				if (PriceEntered == null)
-					PriceEntered = PriceActual;
+				priceActual = invoiceLine.getPriceActual();
 
-				log.debug("qty - UOM=" + C_UOM_To_ID
-						+ ", QtyEntered/PriceActual=" + QtyEntered + "/" + PriceActual
+				priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
+						uomToID, priceActual);
+
+				if (priceEntered == null)
+				{
+					priceEntered = priceActual;
+				}
+
+				log.debug("qty - UOM=" + uomToID
+						+ ", QtyEntered/PriceActual=" + qtyEntered + "/" + priceActual
 						+ " -> " + conversion
-						+ " QtyInvoiced/PriceEntered=" + QtyInvoiced + "/" + PriceEntered);
-				Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-				mTab.setValue("PriceEntered", PriceEntered);
+						+ " QtyInvoiced/PriceEntered=" + qtyInvoiced + "/" + priceEntered);
+
+				setUOMConversion(calloutField, conversion);
+				invoiceLine.setPriceEntered(priceEntered);
 			}
-			mTab.setValue("QtyInvoiced", QtyInvoiced);
+
+			invoiceLine.setQtyInvoiced(qtyInvoiced);
 
 		}
 		// QtyEntered changed - calculate QtyInvoiced
-		else if (mField.getColumnName().equals("QtyEntered"))
+		else if (columnName.equals("QtyEntered"))
 		{
-			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
-			QtyEntered = (BigDecimal)value;
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
-			if (QtyEntered.compareTo(QtyEntered1) != 0)
+			final int uomToID = invoiceLine.getC_UOM_ID();
+
+			qtyEntered = invoiceLine.getQtyEntered();
+
+			BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
+			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
-						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
-				QtyEntered = QtyEntered1;
-				mTab.setValue("QtyEntered", QtyEntered);
+				log.debug("Corrected QtyEntered Scale UOM=" + uomToID
+						+ "; QtyEntered=" + qtyEntered + "->" + qtyEnteredScaled);
+				qtyEntered = qtyEnteredScaled;
+				invoiceLine.setQtyEntered(qtyEntered);
+
 			}
-			QtyInvoiced = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
-			if (QtyInvoiced == null)
-				QtyInvoiced = QtyEntered;
-			boolean conversion = QtyEntered.compareTo(QtyInvoiced) != 0;
-			log.debug("qty - UOM=" + C_UOM_To_ID
-					+ ", QtyEntered=" + QtyEntered
+			qtyInvoiced = MUOMConversion.convertToProductUOM(ctx, productID,
+					uomToID, qtyEntered);
+
+			if (qtyInvoiced == null)
+			{
+				qtyInvoiced = qtyEntered;
+			}
+
+			boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
+			log.debug("qty - UOM=" + uomToID
+					+ ", QtyEntered=" + qtyEntered
 					+ " -> " + conversion
-					+ " QtyInvoiced=" + QtyInvoiced);
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-			mTab.setValue("QtyInvoiced", QtyInvoiced);
+					+ " QtyInvoiced=" + qtyInvoiced);
+
+			setUOMConversion(calloutField, conversion);
+			invoiceLine.setQtyInvoiced(qtyInvoiced);
 		}
 		// QtyInvoiced changed - calculate QtyEntered (should not happen)
-		else if (mField.getColumnName().equals("QtyInvoiced"))
+		else if (columnName.equals("QtyInvoiced"))
 		{
-			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
-			QtyInvoiced = (BigDecimal)value;
-			int precision = MProduct.get(ctx, M_Product_ID).getUOMPrecision();
-			BigDecimal QtyInvoiced1 = QtyInvoiced.setScale(precision, BigDecimal.ROUND_HALF_UP);
-			if (QtyInvoiced.compareTo(QtyInvoiced1) != 0)
+			final int uomToID = invoiceLine.getC_UOM_ID();
+
+			qtyInvoiced = invoiceLine.getQtyInvoiced();
+
+			int precision = MProduct.get(ctx, productID).getUOMPrecision();
+
+			final BigDecimal qtyInvoicedScaled = qtyInvoiced.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			if (qtyInvoiced.compareTo(qtyInvoicedScaled) != 0)
 			{
 				log.debug("Corrected QtyInvoiced Scale "
-						+ QtyInvoiced + "->" + QtyInvoiced1);
-				QtyInvoiced = QtyInvoiced1;
-				mTab.setValue("QtyInvoiced", QtyInvoiced);
+						+ qtyInvoiced + "->" + qtyInvoicedScaled);
+
+				qtyInvoiced = qtyInvoicedScaled;
+				invoiceLine.setQtyInvoiced(qtyInvoiced);
+
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyInvoiced);
-			if (QtyEntered == null)
-				QtyEntered = QtyInvoiced;
-			boolean conversion = QtyInvoiced.compareTo(QtyEntered) != 0;
-			log.debug("qty - UOM=" + C_UOM_To_ID
-					+ ", QtyInvoiced=" + QtyInvoiced
+			qtyEntered = MUOMConversion.convertFromProductUOM(ctx, productID,
+					uomToID, qtyInvoiced);
+			if (qtyEntered == null)
+			{
+				qtyEntered = qtyInvoiced;
+			}
+
+			boolean conversion = qtyInvoiced.compareTo(qtyEntered) != 0;
+
+			log.debug("qty - UOM=" + uomToID
+					+ ", QtyInvoiced=" + qtyInvoiced
 					+ " -> " + conversion
-					+ " QtyEntered=" + QtyEntered);
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-			mTab.setValue("QtyEntered", QtyEntered);
+					+ " QtyEntered=" + qtyEntered);
+			setUOMConversion(calloutField, conversion);
+
+			invoiceLine.setQtyEntered(qtyEntered);
 		}
 		//
 		return "";
 	}	// qty
 
+	private static final void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
+	{
+		calloutField.putContext(CTX_UOMConversion, conversion);
+	}
+
 	public String priceList(final ICalloutField calloutField)
 	{
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(mTab, I_C_Invoice.class);
+		final I_C_Invoice invoice = calloutField.getModel(I_C_Invoice.class);
+
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 		if (priceList == null || priceList.getM_PriceList_ID() <= 0)
 		{
