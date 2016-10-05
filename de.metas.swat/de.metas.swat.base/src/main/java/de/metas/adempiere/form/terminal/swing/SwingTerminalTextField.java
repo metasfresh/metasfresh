@@ -54,7 +54,9 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.images.Images;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -451,17 +453,21 @@ import net.miginfocom.swing.MigLayout;
 		textComponent.setText(text);
 
 		// TODO: gh #370: remove the commitEdit call (also un-edit the javadoc!) if this change doesn't help either
-		try
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean commit = sysConfigBL.getBooleanValue("de.metas.adempiere.form.terminal.swing.SwingTerminalTextField.directCommitEditOnSetText", true);
+		if (commit)
 		{
-			commitEdit();
+			try
+			{
+				commitEdit();
+			}
+			catch (final ParseException e)
+			{
+				// don't do anything about the error. we just want to make sure that *if* the text is set from the outside and *if* that's successful, *then* the value is directly updated too.
+				logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; commitEdit() after setText() failed with exception={}, errorOffSet={} on textComponent={}; this={}",
+						System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), e, e.getErrorOffset(), textComponent, this);
+			}
 		}
-		catch (final ParseException e)
-		{
-			// don't do anything about the error. we just want to make sure that *if* the text is set from the outside and *if* that's successful, *then* the value is directly updated too.
-			logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; commitEdit() after setText() failed with exception={}, errorOffSet={} on textComponent={}; this={}",
-					System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), e, e.getErrorOffset(), textComponent, this);
-		}
-
 		firePropertyChanged(ITerminalTextField.PROPERTY_TextChanged, textOld, text);
 	}
 
