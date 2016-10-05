@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import Header from '../components/app/Header';
 
 import {
-    getWindowBreadcrumb,
+    getRootBreadcrumb,
     getDashboardLink
  } from '../actions/MenuActions';
 
@@ -17,16 +17,16 @@ export class Dashboard extends Component {
 
     componentDidMount = () => {
         const {dispatch} = this.props;
-        dispatch(getWindowBreadcrumb("143"));
+        dispatch(getRootBreadcrumb());
         this.getDashboardLink();
     }
 
     getDashboardLink = () => {
         const {dispatch} = this.props;
         dispatch(getDashboardLink()).then(response => {
-                this.setState(Object.assign({}, this.state, {
-                    link: response.data
-                }))
+            this.setState(Object.assign({}, this.state, {
+                link: response.data
+            }))
         });
     }
 
@@ -36,7 +36,7 @@ export class Dashboard extends Component {
         return (
             <div>
                 <Header
-                    breadcrumb={breadcrumb.slice(0,1)}
+                    breadcrumb={breadcrumb}
                     siteName = {"Dashboard"}
                 />
                 <div className="header-sticky-distance"/>
