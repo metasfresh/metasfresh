@@ -3,11 +3,17 @@ import axios from 'axios';
 import config from '../config';
 
 
-
 export function setBreadcrumb(breadcrumb){
     return {
         type: types.SET_BREADCRUMB,
         breadcrumb: breadcrumb
+    }
+}
+
+export function setReferences(references){
+    return {
+        type: types.SET_REFERENCES,
+        references: references
     }
 }
 
@@ -42,6 +48,7 @@ export function getWindowBreadcrumb(id){
             let req = 0;
             let pathData = flatten(response.data);
 
+
             // promise to get all of the breadcrumb menu options
             let breadcrumbProcess = new Promise((resolve, reject) => {
 
@@ -75,8 +82,14 @@ export function getWindowBreadcrumb(id){
             return breadcrumbProcess;
         }).then((item) => {
             dispatch(setBreadcrumb(item.reverse()));
+        }).catch((err) => {
+            dispatch(setBreadcrumb([]));
         });
     }
+}
+
+export function getRelatedDocuments(type, id){
+    return dispatch => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
 }
 
 

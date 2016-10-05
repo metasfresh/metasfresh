@@ -50,6 +50,7 @@ class DocList extends Component {
                 layout: response.data,
                 filters: response.data.filters
             }), () => {
+
                 dispatch(createViewRequest(windowType, "grid", 20, [])).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
@@ -83,7 +84,7 @@ class DocList extends Component {
         const {data,page} = this.state;
 
         let sortingQuery = '';
-        
+
         this.setState(
             Object.assign({}, this.state, {
                 sortingAsc: ascending
@@ -137,8 +138,8 @@ class DocList extends Component {
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
         const {layout, data, page, sortingField} = this.state;
+        
         if( layout && data) {
-
             return (
                 <div>
                     <Header breadcrumb={breadcrumb} />
@@ -155,7 +156,6 @@ class DocList extends Component {
                             <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
                                 <i className="meta-icon-preview" /> No search filters
                             </button>
-
                         </div>
                         <div>
                             <Table
@@ -201,11 +201,10 @@ function mapStateToProps(state) {
         modal: false
     }
 
-
     const {
         breadcrumb
     } = menuHandler || {
-        breadcrumb: {}
+        breadcrumb: []
     }
 
     return {

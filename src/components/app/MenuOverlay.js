@@ -216,7 +216,6 @@ class MenuOverlay extends Component {
                                             handleNewRedirect={this.handleNewRedirect}
                                             query={true}
                                             handlePath={this.handlePath}
-                                            dis={dispatch}
                                             {...result}
                                         />
                                     )}
