@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -55,8 +54,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor, Serializable
+public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor
 {
 	public static final Builder builder()
 	{

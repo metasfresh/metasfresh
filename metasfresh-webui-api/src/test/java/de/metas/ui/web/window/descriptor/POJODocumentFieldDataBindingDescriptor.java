@@ -1,12 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -48,24 +41,6 @@ public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldData
 	public String getColumnName()
 	{
 		return columnName;
-	}
-
-	@Override
-	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
-	{
-		return null;
-	}
-
-	@Override
-	public LookupDataSource createLookupDataSource(final LookupScope scope)
-	{
-		return null;
-	}
-
-	@Override
-	public Collection<String> getLookupValuesDependsOnFieldNames()
-	{
-		return ImmutableList.of();
 	}
 
 	@Override

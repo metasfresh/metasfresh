@@ -94,7 +94,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	{
 		super();
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
-		_adWindowId = descriptorsFactory.documentEntity().getAD_Window_ID();
+		_adWindowId = gridTabVO.getAD_Window_ID();
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -452,7 +452,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		}
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
-				.setLookupSource(field.getLookupSource())
+				.setLookupSource(field.getLookupSourceType())
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField));
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);

@@ -1,8 +1,6 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.model.lookup;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.datatypes.LookupValue;
 
 /*
  * #%L
@@ -26,13 +24,8 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
-public interface DocumentEntityDataBindingDescriptor
+@FunctionalInterface
+public interface LookupValueByIdSupplier
 {
-	DocumentsRepository getDocumentsRepository();
-	
-	public interface DocumentEntityDataBindingDescriptorBuilder
-	{
-		DocumentEntityDataBindingDescriptor getOrBuild();
-	}
+	LookupValue findById(Object id);
 }

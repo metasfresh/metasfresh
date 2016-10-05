@@ -65,7 +65,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocument implements Serializable
 {
-	private static final JSONDocument ofDocument(final Document document, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocument ofDocument(final Document document, final JSONFilteringOptions jsonFilteringOpts)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -155,7 +155,6 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 		documentChangedEvents.getFieldChangesList()
 				.stream()
-				// TODO apply filtering
 				.filter(jsonFilteringOpts.documentFieldChangeFilter())
 				.forEach((field) -> {
 					// Add the pseudo-field "ID" first

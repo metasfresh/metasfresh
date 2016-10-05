@@ -1,8 +1,4 @@
-package de.metas.ui.web.window.descriptor;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import de.metas.ui.web.window.model.DocumentsRepository;
+package de.metas.ui.web.window.datatypes;
 
 /*
  * #%L
@@ -26,13 +22,21 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
-public interface DocumentEntityDataBindingDescriptor
+public enum DocumentType
 {
-	DocumentsRepository getDocumentsRepository();
-	
-	public interface DocumentEntityDataBindingDescriptorBuilder
+	Window("W") //
+	, Process("P") //
+	;
+
+	private final String symbol;
+
+	DocumentType(final String symbol)
 	{
-		DocumentEntityDataBindingDescriptor getOrBuild();
+		this.symbol = symbol;
+	}
+
+	public String getSymbol()
+	{
+		return symbol;
 	}
 }

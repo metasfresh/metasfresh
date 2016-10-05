@@ -30,7 +30,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-public interface LookupDataSource
+public interface LookupDataSource extends LookupValueByIdSupplier
 {
 	int FIRST_ROW = 0;
 	int DEFAULT_PageLength = 10;
@@ -49,6 +49,7 @@ public interface LookupDataSource
 		return findEntities(ctx, DEFAULT_PageLength);
 	}
 
+	@Override
 	LookupValue findById(Object id);
 
 	List<CCacheStats> getCacheStats();

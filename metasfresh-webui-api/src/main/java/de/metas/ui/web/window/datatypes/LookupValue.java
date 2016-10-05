@@ -66,6 +66,22 @@ public abstract class LookupValue
 		}
 	}
 
+	public static final LookupValue fromObject(final Object id, final String displayName)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+		if (id instanceof Integer)
+		{
+			return new IntegerLookupValue((int)id, displayName);
+		}
+		else
+		{
+			return new StringLookupValue(id.toString(), displayName);
+		}
+	}
+
 	protected final Object id;
 	protected final String displayName;
 
@@ -171,7 +187,7 @@ public abstract class LookupValue
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
-			if(stringLookupValue == null)
+			if (stringLookupValue == null)
 			{
 				return null;
 			}

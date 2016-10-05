@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -35,7 +36,10 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
  * #%L
@@ -85,6 +89,8 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	private final Class<?> valueClass;
 
+	private final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
+
 	private final Optional<IExpression<?>> defaultValueExpression;
 	private final List<IDocumentFieldCallout> callouts;
 
@@ -126,8 +132,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		calculated = builder.calculated;
 
 		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
-
 		valueClass = Preconditions.checkNotNull(builder.valueClass, "value class not null");
+
+		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
 
 		defaultValueExpression = Preconditions.checkNotNull(builder.defaultValueExpression, "defaultValueExpression not null");
 
@@ -202,6 +209,23 @@ public final class DocumentFieldDescriptor implements Serializable
 		return valueClass;
 	}
 
+	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
+	{
+		return lookupDescriptorProvider.apply(scope);
+	}
+
+	public LookupDataSource createLookupDataSource(final LookupScope scope)
+	{
+		final LookupDescriptor lookupDescriptor = getLookupDescriptor(scope);
+		if (lookupDescriptor == null)
+		{
+			return null;
+		}
+
+		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+
+	}
+
 	public Optional<IExpression<?>> getDefaultValueExpression()
 	{
 		return defaultValueExpression;
@@ -245,6 +269,11 @@ public final class DocumentFieldDescriptor implements Serializable
 		return dependencies;
 	}
 
+	public Object convertToValueClass(final Object value, final LookupValueByIdSupplier lookupDataSource)
+	{
+		return convertToValueClass(fieldName, value, valueClass, lookupDataSource);
+	}
+
 	/**
 	 * Converts given value to target class.
 	 *
@@ -253,7 +282,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	public <T> T convertToValueClass(final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
+	public <T> T convertToValueClass(final Object value, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
 	{
 		return convertToValueClass(fieldName, value, targetType, lookupDataSource);
 	}
@@ -267,7 +296,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	public static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupDataSource lookupDataSource)
+	public static <T> T convertToValueClass(final String fieldName, final Object value, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -375,9 +404,9 @@ public final class DocumentFieldDescriptor implements Serializable
 					final T valueConv = (T)JSONLookupValue.integerLookupValueFromJsonMap(map);
 					return valueConv;
 				}
-				else if (Integer.class.isAssignableFrom(fromType))
+				else if (Number.class.isAssignableFrom(fromType))
 				{
-					final Integer valueInt = (Integer)value;
+					final int valueInt = ((Number)value).intValue();
 					if (lookupDataSource != null)
 					{
 						final LookupValue valueLookup = lookupDataSource.findById(valueInt);
@@ -492,8 +521,10 @@ public final class DocumentFieldDescriptor implements Serializable
 		private boolean calculated;
 
 		private DocumentFieldWidgetType widgetType;
-		private LookupSource lookupSource;
 		public Class<?> valueClass;
+
+		// Lookup
+		private Function<LookupScope, LookupDescriptor> lookupDescriptorProvider = (scope) -> null;
 
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
@@ -557,6 +588,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setCaption(final ITranslatableString caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+
 		public ITranslatableString getCaption()
 		{
 			if (caption == null)
@@ -570,6 +607,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
 		{
 			description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			return this;
+		}
+
+		public Builder setDescription(final ITranslatableString description)
+		{
+			this.description = description;
 			return this;
 		}
 
@@ -649,15 +692,22 @@ public final class DocumentFieldDescriptor implements Serializable
 			return widgetType;
 		}
 
-		public Builder setLookupSource(final LookupSource lookupSource)
+		public Builder setLookupDescriptorProvider(Function<LookupScope, LookupDescriptor> lookupDescriptorProvider)
 		{
-			this.lookupSource = lookupSource;
+			Check.assumeNotNull(lookupDescriptorProvider, "Parameter lookupDescriptorProvider is not null");
+			this.lookupDescriptorProvider = lookupDescriptorProvider;
 			return this;
 		}
 
-		public LookupSource getLookupSource()
+		private Function<LookupScope, LookupDescriptor> getLookupDescriptorProvider()
 		{
-			return lookupSource;
+			return lookupDescriptorProvider;
+		}
+
+		public LookupSource getLookupSourceType()
+		{
+			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
@@ -736,11 +786,11 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private ILogicExpression buildReadonlyLogicEffective()
 		{
-			if(isParentLink())
+			if (isParentLink())
 			{
 				return ILogicExpression.TRUE;
 			}
-			
+
 			if (isVirtualField())
 			{
 				return ILogicExpression.TRUE;
@@ -750,7 +800,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			{
 				return ILogicExpression.TRUE;
 			}
-			
+
 			// If the tab is always readonly, we can assume any field in that tab is readonly
 			final ILogicExpression entityReadonlyLogic = getEntityReadonlyLogic();
 			if (entityReadonlyLogic.isConstantTrue())
@@ -758,13 +808,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				return ILogicExpression.TRUE;
 			}
 
-
 			// Case: DocumentNo special field not be readonly
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
 				return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
 			}
-			
+
 			// Case: DocAction
 			if (hasCharacteristic(Characteristic.SpecialField_DocAction))
 			{
@@ -943,7 +992,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
+		private Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
 		{
 			return _dataBinding;
 		}
@@ -955,10 +1004,10 @@ public final class DocumentFieldDescriptor implements Serializable
 					.add(fieldName, getDisplayLogic().getParameters(), DependencyType.DisplayLogic)
 					.add(fieldName, getMandatoryLogicEffective().getParameters(), DependencyType.MandatoryLogic);
 
-			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
-			if (dataBinding != null)
+			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().apply(LookupScope.DocumentField);
+			if (lookupDescriptor != null)
 			{
-				dependencyMapBuilder.add(fieldName, dataBinding.getLookupValuesDependsOnFieldNames(), DependencyType.LookupValues);
+				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);
 			}
 
 			return dependencyMapBuilder.build();
