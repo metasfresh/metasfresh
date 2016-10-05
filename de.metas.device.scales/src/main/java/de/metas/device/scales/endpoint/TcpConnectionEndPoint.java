@@ -58,6 +58,7 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 			osw.flush();
 
 			final String result = in.readLine();
+
 			return result;
 		}
 		catch (final UnknownHostException e)
@@ -70,27 +71,19 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 		}
 		finally
 		{
-			try
-			{
-				if (osw != null)
-				{
-					osw.close();
-				}
-				if (in != null)
-				{
-					in.close();
-				}
-				if (clientSocket != null)
-				{
-					clientSocket.close();
-				}
-			}
-			catch (final IOException e)
-			{
-				// we tried to close the socked; nothing more to do here
-			}
+			// @formatter:off
+			try	{ if (osw != null)          { osw.close(); } } catch (final IOException e) { /* nothing */ }
+			try	{ if (in != null)           { in.close();  } } catch (final IOException e) { /* nothing */ }
+
+			try	{ if (clientSocket != null) {
+				clientSocket.shutdownOutput();
+				clientSocket.shutdownInput();
+				clientSocket.close();
+			} } catch (final IOException e) { /* nothing */ }
+			// @formatter:on
 		}
 	}
+
 
 	public TcpConnectionEndPoint setHost(final String hostName)
 	{
