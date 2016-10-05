@@ -46,14 +46,14 @@ public class BPartnerBL implements IBPartnerBL
 		String isInvoiceEmailEnabled = bpartner.getIsInvoiceEmailEnabled();
 		//
 		// check flag from partner 
-		if (Check.isEmpty(isInvoiceEmailEnabled))
+		if (Check.isEmpty(isInvoiceEmailEnabled, true))
 		{
 			//
 			// if is empty in partner, check it in user
 			isInvoiceEmailEnabled = user.getIsInvoiceEmailEnabled();
 			//
 			//if is empty also in user, return true - we do not want to let filtering by this if is not completed
-			if (Check.isEmpty(isInvoiceEmailEnabled))
+			if (Check.isEmpty(isInvoiceEmailEnabled, true))
 			{
 				matchingisInvoiceEmailEnabled = Boolean.TRUE;
 			}
