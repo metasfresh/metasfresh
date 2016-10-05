@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 
 /**
  * Immutable Process Parameter
@@ -248,7 +249,22 @@ public final class ProcessInfoParameter implements Serializable
 
 	private final Timestamp toTimestamp(final Object value)
 	{
-		return (Timestamp)value;
+		if(value == null)
+		{
+			return null;
+		}
+		if(value instanceof Timestamp)
+		{
+			return (Timestamp)value;
+		}
+		else if (value instanceof java.util.Date)
+		{
+			return TimeUtil.asTimestamp((java.util.Date)value);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert "+value+" to Timestamp");
+		}
 	}
 
 	public BigDecimal getParameterAsBigDecimal()

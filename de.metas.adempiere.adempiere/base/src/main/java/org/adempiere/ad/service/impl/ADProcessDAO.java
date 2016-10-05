@@ -153,6 +153,16 @@ public class ADProcessDAO implements IADProcessDAO
 				.setOnlyActiveRecords(true)
 				.list(I_AD_Process.class);
 	}
+	
+	@Override
+	public final List<Integer> retrieveProcessesIdsForTable(final Properties ctx, final int adTableId)
+	{
+		final IQueryBuilder<I_AD_Process> queryBuilder = retrieveProcessesForTableQueryBuilder(ctx, adTableId);
+		return queryBuilder.create()
+				.setOnlyActiveRecords(true)
+				.listIds();
+	}
+
 
 	@Override
 	public final List<I_AD_Process> retrieveReportProcessesForTable(final Properties ctx, final String tableName)
@@ -226,5 +236,18 @@ public class ADProcessDAO implements IADProcessDAO
 				.create()
 				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+	
+	@Override
+	public List<I_AD_Process_Para> retriveProcessParameters(final I_AD_Process process)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, process)
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_AD_Process_Para.COLUMNNAME_SeqNo)
+				.endOrderBy()
+				.create()
+				.listImmutable(I_AD_Process_Para.class);
 	}
 }

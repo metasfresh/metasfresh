@@ -22,7 +22,6 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
@@ -38,16 +37,26 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * 
 	 * @param pi process Info
 	 */
-	void loadParameterFromDB(ProcessInfo pi);
+	void loadFromDB(ProcessInfo pi);
 
 	/**
-	 * Saves the parameters of the given ProcessInfo object to the Database. Parameters which are already saved in the database will be: <li>Ignored if the value has not changed <li>Overwritten if the
+	 * Saves the parameters of the given ProcessInfo object to the Database. Parameters which are already saved in the database will be:
+	 * <li>Ignored if the value has not changed
+	 * <li>Overwritten if the
 	 * Value has changed Parameters that are saved in the Database but not included in the ProcessInfo are not affected.
 	 * 
 	 * @param pi process info
 	 * @task US1007
 	 */
 	void saveParameterToDB(ProcessInfo pi);
+
+	/**
+	 * 
+	 * @param adPInstanceId
+	 * @param piParams
+	 * @see #saveParameterToDB(ProcessInfo)
+	 */
+	void saveParameterToDB(int adPInstanceId, ProcessInfoParameter[] piParams);
 
 	/**
 	 * Retrieve process parameters for given AD_PInstance_ID
@@ -59,5 +68,4 @@ public interface IADPInstanceDAO extends ISingletonService
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(Properties ctx, int adPInstanceId);
 
 	List<I_AD_PInstance_Para> retrievePInstanceParams(Properties ctx, int adPInstanceId);
-
 }

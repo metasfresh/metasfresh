@@ -37,9 +37,8 @@ import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.MPInstance;
@@ -74,20 +73,14 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public List<ProcessInfoParameter> retrieveProcessInfoParameters(final Properties ctx, final int adPInstanceId)
 	{
-		final List<I_AD_PInstance_Para> pinstanceParams = retrievePInstanceParams(ctx, adPInstanceId);
-		return ListUtils.convert(pinstanceParams
-				, new Converter<ProcessInfoParameter, I_AD_PInstance_Para>()
-				{
-					@Override
-					public ProcessInfoParameter convert(final I_AD_PInstance_Para adPInstancePara)
-					{
-						return createProcessInfoParameter(adPInstancePara);
-					}
-				});
+		return retrievePInstanceParams(ctx, adPInstanceId)
+				.stream()
+				.map(adPInstancePara -> createProcessInfoParameter(adPInstancePara))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@Override
-	public void loadParameterFromDB(final ProcessInfo pi)
+	public void loadFromDB(final ProcessInfo pi)
 	{
 		Check.assumeNotNull(pi, "pi not null");
 
@@ -95,7 +88,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Retrieve and create ProcessInfoParameters
 		final Properties ctx = pi.getCtx();
 		final int adPInstanceId = pi.getAD_PInstance_ID();
-		final List<ProcessInfoParameter> processInfoParams = retrieveProcessInfoParameters(ctx, adPInstanceId);
 
 		//
 		// Set ProcessInfo's AD_Client_ID and AD_User_ID (if not already set)
@@ -116,6 +108,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		//
 		// Set ProcessInfo's Parameters
+		final List<ProcessInfoParameter> processInfoParams = retrieveProcessInfoParameters(ctx, adPInstanceId);
 		final ProcessInfoParameter[] paramsArr = processInfoParams.toArray(new ProcessInfoParameter[processInfoParams.size()]);
 		pi.setParameter(paramsArr);
 	}
@@ -166,6 +159,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public void saveParameterToDB(final ProcessInfo pi)
 	{
+		saveParameterToDB(pi.getAD_PInstance_ID(), pi.getParameter());
+	}
+	
+	@Override
+	public void saveParameterToDB(final int adPInstanceId, final ProcessInfoParameter[] piParams)
+	{
 		DB.saveConstraints();
 		try
 		{
@@ -173,7 +172,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			.setOnlyAllowedTrxNamePrefixes(true)
 			.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 
-			saveParameterToDB0(pi);
+			saveParameterToDB0(adPInstanceId, piParams);
 		}
 		finally
 		{
@@ -185,10 +184,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	 *
 	 * Called by {@link #saveParameterToDB(ProcessInfo)} to do the actual work.
 	 */
-	private static void saveParameterToDB0(final ProcessInfo pi)
+	private static void saveParameterToDB0(final int adPInstanceId, final ProcessInfoParameter[] piParams)
 	{
-		final ProcessInfoParameter[] piParams = pi.getParameter();
-
 		// exit if this ProcessInfo has no Parameters
 		if (piParams == null || piParams.length == 0)
 		{
@@ -196,7 +193,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		// get Parameters from the Database
-		final MPInstance adPInstance = new MPInstance(Env.getCtx(), pi.getAD_PInstance_ID(), ITrx.TRXNAME_None);
+		final MPInstance adPInstance = new MPInstance(Env.getCtx(), adPInstanceId, ITrx.TRXNAME_None);
 		final List<I_AD_PInstance_Para> instParams = adPInstance.getParameters();
 
 		// Put these Parameters in a map, so we can get them by name later.
