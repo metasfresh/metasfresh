@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.inoutcandidate.model;
 
@@ -32,7 +16,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1493595023L;
+	private static final long serialVersionUID = 14259786L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -46,6 +30,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
 			setIsBPartnerAddress_Override (false);
+// N
+			setIsPackagingMaterial (false);
 // N
 			setM_Product_ID (0);
 			setM_ReceiptSchedule_ID (0);
@@ -70,14 +56,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_ReceiptSchedule[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -136,7 +114,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -711,7 +689,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	@Override
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial)
 	{
-		throw new IllegalArgumentException ("IsPackagingMaterial is virtual column");	}
+		set_Value (COLUMNNAME_IsPackagingMaterial, Boolean.valueOf(IsPackagingMaterial));
+	}
 
 	/** Get Packaging Material .
 		@return Packaging Material 	  */
@@ -806,7 +785,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	@Override
 	public void setMovementDate (java.sql.Timestamp MovementDate)
 	{
-		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
 	/** Get Bewegungs-Datum.

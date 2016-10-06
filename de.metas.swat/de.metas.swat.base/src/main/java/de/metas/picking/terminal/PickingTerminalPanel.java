@@ -163,12 +163,22 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 	@Override
 	public void dispose()
 	{
+		if(isDisposed())
+		{
+			// This method might be called by both the swing framework and ITerminalContext.
+			// Therefore we need to make sure not to try and call deleteReferences() twice because the second time there will be an error.
+			return;
+		}
+
+		// it's important to do this before calling deleteReferences(), because this instance itself was also added as a removable component.
+		// so,  deleteReferences() will also call this dispose() method, and we want to avoid a stack overflow error.
+		// note: alternatively, we could also add a _disposing variable, like we do e.g. in AbstractHUSelectFrame.
+		_disposed = true;
+
 		getTerminalContext().deleteReferences(terminalContextAndRefs.getRight());
 
 		final TerminalContextFactory terminalContextFactory = TerminalContextFactory.get();
 		terminalContextFactory.destroy(getTerminalContext());
-
-		_disposed = true;
 	}
 
 	@Override

@@ -1,0 +1,140 @@
+package de.metas.device.scales.endpoint;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Random;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/*
+ * #%L
+ * de.metas.device.scales
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class TcpConnectionEndPointTest
+{
+	// get a random port number to avoid conflicts. shall be greater than 1024 to avoid trouble on unix systems
+	private static int port = new Random().nextInt(60000) + 1025;
+
+	private static volatile int weight = 100;
+	boolean exitServerSocketThread = false;
+
+	private static TcpConnectionEndPoint tcpConnectionEndPoint;
+
+	@BeforeClass
+	public static void setupEP()
+	{
+		tcpConnectionEndPoint = new TcpConnectionEndPoint();
+		tcpConnectionEndPoint.setHost("localhost");
+		tcpConnectionEndPoint.setPort(port);
+	}
+
+	@Before
+	public void setUp()
+	{
+		exitServerSocketThread = false;
+
+		final Thread myThread = new Thread()
+		{
+			@Override
+			public void run()
+			{
+				while (!exitServerSocketThread)
+				{
+					try (ServerSocket myServer = new ServerSocket(port);
+							Socket myServerSocket = myServer.accept();
+							DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
+							DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
+					{
+
+						byte[] bytes = new byte[10];
+
+						final int read = dis.read(bytes);
+						if (read > 0)
+						{
+							final String string = new String(bytes);
+							System.out.println("server socked received: " + string + "; weight=" + weight);
+
+							// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
+							// first sending a wrong result. the client EP is supposed to only take the last line.
+							final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + "\r\n";
+							dos.writeBytes(wrongServerReturnString);
+							System.out.println("server socked replied with wrongServerReturnString=" + wrongServerReturnString);
+
+							final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + "\r\n";
+							dos.writeBytes(serverReturnString);
+							System.out.println("server socked replied with serverReturnString=" + serverReturnString);
+
+							dos.flush();
+
+						}
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		myThread.start();
+	}
+
+	@Test
+	public void test1()
+	{
+		weight = 300;
+
+		final String result = tcpConnectionEndPoint.sendCmd("S");
+		final String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
+
+		assertThat(result, is(expectedResult));
+	}
+
+	@Test
+	public void test2()
+	{
+		weight = 200;
+
+		String result = tcpConnectionEndPoint.sendCmd("S");
+		String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
+		assertThat(result, is(expectedResult));
+
+		weight = 220;
+		result = tcpConnectionEndPoint.sendCmd("S");
+		expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
+		assertThat(result, is(expectedResult));
+	}
+
+	@After
+	public void tearDown() throws IOException
+	{
+		exitServerSocketThread = true;
+	}
+}

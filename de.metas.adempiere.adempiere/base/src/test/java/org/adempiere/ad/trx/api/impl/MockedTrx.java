@@ -10,18 +10,17 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,21 +28,24 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
+import org.compiere.util.Util;
 import org.junit.Assert;
 import org.junit.Ignore;
 
 @Ignore
-public class MockedTrx extends AbstractTrx
+public class MockedTrx extends PlainTrx
 {
-	private boolean commitCalled = false;
-	private Throwable onCommitException = null;
-
-	private boolean rollbackCalled = false;
+	/** exception this mock shall throw on rollback */
 	private Throwable onRollbackException;
+
+	private List<Exception> rollbacks = new ArrayList<>();
+	private List<ITrxSavepoint> rollbacksToSavePoint = new ArrayList<>();
+
+	private Throwable onCommitException;
+	private List<Exception> commits = new ArrayList<>();
 
 	private boolean closeCalled = false;
 
-	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<ITrxSavepoint>();
 	private final List<ITrxSavepoint> releasedSavepoints = new ArrayList<ITrxSavepoint>();
 
 	public MockedTrx(final ITrxManager trxManager, final String trxName)
@@ -52,23 +54,9 @@ public class MockedTrx extends AbstractTrx
 	}
 
 	@Override
-	protected ITrxSavepoint createTrxSavepointNative(String name)
+	protected boolean releaseSavepointNative(final ITrxSavepoint savepoint)
 	{
-		Assert.assertTrue("Transaction shall be started first", isActive());
-
-		final PlainTrxSavepoint savepoint = new PlainTrxSavepoint(this, name);
-		activeSavepoints.add(savepoint);
-
-		return savepoint;
-	}
-
-	@Override
-	protected boolean releaseSavepointNative(final ITrxSavepoint savepoint) throws Exception
-	{
-		Assert.assertTrue("Transaction shall be started first", isActive());
-
-		final boolean removed = activeSavepoints.remove(savepoint);
-		Assert.assertTrue("Savepoint " + savepoint + " shall be in the activeSavepoints list", removed);
+		super.releaseSavepointNative(savepoint);
 
 		releasedSavepoints.add(savepoint);
 		return true;
@@ -77,9 +65,10 @@ public class MockedTrx extends AbstractTrx
 	@Override
 	protected boolean rollbackNative(boolean throwException) throws SQLException
 	{
-		Assert.assertTrue("Transaction shall be started first", isActive());
+		super.rollbackNative(throwException);
 
-		rollbackCalled = true;
+		rollbacks.add(new Exception("Stacktrace of rollbackNative"));
+		rollbacksToSavePoint.add(null);
 
 		return throwExceptionOrReturnFalse(onRollbackException, throwException);
 	}
@@ -87,7 +76,10 @@ public class MockedTrx extends AbstractTrx
 	@Override
 	protected boolean rollbackNative(ITrxSavepoint savepoint)
 	{
-		Assert.assertTrue("Transaction shall be started first", isActive());
+		super.releaseSavepointNative(savepoint);
+
+		rollbacks.add(new Exception("Stacktrace of rollbackNative"));
+		rollbacksToSavePoint.add(savepoint);
 
 		return true;
 	}
@@ -95,9 +87,9 @@ public class MockedTrx extends AbstractTrx
 	@Override
 	protected boolean commitNative(boolean throwException) throws SQLException
 	{
-		Assert.assertTrue("Transaction shall be started first", isActive());
+		super.commitNative(throwException);
 
-		commitCalled = true;
+		commits.add(new Exception("Stacktrace of commitNative"));
 
 		return throwExceptionOrReturnFalse(onCommitException, throwException);
 	}
@@ -130,13 +122,13 @@ public class MockedTrx extends AbstractTrx
 				return false;
 			}
 		}
-
 		return true;
 	}
 
 	@Override
 	protected boolean closeNative()
 	{
+		super.closeNative();
 		// Assume that at this point the transaction is no longer active because it was never active or because it was commit/rollback first.
 		Assert.assertFalse("Transaction shall not be active at this point", isActive());
 
@@ -159,12 +151,12 @@ public class MockedTrx extends AbstractTrx
 	 */
 	public boolean isCommitCalled()
 	{
-		return commitCalled;
+		return !commits.isEmpty();
 	}
 
 	public boolean isRollbackCalled()
 	{
-		return rollbackCalled;
+		return !rollbacks.isEmpty();
 	}
 
 	/**
@@ -175,13 +167,42 @@ public class MockedTrx extends AbstractTrx
 		return closeCalled;
 	}
 
-	public List<ITrxSavepoint> getActiveSavepoints()
-	{
-		return activeSavepoints;
-	}
-
 	public List<ITrxSavepoint> getReleasedSavepoints()
 	{
 		return releasedSavepoints;
+	}
+
+	/**
+	 *
+	 *
+	 * @return a stacktrace for each time, {@link #commit()} was called on this trx.
+	 *
+	 * @see {@link Util#dumpStackTraceToString(Throwable)}
+	 */
+	public List<Exception> getCommits()
+	{
+		return commits;
+	}
+
+	/**
+	 *
+	 * @return a stacktrace for each time, {@link #rollback()} or {@link #rollback(ITrxSavepoint)} was called on this trx.
+	 *
+	 * @see {@link Util#dumpStackTraceToString(Throwable)}
+	 */
+	public List<Exception> getRollbacks()
+	{
+		return rollbacks;
+	}
+
+	/**
+	 *
+	 * @return a list for each time {@link #rollback()} or {@link #rollback(ITrxSavepoint)} was called on this trx.
+	 *         the list has the same size as the one returned by {@link #getRollbacks()}.
+	 *         If {@link #rollback()} was called without a save point, then the list contains <code>null</code> at this position.
+	 */
+	public List<ITrxSavepoint> getRollbacksToSavePoint()
+	{
+		return rollbacksToSavePoint;
 	}
 }

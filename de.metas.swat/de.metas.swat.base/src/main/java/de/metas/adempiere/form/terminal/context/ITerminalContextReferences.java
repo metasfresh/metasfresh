@@ -99,4 +99,12 @@ public interface ITerminalContextReferences extends AutoCloseable
 	 * @param keyLayout
 	 */
 	void setNumericKeyLayout(IKeyLayout keyLayout);
+
+	/**
+	 * Call {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} with this instance.
+	 * Hint: please don't directly call this method. It's intended to be called by a {@code try}-with-resources statement.
+	 *
+	 */
+	@Override
+	void close();
 }

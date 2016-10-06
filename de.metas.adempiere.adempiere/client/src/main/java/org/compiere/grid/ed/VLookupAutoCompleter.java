@@ -43,9 +43,9 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -61,8 +61,10 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.autocomplete.model.I_AD_Table;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -71,6 +73,8 @@ import de.metas.autocomplete.model.I_AD_Table;
  */
 /* package */class VLookupAutoCompleter extends FieldAutoCompleter
 {
+	private static final Logger log = LogManager.getLogger(VLookupAutoCompleter.class);
+	
 	private final VLookup editor;
 	private final MLookupInfo lookupInfo;
 	// private final MLookup lookup;
@@ -285,7 +289,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		final String sqlSelect = lookupInfo.getSelectSqlPartAsString();
 		if (Check.isEmpty(sqlSelect, true))
 		{
-			log.warn("Empty SELECT SQL found for: " + lookupInfo);
+			log.warn("Empty SELECT SQL found for: {}", lookupInfo);
 			return null;
 		}
 
@@ -346,16 +350,10 @@ import de.metas.autocomplete.model.I_AD_Table;
 	}
 
 	@Override
-	public boolean isEnabled()
+	public void setUserObject(final Object userObject)
 	{
-		return this.textBox.hasFocus();
-	}
-
-	@Override
-	public void setUserObject(Object userObject)
-	{
-		String textOld = textBox.getText();
-		int caretPosition = textBox.getCaretPosition();
+		final String textOld = getText();
+		final int caretPosition = getTextCaretPosition();
 		//
 		super.setUserObject(userObject);
 		// Object valueOld = editor.getValue();
@@ -376,14 +374,14 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 		else
 		{
-			log.warn("Not supported - " + userObject + ", class=" + userObject.getClass());
+			log.warn("Not supported - {}, class={}", userObject, userObject.getClass());
 			return;
 		}
 		editor.actionCombo(value);
 		if (value == null)
 		{
-			textBox.setText(textOld);
-			textBox.setCaretPosition(caretPosition);
+			setText(textOld);
+			setTextCaretPosition(caretPosition);
 		}
 	}
 

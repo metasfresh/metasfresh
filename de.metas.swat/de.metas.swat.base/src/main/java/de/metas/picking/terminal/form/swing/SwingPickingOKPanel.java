@@ -103,7 +103,7 @@ import de.metas.product.IStoragePA;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Picking First Window Panel
+ * Picking First Window Panel, which is embedded in {@link SwingPickingTerminalPanel}.
  *
  * @author cg
  *
@@ -774,7 +774,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void configureMiniTable(IMiniTable miniTable)
+	public void configureMiniTable(final IMiniTable miniTable)
 	{
 		columnName2index.clear();
 		miniTable.setMultiSelection(false);

@@ -205,13 +205,4 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 			editor.setValue(null);
 		}
 	}
-
-	/**
-	 * C&Ped this method from {@link VLookupAutoCompleter}..can't say that i know what it is about..
-	 */
-	@Override
-	public boolean isEnabled()
-	{
-		return textBox.hasFocus();
-	}
 }

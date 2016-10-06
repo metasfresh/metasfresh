@@ -13,11 +13,11 @@ package de.metas.lock.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,7 +65,7 @@ public interface ILockCommand
 
 	/**
 	 * Default value for {@link #isFailIfNothingLocked()} is <code>true</code>.
-	 * 
+	 *
 	 * NOTE: we decided to do so because in most of the cases, when there is nothing inserted it's because the selection is created in a transaction which is not commited yet, and debugging this issue
 	 * could be quite hard.
 	 */
@@ -77,10 +77,16 @@ public interface ILockCommand
 
 	ILock getParentLock();
 
-	/** Sets owner/new owner of the lock which will be acquired */
+	/**
+	 * Sets owner/new owner of the lock which will be acquired.
+	 * <p>
+	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)}, {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)} or {@link ILockManager#getLockedWhereClause(Class, String, ILock)}.
+	 */
 	ILockCommand setOwner(final LockOwner owner);
 
-	/** @return owner/new owner of the lock which will be acquired; never returns <code>null</code> */
+	/**
+	 * @return owner/new owner of the lock which will be acquired; never returns <code>null</code>
+	 */
 	LockOwner getOwner();
 
 	/**
@@ -116,9 +122,9 @@ public interface ILockCommand
 
 	/**
 	 * Sets if the lock command shall fail if on {@link #acquire()} nothing was locked.
-	 * 
+	 *
 	 * By default this is {@link #DEFAULT_FailIfNothingLocked}
-	 * 
+	 *
 	 * @param failIfNothingLocked
 	 */
 	ILockCommand setFailIfNothingLocked(boolean failIfNothingLocked);
