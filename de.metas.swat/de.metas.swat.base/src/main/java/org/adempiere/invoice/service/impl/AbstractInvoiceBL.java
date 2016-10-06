@@ -108,7 +108,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// System configurations (public for testing)
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
-	
+
 	//FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
@@ -904,7 +904,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = Services.get(IInvoiceLineBL.class).calculatedQtyInPriceUOM(qtyInvoiced, invoiceLine, false);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
@@ -1355,7 +1355,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
-		
+
 		//
 		// allocate the invoice against the credit memo
 		// @formatter:off
@@ -1380,7 +1380,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.create(true); // completeIt = true
 		// @formatter:on
 	}
-	
+
 	@Override
 	public String getDefaultPaymentRule()
 	{
