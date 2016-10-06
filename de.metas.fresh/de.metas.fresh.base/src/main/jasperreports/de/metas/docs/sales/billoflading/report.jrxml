@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-16T09:46:53 -->
+<!-- 2016-10-06T16:02:50 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/sales/billoflading/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -37,22 +39,22 @@ FROM
 	'1 Data' as tag
 FROM
 	M_ShipperTransportation mst
-	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id)
-	INNER JOIN M_Package mp ON (mp.M_Package_ID=msp.M_Package_ID)
-	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID)
+	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id) AND msp.isActive = 'Y'
+	INNER JOIN M_Package mp ON (mp.M_Package_ID=msp.M_Package_ID) AND mp.isActive = 'Y'
+	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID) AND mphu.isActive = 'Y'
 	INNER JOIN M_HU hu ON (hu.M_HU_ID=mphu.M_HU_ID)
-	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID)
-	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID)
-	INNER JOIN M_HU_Storage hu_storage ON (hu_storage.M_HU_ID=hu.M_HU_ID)
-	INNER JOIN M_Product p ON (p.M_Product_ID=hu_storage.M_Product_ID)
+	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID) AND hu_pi_ver.isActive = 'Y'
+	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID) AND hu_pi.isActive = 'Y'
+	INNER JOIN M_HU_Storage hu_storage ON (hu_storage.M_HU_ID=hu.M_HU_ID) AND hu_storage.isActive = 'Y'
+	INNER JOIN M_Product p ON (p.M_Product_ID=hu_storage.M_Product_ID) AND p.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner_Product bpp ON (p.M_Product_ID = bpp.M_Product_ID) AND bpp.isActive = 'Y'
-	INNER JOIN C_UOM uom ON (COALESCE(hu_storage.C_UOM_ID, p.C_UOM_ID) = uom.C_UOM_ID)
-	INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=msp.C_BPartner_ID)
-	INNER JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID=msp.C_BPartner_Location_ID)
-	INNER JOIN C_Location loc ON (loc.C_Location_ID=bpl.C_Location_ID)
-	INNER JOIN C_Country loc_cy ON (loc_cy.C_Country_ID=loc.C_Country_ID)
+	INNER JOIN C_UOM uom ON (COALESCE(hu_storage.C_UOM_ID, p.C_UOM_ID) = uom.C_UOM_ID) AND uom.isActive = 'Y'
+	INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=msp.C_BPartner_ID) AND bp.isActive = 'Y'
+	INNER JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID=msp.C_BPartner_Location_ID) AND bpl.isActive = 'Y'
+	INNER JOIN C_Location loc ON (loc.C_Location_ID=bpl.C_Location_ID) AND loc.isActive = 'Y'
+	INNER JOIN C_Country loc_cy ON (loc_cy.C_Country_ID=loc.C_Country_ID) AND loc_cy.isActive = 'Y'
 WHERE
-	mst.M_ShipperTransportation_ID = $P{RECORD_ID}
+	mst.M_ShipperTransportation_ID = $P{RECORD_ID} AND mst.isActive = 'Y'
 UNION
 SELECT
 	null AS DocNo, null AS DocDate, null AS BPName, null AS gln, null, null,
