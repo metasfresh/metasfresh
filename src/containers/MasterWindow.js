@@ -7,7 +7,7 @@ import {
 } from '../actions/WindowActions';
 
 import {
-    notificationState
+    addNotification
 } from '../actions/AppActions';
 
 import Window from '../components/Window';
@@ -37,10 +37,19 @@ class MasterWindow extends Component {
         });
     }
 
-    fireNotification = () => {
+    fireNotificationSuccess = () => {
         const {dispatch} = this.props;
+        dispatch(addNotification(true, 'Success', 'Lorem ipsum dolor sit amet', 1000, 'success'));
+    }
 
-        dispatch(notificationState('true'));
+    fireNotificationWarning = () => {
+        const {dispatch} = this.props;
+        dispatch(addNotification(true, 'Warning', 'This is warning message', 0, 'warning'));
+    }
+
+    fireNotificationError = () => {
+        const {dispatch} = this.props;
+        dispatch(addNotification(true, 'Error', 'Lorem ipsum error sit amet. Error error.', 5000, 'error'));
     }
 
     componentWillReceiveProps(props) {
@@ -100,6 +109,10 @@ class MasterWindow extends Component {
                 />
 
                 <NotificationHandler />
+
+                <button onClick={this.fireNotificationSuccess}>Show success</button>
+                <button onClick={this.fireNotificationWarning}>Show warning</button>
+                <button onClick={this.fireNotificationError}>Show error</button>
 
             </div>
         );

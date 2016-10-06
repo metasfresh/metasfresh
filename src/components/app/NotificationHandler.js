@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import Notification from '../app/Notification';
 
 import {
-    notificationState
+    addNotification
 } from '../../actions/AppActions';
 
 class NotificationHandler extends Component {
@@ -12,13 +12,15 @@ class NotificationHandler extends Component {
         super(props);
 
         this.state = {
-            notification: 'false'
+            notification: {
+              visible: false,
+              notifications: [],
+              title: '',
+              msg: '',
+              time: 0
+            }
         }
     }
-
-    componentWillReceiveProps(props) {
-    }
-
 
     render() {
         return (
@@ -32,7 +34,7 @@ class NotificationHandler extends Component {
 }
 
 NotificationHandler.propTypes = {
-    notification: PropTypes.string.isRequired
+    notification: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
@@ -40,7 +42,7 @@ function mapStateToProps(state) {
     const {
         notification
     } = appHandler || {
-        notification: 'false'
+        notification: {}
     }
 
     return {
