@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 
@@ -87,10 +88,10 @@ public interface IDocOutboundDAO extends ISingletonService
 	
 	/**
 	 *  Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
-	 * @param ctx
+	 * @param contextProvider
 	 * @param bpartnerId
 	 * @param AD_Table_ID
 	 * @return
 	 */
-	I_C_Doc_Outbound_Log retrieveLog(Properties ctx, int bpartnerId, int AD_Table_ID);
+	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
 }
