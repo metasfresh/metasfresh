@@ -33,7 +33,7 @@ class Widget extends Component {
         }
         let customWindowType = windowType
         if(isAdvanced){
-            customWindowType += "&advanced=true"  
+            customWindowType += "&advanced=true"
         }
 
         //do patch only when value is not equal state
@@ -167,7 +167,7 @@ class Widget extends Component {
                 )
             case "Lookup":
                 return (
-                    <Lookup  
+                    <Lookup
                         recent={[]}
                         dataId={dataId}
                         properties={fields}
@@ -423,7 +423,7 @@ class Widget extends Component {
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")}>{caption}</div>}
+                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
                             <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
                                 {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
                             </div>
