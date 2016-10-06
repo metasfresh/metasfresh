@@ -50,7 +50,7 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.interfaces.I_C_BPartner;
@@ -182,7 +182,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 	 */
 	protected I_C_Doc_Outbound_Log_Line retrieveDocumentLogLine(final I_C_Doc_Outbound_Log log)
 	{
-		final I_C_Doc_Outbound_Log_Line logLine = Services.get(IArchiveDAO.class).retrieveCurrentPDFArchiveLogLineOrNull(log);
+		final I_C_Doc_Outbound_Log_Line logLine = Services.get(IDocOutboundDAO.class).retrieveCurrentPDFArchiveLogLineOrNull(log);
 		return logLine;
 	}
 

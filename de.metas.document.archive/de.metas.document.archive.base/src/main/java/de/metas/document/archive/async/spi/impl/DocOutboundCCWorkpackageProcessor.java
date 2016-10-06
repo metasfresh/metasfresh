@@ -42,7 +42,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
@@ -92,7 +92,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// Get Document Outbound Configuration
-		final I_C_Doc_Outbound_Config config = Services.get(IArchiveDAO.class).retrieveConfigForModel(model);
+		final I_C_Doc_Outbound_Config config = Services.get(IDocOutboundDAO.class).retrieveConfigForModel(model);
 		if (config == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (" + model + ")");

@@ -17,6 +17,7 @@ upcoming
 ## Features
 * #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
 * #418 Improve sales and purchase tracking reports
+* #443 Add is to be sent as email to doc outbound log
 
 ## Fixes
 * #448 Rounding issue with partical credit memos
