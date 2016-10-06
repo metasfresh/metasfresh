@@ -3,8 +3,7 @@ import update from 'react-addons-update';
 
 const initialState = {
     breadcrumb: [],
-    references: [],
-    globalGridFilter: null
+    references: []
 }
 
 export default function menuHandler(state = initialState, action) {

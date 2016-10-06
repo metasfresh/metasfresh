@@ -30,6 +30,7 @@ class DocList extends Component {
                 />
                 <div className="container header-sticky-distance">
                     <DocumentList
+                        type="grid"
                         windowType={windowType}
                     />
                 </div>

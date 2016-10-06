@@ -4,6 +4,7 @@ class TableHeader extends Component {
     constructor(props) {
         super(props);
     }
+
     getSizeClass = (widgetType) => {
         const lg = ['List', 'Lookup', 'LongText'];
         const md = ['DateTime', 'Date', 'Time', 'Text'];
@@ -16,7 +17,7 @@ class TableHeader extends Component {
             return 'th-sm';
         }
     }
-    
+
     renderSorting = (field, caption) => {
         const {sort,display, orderBy, deselect} = this.props;
         let sorting = {};

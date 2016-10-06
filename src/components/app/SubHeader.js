@@ -9,7 +9,7 @@ import {
 
 import {
     setFilter
-} from '../../actions/MenuActions';
+} from '../../actions/ListActions';
 
 class Subheader extends Component {
     constructor(props){
@@ -58,7 +58,7 @@ class Subheader extends Component {
                                 <div>
                                     <div className="subheader-header">Referenced documents</div>
                                     <div className="subheader-break" />
-                                    { references ? references.map((item, key) =>
+                                    { references && !!references.length ? references.map((item, key) =>
                                         <div
                                             className="subheader-item"
                                             onClick={() => this.handleReferenceClick(item.documentType, item.filter)}

@@ -11,35 +11,41 @@ import {
     browseViewRequest
 } from '../../actions/AppActions';
 
+import {
+    setFilter,
+    setPagination,
+    setSorting
+} from '../../actions/ListActions';
+
 class DocumentList extends Component {
     constructor(props){
         super(props);
+        const {filters, type} = props;
 
         this.state = {
-            page: 1,
             data: null,
-            layout: null,
-            filters: null,
-            sortingAsc: false,
-            sortingField: ''
+            layout: null
         }
-        const {globalGridFilter} = props;
-        this.updateData(globalGridFilter);
+        this.updateData(type);
+    }
+
+    componentWillUpdate() {
+        const {sorting} = this.props;
+        const {data} = this.state;
+
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return !!nextState.layout && !!nextState.data && !!nextState.filters;
+        return !!nextState.layout && !!nextState.data;
     }
 
-    updateData = (filter) => {
-        const {dispatch, windowType} = this.props;
-        dispatch(viewLayoutRequest(windowType, "grid")).then(response => {
+    updateData = (type) => {
+        const {dispatch, windowType, filters} = this.props;
+        dispatch(viewLayoutRequest(windowType, type)).then(response => {
             this.setState(Object.assign({}, this.state, {
-                layout: response.data,
-                filters: response.data.filters
+                layout: response.data
             }), () => {
-
-                dispatch(createViewRequest(windowType, "grid", 20, !!filter ? [filter] : [])).then((response) => {
+                dispatch(createViewRequest(windowType, type, 20, !!filters ? [filters] : [])).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -51,7 +57,8 @@ class DocumentList extends Component {
     }
 
     getView = () => {
-        const {data,page} = this.state;
+        const {data} = this.state;
+        const {page} = this.props;
 
         this.getData(data.viewId, page, 20);
     }
@@ -68,26 +75,17 @@ class DocumentList extends Component {
     }
 
     sortData = (ascending, field, startPage) => {
-        const {sortingAsc, sortingField} = this.state;
-        const {data,page} = this.state;
+        const {sorting, page, dispatch} = this.props;
+        const {data} = this.state;
 
         let sortingQuery = '';
 
-        this.setState(
-            Object.assign({}, this.state, {
-                sortingAsc: ascending
-            }), () => {
-                this.setState(
-                    Object.assign({}, this.state, {
-                        sortingField: field
-                    }), () => {
-                        if(startPage){
-                           this.handleChangePage(1);
-                        }
-                    }
-                );
-            }
-        );
+        dispatch(setSorting(field, ascending));
+
+        if(startPage){
+            dispatch(setPagination(1));
+        }
+
 
         if(field && ascending) {
             sortingQuery = '+' + field;
@@ -99,10 +97,11 @@ class DocumentList extends Component {
     }
 
     handleChangePage = (index) => {
-        const {data, page} = this.state;
-        const {sortingAsc, sortingField} = this.state;
+        const {data} = this.state;
+        const {sorting, page, dispatch} = this.props;
 
         let currentPage = page;
+
         switch(index){
             case "up":
                 currentPage * data.pageLength < data.size ? currentPage++ : null;
@@ -115,32 +114,36 @@ class DocumentList extends Component {
         }
 
         if(currentPage !== page){
-            this.setState(Object.assign({}, this.state, {
-                page: parseInt(currentPage)
-            }), ()=>{
-                this.sortData(sortingAsc, sortingField);
-            });
+            dispatch(setPagination(parseInt(currentPage)));
+            this.sortData(sorting.dir, sorting.prop);
         }
     }
 
     render() {
-        const {layout, data, page} = this.state;
-        const {dispatch, windowType} = this.props;
+        const {layout, data} = this.state;
+        const {dispatch, windowType, type, filters, page} = this.props;
 
         if(layout && data) {
             return (
                 <div>
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
-                        <button
-                            className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                            onClick={() => dispatch(push('/window/' + windowType + '/new'))}
-                        >
-                            <i className="meta-icon-add" /> New {layout.caption}
-                        </button>
-                        <span>Filters: </span>
+                        {type === "grid" &&
+                            <button
+                                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                                onClick={() => dispatch(push('/window/' + windowType + '/new'))}
+                            >
+                                <i className="meta-icon-add" /> New {layout.caption}
+                            </button>
+                        }
+                        {type === "grid" &&
+                            <span>Filters: </span>
+                        }
                         <DatetimeRange />
                         <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
-                            <i className="meta-icon-preview" /> No search filters
+                            <i className="meta-icon-preview" />
+                            {filters ?
+                                " ..." : " No search filters"
+                            }
                         </button>
                     </div>
                     <div>
@@ -175,20 +178,28 @@ class DocumentList extends Component {
 }
 
 DocumentList.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    page: PropTypes.number.isRequired,
+    sorting: PropTypes.object.isRequired
 }
 
 function mapStateToProps(state) {
-    const { menuHandler } = state;
+    const { listHandler } = state;
 
     const {
-        globalGridFilter
-    } = menuHandler || {
-        globalGridFilter: {}
+        filters,
+        page,
+        sorting
+    } = listHandler || {
+        filters: null,
+        page: 1,
+        sorting: {}
     }
 
     return {
-        globalGridFilter
+        filters,
+        page,
+        sorting
     }
 }
 
