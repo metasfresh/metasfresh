@@ -9,6 +9,10 @@ import {
     setReferences
 } from './MenuActions';
 
+import {
+    clearListProps
+} from './ListActions';
+
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -142,6 +146,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
             .then(response => {
 
                 if(docId == "NEW" && !isModal){
+                    dispatch(clearListProps());
                     dispatch(replace("/window/"+ windowType + "/" + response.data[0].id));
                 }
 
