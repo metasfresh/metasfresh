@@ -30,10 +30,16 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 {
+	private static final transient Logger logger = LogManager.getLogger(TcpConnectionEndPoint.class);
+
 	private String hostName;
 	private int port;
 
@@ -44,9 +50,9 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	@Override
 	public String sendCmd(final String cmd)
 	{
-		try (Socket clientSocket = new Socket(hostName, port);
-				BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));)
+		try (final Socket clientSocket = new Socket(hostName, port);
+				final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				final BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));)
 		{
 			osw.write(cmd);
 			osw.newLine();
@@ -58,9 +64,10 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 			{
 				result = readLine;
 				readLine = in.readLine();
+				logger.debug("Read line from the socket: {}", readLine);
 			}
+			logger.debug("Result (last line) as read from the socket: {}", result);
 			return result;
-//			return in.readLine();
 		}
 		catch (final UnknownHostException e)
 		{
