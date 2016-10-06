@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +40,8 @@ import org.junit.Test;
 
 public class TcpConnectionEndPointTest
 {
-	private static int port = 7654;
+	// get a random port number to avoid conflicts. shall be greater than 1024 to avoid trouble on unix systems
+	private static int port = new Random().nextInt(60000) + 1025;
 
 	private static volatile int weight = 100;
 	boolean exitServerSocketThread = false;
@@ -81,8 +83,8 @@ public class TcpConnectionEndPointTest
 							System.out.println("server socked received: " + string + "; weight=" + weight);
 
 							// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
-							//first sending a wrong result. the client EP is supposed to only take the last line.
-							final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight-10)) + "\r\n";
+							// first sending a wrong result. the client EP is supposed to only take the last line.
+							final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + "\r\n";
 							dos.writeBytes(wrongServerReturnString);
 							System.out.println("server socked replied with wrongServerReturnString=" + wrongServerReturnString);
 
@@ -91,7 +93,6 @@ public class TcpConnectionEndPointTest
 							System.out.println("server socked replied with serverReturnString=" + serverReturnString);
 
 							dos.flush();
-
 
 						}
 					}
