@@ -38,28 +38,29 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	private int port;
 
 	/**
-	 * Opens a socked, sends the command and closes the socked again afterwards.
+	 * Opens a socked, sends the command, reads the response and closes the socked again afterwards.
+	 * Note: discards everything besides the last line.
 	 */
 	@Override
 	public String sendCmd(final String cmd)
 	{
-		Socket clientSocket = null;
-		BufferedReader in = null;
-		BufferedWriter osw = null;
-		try
+		try (Socket clientSocket = new Socket(hostName, port);
+				BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));)
 		{
-			clientSocket = new Socket(hostName, port);
-
-			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));
-
 			osw.write(cmd);
 			osw.newLine();
 			osw.flush();
 
-			final String result = in.readLine();
-
+			String result = null;
+			String readLine = in.readLine();
+			while (readLine != null)
+			{
+				result = readLine;
+				readLine = in.readLine();
+			}
 			return result;
+//			return in.readLine();
 		}
 		catch (final UnknownHostException e)
 		{
@@ -69,21 +70,7 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 		{
 			throw new EndPointException("Caught IOException: " + e.getLocalizedMessage(), e);
 		}
-		finally
-		{
-			// @formatter:off
-			try	{ if (osw != null)          { osw.close(); } } catch (final IOException e) { /* nothing */ }
-			try	{ if (in != null)           { in.close();  } } catch (final IOException e) { /* nothing */ }
-
-			try	{ if (clientSocket != null) {
-				clientSocket.shutdownOutput();
-				clientSocket.shutdownInput();
-				clientSocket.close();
-			} } catch (final IOException e) { /* nothing */ }
-			// @formatter:on
-		}
 	}
-
 
 	public TcpConnectionEndPoint setHost(final String hostName)
 	{
