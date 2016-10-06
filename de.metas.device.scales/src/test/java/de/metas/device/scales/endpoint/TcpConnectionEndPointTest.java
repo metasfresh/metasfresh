@@ -2,6 +2,7 @@ package de.metas.device.scales.endpoint;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -87,7 +88,7 @@ public class TcpConnectionEndPointTest
 								DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
 								DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
 						{
-							byte[] bytes = new byte[10];
+							final byte[] bytes = new byte[10];
 
 							final int read = dis.read(bytes);
 							if (read > 0)
@@ -110,9 +111,10 @@ public class TcpConnectionEndPointTest
 						}
 					}
 				}
-				catch (IOException e)
+				catch (final IOException e)
 				{
 					e.printStackTrace();
+					fail("Caught " + e);
 				}
 			}
 		};
@@ -153,7 +155,7 @@ public class TcpConnectionEndPointTest
 	}
 
 	@After
-	public void tearDown() throws IOException
+	public void tearDown()
 	{
 		exitServerSocketThread = true;
 	}
