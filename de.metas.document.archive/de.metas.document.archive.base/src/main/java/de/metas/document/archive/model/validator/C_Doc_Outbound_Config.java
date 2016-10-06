@@ -32,7 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 
@@ -64,7 +64,7 @@ class C_Doc_Outbound_Config
 	@Init
 	public void registerAllOutboundProducers()
 	{
-		final List<I_C_Doc_Outbound_Config> configs = Services.get(IArchiveDAO.class).retrieveAllConfigs();
+		final List<I_C_Doc_Outbound_Config> configs = Services.get(IDocOutboundDAO.class).retrieveAllConfigs();
 		for (final I_C_Doc_Outbound_Config config : configs)
 		{
 			registerOutboundProducer(config);
