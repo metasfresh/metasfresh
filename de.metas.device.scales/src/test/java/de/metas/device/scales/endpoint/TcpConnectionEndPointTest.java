@@ -39,8 +39,6 @@ import org.junit.Test;
 
 public class TcpConnectionEndPointTest
 {
-	private static int port = 7654;
-
 	private static volatile int weight = 100;
 	boolean exitServerSocketThread = false;
 
@@ -54,55 +52,78 @@ public class TcpConnectionEndPointTest
 		tcpConnectionEndPoint.setReturnLastLine(true);
 	}
 
+	/**
+	 * Create a server socket to emulate the scale.
+	 * It picks a port each time it is run, in order to prevent issued with ports that are already in use.
+	 *
+	 * @throws InterruptedException
+	 */
 	@Before
-	public void setUp()
+	public void setUp() throws InterruptedException
 	{
 		exitServerSocketThread = false;
 
-		final Thread myThread = new Thread()
+		final Thread serverSocketThread = new Thread()
 		{
 			@Override
 			public void run()
 			{
-				while (!exitServerSocketThread)
+				try (ServerSocket myServer = new ServerSocket(0))
 				{
-					try (ServerSocket myServer = new ServerSocket(port);
-							Socket myServerSocket = myServer.accept();
-							DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
-							DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
+					final int port = myServer.getLocalPort();
+					System.out.println("TcpConnectionEndPointTest" + ": server socked listening on port " + port);
+
+					tcpConnectionEndPoint.setPort(port);
+
+					// now we can notify the actual junit thread
+					synchronized (tcpConnectionEndPoint)
 					{
+						tcpConnectionEndPoint.notify();
+					}
 
-						byte[] bytes = new byte[10];
-
-						final int read = dis.read(bytes);
-						if (read > 0)
+					while (!exitServerSocketThread)
+					{
+						try (Socket myServerSocket = myServer.accept();
+								DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
+								DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
 						{
-							final String string = new String(bytes);
-							System.out.println("server socked received: " + string + "; weight=" + weight);
+							byte[] bytes = new byte[10];
 
-							// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
-							//first sending a wrong result. the client EP is supposed to only take the last line.
-							final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight-10)) + "\r\n";
-							dos.writeBytes(wrongServerReturnString);
-							System.out.println("server socked replied with wrongServerReturnString=" + wrongServerReturnString);
+							final int read = dis.read(bytes);
+							if (read > 0)
+							{
+								final String string = new String(bytes);
+								System.out.println("TcpConnectionEndPointTest" + ": server socked received: '" + string + "'; weight=" + weight);
 
-							final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + "\r\n";
-							dos.writeBytes(serverReturnString);
-							System.out.println("server socked replied with serverReturnString=" + serverReturnString);
+								// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
+								// first sending a wrong result. the client EP is supposed to only take the last line.
+								final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + "\r\n";
+								dos.writeBytes(wrongServerReturnString);
+								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with wrongServerReturnString=" + wrongServerReturnString);
 
-							dos.flush();
+								final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + "\r\n";
+								dos.writeBytes(serverReturnString);
+								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with serverReturnString=" + serverReturnString);
 
-
+								dos.flush();
+							}
 						}
 					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
 				}
 			}
 		};
-		myThread.start();
+		serverSocketThread.start();
+
+		// this "junit" thread needs to wait until 'serverSocketThread' found a port and set it to 'tcpConnectionEndPoint'
+		// htx to http://stackoverflow.com/questions/7126550/java-wait-and-notify-illegalmonitorstateexception
+		synchronized (tcpConnectionEndPoint)
+		{
+			tcpConnectionEndPoint.wait(60 * 1000); // wait one minute max, in order not to hang the whole build process.
+		}
 	}
 
 	@Test
