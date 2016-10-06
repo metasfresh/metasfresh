@@ -147,6 +147,9 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(filters);
 
+		// task 06570: exclude lines that are packaging materials
+		queryBuilder.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_IsPackagingMaterial, false);
+
 		// order by
 		queryBuilder.orderBy()
 				.addColumn(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_MovementDate)
@@ -158,10 +161,6 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.list(I_M_ReceiptSchedule.class)
 				.stream()
 
-		// task 06570: exclude lines that are packaging materials
-		// TODO: make isPackagingMaterial a physical column https://github.com/metasfresh/metasfresh/issues/388
-				.filter(rs -> !rs.isPackagingMaterial())
-
 		// task 07074: exclude lines with products that have type != item (fixes this comment when i migrated to lambda)
 				.filter(rs -> X_M_Product.PRODUCTTYPE_Item.equals(rs.getM_Product().getProductType()))
 
@@ -169,7 +168,6 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 
 		return createTableRows(schedules);
 	}
-
 
 	private List<IPOSTableRow> createTableRows(final List<? extends Object> schedules)
 	{
