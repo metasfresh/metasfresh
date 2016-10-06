@@ -84,4 +84,13 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * @param queryBuilder
 	 */
 	void addPDFArchiveLogLineFilters(IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder);
+	
+	/**
+	 *  Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
+	 * @param ctx
+	 * @param bpartnerId
+	 * @param AD_Table_ID
+	 * @return
+	 */
+	I_C_Doc_Outbound_Log retrieveLog(Properties ctx, int bpartnerId, int AD_Table_ID);
 }

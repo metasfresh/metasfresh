@@ -24,6 +24,7 @@ package de.metas.document.archive.api.impl;
 
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -60,6 +61,31 @@ public class PlainDocOutboundDAO extends AbstractDocOutboundDAO
 					return false;
 				}
 				if (pojo.getRecord_ID() != recordId)
+				{
+					return false;
+				}
+				return true;
+			}
+		});
+	}
+	
+	@Override
+	public I_C_Doc_Outbound_Log retrieveLog(Properties ctx, final int bpartnerId, final int AD_Table_ID)
+	{
+		Check.assume(bpartnerId > 0, "bpartnerId > 0");
+		Check.assume(AD_Table_ID > 0, "AD_Table_ID >0");
+
+
+		return POJOLookupMap.get().getFirstOnly(I_C_Doc_Outbound_Log.class, new IQueryFilter<I_C_Doc_Outbound_Log>()
+		{
+			@Override
+			public boolean accept(final I_C_Doc_Outbound_Log pojo)
+			{
+				if (pojo.getAD_Table_ID() != AD_Table_ID)
+				{
+					return false;
+				}
+				if (pojo.getC_BPartner_ID() != bpartnerId)
 				{
 					return false;
 				}

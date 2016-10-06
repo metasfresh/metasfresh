@@ -59,6 +59,20 @@ public class DocOutboundDAO extends AbstractDocOutboundDAO
 
 		return docExchange;
 	}
+	
+	@Override
+	public I_C_Doc_Outbound_Log retrieveLog(Properties ctx, int bpartnerId, int AD_Table_ID)
+	{
+		final String whereClause = I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID + "=?"
+				+ " AND " + I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID + "=?";
+		
+		final I_C_Doc_Outbound_Log docExchange = new Query(ctx, I_C_Doc_Outbound_Log.Table_Name, whereClause, ITrx.TRXNAME_None)
+				.setParameters(bpartnerId, AD_Table_ID)
+				.setOrderBy(I_C_Doc_Outbound_Log.COLUMNNAME_Created + " DESC ")
+				.first(I_C_Doc_Outbound_Log.class);
+
+		return docExchange;
+	}
 
 	@Override
 	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
@@ -69,4 +83,6 @@ public class DocOutboundDAO extends AbstractDocOutboundDAO
 				.setOnlyActiveRecords(true)
 				.list(I_C_Doc_Outbound_Config.class);
 	}
+	
+	
 }
