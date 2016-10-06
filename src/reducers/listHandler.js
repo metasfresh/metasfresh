@@ -27,6 +27,12 @@ export default function listHandler(state = initialState, action) {
                     dir: action.dir
                 })
             })
+        case types.CLEAR_LIST_PROPS:
+            return Object.assign({}, state, {
+                filters: null,
+                page: 1,
+                sorting: {}
+            })
         default:
             return state
     }

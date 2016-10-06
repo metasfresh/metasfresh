@@ -21,3 +21,9 @@ export function setPagination(page){
         page: page
     }
 }
+
+export function clearListProps(){
+    return {
+        type: types.CLEAR_LIST_PROPS
+    }
+}
