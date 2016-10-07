@@ -125,13 +125,38 @@ WHERE
 	AND o.C_BPartner_ID = (CASE WHEN $5 IS NULL THEN o.C_BPartner_ID ELSE $5 END)
 	AND ol.M_Product_ID = (CASE WHEN $6 IS NULL THEN ol.M_Product_ID ELSE $6 END)
 	AND o.isSOTrx= $7
-	AND o_iol.M_AttributeSetInstance_ID = (CASE WHEN $8 IS NULL THEN o_iol.M_AttributeSetInstance_ID ELSE $8 END)
 	AND o.isActive ='Y' AND o_io.isActive ='Y' AND c_o.isActive ='Y' AND c_io.isActive ='Y'
 	AND o.docStatus IN ('CO', 'CL')
 	AND o_io.docStatus IN ('CO', 'CL')
 	AND c_o.docStatus IN ('CO', 'CL')
 	AND c_io.docStatus IN ('CO', 'CL')
 	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	
+	AND
+		(CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $8 )
+			-- ... then apply following filter:
+			THEN ( 
+			-- Take lines where the attributes of the current InoutLine's asi are in the parameter asi and their Values Match
+				EXISTS (
+					SELECT	0
+					FROM	report.fresh_Attributes a -- a = Attributes from inout line, pa = Parameter Attributes
+						INNER JOIN report.fresh_Attributes pa ON pa.M_AttributeSetInstance_ID = $8 
+							AND a.at_value = pa.at_value -- same attribute
+							AND a.ai_value = pa.ai_value -- same value
+					WHERE	a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
+					)
+					-- Dismiss lines where the Attributes in the Parameter are not in the inoutline's asi
+				AND NOT EXISTS (
+					SELECT	0
+					FROM	report.fresh_Attributes pa
+						LEFT OUTER JOIN report.fresh_Attributes a ON a.at_value = pa.at_value AND a.ai_value = pa.ai_value 
+							AND a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
+					WHERE	pa.M_AttributeSetInstance_ID = $8
+						AND a.M_AttributeSetInstance_ID IS null
+						)
+					)	
+		ELSE TRUE END)
+		
 	
 )a
 
