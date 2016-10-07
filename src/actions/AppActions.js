@@ -33,10 +33,9 @@ export function createViewRequest(windowType, viewType, pageLength, filters){
     return (dispatch) => axios.put(config.API_URL + '/window/view?type=' + windowType + '&viewType=' + viewType, filters);
 }
 
-export function addNotification(visible, title, msg, time, notifType){
+export function addNotification(title, msg, time, notifType){
     return {
         type: types.ADD_NOTIFICATION,
-        visible: visible,
         title: title,
         msg: msg,
         time: time,

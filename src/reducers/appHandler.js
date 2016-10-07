@@ -4,7 +4,6 @@ import update from 'react-addons-update';
 const initialState = {
 	notification: {
 		id: '',
-		visible: false,
 		title: '',
 		msg: '',
 		time: 0,
@@ -23,7 +22,6 @@ export default function appHandler(state = initialState, action) {
 	        arr.push({id: index, title: action.title, msg: action.msg, time: action.time, notifType: action.notifType});
             return Object.assign({}, state, {
                 notification: Object.assign({}, state.notification, {
-                	visible: action.visible,
                 	notifications: arr
                 })
 	        });

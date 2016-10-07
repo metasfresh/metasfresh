@@ -64,7 +64,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly } = this.props;
+        const { type, docId, rowId, tabId,readonly, mainTable } = this.props;
         const { edited } = this.state;
 
         //iterate over layout settings
@@ -86,7 +86,7 @@ class TableItem extends Component {
                     onDoubleClick={(e) => this.handleEditProperty(e,property, true)}
                     onClickOutside={(e) => this.handleEditProperty(e)}
                     disableOnClickOutside={edited !== property}
-                    onKeyDown = {(e) => this.handleKey(e, property)}
+                    onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
                 />
             )
         })

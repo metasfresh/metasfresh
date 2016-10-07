@@ -173,6 +173,72 @@ class Table extends Component {
 
     }
 
+    handleKeyDownDocList = (e) => {
+        const {selected} = this.state;
+
+
+        const {rowData, tabid, listenOnKeys, onDoubleClick} = this.props;
+        const item = rowData[tabid];
+        const selectRange = e.shiftKey;
+
+
+
+        switch(e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+
+
+                const array = (rowData[tabid]).map((item, id) => {
+                    return item.id
+                });
+
+
+                const actualId = array.findIndex(x => x === selected[selected.length-1])
+
+                if(actualId < array.length-1 ){
+                    let newId = actualId+1;
+                    // this.state.selected = [Object.keys(rowData[tabid])[newId]];
+
+                    if(!selectRange) {
+                        this.selectOneProduct(array[newId]);
+                    } else {
+                        this.selectProduct(array[newId]);
+                    }
+                }
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+
+                const arrays = (rowData[tabid]).map((item, id) => {
+                    return item.id
+                });
+
+                const actual = arrays.findIndex(x => x === selected[selected.length-1])
+
+
+                if(actual > 0 ){
+                    let newId = actual-1;
+
+                    if(!selectRange) {
+                        this.selectOneProduct(arrays[newId]);
+
+                    } else {
+                        this.selectProduct(arrays[newId]);
+                    }
+                }
+                break;
+            case "Enter":
+                e.preventDefault();
+                if(selected.length > 1) {
+
+                } else {
+                   onDoubleClick(selected[selected.length-1]); 
+                }
+                
+                break;
+        }
+    }
+
     closeContextMenu = (event) => {
         this.setState(Object.assign({}, this.state, {
             contextMenu: Object.assign({}, this.state.contextMenu, {
@@ -282,7 +348,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -291,7 +357,6 @@ class Table extends Component {
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
-                // console.log(keyProperty);
                 ret.push(
                     <TableItem
                         fields={item[key].fields}
@@ -308,6 +373,7 @@ class Table extends Component {
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
+                        mainTable={mainTable}
                     />
                 );
             }
@@ -364,7 +430,7 @@ class Table extends Component {
                                     "table table-bordered-vertically table-striped " +
                                     (readonly ? "table-read-only" : "")
                                 }
-                                onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : ''}
+                                onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : (listenOnKeys && mainTable) ? (e) => this.handleKeyDownDocList(e) : ''}
                             >
                                 <thead>
                                     <TableHeader cols={cols} mainTable={mainTable} sort={sort} orderBy={orderBy} deselect={this.deselectAllProducts} />

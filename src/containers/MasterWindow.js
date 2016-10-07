@@ -39,17 +39,17 @@ class MasterWindow extends Component {
 
     fireNotificationSuccess = () => {
         const {dispatch} = this.props;
-        dispatch(addNotification(true, 'Success', 'Lorem ipsum dolor sit amet', 1000, 'success'));
+        dispatch(addNotification('Success', 'Lorem ipsum dolor sit amet', 1000, 'success'));
     }
 
     fireNotificationWarning = () => {
         const {dispatch} = this.props;
-        dispatch(addNotification(true, 'Warning', 'This is warning message', 0, 'warning'));
+        dispatch(addNotification('Warning', 'This is warning message', 0, 'warning'));
     }
 
     fireNotificationError = () => {
         const {dispatch} = this.props;
-        dispatch(addNotification(true, 'Error', 'Lorem ipsum error sit amet. Error error.', 5000, 'error'));
+        dispatch(addNotification('Error', 'Lorem ipsum error sit amet. Error error.', 5000, 'error'));
     }
 
     componentWillReceiveProps(props) {

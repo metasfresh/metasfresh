@@ -1236,7 +1236,7 @@ th {
     top: 55px;
     right: 0;
     width: 320px;
-    z-index: 300;
+    z-index: 800;
     text-align: right;
     padding: 10px;
 }
