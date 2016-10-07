@@ -20,27 +20,34 @@ import {
 class DocumentList extends Component {
     constructor(props){
         super(props);
-        const {filters, type} = props;
+        const {filters, type,windowType} = props;
 
         this.state = {
             data: null,
             layout: null
         }
-        this.updateData(type);
+        this.updateData(type,windowType);
+
     }
 
-    componentWillUpdate() {
-        const {sorting} = this.props;
-        const {data} = this.state;
+    componentWillReceiveProps(props) {
+        const {sorting, type, windowType} = props;
 
+        //if we browse list of docs, changing type of Document
+        //does not re-construct component, so we need to
+        //make it manually while the windowType changes.
+        if(windowType !== this.props.windowType) {
+            this.updateData(type, windowType);
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+
         return !!nextState.layout && !!nextState.data;
     }
 
-    updateData = (type) => {
-        const {dispatch, windowType, filters} = this.props;
+    updateData = (type, windowType) => {
+        const {dispatch, filters} = this.props;
         dispatch(viewLayoutRequest(windowType, type)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 layout: response.data

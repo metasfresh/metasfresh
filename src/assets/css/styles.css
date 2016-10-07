@@ -78,7 +78,6 @@ body {
 
 .panel {
     display: block;
-    position: relative;
     width: 100%;
 }
 .panel-modal {
@@ -209,18 +208,9 @@ body {
     overflow: hidden;
 }
 
-.th-lg {
-    min-width: 200px;
-    width:200px;
-    max-width: 200px;
-}
-.th-md {
-    min-width: 100px;
-    max-width: 100px;
-}
-.th-sm {
-    min-width: 60px;
-    max-width: 100px;
+.table .col-xs-12,
+.table .col-sm-12 {
+    position:static;
 }
 
 .table td {
@@ -708,10 +698,12 @@ table .input-mandatory input {
   margin: 0;
 }
 
-table  .input-dropdown-list {
-  left: -.75rem;
-  width: calc(100% + 1.5rem);
+table .input-dropdown-list {
+  /*left: -.75rem;*/
+  /*width: calc(100% + 1.5rem);*/
 }
+
+
 table .input-dropdown .input-field {
   background: transparent;
   color: $brand-font-color;
@@ -720,13 +712,8 @@ table .input-dropdown .input-field {
 
 table .input-dropdown {
   border: none;
-  padding-left: .50rem;
-  padding-right: .50rem;
-}
-
-
-table .List .input-dropdown-list {
-  top: 28px;
+  /*padding-left: .50rem;
+  padding-right: .50rem;*/
 }
 
 table .List .input-dropdown-item-title {
@@ -828,15 +815,36 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .table td {
-  min-width: 75px;
+  width: 75px;
+  overflow: hidden;
+}
+
+.th-lg {
+    width:200px;
+}
+.th-md {
+    width:100px;
+}
+.th-sm {
+    min-width: 60px;
+    max-width: 100px;
 }
 
 .table .td-lg {
-  min-width: 225px;
+  width: 225px;
+  max-width: 225px;
+}
+
+.td-lg .input-dropdown-list {
+    width: 225px;
 }
 
 .table .td-md {
-  min-width: 144px;
+  width: 144px;
+  max-width: 144px;
+}
+.td-lg .input-dropdown-list {
+    width: 144px;
 }
 
 .Lookup .input-icon {
@@ -1211,12 +1219,12 @@ body {
 
 .sort-menu:hover {
     .th-caption {
-       color: $brand-font-color; 
+       color: $brand-font-color;
        text-decoration: underline;
     }
     .sort-ico {
         color: $brand-font-color;
-    }   
+    }
 }
 
 th {
