@@ -51,7 +51,7 @@ public class TcpConnectionEndPointTest
 	{
 		tcpConnectionEndPoint = new TcpConnectionEndPoint();
 		tcpConnectionEndPoint.setHost("localhost");
-		tcpConnectionEndPoint.setPort(port);
+		tcpConnectionEndPoint.setReturnLastLine(true);
 	}
 
 	@Before

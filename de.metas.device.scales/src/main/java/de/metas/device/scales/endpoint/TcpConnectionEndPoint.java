@@ -30,12 +30,19 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 {
+	private static final transient Logger logger = LogManager.getLogger(TcpConnectionEndPoint.class);
+
 	private String hostName;
 	private int port;
+	private boolean returnLastLine = false;
 
 	/**
 	 * Opens a socked, sends the command, reads the response and closes the socked again afterwards.
@@ -44,23 +51,34 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	@Override
 	public String sendCmd(final String cmd)
 	{
-		try (Socket clientSocket = new Socket(hostName, port);
-				BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));)
+
+		try (final Socket clientSocket = new Socket(hostName, port);
+				final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				final BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));)
 		{
 			osw.write(cmd);
 			osw.newLine();
 			osw.flush();
 
 			String result = null;
-			String readLine = in.readLine();
-			while (readLine != null)
+			String lastReadLine = in.readLine();
+			if (returnLastLine)
 			{
-				result = readLine;
-				readLine = in.readLine();
+				while (lastReadLine != null)
+				{
+					result = lastReadLine;
+					lastReadLine = in.readLine();
+					logger.debug("Read line from the socket: {}", lastReadLine);
+				}
+				logger.debug("Result (last line) as read from the socket: {}", result);
+			}
+			else
+			{
+				result = lastReadLine;
+				logger.debug("Result (first line) as read from the socket: {}", result);
 			}
 			return result;
-//			return in.readLine();
+			// return in.readLine();
 		}
 		catch (final UnknownHostException e)
 		{
@@ -81,6 +99,19 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	public TcpConnectionEndPoint setPort(final int port)
 	{
 		this.port = port;
+		return this;
+	}
+
+	/**
+	 * If <code>false</code>, then the endpoint will return the first line coming out of the socket.
+	 * If <code>true</code>, if will discard all lines until there is nothing more coming out of the socket, and then return the last line if got.
+	 *
+	 * @param returnLastLine
+	 * @return
+	 */
+	public TcpConnectionEndPoint setReturnLastLine(final boolean returnLastLine)
+	{
+		this.returnLastLine = returnLastLine;
 		return this;
 	}
 

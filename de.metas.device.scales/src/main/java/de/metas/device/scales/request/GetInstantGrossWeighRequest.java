@@ -1,4 +1,4 @@
-package de.metas.device.scales.impl.systec;
+package de.metas.device.scales.request;
 
 /*
  * #%L
@@ -22,18 +22,26 @@ package de.metas.device.scales.impl.systec;
  * #L%
  */
 
-import java.util.LinkedHashMap;
-
-import de.metas.device.scales.impl.ICmd;
+import de.metas.device.api.IDeviceRequest;
 
 /**
- * Base class for the commands that request a weight from a scale. Note that the Response message shall be the same for all different command subclasses.
+ * Requests the "instant" weight from the scale.
+ * This result might be "stable" or "dynamic".
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface ISystecCmd extends ICmd
+public class GetInstantGrossWeighRequest implements IDeviceRequest<GetWeightResponse>
 {
+	@Override
+	public Class<GetWeightResponse> getResponseClass()
+	{
+		return GetWeightResponse.class;
+	}
 
-	LinkedHashMap<String, SystecResultStringElement> getResultElements();
+	@Override
+	public String toString()
+	{
+		return String.format("GetInstantGrossWeighRequest []");
+	}
 }

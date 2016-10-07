@@ -1,5 +1,7 @@
 package de.metas.device.scales.impl;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 /*
  * #%L
  * de.metas.device.scales
@@ -10,12 +12,12 @@ package de.metas.device.scales.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,6 +48,7 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 		final IDeviceConfigParam epClass = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_CLASS);
 		final IDeviceConfigParam epHost = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_IP);
 		final IDeviceConfigParam epPort = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_PORT);
+		final IDeviceConfigParam epReturnLastLine = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_RETURN_LAST_LINE);
 
 		final IDeviceConfigParam roundToPrecision = request.getParameters().get(AbstractTcpScales.PARAM_ROUND_TO_PRECISION); // task 09207
 
@@ -54,7 +57,7 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 		try
 		{
 			@SuppressWarnings("unchecked")
-			final Class<TcpConnectionEndPoint> c = (Class<TcpConnectionEndPoint>)Class.forName((String)epClass.getValue());
+			final Class<TcpConnectionEndPoint> c = (Class<TcpConnectionEndPoint>)Class.forName(epClass.getValue());
 			ep = c.newInstance();
 		}
 		catch (ClassNotFoundException e)
@@ -70,11 +73,12 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 			throw new DeviceException("Caught an IllegalAccessException: " + e.getLocalizedMessage(), e);
 		}
 
-		ep.setHost((String)epHost.getValue());
-		ep.setPort(Integer.parseInt((String)epPort.getValue()));
+		ep.setHost(epHost.getValue());
+		ep.setPort(Integer.parseInt(epPort.getValue()));
+		ep.setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
 
 		device.setEndPoint(ep);
-		device.setRoundToPrecision(Integer.parseInt((String)roundToPrecision.getValue()));
+		device.setRoundToPrecision(Integer.parseInt(roundToPrecision.getValue()));
 		device.configureStatic();
 
 		return new IDeviceResponse()
