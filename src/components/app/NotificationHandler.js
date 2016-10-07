@@ -10,16 +10,6 @@ import {
 class NotificationHandler extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            notification: {
-              visible: false,
-              notifications: [],
-              title: '',
-              msg: '',
-              time: 0
-            }
-        }
     }
 
     render() {

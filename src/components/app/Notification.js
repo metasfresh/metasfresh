@@ -11,7 +11,7 @@ class Notification extends Component {
 
     }
 
-    rendernotification = (item,index) => {
+    renderNotification = (item,index) => {
       const {dispatch} = this.props;
 
       if(item.time > 0) {
@@ -30,14 +30,6 @@ class Notification extends Component {
       )
     }
 
-    set_time_out = ( id, code, time ) => {
-        if( id in timeout_handles ) {
-            clearTimeout( timeout_handles[id] )
-        }
-
-        timeout_handles[id] = setTimeout( code, time )
-    }
-
     closeNotification = (item) => {
       const {dispatch} = this.props;
       dispatch(deleteNotification(item));
@@ -50,7 +42,7 @@ class Notification extends Component {
           <div>
             
             {notification.notifications && notification.notifications.map((item,index) =>
-              this.rendernotification(item,index)
+              this.renderNotification(item,index)
             )}
 
           </div>

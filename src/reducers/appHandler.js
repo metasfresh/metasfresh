@@ -3,11 +3,6 @@ import update from 'react-addons-update';
 
 const initialState = {
 	notification: {
-		id: '',
-		title: '',
-		msg: '',
-		time: 0,
-		notifType: '',
 		notifications: []
 	}
 }
@@ -17,12 +12,13 @@ export default function appHandler(state = initialState, action) {
 
     	// NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
-	        let arr = state.notification.notifications;
+	        let initialArray = state.notification.notifications;
 	        let index = state.notification.notifications.length;
-	        arr.push({id: index, title: action.title, msg: action.msg, time: action.time, notifType: action.notifType});
+	        var newArray = update(initialArray, {$push: [{id: index, title: action.title, msg: action.msg, time: action.time, notifType: action.notifType}]});
+
             return Object.assign({}, state, {
                 notification: Object.assign({}, state.notification, {
-                	notifications: arr
+                	notifications: newArray
                 })
 	        });
 
@@ -30,10 +26,11 @@ export default function appHandler(state = initialState, action) {
 	        let item = state.notification.notifications;
 	        let array = state.notification.notifications;
 	        let idToDel = array.indexOf(action.item);
-	        array.splice(idToDel, 1);
+	        var newArraySpliced = update(array, {$splice: [[idToDel,1]]});
+
 	        return Object.assign({}, state, {
                 notification: Object.assign({}, state.notification, {
-                	notifications: array
+                	notifications: newArraySpliced
                 })
 	        });
 

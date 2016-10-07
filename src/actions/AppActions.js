@@ -49,3 +49,8 @@ export function deleteNotification(item){
         item: item
     }
 }
+
+
+export function fireNotification(item){
+    
+}
