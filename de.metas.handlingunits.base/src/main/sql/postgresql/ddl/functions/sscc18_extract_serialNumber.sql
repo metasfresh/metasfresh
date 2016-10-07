@@ -9,4 +9,3 @@ $BODY$
 LANGUAGE plpgsql IMMUTABLE 
 COST 100;
 --
-ALTER FUNCTION sscc18_extract_serialNumber(text) OWNER TO adempiere;

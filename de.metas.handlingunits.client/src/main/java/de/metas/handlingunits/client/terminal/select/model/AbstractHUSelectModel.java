@@ -611,8 +611,11 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		}
 
 		//
-		// Refresh lines (even if user canceled the editing)
-		refreshLines(true);
+		// Do not refresh the lines here, because this code is run within "AbstractHUSelect*Panel*.doProcessSelectedLines()"
+		// and that panel's doProcessSelectedLines() method is running within its own terminal references that are destroyed after that panel's doProcessSelectedLines() finished.
+		// This means, that *if* refreshLines() creates any buttons and stuffs, they will be disposed really soon
+		// refreshLines(true);
+
 	}
 
 	protected void processRows(final Set<IPOSTableRow> selectedRows, final HUEditorModel huEditorModel)

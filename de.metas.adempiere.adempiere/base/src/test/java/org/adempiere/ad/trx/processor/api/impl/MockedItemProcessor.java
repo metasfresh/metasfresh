@@ -10,18 +10,17 @@ package org.adempiere.ad.trx.processor.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,12 @@ import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Ignore;
 
+/**
+ * A mocked processor for testing.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Ignore
 public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemProcessorResult>
 {
@@ -51,18 +56,18 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	private final List<String> errorOnChunkCompleteGroupKeys = new ArrayList<String>();
 	private final List<String> errorOnChunkCancelGroupKeys = new ArrayList<String>();
 	private Boolean expectTrxSavepoints = null;
-	
+
 	//
 	// State
 	private ItemProcessorResult result = null;
 	private AggregatedItem currentAggregatedItem = null;
-	
+
 	public MockedItemProcessor()
 	{
 		super();
 		reset();
 	}
-	
+
 	public void reset()
 	{
 		processorCtx = null;
@@ -70,18 +75,20 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 		currentAggregatedItem = null;
 	}
 
-
 	@Override
-	public void setTrxItemProcessorCtx(ITrxItemProcessorContext processorCtx)
+	public void setTrxItemProcessorCtx(final ITrxItemProcessorContext processorCtx)
 	{
 		this.processorCtx = processorCtx;
 	}
 
 	@Override
-	public void process(Item item)
+	public void process(final Item item)
 	{
+		item.setProcessed();
+
 		Assert.assertNotNull("item shall not be null", item);
 		Assert.assertNotNull("currentAggregatedItem shall be initialized", currentAggregatedItem);
+
 		assertThreadInheritedTrxSet();
 
 		if (errorItems.contains(item))
@@ -98,7 +105,7 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	}
 
 	@Override
-	public boolean isSameChunk(Item item)
+	public boolean isSameChunk(final Item item)
 	{
 		assertThreadInheritedTrxSet();
 
@@ -190,7 +197,7 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 		Check.assumeNotEmpty(groupKey, "groupKey not null");
 		errorOnNewChunkGroupKeys.add(groupKey);
 	}
-	
+
 	public void setExpectTrxSavepoints(final boolean expectTrxSavepoints)
 	{
 		this.expectTrxSavepoints = expectTrxSavepoints;
@@ -200,13 +207,13 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 		Assert.assertTrue("Thread inherited transaction shall be set at this point", !trxManager.isNull(trxName));
-		
+
 		Assert.assertEquals("Thread inherited transaction shall match context transaction", processorCtx.getTrxName(), trxName);
-		
+
 		if (expectTrxSavepoints != null)
 		{
 			final PlainTrx trx = (PlainTrx)processorCtx.getTrx();
-			Assert.assertEquals("Active savepoints for "+trx, expectTrxSavepoints, trx.hasActiveSavepoints());
+			Assert.assertEquals("Active savepoints for " + trx, expectTrxSavepoints, trx.hasActiveSavepoints());
 		}
 	}
 }

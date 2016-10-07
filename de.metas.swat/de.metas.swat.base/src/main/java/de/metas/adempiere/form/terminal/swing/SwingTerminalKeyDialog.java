@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Component;
@@ -46,10 +45,11 @@ import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalKeySuggestionsPanel;
 import de.metas.adempiere.form.terminal.ITerminalLookupField;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * On Screen Keyboard
- * 
+ *
  * @author Paul Bowden Adaxa Pty Ltd
  * @author Teo Sarca, metas.ro SRL
  */
@@ -163,7 +163,7 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 
 			panel.add(factory.wrapComponent(confirm), "south");
 		}
-		
+
 		//
 		// Pack dialog & pimp it
 		dialog.pack();
@@ -202,6 +202,9 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 		super.dispose();
 	}
 
+	/**
+	 * Finished this dialog and sets it visible. Before doing so, it invoices {@link ITerminalContext#closeCurrentReferences()}, so make sure that at this point all components that belong to the on-screen keyboard are created.
+	 */
 	@Override
 	public void activate()
 	{
@@ -216,6 +219,7 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 		dialog.setLocation(loc);
 
 		requestTextFieldFocus();
+		getTerminalContext().closeCurrentReferences();
 		dialog.setVisible(true);
 	}
 

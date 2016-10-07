@@ -44,6 +44,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 
 public class HUOrderBL implements IHUOrderBL
 {
@@ -58,8 +59,6 @@ public class HUOrderBL implements IHUOrderBL
 
 		final de.metas.handlingunits.model.I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_C_OrderLine.class);
 
-		final I_M_HU_PI_Item_Product pip;
-
 		if (olPO.getM_Product_ID() <= 0)
 		{
 			return; // No product selected. Nothing to do.
@@ -71,10 +70,16 @@ public class HUOrderBL implements IHUOrderBL
 
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-		//
-		// get the pip we will work with
-		//
-		if (InterfaceWrapperHelper.isNew(ol))
+		I_M_HU_PI_Item_Product pip = ol.getM_HU_PI_Item_Product();
+		final boolean isCounterDoc = ol.getRef_OrderLine_ID() > 0;
+
+		// in case the order line already has a packing instruction, it should be kept as is, excepting the lines of counter documents
+		if (pip != null && !isCounterDoc)
+		{
+			// nothing to do. Keep the old packing instructions
+		}
+
+		else if (InterfaceWrapperHelper.isNew(ol))
 		{
 			pip = getOrderLinePIIPForNewOrderLine(ol, huUnitType);
 		}
@@ -115,7 +120,7 @@ public class HUOrderBL implements IHUOrderBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx,
 					ol,
-					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
 					trxName);
 		}
 		// If is not null, set all related items
@@ -145,7 +150,7 @@ public class HUOrderBL implements IHUOrderBL
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 			orderLineBL.setPricesIfNotIgnored(ctx, ol,
-					InterfaceWrapperHelper.isNew(ol),             // usePriceUOM
+					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
 					trxName);
 		}
 	}
@@ -168,7 +173,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		final boolean allowInfiniteCapacity = true;
 
-		final I_M_HU_PI_Item_Product newPIIP;
+		I_M_HU_PI_Item_Product newPIIP;
 
 		// FRESH-351: maybe the order line was copied with *all* its columns and then the M_Product_ID was changed
 		// -> this happens when creating a counter doc, see MOrder.copyLineFrom(...)
@@ -180,32 +185,74 @@ public class HUOrderBL implements IHUOrderBL
 				&& ol.getC_PackingMaterial_OrderLine().getM_Product_ID() > 0;
 
 		final boolean inconsistentProduct =
-				// a virtual piip or one that allows any product can't be inconsistent with the ol's current procudt
-				!olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
+		// a virtual piip or one that allows any product can't be inconsistent with the ol's current procudt
+		!olPip.isAllowAnyProduct() && !hupiItemProductBL.isVirtualHUPIItemProduct(olPip)
 				&& olPip.getM_Product_ID() != ol.getM_Product_ID();
 
 		if (packagingProductMightBeInconsistent)
 		{
-			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
-					ol.getM_Product(),
-					ol.getC_BPartner(),
-					ol.getDateOrdered(),
-					huUnitType,
-					allowInfiniteCapacity,
-// FRESH-386: the counter-record 'ol' still references the original line's packaging line
-// TODO: add listener etc infractucture to make this work nicely
-//					ol.getC_PackingMaterial_OrderLine().getM_Product()
-					null
-					);
+			// the packing material product that will be used for packaging the products in the line
+			final I_M_Product packagingProduct;
 
-			if (newPIIP == null || newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
+			final boolean isCounterDoc = ol.getRef_OrderLine_ID() > 0;
+
+			if (ol.getC_PackingMaterial_OrderLine() == null || !isCounterDoc)
 			{
-				logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
-						+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
-						+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
-						ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
-						olPip,
-						newPIIP);
+				packagingProduct = null;
+			}
+			else
+			{
+				packagingProduct = ol.getC_PackingMaterial_OrderLine().getM_Product();
+			}
+
+			final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+			// the pm product that will have to fit the piip.
+			// In case this product is null, the PIIPs which allow any product are also eligible.
+			final I_M_Product pmProductToUse;
+
+			if (isCounterDoc)
+			{
+				pmProductToUse = productDAO.retrieveMappedProductOrNull(packagingProduct, ol.getAD_Org());
+			}
+
+			else
+			{
+				pmProductToUse = null;
+			}
+
+			// FRESH-573: In case the packing material to use was not found in case of a counter document, always use VIrtual PI
+			// Do not fallback to general packing instructions because it would be confusing.
+			if (pmProductToUse == null && isCounterDoc)
+			{
+				newPIIP = null;
+			}
+
+			else
+			{
+				newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
+						ol.getM_Product(),
+						ol.getC_BPartner(),
+						ol.getDateOrdered(),
+						huUnitType,
+						allowInfiniteCapacity,
+						// FRESH-386:
+						// TODO: add listener etc infractucture to make this work nicely
+						// ol.getC_PackingMaterial_OrderLine().getM_Product()
+						pmProductToUse);
+			}
+
+			if (newPIIP != null && !isCounterDoc)
+			{
+				if (newPIIP.getM_HU_PI_Item_ID() != olPip.getM_HU_PI_Item_ID())
+				{
+					logger.debug("C_OrderLine={} has M_Product_ID={} and C_PackingMaterial_OrderLine={} with (packaging-)M_Product_ID={},"
+							+ " but the ol's current M_HU_PI_Item_Product={} references a different packaging-M_Product;"
+							+ " => going to change the ol's M_HU_PI_Item_Product to {}!",
+							ol, ol.getM_Product_ID(), ol.getC_PackingMaterial_OrderLine(), ol.getC_PackingMaterial_OrderLine().getM_Product_ID(),
+							olPip,
+							newPIIP);
+				}
 			}
 		}
 		else if (inconsistentProduct)
@@ -396,4 +443,5 @@ public class HUOrderBL implements IHUOrderBL
 
 		return piItemProductDAO.matches(ctx, queryVO, ITrx.TRXNAME_None);
 	}
+
 }

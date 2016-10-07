@@ -1,12 +1,18 @@
 package org.adempiere.ad.trx.processor.api.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
+import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -14,7 +20,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
 
 import junit.framework.AssertionFailedError;
 
@@ -60,11 +65,30 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	private Class<?> expectedExceptionClass;
 	private OnItemErrorPolicy onItemErrorPolicy;
 
+	/**
+	 * The exception handler that is used when we test the executor. Extend as needed.
+	 */
+	private final ITrxItemExceptionHandler exceptionHandler = new LoggerTrxItemExceptionHandler()
+	{
+		@Override
+		public void onItemError(Exception e, Object item)
+		{
+			super.onItemError(e, item);
+			if (item instanceof Item)
+			{
+				((Item)item).setOnItemErrorException(e);
+			}
+		}
+	};
+
 	public TrxItemProcessorExecutorRunExpectations()
 	{
 		super();
 	}
 
+	/**
+	 * Executes the executor and asserts that all expectations hold true.
+	 */
 	public void assertExpected()
 	{
 		//
@@ -87,7 +111,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			public void run(final String localTrxName) throws Exception
 			{
 				final ITrx trx = trxManager.getTrx(localTrxName);
-				Assert.assertEquals("Null transaction", !isRunInTrx(), trxManager.isNull(trx));
+				assertEquals("Null transaction", !isRunInTrx(), trxManager.isNull(trx));
 
 				//
 				// Create the context
@@ -97,9 +121,9 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 				//
 				// Create the executor
 				final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<>(
-						processorCtx,  // processing context
-						processor,  // processor
-						ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler,
+						processorCtx,    // processing context
+						processor,    // processor
+						exceptionHandler,
 						onItemErrorPolicy,
 						useTrxSavepoints);
 
@@ -134,18 +158,18 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		//
 		// Check the result
 		assertException(getExpectedExceptionClass(), exceptionActual.getValue());
-		Assert.assertEquals("Invalid result", getExpectedResult(), resultActual.getValue());
+		assertEquals("Invalid result", getExpectedResult(), resultActual.getValue());
 
 		//
 		// Make sure all all transactions were closed
 		final List<ITrx> activeTrxs = trxManager.getActiveTransactionsList();
-		Assert.assertTrue("All transactions shall be closed: " + activeTrxs, activeTrxs.isEmpty());
+		assertTrue("All transactions shall be closed: " + activeTrxs, activeTrxs.isEmpty());
 
 		//
 		// Make sure the thread inherited transaction was restored
 		final String threadIneritedTrxNameAfter = trxManager.getThreadInheritedTrxName();
-		Assert.assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
-				threadIneritedTrxNameBefore,  // expected,
+		assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
+				threadIneritedTrxNameBefore,    // expected,
 				threadIneritedTrxNameAfter // actual
 		);
 		trxManager.setThreadInheritedTrxName(null); // just reset it to have it clean
@@ -173,7 +197,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			if (exceptionActual == null)
 			{
 				// exception expected but we got no exception
-				Assert.fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
+				fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
 				return;
 			}
 			else if (expectedExceptionClass.isAssignableFrom(exceptionActual.getClass()))

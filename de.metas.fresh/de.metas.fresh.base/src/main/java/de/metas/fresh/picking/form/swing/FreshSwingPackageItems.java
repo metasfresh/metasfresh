@@ -13,12 +13,12 @@ package de.metas.fresh.picking.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,6 +51,7 @@ import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.fresh.picking.FreshProductLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.PickingSlotKeyGroup;
@@ -714,7 +715,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 	/**
 	 * Checks is the {@value #ACTION_DistributeQtyToNewHUs} shall be available.
-	 * 
+	 *
 	 * @return true if it shall be available
 	 */
 	private boolean isDistributeQtyToNewHUsAvailable()
@@ -754,7 +755,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 	/**
 	 * Distribute the user entered Qty to a specified number of TUs.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08754_Kommissionierung_Erweiterung_Verteilung_%28103380135151%29
 	 */
 	private void onDistributeQtyToNewHUs()
@@ -829,7 +830,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 *
 	 * It will:
 	 * <ul>
-	 * <li>open the HU Editor, let user to select some HUs
+	 * <li>open the HU Editor, let user select some HUs
 	 * <li>will allocate those HUs to selected product key's shipment schedules
 	 * <li>will move those selected HUs directly in picking slot's queue.
 	 * </ul>
@@ -869,35 +870,41 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 		huKeyFactory.clearCache();
 
-		//
-		// Create HU Editor Model
-		final PickingHUEditorModel huEditorModel = new PickingHUEditorModel(
-				terminalContext // context
-				, selectedHU // default HU to select after query
-				, productKey::findAvailableHUs // HUs provider
-		);
-		huEditorModel.setConsiderAttributes(true);
+		// the selected HUs are set from the HU-Editor within the following try-with-resources block
+		final Set<I_M_HU> husSelected;
 
-		//
-		// Create HU Editor UI Panel
-		final HUEditorPanel huEditorPanel = new PickingHUEditorPanel(huEditorModel);
-
-		//
-		// Wrap our HU Editor Panel with a model dialog
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel);
-		editorDialog.setSize(terminalContext.getScreenResolution());
-
-		// Activate editor dialog and wait for user
-		editorDialog.activate();
-
-		if (editorDialog.isCanceled())
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
-			// nothing to do
-			return;
+			//
+			// Create HU Editor Model
+			final PickingHUEditorModel huEditorModel = new PickingHUEditorModel(
+					terminalContext // context
+					, selectedHU // default HU to select after query
+					, productKey::findAvailableHUs // HUs provider
+			);
+			huEditorModel.setConsiderAttributes(true); // the default
+
+			// Create HU Editor UI Panel
+			final HUEditorPanel huEditorPanel = new PickingHUEditorPanel(huEditorModel);
+
+			// we already have our own terminal context ref in this try-with-resources block
+			final boolean maintainOwnContextReferences = false;
+
+			// Wrap our HU Editor Panel with a model dialog
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel, maintainOwnContextReferences);
+			editorDialog.setSize(terminalContext.getScreenResolution());
+
+			// Activate editor dialog and wait for user
+			editorDialog.activate();
+
+			if (editorDialog.isCanceled())
+			{
+				return; // nothing to do
+			}
+
+			husSelected = huEditorModel.getSelectedHUs();
 		}
 
-		//
-		final Set<I_M_HU> husSelected = huEditorModel.getSelectedHUs();
 		if (husSelected.isEmpty())
 		{
 			// nothing selected, nothing to do

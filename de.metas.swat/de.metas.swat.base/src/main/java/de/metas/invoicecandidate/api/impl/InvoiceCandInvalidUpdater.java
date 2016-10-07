@@ -31,7 +31,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
@@ -154,9 +154,16 @@ import de.metas.lock.api.ILock;
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
-					.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and do not help us here
+
+					// Don't use trx savepoints because they are expensive and we are not going to rollback anyways (OnItemErrorPolicy.ContinueChunkAndCommit)
+					// Note that if our trx is null, then this doesn't matter anyways.
+					.setUseTrxSavepoints(false)
+
 					.setExceptionHandler(new ICTrxItemExceptionHandler(result))
-					.setOnItemErrorPolicy(ITrxItemExecutorBuilder.OnItemErrorPolicy.ContinueChunkAndCommit) // issue #302: ICTrxItemExceptionHandler will deal with problems, so we just continue if they happen.
+
+					// issue #302: ICTrxItemExceptionHandler will deal with problems, so we just continue if they happen.
+					.setOnItemErrorPolicy(OnItemErrorPolicy.ContinueChunkAndCommit)
+
 					.setProcessor(new TrxItemChunkProcessorAdapter<I_C_Invoice_Candidate, ICUpdateResult>()
 					{
 						/** the invoice candidates which were updated in current batch/chunk */
@@ -186,7 +193,7 @@ import de.metas.lock.api.ILock;
 
 						/**
 						 * Always return <code>true</code> and let the caller decide when to close the chunk (based on ItemsPerBatch setting).
-						 * We do this because in theory, each IC is independent from each other.
+						 * We do this because in fact, each IC is independent from each other.
 						 * On the other hand, we don't want the overhead of dealing with each IC independently (trx-commit etc).
 						 */
 						@Override
