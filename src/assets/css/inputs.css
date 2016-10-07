@@ -462,7 +462,6 @@ input:checked + .input-slider:before {
 }
 
 .input-dropdown-container {
-    position:relative;
     cursor: pointer;
     min-width: 200px;
 }
@@ -487,10 +486,13 @@ input:checked + .input-slider:before {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
+.table .input-dropdown-list {
+    margin-top:8px;
+    margin-left:-14px;
+}
 .input-dropdown-list {
     position: absolute;
-    top:31px;
-    width:100%;
+    width:calc(100% - 30px);
     background-color: #fff;
     z-index:300;
     border: 1px solid $brand-light-color;
