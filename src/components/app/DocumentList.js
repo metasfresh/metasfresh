@@ -26,13 +26,14 @@ class DocumentList extends Component {
             data: null,
             layout: null
         }
+
         this.updateData(type);
     }
 
-    componentWillUpdate() {
-        const {sorting} = this.props;
+    componentWillReceiveProps() {
+        const {sorting, type} = this.props;
         const {data} = this.state;
-
+        this.updateData(type);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
