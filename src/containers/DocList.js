@@ -19,6 +19,13 @@ class DocList extends Component {
         dispatch(getWindowBreadcrumb(windowType))
     }
 
+    renderDocumentList = (windowType) => {
+        return (<DocumentList
+            type="grid"
+            windowType={windowType}
+        />)
+    }
+
     render() {
         const {dispatch, windowType, breadcrumb} = this.props;
 
@@ -29,10 +36,7 @@ class DocList extends Component {
                     windowType={windowType}
                 />
                 <div className="container header-sticky-distance">
-                    <DocumentList
-                        type="grid"
-                        windowType={windowType}
-                    />
+                    {this.renderDocumentList(windowType)}
                 </div>
             </div>
         );
