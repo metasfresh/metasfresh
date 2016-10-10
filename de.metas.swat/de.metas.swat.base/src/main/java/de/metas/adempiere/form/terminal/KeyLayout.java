@@ -35,10 +35,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
@@ -46,6 +48,7 @@ import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.logging.LogManager;
 
 /**
@@ -122,6 +125,11 @@ public abstract class KeyLayout implements IKeyLayout
 			_listeners.clear();
 		}
 
+		if (internalReferences != null)
+		{
+			internalReferences.dispose();
+		}
+
 		basePanel = null;
 
 		_disposed = true;
@@ -174,7 +182,7 @@ public abstract class KeyLayout implements IKeyLayout
 			if (!_disposed)
 			{
 				keys = createKeys();
-				for (ITerminalKey key : keys)
+				for (final ITerminalKey key : keys)
 				{
 					getTerminalContext().addToDisposableComponents(key);
 				}
@@ -325,6 +333,42 @@ public abstract class KeyLayout implements IKeyLayout
 		}
 	}
 
+	private ITerminalContextReferences internalReferences = null;
+
+	/**
+	 * Helper method for subclasses.
+	 * Disposes this instance's internal {@link ITerminalContextReferences}, then creates a new one.
+	 * Then it actually invokes the given callable and finally detaches the newly created references.
+	 * This way, the references is owned by this keyLayout.
+	 * The components that belong to this keyLayout (whether this keyLayout directly knows them or not) will be disposed when they aren't needed anymore while this keyLayout itself can live on.
+	 *
+	 * @param f the code that (re)creates and (re)sets this keyLayout's keys by calling {@link #setKeys(Collection)}.
+	 * @see ITerminalContext#detachReferences(ITerminalContextReferences).
+	 * @task https://github.com/metasfresh/metasfresh/issues/458
+	 */
+	protected void disposeCreateDetachReverences(final Callable<Void> f)
+	{
+		if (internalReferences != null)
+		{
+			internalReferences.dispose();
+		}
+		internalReferences = getTerminalContext().newReferences();
+
+		try
+		{
+			f.call();
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		finally
+		{
+			getTerminalContext().detachReferences(internalReferences);
+		}
+
+	}
+
 	/**
 	 * @param keysNew
 	 * @return true if keysNew were actually set; false if there was no change
@@ -448,7 +492,9 @@ public abstract class KeyLayout implements IKeyLayout
 
 	protected final void fireKeysChangedEvent()
 	{
-		_listeners.firePropertyChange(IKeyLayout.PROPERTY_KeysChanged, false, true);
+		final boolean oldValue = false;
+		final boolean newValue = true;
+		_listeners.firePropertyChange(IKeyLayout.PROPERTY_KeysChanged, oldValue, newValue);
 	}
 
 	/**
