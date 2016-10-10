@@ -1,5 +1,7 @@
 package de.metas.device.scales.impl;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.BooleanUtils;
 
 /*
@@ -15,15 +17,14 @@ import org.apache.commons.lang3.BooleanUtils;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import de.metas.device.api.DeviceException;
 import de.metas.device.api.IDeviceRequestHandler;
@@ -45,12 +46,15 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 	@Override
 	public IDeviceResponse handleRequest(final DeviceRequestConfigureDevice request)
 	{
-		final IDeviceConfigParam epClass = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_CLASS);
-		final IDeviceConfigParam epHost = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_IP);
-		final IDeviceConfigParam epPort = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_PORT);
-		final IDeviceConfigParam epReturnLastLine = request.getParameters().get(AbstractTcpScales.PARAM_ENDPOINT_RETURN_LAST_LINE);
+		final Map<String, IDeviceConfigParam> parameters = request.getParameters();
 
-		final IDeviceConfigParam roundToPrecision = request.getParameters().get(AbstractTcpScales.PARAM_ROUND_TO_PRECISION); // task 09207
+		final IDeviceConfigParam epClass = parameters.get(AbstractTcpScales.PARAM_ENDPOINT_CLASS);
+		final IDeviceConfigParam epHost = parameters.get(AbstractTcpScales.PARAM_ENDPOINT_IP);
+		final IDeviceConfigParam epPort = parameters.get(AbstractTcpScales.PARAM_ENDPOINT_PORT);
+		final IDeviceConfigParam epReturnLastLine = parameters.get(AbstractTcpScales.PARAM_ENDPOINT_RETURN_LAST_LINE);
+		final IDeviceConfigParam epReadTimeoutMillis = parameters.get(AbstractTcpScales.PARAM_ENDPOINT_READ_TIMEOUT_MILLIS);
+
+		final IDeviceConfigParam roundToPrecision = parameters.get(AbstractTcpScales.PARAM_ROUND_TO_PRECISION); // task 09207
 
 		TcpConnectionEndPoint ep = null;
 
@@ -76,6 +80,7 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 		ep.setHost(epHost.getValue());
 		ep.setPort(Integer.parseInt(epPort.getValue()));
 		ep.setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
+		ep.setReadTimeoutMillis(Integer.parseInt(epReadTimeoutMillis.getValue()));
 
 		device.setEndPoint(ep);
 		device.setRoundToPrecision(Integer.parseInt(roundToPrecision.getValue()));
