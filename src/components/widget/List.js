@@ -26,7 +26,6 @@ class List extends Component {
             loading: true
         }));
 
-        console.log(rowId);
 
         dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
             this.setState(Object.assign({}, this.state, {
