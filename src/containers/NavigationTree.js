@@ -4,7 +4,6 @@ import { Link } from 'react-router';
 
 import Header from '../components/app/Header';
 import MenuOverlayContainer from '../components/app/MenuOverlayContainer';
-import NavigationTreeItem from '../components/app/NavigationTreeItem';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 
@@ -98,17 +97,18 @@ class NavigationTree extends Component {
                     {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                 </div>
             </div>
-            <p className="menu-overlay-header">{rootResults.caption}</p>
+            <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
             <div className="column-wrapper">
-            {queriedResults && queriedResults.map((subitem, subindex) =>
-                <NavigationTreeItem
-                    key={subindex}
-                    handleRedirect={this.handleRedirect}
-                    handleClickOnFolder={this.handleDeeper}
-                    handleNewRedirect={this.handleNewRedirect}
-                    {...subitem}
-                />
-            )}
+                {queriedResults && queriedResults.map((subitem, subindex) =>
+                    <MenuOverlayContainer
+                        key={subindex}
+                        printChildren={true}
+                        handleClickOnFolder={this.handleDeeper}
+                        handleRedirect={this.handleRedirect}
+                        handleNewRedirect={this.handleNewRedirect}
+                        {...subitem}
+                    />
+                )}
             </div>
         </div>
       )
