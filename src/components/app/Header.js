@@ -159,7 +159,7 @@ class Header extends Component {
                             <div className="header-left-side">
                                 <div
                                     onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
-                                    className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default btn-subheader-open btn-header-open" : "btn-meta-primary")}
+                                    className={"btn-square btn-header " + (isSubheaderShow ? "btn-meta-default-dark btn-subheader-open btn-header-open" : "btn-meta-primary")}
                                 >
                                     <i className="meta-icon-more" />
                                 </div>

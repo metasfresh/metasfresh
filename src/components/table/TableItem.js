@@ -32,17 +32,18 @@ class TableItem extends Component {
                 let disabled = document.activeElement.querySelector('.input-disabled');
                 let readonly = document.activeElement.querySelector('.input-readonly');
                 if(disabled || readonly) {
-                changeListenOnTrue();
-                this.handleEditProperty(e);
+                    changeListenOnTrue();
+                    this.handleEditProperty(e);
                 } else {
-                changeListenOnFalse();
+                    changeListenOnFalse();
                 }
             }
             })
-        } 
+        }
 
-       
+
     }
+
     handleKey = (e, property) => {
         const elem = document.activeElement;
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
@@ -59,7 +60,7 @@ class TableItem extends Component {
         } else if (e.key === "Enter" && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
-            activeCell.focus();
+            activeCell && activeCell.focus();
         }
     }
 
