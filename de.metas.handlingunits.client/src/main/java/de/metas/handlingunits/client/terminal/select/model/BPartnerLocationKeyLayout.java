@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.select.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -58,30 +57,35 @@ public class BPartnerLocationKeyLayout extends DefaultKeyLayout
 	 */
 	public void createAndSetKeysFromBPartnerLocations(final Collection<? extends I_C_BPartner_Location> bpartnerLocations)
 	{
-		if (bpartnerLocations == null || bpartnerLocations.isEmpty())
-		{
-			final List<ITerminalKey> keys = Collections.emptyList();
-			setKeys(keys);
-			return;
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
+					if (bpartnerLocations == null || bpartnerLocations.isEmpty())
+					{
+						final List<ITerminalKey> keys = Collections.emptyList();
+						setKeys(keys);
+						return null;
+					}
 
-		//
-		// Create Keys
-		final ITerminalContext terminalContext = getTerminalContext();
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
-		for (final I_C_BPartner_Location bpartnerLocation : bpartnerLocations)
-		{
-			final BPartnerLocationKey key = new BPartnerLocationKey(terminalContext, bpartnerLocation);
-			keys.add(key);
-		}
+					//
+					// Create Keys
+					final ITerminalContext terminalContext = getTerminalContext();
+					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+					for (final I_C_BPartner_Location bpartnerLocation : bpartnerLocations)
+					{
+						final BPartnerLocationKey key = new BPartnerLocationKey(terminalContext, bpartnerLocation);
+						keys.add(key);
+					}
 
-		//
-		// Sort the keys by their Name(asc).
-		Collections.sort(keys, ITerminalKey.COMPARATOR_ByName);
+					//
+					// Sort the keys by their Name(asc).
+					Collections.sort(keys, ITerminalKey.COMPARATOR_ByName);
 
-		//
-		// Set new Keys list
-		setKeys(keys);
+					//
+					// Set new Keys list
+					setKeys(keys);
+					return null;
+				});
 	}
 
 	public BPartnerLocationKey getSelectedKey()
