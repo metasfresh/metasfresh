@@ -8,17 +8,19 @@ export function setFilter(filter){
         filter: filter
     }
 }
-export function setSorting(prop, dir){
+export function setSorting(prop, dir, windowType){
     return {
         type: types.SET_LIST_SORTING,
         prop: prop,
-        dir: dir
+        dir: dir,
+        windowType: windowType
     }
 }
-export function setPagination(page){
+export function setPagination(page, windowType){
     return {
         type: types.SET_LIST_PAGINATION,
-        page: page
+        page: page,
+        windowType: windowType
     }
 }
 
