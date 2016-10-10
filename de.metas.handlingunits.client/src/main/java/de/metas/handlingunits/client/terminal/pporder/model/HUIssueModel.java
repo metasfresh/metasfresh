@@ -177,7 +177,7 @@ public class HUIssueModel implements IDisposable
 	{
 		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), service.retrieveWarehouse(getCtx()));
-		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	public void addPropertyChangeListener(final PropertyChangeListener listener)
@@ -264,7 +264,7 @@ public class HUIssueModel implements IDisposable
 	{
 		final int warehouseId = getSelectedWarehouseId();
 		final List<I_PP_Order> orders = service.getManufacturingOrders(getCtx(), warehouseId);
-		manufacturingOrderKeyLayout.setKeysFromOrders(orders);
+		manufacturingOrderKeyLayout.createAndSetKeysFromOrders(orders);
 	}
 
 	public final void loadOrderBOMLineKeyLayout()
@@ -279,7 +279,7 @@ public class HUIssueModel implements IDisposable
 		}
 
 		final List<I_PP_Order_BOMLine> lines = service.getOrderBOMLines(order);
-		orderBOMLineKeyLayout.setKeysFromBOMLines(lines);
+		orderBOMLineKeyLayout.createAndSetKeysFromBOMLines(lines);
 	}
 
 	private final void clearSelected()

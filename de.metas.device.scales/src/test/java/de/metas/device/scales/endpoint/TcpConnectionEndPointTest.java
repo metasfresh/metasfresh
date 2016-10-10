@@ -60,7 +60,7 @@ public class TcpConnectionEndPointTest
 	 * @throws InterruptedException
 	 */
 	@Before
-	public void setUp() throws InterruptedException
+	public void setUpServer() throws InterruptedException
 	{
 		exitServerSocketThread = false;
 
@@ -84,9 +84,9 @@ public class TcpConnectionEndPointTest
 
 					while (!exitServerSocketThread)
 					{
-						try (Socket myServerSocket = myServer.accept();
-								DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
-								DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
+						try (final Socket myServerSocket = myServer.accept();
+								final DataInputStream dis = new DataInputStream(myServerSocket.getInputStream());
+								final DataOutputStream dos = new DataOutputStream(myServerSocket.getOutputStream());)
 						{
 							final byte[] bytes = new byte[10];
 
