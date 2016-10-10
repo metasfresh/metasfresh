@@ -26,7 +26,6 @@ package de.metas.document.archive.spi.impl;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,10 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.archive.api.IBPartnerBL;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.document.archive.api.IArchiveDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -68,38 +64,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchange.setAD_Table_ID(adTableId);
 		docExchange.setRecord_ID(recordId);
 		docExchange.setC_BPartner_ID(archive.getC_BPartner_ID());
-		
-		//
+
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docExchange.setC_DocType_ID(doctypeID);
-		
-		//
-		// set isInvoiceEmailEnabled
-		final Object archiveReferencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
-		if (archiveReferencedModel != null)
-		{
-			final boolean isInvoiceDocument = InterfaceWrapperHelper.isInstanceOf(archiveReferencedModel, I_C_Invoice.class);
-			final Boolean matchingisInvoiceEmailEnabled;
-			// in case of invoice document, enable email only if is enabled in partner
-			if (isInvoiceDocument)
-			{
-				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
-				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
-				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
-				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
-				
-			}
-			else
-			{
-				// set by defualt on Y for all other documents
-				matchingisInvoiceEmailEnabled = Boolean.TRUE;
-			}
-			 
-			docExchange.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
-		}
 
-		
-		
 		docExchange.setDateLastEMail(null);
 		docExchange.setDateLastPrint(null);
 
@@ -130,7 +98,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 
-		I_C_Doc_Outbound_Log docExchange = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
+		I_C_Doc_Outbound_Log docExchange = Services.get(IArchiveDAO.class).retrieveLog(archive);
 
 		if (docExchange == null)
 		{

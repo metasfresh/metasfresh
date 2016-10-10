@@ -55,6 +55,7 @@ SELECT
 	a.io_bp_name,
 	SUM(a.io_qty),
 	a.io_uom
+	--a.inoutdocno
 FROM (
 SELECT distinct
 	o.DateOrdered,
@@ -100,10 +101,16 @@ INNER JOIN C_Period per_end ON $3 = per_end.C_Period_ID AND per_end.isActive = '
 INNER JOIN M_InOutLine o_iol ON ol.C_OrderLine_ID = o_iol.C_OrderLine_ID
 INNER JOIN M_InOut o_io ON o_iol.M_InOut_ID = o_io.M_InOut_ID
 INNER JOIN M_HU_Assignment huas ON huas.ad_table_id = get_table_id('M_InOutLine') AND huas.Record_ID = o_iol.M_InOutLine_ID
+INNER JOIN M_HU hu ON huas.m_hu_id = hu.m_hu_id
+
+--find splitted hus if exists
+LEFT OUTER JOIN M_HU_Trx_Line trx_line ON trx_line.M_HU_ID = huas.M_TU_HU_ID
 
 --counter inout's hus and inout 
+INNER JOIN M_HU_Assignment huas_io ON (huas_io.M_HU_ID = huas.M_HU_ID OR huas_io.M_TU_HU_ID IN (select distinct hu_id from "de.metas.handlingunits".recursive_hu_trace(trx_line.M_HU_Trx_Line_ID::integer))  ) AND huas_io.ad_table_id = get_table_id('M_InOutLine') AND huas_io.M_HU_Assignment_ID != huas.M_HU_Assignment_ID AND huas_io.Record_ID != o_iol.M_InOutLine_ID
+
 								
-INNER JOIN M_InOutLine c_iol ON c_iol.M_InOutLine_ID = ANY (ARRAY(SELECT Record_ID from "de.metas.handlingunits".hu_assigment_tracking(huas.m_hu_assignment_id) ))
+INNER JOIN M_InOutLine c_iol ON huas_io.Record_ID = c_iol.M_InOutLine_ID 
 INNER JOIN M_InOut c_io ON c_iol.M_InOut_ID = c_io.M_InOut_ID AND c_io.isSOTrx != o_io.isSOTrx
 INNER JOIN C_InvoiceCandidate_InOutLine iciol ON c_iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
@@ -167,3 +174,4 @@ ORDER BY
 	a.io_bp_value
 $$
   LANGUAGE sql STABLE;
+

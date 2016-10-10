@@ -10,18 +10,17 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -51,7 +50,6 @@ import org.compiere.model.PackingTreeBL;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.inoutcandidate.api.IPackageable;
@@ -93,16 +91,16 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Shall we group lines by destination Warehouse ?
-	 * 
+	 *
 	 * Default: true
 	 */
 	private boolean groupByWarehouseDest = false;
 
 	/**
 	 * Shall we group lines by Product?
-	 * 
+	 *
 	 * Default: true.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
 	 */
 	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
@@ -185,7 +183,7 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Set BPartner Ids to filter
-	 * 
+	 *
 	 * @param bpartnerIds
 	 */
 	public void setBPartnerIds(final List<Integer> bpartnerIds)
@@ -383,7 +381,7 @@ public class PackingMd extends MvcMdGenForm
 	}
 
 	/**
-	 * 
+	 *
 	 * @param miniTable
 	 * @return
 	 */
@@ -422,9 +420,9 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Gets BPartner IDs from selected rows.
-	 * 
+	 *
 	 * If there are no selected rows, all BPartners will be returned
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<KeyNamePair> getSelectedBPartners()
@@ -471,9 +469,9 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Gets DeliveryDates from selected rows.
-	 * 
+	 *
 	 * If there are no selected rows than DeliveryDates from all lines will be returned.
-	 * 
+	 *
 	 * @return DeliveryDates from selected rows; never return null
 	 */
 	public Set<Date> getSelectedDeliveryDates()
@@ -576,7 +574,7 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Returns false if the selected row's DeliveryViaRule equals {@link X_M_ShipmentSchedule#DELIVERYVIARULE_Abholung}. False otherwise.
-	 * 
+	 *
 	 * @return
 	 * @throws IllegalStateException if no row is selected
 	 */
@@ -585,7 +583,7 @@ public class PackingMd extends MvcMdGenForm
 		final IDColumn id = getIDColumn(selectedIdx);
 
 		final String selectedDeliveryVia = uniqueId2Key.get(id.getRecord_ID()).getDeliveryVia();
-		return !Util.equals(selectedDeliveryVia, X_M_ShipmentSchedule.DELIVERYVIARULE_Pickup); // selectedDeliveryVia might be null
+		return !Check.equals(selectedDeliveryVia, X_M_ShipmentSchedule.DELIVERYVIARULE_Pickup); // selectedDeliveryVia might be null
 	}
 
 	/**
@@ -629,7 +627,7 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Build up the {@link IPackageableQuery} to be used when selecting {@link IPackageable} items.
-	 * 
+	 *
 	 * @return query
 	 */
 	private IPackageableQuery createPackageableQuery()
@@ -769,19 +767,11 @@ public class PackingMd extends MvcMdGenForm
 
 		//
 		// Filter packageable items and add them to table
-		for (final IPackageable packageableItem : packageableItemsAll)
-		{
-			if (!isPackageableItemAccepted(packageableItem))
-			{
-				continue;
-			}
-
-			final TableRow tableRow = createTableRow(packageableItem);
-			if (tableRow != null)
-			{
-				addTableRow(tableRow);
-			}
-		}
+		packageableItemsAll.stream()
+				.filter(i -> isPackageableItemAccepted(i))
+				.map(i -> createTableRow(i))
+				.filter(r -> r != null)
+				.forEach(r -> addTableRow(r));
 	}
 
 	private boolean isPackageableItemAccepted(final IPackageable packageableItem)
@@ -836,7 +826,7 @@ public class PackingMd extends MvcMdGenForm
 	private List<IPackageable> _packageableItemsAll = null;
 
 	/**
-	 * 
+	 *
 	 * @return how many rows (i.e. product picking lines) we have
 	 */
 	public int getRowsCount()
@@ -900,7 +890,7 @@ public class PackingMd extends MvcMdGenForm
 
 	/**
 	 * Gets current {@link ITableRowSearchSelectionMatcher}.
-	 * 
+	 *
 	 * @return current {@link ITableRowSearchSelectionMatcher}; never null
 	 */
 	public final ITableRowSearchSelectionMatcher getTableRowSearchSelectionMatcher()
@@ -1037,7 +1027,7 @@ public class PackingMd extends MvcMdGenForm
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if this model has no rows (i.e. there are no {@link TableRowKey}s)
 	 */
 	public boolean isEmpty()
