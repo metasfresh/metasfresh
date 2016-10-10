@@ -31,9 +31,9 @@ class Widget extends Component {
         if(rowId === "NEW"){
             currRowId = relativeDocId;
         }
-        let customWindowType = windowType
+        let customWindowType = windowType;
         if(isAdvanced){
-            customWindowType += "&advanced=true"
+            customWindowType += "&advanced=true";
         }
 
         //do patch only when value is not equal state
@@ -45,7 +45,6 @@ class Widget extends Component {
             if(widgetType !== "Button"){
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
-
             ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
         }
 

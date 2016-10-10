@@ -69,7 +69,8 @@ class Lookup extends Component {
 
         // handling selection when main is not set or set.
         if(this.state.property === "") {
-            onChange(mainProperty[0].field, select).then(() => {
+            const promise = onChange(mainProperty[0].field, select);
+            promise && promise.then(() => {
                 this.inputSearch.value = select[Object.keys(select)[0]];
                 // call for more properties
                 let batchArray = [];
@@ -268,7 +269,7 @@ class Lookup extends Component {
     }
 
     handleValueChanged = () => {
-        
+
         const {defaultValue} = this.props;
         const {oldValue} = this.state;
 
@@ -279,8 +280,8 @@ class Lookup extends Component {
                 this.inputSearch.value = inputValue
                 this.setState(Object.assign({}, this.state, {
                     oldValue: inputValue
-                }));  
-            }    
+                }));
+            }
         }
     }
 
