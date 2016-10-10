@@ -232,8 +232,16 @@
 }
 
 .menu-overlay-node-container {
-    width: auto;
+    width: 100%;
+    display: inline-block;
+}
 
+.menu-overlay-header-deep {
+    font-weight: 400;
+}
+
+.menu-overlay-node-spaced {
+    margin-left: 1rem;
 }
 
 .menu-overlay-root-body .menu-overlay-node-container {
@@ -288,17 +296,25 @@
 }
 
 .menu-overlay-header {
-    text-transform: uppercase;
-    font-weight: 500;
     font-size: .875rem;
+    margin:0;
+}
+.menu-overlay-header-main {
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.menu-overlay-header-spaced {
     margin: 1rem 0;
 }
-
 .menu-overlay-expanded-link {
     display: block;
-    margin: .5rem 1rem;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-left: 1rem;
+}
+
+.menu-overlay-expanded-link-spaced {
+    margin: .5rem 0;
 }
 
 .menu-overlay-link,

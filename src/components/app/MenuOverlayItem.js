@@ -42,12 +42,26 @@ class MenuOverlayItem extends Component {
     }
 
     render() {
-        const {dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder, handleRedirect, handleNewRedirect, handlePath, query} = this.props;
+        const {
+            dispatch,
+            nodeId,
+            type,
+            elementId,
+            caption,
+            children,
+            handleClickOnFolder,
+            handleRedirect,
+            handleNewRedirect,
+            handlePath,
+            query,
+            printChildren
+        } = this.props;
 
         return (
-            <div
+            <span
                 className={
-                    "menu-overlay-expanded-link "
+                    "menu-overlay-expanded-link " +
+                    (!printChildren ? "menu-overlay-expanded-link-spaced " : "")
                 }
             >
 
@@ -71,19 +85,19 @@ class MenuOverlayItem extends Component {
                >
                     {children ? children.map(
                         (item, id) =>
-                            <div key={id} className="query-results" >
-                                <div className="query-caption">{caption +' / '}</div>
+                            <span key={id} className="query-results" >
+                                <span className="query-caption">{caption +' / '}</span>
                                 <span className={type === 'group' ? "query-clickable-group" : "query-clickable-link"}
                                      onClick={e => this.clickedItem(e, item.elementId, item.nodeId, item.type)}
                                      onMouseDown={e => this.onMouseDown(item.type, item.nodeId)}
                                 >
                                     {item.caption}
                                 </span>
-                            </div>
+                            </span>
                         ) : caption}
                </span>
             }
-            </div>
+            </span>
         )
     }
 }

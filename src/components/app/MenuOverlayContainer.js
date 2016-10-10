@@ -18,11 +18,32 @@ class MenuOverlayContainer extends Component {
 	}
 
 	render() {
-		const {children, elementId, caption, type, handleClickOnFolder,handleRedirect, handleNewRedirect, handlePath} = this.props;
+		const {
+            children,
+            elementId,
+            caption,
+            type,
+            handleClickOnFolder,
+            handleRedirect,
+            handleNewRedirect,
+            handlePath,
+            printChildren,
+            deep
+        } = this.props;
 		return (
-			<div className="menu-overlay-node-container">
+			<div
+                className={
+                    "menu-overlay-node-container " +
+                    (deep ? "menu-overlay-node-spaced " : "")
+                }>
 				{type==='group' &&
-					<p className="menu-overlay-header">{caption}</p>
+					<span
+                        className={
+                            "menu-overlay-header " +
+                            (!printChildren ? "menu-overlay-header-spaced " : " ") +
+                            (!deep ? "menu-overlay-header-main" : " ")
+                        }
+                    >{caption}</span>
 				}
 
 				{type!=='group' &&
@@ -33,19 +54,28 @@ class MenuOverlayContainer extends Component {
 					>
 						{caption}
 					</span>
-
-				
 				}
 
 				{children && children.map((subitem, subindex) =>
-					<MenuOverlayItem
-						key={subindex}
-						handleClickOnFolder={handleClickOnFolder}
-						handleRedirect={handleRedirect}
-						handleNewRedirect={handleNewRedirect}
-						handlePath={handlePath}
-						{...subitem}
-					/>
+					subitem.children && printChildren ?
+                        <MenuOverlayContainer
+                            key={subindex}
+                            handleClickOnFolder={this.handleDeeper}
+                            handleRedirect={this.handleRedirect}
+                            handleNewRedirect={this.handleNewRedirect}
+                            printChildren={true}
+                            deep={true}
+                            {...subitem}
+    					/> :
+                        <MenuOverlayItem
+    						key={subindex}
+    						handleClickOnFolder={handleClickOnFolder}
+    						handleRedirect={handleRedirect}
+    						handleNewRedirect={handleNewRedirect}
+    						handlePath={handlePath}
+                            printChildren={printChildren}
+    						{...subitem}
+                        />
 				)}
 			</div>
 		)
