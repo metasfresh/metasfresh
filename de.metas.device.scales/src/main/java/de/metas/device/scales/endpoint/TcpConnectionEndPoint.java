@@ -71,7 +71,6 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 					logger.debug("Read line from the socket: {}", lastReadLine);
 				}
 				logger.debug("Result (last line) as read from the socket: {}", result);
-				logger.debug("Read line from the socket: {}", readLine);
 			}
 			else
 			{
