@@ -73,16 +73,16 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 		{
 			bpartnersSorted = new TreeSet<KeyNamePair>(bpartners);
 		}
+		//
+		// Check if our keys are actually changed
+		if (Check.equals(this._bpartnerKNPs, bpartnersSorted))
+		{
+			return;
+		}
 
 		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
 		disposeCreateDetachReverences(
 				() -> {
-					//
-					// Check if our keys are actually changed
-					if (Check.equals(this._bpartnerKNPs, bpartnersSorted))
-					{
-						return null;
-					}
 
 					//
 					// Create Keys

@@ -38,7 +38,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 public class DeliveryDateKeyLayout extends DefaultKeyLayout
 {
 
-	public DeliveryDateKeyLayout(ITerminalContext tc)
+	public DeliveryDateKeyLayout(final ITerminalContext tc)
 	{
 		super(tc);
 	}
@@ -55,33 +55,34 @@ public class DeliveryDateKeyLayout extends DefaultKeyLayout
 	 */
 	public void createAndSetKeysFromDates(final Set<Date> deliveryDates)
 	{
+		//
+		// Normalize and sort new Delivery Dates
+		final Set<Date> deliveryDatesSorted;
+		if (deliveryDates == null || deliveryDates.isEmpty())
+		{
+			deliveryDatesSorted = Collections.emptySet();
+		}
+		else
+		{
+			deliveryDatesSorted = new TreeSet<Date>(deliveryDates);
+		}
+
+		//
+		// Check if there will be an actual change
+		if (Check.equals(_deliveryDates, deliveryDatesSorted))
+		{
+			return;
+		}
+
 		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
 		disposeCreateDetachReverences(
 				() -> {
-					//
-					// Normalize and sort new Delivery Dates
-					final Set<Date> deliveryDatesSorted;
-					if (deliveryDates == null || deliveryDates.isEmpty())
-					{
-						deliveryDatesSorted = Collections.emptySet();
-					}
-					else
-					{
-						deliveryDatesSorted = new TreeSet<Date>(deliveryDates);
-					}
-
-					//
-					// Check if there will be an actual change
-					if (Check.equals(this._deliveryDates, deliveryDatesSorted))
-					{
-						return null;
-					}
 
 					final List<ITerminalKey> deliveryDateKeys = new ArrayList<ITerminalKey>(deliveryDatesSorted.size());
 
 					//
 					// Create new DeliveryDate Keys
-					for (Date deliveryDate : deliveryDatesSorted)
+					for (final Date deliveryDate : deliveryDatesSorted)
 					{
 						final DeliveryDateKey deliveryDateKey = new DeliveryDateKey(getTerminalContext(), deliveryDate);
 						deliveryDateKeys.add(deliveryDateKey);
@@ -90,7 +91,7 @@ public class DeliveryDateKeyLayout extends DefaultKeyLayout
 					//
 					// Set new Keys
 					setKeys(deliveryDateKeys);
-					this._deliveryDates = deliveryDatesSorted;
+					_deliveryDates = deliveryDatesSorted;
 					return null;
 				});
 	}
