@@ -141,8 +141,8 @@ class MenuOverlay extends Component {
         return (
             <div className="menu-overlay-container">
                 {node.nodeId != 0 &&
-                    <p className="menu-overlay-header group-header">
-                    {this.renderPath(path)}
+                    <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
+                        {this.renderPath(path)}
                     </p>
                 }
                 {node && node.children.map((item,index) =>
@@ -164,7 +164,16 @@ class MenuOverlay extends Component {
         return(
             <div>
                 {nodeData && nodeData.children.map((item, index) =>
-                    <span className="menu-overlay-expanded-link" key={index}> <span className={item.elementId? 'menu-overlay-link' : 'menu-overlay-expand'} onClick={ e => this.linkClick(item) }>{item.caption}</span></span>
+                    <span
+                        className="menu-overlay-expanded-link"
+                        key={index}
+                    >
+                        <span
+                            className={item.elementId? 'menu-overlay-link' : 'menu-overlay-expand'}
+                            onClick={ e => this.linkClick(item) }>
+                                {item.caption}
+                            </span>
+                    </span>
                 )}
             </div>
         )
