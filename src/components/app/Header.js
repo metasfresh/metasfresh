@@ -100,7 +100,7 @@ class Header extends Component {
                 {breadcrumb && breadcrumb.map((item, index) =>
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
-                        <span
+                        <span title={(index === 0 ? "" : item.children.captionBreadcrumb)}
                             className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
                             onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
