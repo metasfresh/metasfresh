@@ -37,21 +37,6 @@ class MasterWindow extends Component {
         });
     }
 
-    fireNotificationSuccess = () => {
-        const {dispatch} = this.props;
-        dispatch(addNotification('Success', 'Lorem ipsum dolor sit amet', 4000, 'success'));
-    }
-
-    fireNotificationWarning = () => {
-        const {dispatch} = this.props;
-        dispatch(addNotification('Warning', 'This is warning message', 0, 'warning'));
-    }
-
-    fireNotificationError = () => {
-        const {dispatch} = this.props;
-        dispatch(addNotification('Error', 'Lorem ipsum error sit amet. Error error.', 2000, 'error'));
-    }
-
     componentWillReceiveProps(props) {
         const {master} = this.props;
         this.setState(Object.assign({}, this.state, {
@@ -109,10 +94,6 @@ class MasterWindow extends Component {
                 />
 
                 <NotificationHandler />
-
-                <button onClick={this.fireNotificationSuccess}>Show success</button>
-                <button onClick={this.fireNotificationWarning}>Show warning</button>
-                <button onClick={this.fireNotificationError}>Show error</button>
 
             </div>
         );
