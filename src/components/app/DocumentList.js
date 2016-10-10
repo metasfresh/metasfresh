@@ -14,20 +14,20 @@ import {
 import {
     setFilter,
     setPagination,
-    setSorting
+    setSorting,
+    clearListProps
 } from '../../actions/ListActions';
 
 class DocumentList extends Component {
     constructor(props){
         super(props);
-        const {filters, type,windowType} = props;
+        const {filters, type, windowType} = props;
 
         this.state = {
             data: null,
             layout: null
         }
         this.updateData(type,windowType);
-
     }
 
     componentWillReceiveProps(props) {
@@ -65,9 +65,20 @@ class DocumentList extends Component {
 
     getView = () => {
         const {data} = this.state;
-        const {page} = this.props;
+        const {dispatch, page, sorting, windowType} = this.props;
+        let query = "";
 
-        this.getData(data.viewId, page, 20);
+        //
+        //  Condition, that ensure wheter windowType
+        //  is the same as for saved query params
+        //
+        if(windowType === sorting.windowType) {
+            query = this.getSortingQuery(sorting.dir, sorting.prop);
+        }else{
+            dispatch(clearListProps());
+        }
+
+        this.getData(data.viewId, page, 20, query);
     }
 
     getData = (id, page, pages, sortingQuery) => {
@@ -81,26 +92,28 @@ class DocumentList extends Component {
         });
     }
 
-    sortData = (ascending, field, startPage) => {
-        const {sorting, page, dispatch} = this.props;
-        const {data} = this.state;
-
+    getSortingQuery = (asc, field) => {
         let sortingQuery = '';
 
-        dispatch(setSorting(field, ascending));
-
-        if(startPage){
-            dispatch(setPagination(1));
-        }
-
-
-        if(field && ascending) {
+        if(field && asc) {
             sortingQuery = '+' + field;
-        } else if(field && !ascending) {
+        } else if(field && !asc) {
             sortingQuery = '-' + field;
         }
+        return sortingQuery;
+    }
 
-        this.getData(data.viewId, page, 20, sortingQuery);
+    sortData = (asc, field, startPage) => {
+        const {sorting, page, dispatch, windowType} = this.props;
+        const {data} = this.state;
+
+        dispatch(setSorting(field, asc, windowType));
+
+        if(startPage){
+            dispatch(setPagination(1, windowType));
+        }
+
+        this.getData(data.viewId, page, 20, this.getSortingQuery(asc, field));
     }
 
     handleChangePage = (index) => {
@@ -129,7 +142,6 @@ class DocumentList extends Component {
     render() {
         const {layout, data} = this.state;
         const {dispatch, windowType, type, filters, page} = this.props;
-
         if(layout && data) {
             return (
                 <div>
