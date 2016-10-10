@@ -251,7 +251,7 @@ import de.metas.lock.api.ILock;
 		final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
 
 		// update the Discount value of 'ic'. We will need it for the priceActual further down
-		invoiceCandBL.set_Discount(ctx, ic);
+		invoiceCandBL.setDiscountFromOrderLine(ctx, ic);
 
 		// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
 		// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
