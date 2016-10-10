@@ -203,7 +203,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	/**
 	 * Refresh current lines
 	 *
-	 * @param forceRefresh if true then always refresh (even if is not needed)
+	 * @param forceRefresh if <code>true</code> then always refresh (even if is not needed)
 	 */
 	public void refreshLines(final boolean forceRefresh)
 	{
@@ -248,7 +248,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		{
 			// Update BPartner Key Layout:
 			final List<I_C_BPartner> bpartners = service.getBPartners(_lines);
-			vendorKeyLayout.setKeysFromBPartners(bpartners);
+			vendorKeyLayout.createAndSetKeysFromBPartners(bpartners);
 
 			// Update other custom key layouts
 			loadKeysFromLines(_lines);
@@ -682,7 +682,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		final List<I_M_Warehouse> warehousesAll = service.retrieveWarehouses(getCtx());
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), warehousesAll);
 		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found");
-		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	protected final void setLayoutsEnabled(final boolean enabled)

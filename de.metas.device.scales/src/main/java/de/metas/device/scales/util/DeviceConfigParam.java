@@ -10,12 +10,12 @@ package de.metas.device.scales.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,19 +27,19 @@ import de.metas.device.api.request.IDeviceConfigParam;
 
 /**
  * Simple pojo implementation of {@link IDeviceConfigParam}. Consider to moves this class to a generic "device tools" project as soon as we start supporting devices other than scales.
- * 
+ *
  * @author ts
- * 
+ *
  */
 public final class DeviceConfigParam implements IDeviceConfigParam
 {
 
 	private final String systemName;
 	private final String userFriendlyName;
-	private final Object defaultValue;
-	private Object value;
+	private final String defaultValue;
+	private String value;
 
-	public DeviceConfigParam(final String systemName, final String userFriendlyName, final Object defaultValue)
+	public DeviceConfigParam(final String systemName, final String userFriendlyName, final String defaultValue)
 	{
 		this.systemName = systemName;
 		this.userFriendlyName = userFriendlyName;
@@ -59,19 +59,19 @@ public final class DeviceConfigParam implements IDeviceConfigParam
 	}
 
 	@Override
-	public Object getDefaultValue()
+	public String getDefaultValue()
 	{
 		return defaultValue;
 	}
 
 	@Override
-	public Object getValue()
+	public String getValue()
 	{
 		return value;
 	}
 
 	@Override
-	public void setValue(Object value)
+	public void setValue(String value)
 	{
 		this.value = value;
 	}

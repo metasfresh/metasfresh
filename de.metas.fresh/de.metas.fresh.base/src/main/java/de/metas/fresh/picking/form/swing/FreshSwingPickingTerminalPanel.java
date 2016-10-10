@@ -247,14 +247,14 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		// Update BPartner Keys
 		{
 			final Set<KeyNamePair> bpartners = pickingOKPanel.getSelectedBPartners();
-			bpartnerKeyLayout.setKeysFromBPartnerKNPs(bpartners);
+			bpartnerKeyLayout.createAndSetKeysFromBPartnerKNPs(bpartners);
 		}
 
 		//
 		// Update DeliveryDate Keys
 		{
 			final Set<Date> deliveryDates = pickingOKPanel.getSelectedDeliveryDates();
-			deliveryDateKeyLayout.setKeysFromDates(deliveryDates);
+			deliveryDateKeyLayout.createAndSetKeysFromDates(deliveryDates);
 		}
 	}
 

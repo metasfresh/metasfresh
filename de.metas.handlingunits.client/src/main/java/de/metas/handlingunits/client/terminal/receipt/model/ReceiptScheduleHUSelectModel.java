@@ -121,7 +121,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		purchaseOrderKeyLayout.addTerminalKeyListener(new TerminalKeyListenerAdapter()
 		{
-
 			@Override
 			public void keyReturned(final ITerminalKey key)
 			{
@@ -165,12 +164,15 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return purchaseOrderKey.getC_Order_ID();
 	}
 
+	/**
+	 * Loads purchase order keys from the given <code>line</code>.
+	 */
 	@Override
 	protected void loadKeysFromLines(final List<IPOSTableRow> lines)
 	{
 		final IPOSFiltering service = getService();
 		final List<I_C_Order> purchaseOrders = service.getOrders(lines);
-		purchaseOrderKeyLayout.setKeysFromOrders(purchaseOrders);
+		purchaseOrderKeyLayout.createAndSetKeysFromOrders(purchaseOrders);
 	}
 
 	@Override

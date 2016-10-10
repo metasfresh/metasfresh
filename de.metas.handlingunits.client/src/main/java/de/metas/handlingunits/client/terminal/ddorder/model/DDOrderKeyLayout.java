@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.ddorder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -56,30 +55,35 @@ public class DDOrderKeyLayout extends DefaultKeyLayout
 		return keyLayoutId;
 	}
 
-	public void setKeysFromDDOrders(final List<I_DD_Order> ddOrders)
+	public void createAndSetKeysFromDDOrders(final List<I_DD_Order> ddOrders)
 	{
-		if (ddOrders == null || ddOrders.isEmpty())
-		{
-			final List<ITerminalKey> keys = Collections.emptyList();
-			setKeys(keys);
-			return;
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
+					if (ddOrders == null || ddOrders.isEmpty())
+					{
+						final List<ITerminalKey> keys = Collections.emptyList();
+						setKeys(keys);
+						return null;
+					}
 
-		//
-		// Create Keys
-		final List<DDOrderKey> keys = new ArrayList<>();
-		for (final I_DD_Order ddOrder : ddOrders)
-		{
-			final DDOrderKey key = new DDOrderKey(getTerminalContext(), ddOrder);
-			keys.add(key);
-		}
-		
-		//
-		// Sort the keys
-		Collections.sort(keys, ITerminalKey.COMPARATOR_ByName);
+					//
+					// Create Keys
+					final List<DDOrderKey> keys = new ArrayList<>();
+					for (final I_DD_Order ddOrder : ddOrders)
+					{
+						final DDOrderKey key = new DDOrderKey(getTerminalContext(), ddOrder);
+						keys.add(key);
+					}
 
-		// Set new Keys list
-		setKeys(keys);
+					//
+					// Sort the keys
+					Collections.sort(keys, ITerminalKey.COMPARATOR_ByName);
+
+					// Set new Keys list
+					setKeys(keys);
+					return null;
+				});
 	}
 
 }

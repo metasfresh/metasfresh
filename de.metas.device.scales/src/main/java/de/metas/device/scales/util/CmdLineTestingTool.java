@@ -26,7 +26,7 @@ package de.metas.device.scales.util;
 import de.metas.device.scales.SystecScales;
 import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
 import de.metas.device.scales.endpoint.MockedEndpoint;
-import de.metas.device.scales.request.GetGrossWeighRequest;
+import de.metas.device.scales.request.GetStableGrossWeighRequest;
 import de.metas.device.scales.request.GetWeightResponse;
 
 public class CmdLineTestingTool
@@ -50,7 +50,7 @@ public class CmdLineTestingTool
 		scales.configureStatic();
 
 		System.out.println("Querying scales..");
-		final GetWeightResponse response = scales.accessDevice(new GetGrossWeighRequest());
+		final GetWeightResponse response = scales.accessDevice(new GetStableGrossWeighRequest());
 		System.out.println("Scales responded: " + response.getWeight() + " " + response.getUom());
 	}
 }
