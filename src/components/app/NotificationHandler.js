@@ -13,10 +13,18 @@ class NotificationHandler extends Component {
     }
 
     render() {
+
+        const {notification} = this.props;
+
         return (
           <div className="notification-handler"> 
 
-          <Notification notification={this.props.notification} />
+          {notification.notifications && notification.notifications.map((item,index) =>
+              <Notification 
+                key={index} 
+                item={item} 
+              />
+          )}
 
           </div>
         )

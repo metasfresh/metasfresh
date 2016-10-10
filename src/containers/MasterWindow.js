@@ -39,7 +39,7 @@ class MasterWindow extends Component {
 
     fireNotificationSuccess = () => {
         const {dispatch} = this.props;
-        dispatch(addNotification('Success', 'Lorem ipsum dolor sit amet', 1000, 'success'));
+        dispatch(addNotification('Success', 'Lorem ipsum dolor sit amet', 4000, 'success'));
     }
 
     fireNotificationWarning = () => {
@@ -49,7 +49,7 @@ class MasterWindow extends Component {
 
     fireNotificationError = () => {
         const {dispatch} = this.props;
-        dispatch(addNotification('Error', 'Lorem ipsum error sit amet. Error error.', 5000, 'error'));
+        dispatch(addNotification('Error', 'Lorem ipsum error sit amet. Error error.', 2000, 'error'));
     }
 
     componentWillReceiveProps(props) {

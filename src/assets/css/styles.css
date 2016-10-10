@@ -1009,7 +1009,11 @@ th {
 }
 
 .header-breadcrumb > span:first-of-type > .ico-home {
-    min-width: 20px;
+    min-width: 24px;
+}
+
+.header-breadcrumb > span:first-child {
+    min-width: 26px;
 }
 
 .notification {
@@ -1260,6 +1264,8 @@ th {
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
     padding: 10px 15px 10px 13px;
     position: relative;
+    opacity: 0;
+    transition: all 0.5s;
 }
 
 .notification-item.success {
@@ -1272,7 +1278,6 @@ th {
 
 .notification-item.warning {
     border: 2px solid $brand-warning-color;
-    opacity: 1;
 }
 
 .notification-item.warning .notification-header {
@@ -1281,7 +1286,6 @@ th {
 
 .notification-item.error {
     border: 2px solid $brand-danger-color;
-    opacity: 1;
 }
 
 .notification-item.error .notification-header {
@@ -1305,4 +1309,9 @@ th {
 .notification-content {
     line-height: 1.2em;
     font-size: 14px;
+}
+
+.notif-animate {
+    opacity: 1;
+    transition: all 0.5s;
 }

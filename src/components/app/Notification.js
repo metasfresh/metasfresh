@@ -8,22 +8,17 @@ import {
 class Notification extends Component {
     constructor(props) {
         super(props);
-
+        this.state = {
+            notificationMounted: false
+        }
     }
 
-    renderNotification = (item,index) => {
+    renderNotification = (item) => {
       const {dispatch} = this.props;
-
-      if(item.time > 0) {
-        setTimeout(function(){
-          dispatch(deleteNotification(item));
-        }, item.time);
-      }
-      
-
+      const {notificationMounted} = this.state;
 
       return (
-        <div className={"notification-item " + (item.notifType ? item.notifType : 'error')} key={index}>
+        <div className={"notification-item " + (item.notifType ? item.notifType : 'error') + (notificationMounted ? ' notif-animate' : '')}>
           <div className="notification-header"> {item.title} <i onClick={() => this.closeNotification(item)} className="meta-icon-close-1"></i></div>
           <div className="notification-content"> {item.msg} </div>
         </div> 
@@ -32,19 +27,46 @@ class Notification extends Component {
 
     closeNotification = (item) => {
       const {dispatch} = this.props;
-      dispatch(deleteNotification(item));
+
+      this.setState(Object.assign({}, this.state, {
+        notificationMounted: false
+      }))
+
+      setTimeout(function(){
+        dispatch(deleteNotification(item));
+      }, 300);
+    }
+
+    componentDidMount() {
+      const {item, dispatch} = this.props;
+
+      if(item.time > 0) {
+        setTimeout(function(){
+          dispatch(deleteNotification(item));
+        }, item.time);
+      }
+      let th = this;
+      setTimeout(function(){
+          th.setState(Object.assign({}, this.state, {
+            notificationMounted: true
+          }))
+        }, 10);
+    }
+
+    componentWillReceiveProps() {
+      this.setState(Object.assign({}, this.state, {
+            notificationMounted: true
+      }))
     }
 
 
     render() {
-        const {notification} = this.props;
+        const {notification, item} = this.props;
         return (
           <div>
-            
-            {notification.notifications && notification.notifications.map((item,index) =>
-              this.renderNotification(item,index)
-            )}
-
+          {item && 
+              this.renderNotification(item)
+          }
           </div>
         )
     }
