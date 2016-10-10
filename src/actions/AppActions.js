@@ -19,18 +19,18 @@ export function dropdownRequest(windowType, propertyName, id, tabId, rowId) {
 }
 
 export function viewLayoutRequest(windowType, type){
-    return (dispatch) => axios.get(config.API_URL + '/window/viewLayout?type=' + windowType + '&viewType=' + type);
+    return (dispatch) => axios.get(config.API_URL + '/documentView/layout?type=' + windowType + '&viewType=' + type);
 }
 
 export function browseViewRequest(viewId, page, pageLength, orderBy){
     return (dispatch) => {
         const firstRow = pageLength * (page - 1);
-        return axios.get(config.API_URL + '/window/view/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''))
+        return axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''))
     }
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters){
-    return (dispatch) => axios.put(config.API_URL + '/window/view?type=' + windowType + '&viewType=' + viewType, filters);
+    return (dispatch) => axios.put(config.API_URL + '/documentView/?type=' + windowType + '&viewType=' + viewType, filters);
 }
 
 export function addNotification(title, msg, time, notifType){
@@ -52,5 +52,5 @@ export function deleteNotification(item){
 
 
 export function fireNotification(item){
-    
+
 }
