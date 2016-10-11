@@ -157,7 +157,7 @@ class NavigationTree extends Component {
               />
               {connectionError && <ErrorScreen />}
 
-              <div className="container">
+              <div className="container-fluid">
                 <div className="row">
                 {this.renderTree(rootResults)}
                 </div>
