@@ -89,7 +89,7 @@ class NavigationTree extends Component {
       const {rootResults, queriedResults} = this.state;
 
       return(
-        <div className="container">
+        <div className="container-fluid">
             <div className="search-wrapper">
                 <div className="input-flex input-primary">
                     <i className="input-icon meta-icon-preview"/>

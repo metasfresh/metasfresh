@@ -122,7 +122,7 @@ class Window extends Component {
         const {data, isModal} = this.props;
         return (
             <div>
-                <div className={"container " + (!!isModal ? "" : "header-sticky-distance")} key="window">
+                <div className={"container-fluid " + (!!isModal ? "" : "header-sticky-distance")} key="window">
                     {sections && this.renderSections(sections)}
                     <div className="m-t-1 m-b-2">
                         {tabs && this.renderTabs(tabs)}
