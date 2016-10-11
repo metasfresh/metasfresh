@@ -783,8 +783,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return qty;
 		}
 
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 		final I_M_Product product = ic.getM_Product();
-		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertQty(product, qty, productUOM, priceUOM);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertQty(product, qty, productUOM, priceUOM);
 
 		logger.debug("converted qty {} of product {} from {} to {} => {} for ic {}",
 				new Object[] { qty, product.getValue(), productUOM.getName(), priceUOM.getName(), qtyInPriceUOM, ic });
