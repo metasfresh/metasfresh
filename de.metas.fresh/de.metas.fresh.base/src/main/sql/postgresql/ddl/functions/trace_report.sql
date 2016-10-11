@@ -139,17 +139,21 @@ WHERE
 			-- Take lines where the attributes of the current InoutLine's asi are in the parameter asi and their Values Match
 				EXISTS (
 					SELECT	0
-					FROM	report.fresh_Attributes a -- a = Attributes from inout line, pa = Parameter Attributes
-						INNER JOIN report.fresh_Attributes pa ON pa.M_AttributeSetInstance_ID = $8 
-							AND a.at_value = pa.at_value -- same attribute
-							AND a.ai_value = pa.ai_value -- same value
+					FROM	report.fresh_Attributes_ConcreteADR a -- a = Attributes from inout line, pa = Parameter Attributes
+					INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID =6487321
+					AND a.at_value = pa.at_value -- same attribute
+					AND (CASE WHEN a.at_value = '1000015' THEN  ('%'||substring(a.ai_value from 5)||'%' like '%'||substring(pa.ai_value from 5)||'%' OR '%'||substring(pa.ai_value from 5)||'%' like '%'||substring(a.ai_value from 5)||'%' ) --case of adr containing similar value
+					ELSE a.ai_value = pa.ai_value END)  --same value
 					WHERE	a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
 					)
 					-- Dismiss lines where the Attributes in the Parameter are not in the inoutline's asi
 				AND NOT EXISTS (
 					SELECT	0
-					FROM	report.fresh_Attributes pa
-						LEFT OUTER JOIN report.fresh_Attributes a ON a.at_value = pa.at_value AND a.ai_value = pa.ai_value 
+					FROM	report.fresh_Attributes_ConcreteADR pa
+						LEFT OUTER JOIN report.fresh_Attributes_ConcreteADR a 
+						ON a.at_value = pa.at_value AND
+						(CASE WHEN a.at_value = '1000015' THEN  ('%'||substring(a.ai_value from 5)||'%' like '%'||substring(pa.ai_value from 5)||'%' OR '%'||substring(pa.ai_value from 5)||'%' like '%'||substring(a.ai_value from 5)||'%' ) --case of adr containing similar value
+					ELSE a.ai_value = pa.ai_value END)
 							AND a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
 					WHERE	pa.M_AttributeSetInstance_ID = $8
 						AND a.M_AttributeSetInstance_ID IS null
