@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -91,15 +89,17 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -1136,7 +1136,7 @@ public class VPAttributeDialog extends CDialog
 			{
 				final VString editorString = (VString)editor;
 				final String value = editorString.getText();
-				if (attribute.isMandatory() && Check.isEmpty(value, false))
+				if (attribute.isMandatory() && Check.isEmpty(value, true))
 				{
 					mandatory.add(attribute.getName());
 				}
