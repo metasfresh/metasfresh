@@ -41,6 +41,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_AD_User;
+import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 
 public class DocOutboundArchiveEventListenerTest
@@ -71,8 +73,15 @@ public class DocOutboundArchiveEventListenerTest
 	{
 		final String documentNoExpected = "DocumentNotToBeUsed";
 
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		InterfaceWrapperHelper.save(bpartner);
+		final I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
+		InterfaceWrapperHelper.save(user);
+		
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
 		invoice.setDocumentNo(documentNoExpected);
+		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		invoice.setAD_User_ID(user.getAD_User_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_AD_Archive archive = createArchive(invoice);

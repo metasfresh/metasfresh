@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 
@@ -34,7 +35,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 
-public interface IArchiveDAO extends ISingletonService
+public interface IDocOutboundDAO extends ISingletonService
 {
 	/**
 	 * Retrieve all <b>active</b> {@link I_C_Doc_Outbound_Config}s for <b>all</b> clients.
@@ -84,4 +85,13 @@ public interface IArchiveDAO extends ISingletonService
 	 * @param queryBuilder
 	 */
 	void addPDFArchiveLogLineFilters(IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder);
+	
+	/**
+	 *  Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
+	 * @param contextProvider
+	 * @param bpartnerId
+	 * @param AD_Table_ID
+	 * @return
+	 */
+	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
 }

@@ -235,7 +235,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			}
 
 			String value = "";
-			BigDecimal qtyToDeliver = BigDecimal.ZERO;
+			BigDecimal qtyToDeliver = Env.ZERO;
 			int warehouseDestId = 0;
 
 			// restrict the searching;
@@ -431,7 +431,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			containers.add(bin);
 		}
 
-		BigDecimal unpackedQty = BigDecimal.ZERO;
+		BigDecimal unpackedQty = Env.ZERO;
 		for (final IPackingItem item : unallocatedLines)
 		{
 			unpackedQty = unpackedQty.add(item.getQtySum());

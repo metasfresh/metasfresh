@@ -1,10 +1,10 @@
-package de.metas.device.scales.impl;
+package de.metas.document.archive.model;
 
 /*
  * #%L
- * de.metas.device.scales
+ * de.metas.document.archive.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +22,26 @@ package de.metas.device.scales.impl;
  * #L%
  */
 
-
-public interface ICmd
+public interface I_AD_User extends org.compiere.model.I_AD_User
 {
-	String getCmd();
+	//@formatter:off
+	// task 724 ; gh #443
+	public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+	/**
+	 * Get IsInvoiceEmailEnabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsInvoiceEmailEnabled();
+	/**
+	 * Set IsInvoiceEmailEnabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled);
+	//@formatter:on
 }

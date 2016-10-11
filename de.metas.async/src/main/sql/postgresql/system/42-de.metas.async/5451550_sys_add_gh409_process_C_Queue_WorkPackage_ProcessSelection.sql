@@ -1,4 +1,23 @@
-﻿-- 05.10.2016 14:35
+﻿
+--
+-- DDL: make the description column bigger
+--
+-- 07.10.2016 07:20
+-- URL zum Konzept
+INSERT INTO t_alter_column values('ad_process','Description','VARCHAR(2000)',null,'NULL')
+;
+
+COMMIT;
+
+
+
+-- 07.10.2016 07:20
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=14, FieldLength=2000,Updated=TO_TIMESTAMP('2016-10-07 07:20:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2810
+;
+
+
+-- 05.10.2016 14:35
 -- URL zum Konzept
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540726,'Y','de.metas.async.process.C_Queue_WorkPackage_ProcessSelection','N',TO_TIMESTAMP('2016-10-05 14:35:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.async','Y','N','N','N','N','N','N','Y',0,'Auswahl per Prozess verarbeiten','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-05 14:35:30','YYYY-MM-DD HH24:MI:SS'),100,'C_Queue_WorkPackage_ProcessSelection')
 ;

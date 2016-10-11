@@ -13,15 +13,14 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -52,14 +51,14 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.service.IInvoiceLineBL;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 public class InvoiceLineBL implements IInvoiceLineBL
@@ -177,10 +176,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		if (invoice.getM_PriceList_ID() != 100) // FIXME use PriceList_None constant
+		if (invoice.getM_PriceList_ID() != 100)  // FIXME use PriceList_None constant
 		{
 			final I_M_PriceList priceList = invoice.getM_PriceList();
-
 
 			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
@@ -236,35 +234,23 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	{
 		Check.assumeNotNull(invoiceLine, "invoiceLine not null");
 
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-		final BigDecimal qtyInvoicedInPriceUOM = calculatedQtyInPriceUOM(qtyInvoiced, invoiceLine, false);
-		return qtyInvoicedInPriceUOM;
-	}
+		final BigDecimal qty = invoiceLine.getQtyInvoiced();
 
-	@Override
-	public BigDecimal calculatedQtyInPriceUOM(final BigDecimal qty,
-			final I_C_InvoiceLine invoiceLine,
-			final boolean errorIfNotPossible)
-	{
 		Check.assumeNotNull(qty, "qty not null");
 
 		final I_C_UOM priceUOM = invoiceLine.getPrice_UOM();
 		if (invoiceLine.getPrice_UOM_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has no Price_UOM and param throwErrorIfNotPossible=true", invoiceLine);
-
 			return qty;
 		}
 		if (invoiceLine.getM_Product_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has no M_Product and param throwErrorIfNotPossible=true", invoiceLine);
 			return qty;
 		}
 
 		final I_M_Product product = invoiceLine.getM_Product();
 		if (product.getC_UOM_ID() <= 0)
 		{
-			Check.errorIf(errorIfNotPossible, "given invoiceLine {} has M_Product {} with no C_UOM and param throwErrorIfNotPossible=true", invoiceLine, product);
 			return qty;
 		}
 
@@ -287,8 +273,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	public IEditablePricingContext createPricingContext(I_C_InvoiceLine invoiceLine,
 			final int priceListId,
-			final BigDecimal priceQty
-			)
+			final BigDecimal priceQty)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
@@ -364,9 +349,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		pricingCtx.setManualPrice(invoiceLine.isManualPrice());
 
-		if(pricingCtx.isManualPrice())
+		if (pricingCtx.isManualPrice())
 		{
-			// Task 08908: 	do not calculate the prices in case the price is manually set
+			// Task 08908: do not calculate the prices in case the price is manually set
 			return;
 		}
 
