@@ -117,7 +117,7 @@ class MenuOverlay extends Component {
 
 	   return(
 		<span>{path.children != undefined? path.children.map((index, id) =>
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+			<span key={id}>{ path.nodeId > 0 ? (path.captionBreadcrumb + ' / '):''}<span>{this.renderPath(index)}</span></span>
 
 			): path.captionBreadcrumb
 		}</span>
@@ -125,10 +125,11 @@ class MenuOverlay extends Component {
     }
 
     renderPath = (path) => {
+        console.log(path);
 
 	   return(
-		<span>{path.children != undefined? path.children.map((index, id) =>
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+		<span>{path.children != undefined ? path.children.map((index, id) =>
+			<span key={id}>{path.nodeId > 0 ? (path.captionBreadcrumb + ' / '):''}<span>{this.renderPath(index)}</span></span>
 
 			): path.captionBreadcrumb
 		}</span>
