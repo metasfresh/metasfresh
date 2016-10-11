@@ -27,7 +27,8 @@ class DocumentList extends Component {
             data: null,
             layout: null
         }
-        this.updateData(type,windowType);
+
+        this.updateData(type, windowType);
     }
 
     componentWillReceiveProps(props) {
@@ -48,7 +49,7 @@ class DocumentList extends Component {
 
     updateData = (type, windowType) => {
         const {dispatch, filters} = this.props;
-        dispatch(viewLayoutRequest(windowType, type)).then(response => {
+        windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
@@ -142,6 +143,7 @@ class DocumentList extends Component {
     render() {
         const {layout, data} = this.state;
         const {dispatch, windowType, type, filters, page} = this.props;
+
         if(layout && data) {
             return (
                 <div>
