@@ -26,7 +26,7 @@ axios.defaults.withCredentials = true;
 axios.interceptors.response.use(function (response) {
     return response;
 }, function (error) {
-    store.dispatch(addNotification('Error', error.message, 5000, 'error'));
+    store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
 
     if(!error.response){
         store.dispatch(noConnection(true));
