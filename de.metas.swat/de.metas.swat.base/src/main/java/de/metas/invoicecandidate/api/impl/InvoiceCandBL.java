@@ -193,7 +193,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)                       // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)                        // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -287,7 +287,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                       // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                        // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -413,7 +413,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getLeft());
 
 			final BigDecimal netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
-			if (netAmtInvoiced == null) // gh #428 flag the IC if we can't get NetAmtInvoiced
+			if (netAmtInvoiced == null)  // gh #428 flag the IC if we can't get NetAmtInvoiced
 			{
 				ic.setIsError(true);
 				ic.setErrorMsg("Unable to compute NetAmtInvoiced. Check UOM conversions");
@@ -465,6 +465,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //					DocAction.STATUS_InProgress))                     // 06162 InProgress invoices shall also be processed
 //			{
 // @formatter:on
+
 			qtyInvoiced = qtyInvoiced.add(ila.getQtyInvoiced());
 
 			//
@@ -1253,7 +1254,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))        // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))         // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1307,6 +1308,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				final BigDecimal qtyInvoicedForIla;
 				final String note;
+
+				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
+				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
+
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)
 				{
 					// undo/reverse the full credit memo quantity. Note that when we handled the credit memo's completion we didn't care about any overlap either, but also created an ila with the full
@@ -1327,7 +1332,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final IPair<BigDecimal, BigDecimal> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ilaToReverse.getC_Invoice_Candidate());
+					final IPair<BigDecimal, BigDecimal> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
 					final BigDecimal qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.getLeft();
 
 					// examples:
@@ -1344,7 +1349,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", (=>overlap=" + overlap + ")";
 				}
 				createUpdateIla(
-						ilaToReverse.getC_Invoice_Candidate(),
+						invoiceCandidate,
 						reversalLine,
 						qtyInvoicedForIla,
 						note);
@@ -1427,7 +1432,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)                       // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)                        // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1478,8 +1483,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			processed = X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override());
 		}
 
-		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved
-		if (!ic.isError())
+		final boolean processedCalc;
+
+		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved.
+		if (ic.isError())
+		{
+			// ...unless (gh #428) the ic is currently processed, and there is an error, then we might want to unset the processed flag. Otherwise, the users might not notice the error.
+			// if processedCalc is currently set, we want to unset it.
+			// note that we still leave
+			processedCalc = false;
+		}
+		else
 		{
 			// services
 			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -1504,20 +1518,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 
 			// task 08567: add a way to override "processed" by the user
-			final boolean processedCalc = noOpenQty && nonReversedIlas > 0;
-			ic.setProcessed_Calc(processedCalc);
-
-			if (processed == null)
-			{
-				processed = processedCalc; // processed wasn't set via Processed_Override
-			}
+			processedCalc = noOpenQty && nonReversedIlas > 0;
 		}
 
 		if (processed == null)
 		{
-			return; // we had isError()=true and Processed_Override was not set.
+			processed = processedCalc; // processed wasn't set via Processed_Override
 		}
 
+		ic.setProcessed_Calc(processedCalc);
 		ic.setProcessed(processed);
 
 		// 08459
@@ -1903,7 +1912,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                       // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                        // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
