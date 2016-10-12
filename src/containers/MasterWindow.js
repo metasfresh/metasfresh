@@ -12,11 +12,8 @@ import {
 
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
-import Header from '../components/app/Header';
-import ErrorScreen from '../components/app/ErrorScreen';
 import Widget from '../components/Widget';
-import NotificationHandler from '../components/app/NotificationHandler';
-
+import Container from '../components/Container';
 
 class MasterWindow extends Component {
     constructor(props){
@@ -60,20 +57,18 @@ class MasterWindow extends Component {
         const docSummaryData =  findRowByPropName(master.data, documentSummaryElement && documentSummaryElement.fields[0].field);
 
         return (
-            <div>
-                <Header
-                    docStatus = {docActionElement}
-                    docStatusData = {docStatusData}
-                    docNo = {documentNoElement}
-                    docNoData = {docNoData}
-                    docSummaryData = {docSummaryData}
-                    dataId={dataId}
-                    windowType={type}
-                    breadcrumb={breadcrumb}
-                    references={references}
-                    showSidelist={true}
-                />
-                {connectionError && <ErrorScreen />}
+            <Container
+                docActionElem = {docActionElement}
+                docStatusData = {docStatusData}
+                docNoElement = {documentNoElement}
+                docNoData = {docNoData}
+                docSummaryData = {docSummaryData}
+                dataId={dataId}
+                windowType={type}
+                breadcrumb={breadcrumb}
+                references={references}
+                showSidelist={true}
+            >
                 {modal.visible &&
                     <Modal
                         windowType={modal.type}
@@ -94,10 +89,7 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                 />
-
-                <NotificationHandler />
-
-            </div>
+            </Container>
         );
     }
 }

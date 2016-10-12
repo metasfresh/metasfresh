@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import Header from '../components/app/Header';
+import Container from '../components/Container';
 
 import {
     getRootBreadcrumb,
@@ -34,14 +34,12 @@ export class Dashboard extends Component {
         const {breadcrumb} = this.props;
         const {link} = this.state;
         return (
-            <div>
-                <Header
-                    breadcrumb={breadcrumb}
-                    siteName = {"Dashboard"}
-                />
-                <div className="header-sticky-distance"/>
+            <Container
+                breadcrumb={breadcrumb}
+                siteName = {"Dashboard"}
+            >
                 <iframe className="dashboard" src={link}></iframe>
-            </div>
+            </Container>
         );
     }
 }

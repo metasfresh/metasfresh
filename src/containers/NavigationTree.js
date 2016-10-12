@@ -6,6 +6,8 @@ import Header from '../components/app/Header';
 import MenuOverlayContainer from '../components/app/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
+import Container from '../components/Container';
+
 
 import {
     rootRequest,
@@ -150,20 +152,12 @@ class NavigationTree extends Component {
         const {rootResults, deepNode} = this.state;
 
         return (
-          <div className="map-tree-wrapper">
-              <Header
-                  breadcrumb={breadcrumb.slice(0,1)}
-                  siteName = {"Sitemap"}
-              />
-              {connectionError && <ErrorScreen />}
-
-              <div className="container-fluid">
-                <div className="row">
+            <Container
+                breadcrumb={breadcrumb.slice(0,1)}
+                siteName = {"Sitemap"}
+            >
                 {this.renderTree(rootResults)}
-                </div>
-              </div>
-
-          </div>
+            </Container>
         );
     }
 }
