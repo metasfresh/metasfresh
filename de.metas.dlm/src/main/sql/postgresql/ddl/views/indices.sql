@@ -28,5 +28,5 @@ WHERE true
 	AND NOT i.indIsUnique
 	AND NOT c_i.relname ILIKE '%_dlm_level' /* dont't fiddle with "our" DLM indexes, that's already done elsewhere */
 ORDER BY index_name;
-COMMENT ON VIEW dlm.indices IS 'This view is used by the functions tha DLM and un-DLM tables';
+COMMENT ON VIEW dlm.indices IS 'This view *was* used by the functions that DLM and un-DLM tables. Currently it seems as if we won''t need it in future';
 --SELECT * FROM dlm.indices;

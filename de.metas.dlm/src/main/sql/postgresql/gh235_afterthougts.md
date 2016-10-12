@@ -9,7 +9,7 @@ Index filter predicates give a false sense of safety; even though an index is us
 Which promted my to read further, so I read some more through [http://use-the-index-luke.com](http://use-the-index-luke.com).
 
 And now I believe that we don't really need the partial indices that create there:
-* i' pretty sure that postgresql will not generally try to load the whole (full) index and do a seq scan on the table if that's not possible.
+* i'm pretty sure that postgresql will not generally try to load the whole (full) index and do a seq scan on the table if that's not possible.
 * we do need the "full" indices anyways, because otherways some selects like the one done by the C_Invoice_Cadidate window won't work anymore.
 
 IMHO, what we need to do instead of adding partial indices is to understand how indexing works and consider augmenting our existing indeces.
