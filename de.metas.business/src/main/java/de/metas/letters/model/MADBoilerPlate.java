@@ -90,6 +90,7 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCtl;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -166,12 +167,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
 		pi.setParameter(params);
-		// Execute Process
-		if (!process.processIt(pi, null))
-		{
-			throw new AdempiereException(pi.getSummary());
-		}
-		//
+		
+		ProcessCtl.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}

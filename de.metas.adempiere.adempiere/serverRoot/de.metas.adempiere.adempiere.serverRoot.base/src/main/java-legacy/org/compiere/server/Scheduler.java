@@ -23,10 +23,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -42,6 +42,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_SchedulerLog;
 import org.compiere.model.I_AD_Task;
@@ -56,7 +57,6 @@ import org.compiere.model.MUser;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -66,6 +66,7 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.notification.INotificationBL;
+import de.metas.process.ProcessCtl;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
@@ -232,7 +233,7 @@ public class Scheduler extends AdempiereServer
 						}
 						else
 						{
-							result = runProcess(pi, process);
+							result = runProcess(pi);
 						}
 						m_summary.append(result);
 					}
@@ -330,13 +331,6 @@ public class Scheduler extends AdempiereServer
 		return schedulerCtx;
 	}
 
-	private final ITrx getThreadInheritedTrx()
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		return trx;
-	}
-
 	/**
 	 * Run Report
 	 *
@@ -348,14 +342,16 @@ public class Scheduler extends AdempiereServer
 	{
 		log.debug("Run report: {}", process);
 
-		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
+		if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
 		{
 			return "Not a Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
 
 		// Process
-		final ITrx trx = getThreadInheritedTrx();
-		if (!process.processIt(pi, trx) && pi.getClassName() != null)
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.executeSync();
+		if (pi.isError())
 		{
 			return "Process failed: (" + pi.getClassName() + ") " + pi.getSummary();
 		}
@@ -398,14 +394,15 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private final String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
+	private final String runProcess(final ProcessInfo pi) throws Exception
 	{
-		log.debug("Run process: {}", process);
+		log.debug("Run process: {}", pi);
 
-		final ITrx trx = getThreadInheritedTrx();
-		final boolean ok = process.processIt(pi, trx);
-		ProcessInfoUtil.setLogFromDB(pi);
-
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.executeSync();
+		final boolean ok = !pi.isError();
+		
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
 		final MUser from = new MUser(pi.getCtx(), pi.getAD_User_ID(), ITrx.TRXNAME_None);
@@ -413,7 +410,7 @@ public class Scheduler extends AdempiereServer
 
 		notify(ok,
 				from,
-				process.getName(),
+				pi.getTitle(),
 				pi.getSummary(),
 				pi.getLogInfo(),
 				adPInstanceTableID,
@@ -430,13 +427,13 @@ public class Scheduler extends AdempiereServer
 	 * @param process
 	 * @see org.compiere.wf.MWFActivity.performWork(Trx)
 	 */
-	private final ProcessInfo createProcessInfo(final MProcess process)
+	private final ProcessInfo createProcessInfo(final I_AD_Process process)
 	{
-		final Properties ctx = process.getCtx(); // We assume the right context was already used when the process was loaded
+		final Properties ctx = InterfaceWrapperHelper.getCtx(process); // We assume the right context was already used when the process was loaded
 		final int AD_Table_ID = 0;
 		final int Record_ID = 0;
 
-		final MPInstance pInstance = new MPInstance(ctx, process, AD_Table_ID, Record_ID);
+		final I_AD_PInstance pInstance = new MPInstance(ctx, process, AD_Table_ID, Record_ID);
 		fillParameter(pInstance);
 
 		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), AD_Table_ID, Record_ID);
@@ -505,25 +502,27 @@ public class Scheduler extends AdempiereServer
 	 *
 	 * @param pInstance process instance
 	 */
-	private void fillParameter(final MPInstance pInstance)
+	private void fillParameter(final I_AD_PInstance pInstance)
 	{
 		// NOTE: we want to requrey the parameters each time, in case they were changed
 		// This will allow the sysadm to do quick tweaks without restarting adempiere server
 		final MSchedulerPara[] sParams = m_model.getParameters(true);
 
-		for (final I_AD_PInstance_Para iPara : pInstance.getParameters())
+		final Properties ctx = InterfaceWrapperHelper.getCtx(pInstance);
+		final int adPInstanceId = pInstance.getAD_PInstance_ID();
+		for (final I_AD_PInstance_Para iPara : Services.get(IADPInstanceDAO.class).retrievePInstanceParams(ctx, adPInstanceId))
 		{
-			for (int np = 0; np < sParams.length; np++)
+			for (final MSchedulerPara sPara : sParams)
 			{
-				final MSchedulerPara sPara = sParams[np];
-				if (iPara.getParameterName().equals(sPara.getColumnName()))
+				final String parameterName = sPara.getColumnName();
+				
+				if (iPara.getParameterName().equals(parameterName))
 				{
 					final String variable = sPara.getParameterDefault();
-					log.debug("Filling parameter: {} = {}", sPara.getColumnName(), variable);
+					log.debug("Filling parameter: {} = {}", parameterName, variable);
 					// Value - Constant/Variable
 					Object value = variable;
-					if (variable == null
-							|| variable != null && variable.length() == 0)
+					if (variable == null || variable != null && variable.length() == 0)
 					{
 						value = null;
 					}
@@ -535,16 +534,16 @@ public class Scheduler extends AdempiereServer
 						index = columnName.indexOf('@');
 						if (index == -1)
 						{
-							log.warn(sPara.getColumnName() + " - cannot evaluate=" + variable);
+							log.warn(parameterName + " - cannot evaluate=" + variable);
 							break;
 						}
 						columnName = columnName.substring(0, index);
+						
 						// try Env
-						final Properties ctx = getCtx();
 						final String env = Env.getContext(ctx, columnName);
 						if (env.length() == 0)
 						{
-							log.warn(sPara.getColumnName() + " - not in environment =" + columnName + "(" + variable + ")");
+							log.warn(parameterName + " - not in environment =" + columnName + "(" + variable + ")");
 							break;
 						}
 						else
@@ -556,15 +555,16 @@ public class Scheduler extends AdempiereServer
 					// No Value
 					if (value == null)
 					{
-						log.debug("{} - empty", sPara.getColumnName());
+						log.debug("{} - empty", parameterName);
 						break;
 					}
 
 					// Convert to Type
 					try
 					{
-						if (DisplayType.isNumeric(sPara.getDisplayType())
-								|| DisplayType.isID(sPara.getDisplayType()))
+						final int displayType = sPara.getDisplayType();
+						if (DisplayType.isNumeric(displayType)
+								|| DisplayType.isID(displayType))
 						{
 							BigDecimal bd = null;
 							if (value instanceof BigDecimal)
@@ -580,9 +580,9 @@ public class Scheduler extends AdempiereServer
 								bd = new BigDecimal(value.toString());
 							}
 							iPara.setP_Number(bd);
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + bd + "=)");
+							log.debug(parameterName + " = " + variable + " (=" + bd + "=)");
 						}
-						else if (DisplayType.isDate(sPara.getDisplayType()))
+						else if (DisplayType.isDate(displayType))
 						{
 							Timestamp ts = null;
 							if (value instanceof Timestamp)
@@ -594,18 +594,18 @@ public class Scheduler extends AdempiereServer
 								ts = Timestamp.valueOf(value.toString());
 							}
 							iPara.setP_Date(ts);
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + ts + "=)");
+							log.debug(parameterName + " = " + variable + " (=" + ts + "=)");
 						}
 						else
 						{
 							iPara.setP_String(value.toString());
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + value + "=) " + value.getClass().getName());
+							log.debug(parameterName + " = " + variable + " (=" + value + "=) " + value.getClass().getName());
 						}
 						InterfaceWrapperHelper.save(iPara);
 					}
 					catch (final Exception e)
 					{
-						log.warn(sPara.getColumnName() + " = " + variable + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
+						log.warn(parameterName + " = " + variable + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
 					}
 					break;
 				}	// parameter match

@@ -1,6 +1,6 @@
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved.                *
+ * Copyright (C) 2007 Adempiere, Inc. All Rights Reserved.                *
  * This program is free software; you can redistribute it and/or modify it    *
  * under the terms version 2 of the GNU General Public License as published   *
  * by the Free Software Foundation. This program is distributed in the hope   *
@@ -10,22 +10,18 @@
  * You should have received a copy of the GNU General Public License along    *
  * with this program; if not, write to the Free Software Foundation, Inc.,    *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ *
+ * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com
+ * _____________________________________________
  *****************************************************************************/
-package org.adempiere.ad.process;
+package org.compiere.print;
 
 /**
  * 
  * @author Low Heng Sin
  *
  */
-public interface IProcessParameter {
-
-	/**
-	 * Save Parameter values
-	 *
-	 * @param adPInstanceId AD_PInstance_ID used to save the process parameters
-	 * @return true if parameters saved
-	 */
-	public boolean saveParameters(final int adPInstanceId);
-
+public interface ReportViewerProvider
+{
+	public void openViewer(ReportEngine re);
 }

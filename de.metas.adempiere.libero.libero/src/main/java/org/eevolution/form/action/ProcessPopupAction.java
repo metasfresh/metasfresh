@@ -16,39 +16,14 @@
 
 package org.eevolution.form.action;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 
 import javax.swing.JFrame;
 
 import org.compiere.apps.ADialog;
-import org.compiere.apps.ProcessParameter;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
-import org.eevolution.process.ProcessInfoHandler;
 import org.eevolution.tools.swing.SwingTool;
 
 /**
@@ -59,7 +34,6 @@ import org.eevolution.tools.swing.SwingTool;
 public abstract class ProcessPopupAction extends PopupAction {
 	
 	protected JFrame window;
-	protected ProcessInfoHandler pih;
 	
 	protected abstract void doProcess();
 	
@@ -72,15 +46,16 @@ public abstract class ProcessPopupAction extends PopupAction {
 		this.window = window;
 	}
 	
+	@Override
 	protected void beforeAction() {
 		
 		SwingTool.setCursorsFromParent(window.getContentPane(), true);
 		super.beforeAction();
 
-		pih = new ProcessInfoHandler(getProcessID());
-		showDialog(pih);
+		throw new UnsupportedOperationException(); // TODO implement
 	}		
 
+	@Override
 	protected void doAction(ActionEvent e) {
 
 		if(successful()) {
@@ -114,7 +89,7 @@ public abstract class ProcessPopupAction extends PopupAction {
 	
 	protected int getParameterValueAsInt(String name) {
 		
-		Object o = pih.getParameterValue(name);
+		Object o = getParameterValue(name);
 		
 		int value = -1;
 		if(o instanceof Integer) {
@@ -139,26 +114,6 @@ public abstract class ProcessPopupAction extends PopupAction {
 	}
 	
 	protected Object getParameterValue(String name) {
-		
-		return pih.getParameterValue(name);
-	}
-	
-	protected void showDialog(ProcessInfoHandler pib) {
-		
-		ProcessParameter para = new ProcessParameter(
-				Env.getFrame((Container)window), Env.getWindowNo(window), pib.getProcessInfo());
-		
-		if (para.initDialog()) {
-			
-			para.setVisible(true);
-			
-			if (!para.isOK()) {
-		
-				setError(Msg.translate(Env.getCtx(), "Cancel"));
-				setIgnoreChange(true);
-				pib.setProcessError();
-				return;
-			}
-		}
+		throw new UnsupportedOperationException(); // TODO implement
 	}
 }

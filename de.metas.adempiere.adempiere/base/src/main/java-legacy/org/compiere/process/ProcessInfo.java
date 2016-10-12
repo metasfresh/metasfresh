@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -31,7 +32,6 @@ import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
@@ -48,6 +48,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
 import de.metas.logging.LogManager;
@@ -60,7 +61,7 @@ import de.metas.logging.LogManager;
  * @author victor.perez@e-evolution.com
  * @see FR 1906632 http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1906632&group_id=176962
  */
-public class ProcessInfo implements Serializable, IContextAware
+public final class ProcessInfo implements Serializable
 {
 	/**
 	 * Constructor
@@ -130,6 +131,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	private String m_Summary = "";
 	/** Execution had an error */
 	private boolean m_Error = false;
+	private transient boolean m_ErrorWasReportedToUser = false;
 
 	/* General Data Object */
 	private Serializable m_SerializableObject = null;
@@ -143,7 +145,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	private boolean m_timeout = false;
 
 	/** Log Info */
-	private ArrayList<ProcessInfoLog> m_logs = null;
+	private List<ProcessInfoLog> _logs = new ArrayList<>();
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
 	/** Log Info */
@@ -151,8 +153,6 @@ public class ProcessInfo implements Serializable, IContextAware
 	private boolean m_parameterLoaded = false;
 
 	private Properties ctx;
-	/** Transaction Name */
-	private String m_transactionName = null;
 
 	private boolean m_printPreview = false;
 
@@ -192,14 +192,16 @@ public class ProcessInfo implements Serializable, IContextAware
 			sb.append(",Transient=").append(m_TransientObject);
 		if (m_SerializableObject != null)
 			sb.append(",Serializable=").append(m_SerializableObject);
-		sb.append(",Summary=").append(getSummary())
-				.append(",Log=").append(m_logs == null ? 0 : m_logs.size());
-		// .append(getLogInfo(false));
+		
+		sb.append(",Summary=").append(getSummary());
+		
+		final List<ProcessInfoLog> logs = _logs;
+		sb.append(",Log=").append(logs == null ? 0 : logs.size());
+		
 		sb.append("]");
 		return sb.toString();
 	}   // toString
 
-	@Override
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
@@ -253,24 +255,30 @@ public class ProcessInfo implements Serializable, IContextAware
 	}	// addSummary
 
 	/**
-	 * Method setError
-	 *
-	 * @param error boolean
+	 * @param error true if the process execution failed
 	 */
-	public void setError(boolean error)
+	public void setError(final boolean error)
 	{
 		m_Error = error;
 	}	// setError
 
 	/**
-	 * Method isError
-	 *
-	 * @return boolean
+	 * @return true if the process execution failed
 	 */
 	public boolean isError()
 	{
 		return m_Error;
 	}	// isError
+	
+	public void setErrorWasReportedToUser()
+	{
+		m_ErrorWasReportedToUser = true;
+	}
+	
+	public boolean isErrorWasReportedToUser()
+	{
+		return m_ErrorWasReportedToUser;
+	}
 
 	/**
 	 * Batch
@@ -356,7 +364,8 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public String getLogInfo(final boolean html)
 	{
-		if (m_logs == null)
+		final List<ProcessInfoLog> logs = getLogsInnerList();
+		if (logs.isEmpty())
 		{
 			return "";
 		}
@@ -367,35 +376,43 @@ public class ProcessInfo implements Serializable, IContextAware
 		if (html)
 			sb.append("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"2\">");
 		//
-		for (int i = 0; i < m_logs.size(); i++)
+		for (final ProcessInfoLog log : logs)
 		{
 			if (html)
+			{
 				sb.append("<tr>");
-			else if (i > 0)
+			}
+			else
+			{
 				sb.append("\n");
-			//
-			ProcessInfoLog log = m_logs.get(i);
-			/**
-			 * if (log.getP_ID() != 0) sb.append(html ? "<td>" : "") .append(log.getP_ID()) .append(html ? "</td>" : " \t");
-			 **/
+			}
+			
 			//
 			if (log.getP_Date() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(dateFormat.format(log.getP_Date()))
 						.append(html ? "</td>" : " \t");
+			}
 			//
 			if (log.getP_Number() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(log.getP_Number())
 						.append(html ? "</td>" : " \t");
+			}
 			//
 			if (log.getP_Msg() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(Services.get(IMsgBL.class).parseTranslation(getCtx(), log.getP_Msg()))
 						.append(html ? "</td>" : "");
+			}
 			//
 			if (html)
+			{
 				sb.append("</tr>");
+			}
 		}
 		if (html)
 			sb.append("</table>");
@@ -638,7 +655,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
-		return getRecord(modelClass, getTrxName());
+		return getRecord(modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -711,9 +728,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	}
 
 	/**
-	 * Method getTitle
-	 *
-	 * @return String
+	 * @return process title/name
 	 */
 	public String getTitle()
 	{
@@ -721,14 +736,12 @@ public class ProcessInfo implements Serializable, IContextAware
 	}
 
 	/**
-	 * Method setTitle
-	 *
-	 * @param Title String
+	 * @param process title/name
 	 */
 	public void setTitle(String Title)
 	{
 		m_Title = Title;
-	}	// setTitle
+	}
 
 	/**
 	 * Method setAD_Client_ID
@@ -781,7 +794,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	{
 		if (!m_parameterLoaded)
 		{
-			Services.get(IADPInstanceDAO.class).loadParameterFromDB(this);
+			Services.get(IADPInstanceDAO.class).loadFromDB(this);
 			Check.assume(m_parameterLoaded, "parameters shall be loaded at this time");
 			Check.assumeNotNull(m_parameter, "m_parameter not null");
 		}
@@ -808,6 +821,26 @@ public class ProcessInfo implements Serializable, IContextAware
 		m_parameter = parameter;
 		m_parameterLoaded = true;
 	}	// setParameter
+	
+	public void setParameter(final List<ProcessInfoParameter> parameter)
+	{
+		if(parameter == null || parameter.isEmpty())
+		{
+			m_parameter = new ProcessInfoParameter[]{};
+		}
+		else
+		{
+			m_parameter = parameter.toArray(new ProcessInfoParameter[parameter.size()]);
+		}
+		m_parameterLoaded = true;
+	}	// setParameter
+
+	
+	public void setParameterNotLoaded()
+	{
+		m_parameter = null;
+		m_parameterLoaded = false;
+	}
 
 	/**************************************************************************
 	 * Add to Log
@@ -843,95 +876,62 @@ public class ProcessInfo implements Serializable, IContextAware
 	 *
 	 * @param logEntry log entry
 	 */
-	public void addLog(ProcessInfoLog logEntry)
+	public void addLog(final ProcessInfoLog logEntry)
 	{
 		if (logEntry == null)
+		{
 			return;
-		if (m_logs == null)
-			m_logs = new ArrayList<ProcessInfoLog>();
-		m_logs.add(logEntry);
-	}	// addLog
+		}
 
-	/**
-	 * Method getLogs
-	 *
-	 * @return ProcessInfoLog[]
-	 */
-	public ProcessInfoLog[] getLogs()
-	{
-		if (m_logs == null)
-			return null;
-		ProcessInfoLog[] logs = new ProcessInfoLog[m_logs.size()];
-		m_logs.toArray(logs);
-		return logs;
-	}	// getLogs
-
-	/**
-	 * Method getIDs
-	 *
-	 * @return int[]
-	 */
-	public int[] getIDs()
-	{
-		if (m_logs == null)
-			return null;
-		int[] ids = new int[m_logs.size()];
-		for (int i = 0; i < m_logs.size(); i++)
-			ids[i] = m_logs.get(i).getP_ID();
-		return ids;
-	}	// getIDs
-
-	/**
-	 * Method getLogList
-	 *
-	 * @return ArrayList
-	 */
-	public ArrayList<ProcessInfoLog> getLogList()
-	{
-		return m_logs;
+		final List<ProcessInfoLog> logs;
+		if (_logs == null)
+		{
+			logs = _logs = new ArrayList<>();
+		}
+		else
+		{
+			logs = _logs;
+		}
+		
+		logs.add(logEntry);
 	}
 
 	/**
-	 * Method setLogList
+	 * Gets current logs.
+	 * 
+	 * If needed, it will load the logs.
 	 *
-	 * @param logs ArrayList
+	 * @return logs inner list
 	 */
-	public void setLogList(ArrayList<ProcessInfoLog> logs)
+	private final List<ProcessInfoLog> getLogsInnerList()
 	{
-		m_logs = logs;
+		if(_logs == null)
+		{
+			_logs = new ArrayList<>(ProcessInfoUtil.retrieveLogsFromDB(getAD_PInstance_ID()));
+		}
+		return _logs;
+	}
+	
+	public void markLogsAsStale()
+	{
+		// TODO: shall we save existing ones ?!
+		_logs = null;
 	}
 
 	/**
-	 * Get transaction name for this process
-	 *
-	 * @return String
+	 * Get current logs (i.e. logs which were recorded to this instance).
+	 * 
+	 * This method will not load the logs.
+	 * 
+	 * @return current logs 
 	 */
-	public String getTransactionName()
+	/* package */List<ProcessInfoLog> getCurrentLogs()
 	{
-		return getTrxName();
+		// NOTE: don't load them!
+		final List<ProcessInfoLog> logs = _logs;
+		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
 	}
-
-	/**
-	 * Get database transaction name for this process
-	 *
-	 * @return String
-	 */
-	@Override
-	public String getTrxName()
-	{
-		return m_transactionName;
-	}
-
-	/**
-	 * Set transaction name from this process
-	 *
-	 * @param trxName
-	 */
-	public void setTransactionName(String trxName)
-	{
-		m_transactionName = trxName;
-	}
-
+	
 	/**
 	 * Set print preview flag, only relevant if this is a reporting process.
 	 * A <code>false</code> parameter can be overridden by the {@link Ini#P_PRINTPREVIEW} property
@@ -1113,11 +1113,11 @@ public class ProcessInfo implements Serializable, IContextAware
 	}
 
 	/**
-	 * @param m_whereClause the m_whereClause to set
+	 * @param whereClause the m_whereClause to set
 	 */
-	public void setWhereClause(String m_whereClause)
+	public void setWhereClause(String whereClause)
 	{
-		this.m_whereClause = m_whereClause;
+		this.m_whereClause = whereClause;
 	}
 
 	private String m_whereClause = "";

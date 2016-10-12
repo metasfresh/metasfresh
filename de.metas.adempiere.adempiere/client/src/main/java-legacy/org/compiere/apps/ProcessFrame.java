@@ -2,9 +2,8 @@ package org.compiere.apps;
 
 import java.awt.Window;
 
-import javax.swing.JFrame;
-
-import org.compiere.swing.CDialog;
+import org.compiere.swing.CFrame;
+import org.compiere.util.Env;
 
 /*
  * #%L
@@ -29,7 +28,7 @@ import org.compiere.swing.CDialog;
  */
 
 /**
- * Process starter - modal dialog.
+ * Process starter - frame (i.e. not modal dialog).
  * 
  * To create a new instance, please use {@link ProcessDialog#builder()}
  * 
@@ -37,30 +36,53 @@ import org.compiere.swing.CDialog;
  *
  */
 @SuppressWarnings("serial")
-class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelWindow
+class ProcessFrame extends CFrame implements ProcessDialog, ProcessPanelWindow
 {
-	private final JFrame parentFrame;
-	private ProcessPanel panel;
+	private final ProcessPanel panel;
+	private final Integer windowNoCreatedHere;
 
-	ProcessModalDialog(final JFrame parentFrame, final ProcessDialogBuilder builder)
+	public ProcessFrame(final ProcessDialogBuilder builder)
 	{
-		super(
-				parentFrame,       // owner
-				"",       // title
-				true // modal
-		);
-		this.parentFrame = parentFrame;
+		super();
+
+		if (builder.getWindowNo() <= 0 || builder.getWindowNo() == Env.WINDOW_None)
+		{
+			windowNoCreatedHere = Env.createWindowNo(this);
+			builder.setWindowAndTabNo(windowNoCreatedHere);
+		}
+		else
+		{
+			windowNoCreatedHere = null;
+		}
 
 		panel = builder
 				.setWindow(this)
-				.skipResultsPanel()
 				.buildPanel();
 	}
 
 	@Override
-	public void enableWindowEvents(final long windowEventMask)
+	public void dispose()
 	{
-		enableEvents(windowEventMask);
+		panel.dispose();
+		super.dispose();
+
+		if (windowNoCreatedHere != null)
+		{
+			Env.clearWinContext(windowNoCreatedHere);
+		}
+	}
+
+	@Override
+	public void setVisible(boolean visible)
+	{
+		super.setVisible(visible);
+		panel.setVisible(visible);
+	}
+
+	@Override
+	public void enableWindowEvents(final long eventsToEnable)
+	{
+		enableEvents(eventsToEnable);
 	}
 
 	@Override
@@ -69,38 +91,16 @@ class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelW
 		return this;
 	}
 
+	public boolean isDisposed()
+	{
+		return panel.isDisposed();
+	}
+
 	@Override
 	public void showCenterScreen()
 	{
 		validate();
 		pack();
-		AEnv.showCenterWindow(parentFrame, this);
-	}
-
-	@Override
-	public void dispose()
-	{
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
-
-		super.dispose();
-	}
-
-	public boolean isDisposed()
-	{
-		return panel == null || panel.isDisposed();
-	}
-
-	@Override
-	public void setVisible(final boolean visible)
-	{
-		super.setVisible(visible);
-		if (panel != null)
-		{
-			panel.setVisible(visible);
-		}
+		AEnv.showCenterScreen(this);
 	}
 }

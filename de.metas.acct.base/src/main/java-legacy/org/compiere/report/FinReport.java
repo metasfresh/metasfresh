@@ -26,10 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IFactAcctCubeBL;
@@ -60,6 +56,9 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Financial Report Engine
@@ -1918,5 +1917,10 @@ public class FinReport extends SvrProcess
 			return PA_ReportLine_ID;
 		}
 
+	}
+	
+	protected final MReport getPA_Report()
+	{
+		return m_report;
 	}
 }	// FinReport

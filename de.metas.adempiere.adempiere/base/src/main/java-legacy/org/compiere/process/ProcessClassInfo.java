@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
+
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -229,6 +230,7 @@ public final class ProcessClassInfo
 
 	private final boolean runPrepareOutOfTransaction;
 	private final boolean runDoItOutOfTransaction;
+	private final boolean clientOnly;
 	private final List<ProcessClassParamInfo> parameterInfos;
 
 	private static final boolean DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear = true;
@@ -243,6 +245,7 @@ public final class ProcessClassInfo
 		super();
 		runPrepareOutOfTransaction = false;
 		runDoItOutOfTransaction = false;
+		clientOnly = false;
 		parameterInfos = ImmutableList.of();
 		existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
 	}
@@ -265,6 +268,10 @@ public final class ProcessClassInfo
 		//
 		// Load parameter infos
 		this.parameterInfos = ImmutableList.copyOf(createProcessClassParamInfos(processClass));
+
+		//
+		// Check ClientProcess marker
+		this.clientOnly = ClientProcess.class.isAssignableFrom(processClass);
 
 		//
 		// Load from @Process annotation
@@ -295,6 +302,12 @@ public final class ProcessClassInfo
 	public boolean isRunDoItOutOfTransaction()
 	{
 		return runDoItOutOfTransaction;
+	}
+	
+	/** @return true if this process shall be executed on client side only */
+	public boolean isClientOnly()
+	{
+		return clientOnly;
 	}
 
 	public boolean isParameterMandatory(final String parameterName)

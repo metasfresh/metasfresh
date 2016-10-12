@@ -16,100 +16,65 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.sql.CallableStatement;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.List;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_PA_Report;
 import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Msg;
-import org.compiere.util.Trx;
 
+import de.metas.process.ProcessCtl;
 
 /**
- *  Financial Report Engine
+ * Financial Report Engine
  *
- *  @author Jorg Janke
- *  @version $Id: FinReport.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: FinReport.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
 public class FinReportJasper extends FinReport
 {
-
-	/**	Report Definition				*/
-	private MReport				m_report = null;
-
-	/**************************************************************************
-	 *  Perform process.
-	 *  @return Message to be translated
-	 *  @throws Exception
-	 */
-	protected String doIt() throws Exception
+	@Override
+	protected void postProcess(final boolean success)
 	{
-		// Call the normal FinReport to fill the T_Report table
-		String finReportMsg = super.doIt();
+		super.postProcess(success);
+		
+		if (!success)
+		{
+			return;
+		}
 
 		// Now invoke the associated jasper report (must report on the T_Report table)
-		ArrayList<ProcessInfoParameter> list = new ArrayList<ProcessInfoParameter>();
+		final List<ProcessInfoParameter> param = new ArrayList<>();
 
 		// Copy the list of parameters from the financial report
-		ProcessInfoParameter oldpara[] = getParameter();
-		for (int i = 0; i < oldpara.length; i++)
-			list.add (oldpara[i]);
+		for (final ProcessInfoParameter oldpara : getParameter())
+			param.add(oldpara);
 		// and add the T_Report_AD_PInstance_ID parameter
-		list.add (new ProcessInfoParameter("T_Report_AD_PInstance_ID", new Integer(getAD_PInstance_ID()), null, null, null));
-		ProcessInfoParameter[] pars = new ProcessInfoParameter[list.size()];
-		list.toArray(pars);
+		param.add(new ProcessInfoParameter("T_Report_AD_PInstance_ID", getAD_PInstance_ID(), null, null, null));
 
-		//	Load Report Definition
-		m_report = new MReport (getCtx(), getRecord_ID(), get_TrxName());
+		// Load Report Definition
+		final I_PA_Report paReport = getPA_Report();
 
-		MProcess proc = new MProcess(getCtx(), m_report.getJasperProcess_ID(), get_TrxName());
-	    MPInstance instance = new MPInstance(proc, getTable_ID(), getRecord_ID());
-	    instance.setWhereClause(getProcessInfo().getWhereClause());
-	    instance.save();
-	    ProcessInfo poInfo = new ProcessInfo(proc.getName(), proc.getAD_Process_ID());
-	    poInfo.setParameter(pars);
-	    poInfo.setRecord_ID(getRecord_ID());
-	    poInfo.setAD_Process_ID(proc.getAD_Process_ID());
-	    poInfo.setAD_PInstance_ID(instance.getAD_PInstance_ID());
-	    
-	    Services.get(IADPInstanceDAO.class).saveParameterToDB(poInfo); // 07154
-	    
-	    // need to commit in order to allow jasper to view the data
-	    Trx trx = Trx.get(get_TrxName(), true);
-	    trx.commit();
-	    
-	    // CarlosRuiz - globalqss - allow procedure preprocess
-	    if (proc.getProcedureName() != null && proc.getProcedureName().length() > 0) {
-			//  execute on this thread/connection
-			String sql = "{call " + proc.getProcedureName() + "(?)}";
-			try(final CallableStatement cstmt = DB.prepareCall(sql)) //	ro??
-			{
-				cstmt.setInt(1, getAD_PInstance_ID());
-				cstmt.executeUpdate();
-				cstmt.close();
-			}
-			catch (Exception e)
-			{
-				log.error(sql, e);
-				poInfo.setThrowable(e); // 03152
-				poInfo.setSummary (Msg.getMsg(Env.getCtx(), "ProcessRunError") + " " + e.getLocalizedMessage());
-			}
-	    }
-	    
-	    // TODO - allow java class preprocess if the classname <> ProcessUtil.JASPER_STARTER_CLASS
+		final I_AD_Process proc = paReport.getJasperProcess();
+		MPInstance instance = new MPInstance(proc, getTable_ID(), getRecord_ID());
+		instance.setWhereClause(getProcessInfo().getWhereClause());
+		instance.save();
 
-	    ProcessUtil.startJavaProcess(getCtx(), poInfo, trx);
-	    
-	    return finReportMsg;
-	}	//	doIt
+		final ProcessInfo pi = new ProcessInfo(proc.getName(), proc.getAD_Process_ID());
+		pi.setParameter(param.toArray(new ProcessInfoParameter[param.size()]));
+		pi.setTable_ID(getTable_ID());
+		pi.setRecord_ID(getRecord_ID());
+		pi.setAD_Process_ID(proc.getAD_Process_ID());
+		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
-}	//	FinReport
+		Services.get(IADPInstanceDAO.class).saveParameterToDB(pi); // 07154
+
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.execute();
+	}
+}	// FinReport

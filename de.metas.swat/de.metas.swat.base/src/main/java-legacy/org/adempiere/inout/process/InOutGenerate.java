@@ -48,13 +48,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.shipment.IShipmentBL;
 import org.adempiere.inout.shipment.ShipmentParams;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
@@ -142,6 +142,7 @@ public final class InOutGenerate extends SvrProcess
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare() {
 
 		ProcessInfoParameter[] para = getParameter();
@@ -194,6 +195,7 @@ public final class InOutGenerate extends SvrProcess
 	 * @return info
 	 * @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("Selection=" + p_Selection + ", M_Warehouse_ID="
@@ -243,11 +245,6 @@ public final class InOutGenerate extends SvrProcess
 		return "@Created@ = " + m_created;
 
 	} // doIt
-
-	public static int[] getM_InOut_IDs(final ProcessInfo pi)
-	{
-		return pi.getIDs();
-	}
 
 	private Set<Integer> retrieveSelectedOrderIds()
 	{

@@ -70,6 +70,7 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.ProcessCtl;
 
 /**
  * Workflow Activity Model.
@@ -1043,7 +1044,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			pi.setAD_User_ID(getAD_User_ID());
 			pi.setAD_Client_ID(getAD_Client_ID());
 			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-			return process.processItWithoutTrxClose(pi, trx);
+			
+			ProcessCtl.builder()
+					.setProcessInfo(pi)
+					.executeSync();
+			return true;
 		}
 
 		/******
@@ -1479,12 +1484,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (iPara.getParameterName().equals(nPara.getAttributeName()))
 				{
 					String variableName = nPara.getAttributeValue();
-					log.debug(nPara.getAttributeName()
-							+ " = " + variableName);
+					log.debug(nPara.getAttributeName() + " = " + variableName);
 					// Value - Constant/Variable
 					Object value = variableName;
-					if (variableName == null
-							|| (variableName != null && variableName.length() == 0))
+					if (variableName == null || (variableName != null && variableName.length() == 0))
 						value = null;
 					else if (variableName.indexOf('@') != -1 && m_po != null)	// we have a variable
 					{

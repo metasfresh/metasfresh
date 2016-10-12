@@ -91,9 +91,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
-import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.model.I_C_Payment_Request;
 
@@ -508,7 +508,7 @@ final class ReadPaymentForm
 				final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
 				if (candidates.isEmpty())
 				{
-					throw new AdempiereException("@" + InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+					throw new AdempiereException("@" + IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
 				}
 
 				//

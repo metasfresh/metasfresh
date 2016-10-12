@@ -23,8 +23,6 @@ import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -43,9 +41,12 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Waiting Dialog
@@ -68,7 +69,7 @@ public class Waiting extends CDialog
 	 *  @param canNotWait user can continue with other work
 	 *  @param timer    timer ticks (seconds) - if 0 then 10
 	 */
-	public Waiting (Frame owner, String text, boolean canNotWait, int timer)
+	public Waiting (final Frame owner, final String text, final boolean canNotWait, final int timer)
 	{
 		super(owner, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Processing"));
 		init (text, canNotWait, timer);

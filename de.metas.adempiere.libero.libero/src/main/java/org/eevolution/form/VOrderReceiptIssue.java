@@ -1555,12 +1555,6 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return true;
-	}
-
-	@Override
 	public void lockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}

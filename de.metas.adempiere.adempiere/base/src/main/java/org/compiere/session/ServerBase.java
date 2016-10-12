@@ -28,10 +28,8 @@ import java.util.Properties;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
 import org.compiere.model.MTask;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -123,32 +121,12 @@ public class ServerBase implements IServerService
 	 * @return resulting Process Info
 	 */
 	@Override
-	public ProcessInfo process(final Properties ctx, final ProcessInfo pi)
+	public void process(Properties ctx, int adPInstanceId)
 	{
-
+		// TODO: implement remote process
 		m_processCount++;
-
-		// Start Process
-		ProcessUtil.startJavaProcess(ctx, pi, ITrx.TRX_None);
-		return pi;
+		throw new UnsupportedOperationException();
 	}	// process
-
-	/*************************************************************************
-	 * Run Workflow (and wait) on Server
-	 *
-	 * @param ctx Context
-	 * @param pi Process Info
-	 * @param AD_Workflow_ID id
-	 * @return process info
-	 */
-	@Override
-	public ProcessInfo workflow(final Properties ctx, final ProcessInfo pi, final int AD_Workflow_ID)
-	{
-		log.info("[" + m_no + "] " + AD_Workflow_ID);
-		m_workflowCount++;
-		ProcessUtil.startWorkFlow(ctx, pi, AD_Workflow_ID);
-		return pi;
-	}	// workflow
 
 	@Override
 	public EMailSentStatus sendEMail(final EMail email)
@@ -208,20 +186,6 @@ public class ServerBase implements IServerService
 				.append("]");
 		return sb.toString();
 	}	// getStatus
-
-	/**
-	 * Execute db proces on server
-	 *
-	 * @param processInfo
-	 * @param procedureName
-	 * @return ProcessInfo
-	 */
-	@Override
-	public ProcessInfo dbProcess(final ProcessInfo processInfo, final String procedureName)
-	{
-		ProcessUtil.startDatabaseProcedure(processInfo, procedureName, ITrx.TRX_None);
-		return processInfo;
-	}
 
 	/**
 	 * String Representation

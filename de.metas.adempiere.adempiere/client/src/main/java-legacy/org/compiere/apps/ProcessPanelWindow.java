@@ -1,49 +1,56 @@
-package de.metas.adempiere.service;
+package org.compiere.apps;
+
+import java.awt.Container;
+import java.awt.Image;
+import java.awt.Window;
+
+import javax.swing.JRootPane;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.adempiere.adempiere.client
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.util.ISingletonService;
-
-import de.metas.adempiere.util.GlobalLock;
-
 /**
- * Global Locking System.
- * Used to synchronize ADempiere processes across multiple instances.
- * @author tsa
+ * Swing process window which will host the {@link ProcessDialog} implementation.
  * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
-@Deprecated
-public interface IGlobalLockSystem extends ISingletonService
+public interface ProcessPanelWindow
 {
+	void dispose();
 
-	public static final long TIMEOUT_NEVER = -1;
+	void showCenterScreen();
 
-	public GlobalLock createLock(String type, int id);
+	void enableWindowEvents(long eventsToEnable);
 
-	public boolean isLocked(GlobalLock lock);
+	void setIconImage(Image image);
 
-	boolean acquire(GlobalLock lock, long timeoutMillis) throws InterruptedException;
+	Container getContentPane();
 
-	void release(GlobalLock lock);
+	public JRootPane getRootPane();
+
+	void setTitle(String title);
+
+	void setEnabled(boolean enabled);
+
+	Window asAWTWindow();
 }

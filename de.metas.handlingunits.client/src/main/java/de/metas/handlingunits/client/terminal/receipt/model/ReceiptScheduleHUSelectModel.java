@@ -43,7 +43,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
@@ -81,6 +80,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
+import de.metas.process.ProcessCtl;
 
 /**
  * Wareneingang (POS).
@@ -493,6 +493,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
 		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
+		pi.setWindowNo(getTerminalContext().getWindowNo());
 		pi.setReportLanguage(bpartnerLaguage);
 
 		// 07055: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
@@ -524,24 +525,11 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			}
 		});
 
-		final ITerminalContext terminalContext = getTerminalContext();
-
 		//
 		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null,      // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null,      // IProcessParameter
-						pi,
-						localTrx);
-			}
-		});
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.executeSync();
 	}
 
 	@Override

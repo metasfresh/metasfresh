@@ -38,7 +38,6 @@ import java.util.Set;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IADProcessDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,7 +46,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
@@ -70,6 +68,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
+import de.metas.process.ProcessCtl;
 
 /**
  * Model responsible for generating HU labels and reports
@@ -385,6 +384,7 @@ public class HUReportModel implements IDisposable
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
 		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
+		pi.setWindowNo(getTerminalContext().getWindowNo());
 
 		final Set<Integer> huBPartnerIds = new HashSet<>();
 
@@ -458,8 +458,6 @@ public class HUReportModel implements IDisposable
 			}
 		});
 
-		final ITerminalContext terminalContext = getTerminalContext();
-
 		//
 		// Execute report in a new transaction
 		trxManagerService.run(new TrxRunnable()
@@ -467,13 +465,9 @@ public class HUReportModel implements IDisposable
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null, // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null, // IProcessParameter
-						pi,
-						localTrx);
+				ProcessCtl.builder()
+						.setProcessInfo(pi)
+						.executeSync();
 			}
 		});
 	}

@@ -384,12 +384,6 @@ public class VOrderPlanning extends CPanel
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return false;
-	}
-
-	@Override
 	public void lockUI(org.compiere.process.ProcessInfo processInfo)
 	{
 	}

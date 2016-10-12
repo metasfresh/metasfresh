@@ -23,10 +23,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.ProcessUtil;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -146,57 +143,13 @@ public class MProcess extends X_AD_Process
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MProcess[")
+		StringBuilder sb = new StringBuilder("MProcess[")
 			.append (get_ID())
 			.append("-").append(getName())
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
 
-	/**
-	 * 	Process It (sync)
-	 *	@param pi Process Info
-	 *	@param trx transaction
-	 *	@return true if OK
-	 */
-	public boolean processIt (ProcessInfo pi, ITrx trx)
-	{
-		if (pi.getAD_PInstance_ID() == 0)
-		{
-			final MPInstance pInstance = new MPInstance (this, pi);
-
-			//	Lock
-			pInstance.setIsProcessing(true);
-			pInstance.saveEx();
-		}
-
-		boolean ok = false;
-
-		//	Java Class
-		String Classname = getClassname();
-		if (Classname != null && Classname.length() > 0)
-		{
-			pi.setClassName(Classname);
-			ok = startClass(pi, trx);
-		}
-		else
-		{
-			//	PL/SQL Procedure
-			String ProcedureName = getProcedureName();
-			if (ProcedureName != null && ProcedureName.length() > 0)
-			{
-				ok = startProcess (ProcedureName, pi, trx);
-			}
-			else
-			{
-				String msg = "No Classname or ProcedureName for " + getName();
-				pi.setSummary(msg, ok);
-				log.warn(msg);
-			}
-		}
-
-		return ok;
-	}	//	process
 
 	/**
 	 * 	Is this a Java Process
@@ -207,43 +160,6 @@ public class MProcess extends X_AD_Process
 		String Classname = getClassname();
 		return (Classname != null && Classname.length() > 0);
 	}	//	is JavaProcess
-
-	/**
-	 *  Start Database Process
-	 *  @param ProcedureName PL/SQL procedure name
-	 *  @param pInstance process instance
-	 *	see ProcessCtl.startProcess
-	 *  @return true if success
-	 */
-	private static boolean startProcess (String ProcedureName, ProcessInfo processInfo, ITrx trx)
-	{
-		int AD_PInstance_ID = processInfo.getAD_PInstance_ID();
-		//  execute on this thread/connection
-		log.debug("Starting process: {} ({})", ProcedureName, AD_PInstance_ID);
-
-		return ProcessUtil.startDatabaseProcedure(processInfo, ProcedureName, trx);
-	}   //  startProcess
-
-
-	/**
-	 *  Start Java Class (sync).
-	 *      instanciate the class implementing the interface ProcessCall.
-	 *  The class can be a Server/Client class (when in Package
-	 *  org adempiere.process or org.compiere.model) or a client only class
-	 *  (e.g. in org.compiere.report)
-	 *
-	 *  @param Classname    name of the class to call
-	 *  @param pi	process info
-	 *  @param trx transaction
-	 *  @return     true if success
-	 *	see ProcessCtl.startClass
-	 */
-	private boolean startClass (ProcessInfo pi, ITrx trx)
-	{
-		log.debug("Starting class: {}", pi.getClassName());
-
-		return ProcessUtil.startJavaProcess(getCtx(), pi, trx);
-	}   //  startClass
 
 
 	/**
@@ -365,70 +281,4 @@ public class MProcess extends X_AD_Process
 			targetPara.copyFrom (sourcePara);  // saves automatically
 		}
 	}
-
-	/**
-	 * 	Process It without closing the given transaction - used from workflow engine.
-	 *	@param pi Process Info
-	 *	@param trx transaction
-	 *	@return true if OK
-	 */
-	public boolean processItWithoutTrxClose (ProcessInfo pi, Trx trx)
-	{
-		if (pi.getAD_PInstance_ID() == 0)
-		{
-			final MPInstance pInstance = new MPInstance (this, pi);
-
-			//	Lock
-			pInstance.setIsProcessing(true);
-			pInstance.save();
-		}
-
-		boolean ok = false;
-
-		//	Java Class
-		String Classname = getClassname();
-		if (Classname != null && Classname.length() > 0)
-		{
-			pi.setClassName(Classname);
-			ok = startClassWithoutTrxClose(pi, trx);
-		}
-		else
-		{
-			//	PL/SQL Procedure
-			String ProcedureName = getProcedureName();
-			if (ProcedureName != null && ProcedureName.length() > 0)
-			{
-				ok = startProcess (ProcedureName, pi, trx);
-			}
-			else
-			{
-				String msg = "No Classname or ProcedureName for " + getName();
-				pi.setSummary(msg, ok);
-				log.warn(msg);
-			}
-		}
-
-		return ok;
-	}	//	processItWithoutTrxClose
-
-	/**
-	 *  Start Java Class (sync) without closing the given transaction.
-	 *      instanciate the class implementing the interface ProcessCall.
-	 *  The class can be a Server/Client class (when in Package
-	 *  org adempiere.process or org.compiere.model) or a client only class
-	 *  (e.g. in org.compiere.report)
-	 *
-	 *  @param Classname    name of the class to call
-	 *  @param pi	process info
-	 *  @param trx transaction
-	 *  @return     true if success
-	 *	see ProcessCtl.startClass
-	 */
-	private boolean startClassWithoutTrxClose (ProcessInfo pi, Trx trx)
-	{
-		log.debug("Starting class without transaction close: {}", pi.getClassName());
-		return ProcessUtil.startJavaProcessWithoutTrxClose(getCtx(), pi, trx);
-	}   //  startClassWithoutTrxClose
-
-
 }	//	MProcess

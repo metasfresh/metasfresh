@@ -30,6 +30,7 @@ import org.compiere.model.Null;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@FunctionalInterface
 public interface ISvrProcessDefaultParametersProvider
 {
 	Object DEFAULT_VALUE_NOTAVAILABLE = null;

@@ -55,7 +55,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.MPInstance;
@@ -87,6 +86,7 @@ import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.process.ProcessCtl;
 
 /**
  * @author cg

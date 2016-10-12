@@ -1104,12 +1104,6 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return _uiLocked;
-	}
-
-	@Override
 	public void lockUI(final org.compiere.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

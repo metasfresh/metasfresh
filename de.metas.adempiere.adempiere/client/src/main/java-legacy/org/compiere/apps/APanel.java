@@ -121,7 +121,6 @@ import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
@@ -2560,30 +2559,25 @@ public class APanel extends CPanel
 	private void cmd_print(boolean printPreview)
 	{
 		// Get process defined for this tab
-		int AD_Process_ID = m_curTab.getAD_Process_ID();
-		log.info("ID=" + AD_Process_ID);
+		final int AD_Process_ID = m_curTab.getAD_Process_ID();
+		log.info("AD_Process_ID={}", AD_Process_ID);
 
 		// No report defined
-		if (AD_Process_ID == 0)
+		if (AD_Process_ID <= 0)
 		{
 			cmd_report();
 			return;
 		}
 
 		cmd_save(false);
-		//
-		int table_ID = m_curTab.getAD_Table_ID();
-		int record_ID = m_curTab.getRecord_ID();
-		ProcessInfo pi = new ProcessInfo(getTitle(), AD_Process_ID, table_ID, record_ID);
-		pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-		pi.setPrintPreview(printPreview);
-		pi.setWindowNo(m_curWindowNo); // metas: 03040
-		pi.setTabNo(getTabNo());
-
-		ProcessCtl.process(this, m_curWindowNo, pi, ITrx.TRX_None); // calls lockUI, unlockUI
-		statusBar.setStatusLine(pi.getSummary(), pi.isError());
-	}   // cmd_print
+		
+		ProcessDialog.builder()
+				.setAD_Process_ID(AD_Process_ID)
+				.setFromGridTab(m_curTab)
+				.setPrintPreview(printPreview)
+				.setASyncParent(this)
+				.show();
+	}
 
 	/**
 	 * Find - Set Query
@@ -3116,19 +3110,11 @@ public class APanel extends CPanel
 		// Call Process
 		else
 		{
-			final ProcessModalDialog dialog = new ProcessModalDialog(
-					m_curTab,   // gridTab
-					this,   // ASyncProcess aProcess
-					vButton.getProcess_ID(),   // AD_Process_ID
-					table_ID, record_ID,   // AD_Table_ID, Record_ID
-					startWOasking  // autoStart
-			);
-			if (dialog.isValidDialog())
-			{
-				dialog.validate();
-				dialog.pack();
-				AEnv.showCenterWindow(Env.getWindow(m_curWindowNo), dialog);
-			}
+			ProcessDialog.builder()
+					.setFromGridTab(m_curTab)
+					.setASyncParent(this)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.showModal(getCurrentFrame());
 		}
 	}	// actionButton
 
@@ -3206,8 +3192,6 @@ public class APanel extends CPanel
 			// Show process logs if any
 			if (pi.isShowProcessLogs())
 			{
-				ProcessInfoUtil.setLogFromDB(pi);
-
 				final String logInfo = pi.getLogInfo();
 				if (logInfo.length() > 0)
 				{
@@ -3225,9 +3209,10 @@ public class APanel extends CPanel
 	{
 		// Update Status Line
 		setStatusLine(pi.getSummary(), pi.isError());
-		if (pi.isError())
+		if (pi.isError() && !pi.isErrorWasReportedToUser())
 		{
 			ADialog.error(m_curWindowNo, this, null, pi.getSummary());
+			pi.setErrorWasReportedToUser();
 		}
 	}
 
@@ -3236,8 +3221,7 @@ public class APanel extends CPanel
 	 * 
 	 * @return true, if UI is locked
 	 */
-	@Override
-	public boolean isUILocked()
+	private boolean isUILocked()
 	{
 		return m_isLocked;
 	}   // isLoacked

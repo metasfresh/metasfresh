@@ -24,7 +24,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -37,7 +41,6 @@ import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -663,63 +666,35 @@ public class MWorkflow extends X_AD_Workflow
 	/**************************************************************************
 	 * 	Start Workflow.
 	 * 	@param pi Process Info (Record_ID)
-	 *  @deprecated
 	 *	@return process
 	 */
-	@Deprecated
-	public MWFProcess start (ProcessInfo pi)
+	public MWFProcess start (final ProcessInfo pi)
 	{
-		return start(pi, null);
-	}
-	
-	/**************************************************************************
-	 * 	Start Workflow.
-	 * 	@param pi Process Info (Record_ID)
-	 *	@return process
-	 */
-	public MWFProcess start (final ProcessInfo pi, final String trxName)
-	{
-		MWFProcess retValue = null;
-		String localTrxName = null;
-		Trx localTrx = null;
-		if (trxName == null)
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, new TrxCallable<MWFProcess>()
 		{
-			localTrxName = Trx.createTrxName("WFP", false);
-		}
-		try
-		{
-			DB.saveConstraints();
-			if(localTrxName != null)
+			@Override
+			public MWFProcess call() throws Exception
 			{
-				DB.getConstraints().addAllowedTrxNamePrefix(localTrxName);
-				localTrx = Trx.get(localTrxName, true);
+				final MWFProcess wfProcess = new MWFProcess(MWorkflow.this, pi, ITrx.TRXNAME_ThreadInherited);
+				InterfaceWrapperHelper.save(wfProcess);
+				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
+				wfProcess.startWork();
+				
+				return wfProcess;
 			}
-			retValue = new MWFProcess (this, pi, trxName != null ? trxName : localTrx.getTrxName());
-			retValue.save();
-			pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
-			retValue.startWork();
-			if (localTrx != null)
-				localTrx.commit(true);
-		}
-		catch (Exception e)
-		{
-			if (localTrx != null)
-				localTrx.rollback();
-			log.error(e.getLocalizedMessage(), e);
-			
-			pi.setThrowable(e); // 03152
-			pi.setSummary(e.getMessage(), true);
-			retValue = null;
-		}
-		finally 
-		{
-			DB.restoreConstraints();
-			
-			if (localTrx != null)
-				localTrx.close();
-		}
-		return retValue;
-	}	//	MWFProcess
+
+			@Override
+			public boolean doCatch(Throwable ex) throws Throwable
+			{
+				log.error("Failed starting workflow {} for {}", MWorkflow.this, pi, ex);
+				
+				pi.setThrowable(ex); // 03152
+				pi.setSummary(ex.getMessage(), true);
+				return ROLLBACK;
+			}
+		});
+	}
 
 	/**
 	 * 	Start Workflow and Wait for completion.
@@ -731,7 +706,7 @@ public class MWorkflow extends X_AD_Workflow
 		final int SLEEP = 500;		//	1/2 sec
 		final int MAXLOOPS = 30;	//	15 sec	
 		//
-		MWFProcess process = start(pi, pi.getTransactionName());
+		final MWFProcess process = start(pi);
 		if (process == null)
 			return null;
 		Thread.yield();
