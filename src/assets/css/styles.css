@@ -872,6 +872,14 @@ table .rdtPicker table td, .rdtPicker table th {
     align-items: flex-center;
 }
 
+.order-list-panel-body .pagination-wrapper {
+    padding: 0 10px;
+}
+
+.order-list-panel-body .page-link {
+    padding: .4rem .65rem;
+}
+
 .pagination-part {
     text-align: right;
 }
