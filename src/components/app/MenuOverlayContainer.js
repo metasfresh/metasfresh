@@ -60,9 +60,9 @@ class MenuOverlayContainer extends Component {
 					subitem.children && printChildren ?
                         <MenuOverlayContainer
                             key={subindex}
-                            handleClickOnFolder={this.handleDeeper}
-                            handleRedirect={this.handleRedirect}
-                            handleNewRedirect={this.handleNewRedirect}
+                            handleClickOnFolder={handleClickOnFolder}
+                            handleRedirect={handleRedirect}
+                            handleNewRedirect={handleNewRedirect}
                             printChildren={true}
                             deep={true}
                             {...subitem}

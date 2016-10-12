@@ -2,8 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
-import Header from '../components/app/Header';
 import DocumentList from '../components/app/DocumentList';
+import Container from '../components/Container';
 
 import {
     getWindowBreadcrumb
@@ -30,17 +30,13 @@ class DocList extends Component {
         const {dispatch, windowType, breadcrumb} = this.props;
 
         return (
-            <div>
-                <Header
-                    breadcrumb={breadcrumb}
-                    windowType={windowType}
-                />
-                <div className="container-fluid header-sticky-distance">
-                    {this.renderDocumentList(windowType)}
-                </div>
-            </div>
+            <Container
+                breadcrumb={breadcrumb}
+                windowType={windowType}
+            >
+                {this.renderDocumentList(windowType)}
+            </Container>
         );
-
     }
 }
 

@@ -6,6 +6,8 @@ import Header from '../components/app/Header';
 import MenuOverlayContainer from '../components/app/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
+import Container from '../components/Container';
+
 
 import {
     rootRequest,
@@ -89,26 +91,26 @@ class NavigationTree extends Component {
       const {rootResults, queriedResults} = this.state;
 
       return(
-        <div className="container-fluid">
-            <div className="search-wrapper">
-                <div className="input-flex input-primary">
-                    <i className="input-icon meta-icon-preview"/>
-                    <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
-                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
-                </div>
+      <div>
+        <div className="search-wrapper">
+            <div className="input-flex input-primary">
+                <i className="input-icon meta-icon-preview"/>
+                <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
             </div>
-            <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
-            <div className="column-wrapper">
-                {queriedResults && queriedResults.map((subitem, subindex) =>
-                    <MenuOverlayContainer
-                        key={subindex}
-                        printChildren={true}
-                        handleClickOnFolder={this.handleDeeper}
-                        handleRedirect={this.handleRedirect}
-                        handleNewRedirect={this.handleNewRedirect}
-                        {...subitem}
-                    />
-                )}
+        </div>
+        <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
+        <div className="column-wrapper">
+            {queriedResults && queriedResults.map((subitem, subindex) =>
+                <MenuOverlayContainer
+                    key={subindex}
+                    printChildren={true}
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    {...subitem}
+                />
+            )}
             </div>
         </div>
       )
@@ -150,20 +152,12 @@ class NavigationTree extends Component {
         const {rootResults, deepNode} = this.state;
 
         return (
-          <div className="map-tree-wrapper">
-              <Header
-                  breadcrumb={breadcrumb.slice(0,1)}
-                  siteName = {"Sitemap"}
-              />
-              {connectionError && <ErrorScreen />}
-
-              <div className="container-fluid">
-                <div className="row">
+            <Container
+                breadcrumb={breadcrumb.slice(0,1)}
+                siteName = {"Sitemap"}
+            >
                 {this.renderTree(rootResults)}
-                </div>
-              </div>
-
-          </div>
+            </Container>
         );
     }
 }
