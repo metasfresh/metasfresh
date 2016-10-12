@@ -151,7 +151,7 @@ class TablePagination extends Component {
         }
 
         return (
-            <div>
+            <div className="pagination-wrapper">
                 <div className="pagination-row">
                     <div>
                         <div>{selected.length > 0 ? selected.length + " items selected" : "No items selected"}</div>

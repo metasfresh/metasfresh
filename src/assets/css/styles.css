@@ -872,6 +872,14 @@ table .rdtPicker table td, .rdtPicker table th {
     align-items: flex-center;
 }
 
+.order-list-panel-body .pagination-wrapper {
+    padding: 0 10px;
+}
+
+.order-list-panel-body .page-link {
+    padding: .4rem .65rem;
+}
+
 .pagination-part {
     text-align: right;
 }
@@ -1250,11 +1258,10 @@ th {
 .notification-handler {
     position: fixed;
     top: 55px;
-    right: 0;
-    width: 320px;
+    right: 10px;
+    width: 300px;
     z-index: 800;
     text-align: right;
-    padding: 10px;
 }
 
 .notification-item {
@@ -1263,7 +1270,8 @@ th {
     display: inline-block;
     border: 2px solid red;
     border-radius: 3px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    margin-top: 10px;
     background: white;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
     padding: 10px 15px 10px 13px;

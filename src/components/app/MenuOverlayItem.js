@@ -86,8 +86,8 @@ class MenuOverlayItem extends Component {
                     {children ? children.map(
                         (item, id) =>
                             <span key={id} className="query-results" >
-                                <span className="query-caption">{caption +' / '}</span>
-                                <span className={type === 'group' ? "query-clickable-group" : "query-clickable-link"}
+                                <span className="query-caption">{id===0 ? caption +' / ': '/'}</span>
+                                <span title={item.caption} className={type === 'group' ? "query-clickable-group" : "query-clickable-link"}
                                      onClick={e => this.clickedItem(e, item.elementId, item.nodeId, item.type)}
                                      onMouseDown={e => this.onMouseDown(item.type, item.nodeId)}
                                 >

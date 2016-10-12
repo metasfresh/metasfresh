@@ -117,7 +117,7 @@ class MenuOverlay extends Component {
 
 	   return(
 		<span>{path.children != undefined? path.children.map((index, id) =>
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+			<span key={id}>{ path.nodeId > 0 ? (path.captionBreadcrumb + ' / '):''}<span>{this.renderPath(index)}</span></span>
 
 			): path.captionBreadcrumb
 		}</span>
@@ -125,10 +125,9 @@ class MenuOverlay extends Component {
     }
 
     renderPath = (path) => {
-
 	   return(
-		<span>{path.children != undefined? path.children.map((index, id) =>
-			<span key={id}>{path.captionBreadcrumb + ' / '}<span>{this.renderPath(index)}</span></span>
+		<span>{path.children != undefined ? path.children.map((index, id) =>
+			<span key={id}>{path.nodeId > 0 ? (path.captionBreadcrumb + ' / '):''}<span>{this.renderPath(index)}</span></span>
 
 			): path.captionBreadcrumb
 		}</span>
@@ -139,7 +138,7 @@ class MenuOverlay extends Component {
     	const {path} = this.state;
 
         return (
-            <div className="menu-overlay-container">
+            <div className="column-wrapper">
                 {node.nodeId != 0 &&
                     <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
                         {this.renderPath(path)}
@@ -208,7 +207,7 @@ class MenuOverlay extends Component {
                                 </div>
                             }
                             <div className="menu-overlay-root-body">
-                                <div className="menu-overlay-container">
+                                <div className="menu-overlay-container-column-wrapper">
                                     {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
                                 </div>
                                 <div className="menu-overlay-query">
