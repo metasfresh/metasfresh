@@ -147,7 +147,7 @@ public class ProcessDescriptorsFactory
 				//
 				;
 
-		for (final I_AD_Process_Para adProcessParam : adProcessDAO.retriveProcessParameters(adProcess))
+		for (final I_AD_Process_Para adProcessParam : adProcessDAO.retrieveProcessParameters(adProcess))
 		{
 			final DocumentFieldDescriptor.Builder processParaDescriptor = createProcessParaDescriptor(adProcessParam);
 			parametersDescriptor.addField(processParaDescriptor);
