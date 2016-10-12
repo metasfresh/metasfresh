@@ -17,12 +17,13 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -38,6 +39,7 @@ import de.metas.logging.LogManager;
  * 			<li>BF [ 1757523 ] Server Processes are using Server's context
  * 			<li>FR [ 2214883 ] Remove SQL code and Replace for Query
  */
+@Deprecated
 public class MProcess extends X_AD_Process
 {
 	/**
@@ -92,49 +94,7 @@ public class MProcess extends X_AD_Process
 	public MProcess (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MProcess
-
-
-	/**	Parameters					*/
-	private MProcessPara[] m_parameters = null;
-
-	/**
-	 * 	Get Parameters
-	 *	@return parameters
-	 */
-	public MProcessPara[] getParameters()
-	{
-		if (m_parameters != null)
-			return m_parameters;
-		//
-		String whereClause = MProcessPara.COLUMNNAME_AD_Process_ID+"=?";
-		List<MProcessPara> list = new Query(getCtx(), MProcessPara.Table_Name, whereClause, get_TrxName())
-			.setParameters(new Object[]{get_ID()})
-			.setOrderBy(MProcessPara.COLUMNNAME_SeqNo)
-			.list();
-		//
-		m_parameters = new MProcessPara[list.size()];
-		list.toArray(m_parameters);
-		return m_parameters;
-	}	//	getParameters
-
-	/**
-	 * 	Get Parameter with ColumnName
-	 *	@param name column name
-	 *	@return parameter or null
-	 */
-	public MProcessPara getParameter(String name)
-	{
-		getParameters();
-		for (int i = 0; i < m_parameters.length; i++)
-		{
-			if (m_parameters[i].getColumnName().equals(name))
-				return m_parameters[i];
-		}
-		return null;
-	}	//	getParameter
-
-
+	}
 
 	/**
 	 * 	String Representation
@@ -152,30 +112,12 @@ public class MProcess extends X_AD_Process
 
 
 	/**
-	 * 	Is this a Java Process
-	 *	@return true if java process
-	 */
-	public boolean isJavaProcess()
-	{
-		String Classname = getClassname();
-		return (Classname != null && Classname.length() > 0);
-	}	//	is JavaProcess
-
-
-	/**
-	 * 	Is it a Workflow
-	 *	@return true if Workflow
-	 */
-	public boolean isWorkflow()
-	{
-		return getAD_Workflow_ID() > 0;
-	}	//	isWorkflow
-
-
-	/**
 	 * 	Update Statistics
 	 *	@param seconds sec
+	 *
+	 * @deprecated this method shall be moved to a different API and the statistics shall not be stored in AD_Process!
 	 */
+	@Deprecated
 	public void addStatistics (int seconds)
 	{
 		setStatistic_Count(getStatistic_Count() + 1);
@@ -274,8 +216,7 @@ public class MProcess extends X_AD_Process
 
 		// copy parameters
 		// TODO? Perhaps should delete existing first?
-		MProcessPara[] parameters = source.getParameters();
-		for ( MProcessPara sourcePara : parameters )
+		for (final I_AD_Process_Para sourcePara : Services.get(IADProcessDAO.class).retrieveProcessParameters(source))
 		{
 			MProcessPara targetPara = new MProcessPara(this);
 			targetPara.copyFrom (sourcePara);  // saves automatically

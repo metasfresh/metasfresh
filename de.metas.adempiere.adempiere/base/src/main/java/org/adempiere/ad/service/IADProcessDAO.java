@@ -113,5 +113,5 @@ public interface IADProcessDAO extends ISingletonService
 
 	int retrieveProcessParaLastSeqNo(I_AD_Process process);
 
-	List<I_AD_Process_Para> retriveProcessParameters(I_AD_Process process);
+	List<I_AD_Process_Para> retrieveProcessParameters(I_AD_Process process);
 }

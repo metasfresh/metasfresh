@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -115,9 +116,8 @@ public class MProcessPara extends X_AD_Process_Para
 	 * and saves
 	 * @param source 
 	 */
-	public void copyFrom (final MProcessPara source)
+	public void copyFrom (final I_AD_Process_Para source)
 	{
-
 		log.debug("Copying from:" + source + ", to: " + this);
 		setAD_Element_ID(source.getAD_Element_ID());
 		setAD_Reference_ID(source.getAD_Reference_ID());

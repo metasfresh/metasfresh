@@ -218,21 +218,4 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_String(boolParameter ? "Y" : "N");
 	}	//	setParameter
-
-	/**
-	 * @return Display type
-	 */
-	public int getDisplayType() 
-	{
-		MProcess process = (MProcess) getAD_PInstance().getAD_Process();
-		MProcessPara[] params = process.getParameters();
-		for(MProcessPara param : params)
-		{
-			if (param.getColumnName().equals(getParameterName()))
-			{
-				return param.getAD_Reference_ID();
-			}
-		}
-		return -1;
-	}
 }	//	MPInstance_Para

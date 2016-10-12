@@ -125,7 +125,7 @@ public class MPInstance extends X_AD_PInstance
 
 			// Set Parameter Base Info
 			int seqNo = 10; // metas
-			for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retriveProcessParameters(process))
+			for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retrieveProcessParameters(process))
 			{
 				I_AD_PInstance_Para pip = new MPInstancePara(this, seqNo); // metas: use seqNo instead of para[i].getSeqNo()
 				pip.setParameterName(para.getColumnName());
