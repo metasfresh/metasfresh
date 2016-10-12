@@ -54,7 +54,7 @@ class List extends Component {
         )
     }
     render() {
-        const {list, rank,readonly, defaultValue, selected, align} = this.props;
+        const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
         return (
             <div
                 tabIndex="0"
@@ -63,7 +63,7 @@ class List extends Component {
                 onBlur={this.handleBlur}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary")}>
+                <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary") + (updated ? " pulse" : "")}>
                     <div className={
                         "input-editable input-dropdown-focused " +
                         (align ? "text-xs-" + align + " " : "")

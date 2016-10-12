@@ -17,7 +17,8 @@ class Widget extends Component {
         super(props);
 
         this.state = {
-            cachedValue: null
+            cachedValue: null,
+            updated: false
         }
     }
 
@@ -105,12 +106,27 @@ class Widget extends Component {
 
 
     componentWillReceiveProps() {
-        
+        // console.log('widget componentWillReceiveProps');
+        let th = this;
+        this.setState(
+            Object.assign({}, this.state, {
+                updated: true
+            }), () => {
+                setTimeout(function(){
+                  th.setState(Object.assign({}, this.state, {
+                    updated: false
+                  }))
+                }, 200);
+            }
+        );
+
+        // console.log(this.state.updated);
     }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {isModal} = this.props
+        const {updated} = this.state
 
         switch(widgetType){
             case "Date":
@@ -119,7 +135,8 @@ class Widget extends Component {
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (type === "primary" ? "input-primary " : "input-secondary ")
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (updated ? " pulse" : "")
                     }>
                         <Datetime
                             timeFormat={false}
@@ -138,7 +155,8 @@ class Widget extends Component {
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (type === "primary" ? "input-primary " : "input-secondary ")
+                        (type === "primary" ? "input-primary " : "input-secondary ") +
+                        (updated ? " pulse" : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -157,7 +175,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -185,6 +204,7 @@ class Widget extends Component {
                         onChange={this.handlePatch}
                         align={align}
                         isModal={isModal}
+                        updated={updated}
                     />
                 )
             case "List":
@@ -201,6 +221,7 @@ class Widget extends Component {
                         tabId={tabId}
                         onChange={(option) => this.handlePatch(fields[0].field, option)}
                         align={align}
+                        updated={updated}
                     />
                 )
             case "Text":
@@ -252,7 +273,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <input
                             type="number"
@@ -274,7 +296,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <input
                             type="number"
@@ -294,7 +317,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <input
                             type="number"
@@ -316,7 +340,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <input
                             type="number"
@@ -338,7 +363,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse" : "")
                     }>
                         <input
                             type="number"
