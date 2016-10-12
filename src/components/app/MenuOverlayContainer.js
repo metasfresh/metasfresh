@@ -34,7 +34,7 @@ class MenuOverlayContainer extends Component {
 			<div
                 className={
                     "menu-overlay-node-container " +
-                    (deep ? "menu-overlay-node-spaced " : "")
+                    (deep ? "menu-overlay-node-spaced " : "menu-overlay-expanded-link-spaced")
                 }>
 				{type==='group' &&
 					<span

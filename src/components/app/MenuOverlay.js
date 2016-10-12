@@ -138,7 +138,7 @@ class MenuOverlay extends Component {
     	const {path} = this.state;
 
         return (
-            <div className="menu-overlay-container">
+            <div className="column-wrapper">
                 {node.nodeId != 0 &&
                     <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
                         {this.renderPath(path)}
@@ -207,7 +207,7 @@ class MenuOverlay extends Component {
                                 </div>
                             }
                             <div className="menu-overlay-root-body">
-                                <div className="menu-overlay-container">
+                                <div className="menu-overlay-container-column-wrapper">
                                     {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
                                 </div>
                                 <div className="menu-overlay-query">

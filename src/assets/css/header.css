@@ -246,6 +246,7 @@
 
 .menu-overlay-root-body .menu-overlay-node-container {
     width: 220px;
+    display: block;
 }
 
 .menu-overlay-query {
