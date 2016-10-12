@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-11T13:47:45 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="72ae854d-9320-4e37-a30a-398c796a73f1">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -12,7 +14,7 @@
 	<parameter name="bis" class="java.util.Date"/>
 	<parameter name="details" class="java.lang.String"/>
 	<parameter name="c_bpartner_id" class="java.math.BigDecimal"/>
-	<parameter name="AD_ORG_ID" class="java.lang.String"/>
+	<parameter name="AD_ORG_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[select '';]]>
 	</queryString>
@@ -28,26 +30,26 @@
 	<pageHeader>
 		<band height="63" splitType="Stretch">
 			<line>
-				<reportElement key="line-2" positionType="FixRelativeToBottom" x="0" y="61" width="782" height="1" forecolor="#000000"/>
+				<reportElement key="line-2" positionType="FixRelativeToBottom" x="0" y="61" width="782" height="1" forecolor="#000000" uuid="1d7c9793-3fa3-45e4-8c53-e2a6140ec66b"/>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-1" x="321" y="0" width="461" height="60"/>
+				<reportElement key="subreport-1" x="321" y="0" width="461" height="60" uuid="6db575c1-0bbc-4cf0-bf0a-9c02e42aa21f"/>
 				<subreportParameter name="AD_ORG_ID">
 					<subreportParameterExpression><![CDATA[$P{AD_ORG_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/reports/arbeitszeit/report_title.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/arbeitszeit/report_title.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-2" x="0" y="0" width="321" height="60"/>
+				<reportElement key="subreport-2" x="0" y="0" width="321" height="60" uuid="8e87aad3-ba6c-4944-9173-7fa886c5660d"/>
 				<subreportParameter name="AD_ORG_ID">
 					<subreportParameterExpression><![CDATA[$P{AD_ORG_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/reports/arbeitszeit/report_logo.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/arbeitszeit/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -57,7 +59,7 @@
 	<detail>
 		<band height="36" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="782" height="36"/>
+				<reportElement key="subreport-3" x="0" y="0" width="782" height="36" uuid="117f4315-e8ca-4bfc-b42f-1a5c31445046"/>
 				<subreportParameter name="bis">
 					<subreportParameterExpression><![CDATA[$P{bis}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -74,7 +76,7 @@
 					<subreportParameterExpression><![CDATA[$P{AD_ORG_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression class="java.lang.String"><![CDATA["de/metas/reports/arbeitszeit/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/arbeitszeit/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
@@ -84,7 +86,7 @@
 	<pageFooter>
 		<band height="37" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-12" x="573" y="25" width="170" height="12"/>
+				<reportElement key="textField-12" x="573" y="25" width="170" height="12" uuid="e20028f0-8c71-4a6b-9318-8c9daee4f633"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -94,29 +96,30 @@
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite "+$V{PAGE_NUMBER}+" von "+" "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Seite "+$V{PAGE_NUMBER}+" von "+" "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-13" x="746" y="25" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-13" x="746" y="25" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="98a84339-c82e-40e7-a5b6-08dd9d341d2e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
 					<font fontName="SansSerif" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-3" x="0" y="2" width="782" height="1" forecolor="#000000"/>
+				<reportElement key="line-3" x="0" y="2" width="782" height="1" forecolor="#000000" uuid="30cd864b-d0f1-4467-95c0-ed63d14981bb"/>
 				<graphicElement>
 					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-14" x="2" y="25" width="209" height="12"/>
+				<reportElement key="textField-14" x="2" y="25" width="209" height="12" uuid="3cd0c491-87dc-4075-b0fc-f07cefa5fce8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -126,7 +129,7 @@
 				<textElement>
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

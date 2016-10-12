@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-10T18:28:20 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="124" pageHeight="453" columnWidth="124" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="4.831530000000009"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="967"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -22,20 +26,21 @@
 			FROM AD_Org org
 
 			-- INFO I NEED
-			INNER JOIN AD_OrgInfo org_info ON org.AD_Org_ID = org_info.AD_Org_ID
-			INNER JOIN C_BPartner_Location org_bpl ON org_info.orgBP_Location_ID = org_bpl.C_BPartner_Location_ID
-			INNER JOIN C_Location org_l ON org_bpl.C_Location_ID = org_l.C_Location_ID
-			INNER JOIN c_bpartner org_bp ON org_bpl.C_Bpartner_ID = org_bp.C_BPartner_ID
+			INNER JOIN AD_OrgInfo org_info ON org.AD_Org_ID = org_info.AD_Org_ID AND org_info.isActive = 'Y'
+			INNER JOIN C_BPartner_Location org_bpl ON org_info.orgBP_Location_ID = org_bpl.C_BPartner_Location_ID AND org_bpl.isActive = 'Y'
+			INNER JOIN C_Location org_l ON org_bpl.C_Location_ID = org_l.C_Location_ID AND org_l.isActive = 'Y'
+			INNER JOIN c_bpartner org_bp ON org_bpl.C_Bpartner_ID = org_bp.C_BPartner_ID AND org_bp.isActive = 'Y'
 
 			-- LINKING
-			LEFT OUTER JOIN M_HU_Assignment huas ON tu.M_HU_ID = huas.M_HU_ID AND huas.AD_Table_ID IN (Get_Table_ID('M_ReceiptSchedule'), Get_Table_ID('PP_Order'), Get_Table_ID('PP_Order_BOMLine'),Get_Table_ID('M_InOutLine'))
-			LEFT OUTER JOIN M_ReceiptSchedule rs ON huas.AD_Table_ID = Get_Table_ID('M_ReceiptSchedule') and rs.M_ReceiptSchedule_ID = huas.Record_ID and rs.AD_Org_ID = org.AD_Org_ID
-			LEFT OUTER JOIN PP_Order ppo ON huas.AD_Table_ID = Get_Table_ID('PP_Order') and ppo.PP_Order_ID = huas.Record_ID AND ppo.AD_Org_ID = org.AD_Org_ID
-			LEFT OUTER JOIN PP_Order_BOMLine ppl on huas.AD_Table_ID = Get_Table_ID('PP_Order_BOMLine') and ppl.PP_Order_BOMLine_ID = huas.Record_ID AND ppl.AD_Org_ID = org.AD_Org_ID
-			LEFT OUTER JOIN M_InOutLine iol on huas.AD_Table_ID = Get_Table_ID('M_InOutLine') and iol.M_InOutLine_ID = huas.Record_ID AND iol.AD_Org_ID = org.AD_Org_ID
+			LEFT OUTER JOIN M_HU_Assignment huas ON tu.M_HU_ID = huas.M_HU_ID AND huas.AD_Table_ID IN (Get_Table_ID('M_ReceiptSchedule'), Get_Table_ID('PP_Order'), Get_Table_ID('PP_Order_BOMLine'),Get_Table_ID('M_InOutLine')) AND huas.isActive = 'Y'
+			LEFT OUTER JOIN M_ReceiptSchedule rs ON huas.AD_Table_ID = Get_Table_ID('M_ReceiptSchedule') and rs.M_ReceiptSchedule_ID = huas.Record_ID and rs.AD_Org_ID = org.AD_Org_ID AND rs.isActive = 'Y'
+			LEFT OUTER JOIN PP_Order ppo ON huas.AD_Table_ID = Get_Table_ID('PP_Order') and ppo.PP_Order_ID = huas.Record_ID AND ppo.AD_Org_ID = org.AD_Org_ID AND ppo.isActive = 'Y'
+			LEFT OUTER JOIN PP_Order_BOMLine ppl on huas.AD_Table_ID = Get_Table_ID('PP_Order_BOMLine') and ppl.PP_Order_BOMLine_ID = huas.Record_ID AND ppl.AD_Org_ID = org.AD_Org_ID AND ppl.isActive = 'Y'
+			LEFT OUTER JOIN M_InOutLine iol on huas.AD_Table_ID = Get_Table_ID('M_InOutLine') and iol.M_InOutLine_ID = huas.Record_ID AND iol.AD_Org_ID = org.AD_Org_ID AND iol.isActive = 'Y'
 
 
 			WHERE CASE WHEN huas.M_HU_ID IS NOT NULL THEN huas.M_HU_ID =tu.M_HU_ID ELSE tu.AD_Org_ID = org.AD_Org_ID END
+			 AND org.isActive = 'Y'
 			limit 1
 	) as org_address,
 	p.name || ' / ' || pt.name as name,
@@ -51,43 +56,43 @@
 	tua_her.name ILIKE '%schweiz%' as is_suisse
 FROM
 	M_HU tu
-	JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID
-	JOIN M_Product p ON tus.M_Product_ID = p.M_Product_ID
-	JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = 'fr_CH'
+	JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
+	JOIN M_Product p ON tus.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = 'fr_CH' AND pt.isActive = 'Y'
 	LEFT JOIN (
 		SELECT 	sub_tua.M_HU_ID, sub_av.name
 		FROM	M_HU_Attribute sub_tua
-			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID
-			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE 	sub_a.value = '1000004' -- Produktionsart
+			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID AND sub_av.isActive = 'Y'
+			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID AND sub_a.isActive = 'Y'
+		WHERE 	sub_a.value = '1000004'  AND sub_tua.isActive = 'Y' -- Produktionsart
 	) tua_anb ON tu.M_HU_ID = tua_anb.M_HU_ID
 	LEFT JOIN (
 		SELECT 	sub_tua.M_HU_ID, sub_av.name
 		FROM	M_HU_Attribute sub_tua
-			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID
-			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE 	sub_a.value = '1000001' -- Herkunft
+			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID AND sub_av.isActive = 'Y'
+			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID AND sub_a.isActive = 'Y'
+		WHERE 	sub_a.value = '1000001' AND sub_tua.isActive = 'Y' -- Herkunft
 	) tua_her ON tu.M_HU_ID = tua_her.M_HU_ID
 	LEFT JOIN (
 		SELECT 	sub_tua.M_HU_ID, sub_tua.valuenumber
 		FROM	M_HU_Attribute sub_tua
-			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE 	sub_a.value = 'WeightNet' -- Gewicht Netto
+			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID AND sub_a.isActive = 'Y'
+		WHERE 	sub_a.value = 'WeightNet' AND sub_tua.isActive = 'Y'-- Gewicht Netto
 	) tua_gew ON tu.M_HU_ID = tua_gew.M_HU_ID
 	LEFT JOIN (
 		SELECT sub_tua.M_HU_ID, sub_av.name
 		FROM	M_HU_Attribute sub_tua
-			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID
-			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE sub_a.value = '1000015' -- ADR
+			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID AND sub_av.isActive = 'Y'
+			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID AND sub_a.isActive = 'Y'
+		WHERE sub_a.value = '1000015' AND sub_tua.isActive = 'Y' -- ADR
 			AND sub_av.value != '01' -- 'keine / leer'
 	) tua_adr ON tu.M_HU_ID = tua_adr.M_HU_ID
 	LEFT JOIN (
 		SELECT 	sub_tua.M_HU_ID, sub_av.name
 		FROM	M_HU_Attribute sub_tua
-			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID
-			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID
-		WHERE 	sub_a.value = '1000002' -- Label
+			INNER JOIN M_AttributeValue sub_av ON sub_tua.value = sub_av.value AND sub_tua.M_Attribute_ID = sub_av.M_Attribute_ID AND sub_av.isActive = 'Y'
+			INNER JOIN M_Attribute sub_a ON sub_tua.M_Attribute_ID = sub_a.M_Attribute_ID AND sub_a.isActive = 'Y'
+		WHERE 	sub_a.value = '1000002' AND sub_tua.isActive = 'Y' -- Label
 			AND sub_av.name ILIKE '%suisse%garantie%'
 	) tua_sg ON tu.M_HU_ID = tua_sg.M_HU_ID
 WHERE
@@ -125,14 +130,14 @@ WHERE
 	<detail>
 		<band height="453" splitType="Stretch">
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement uuid="884bb213-0bfc-40c1-9195-b5c8ff625e53" x="23" y="232" width="11" height="162"/>
+				<reportElement x="23" y="232" width="11" height="162" uuid="884bb213-0bfc-40c1-9195-b5c8ff625e53"/>
 				<textElement rotation="Right" markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{abgepackt}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RetainShape" hAlign="Right">
-				<reportElement uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b" key="image-1" x="79" y="340" width="37" height="111"/>
+				<reportElement key="image-1" x="79" y="340" width="37" height="111" uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -142,82 +147,82 @@ WHERE
 				<imageExpression><![CDATA["de/metas/docs/label/generics/logo.png"]]></imageExpression>
 			</image>
 			<staticText>
-				<reportElement uuid="e8db4a31-69d7-41df-8a88-5e4b91eb872b" x="52" y="119" width="11" height="114"/>
+				<reportElement x="52" y="119" width="11" height="114" uuid="e8db4a31-69d7-41df-8a88-5e4b91eb872b"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Gewicht / Poids]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="785d851c-5f18-429e-bf10-d4169240b502" x="23" y="119" width="11" height="114"/>
+				<reportElement x="23" y="119" width="11" height="114" uuid="785d851c-5f18-429e-bf10-d4169240b502"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Abgepackt am / Emballé le]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="bbed02c4-4d61-441a-91ba-16a81385fcef" x="66" y="232" width="11" height="162"/>
+				<reportElement x="66" y="232" width="11" height="162" uuid="bbed02c4-4d61-441a-91ba-16a81385fcef"/>
 				<textElement rotation="Right" markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{herkunft}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="68c93104-0a9b-4aa7-92b1-2fe49caf2516" x="38" y="232" width="11" height="162"/>
+				<reportElement x="38" y="232" width="11" height="162" uuid="68c93104-0a9b-4aa7-92b1-2fe49caf2516"/>
 				<textElement rotation="Right" markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="69176aa5-4fc2-4ab3-831a-5c45dbda6aff" x="79" y="6" width="11" height="100"/>
+				<reportElement x="79" y="6" width="11" height="100" uuid="69176aa5-4fc2-4ab3-831a-5c45dbda6aff"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Produzent / Producteur]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="f6199d19-c6bd-4aea-bed8-6bfa9c3a575c" x="66" y="119" width="11" height="114"/>
+				<reportElement x="66" y="119" width="11" height="114" uuid="f6199d19-c6bd-4aea-bed8-6bfa9c3a575c"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Herkunft / Origine]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8f2dd1fd-c0b2-40d5-bf4b-72fdb5497be5" x="38" y="119" width="11" height="114"/>
+				<reportElement x="38" y="119" width="11" height="114" uuid="8f2dd1fd-c0b2-40d5-bf4b-72fdb5497be5"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Lieferant / Fournisseur]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="76de718c-0e2b-4109-9800-380fc8990bfc" x="94" y="4" width="24" height="339"/>
+				<reportElement x="94" y="4" width="24" height="339" uuid="76de718c-0e2b-4109-9800-380fc8990bfc"/>
 				<textElement rotation="Right">
 					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="d8bff8d0-ea0d-4a1e-8122-4b66d77e84af" x="79" y="119" width="11" height="114"/>
+				<reportElement x="79" y="119" width="11" height="114" uuid="d8bff8d0-ea0d-4a1e-8122-4b66d77e84af"/>
 				<textElement rotation="Right">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Anbau / Méthode / Methodo]]></text>
 			</staticText>
 			<image>
-				<reportElement uuid="2ac56ab4-ac81-43d7-9fa4-e7e6ba587dbd" x="24" y="5" width="56" height="101">
+				<reportElement x="24" y="5" width="56" height="101" uuid="2ac56ab4-ac81-43d7-9fa4-e7e6ba587dbd">
 					<printWhenExpression><![CDATA[new Boolean($F{is_suisse} && !$F{is_suisse_garantie})]]></printWhenExpression>
 				</reportElement>
 				<imageExpression><![CDATA["de/metas/docs/label/generics/swiss_rotated.png"]]></imageExpression>
 			</image>
 			<image>
-				<reportElement uuid="2ac56ab4-ac81-43d7-9fa4-e7e6ba587dbd" x="24" y="5" width="56" height="101">
+				<reportElement x="24" y="5" width="56" height="101" uuid="2ac56ab4-ac81-43d7-9fa4-e7e6ba587dbd">
 					<printWhenExpression><![CDATA[new Boolean($F{is_suisse_garantie})]]></printWhenExpression>
 				</reportElement>
 				<imageExpression><![CDATA["de/metas/docs/label/generics/suissegarantie_rotated.png"]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="884bb213-0bfc-40c1-9195-b5c8ff625e53" x="8" y="6" width="11" height="172">
+				<reportElement x="8" y="6" width="11" height="172" uuid="884bb213-0bfc-40c1-9195-b5c8ff625e53">
 					<printWhenExpression><![CDATA[new Boolean($F{lotnummer} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement rotation="Right" markup="none">
@@ -226,21 +231,21 @@ WHERE
 				<textFieldExpression><![CDATA["Lot: " + $F{lotnummer}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f82c6771-b155-41f7-b4a6-3405f60f32fd" x="52" y="232" width="11" height="162"/>
+				<reportElement x="52" y="232" width="11" height="162" uuid="f82c6771-b155-41f7-b4a6-3405f60f32fd"/>
 				<textElement rotation="Right" markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gewicht} + " kg / kilo"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c60b3c5b-4c40-471d-8e29-2db2197f7bfa" x="79" y="232" width="11" height="162"/>
+				<reportElement x="79" y="232" width="11" height="162" uuid="c60b3c5b-4c40-471d-8e29-2db2197f7bfa"/>
 				<textElement rotation="Right" markup="none">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{anbau}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="26369798-845d-4b91-81b9-72d7871a39e1" x="8" y="277" width="11" height="157">
+				<reportElement x="8" y="277" width="11" height="157" uuid="26369798-845d-4b91-81b9-72d7871a39e1">
 					<printWhenExpression><![CDATA[new Boolean($F{is_suisse_garantie})]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" rotation="Right" markup="none">

@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_detail_vorlage" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-11T13:55:58 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_detail_vorlage" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="330f3806-0887-4e42-867f-e9ccc904bb05">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="von" class="java.util.Date"/>
 	<parameter name="bis" class="java.util.Date"/>
 	<parameter name="details" class="java.lang.String"/>
 	<parameter name="c_bpartner_id" class="java.math.BigDecimal"/>
-	<parameter name="AD_ORG_ID" class="java.lang.String"/>
+	<parameter name="AD_ORG_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[select
 
@@ -24,19 +28,19 @@ from
 	c_bpartner bp
 
 left join ad_user u on
-				bp.c_bpartner_id = u.c_bpartner_id
+				bp.c_bpartner_id = u.c_bpartner_id AND u.isActive = 'Y'
 
 left join ad_session s on
-				bp.ad_client_id = s.ad_client_id
+				bp.ad_client_id = s.ad_client_id AND s.isActive = 'Y'
 
 left join ad_changelog c on
-				s.ad_session_id = c.ad_session_id
+				s.ad_session_id = c.ad_session_id AND c.isActive = 'Y'
 
 left join ad_pinstance pi on
-				pi.ad_user_id = u.ad_user_id
+				pi.ad_user_id = u.ad_user_id AND pi.isActive = 'Y'
 
 left join ad_process p on
-				p.ad_process_id = pi.ad_process_id
+				p.ad_process_id = pi.ad_process_id AND p.isActive = 'Y'
 
 left join ad_pinstance_log pilog on
 				pi.ad_pinstance_id = pilog.ad_pinstance_id
@@ -44,7 +48,7 @@ left join ad_pinstance_log pilog on
 
 where
 
-	bp.isemployee = 'Y'
+	bp.isemployee = 'Y' AND bp.isActive = 'Y'
 and
      s.created between $P{von} and $P{bis}
 
@@ -55,30 +59,14 @@ and
 
 group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_msg]]>
 	</queryString>
-	<field name="partnername" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="remote_host" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="datum" class="java.sql.Date">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="zeit" class="java.sql.Time">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="alterwert" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="neuerwert" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="prozessname" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="p_msg" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="partnername" class="java.lang.String"/>
+	<field name="remote_host" class="java.lang.String"/>
+	<field name="datum" class="java.sql.Date"/>
+	<field name="zeit" class="java.sql.Time"/>
+	<field name="alterwert" class="java.lang.String"/>
+	<field name="neuerwert" class="java.lang.String"/>
+	<field name="prozessname" class="java.lang.String"/>
+	<field name="p_msg" class="java.lang.String"/>
 	<variable name="login" class="java.lang.String" resetType="None" calculation="Lowest">
 		<variableExpression><![CDATA[$F{zeit}]]></variableExpression>
 	</variable>
@@ -95,7 +83,7 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 		<groupFooter>
 			<band height="28">
 				<rectangle>
-					<reportElement key="rectangle-3" x="0" y="14" width="782" height="14" backcolor="#808080"/>
+					<reportElement key="rectangle-3" x="0" y="14" width="782" height="14" backcolor="#808080" uuid="be35bc73-fa7e-4b8b-b3cc-111a6291fe77"/>
 					<graphicElement>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</graphicElement>
@@ -108,54 +96,53 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 		<groupHeader>
 			<band height="24">
 				<rectangle>
-					<reportElement mode="Transparent" x="1" y="0" width="780" height="24"/>
+					<reportElement mode="Transparent" x="1" y="0" width="780" height="24" uuid="96d32ba5-5fb5-4f84-bb20-975808cf50e6"/>
 				</rectangle>
 				<textField pattern="dd.MM.yyyy">
-					<reportElement x="79" y="1" width="85" height="12"/>
+					<reportElement x="79" y="1" width="85" height="12" uuid="06127736-8bc3-4db7-a505-3f0014d2c945"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.util.Date"><![CDATA[$F{datum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{datum}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="6" y="1" width="68" height="12"/>
+					<reportElement x="6" y="1" width="68" height="12" uuid="8c354b80-8877-4d32-842f-23f8f07ed210"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{partnername}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{partnername}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="251" y="0" width="56" height="12"/>
+					<reportElement x="251" y="0" width="56" height="12" uuid="322e66f5-5e20-4494-9fcf-83972e53e4d9"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{remote_host}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{remote_host}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="185" y="1" width="45" height="12"/>
+					<reportElement x="185" y="1" width="45" height="12" uuid="6f95f949-5395-4467-b64e-8b89579dc5f0"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$V{login}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{login}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="datum">
-					<reportElement x="185" y="12" width="45" height="12"/>
+					<reportElement x="185" y="12" width="45" height="12" uuid="82881338-e90e-4eab-9fee-12302ed64399"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$V{logout}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{logout}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="549" y="0" width="100" height="20" forecolor="#FFFFFF"/>
-					<textElement/>
-					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Zeile_COUNT}]]></textFieldExpression>
+					<reportElement x="549" y="0" width="100" height="20" forecolor="#FFFFFF" uuid="a8331b3d-526b-478f-97a6-dd9c62f3542c"/>
+					<textFieldExpression><![CDATA[$V{Zeile_COUNT}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="datum">
-					<reportElement x="308" y="1" width="94" height="12"/>
+					<reportElement x="308" y="1" width="94" height="12" uuid="166a8b2e-b89c-4467-8e95-00404fce6ac7"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{Zeile}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{Zeile}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -169,34 +156,34 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 	<pageHeader>
 		<band height="32" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="0" width="782" height="32" backcolor="#808080"/>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="32" backcolor="#808080" uuid="96d7da3d-d89a-48e7-ba1e-e9c31e637570"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="6" y="0" width="68" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="6" y="0" width="68" height="16" forecolor="#FFFFFF" uuid="54fa4872-798d-43d3-9612-91010a91a0a0"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Mitarbeiter]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="185" y="0" width="45" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="185" y="0" width="45" height="16" forecolor="#FFFFFF" uuid="de49b4b7-1818-41aa-88c8-aed64c54d477"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Login]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="251" y="0" width="56" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="251" y="0" width="56" height="16" forecolor="#FFFFFF" uuid="44f330c7-bbcd-4662-b82a-3d95125ad972"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Remote Host]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="424" y="0" width="125" height="16" forecolor="#FFFFFF">
+				<reportElement x="424" y="0" width="125" height="16" forecolor="#FFFFFF" uuid="1e50f2f5-86a6-4f81-a6fd-c276f17af192">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -205,7 +192,7 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				<text><![CDATA[Prozessname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="559" y="0" width="151" height="16" forecolor="#FFFFFF">
+				<reportElement x="559" y="0" width="151" height="16" forecolor="#FFFFFF" uuid="45640a75-e222-4030-9c67-b171df78fd1a">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -214,7 +201,7 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				<text><![CDATA[Prozessbeschreibung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="66" y="16" width="100" height="16" forecolor="#FFFFFF">
+				<reportElement x="66" y="16" width="100" height="16" forecolor="#FFFFFF" uuid="da0d83b1-461d-4e4d-b938-023f676820b5">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -223,14 +210,14 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				<text><![CDATA[Sitzungszeit(detailliert)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="81" y="0" width="85" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="81" y="0" width="85" height="16" forecolor="#FFFFFF" uuid="e116ac5e-1e3a-4b88-ae6f-dbc0e210c316"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="308" y="16" width="94" height="16" forecolor="#FFFFFF">
+				<reportElement x="308" y="16" width="94" height="16" forecolor="#FFFFFF" uuid="7ac2d5cd-0bd2-4f31-8215-e57fe66f0c15">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -239,7 +226,7 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				<text><![CDATA[Neuer Wert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="251" y="16" width="56" height="16" forecolor="#FFFFFF">
+				<reportElement x="251" y="16" width="56" height="16" forecolor="#FFFFFF" uuid="d321aecd-3233-437e-b848-e1c94e4ffdbf">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -248,14 +235,14 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				<text><![CDATA[Alter Wert]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="185" y="16" width="45" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="185" y="16" width="45" height="16" forecolor="#FFFFFF" uuid="061c8866-255a-4a5d-9ad6-d75ec450791b"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[Logout]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="308" y="0" width="94" height="16" forecolor="#FFFFFF"/>
+				<reportElement x="308" y="0" width="94" height="16" forecolor="#FFFFFF" uuid="d3416fdd-4a07-4ccd-b593-676643418e8b"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
@@ -270,7 +257,7 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 		<band height="11" splitType="Stretch">
 			<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 			<rectangle>
-				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" backcolor="#FFFFCC">
+				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" backcolor="#FFFFCC" uuid="ec2bacbd-2175-4bce-ae18-6ef48a6a6b2a">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -278,49 +265,49 @@ group by   s.created,bp.name,s.remote_host,c.oldvalue,c.newvalue,p.name,pilog.p_
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="true">
-				<reportElement x="424" y="0" width="135" height="11">
+				<reportElement x="424" y="0" width="135" height="11" uuid="522ba52b-aee3-448f-b3f6-f8eb7f1e3722">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{prozessname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{prozessname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="559" y="0" width="151" height="11">
+				<reportElement x="559" y="0" width="151" height="11" uuid="a4b7902d-a596-47a9-81b5-f517993f1770">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{p_msg}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_msg}]]></textFieldExpression>
 			</textField>
 			<textField pattern="HH:mm" isBlankWhenNull="true">
-				<reportElement x="64" y="0" width="100" height="11">
+				<reportElement x="64" y="0" width="100" height="11" uuid="cfcd4c1c-56e8-467c-a98e-f51b342481d9">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.sql.Time"><![CDATA[$F{zeit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{zeit}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="257" y="0" width="51" height="11">
+				<reportElement x="257" y="0" width="51" height="11" uuid="85cf491b-b052-4744-83bb-50c05237f4c0">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{alterwert}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{alterwert}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="308" y="0" width="93" height="11">
+				<reportElement x="308" y="0" width="93" height="11" uuid="70c97c2f-01ed-479b-a731-04f4d537de07">
 					<printWhenExpression><![CDATA[( $P{details}.equals("Y") ? new Boolean(true) : new Boolean(false) )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{neuerwert}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{neuerwert}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

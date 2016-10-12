@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-11T13:49:42 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c523e913-b3c3-41cc-beb2-ced25e205b42">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="AD_ORG_ID" class="java.lang.String"/>
+	<parameter name="AD_ORG_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 
@@ -32,72 +36,61 @@
 
 FROM
 	ad_org o
-	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id
-	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id
-	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id
+	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id AND oi.isActive = 'Y'
+	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
+	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id AND t.isActive = 'Y'
 WHERE
-	o.ad_org_id = $P{AD_ORG_ID}
+	o.ad_org_id = $P{AD_ORG_ID} AND o.isActive = 'Y'
 group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 	</queryString>
-	<field name="orgname" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="address1" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="city" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="postal" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="max" class="java.sql.Timestamp">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="orgname" class="java.lang.String"/>
+	<field name="address1" class="java.lang.String"/>
+	<field name="city" class="java.lang.String"/>
+	<field name="postal" class="java.lang.String"/>
+	<field name="max" class="java.sql.Timestamp"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="59" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="4" width="240" height="19"/>
+				<reportElement x="0" y="4" width="240" height="19" uuid="4ebcfb4e-3822-4d4e-9d2e-18413d30677d"/>
 				<textElement>
 					<font size="14" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Arbeitszeit]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="1" y="23" width="87" height="12"/>
+				<reportElement x="1" y="23" width="87" height="12" uuid="2ef2b831-968b-44d8-87cd-4e8cf6c4f9eb"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Organisation:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="90" y="23" width="240" height="12"/>
+				<reportElement x="90" y="23" width="240" height="12" uuid="5627aa6a-b80a-492c-9369-39cb98eb65a7"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{orgname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="1" y="35" width="89" height="12"/>
-				<textElement/>
+				<reportElement x="1" y="35" width="89" height="12" uuid="a6424e7c-4e79-4018-a838-20018c98cc39"/>
 				<text><![CDATA[Static text]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="47" width="90" height="12"/>
+				<reportElement x="0" y="47" width="90" height="12" uuid="ee78f71b-fec4-40b6-855a-e060d7a77f72"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Datum:]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="90" y="47" width="100" height="12"/>
+				<reportElement x="90" y="47" width="100" height="12" uuid="2e207666-9e06-4883-a8e5-775bd8dd15d0"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[new Date ()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date ()]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
