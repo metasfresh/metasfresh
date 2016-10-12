@@ -35,6 +35,11 @@ body {
     color: #fff;
 }
 
+.container-fluid {
+    padding-left: 70px;
+    padding-right: 70px;
+}
+
 /*
  *  Extension for bootstrap grid
  */
@@ -218,13 +223,12 @@ body {
     border-top:0;
     text-overflow: ellipsis;
     white-space: nowrap;
-
 }
 
 .table.table-bordered-horizontally td{
     border-bottom:1px solid $brand-border-color;
 }
-.table.table-bordered-vertically td{
+.table.table-bordered-vertically td:not(:last-child){
     border-right:1px solid $brand-border-color;
 }
 

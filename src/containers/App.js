@@ -21,7 +21,6 @@ const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
 
-
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(function (response) {

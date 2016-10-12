@@ -31,7 +31,7 @@ class Subheader extends Component {
         const { windowType, onClick, references, dataId } = this.props;
         return (
             <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
-                <div className="container">
+                <div className="container-fluid">
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column" onClick = {onClick}>

@@ -35,7 +35,7 @@ class DocList extends Component {
                     breadcrumb={breadcrumb}
                     windowType={windowType}
                 />
-                <div className="container header-sticky-distance">
+                <div className="container-fluid header-sticky-distance">
                     {this.renderDocumentList(windowType)}
                 </div>
             </div>

@@ -56,7 +56,9 @@ class MasterWindow extends Component {
             "action": findRowByPropName(master.data, "DocAction"),
             "displayed": true
         };
+
         const docSummaryData =  findRowByPropName(master.data, documentSummaryElement && documentSummaryElement.fields[0].field);
+
         return (
             <div>
                 <Header
