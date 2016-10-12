@@ -10,18 +10,17 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,43 +50,48 @@ public class DeliveryDateKeyLayout extends DefaultKeyLayout
 
 	/**
 	 * Create keys and set them from given {@link Date}s set.
-	 * 
+	 *
 	 * @param deliveryDates
 	 */
-	public void setKeysFromDates(final Set<Date> deliveryDates)
+	public void createAndSetKeysFromDates(final Set<Date> deliveryDates)
 	{
-		//
-		// Normalize and sort new Delivery Dates
-		final Set<Date> deliveryDatesSorted;
-		if (deliveryDates == null || deliveryDates.isEmpty())
-		{
-			deliveryDatesSorted = Collections.emptySet();
-		}
-		else
-		{
-			deliveryDatesSorted = new TreeSet<Date>(deliveryDates);
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
+					//
+					// Normalize and sort new Delivery Dates
+					final Set<Date> deliveryDatesSorted;
+					if (deliveryDates == null || deliveryDates.isEmpty())
+					{
+						deliveryDatesSorted = Collections.emptySet();
+					}
+					else
+					{
+						deliveryDatesSorted = new TreeSet<Date>(deliveryDates);
+					}
 
-		//
-		// Check if there will be an actual change
-		if (Check.equals(this._deliveryDates, deliveryDatesSorted))
-		{
-			return;
-		}
+					//
+					// Check if there will be an actual change
+					if (Check.equals(this._deliveryDates, deliveryDatesSorted))
+					{
+						return null;
+					}
 
-		final List<ITerminalKey> deliveryDateKeys = new ArrayList<ITerminalKey>(deliveryDatesSorted.size());
+					final List<ITerminalKey> deliveryDateKeys = new ArrayList<ITerminalKey>(deliveryDatesSorted.size());
 
-		//
-		// Create new DeliveryDate Keys
-		for (Date deliveryDate : deliveryDatesSorted)
-		{
-			final DeliveryDateKey deliveryDateKey = new DeliveryDateKey(getTerminalContext(), deliveryDate);
-			deliveryDateKeys.add(deliveryDateKey);
-		}
+					//
+					// Create new DeliveryDate Keys
+					for (Date deliveryDate : deliveryDatesSorted)
+					{
+						final DeliveryDateKey deliveryDateKey = new DeliveryDateKey(getTerminalContext(), deliveryDate);
+						deliveryDateKeys.add(deliveryDateKey);
+					}
 
-		//
-		// Set new Keys
-		setKeys(deliveryDateKeys);
-		this._deliveryDates = deliveryDatesSorted;
+					//
+					// Set new Keys
+					setKeys(deliveryDateKeys);
+					this._deliveryDates = deliveryDatesSorted;
+					return null;
+				});
 	}
 }

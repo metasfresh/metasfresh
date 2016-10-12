@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.select.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -67,31 +66,36 @@ public class WarehouseKeyLayout extends DefaultKeyLayout
 		return keyLayoutId;
 	}
 
-	public void setKeysFromWarehouses(final List<I_M_Warehouse> warehouses)
+	public void createAndSetKeysFromWarehouses(final List<I_M_Warehouse> warehouses)
 	{
-		if (warehouses == null || warehouses.isEmpty())
-		{
-			final List<ITerminalKey> keys = Collections.emptyList();
-			setKeys(keys);
-			return;
-		}
-		
-		//
-		// Create Keys
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
-		for (final I_M_Warehouse warehouse : warehouses)
-		{
-			final WarehouseKey key = new WarehouseKey(getTerminalContext(), warehouse);
-			keys.add(key);
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
+					if (warehouses == null || warehouses.isEmpty())
+					{
+						final List<ITerminalKey> keys = Collections.emptyList();
+						setKeys(keys);
+						return null;
+					}
 
-		//
-		// Sort keys by Name
-		Collections.sort(keys, TerminalKeyByNameComparator.instance);
+					//
+					// Create Keys
+					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+					for (final I_M_Warehouse warehouse : warehouses)
+					{
+						final WarehouseKey key = new WarehouseKey(getTerminalContext(), warehouse);
+						keys.add(key);
+					}
 
-		//
-		// Set new Keys list
-		setKeys(keys);
+					//
+					// Sort keys by Name
+					Collections.sort(keys, TerminalKeyByNameComparator.instance);
+
+					//
+					// Set new Keys list
+					setKeys(keys);
+					return null;
+				});
 	}
 
 	/**

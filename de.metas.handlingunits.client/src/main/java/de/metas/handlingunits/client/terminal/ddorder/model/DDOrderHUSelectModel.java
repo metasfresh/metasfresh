@@ -120,7 +120,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	{
 		final List<IPOSTableRow> lines = getRows();
 		final List<I_DD_Order> ddOrders = getService().getDDOrders(lines);
-		ddOrderKeyLayout.setKeysFromDDOrders(ddOrders);
+		ddOrderKeyLayout.createAndSetKeysFromDDOrders(ddOrders);
 
 		refreshLines(false);
 	}
@@ -155,7 +155,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	protected void loadKeysFromLines(final List<IPOSTableRow> lines)
 	{
 		final List<I_DD_Order> ddOrders = getService().getDDOrders(lines);
-		ddOrderKeyLayout.setKeysFromDDOrders(ddOrders);
+		ddOrderKeyLayout.createAndSetKeysFromDDOrders(ddOrders);
 	}
 
 	/**

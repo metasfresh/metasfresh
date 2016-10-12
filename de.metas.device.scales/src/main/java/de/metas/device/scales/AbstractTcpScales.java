@@ -38,12 +38,13 @@ import de.metas.device.scales.util.DeviceConfigParam;
 
 public abstract class AbstractTcpScales extends AbstractBaseDevice
 {
+	public static final String PARAM_ENDPOINT_CLASS = "Endpoint.Class";
 	public static final String PARAM_ENDPOINT_PORT = "Endpoint.Port";
 	public static final String PARAM_ENDPOINT_IP = "Endpoint.IP";
-	public static final String PARAM_ENDPOINT_CLASS = "Endpoint.Class";
+	public static final String PARAM_ENDPOINT_RETURN_LAST_LINE = "Endpoint.ReturnLastLine";
 
 	/**
-	 * Weight values coming from the device shall be rounded to this precision before they are forwarded to adempiere.<br>
+	 * Weight values coming from the device shall be rounded to this precision before they are forwarded to metasfresh.<br>
 	 * Omit or set to less than zero to disable rounding.
 	 */
 	public static final String PARAM_ROUND_TO_PRECISION = "RoundToPrecision";
@@ -95,7 +96,8 @@ public abstract class AbstractTcpScales extends AbstractBaseDevice
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_CLASS, "Endpoint.Class", ""));
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_IP, "Endpoint.IP", ""));
 		params.add(new DeviceConfigParam(PARAM_ENDPOINT_PORT, "Endpoint.Port", ""));
-		params.add(new DeviceConfigParam(PARAM_ROUND_TO_PRECISION, "RoundToPrecision", -1));
+		params.add(new DeviceConfigParam(PARAM_ENDPOINT_RETURN_LAST_LINE, PARAM_ENDPOINT_RETURN_LAST_LINE, "N"));
+		params.add(new DeviceConfigParam(PARAM_ROUND_TO_PRECISION, "RoundToPrecision", "-1"));
 
 		return new IDeviceResponseGetConfigParams()
 		{

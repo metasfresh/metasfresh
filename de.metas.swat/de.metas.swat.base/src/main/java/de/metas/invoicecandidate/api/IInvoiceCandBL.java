@@ -250,7 +250,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Set the {@value I_C_Invoice_Candidate#COLUMN_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
-	 * <code>Processed_Valc</code> can be overridden by <code>Processed_Override</code>.
+	 * <code>Processed_Calc</code> can be overridden by <code>Processed_Override</code>.
 	 * If it is not overridden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
 	 * <p>
 	 * The <code>Processed_Calc</code> shall be set to <code>true</code> if

@@ -1,4 +1,4 @@
-package de.metas.device.scales.impl.systec;
+package de.metas.device.scales.request;
 
 /*
  * #%L
@@ -13,27 +13,36 @@ package de.metas.device.scales.impl.systec;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.LinkedHashMap;
 
-import de.metas.device.scales.impl.ICmd;
+import de.metas.device.api.IDeviceRequest;
 
 /**
- * Base class for the commands that request a weight from a scale. Note that the Response message shall be the same for all different command subclasses.
+ * Requests the "stable" weight from the scale.
+ * If the scale is unable to measure a stable weight within a certain timeout, it returns an error.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface ISystecCmd extends ICmd
+public class GetStableGrossWeighRequest  implements IDeviceRequest<GetWeightResponse>
 {
+	@Override
+	public Class<GetWeightResponse> getResponseClass()
+	{
+		return GetWeightResponse.class;
+	}
 
-	LinkedHashMap<String, SystecResultStringElement> getResultElements();
+	@Override
+	public String toString()
+	{
+		return String.format("GetStableGrossWeighRequest []");
+	}
 }

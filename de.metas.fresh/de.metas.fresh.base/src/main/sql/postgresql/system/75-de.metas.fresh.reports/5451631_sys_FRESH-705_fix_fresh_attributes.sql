@@ -2,13 +2,13 @@
 
 -- DROP VIEW IF EXISTS Report.fresh_Attributes;
 
-CREATE OR REPLACE VIEW Report.fresh_Attributes_ConcreteADR AS 
+CREATE OR REPLACE VIEW Report.fresh_Attributes AS 
 SELECT * FROM
 (
 	SELECT
 		CASE
 			WHEN a.Value = '1000015' AND av.value = '01' THEN NULL -- ADR & Keine/Leer
-			WHEN a.Value = '1000015' AND (av.value IS NOT NULL OR av.value != '') THEN 'ADR '||av.name -- ADR
+			WHEN a.Value = '1000015' AND (av.value IS NOT NULL OR av.value != '') THEN 'AdR' -- ADR
 			WHEN a.Value = '1000001' AND (av.value IS NOT NULL OR av.value != '') THEN av.value -- Herkunft
 			WHEN a.Value = '1000021' AND (av.value IS NOT NULL OR av.value != '') THEN 'MHD: '||ai.Value -- MHD
 			WHEN a.AttributeValueType = 'S' AND (av.value IS NOT NULL OR av.value != '') THEN ai.Value
@@ -36,4 +36,5 @@ SELECT * FROM
 WHERE COALESCE( ai_value, '') != ''
 ;
 
-COMMENT ON VIEW Report.fresh_Attributes_ConcreteADR IS 'retrieves Attributes in the way they are needed for the jasper reports';
+
+COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they are needed for the jasper reports';

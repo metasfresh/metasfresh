@@ -546,7 +546,13 @@ import de.metas.lock.api.ILock;
 
 			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(item, I_C_Invoice_Candidate.class);
 
-			invoiceCandBL.discardChangesAndSetError(ic, e);
+			// gh #428: don't discard changes that were already made, because they might include a change of QtyInvoice.
+			// in that case, a formerly Processed IC might need to be flagged as unprocessed.
+			// if we discard all changes in this case, then we will have IsError='Y' and also an error message in the IC,
+			// but the user will probably ignore it, because the IC is still flagged as processed.
+			invoiceCandBL.setError(ic, e);
+			//invoiceCandBL.discardChangesAndSetError(ic, e);
+
 			invoiceCandDAO.save(ic);
 		}
 	}
