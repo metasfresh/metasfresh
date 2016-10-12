@@ -28,7 +28,8 @@ class Lookup extends Component {
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
-            oldValue: ''
+            oldValue: '',
+            pulse: false
 
         }
 
@@ -36,10 +37,39 @@ class Lookup extends Component {
 
     componentDidMount() {
         this.handleValueChanged();
+        
+    }
+
+    componentWillReceiveProps() {
+        // let th = this;
+        // this.setState(
+        //     Object.assign({}, this.state, {
+        //         pulse: true
+        //     }), () => {
+        //         setTimeout(function(){
+        //           th.setState(Object.assign({}, this.state, {
+        //             pulse: false
+        //           }))
+        //         }, 200);
+        //     }
+        // );
     }
 
     componentDidUpdate() {
         this.handleValueChanged();
+        // console.log('lookup updated');
+        // let th = this;
+        // this.setState(
+        //     Object.assign({}, this.state, {
+        //         pulse: true
+        //     }), () => {
+        //         setTimeout(function(){
+        //           th.setState(Object.assign({}, this.state, {
+        //             pulse: false
+        //           }))
+        //         }, 200);
+        //     }
+        // );
     }
 
     handleClickOutside = () => {
@@ -301,7 +331,7 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary")}>
+                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (this.state.pulse ? " pulse" : '')}>
                     <div className={
                         "input-editable " +
                         (align ? "text-xs-" + align + " " : "")

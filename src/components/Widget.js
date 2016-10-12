@@ -103,6 +103,12 @@ class Widget extends Component {
         }
     }
 
+
+    componentWillReceiveProps() {
+        
+    }
+
+
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {isModal} = this.props
 

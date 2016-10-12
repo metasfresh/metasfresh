@@ -1327,3 +1327,8 @@ th {
     opacity: 1;
     transition: all 0.5s;
 }
+
+.pulse {
+    background: $brand-pulse-effect;
+    transition: background 0.5s;
+}
