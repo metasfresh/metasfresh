@@ -41,7 +41,7 @@ class Container extends Component {
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
-                <div className="header-sticky-distance">
+                <div className="header-sticky-distance container-fluid">
                     {this.props.children}
                 </div>
             </div>
