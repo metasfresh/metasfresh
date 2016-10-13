@@ -273,7 +273,7 @@ public class ZoomInfoFactory implements IZoomProvider
 			}
 			catch (Exception e)
 			{
-				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source);
+				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, e);
 			}
 		}
 
