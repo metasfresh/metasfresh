@@ -15,7 +15,11 @@ export const getRoutes = (store) => {
         <Route path="/">
             <IndexRoute component={Dashboard} />
             <Route path="/window/:windowType"
-                component={(nextState) => <DocList windowType={nextState.params.windowType} />}
+                component={(nextState) =>
+                    <DocList
+                        windowType={nextState.params.windowType}
+                    />
+                }
             />
             <Route path="/window/:windowType/:docId"
                 component={MasterWindow}
