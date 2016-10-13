@@ -47,10 +47,9 @@ class SwingTerminalDialog extends TerminalDialog
 
 	SwingTerminalDialog(final ITerminalFactory factory,
 			final IComponent parent,
-			final IComponent content,
-			final boolean maintainOwnContextReferences)
+			final IComponent content)
 	{
-		super(factory, parent, content, maintainOwnContextReferences);
+		super(factory, parent, content);
 
 		final JFrame parentSwing = SwingTerminalFactory.getFrame(parent);
 		dialogSwing = new CDialog(parentSwing, true); // modal=true

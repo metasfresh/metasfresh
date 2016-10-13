@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
@@ -36,9 +37,18 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.MoreHUKey;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.logging.LogManager;
 
+/**
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 {
+	private static final transient Logger logger = LogManager.getLogger(HUKeysByBarcodeCollector.class);
+
+
 	private final IQueryFilter<I_M_HU> barcodeFilter;
 
 	private final List<IHUKey> collectedHUKeys = new ArrayList<IHUKey>();
@@ -60,12 +70,6 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 				.setOnlyTopLevelHUs(false)
 				// Create our filter
 				.createQueryFilter();
-	}
-
-	@Override
-	public String toString()
-	{
-		return "HUKeysByBarcodeCollector [barcodeFilter=" + barcodeFilter + ", collectedHUKeys=" + collectedHUKeys + "]";
 	}
 
 	@Override
@@ -129,7 +133,13 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 
 	public List<IHUKey> getCollectedHUKeys()
 	{
+		logger.debug("this-ID={} returning collectedHUKeys={}; this={}", System.identityHashCode(this), collectedHUKeys, this);
 		return collectedHUKeys;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "HUKeysByBarcodeCollector [barcodeFilter=" + barcodeFilter + ", collectedHUKeys=" + collectedHUKeys + "]";
+	}
 }

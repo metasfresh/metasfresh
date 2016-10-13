@@ -10,18 +10,17 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +38,7 @@ import org.adempiere.util.Services;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContextFactory;
@@ -53,6 +53,7 @@ import de.metas.handlingunits.impl.DocumentCollector;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
+import de.metas.logging.LogManager;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -62,6 +63,8 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
  */
 /* package */class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
+	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
+
 	// Services
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
@@ -98,11 +101,10 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 	@Override
 	public List<I_PP_Cost_Collector> createIssues(final Collection<I_M_HU> hus)
 	{
+		logger.debug("this-ID={} going to create issues for hus={}; this={}", System.identityHashCode(this), hus, this);
+
 		// Make sure all HUs have ThreadInherited transaction (in order to use caching)
-		for (final I_M_HU hu : hus)
-		{
-			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
-		}
+		hus.stream().forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited));
 
 		//
 		// Allocation Source: our HUs
@@ -137,12 +139,13 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 		// Get created cost collectors and set the Snapshot_UUID for later recall, in case of an reversal.
 		// task 08177: Also make sure the attributes are saved in the PP_Order_ProductAttributes
 		final List<I_PP_Cost_Collector> costCollectors = documentsCollector.getDocuments(I_PP_Cost_Collector.class);
+
 		final String snapshotId = husSource.getSnapshotId();
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
 			costCollector.setSnapshot_UUID(snapshotId);
 			InterfaceWrapperHelper.save(costCollector);
-			
+
 			Services.get(IPPOrderProductAttributeBL.class).addPPOrderProductAttributes(costCollector);
 		}
 
@@ -212,4 +215,12 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 		Check.assumeNotEmpty(targetOrderBOMLines, "targetOrderBOMLines not empty");
 		return targetOrderBOMLines;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "HUPPOrderIssueProducer [movementDate=" + movementDate + ", targetOrderBOMLines=" + targetOrderBOMLines + ", trxName=" + trxName + ", huContextFactory=" + huContextFactory + ", ctx=" + ctx + "]";
+	}
+
+
 }

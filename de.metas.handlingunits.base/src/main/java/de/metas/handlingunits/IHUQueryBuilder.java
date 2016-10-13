@@ -336,9 +336,9 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
 
 	/**
-	 * Filter only those HUs which have given internal barcode.
+	 * Filter only those HUs which have given internal barcode. Actually, just filter by <code>M_HU_Value</code>.
 	 *
-	 * NOTE: i.e. is searching for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode
+	 * NOTE: i.e. search for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode.
 	 *
 	 * @param barcode
 	 * @return this

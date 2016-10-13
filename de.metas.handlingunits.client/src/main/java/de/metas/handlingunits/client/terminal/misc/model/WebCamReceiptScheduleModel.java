@@ -55,7 +55,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 
 /**
- * @author lc
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class WebCamReceiptScheduleModel implements IDisposable

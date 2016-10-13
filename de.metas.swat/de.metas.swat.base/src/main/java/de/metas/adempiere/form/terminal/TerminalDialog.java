@@ -30,7 +30,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.util.Check;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 
 public abstract class TerminalDialog implements ITerminalDialog
 {
@@ -38,7 +37,6 @@ public abstract class TerminalDialog implements ITerminalDialog
 	private IComponent parent;
 	private final IComponent content;
 
-	private final ITerminalContextReferences contextReferences;
 	private IConfirmPanel confirmPanel;
 
 	private boolean canceled = false;
@@ -46,23 +44,14 @@ public abstract class TerminalDialog implements ITerminalDialog
 	private boolean initialized = false;
 
 	/**
-	 * <b>Important</b>
-	 * <p>
-	 * If you call this constructor with <b>maintainOwnContextReferences==true</b>,
-	 * then make sure not to register the instance using {@link ITerminalContext#addToDisposableComponents(IDisposable)} later,
-	 * because it would cause a {@link StackOverflowError} when this dialog is disposed.
 	 *
 	 * @param terminalFactory
 	 * @param parent
 	 * @param content
-	 * @param maintainOwnContextReferences
-	 *            if <code>true</code>, then we create a new set of references from this point, to be able to destroy them when the dialog closes.
-	 *            In this way we can avoid memory leaks right from this Dialog and from components, listeners etc that were created will using this dialog.
 	 */
 	public TerminalDialog(final ITerminalFactory terminalFactory,
 			final IComponent parent,
-			final IComponent content,
-			final boolean maintainOwnContextReferences)
+			final IComponent content)
 	{
 		Check.assumeNotNull(terminalFactory, "terminalFactory not null");
 		this.terminalFactory = terminalFactory;
@@ -71,17 +60,6 @@ public abstract class TerminalDialog implements ITerminalDialog
 
 		final ITerminalContext terminalContext = terminalFactory.getTerminalContext();
 		this.listeners = new CompositeTerminalDialogListener(terminalContext);
-
-		if (maintainOwnContextReferences)
-		{
-			// important: don't add ourselves as disposable components,
-			// because our own disposed method (which is also called by doOK() and doCancel() alike) calls terminalContext.deleteReferences() and that would cause a StackOverFlowError.
-			contextReferences = terminalContext.newReferences();
-		}
-		else
-		{
-			contextReferences = null;
-		}
 	}
 
 	private final void init()
@@ -228,11 +206,6 @@ public abstract class TerminalDialog implements ITerminalDialog
 			disposeUI();
 			parent = null;
 
-			if (contextReferences != null)
-			{
-				// we were constructed with maintainOwnContextReferences==true
-				getTerminalContext().deleteReferences(contextReferences);
-			}
 			terminalFactory = null;
 		}
 		cancelDispose = false;

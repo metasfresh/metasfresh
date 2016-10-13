@@ -24,8 +24,6 @@ package de.metas.adempiere.form.terminal;
 
 import java.awt.Dimension;
 
-import de.metas.adempiere.form.terminal.context.ITerminalContext;
-
 /**
  * Terminal dialog.
  *
@@ -54,13 +52,6 @@ public interface ITerminalDialog extends IComponent
 	 * Will cancel UI dispose. To be called only when catching user error on submitting forms.
 	 */
 	void cancelDispose();
-
-	/**
-	 * dispose this component. If {@link #activate(boolean)} was called with <code>true</code>,
-	 * then also call {@link ITerminalContext#deleteReferences(de.metas.adempiere.form.terminal.context.ITerminalContextReferences)} with the refs instance that was obtained during <code>activate(true)</code>.
-	 */
-	@Override
-	void dispose();
 
 	/**
 	 * @return UI component
