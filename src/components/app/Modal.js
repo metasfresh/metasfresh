@@ -84,7 +84,7 @@ class Modal extends Component {
 
                         </div>
                     </div>
-                    <div className="panel-modal-content js-panel-modal-content">
+                    <div className="panel-modal-content js-panel-modal-content container-fluid">
                         <Window
                             data={data}
                             dataId={dataId}

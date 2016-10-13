@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DatetimeRange from './DatetimeRange';
@@ -66,20 +66,25 @@ class DocumentList extends Component {
 
     getView = () => {
         const {data} = this.state;
-        const {dispatch, page, sorting, windowType} = this.props;
-        let query = "";
+        const {dispatch, page, sorting, windowType, query} = this.props;
+        let urlQuery = "";
 
+
+        if(query && (query.sortby && query.sortdir)){
+            urlQuery = this.getSortingQuery(query.sortdir, query.sortby);
+        }
         //
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
         //
-        if(windowType === sorting.windowType) {
-            query = this.getSortingQuery(sorting.dir, sorting.prop);
+        else if(windowType === sorting.windowType) {
+            urlQuery = this.getSortingQuery(sorting.dir, sorting.prop);
         }else{
             dispatch(clearListProps());
         }
 
-        this.getData(data.viewId, page, 20, query);
+
+        this.getData(data.viewId, page, 20, urlQuery);
     }
 
     getData = (id, page, pages, sortingQuery) => {
@@ -105,8 +110,10 @@ class DocumentList extends Component {
     }
 
     sortData = (asc, field, startPage) => {
-        const {sorting, page, dispatch, windowType} = this.props;
+        const {sorting, page, dispatch, windowType, sortingCallback} = this.props;
         const {data} = this.state;
+
+        sortingCallback && sortingCallback(asc, field);
 
         dispatch(setSorting(field, asc, windowType));
 

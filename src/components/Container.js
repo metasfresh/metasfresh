@@ -19,9 +19,11 @@ class Container extends Component {
             windowType,
             breadcrumb,
             references,
+            actions,
             showSidelist,
             siteName,
-            connectionError
+            connectionError,
+            noMargin
         } = this.props;
 
         return (
@@ -36,12 +38,13 @@ class Container extends Component {
                     windowType={windowType}
                     breadcrumb={breadcrumb}
                     references={references}
+                    actions={actions}
                     showSidelist={showSidelist}
                     siteName = {siteName}
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
-                <div className="header-sticky-distance container-fluid">
+                <div className={"header-sticky-distance " + (!!noMargin ? "dashboard" : "container-fluid")}>
                     {this.props.children}
                 </div>
             </div>

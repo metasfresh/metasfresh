@@ -17,6 +17,13 @@ export function setReferences(references){
     }
 }
 
+export function setActions(actions){
+    return {
+        type: types.SET_ACTIONS,
+        actions: actions
+    }
+}
+
 // THUNK ACTIONS
 export function getDashboardLink() {
     return dispatch => axios.get(config.API_URL + '/userSession/dashboardUrl');
@@ -98,6 +105,10 @@ export function getWindowBreadcrumb(id){
 
 export function getRelatedDocuments(type, id){
     return dispatch => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
+}
+
+export function getDocumentActions(type, id){
+    return dispatch => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
 }
 
 

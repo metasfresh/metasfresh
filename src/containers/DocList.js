@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import {push} from 'react-router-redux';
+import {push,replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DocumentList from '../components/app/DocumentList';
@@ -19,22 +19,29 @@ class DocList extends Component {
         dispatch(getWindowBreadcrumb(windowType))
     }
 
-    renderDocumentList = (windowType) => {
+    sortingCallback = (asc, field) => {
+        const {dispatch, windowType} = this.props;
+        dispatch(replace('/window/' + windowType + '?sortby=' + field + '&sortdir=' + asc));
+    }
+
+    renderDocumentList = (windowType, query) => {
         return (<DocumentList
             type="grid"
+            sortingCallback={this.sortingCallback}
             windowType={windowType}
+            query={query}
         />)
     }
 
     render() {
-        const {dispatch, windowType, breadcrumb} = this.props;
+        const {dispatch, windowType, breadcrumb, query} = this.props;
 
         return (
             <Container
                 breadcrumb={breadcrumb}
                 windowType={windowType}
             >
-                {this.renderDocumentList(windowType)}
+                {this.renderDocumentList(windowType, query)}
             </Container>
         );
     }
@@ -42,11 +49,12 @@ class DocList extends Component {
 
 DocList.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    breadcrumb: PropTypes.array.isRequired,
+    query: PropTypes.object.isRequired,
 }
 
 function mapStateToProps(state) {
-    const { menuHandler } = state;
+    const { menuHandler, routing } = state;
 
     const {
         breadcrumb
@@ -54,8 +62,15 @@ function mapStateToProps(state) {
         breadcrumb: []
     }
 
+    const {
+        query
+    } = routing.locationBeforeTransitions || {
+        query: {}
+    }
+
     return {
-        breadcrumb
+        breadcrumb,
+        query
     }
 }
 

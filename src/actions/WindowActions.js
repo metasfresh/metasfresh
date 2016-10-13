@@ -6,7 +6,9 @@ import {push, replace} from 'react-router-redux';
 import {
     getWindowBreadcrumb,
     getRelatedDocuments,
-    setReferences
+    setReferences,
+    getDocumentActions,
+    setActions
 } from './MenuActions';
 
 import {
@@ -164,6 +166,9 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     dispatch(getWindowBreadcrumb(windowType));
                     dispatch(getRelatedDocuments(windowType, docId)).then((response) => {
                         dispatch(setReferences(response.data.references));
+                    })
+                    dispatch(getDocumentActions(windowType, docId)).then((response) => {
+                        dispatch(setActions(response.data.actions));
                     })
                 }
             }).then(response =>

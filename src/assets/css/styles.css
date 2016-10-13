@@ -38,6 +38,7 @@ body {
 .container-fluid {
     padding-left: 70px;
     padding-right: 70px;
+    height: 100%;
 }
 
 /*
@@ -1343,3 +1344,4 @@ td.pulse-on input {
 td.pulse-off input {
     background: transparent !important;
 }
+

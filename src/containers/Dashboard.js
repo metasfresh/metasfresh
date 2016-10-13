@@ -37,6 +37,7 @@ export class Dashboard extends Component {
             <Container
                 breadcrumb={breadcrumb}
                 siteName = {"Dashboard"}
+                noMargin = {true}
             >
                 <iframe className="dashboard" src={link}></iframe>
             </Container>
