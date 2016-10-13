@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Date;
@@ -51,6 +50,7 @@ import com.google.common.collect.ImmutableMap;
 	private final transient IQueryBL factory = Services.get(IQueryBL.class);
 
 	private final Class<T> modelClass;
+	private final String tableName;
 
 	private Properties ctx;
 	private String trxName;
@@ -68,26 +68,32 @@ import com.google.common.collect.ImmutableMap;
 	 */
 	private ContextClientQueryFilter<T> contextClientQueryFilter;
 
-	public QueryBuilder(final Class<T> modelClass)
+	/**
+	 * Note: we don't provide two constructors (one without <code>tableName</code> param), because instances of this class are generally created by {@link IQueryBuilder} and that's how a user should obtain them.
+	 * Exceptions might be some test cases, but there is think that a developer can carry the border of explicitly giving a <code>null</code> parameter. On the upside, we don't have multiple different constructors to choose from.
+	 *
+	 * @param modelClass
+	 * @param tableName may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
+	 */
+	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
-		super();
-
 		this.modelClass = modelClass;
-
+		this.tableName = tableName; // when the table's name is required, use the modelClass to obtain it
 		filters = factory.createCompositeQueryFilter(modelClass);
 	}
 
 	private QueryBuilder(final QueryBuilder<T> from)
 	{
-		super();
 		this.modelClass = from.modelClass;
+		this.tableName = from.tableName;
+
 		this.ctx = from.ctx;
 		this.trxName = from.trxName;
 		this.filters = from.filters.copy();
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
 		this.onlySelection_ID = from.onlySelection_ID;
 		this.limit = from.limit;
-		
+
 		this.options = from.options == null ? null : new HashMap<>(from.options);
 	}
 
@@ -206,6 +212,12 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
+	public String getTableName()
+	{
+		return tableName;
+	}
+
+	@Override
 	public Properties getCtx()
 	{
 		return ctx;
@@ -257,10 +269,10 @@ import com.google.common.collect.ImmutableMap;
 			{
 				return this;
 			}
-			
+
 			options = new HashMap<>();
 		}
-		
+
 		if (value == null)
 		{
 			options.remove(name);
@@ -272,14 +284,14 @@ import com.google.common.collect.ImmutableMap;
 
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilder<T> setOption(final String name)
 	{
 		setOption(name, true);
 		return this;
 	}
-	
+
 	public final Map<String, Object> getOptions()
 	{
 		if (options == null)
@@ -498,8 +510,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType>
-			IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedBaseType> column, Class<CollectedType> collectedType)
+	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedBaseType> column, Class<CollectedType> collectedType)
 	{
 		final IQuery<T> query = create();
 
@@ -521,7 +532,7 @@ import com.google.common.collect.ImmutableMap;
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String columnName = column.getColumnName();
 
-		return new QueryBuilder<CollectedType>(collectedType)
+		return new QueryBuilder<CollectedType>(collectedType, null) // tableName=null
 				.setContext(ctx, trxName)
 				.addInSubQueryFilter(keyColumnName, columnName, query);
 	}
@@ -535,7 +546,7 @@ import com.google.common.collect.ImmutableMap;
 		final String thisIDColumnName = InterfaceWrapperHelper.getKeyColumnName(getModelClass());
 		final IQuery<T> thisQuery = create();
 
-		return new QueryBuilder<ExtChildType>(childType)
+		return new QueryBuilder<ExtChildType>(childType, null) // tableName=null
 				.setContext(ctx, trxName)
 				.addInSubQueryFilter(childTableColumnName, thisIDColumnName, thisQuery);
 	}
@@ -555,8 +566,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public <TargetModelType>
-			QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final ModelColumn<T, TargetModelType> column)
+	public <TargetModelType> QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final ModelColumn<T, TargetModelType> column)
 	{
 		return new QueryAggregateBuilder<T, TargetModelType>(this, column);
 	}

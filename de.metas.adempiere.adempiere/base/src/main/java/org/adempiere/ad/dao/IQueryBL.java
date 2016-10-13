@@ -13,15 +13,14 @@ package org.adempiere.ad.dao;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -32,6 +31,15 @@ public interface IQueryBL extends ISingletonService
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, String trxName);
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
+
+	/**
+	 *
+	 * @param modelClass
+	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>.
+	 * @param contextProvider
+	 * @return
+	 */
+	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
 
 	/**
 	 *

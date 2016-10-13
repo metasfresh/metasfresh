@@ -1,21 +1,21 @@
 /*******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                        *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it     *
- * under the terms version 2 of the GNU General Public License as published    *
- * by the Free Software Foundation. This program is distributed in the hope    *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied  *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.            *
- * See the GNU General Public License for more details.                        *
- * You should have received a copy of the GNU General Public License along     *
- * with this program; if not, write to the Free Software Foundation, Inc.,     *
- * 59 Temple Place, Suite 330, Boston, MA                                      *
- * 02111-1307 USA.                                                             *
- *                                                                             *
- * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com                          *
- * Contributor(s):                                                             *
- *                 Teo Sarca, www.arhipac.ro                                   *
- * __________________________________________                                  *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA *
+ * 02111-1307 USA. *
+ * *
+ * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com *
+ * Contributor(s): *
+ * Teo Sarca, www.arhipac.ro *
+ * __________________________________________ *
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
@@ -60,12 +60,24 @@ import de.metas.logging.LogManager;
 /**
  *
  * @author Low Heng Sin
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 1981760 ] Improve Query class <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue <li>FR [ 2041894 ] Add Query.match() method <li>FR [
- *         2107068 ] Query.setOrderBy should be more error tolerant <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method <li>FR [
- *         2546052 ] Introduce Query aggregate methods <li>FR [ 2726447 ] Query aggregate methods for all return types <li>FR [ 2818547 ] Implement Query.setOnlySelection
- *         https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335 <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 1981760 ] Improve Query class
+ *         <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue
+ *         <li>FR [ 2041894 ] Add Query.match() method
+ *         <li>FR [
+ *         2107068 ] Query.setOrderBy should be more error tolerant
+ *         <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords
+ *         <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method
+ *         <li>FR [
+ *         2546052 ] Introduce Query aggregate methods
+ *         <li>FR [ 2726447 ] Query aggregate methods for all return types
+ *         <li>FR [ 2818547 ] Implement Query.setOnlySelection
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335
+ *         <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
  *         https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
- * @author Redhuan D. Oon <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info <li>FR: [ 2214883 ] - to introduce .setClient_ID
+ * @author Redhuan D. Oon
+ *         <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info
+ *         <li>FR: [ 2214883 ] - to introduce .setClient_ID
  */
 public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 {
@@ -75,7 +87,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private final String tableName;
 	private String sqlFrom = null;
 	private POInfo _poInfo;
-	private Class<T> modelClass = null;
+	private final Class<T> modelClass;
 	private String whereClause;
 	private final String trxName;
 
@@ -100,30 +112,41 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @param tableName
 	 * @param whereClause
 	 * @param trxName
-	 * @deprecated Please use {@link #TypedSqlQuery(Properties, Class, String, String)}
 	 */
-	@Deprecated
-	protected TypedSqlQuery(final Properties ctx, final String tableName, final String whereClause, final String trxName)
+	protected TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String tableName, final String whereClause, final String trxName)
 	{
-		super();
 		Check.assumeNotNull(ctx, "ctx not null");
-		Check.assumeNotEmpty(tableName, "tableName not empty");
+
+		this.modelClass = modelClass;
+
+		if (Check.isEmpty(tableName, true))
+		{
+			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+			Check.errorIf(Check.isEmpty(tableName, true),
+					"Parameter 'tableName' is empty, and tableName can not be deducted from modelClass={}; trxName={}; whereClause={}; ctx={}",
+					modelClass, trxName, whereClause, ctx);
+		}
+		else
+		{
+			this.tableName = tableName;
+		}
 
 		this.ctx = ctx;
-		this.tableName = tableName;
+
 		this.whereClause = whereClause;
 		this.trxName = trxName;
 	}
 
-	public TypedSqlQuery(Properties ctx, Class<T> modelClass, String whereClause, String trxName)
+	public TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String whereClause, final String trxName)
 	{
 		this(ctx,
+				modelClass,
 				InterfaceWrapperHelper.getTableName(modelClass),
 				whereClause,
 				trxName);
 
-		this.modelClass = modelClass;
 	}
+
 
 	/**
 	 * @return {@link POInfo}; never returns null
@@ -172,7 +195,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param parameters
 	 */
-	public TypedSqlQuery<T> setParameters(Object... parameters)
+	public TypedSqlQuery<T> setParameters(final Object... parameters)
 	{
 		this.parameters = Arrays.asList(parameters);
 		return this;
@@ -183,7 +206,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param parameters collection of parameters
 	 */
-	public TypedSqlQuery<T> setParameters(List<Object> parameters)
+	public TypedSqlQuery<T> setParameters(final List<Object> parameters)
 	{
 		if (parameters == null)
 		{
@@ -199,28 +222,28 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @param orderBy SQL ORDER BY clause
 	 */
-	public TypedSqlQuery<T> setOrderBy(String orderBy)
+	public TypedSqlQuery<T> setOrderBy(final String orderBy)
 	{
 		this.queryOrderBy = Services.get(IQueryBL.class).createSqlQueryOrderBy(orderBy);
 		return this;
 	}
 
 	@Override
-	public TypedSqlQuery<T> setOrderBy(IQueryOrderBy orderBy)
+	public TypedSqlQuery<T> setOrderBy(final IQueryOrderBy orderBy)
 	{
 		this.queryOrderBy = orderBy;
 		return this;
 	}
 
 	@Override
-	public TypedSqlQuery<T> setApplyAccessFilter(boolean flag)
+	public TypedSqlQuery<T> setApplyAccessFilter(final boolean flag)
 	{
 		this.applyAccessFilter = flag;
 		return this;
 	}
 
 	@Override
-	public TypedSqlQuery<T> setApplyAccessFilterRW(boolean RW)
+	public TypedSqlQuery<T> setApplyAccessFilterRW(final boolean RW)
 	{
 		this.applyAccessFilter = true;
 		this.applyAccessFilterRW = RW;
@@ -242,7 +265,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public TypedSqlQuery<T> setOnlySelection(int AD_PInstance_ID)
+	public TypedSqlQuery<T> setOnlySelection(final int AD_PInstance_ID)
 	{
 		this.onlySelection_ID = AD_PInstance_ID;
 		return this;
@@ -262,7 +285,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> List<ET> list(Class<ET> clazz) throws DBException
+	public <ET extends T> List<ET> list(final Class<ET> clazz) throws DBException
 	{
 		final List<ET> list;
 		if (limit > 0)
@@ -295,7 +318,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
@@ -371,7 +394,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> ET first(Class<ET> clazz) throws DBException
+	public <ET extends T> ET first(final Class<ET> clazz) throws DBException
 	{
 		ET model = null;
 
@@ -386,7 +409,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		// metas: end
 
-		String sql = buildSQL(null, true);
+		final String sql = buildSQL(null, true);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -403,7 +426,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			rs = createResultSet(pstmt);
 			model = retrieveNextModel(rs, clazz);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
@@ -440,11 +463,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 */
 	@Override
-	protected final <ET extends T> ET firstOnly(Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
+	protected final <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
 	{
 		ET model = null;
 		final String sql = buildSQL(
-				null, // selectClause: use default (i.e. all columns)
+				null,    // selectClause: use default (i.e. all columns)
 				false // useOrderByClause=false because we expect only one record
 		);
 
@@ -471,7 +494,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
@@ -505,14 +528,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return firstId(true);
 	}
 
-	private int firstId(boolean assumeOnlyOneResult) throws DBException
+	private int firstId(final boolean assumeOnlyOneResult) throws DBException
 	{
 		final String keyColumnName = getKeyColumnName();
 
-		StringBuilder selectClause = new StringBuilder("SELECT ");
+		final StringBuilder selectClause = new StringBuilder("SELECT ");
 		selectClause.append(keyColumnName);
 		selectClause.append(" FROM ").append(getSqlFrom());
-		String sql = buildSQL(selectClause, true);
+		final String sql = buildSQL(selectClause, true);
 
 		int id = -1;
 		PreparedStatement pstmt = null;
@@ -530,7 +553,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				throw new DBException("QueryMoreThanOneRecordsFound"); // TODO : translate
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -563,7 +586,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @return aggregated value
 	 * @throws DBException
 	 */
-	public BigDecimal aggregate(String sqlExpression, String sqlFunction) throws DBException
+	public BigDecimal aggregate(final String sqlExpression, final String sqlFunction) throws DBException
 	{
 		return aggregate(sqlExpression, sqlFunction, BigDecimal.class);
 	}
@@ -579,7 +602,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 */
 	@Override
-	public <AT> AT aggregate(String columnName, String sqlFunction, Class<AT> returnType) throws DBException
+	public <AT> AT aggregate(final String columnName, final String sqlFunction, final Class<AT> returnType) throws DBException
 	{
 		final List<AT> list = aggregateList(columnName, sqlFunction, returnType);
 
@@ -595,7 +618,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return list.get(0);
 	}
 
-	public <AT> List<AT> aggregateList(String sqlExpression, String sqlFunction, Class<AT> returnType) throws DBException
+	public <AT> List<AT> aggregateList(String sqlExpression, final String sqlFunction, final Class<AT> returnType) throws DBException
 	{
 		if (Check.isEmpty(sqlFunction, true))
 		{
@@ -653,7 +676,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				result.add(value);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -672,7 +695,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
 	}
-	
+
 	@Override
 	protected final List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames)
 	{
@@ -732,7 +755,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				result.add(row);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, getParametersEffective());
 		}
@@ -758,7 +781,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @param sqlExpression
 	 * @return sum
 	 */
-	public BigDecimal sum(String sqlExpression)
+	public BigDecimal sum(final String sqlExpression)
 	{
 		return aggregate(sqlExpression, AGGREGATE_SUM);
 	}
@@ -801,7 +824,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				return rs.next();
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -824,7 +847,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException
+	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz) throws DBException
 	{
 		final boolean guaranteed;
 
@@ -840,7 +863,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return iterate(clazz, guaranteed);
 	}
 
-	public <ET extends T> Iterator<ET> iterate(Class<ET> clazz, boolean guaranteed) throws DBException
+	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz, final boolean guaranteed) throws DBException
 	{
 		Check.assumeNull(postQueryFilter, "No post-filter shall be defined when iterating");
 
@@ -899,18 +922,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		sqlBuffer.insert(0, " SELECT ");
 		sqlBuffer.append(" FROM ").append(getSqlFrom());
-		String sql = buildSQL(sqlBuffer, true);
+		final String sql = buildSQL(sqlBuffer, true);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		List<Object[]> idList = new ArrayList<Object[]>();
+		final List<Object[]> idList = new ArrayList<Object[]>();
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			rs = createResultSet(pstmt);
 			while (rs.next())
 			{
-				Object[] ids = new Object[keyColumnNames.size()];
+				final Object[] ids = new Object[keyColumnNames.size()];
 				for (int i = 0; i < ids.length; i++)
 				{
 					ids[i] = rs.getObject(i + 1);
@@ -918,7 +941,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				idList.add(ids);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
@@ -944,7 +967,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return scroll((Class<ET>)null);
 	}
 
-	public <ET> POResultSet<ET> scroll(Class<ET> clazz) throws DBException
+	public <ET> POResultSet<ET> scroll(final Class<ET> clazz) throws DBException
 	{
 		final String tableName = getTableName();
 		final String sql = buildSQL(null, true);
@@ -959,7 +982,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			rsPO.setCloseOnError(true);
 			return rsPO;
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.info(sql, e);
 			throw new DBException(e, sql, getParametersEffective());
@@ -1036,23 +1059,29 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	protected final String getWhereClauseEffective()
 	{
-		StringBuffer whereBuffer = new StringBuffer();
+		final StringBuffer whereBuffer = new StringBuffer();
 		if (!Check.isEmpty(this.whereClause, true))
 		{
 			if (whereBuffer.length() > 0)
+			{
 				whereBuffer.append(" AND ");
+			}
 			whereBuffer.append("(").append(this.whereClause).append(")");
 		}
 		if (this.onlyActiveRecords)
 		{
 			if (whereBuffer.length() > 0)
+			{
 				whereBuffer.append(" AND ");
+			}
 			whereBuffer.append("IsActive=?");
 		}
-		if (this.onlyClient_ID) // red1
+		if (this.onlyClient_ID)    // red1
 		{
 			if (whereBuffer.length() > 0)
+			{
 				whereBuffer.append(" AND ");
+			}
 			whereBuffer.append("AD_Client_ID=?");
 		}
 		if (this.onlySelection_ID > 0)
@@ -1060,7 +1089,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			final String keyColumnName = getKeyColumnName();
 			//
 			if (whereBuffer.length() > 0)
+			{
 				whereBuffer.append(" AND ");
+			}
 			whereBuffer.append(" EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=?"
 					+ " AND s.T_Selection_ID=" + getTableName() + "." + keyColumnName + ")");
 		}
@@ -1084,7 +1115,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		if (this.onlyClient_ID)
 		{
-			int AD_Client_ID = Env.getAD_Client_ID(ctx);
+			final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 			parametersEffective.add(AD_Client_ID);
 			log.trace("Parameter AD_Client_ID = " + AD_Client_ID);
 		}
@@ -1183,11 +1214,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// metas: end
 
 		if (LogManager.isLevelFinest())
+		{
 			log.trace("TableName = " + getTableName() + "... SQL = " + sql); // red1 - to assist in debugging SQL
+		}
 		return sql;
 	}
-	
-	private final ResultSet createResultSet(PreparedStatement pstmt) throws SQLException
+
+	private final ResultSet createResultSet(final PreparedStatement pstmt) throws SQLException
 	{
 		final List<Object> parametersEffective = getParametersEffective();
 		DB.setParameters(pstmt, parametersEffective);
@@ -1233,7 +1266,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final StringBuilder selectClause = new StringBuilder("SELECT ");
 		selectClause.append(keyColumnName);
 		selectClause.append(" FROM ").append(getSqlFrom());
-		String sql = buildSQL(selectClause, true);
+		final String sql = buildSQL(selectClause, true);
 
 		final List<Integer> list = new ArrayList<Integer>();
 		PreparedStatement pstmt = null;
@@ -1248,7 +1281,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				list.add(recordId);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -1265,7 +1298,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append("Query[");
 		sb.append(getTableName());
 		sb.append(", Where=").append(whereClause);
@@ -1279,9 +1312,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			sb.append(", UNIONS=").append(unions);
 		}
 		if (parameters != null && !parameters.isEmpty())
+		{
 			sb.append(", Params=").append(parameters.toString());
+		}
 		if (queryOrderBy != null)
+		{
 			sb.append(", OrderBy=").append(queryOrderBy);
+		}
 		//
 		// metas: limit & offset
 		if (limit > 0)
@@ -1296,38 +1333,48 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		sb.append(", trxName=").append(trxName);
 		sb.append(", Options=");
 		if (applyAccessFilter)
+		{
 			sb.append("ApplyAccessFilter;");
+		}
 		// metas: commented out because we don't use it anymore (considering always true)
 		// if (applyAccessFilterFullyQualified)
 		// sb.append("ApplyAccessFilterFQ;");
 		if (applyAccessFilterRW)
+		{
 			sb.append("ApplyAccessFilterRW;");
+		}
 		if (onlyActiveRecords)
+		{
 			sb.append("OnlyActive;");
+		}
 		if (onlySelection_ID > 0)
+		{
 			sb.append("OnlySelection=").append(onlySelection_ID).append(";");
+		}
 		if (options != null && !options.isEmpty())
+		{
 			sb.append(options.toString()).append(";");
+		}
 		sb.append("]");
 		return sb.toString();
 	}
 
 	// metas
 	@Override
-	public TypedSqlQuery<T> setLimit(int limit)
+	public TypedSqlQuery<T> setLimit(final int limit)
 	{
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public TypedSqlQuery<T> setLimit(int limit, int offset)
+	public TypedSqlQuery<T> setLimit(final int limit, final int offset)
 	{
 		this.limit = limit;
 		this.offset = offset;
 		return this;
 	}
-	
+
 	/**
 	 * @return true if the query has the LIMIT or OFFSET set
 	 */
@@ -1408,7 +1455,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private Map<String, Object> options = null;
 
 	@Override
-	public TypedSqlQuery<T> setOption(String name, Object value)
+	public TypedSqlQuery<T> setOption(final String name, final Object value)
 	{
 		if (options == null)
 		{
@@ -1440,7 +1487,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <OT> OT getOption(String name)
+	public <OT> OT getOption(final String name)
 	{
 		if (options == null)
 		{
@@ -1455,7 +1502,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	protected TypedSqlQuery<T> newInstance()
 	{
-		return new TypedSqlQuery<T>(ctx, tableName, whereClause, trxName);
+		return new TypedSqlQuery<T>(ctx, modelClass, tableName, whereClause, trxName);
 	}
 
 	/**
@@ -1581,14 +1628,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @param query
 	 * @return
 	 */
-	public static <T> TypedSqlQuery<T> cast(IQuery<T> query)
+	public static <T> TypedSqlQuery<T> cast(final IQuery<T> query)
 	{
 		final TypedSqlQuery<T> typedSqlQuery = (TypedSqlQuery<T>)query;
 		return typedSqlQuery;
 	}
 
 	@Override
-	public int updateDirectly(IQueryUpdater<T> queryUpdater)
+	public int updateDirectly(final IQueryUpdater<T> queryUpdater)
 	{
 		Check.assumeNotNull(queryUpdater, "queryUpdater");
 
@@ -1748,8 +1795,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		sqlFromSelectColumns.asStringBuilder()
 				.insert(0, "SELECT \n")
 				.append("\n FROM ").append(getSqlFrom());
-		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder()
-				, false // useOrderByClause=false
+		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), false // useOrderByClause=false
 		);
 		sqlParams.addAll(getParametersEffective());
 

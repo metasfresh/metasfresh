@@ -42,7 +42,7 @@ public class QueryBL implements IQueryBL
 			final Properties ctx,
 			final String trxName)
 	{
-		return new QueryBuilder<T>(modelClass)
+		return new QueryBuilder<T>(modelClass, null)
 				.setContext(ctx, trxName);
 	}
 
@@ -50,7 +50,14 @@ public class QueryBL implements IQueryBL
 	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
 			final Object contextProvider)
 	{
-		return new QueryBuilder<T>(modelClass)
+		return new QueryBuilder<T>(modelClass, null)
+				.setContext(contextProvider);
+	}
+
+	@Override
+	public <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider)
+	{
+		return new QueryBuilder<T>(modelClass, tableName)
 				.setContext(contextProvider);
 	}
 
