@@ -139,6 +139,7 @@ public final class UserPreference implements Serializable
 			if (preference == null)
 			{
 				preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, ITrx.TRXNAME_ThreadInherited);
+				preference.setAD_User_ID(m_AD_User_ID);
 				preference.setAttribute(attribute);
 			}
 
