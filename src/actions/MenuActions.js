@@ -100,6 +100,10 @@ export function getRelatedDocuments(type, id){
     return dispatch => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
 }
 
+export function getDocumentActions(type, id){
+    return dispatch => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
+}
+
 
 //END OF THUNK ACTIONS
 

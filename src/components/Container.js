@@ -21,7 +21,8 @@ class Container extends Component {
             references,
             showSidelist,
             siteName,
-            connectionError
+            connectionError,
+            noMargin
         } = this.props;
 
         return (
@@ -41,7 +42,7 @@ class Container extends Component {
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
-                <div className="header-sticky-distance container-fluid">
+                <div className={"header-sticky-distance " + (!!noMargin ? "dashboard" : "container-fluid")}>
                     {this.props.children}
                 </div>
             </div>
