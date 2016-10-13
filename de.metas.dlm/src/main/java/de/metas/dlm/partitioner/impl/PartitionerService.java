@@ -5,6 +5,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.model.POInfo;
+import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartionConfigReference;
@@ -48,10 +58,8 @@ public class PartitionerService implements IPartitionerService
 
 		for (final PartitionerConfigLine line : lines)
 		{
-			// AD_Table_ID
-			// get the "record" from DLM_PartionLine_Config.AD_Table_ID as the database record with the smallest ID
-			// that does not yet have a DLM_Partition_ID
-			IDLMAware record = null;
+
+			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName());
 
 			records.addAll(recurse(line, record));
 		}
@@ -70,7 +78,43 @@ public class PartitionerService implements IPartitionerService
 		// if the update worked, then set the DLM level back to the old value
 	}
 
-	private Set<IDLMAware> recurse(final PartitionerConfigLine line, IDLMAware record)
+	private IDLMAware retrieveUnpartitionedRecod(final String tableName)
+	{
+		final List<String> keyColumnNames; // we will order by key column names, so that generally, older records are partitioned first. But note that a particular order is not a "must"
+
+		// TODO: consider extracting this into some "Plain" service-thingie.
+		if (Adempiere.isUnitTestMode())
+		{
+			keyColumnNames = ImmutableList.of(tableName + "_ID");
+		}
+		else
+		{
+			final POInfo poInfo = POInfo.getPOInfo(tableName);
+			keyColumnNames = poInfo.getKeyColumnNames();
+		}
+
+		// AD_Table_ID
+		// get the "record" from DLM_PartionLine_Config.AD_Table_ID as the database record with the smallest ID
+		// that does not yet have a DLM_Partition_ID
+		final IQueryBuilderOrderByClause<IDLMAware> orderBy = Services.get(IQueryBL.class)
+				.createQueryBuilder(IDLMAware.class, tableName, new PlainContextAware(Env.getCtx()))
+				// .addOnlyActiveRecordsFilter() we want to partition both active and inactive records
+				.addEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, null)
+				.orderBy();
+
+		for (final String keyColumnName : keyColumnNames)
+		{
+			orderBy.addColumn(keyColumnName);
+		}
+
+		final IDLMAware record = orderBy
+				.endOrderBy()
+				.create()
+				.first();
+		return record;
+	}
+
+	private Set<IDLMAware> recurse(final PartitionerConfigLine line, final IDLMAware record)
 	{
 		final Set<IDLMAware> records = new HashSet<>();
 		if (!records.add(record))
