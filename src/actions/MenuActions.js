@@ -17,6 +17,13 @@ export function setReferences(references){
     }
 }
 
+export function setActions(actions){
+    return {
+        type: types.SET_ACTIONS,
+        actions: actions
+    }
+}
+
 // THUNK ACTIONS
 export function getDashboardLink() {
     return dispatch => axios.get(config.API_URL + '/userSession/dashboardUrl');

@@ -146,7 +146,7 @@ class Header extends Component {
     }
 
     render() {
-        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references} = this.props;
+        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references,actions} = this.props;
         const {isSubheaderShow, isSideListShow, indicator, menuOverlay} = this.state;
 
         return (
@@ -198,7 +198,14 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader open={isSubheaderShow} dataId={dataId} references={references} windowType={windowType} onClick={e => this.handleBackdropClick(false)}/>
+                <Subheader
+                    open={isSubheaderShow}
+                    dataId={dataId}
+                    references={references}
+                    actions={actions}
+                    windowType={windowType}
+                    onClick={e => this.handleBackdropClick(false)}
+                />
                 {showSidelist && <SideList windowType={windowType} open={isSideListShow} />}
             </div>
         )

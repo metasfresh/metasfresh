@@ -3,7 +3,8 @@ import update from 'react-addons-update';
 
 const initialState = {
     breadcrumb: [],
-    references: []
+    references: [],
+    actions: []
 }
 
 export default function menuHandler(state = initialState, action) {
@@ -15,6 +16,10 @@ export default function menuHandler(state = initialState, action) {
         case types.SET_REFERENCES:
             return Object.assign({}, state, {
                 references: action.references
+            })
+        case types.SET_ACTIONS:
+            return Object.assign({}, state, {
+                actions: action.actions
             })
         case types.SET_GLOBAL_GRID_FILTER:
             return Object.assign({}, state, {

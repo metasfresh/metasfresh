@@ -28,7 +28,7 @@ class Subheader extends Component {
         dispatch(push("/window/" + type));
     }
     render() {
-        const { windowType, onClick, references, dataId } = this.props;
+        const { windowType, onClick, references, actions, dataId } = this.props;
         return (
             <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
                 <div className="container-fluid">
@@ -49,10 +49,15 @@ class Subheader extends Component {
                             <div className=" subheader-column">
                                 <div className="subheader-header">Actions</div>
                                 <div className="subheader-break" />
-                                <div className="subheader-item">Auftrag aus Angebot</div>
-                                <div className="subheader-item">Bestellkontrolle zum Auf</div>
-                                <div className="subheader-item">Generate PO from Sales order</div>
-                                <div className="subheader-item">Geschaftspartnerbeziehung erstellen</div>
+                                { actions && !!actions.length ? actions.map((item, key) =>
+                                    <div
+                                        className="subheader-item"
+                                        onClick={() => this.redirect("/window/" + item.actionId)}
+                                        key={key}
+                                    >
+                                        {item.caption}
+                                    </div>
+                                ) : <div className="subheader-item subheader-item-disabled">There is no actions</div>}
                             </div>
                             <div className=" subheader-column">
                                 <div>

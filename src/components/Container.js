@@ -19,6 +19,7 @@ class Container extends Component {
             windowType,
             breadcrumb,
             references,
+            actions,
             showSidelist,
             siteName,
             connectionError,
@@ -37,6 +38,7 @@ class Container extends Component {
                     windowType={windowType}
                     breadcrumb={breadcrumb}
                     references={references}
+                    actions={actions}
                     showSidelist={showSidelist}
                     siteName = {siteName}
                 />
