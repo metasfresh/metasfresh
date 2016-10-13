@@ -19,7 +19,8 @@ class MasterWindow extends Component {
     constructor(props){
         super(props);
         this.state = {
-            data: []
+            data: [],
+            updatedRow: false
         };
     }
 
@@ -32,6 +33,19 @@ class MasterWindow extends Component {
                 data: response.data[0].fields
             }))
         });
+
+        let th = this;
+        this.setState(
+            Object.assign({}, this.state, {
+                updatedRow: true
+            }), () => {
+                setTimeout(function(){
+                  th.setState(Object.assign({}, this.state, {
+                    updatedRow: false
+                  }))
+                }, 250);
+            }
+        );
     }
 
     componentWillReceiveProps(props) {
@@ -44,7 +58,7 @@ class MasterWindow extends Component {
     render() {
         const {master, connectionError, modal, breadcrumb, references} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const {data} = this.state;
+        const {data, updatedRow} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
 
@@ -88,6 +102,7 @@ class MasterWindow extends Component {
                     rowData={master.rowData}
                     dataId={dataId}
                     isModal={false}
+                    updatedRow={updatedRow}
                 />
             </Container>
         );

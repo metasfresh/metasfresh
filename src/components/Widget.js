@@ -105,22 +105,26 @@ class Widget extends Component {
     }
 
 
-    componentWillReceiveProps() {
-        // console.log('widget componentWillReceiveProps');
-        let th = this;
-        this.setState(
-            Object.assign({}, this.state, {
-                updated: true
-            }), () => {
-                setTimeout(function(){
-                  th.setState(Object.assign({}, this.state, {
-                    updated: false
-                  }))
-                }, 200);
-            }
-        );
+    componentWillReceiveProps(nextProps) {
+        const {updateCell} = this.props;
+        if(updateCell){
+            updateCell();
+        }
 
-        // console.log(this.state.updated);
+        if(this.props.widgetData[0].value!==nextProps.widgetData[0].value) {
+            let th = this;
+            this.setState(
+                Object.assign({}, this.state, {
+                    updated: true
+                }), () => {
+                    setTimeout(function(){
+                      th.setState(Object.assign({}, this.state, {
+                        updated: false
+                      }))
+                    }, 250);
+                }
+            );
+        }
     }
 
 
@@ -136,7 +140,7 @@ class Widget extends Component {
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <Datetime
                             timeFormat={false}
@@ -156,7 +160,7 @@ class Widget extends Component {
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -176,7 +180,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <Datetime
                             timeFormat={true}
@@ -231,7 +235,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="text"
@@ -253,7 +258,8 @@ class Widget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <textarea
                             className="input-field js-input-field"
@@ -274,7 +280,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="number"
@@ -297,7 +303,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="number"
@@ -318,7 +324,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="number"
@@ -341,7 +347,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="number"
@@ -364,7 +370,7 @@ class Widget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (data[0].readonly ? "input-disabled " : "") +
                         (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse" : "")
+                        (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
                             type="number"
@@ -389,7 +395,7 @@ class Widget extends Component {
                             disabled={data[0].readonly}
                             onChange={(e) => this.handlePatch(fields[0].field, e.target.checked)}
                         />
-                        <div className="input-checkbox-tick"/>
+                        <div className={"input-checkbox-tick" + (updated ? " pulse" : "")}/>
                     </label>
                 )
             case "Switch":
@@ -406,7 +412,7 @@ class Widget extends Component {
                             disabled={data[0].readonly}
                             onChange={(e) => this.handlePatch(fields[0].field, e.target.checked)}
                         />
-                        <div className="input-slider" />
+                        <div className={"input-slider" + (updated ? " pulse-on" : " pulse-off")} />
                     </label>
                 )
             case "Label":

@@ -223,7 +223,6 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 
     }
 
-
     return dispatch => axios.patch(
         config.API_URL +
         '/window/commit?type=' +

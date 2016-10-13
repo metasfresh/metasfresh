@@ -348,7 +348,7 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, updatedRow} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -374,6 +374,7 @@ class Table extends Component {
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
                         mainTable={mainTable}
+                        updatedRow={i===keys.length-1 ? updatedRow : false}
                     />
                 );
             }

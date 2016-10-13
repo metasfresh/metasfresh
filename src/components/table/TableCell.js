@@ -6,6 +6,10 @@ import Moment from 'moment';
 class TableCell extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            updatedCell: false
+        }
     }
 
     handleClickOutside = (e) => {
@@ -44,8 +48,25 @@ class TableCell extends Component {
         }
     }
 
+    updateCell = () => {
+
+        let th = this;
+        this.setState(
+            Object.assign({}, this.state, {
+                updatedCell: true
+            }), () => {
+                setTimeout(function(){
+                  th.setState(Object.assign({}, this.state, {
+                    updatedCell: false
+                  }))
+                }, 250);
+            }
+        );
+    }
+
     render() {
         const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly} = this.props;
+        const {updatedCell} = this.state;
         return (
             <td
                 tabIndex="0"
@@ -59,7 +80,8 @@ class TableCell extends Component {
                     (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType==="Text" ? "td-md " : "") +
-                    (item.widgetType)
+                    (item.widgetType) +
+                    (updatedCell ? " pulse-on" : " pulse-off")
                 }
             >
                 {
@@ -73,6 +95,7 @@ class TableCell extends Component {
                             tabId={tabId}
                             noLabel={true}
                             gridAlign={item.gridAlign}
+                            updateCell={this.updateCell}
                         />
                     :
                         this.fieldToString(widgetData[0].value, item.widgetType)

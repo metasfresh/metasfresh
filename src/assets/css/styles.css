@@ -1328,7 +1328,18 @@ th {
     transition: all 0.5s;
 }
 
-.pulse {
-    background: $brand-pulse-effect;
-    transition: background 0.5s;
+.pulse-on {
+    background: $brand-pulse-effect !important;
+    transition: all 0.250s linear;
+}
+
+.pulse-off {
+    transition: all 4s cubic-bezier(0.785, 0.100, 0.760, 0.935);
+}
+
+td.pulse-on input {
+    background: transparent !important;
+}
+td.pulse-off input {
+    background: transparent !important;
 }
