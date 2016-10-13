@@ -87,7 +87,7 @@ public class C_Invoice_Candidate
 //	}
 	// @formatter:on
 	/**
-	 * Set QtyToInvoiceInPriceUOM, just to make sure is up2date.
+	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
