@@ -10,18 +10,28 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.39.38 (2016-41)
+# metasfresh 4.40.39 (2016-42)
 
 upcoming
 
 ## Features
-* #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
-* #418 Improve sales and purchase tracking reports
 * #443 Add is to be sent as email to doc outbound log
+* #418 Improve sales and purchase tracking reports
+
+## Fixes
+* #428 NPE when reversing an invoice including a product with inactive UOM conversion
+* #492 build issue with jaxb2-maven-plugin 1.6 and java-8
+
+# metasfresh 4.39.38 (2016-41)
+
+this week's RC
+
+## Features
+* #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
+
 
 ## Fixes
 * #448 Rounding issue with partical credit memos
-* #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #270 Purchase Order from Sales Order Process wrong Aggregation
 * #433 C_Order copy with details: Packing Instructions are not copied
 
