@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 
 import DatetimeRange from './DatetimeRange';
 import Table from '../table/Table';
+import Filters from './Filters';
 
 import {
     viewLayoutRequest,
@@ -174,6 +175,10 @@ class DocumentList extends Component {
                             }
                         </button>
                     </div>
+
+                    <Filters />
+
+
                     <div>
                         <Table
                             ref={c => this.table = c && c.getWrappedInstance().refs.instance}

@@ -302,7 +302,7 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse" : '')}>
+                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off")}>
                     <div className={
                         "input-editable " +
                         (align ? "text-xs-" + align + " " : "")

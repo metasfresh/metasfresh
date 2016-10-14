@@ -7,7 +7,10 @@ class Filters extends Component {
     render() {
         return (
             <div>
-                Filters
+                <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
+                    <i className="meta-icon-preview" />
+                    No search filters
+                </button>
             </div>
 
         )
