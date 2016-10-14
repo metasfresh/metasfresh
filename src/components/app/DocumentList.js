@@ -57,19 +57,20 @@ class DocumentList extends Component {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
-                        this.getView();
+                        this.getView(response.data.viewId);
                     })
                 })
             })
         });
     }
 
-    getView = () => {
+    getView = (viewId) => {
         const {data} = this.state;
-        const {dispatch, page, sorting, windowType, query} = this.props;
+        const {dispatch, page, sorting, windowType, query, updateUri} = this.props;
         let urlQuery = "";
         let urlPage = page;
 
+        !!updateUri && updateUri("viewId", viewId);
 
         if(query){
             if(query.sort){
