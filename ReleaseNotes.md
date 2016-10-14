@@ -21,6 +21,8 @@ upcoming
 ## Fixes
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
+* #483 Gebindeübersicht Report Typo fix
+* #482 Unable to issue certain HUs to a PP_Order
 
 # metasfresh 4.39.38 (2016-41)
 
