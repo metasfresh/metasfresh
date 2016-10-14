@@ -130,7 +130,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
 				.getDocumentDescriptor(adWindowId)
@@ -163,7 +163,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -192,7 +192,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -262,7 +262,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_RowId, required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setAD_Window_ID(adWindowId)
@@ -292,7 +292,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
@@ -311,7 +311,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
@@ -379,7 +379,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
@@ -420,7 +420,7 @@ public class WindowRestController implements IWindowRestController
 			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 

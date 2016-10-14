@@ -3,6 +3,7 @@ package de.metas.ui.web.login_old;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -137,8 +138,8 @@ public class LoginModelImpl implements LoginModel
 
 		final Login loginService = getLoginService();
 		final MSession session = createMSession(loginService); // metas
-		final KeyNamePair[] rolesKNPairs = loginService.getRoles(request.getUsername(), request.getPassword());
-		if (rolesKNPairs == null || rolesKNPairs.length == 0)
+		final Set<KeyNamePair> rolesKNPairs = loginService.authenticate(request.getUsername(), request.getPassword());
+		if (rolesKNPairs.isEmpty())
 		{
 			closeSessionWithError(session); // metas
 			return LoginAuthResponse.NULL; // note: we will not reach this point because the method throws exception
@@ -183,8 +184,7 @@ public class LoginModelImpl implements LoginModel
 		// Load preferences
 		{
 			final java.sql.Timestamp date = null;
-			final String printerName = null;
-			final String msg = loginService.loadPreferences(org, warehouse, date, printerName);
+			final String msg = loginService.loadPreferences(org, warehouse, date);
 			if (!Check.isEmpty(msg, true))
 			{
 				throw new AdempiereException(msg);
@@ -217,7 +217,7 @@ public class LoginModelImpl implements LoginModel
 		}
 
 		final KeyNamePair role = KeyNamePair.of(adRoleId, "AD_Role_ID=" + adRoleId);
-		final KeyNamePair[] adClients = getLoginService().getClients(role);
+		final Set<KeyNamePair> adClients = getLoginService().setRoleAndGetClients(role);
 		return KeyNamePairList.of(adClients);
 	}
 
@@ -229,7 +229,7 @@ public class LoginModelImpl implements LoginModel
 			return KeyNamePairList.of();
 		}
 		final KeyNamePair client = KeyNamePair.of(adClientId, "AD_Client_ID=" + adClientId);
-		final KeyNamePair[] adOrgs = getLoginService().getOrgs(client);
+		final Set<KeyNamePair> adOrgs = getLoginService().setClientAndGetOrgs(client);
 		return KeyNamePairList.of(adOrgs);
 	}
 
@@ -241,7 +241,7 @@ public class LoginModelImpl implements LoginModel
 			return KeyNamePairList.of();
 		}
 		final KeyNamePair org = KeyNamePair.of(adOrgId, "AD_Org_ID=" + adOrgId);
-		final KeyNamePair[] warehouses = getLoginService().getWarehouses(org);
+		final Set<KeyNamePair> warehouses = getLoginService().getWarehouses(org);
 		return KeyNamePairList.of(warehouses);
 	}
 

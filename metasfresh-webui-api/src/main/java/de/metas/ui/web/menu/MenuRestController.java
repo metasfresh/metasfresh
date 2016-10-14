@@ -73,7 +73,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final MenuNode node = getMenuTree()
 				.getRootNode();
@@ -88,7 +88,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final MenuNode node = getMenuTree()
 				.getNodeById(nodeId);
@@ -102,7 +102,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
@@ -117,7 +117,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
@@ -134,7 +134,7 @@ public class MenuRestController
 			final boolean includeLeafsIfGroupAccepted //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final MenuNode rootFiltered = getMenuTree()
 				.filter(nameQuery, includeLeafsIfGroupAccepted);
