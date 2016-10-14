@@ -887,11 +887,8 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			// Create HU Editor UI Panel
 			final HUEditorPanel huEditorPanel = new PickingHUEditorPanel(huEditorModel);
 
-			// we already have our own terminal context ref in this try-with-resources block
-			final boolean maintainOwnContextReferences = false;
-
 			// Wrap our HU Editor Panel with a model dialog
-			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel, maintainOwnContextReferences);
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel);
 			editorDialog.setSize(terminalContext.getScreenResolution());
 
 			// Activate editor dialog and wait for user
