@@ -205,6 +205,12 @@
 					-->
 					<!-- version>2.2</version -->
 					<version>1.6</version>
+					<configuration>
+						<vmArgs>
+							<!-- thanks to http://stackoverflow.com/questions/23011547/webservice-client-generation-error-with-jdk8 -->
+							<vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+						</vmArgs>
+					</configuration>
 				</plugin>
 
 				<plugin>
