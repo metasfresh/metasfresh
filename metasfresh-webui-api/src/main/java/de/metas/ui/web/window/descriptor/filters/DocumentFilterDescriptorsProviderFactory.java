@@ -5,9 +5,12 @@ import java.util.Collection;
 import org.compiere.model.MQuery.Operator;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 
 /*
  * #%L
@@ -69,6 +72,9 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		
+		final DocumentFieldDataBindingDescriptor dataBinding = field.getDataBinding().orElse(null);
+		final LookupDescriptor lookupDescriptor = dataBinding == null ? null : dataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
 
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(fieldName)
@@ -78,7 +84,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 						.setDisplayName(displayName)
 						.setFieldName(fieldName)
 						.setWidgetType(widgetType)
-						.setOperator(Operator.EQUAL))
+						.setOperator(Operator.EQUAL)
+						.setLookupDescriptor(lookupDescriptor))
 				.build();
 	}
 
