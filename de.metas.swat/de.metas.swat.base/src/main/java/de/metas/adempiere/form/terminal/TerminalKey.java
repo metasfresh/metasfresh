@@ -65,8 +65,6 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	 */
 	public TerminalKey(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 		this.listeners = terminalContext.createPropertyChangeSupport(this);

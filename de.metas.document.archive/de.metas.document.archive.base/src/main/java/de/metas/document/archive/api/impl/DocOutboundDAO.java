@@ -24,24 +24,21 @@ package de.metas.document.archive.api.impl;
 
 
 import java.util.List;
+import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.Query;
+import org.compiere.util.Env;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 
-public class PlainArchiveDAO extends AbstractArchiveDAO
+public class DocOutboundDAO extends AbstractDocOutboundDAO
 {
-
-	@Override
-	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
-	{
-		return POJOLookupMap.get().getRecords(I_C_Doc_Outbound_Config.class);
-	}
-
 	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(final I_AD_Archive archive)
 	{
@@ -50,21 +47,29 @@ public class PlainArchiveDAO extends AbstractArchiveDAO
 		final int adTableId = archive.getAD_Table_ID();
 		final int recordId = archive.getRecord_ID();
 
-		return POJOLookupMap.get().getFirstOnly(I_C_Doc_Outbound_Log.class, new IQueryFilter<I_C_Doc_Outbound_Log>()
-		{
-			@Override
-			public boolean accept(final I_C_Doc_Outbound_Log pojo)
-			{
-				if (pojo.getAD_Table_ID() != adTableId)
-				{
-					return false;
-				}
-				if (pojo.getRecord_ID() != recordId)
-				{
-					return false;
-				}
-				return true;
-			}
-		});
+		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
+
+		final String whereClause = I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID + "=?"
+				+ " AND " + I_C_Doc_Outbound_Log.COLUMNNAME_Record_ID + "=?";
+
+		final I_C_Doc_Outbound_Log docExchange = new Query(ctx, I_C_Doc_Outbound_Log.Table_Name, whereClause, trxName)
+				.setParameters(adTableId, recordId)
+				.firstOnly(I_C_Doc_Outbound_Log.class);
+
+		return docExchange;
 	}
+	
+
+	@Override
+	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
+	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
+	{
+		final Properties ctx = Env.getCtx();
+		return new Query(ctx, I_C_Doc_Outbound_Config.Table_Name, null, ITrx.TRXNAME_None)
+				.setOnlyActiveRecords(true)
+				.list(I_C_Doc_Outbound_Config.class);
+	}
+	
+	
 }

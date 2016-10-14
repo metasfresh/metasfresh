@@ -88,7 +88,7 @@ public class Archive_Main_Validator implements ModelValidator
 
 		//
 		// Register services
-		Services.registerService(de.metas.document.archive.api.IArchiveDAO.class, new de.metas.document.archive.api.impl.ArchiveDAO());
+		Services.registerService(de.metas.document.archive.api.IDocOutboundDAO.class, new de.metas.document.archive.api.impl.DocOutboundDAO());
 		Services.registerService(org.adempiere.archive.api.IArchiveDAO.class, new org.adempiere.archive.api.impl.DocumentArchiveDAO());
 
 		// Register RemoteArchiveStorage
@@ -103,6 +103,8 @@ public class Archive_Main_Validator implements ModelValidator
 		archiveEventManager.registerArchiveEventListener(new DocOutboundArchiveEventListener());
 
 		engine.addModelValidator(new C_Doc_Outbound_Config(this), client);
+		engine.addModelValidator(new AD_User(), client);
+		engine.addModelValidator(new C_BPartner(), client);
 
 		registerArchiveAwareTables();
 		

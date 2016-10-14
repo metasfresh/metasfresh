@@ -123,7 +123,6 @@ public class MockedEndpoint extends TcpConnectionEndPoint
 	 *
 	 * @return
 	 */
-	@SuppressWarnings("unused")
 	private String generateSequenceResult()
 	{
 		synchronized (MockedEndpoint.class)
@@ -143,7 +142,7 @@ public class MockedEndpoint extends TcpConnectionEndPoint
 		}
 	}
 
-	private String createWeightString(final BigDecimal weight)
+	public static String createWeightString(final BigDecimal weight)
 	{
 		final DecimalFormat weightFormat = new DecimalFormat("#########.000");
 		String weightStr = weightFormat.format(weight);

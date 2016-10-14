@@ -13,15 +13,14 @@ package de.metas.adempiere.form.terminal;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
@@ -47,6 +46,12 @@ public interface ITerminalTextField extends ITerminalField<String>
 
 	String getTitle();
 
+	/**
+	 * Set the component's (displayed) text, call {@link #commitEdit()} and fire a {@link #PROPERTY_TextChanged} event.
+	 * If {@link #commitEdit()} fails, then ignore the failure and carry on.
+	 *
+	 * @param name
+	 */
 	void setText(String name);
 
 	String getText();
@@ -68,6 +73,13 @@ public interface ITerminalTextField extends ITerminalField<String>
 
 	IKeyLayout getKeyLayout();
 
+	/**
+	 * Invoke a formatter or validator (if there is any) and if successful, update the "inner" value with the currently displayed text.
+	 * <p>
+	 * Note: see the <a href="http://docs.oracle.com/javase/tutorial/uiswing/components/formattedtextfield.html">How to Use Formatted Text Fields</a> tutorial for details.<br>
+	 *
+	 * @throws ParseException
+	 */
 	void commitEdit() throws ParseException;
 
 	int getDisplayType();

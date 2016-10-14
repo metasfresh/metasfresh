@@ -30,7 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.SwingUtilities;
+
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -39,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.logging.LogManager;
 
 /**
  * Class used to aggregate together {@link IPropertiesPanelModel}s and behave like on single {@link IPropertiesPanelModel}.
@@ -51,6 +55,8 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
  */
 public final class CompositePropertiesPanelModel extends AbstractPropertiesPanelModel
 {
+	private static final transient Logger logger = LogManager.getLogger(CompositePropertiesPanelModel.class);
+
 	/** Current children (indexed) */
 	private IndexedChildren _children = IndexedChildren.NULL;
 	private final ReentrantLock _childrenLock = new ReentrantLock();
@@ -135,8 +141,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			final IndexedChildren childrenNew = IndexedChildren.of(childModelsSupplier == null ? null : childModelsSupplier.get());
 
 			// Prepare child models to be added to our composite
+			int counter = 0;
 			for (final IPropertiesPanelModel childModel : childrenNew.getChildModels())
 			{
+				logger.debug("this-ID={}, isEventDispatchThread={}; within setChildModels() with childModel #{} = {}; this={}",
+						System.identityHashCode(this), SwingUtilities.isEventDispatchThread(), counter++, childModel, this);
 				onBeforeChildAdd(childModel);
 			}
 

@@ -48,6 +48,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
+import de.metas.interfaces.I_C_OrderLine;
 
 /**
  *
@@ -62,12 +63,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, org.compiere.model.I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptScheduleFromOrderLine(orderLine);
 		return Collections.singletonList(receiptSchedule);
 	}
 
-	private I_M_ReceiptSchedule createReceiptScheduleFromOrderLine(final org.compiere.model.I_C_OrderLine line)
+	private I_M_ReceiptSchedule createReceiptScheduleFromOrderLine(final I_C_OrderLine line)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
@@ -91,6 +92,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setRecord_ID(line.getC_OrderLine_ID());
 			receiptSchedule.setC_Order_ID(line.getC_Order_ID());
 			receiptSchedule.setC_OrderLine_ID(line.getC_OrderLine_ID());
+			
+			// #388
+			// set isPackagingMaterial according to the order line
+			receiptSchedule.setIsPackagingMaterial(line.isPackagingMaterial());
 
 			final int docTypeId = retrieveReceiptDocTypeId(line);
 			receiptSchedule.setC_DocType_ID(docTypeId);

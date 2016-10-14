@@ -10,19 +10,46 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.38.36 (2016-40)
+# metasfresh 4.40.39 (2016-42)
 
 upcoming
+
+## Features
+* #443 Add is to be sent as email to doc outbound log
+* #418 Improve sales and purchase tracking reports
+
+## Fixes
+* #428 NPE when reversing an invoice including a product with inactive UOM conversion
+
+# metasfresh 4.39.38 (2016-41)
+
+this week's RC
+
+## Features
+* #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
+
+
+## Fixes
+* #448 Rounding issue with partical credit memos
+* #270 Purchase Order from Sales Order Process wrong Aggregation
+* #433 C_Order copy with details: Packing Instructions are not copied
+
+# metasfresh 4.38.37 (2016-40)
+
+this week's RC
 
 ## Features
  * #395 Add Description in Jasper Invoice Vendor
    - Added a new row in to allow the display of optional line text in further invoices
 
 ## Fixes
+ * #451 OCRB not available in JVM but needed for ESR page
+ * #431 QtyTU does not update in wareneingang pos
+ * #436 Single lookup/list value for mandatory field is not automatically set
+ * #454 barcode field is reset after 500ms
+ * #455 autocomplete in non-generic fields not working anymore
 
 # metasfresh 4.37.36 (2016-39)
-
-this week's RC
 
 ## Features
  * #302 Add different onError policies to TrxItemChunkProcessorExecutor

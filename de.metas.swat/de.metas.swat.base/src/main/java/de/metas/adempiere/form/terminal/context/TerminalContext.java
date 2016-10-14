@@ -406,6 +406,17 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public void deleteReferences(final ITerminalContextReferences references)
 	{
+		removeReferences(currentReferences, true);
+	}
+
+	@Override
+	public void detachReferences(final ITerminalContextReferences references)
+	{
+		removeReferences(references, false);
+	}
+
+	public void removeReferences(final ITerminalContextReferences references, final boolean dispose)
+	{
 		Check.assumeNotNull(references, "Param 'reference' is not null; this={}", this);
 
 		Check.errorIf(!Util.same(currentReferences, references),
@@ -415,8 +426,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 				currentReferences,
 				this);
 
-		// Destroy given references
-		currentReferences.dispose();
+		if (dispose)
+		{
+			// Destroy given references
+			currentReferences.dispose();
+		}
 
 		referencesList.remove(referencesList.size() - 1);
 
@@ -450,6 +464,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		services.clear();
 	}
 
+	@Override
 	public void dispose()
 	{
 
@@ -506,7 +521,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 
 	private TerminalContextReferences getActiveReferences()
 	{
-		for (TerminalContextReferences ref : Lists.reverse(referencesList))
+		for (final TerminalContextReferences ref : Lists.reverse(referencesList))
 		{
 			if (!ref.isReferencesClosed())
 			{

@@ -326,7 +326,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		// the vendor lines are refreshed only if they are displayed
 		if (!isDisplayVendorKeys())
 		{
-			bpartnerKeyLayout.setKeysFromBPartners(null);
+			bpartnerKeyLayout.createAndSetKeysFromBPartners(null);
 			return;
 		}
 
@@ -351,7 +351,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		}
 
 		final List<I_C_BPartner> bPartners = huQueryBuilder.collect(I_M_HU.COLUMN_C_BPartner_ID);
-		bpartnerKeyLayout.setKeysFromBPartners(bPartners);
+		bpartnerKeyLayout.createAndSetKeysFromBPartners(bPartners);
 
 		//
 		// Refresh current BPartnerLocationKeys, if any
