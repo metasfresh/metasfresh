@@ -20,6 +20,7 @@ upcoming
 
 ## Fixes
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
+* #492 build issue with jaxb2-maven-plugin 1.6 and java-8
 
 # metasfresh 4.39.38 (2016-41)
 
