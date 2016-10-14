@@ -70,10 +70,17 @@ class DocumentList extends Component {
         let urlPage = page;
 
 
-        if(query && (query.sort && query.page)){
-            urlQuery = query.sort;
-            urlPage = query.page;
+        if(query){
+            if(query.sort){
+                urlQuery = query.sort;
+                dispatch(setSorting(urlQuery.substring(1), urlQuery[0], windowType));
+            }
+            if(query.page){
+                urlPage = query.page;
+                dispatch(setPagination(parseInt(query.page)));
+            }
         }
+
         //
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
@@ -143,8 +150,8 @@ class DocumentList extends Component {
         }
 
         if(currentPage !== page){
-            dispatch(setPagination(parseInt(currentPage)));
-            !!updateUri && updateUri("page", parseInt(currentPage));
+            dispatch(setPagination(currentPage));
+            !!updateUri && updateUri("page", currentPage);
 
             this.sortData(sorting.dir, sorting.prop);
         }

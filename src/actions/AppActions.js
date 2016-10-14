@@ -55,20 +55,16 @@ export function updateUri(pathname, query, prop, value) {
     return (dispatch) => {
         let url = pathname;
         url += "?";
-        console.log(url)
+
+        // add new prop
+        // or overwrite existing
+        query[prop] = value;
+
         const queryKeys = Object.keys(query);
 
-        if(queryKeys.length > 0){
-            for(var i = 0; i < queryKeys.length; i++){
-                if(prop !== queryKeys[i]){
-                    console.log(prop, query[queryKeys[i]])
-                    url += queryKeys[i] + "=" + query[queryKeys[i]] + "&";
-                }
-            }
+        for(let i = 0; i < queryKeys.length; i++){
+            url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
         }
-
-        url += prop + "=" + value;
-        console.log(url)
 
         dispatch(replace(url));
     }
