@@ -9,6 +9,7 @@ import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Services;
+import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -62,6 +63,8 @@ public class DocumentReferencesService
 		private final int recordId;
 		private final String keyColumnName;
 		private final List<String> keyColumnNames;
+		
+		private final DocumentEvaluatee evaluationContext;
 
 		private DocumentAsZoomSource(final Document document)
 		{
@@ -74,6 +77,8 @@ public class DocumentReferencesService
 			recordId = document.getDocumentId().toInt();
 			keyColumnName = entityDescriptor.getIdFieldName();
 			keyColumnNames = keyColumnName == null ? ImmutableList.of() : ImmutableList.of(keyColumnName);
+			
+			evaluationContext = document.asEvaluatee();
 		}
 
 		@Override
@@ -122,6 +127,12 @@ public class DocumentReferencesService
 		public int getRecord_ID()
 		{
 			return recordId;
+		}
+		
+		@Override
+		public Evaluatee createEvaluationContext()
+		{
+			return evaluationContext;
 		}
 	}
 }

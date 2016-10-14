@@ -29,6 +29,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -676,6 +677,13 @@ public class SqlModelDataSource implements ModelDataSource
 			public int getAD_Table_ID()
 			{
 				return adTableId;
+			}
+			
+			@Override
+			public Evaluatee createEvaluationContext()
+			{
+				// TODO Auto-generated method stub
+				return null;
 			}
 		};
 		return ZoomInfoFactory.get().retrieveZoomInfos(zoomSource);
