@@ -44,7 +44,6 @@ class DocumentList extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-
         return !!nextState.layout && !!nextState.data;
     }
 
@@ -69,11 +68,20 @@ class DocumentList extends Component {
         const {data} = this.state;
         const {dispatch, page, sorting, windowType, query} = this.props;
         let urlQuery = "";
+        let urlPage = page;
 
 
-        if(query && (query.sortby && query.sortdir)){
-            urlQuery = this.getSortingQuery(query.sortdir, query.sortby);
+        if(query){
+            if(query.sort){
+                urlQuery = query.sort;
+                dispatch(setSorting(urlQuery.substring(1), urlQuery[0], windowType));
+            }
+            if(query.page){
+                urlPage = query.page;
+                dispatch(setPagination(parseInt(query.page)));
+            }
         }
+
         //
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
@@ -85,7 +93,7 @@ class DocumentList extends Component {
         }
 
 
-        this.getData(data.viewId, page, 20, urlQuery);
+        this.getData(data.viewId, urlPage, 20, urlQuery);
     }
 
     getData = (id, page, pages, sortingQuery) => {
@@ -111,10 +119,10 @@ class DocumentList extends Component {
     }
 
     sortData = (asc, field, startPage) => {
-        const {sorting, page, dispatch, windowType, sortingCallback} = this.props;
+        const {sorting, page, dispatch, windowType, updateUri} = this.props;
         const {data} = this.state;
 
-        sortingCallback && sortingCallback(asc, field);
+        !!updateUri && updateUri("sort", (asc?"+":"-")+field);
 
         dispatch(setSorting(field, asc, windowType));
 
@@ -127,7 +135,7 @@ class DocumentList extends Component {
 
     handleChangePage = (index) => {
         const {data} = this.state;
-        const {sorting, page, dispatch} = this.props;
+        const {sorting, page, dispatch, updateUri} = this.props;
 
         let currentPage = page;
 
@@ -143,7 +151,9 @@ class DocumentList extends Component {
         }
 
         if(currentPage !== page){
-            dispatch(setPagination(parseInt(currentPage)));
+            dispatch(setPagination(currentPage));
+            !!updateUri && updateUri("page", currentPage);
+
             this.sortData(sorting.dir, sorting.prop);
         }
     }
@@ -190,7 +200,7 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => {dispatch(push("/window/"+windowType+"/"+id))}}
+                            onDoubleClick={(id) => {dispatch(push("/window/" + windowType + "/" + id))}}
                             size={data.size}
                             pageLength={20}
                             handleChangePage={this.handleChangePage}

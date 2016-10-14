@@ -1,6 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
+import {push,replace} from 'react-router-redux';
 
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
     query = encodeURIComponent(query);
@@ -50,7 +51,21 @@ export function deleteNotification(item){
     }
 }
 
+export function updateUri(pathname, query, prop, value) {
+    return (dispatch) => {
+        let url = pathname;
+        url += "?";
 
-export function fireNotification(item){
+        // add new prop
+        // or overwrite existing
+        query[prop] = value;
 
+        const queryKeys = Object.keys(query);
+
+        for(let i = 0; i < queryKeys.length; i++){
+            url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
+        }
+
+        dispatch(replace(url));
+    }
 }
