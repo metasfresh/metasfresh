@@ -224,7 +224,6 @@
 				<artifactId>jaxb2-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>xjc</id>
 						<goals>
 							<goal>xjc</goal>
 						</goals>
@@ -233,29 +232,8 @@
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
 				</configuration>
-
-				<dependencies>
-<!--
-					<dependency>
-						<groupId>org.jvnet.jaxb2_commons</groupId>
-						<artifactId>jaxb2-basics</artifactId>
-						<version>0.6.5</version>
-					</dependency>
--->
-
-						<!-- explicitly using this version because if the plugin runs with 
-							e.g. xerces 2.6.2, we get this error: org.xml.sax.SAXNotRecognizedException: 
-							Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not 
-							recognized. -->
-<!-- 
-					<dependency>
-						<groupId>xerces</groupId>
-						<artifactId>xercesImpl</artifactId>
-						<version>2.9.1</version>
-					</dependency>
--->
-				</dependencies>
 			</plugin>
+
 		</plugins>
 	</build>
 
