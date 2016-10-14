@@ -34,8 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -91,8 +90,10 @@ import org.compiere.util.Login;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 
 /**
  * Manual Shipment Selection
@@ -367,7 +368,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final KeyNamePair clientKeyNamePair = new KeyNamePair(client.get_ID(),
 				client.getName());
 		final Login login = new Login(Env.getCtx());
-		final KeyNamePair[] orgs = login.getOrgs(clientKeyNamePair);
+		final Set<KeyNamePair> orgs = login.setClientAndGetOrgs(clientKeyNamePair);
 
 		for (final KeyNamePair org : orgs) {
 			cOrgFilter.addItem(org);

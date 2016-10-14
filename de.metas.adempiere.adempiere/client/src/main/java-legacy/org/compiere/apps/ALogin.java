@@ -26,12 +26,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.rmi.AccessException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -55,11 +56,7 @@ import org.compiere.db.CConnection;
 import org.compiere.db.CConnectionEditor;
 import org.compiere.grid.ed.VDate;
 import org.compiere.model.I_AD_Language;
-import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MSystem;
-import org.compiere.model.MUser;
-import org.compiere.print.CPrinter;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
@@ -67,6 +64,7 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
+import org.compiere.swing.ListComboBoxModel;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -77,13 +75,9 @@ import org.compiere.util.Login;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
 
-import de.metas.adempiere.model.I_AD_Role;
-import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -136,8 +130,10 @@ public final class ALogin extends CDialog
 
 	/** Logger */
 	private static final Logger log = LogManager.getLogger(ALogin.class);
+	
+	private static final int TABINDEX_UserPassword = 0;
+	private static final int TABINDEX_Defaults = 1;
 
-	private CPanel mainPanel = new CPanel(new BorderLayout());
 	private CTabbedPane loginTabPane = new CTabbedPane();
 	private CPanel connectionPanel = new CPanel();
 	private CLabel hostLabel = new CLabel();
@@ -155,19 +151,10 @@ public final class ALogin extends CDialog
 	private CComboBox<KeyNamePair> clientCombo = new CComboBox<>();
 	private CLabel warehouseLabel = new CLabel();
 	private CComboBox<KeyNamePair> warehouseCombo = new CComboBox<>();
-	private CLabel printerLabel = new CLabel();
-	private CPrinter printerField = new CPrinter();
 	private CLabel roleLabel = new CLabel();
 	private CComboBox<KeyNamePair> roleCombo = new CComboBox<>();
-	private CLabel copy0Label = new CLabel();
-	private CLabel copy1Label = new CLabel();
-	private GridBagLayout connectionLayout = new GridBagLayout();
-	private GridBagLayout defaultPanelLayout = new GridBagLayout();
 	private CLabel languageLabel = new CLabel();
 	private CComboBox<ValueNamePair> languageCombo = new CComboBox<>(Language.getValueNamePairs());
-	private CLabel compileDate = new CLabel();
-	private CPanel southPanel = new CPanel();
-	private BorderLayout southLayout = new BorderLayout();
 	private StatusBar statusBar = new StatusBar();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
 			.withCancelButton(true)
@@ -182,7 +169,7 @@ public final class ALogin extends CDialog
 	private String m_pwd;
 
 	/** Combo Active */
-	private boolean m_comboActive = false;
+	private boolean _comboActive = false;
 	/** Combo Active */
 	private boolean m_okPressed = false;
 	/** Connection OK */
@@ -209,19 +196,20 @@ public final class ALogin extends CDialog
 
 		// me16: set some component names to be shown as "technical name" in our UI testing tool's object mapper
 		// TODO: consider using reflection to name 'em all
-		confirmPanel.setName("Login.confirmPanel");
+		{
+			confirmPanel.setName("Login.confirmPanel");
 
-		loginTabPane.setName("Login.loginTabPane");
+			loginTabPane.setName("Login.loginTabPane");
 
-		connectionPanel.setName("Login.connectionPanel");
-		userTextField.setName("Login.userTextField");
-		passwordField.setName("Login.passwordField");
+			connectionPanel.setName("Login.connectionPanel");
+			userTextField.setName("Login.userTextField");
+			passwordField.setName("Login.passwordField");
 
-		roleCombo.setName("Login.roleCombo");
-		orgCombo.setName("Login.orgCombo");
+			roleCombo.setName("Login.roleCombo");
+			orgCombo.setName("Login.orgCombo");
 
-		defaultPanel.setName("Login.defaultPanel");
-		// me16 done
+			defaultPanel.setName("Login.defaultPanel");
+		}
 
 		final CLabel titleLabel = new CLabel();
 		titleLabel.setFont(UIManager.getFont(MetasFreshTheme.KEY_Logo_TextFontSmall));
@@ -250,26 +238,35 @@ public final class ALogin extends CDialog
 		passwordLabel.setRequestFocusEnabled(false);
 		passwordLabel.setLabelFor(passwordField);
 		languageLabel.setLabelFor(languageCombo);
+		
+		final CLabel copy0Label = new CLabel();
 		copy0Label.setFont(UIManager.getFont(MetasFreshTheme.KEY_Logo_TextFontSmall));
 		copy0Label.setForeground(UIManager.getColor(MetasFreshTheme.KEY_Logo_TextColor));
 		copy0Label.setRequestFocusEnabled(false);
+		
+		final CLabel copy1Label = new CLabel();
 		copy1Label.setRequestFocusEnabled(false);
+		
 		roleLabel.setRequestFocusEnabled(false);
 		roleLabel.setLabelFor(roleCombo);
 		clientLabel.setRequestFocusEnabled(false);
 		orgLabel.setRequestFocusEnabled(false);
 		dateLabel.setRequestFocusEnabled(false);
 		warehouseLabel.setRequestFocusEnabled(false);
-		printerLabel.setRequestFocusEnabled(false);
+		
+		final CLabel compileDate = new CLabel();
 		compileDate.setHorizontalAlignment(SwingConstants.RIGHT);
 		compileDate.setHorizontalTextPosition(SwingConstants.RIGHT);
 		compileDate.setText(Adempiere.getDateVersion());
 		compileDate.setToolTipText(Adempiere.getImplementationVendor());
-		southPanel.setLayout(southLayout);
+		
+		final CPanel southPanel = new CPanel();
+		southPanel.setLayout(new BorderLayout());
+		
 		loginTabPane.addChangeListener(this);
 
 		// ConnectionTab
-		connectionPanel.setLayout(connectionLayout);
+		connectionPanel.setLayout(new GridBagLayout());
 		//
 		hostLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		hostLabel.setText("Host");
@@ -330,7 +327,7 @@ public final class ALogin extends CDialog
 		loginTabPane.add(connectionPanel, res.getString("Connection"));
 
 		// DefaultTab
-		defaultPanel.setLayout(defaultPanelLayout);
+		defaultPanel.setLayout(new GridBagLayout());
 		//
 		roleLabel.setText("Role");
 		roleLabel.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -367,35 +364,15 @@ public final class ALogin extends CDialog
 		warehouseLabel.setText("Warehouse");
 		warehouseLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		warehouseLabel.setLabelFor(warehouseCombo);
-		printerLabel.setText("Printer");
-		printerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		printerLabel.setLabelFor(printerField);
-
-		// metas: us316: don't show printer field on Login panel
-		/*
-		 * defaultPanel.add(printerLabel, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0 ,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 12, 5), 0, 0));
-		 * defaultPanel.add(printerField, new GridBagConstraints(1, 5, 1, 1, 1.0, 0.0 ,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 12, 12), 0, 0)); /*
-		 */
 
 		defaultPanel.add(warehouseLabel, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0
 				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		defaultPanel.add(warehouseCombo, new GridBagConstraints(1, 3, 1, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 
-		// @Trifon - begin
-		/*
-		 * defaultPanel.add(languageLabel, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0 , GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		 * defaultPanel.add(languageCombo, new GridBagConstraints(1, 6, 3, 1, 1.0, 0.0 , GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
-		 */
-		// @Trifon - end
-		//
 		loginTabPane.add(defaultPanel, res.getString("Defaults"));
-
-		// Help
-		/*
-		 * helpPanel.setLayout(helpLayout); helpPanel.setPreferredSize(new Dimension (100,100)); helpPanel.add(helpScollPane, BorderLayout.CENTER); loginTabPane.add(helpPanel, "?");
-		 */
-		//
+		
+		final CPanel mainPanel = new CPanel(new BorderLayout());
 		this.getContentPane().add(mainPanel);
 		mainPanel.add(loginTabPane, BorderLayout.CENTER);
 		mainPanel.setName("loginMainPanel");
@@ -645,10 +622,9 @@ public final class ALogin extends CDialog
 	{
 		if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
 		{
-			if (loginTabPane.getSelectedIndex() == 0)
+			if (loginTabPane.getSelectedIndex() == TABINDEX_UserPassword)
 			{
 				connectionOK();		// first ok
-				printerField.refresh();
 			}
 			else
 			{
@@ -731,29 +707,14 @@ public final class ALogin extends CDialog
 				Services.get(IMsgBL.class).getMsg(ctx, "0"); // trigger messages cache loading
 
 				//
-				// Migration
-				final I_AD_System system = MSystem.get(ctx);
-				if (system.isJustMigrated())
-				{
-					statusBar.setStatusLine("Running: After Migration ....", true);
-					ADialog.info(m_WindowNo, this, "AfterMigration");
-					Thread.yield();
-					DB.afterMigration(ctx);
-				}
-				// Set Defaults
-				printerField.setValue(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // metas: us316
-				// printerField.setValue(Ini.getProperty(Ini.P_PRINTER)); // metas: us316: commented
-
-				//
-				//
-				// fresh_06009 show warehouse only if ShowWarehouseOnLogin is Y.
+				// Show warehouse only if ShowWarehouseOnLogin is Y (task 06009)
 				// Also assume 'Y' if we have no connection.
 				final boolean showWarehouseOnLogin = m_login == null || m_login.isShowWarehouseOnLogin();
 				warehouseLabel.setVisible(showWarehouseOnLogin);
 				warehouseCombo.setVisible(showWarehouseOnLogin);
 
 				// Change Tab to Default
-				loginTabPane.setSelectedIndex(1);
+				loginTabPane.setSelectedIndex(TABINDEX_Defaults);
 			}
 		}
 		finally
@@ -769,22 +730,25 @@ public final class ALogin extends CDialog
 	 * @param e event
 	 */
 	@Override
-	public void stateChanged(ChangeEvent e)
+	public void stateChanged(final ChangeEvent e)
 	{
-		if (loginTabPane.getSelectedIndex() == 2)   // allow access to help
-			return;
-
-		if (!(String.valueOf(passwordField.getPassword()).equals(m_pwd)
-		&& userTextField.getText().equals(m_user)))
+		if (!Objects.equals(String.valueOf(passwordField.getPassword()), m_pwd)
+				|| !Objects.equals(userTextField.getText(), m_user))
+		{
 			m_connectionOK = false;
+		}
+		
 		//
 		if (m_connectionOK)
+		{
 			statusBar.setStatusLine(txt_LoggedIn);
+		}
 		else
 		{
 			statusBar.setStatusLine(txt_NotConnected, true);
-			loginTabPane.setSelectedIndex(0);
+			loginTabPane.setSelectedIndex(TABINDEX_UserPassword);
 		}
+		
 		confirmPanel.getOKButton().requestFocus();
 	}	// loginTabPane
 
@@ -795,11 +759,11 @@ public final class ALogin extends CDialog
 	 */
 	private boolean defaultsOK()
 	{
-		log.info("");
-
 		KeyNamePair org = orgCombo.getSelectedItem();
 		if (org == null)
+		{
 			return false;
+		}
 
 		// Set Properties
 		Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
@@ -817,18 +781,21 @@ public final class ALogin extends CDialog
 
 		// Load Properties and save Ini values
 		statusBar.setStatusLine("Loading Preferences");
-		String msg = m_login.loadPreferences(org,
-				warehouseCombo.getSelectedItem(),
-				dateField.getTimestamp(), printerField.getDisplay());
-		if (msg.length() > 0)
+		final String msg = m_login.loadPreferences(org, warehouseCombo.getSelectedItem(), dateField.getTimestamp());
+		if (!Check.isEmpty(msg))
+		{
 			ADialog.info(m_WindowNo, this, msg);
+		}
 
 		// Check Apps Server - DB Checked in Menu
 		// checkVersion();			// exits if conflict
 
 		// Close - we are done
 		if (m_connectionOK)
+		{
 			this.dispose();
+		}
+		
 		return m_connectionOK;
 	}	// defaultsOK
 
@@ -857,224 +824,280 @@ public final class ALogin extends CDialog
 
 		// Reference check
 		Ini.setProperty(Ini.P_ADEMPIERESYS, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
-
-		// Reference check
 		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
 
-		// Get Roles
+		//
+		// Authenticate and get roles
 		m_login = new Login(getCtx());
-		KeyNamePair[] roles = null;
+		final Set<KeyNamePair> roles;
 		try
 		{
-			roles = m_login.getRoles(m_user, m_pwd);
-			if (roles == null || roles.length == 0)
-			{
-				statusBar.setStatusLine(txt_UserPwdError, true);
-				userTextField.setBackground(AdempierePLAF.getFieldBackground_Error());
-				passwordField.setBackground(AdempierePLAF.getFieldBackground_Error());
-				return false;
-			}
+			roles = m_login.authenticate(m_user, m_pwd);
 		}
 		catch (Throwable e)
 		{
-			if (e.getCause() instanceof AccessException)
+			final Throwable rootCause = Throwables.getRootCause(e);
+			log.error(rootCause.getLocalizedMessage(), rootCause);
+			statusBar.setStatusLine(rootCause.getLocalizedMessage(), true);
+			userTextField.setBackground(AdempierePLAF.getFieldBackground_Error());
+			passwordField.setBackground(AdempierePLAF.getFieldBackground_Error());
+			return false;
+		}
+
+		changeCombo(() -> {
+			roleCombo.setModel(ListComboBoxModel.ofNullable(roles));
+
+			// If we have only one role, we can hide the combobox - metas-2009_0021_AP1_G94
+			if (roleCombo.getItemCount() == 1)
 			{
-				statusBar.setStatusLine(txt_UserPwdError, true);
-				userTextField.setBackground(AdempierePLAF.getFieldBackground_Error());
-				passwordField.setBackground(AdempierePLAF.getFieldBackground_Error());
-				return false;
+				roleCombo.setSelectedIndex(0);
+				roleLabel.setVisible(false);
+				roleCombo.setVisible(false);
 			}
 			else
 			{
-				final Throwable rootCause = Throwables.getRootCause(e);
-				log.error(rootCause.getLocalizedMessage(), rootCause);
-				statusBar.setStatusLine(rootCause.getLocalizedMessage(), true);
-				return false;
+				final KeyNamePair defaultRole = findDefaultRole(roles);
+				if (defaultRole != null)
+				{
+					roleCombo.setSelectedItem(defaultRole);
+				}
+
+				roleLabel.setVisible(true);
+				roleCombo.setVisible(true);
 			}
-		}
 
-		// Delete existing role items
-		m_comboActive = true;
-		if (roleCombo.getItemCount() > 0)
-			roleCombo.removeAllItems();
+			userTextField.setBackground(AdempierePLAF.getFieldBackground_Normal());
+			passwordField.setBackground(AdempierePLAF.getFieldBackground_Normal());
 
-		// Initial role
-		KeyNamePair iniValue = null;
-		String iniDefault = Ini.getProperty(Ini.P_ROLE);
-
-		// fill roles
-		for (int i = 0; i < roles.length; i++)
-		{
-			roleCombo.addItem(roles[i]);
-			if (roles[i].getName().equals(iniDefault))
-				iniValue = roles[i];
-		}
-		if (iniValue != null)
-			roleCombo.setSelectedItem(iniValue);
-
-		// If we have only one role, we can hide the combobox - metas-2009_0021_AP1_G94
-		if (roleCombo.getItemCount() == 1)
-		{
-			roleCombo.setSelectedIndex(0);
-			roleLabel.setVisible(false);
-			roleCombo.setVisible(false);
-		}
-		else
-		{
-			roleLabel.setVisible(true);
-			roleCombo.setVisible(true);
-		}
-
-		userTextField.setBackground(AdempierePLAF.getFieldBackground_Normal());
-		passwordField.setBackground(AdempierePLAF.getFieldBackground_Normal());
-		//
-		this.setTitle(hostField.getDisplay());
-		statusBar.setStatusLine(txt_LoggedIn);
-		m_comboActive = false;
+			//
+			this.setTitle(hostField.getDisplay());
+			statusBar.setStatusLine(txt_LoggedIn);
+		});
+		
 		roleComboChanged();
 
 		return true;
 	}	// tryConnection
+	
+	private void changeCombo(final Runnable runnable)
+	{
+		if(_comboActive)
+		{
+			return;
+		}
+		_comboActive = true;
+		try
+		{
+			runnable.run();
+		}
+		finally
+		{
+			_comboActive = false;
+		}
+	}
+	
+	private static final KeyNamePair findDefaultRole(final Set<KeyNamePair> roles)
+	{
+		if(Check.isEmpty(roles))
+		{
+			return null;
+		}
+		
+		final String iniDefaultRoleName = Ini.getProperty(Ini.P_ROLE);
+		if(!Check.isEmpty(iniDefaultRoleName))
+		{
+			for (final KeyNamePair role : roles)
+			{
+				if (Objects.equals(role.getName(), iniDefaultRoleName))
+				{
+					return role;
+				}
+			}
+		}
+		
+		return roles.iterator().next();
+	}
 
 	/**
 	 * Role changed - fill Client List
 	 */
 	private void roleComboChanged()
 	{
-		final KeyNamePair role = roleCombo.getSelectedItem();
-		if (role == null || m_comboActive)
-			return;
-		log.info(": " + role);
-		m_comboActive = true;
-		//
-		final KeyNamePair[] clients = m_login.getClients(role);
-		// delete existing client/org items
-		if (clientCombo.getItemCount() > 0)
-			clientCombo.removeAllItems();
-		if (orgCombo.getItemCount() > 0)
-			orgCombo.removeAllItems();
-		// No Clients
-		if (clients == null || clients.length == 0)
-		{
-			statusBar.setStatusLine(txt_RoleError, true);
-			m_comboActive = false;
-			return;
-		}
-		// initial client
-		KeyNamePair iniValue = null;
-		String iniDefault = Ini.getProperty(Ini.P_CLIENT);
+		changeCombo(() -> {
+			final KeyNamePair role = roleCombo.getSelectedItem();
+			if (role == null)
+			{
+				return;
+			}
 
-		// fill clients
-		for (int i = 0; i < clients.length; i++)
-		{
-			clientCombo.addItem(clients[i]);
-			if (clients[i].getName().equals(iniDefault))
-				iniValue = clients[i];
-		}
-		// fini
-		if (iniValue != null)
-			clientCombo.setSelectedItem(iniValue);
+			log.info("role changed: {}", role);
+
+			final Set<KeyNamePair> clients = m_login.setRoleAndGetClients(role);
+			clientCombo.setModel(ListComboBoxModel.ofNullable(clients));
+			orgCombo.setModel(new ListComboBoxModel<>());
+
+			// No Clients
+			if (clients == null || clients.isEmpty())
+			{
+				statusBar.setStatusLine(txt_RoleError, true);
+				return;
+			}
+
+			// default
+			final KeyNamePair defaultClient = findDefaultClient(clients);
+			if (defaultClient != null)
+			{
+				clientCombo.setSelectedItem(defaultClient);
+			}
+		});
+		
 		//
-		m_comboActive = false;
 		clientComboChanged();
-	}	// roleComboChanged
+	}
+	
+	private static final KeyNamePair findDefaultClient(final Set<KeyNamePair> clients)
+	{
+		if(Check.isEmpty(clients))
+		{
+			return null;
+		}
+		
+		final String iniDefaultClientName = Ini.getProperty(Ini.P_CLIENT);
+		if(!Check.isEmpty(iniDefaultClientName))
+		{
+			for (final KeyNamePair client : clients)
+			{
+				if (Objects.equals(client.getName(), iniDefaultClientName))
+				{
+					return client;
+				}
+			}
+		}
+
+		return clients.iterator().next();
+	}
 
 	/**
 	 * Client changed - fill Org & Warehouse List
 	 */
 	private void clientComboChanged()
 	{
-		KeyNamePair client = clientCombo.getSelectedItem();
-		if (client == null || m_comboActive)
-			return;
-		log.info(": " + client);
-		m_comboActive = true;
-
-		// @Trifon - Set Proper Env.CTXNAME_AD_Client_ID, Env.CTXNAME_AD_User_ID and Env.CTXNAME_SalesRep_ID
-		// https://sourceforge.net/tracker/?func=detail&aid=2957215&group_id=176962&atid=879332
-		final Properties ctx = getCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getKey());
-		MUser user = MUser.get(ctx, userTextField.getText(), new String(passwordField.getPassword()));
-		if (user != null)
-		{
-			Env.setContext(ctx, Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
-			Env.setContext(ctx, Env.CTXNAME_SalesRep_ID, user.getAD_User_ID());
-		}
-		showHideDateField(); // metas
-		//
-		KeyNamePair[] orgs = m_login.getOrgs(client);
-		// delete existing cleint items
-		if (orgCombo.getItemCount() > 0)
-			orgCombo.removeAllItems();
-
-		// No Orgs
-		if (orgs == null || orgs.length == 0)
-		{
-			statusBar.setStatusLine(txt_RoleError, true);
-			m_comboActive = false;
-			return;
-		}
-		// initial client
-		KeyNamePair orgValue = null;
-		KeyNamePair orgValue2 = null;
-		String iniDefault = Ini.getProperty(Ini.P_ORG);
-
-		// fill orgs
-		for (int i = 0; i < orgs.length; i++)
-		{
-			orgCombo.addItem(orgs[i]);
-			if (orgs[i].getName().equals(iniDefault))
-				orgValue = orgs[i];
-			if (orgValue2 == null && orgs[i].getKey() != 0)
-				orgValue2 = orgs[i];	// first non-0 org
-		}
-		// Non-0 Org exists and last login was with 0
-		if (orgValue2 != null && orgValue != null && orgValue.getKey() == 0)
-			orgValue = orgValue2;
-		// Last Org
-		if (orgValue != null)
-			orgCombo.setSelectedItem(orgValue);
-		// Get first Org
-		else
-			orgValue = orgCombo.getSelectedItem();
-		//
-		m_comboActive = false;
+		changeCombo(() -> {
+			final KeyNamePair client = clientCombo.getSelectedItem();
+			if (client == null)
+			{
+				return;
+			}
+			log.info("client changed: {}", client);
+			
+			showHideDateField();
+			
+			//
+			final Set<KeyNamePair> orgs = m_login.setClientAndGetOrgs(client);
+			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
+			// No Orgs
+			if (orgs == null || orgs.isEmpty())
+			{
+				statusBar.setStatusLine(txt_RoleError, true);
+				return;
+			}
+			
+			final KeyNamePair defaultOrg = findDefaultOrg(orgs);
+			if (defaultOrg != null)
+			{
+				orgCombo.setSelectedItem(defaultOrg);
+			}
+		});
+		
 		orgComboChanged();
-	}	// clientComboChanged
+	}
+	
+	private static final KeyNamePair findDefaultOrg(final Set<KeyNamePair> orgs)
+	{
+		if(Check.isEmpty(orgs))
+		{
+			return null;
+		}
+		
+		final String iniDefaultOrgName = Ini.getProperty(Ini.P_ORG);
+		if(!Check.isEmpty(iniDefaultOrgName))
+		{
+			KeyNamePair orgValue = null;
+			KeyNamePair orgValue2 = null;
+			for (final KeyNamePair org : orgs)
+			{
+				if(Objects.equals(org.getName(), iniDefaultOrgName))
+				{
+					orgValue = org;
+				}
+				if (orgValue2 == null && org.getKey() != 0)
+				{
+					orgValue2 = org;	// first non-0 org
+				}
+			}
+			
+			// Non-0 Org exists and last login was with 0
+			if (orgValue2 != null && orgValue != null && orgValue.getKey() == 0)
+			{
+				orgValue = orgValue2;
+			}
+			
+			if(orgValue != null)
+			{
+				return orgValue;
+			}
+		}
+		
+		return orgs.iterator().next();
+	}
 
 	/**
 	 * Org changed - fill Warehouse List
 	 */
 	private void orgComboChanged()
 	{
-		KeyNamePair org = orgCombo.getSelectedItem();
-		if (org == null || m_comboActive)
-			return;
-		log.info(": " + org);
-		m_comboActive = true;
-		//
-		KeyNamePair[] whs = m_login.getWarehouses(org);
-		// Delete existing warehouse items
-		if (warehouseCombo.getItemCount() > 0)
-			warehouseCombo.removeAllItems();
-
-		// fill warehouses
-		if (whs != null)
-		{
-			// initial warehouse
-			KeyNamePair iniValue = null;
-			String iniDefault = Ini.getProperty(Ini.P_WAREHOUSE);
-			for (int i = 0; i < whs.length; i++)
+		changeCombo(() -> {
+			final KeyNamePair org = orgCombo.getSelectedItem();
+			if (org == null)
 			{
-				warehouseCombo.addItem(whs[i]);
-				if (whs[i].getName().equals(iniDefault))
-					iniValue = whs[i];
+				return;
 			}
-			if (iniValue != null)
-				warehouseCombo.setSelectedItem(iniValue);
+			
+			log.info("org changed: {}", org);
+			
+			final Set<KeyNamePair> warehouses = m_login.getWarehouses(org);
+			warehouseCombo.setModel(ListComboBoxModel.ofNullable(warehouses));
+	
+			final KeyNamePair defaultWarehouse = findDefaultWarehouse(warehouses);
+			if(defaultWarehouse != null)
+			{
+				warehouseCombo.setSelectedItem(defaultWarehouse);
+			}
+		});
+	}
+	
+	private static final KeyNamePair findDefaultWarehouse(final Set<KeyNamePair> warehouses)
+	{
+		if (Check.isEmpty(warehouses))
+		{
+			return null;
 		}
-		m_comboActive = false;
-	}	// orgComboChanged
+		
+		final String iniDefaultName = Ini.getProperty(Ini.P_WAREHOUSE);
+		if(!Check.isEmpty(iniDefaultName))
+		{
+			for (final KeyNamePair warehouse : warehouses)
+			{
+				if (warehouse.getName().equals(iniDefaultName))
+				{
+					return warehouse;
+				}
+			}
+		}
+		
+		return warehouses.iterator().next();
+	}
+	
 
 	// @formatter:off
 //	/**
@@ -1139,9 +1162,7 @@ public final class ALogin extends CDialog
 	{
 		final ValueNamePair selectedLanguage = languageCombo.getSelectedItem();
 		final String selectedADLanguage = selectedLanguage == null ? null : selectedLanguage.getValue();
-		// log.info( "Language: " + langName);
-		Language language = Language.getLanguage(selectedADLanguage);
-		// Language.setLoginLanguage(language); // metas: tsa: 02214: commented out
+		final Language language = Language.getLanguage(selectedADLanguage);
 		Env.setContext(getCtx(), Env.CTXNAME_AD_Language, language.getAD_Language());
 
 		// switching the log in window orientation at once
@@ -1174,7 +1195,6 @@ public final class ALogin extends CDialog
 		orgLabel.setText(res.getString("Organization"));
 		dateLabel.setText(res.getString("Date"));
 		warehouseLabel.setText(res.getString("Warehouse"));
-		printerLabel.setText(res.getString("Printer"));
 		defaultPanel.setToolTipText(res.getString("Defaults"));
 		connectionPanel.setToolTipText(res.getString("Connection"));
 		//
@@ -1204,7 +1224,7 @@ public final class ALogin extends CDialog
 			this.setTitle(res.getString("Login"));
 			statusBar.setStatusLine(txt_NotConnected, true);
 		}
-	}   // languageCombo_actionPerformed
+	}
 
 	// metas
 	private void showHideDateField()
@@ -1224,13 +1244,13 @@ public final class ALogin extends CDialog
 			return false;
 		}
 
-		final boolean allowLoginDateOverride = "Y".equals(Env.getContext(ctx, "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride));
+		final boolean allowLoginDateOverride = m_login.isAllowLoginDateOverride();
 		if (allowLoginDateOverride)
 		{
 			return true;
 		}
 
-		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adClientId = m_login.getCtx().getAD_Client_ID();
 		final boolean dateAutoupdate = sysConfigBL.getBooleanValue("LOGINDATE_AUTOUPDATE", false, adClientId);
 		if (dateAutoupdate)
 		{

@@ -1,6 +1,7 @@
 package org.compiere.util;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.security.TableAccessLevel;
@@ -79,14 +80,21 @@ public class LoginContext
 
 	private final int getMandatoryPropertyAsInt(final String name)
 	{
+		return getOptionalPropertyAsInt(name)
+				.orElseThrow(() -> new UnsupportedOperationException("Missing Context: " + name));
+	}
+	
+	private final Optional<Integer> getOptionalPropertyAsInt(final String name)
+	{
 		final Properties ctx = getCtx();
 		if (Env.getContext(ctx, name).length() == 0)   	// could be number 0
 		{
-			throw new UnsupportedOperationException("Missing Context: " + name);
+			return Optional.empty();
 		}
 		final int valueInt = Env.getContextAsInt(ctx, name);
-		return valueInt;
+		return Optional.of(valueInt);
 	}
+
 
 	private int getPropertyAsInt(final String name)
 	{
@@ -101,6 +109,11 @@ public class LoginContext
 	private Timestamp getPropertyAsDate(final String name)
 	{
 		return Env.getContextAsDate(getCtx(), name);
+	}
+
+	private boolean getPropertyAsBoolean(final String name)
+	{
+		return DisplayType.toBoolean(Env.getContext(getCtx(), name));
 	}
 
 	public void setAutoCommit(final boolean autoCommit)
@@ -139,6 +152,11 @@ public class LoginContext
 	{
 		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_User_ID);
 	}
+	
+	public Optional<Integer> getAD_User_ID_IfExists()
+	{
+		return getOptionalPropertyAsInt(Env.CTXNAME_AD_User_ID);
+	}
 
 	public void setSysAdmin(final boolean sysAdmin)
 	{
@@ -161,6 +179,11 @@ public class LoginContext
 	public void setAllowLoginDateOverride(final boolean allowLoginDateOverride)
 	{
 		setProperty(Env.CTXNAME_IsAllowLoginDateOverride, allowLoginDateOverride);
+	}
+
+	public boolean isAllowLoginDateOverride()
+	{
+		return getPropertyAsBoolean(Env.CTXNAME_IsAllowLoginDateOverride);
 	}
 
 	public int getAD_Role_ID()
