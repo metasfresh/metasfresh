@@ -1345,3 +1345,64 @@ td.pulse-off input {
     background: transparent !important;
 }
 
+.filter-wrapper {
+    position: relative;
+}
+
+.filter-menu {
+    border: 1px solid $brand-light-color;
+    background: white;
+    border-radius: 3px;
+    display: inline-block;
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 31px;
+}
+
+.filter-widget {
+    padding: 8px 13px 12px 13px;
+    min-width: 370px;
+}
+
+.filter-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-menu li {
+    padding: 7px 13px;
+    cursor: pointer;
+}
+
+.filter-menu li:hover {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-active {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.filter-clear {
+    font-size: 11px;
+    color: $brand-icon-color;
+    cursor: pointer;
+    vertical-align: middle;
+    float: right;
+}
+
+.filter-clear i {
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.filter-active {
+    font-weight: 500;
+}
+
+.filter-content {
+    padding-top: 10px;
+}

@@ -6,6 +6,7 @@ import {
 } from '../actions/WindowActions';
 
 import Widget from '../components/Widget';
+import MasterWidget from '../components/MasterWidget';
 import Tabs from '../components/widget/Tabs';
 import TabPane from '../components/widget/TabPane';
 import Table from '../components/table/Table';
@@ -103,7 +104,7 @@ class Window extends Component {
             let relativeDocId = findRowByPropName(data, "ID").value;
 
             return (
-                <Widget
+                <MasterWidget
                     key={'element' + id}
                     windowType={type}
                     dataId={dataId}

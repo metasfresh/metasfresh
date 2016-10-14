@@ -29,6 +29,8 @@ class DocumentList extends Component {
             layout: null
         }
 
+
+
         this.updateData(type, windowType);
     }
 
@@ -63,6 +65,8 @@ class DocumentList extends Component {
                 })
             })
         });
+
+
     }
 
     getView = () => {
@@ -176,7 +180,7 @@ class DocumentList extends Component {
                         </button>
                     </div>
 
-                    <Filters />
+                    <Filters filterData={layout.filters} windowType={windowType}/>
 
 
                     <div>

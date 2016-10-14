@@ -50,7 +50,6 @@ export function deleteNotification(item){
     }
 }
 
-
 export function fireNotification(item){
 
 }
