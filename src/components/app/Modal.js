@@ -19,7 +19,9 @@ class Modal extends Component {
         }
 
         const {dispatch, windowType, dataId, tabId, rowId} = this.props;
-        dispatch(createWindow(windowType, dataId, tabId, rowId, true));
+        dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
+            this.handleClose();
+        });
     }
 
     isAdvancedEdit = () => {
@@ -28,9 +30,7 @@ class Modal extends Component {
 
         this.setState(Object.assign({}, this.state, {
             isAdvanced: isAdvanceMode
-        }))
-
-        //console.log("Advanced edit? " + isAdvanceMode)
+        }));
     }
 
     componentDidMount() {
@@ -41,39 +41,43 @@ class Modal extends Component {
         // but we have to change scope of scrollbar
         document.body.style.overflow = "hidden";
 
-        document.querySelector('.js-panel-modal-content').addEventListener('scroll', this.handleScroll);
+        const modalContent = document.querySelector('.js-panel-modal-content')
+
+        modalContent && modalContent.addEventListener('scroll', this.handleScroll);
         this.isAdvancedEdit();
     }
+
     componentWillUnmount() {
-          document.querySelector('.js-panel-modal-content').removeEventListener('scroll', this.handleScroll);
+        const modalContent = document.querySelector('.js-panel-modal-content')
+        modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
     }
+
     handleScroll = (event) => {
+        let scrollTop = event.srcElement.scrollTop;
 
-      let scrollTop = event.srcElement.scrollTop;
-
-      if(scrollTop > 0) {
-        this.setState(Object.assign({}, this.state, {
-            scrolled: true
-        }))
-      } else {
-        this.setState(Object.assign({}, this.state, {
-            scrolled: false
-        }))
-      }
-
+        if(scrollTop > 0) {
+            this.setState(Object.assign({}, this.state, {
+                scrolled: true
+            }))
+        } else {
+            this.setState(Object.assign({}, this.state, {
+                scrolled: false
+            }))
+        }
     }
+
     handleClose = () => {
         this.props.dispatch(closeModal());
 
-
         document.body.style.overflow = "auto";
     }
+
     render() {
         const {data, layout, indicator, modalTitle, tabId, rowId, dataId, handleUpdateClick} = this.props;
         const {isAdvanced} = this.state
 
         return (
-            <div className="screen-freeze">
+            data.length > 0 && <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
                     <div className={"panel-modal-header " + (this.state.scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>

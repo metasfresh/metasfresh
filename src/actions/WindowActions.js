@@ -144,7 +144,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(initWindow(windowType, docId, tabId, rowId))
+        return dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
 
                 if(docId == "NEW" && !isModal){

@@ -1270,6 +1270,8 @@ th {
 .notification-item {
     text-align: left;
     width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
     display: inline-block;
     border: 2px solid red;
     border-radius: 3px;
