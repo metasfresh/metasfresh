@@ -35,15 +35,20 @@ class C_BPartner
 
 		final I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
 		final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(defaultContact, de.metas.document.archive.model.I_AD_User.class);
-		final boolean isInvoiceEmailEnabled  = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
+		final boolean isInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
 
 		//
-		//retrieve latest log
+		// retrieve latest log
 		final I_C_Doc_Outbound_Log docExchange = Services.get(IDocOutboundDAO.class).retrieveLog(new PlainContextAware(ctx), bpartner.getC_BPartner_ID(), Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		//
 		// update outbound log accordingly which will trigger a validator <code>C_Doc_Outbound_Log</code> which will create the notification
-		docExchange.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
-		InterfaceWrapperHelper.save(docExchange);
+		// update only for invoices
+		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
+		if (AD_Table_ID == docExchange.getAD_Table_ID())
+		{
+			docExchange.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
+			InterfaceWrapperHelper.save(docExchange);
+		}
 	}
 
 }
