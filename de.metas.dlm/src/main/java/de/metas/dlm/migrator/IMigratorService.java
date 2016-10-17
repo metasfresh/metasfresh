@@ -1,6 +1,8 @@
-package de.metas.dlm.model;
+package de.metas.dlm.migrator;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.ISingletonService;
+
+import de.metas.dlm.Partition;
 
 /*
  * #%L
@@ -24,21 +26,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
  * #L%
  */
 
-public interface IDLMAware
+public interface IMigratorService extends ISingletonService
 {
 	/**
-	 * No getter for I_DLM_Partition records, because they might or might not exists at any given time.
+	 * Checks if the given partition could be migrated. This is the case if the partition is "complete", meaning that there would be no records left behind with dangling references, if we migrated the partition.
+	 *
+	 * @param partition
+	 * @throws {@link DLMException} if the given migration is not complete and therefore cannot be migrated.
 	 */
-	String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
-
-	int getDLM_Partition_ID();
-
-	String COLUMNNAME_DLM_Level = "DLM_Level";
-
-	int getDLM_Level();
-
-	default String getTableName()
-	{
-		return InterfaceWrapperHelper.getModelTableName(this);
-	}
+	void testMigratePartition(Partition partition);
 }

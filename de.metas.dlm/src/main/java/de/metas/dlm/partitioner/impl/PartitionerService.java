@@ -3,23 +3,24 @@ package de.metas.dlm.partitioner.impl;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartionConfigReference;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -46,6 +47,8 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 public class PartitionerService implements IPartitionerService
 {
 
+	protected final transient Logger logger = LogManager.getLogger(getClass());
+
 	@Override
 	public void createPartition(final PartitionerConfig config)
 	{
@@ -58,11 +61,11 @@ public class PartitionerService implements IPartitionerService
 
 		for (final PartitionerConfigLine line : lines)
 		{
-
 			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName());
-
 			records.addAll(recurse(line, record));
 		}
+
+		Services.get(IMigratorService.class);
 
 		// now, update the DLM_Partion_ID of the records we found.
 		//
@@ -80,37 +83,25 @@ public class PartitionerService implements IPartitionerService
 
 	private IDLMAware retrieveUnpartitionedRecod(final String tableName)
 	{
-		final List<String> keyColumnNames; // we will order by key column names, so that generally, older records are partitioned first. But note that a particular order is not a "must"
+		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
-		// TODO: consider extracting this into some "Plain" service-thingie.
-		if (Adempiere.isUnitTestMode())
-		{
-			keyColumnNames = ImmutableList.of(tableName + "_ID");
-		}
-		else
-		{
-			final POInfo poInfo = POInfo.getPOInfo(tableName);
-			keyColumnNames = poInfo.getKeyColumnNames();
-		}
+		// we will order by key column names, so that generally, older records are partitioned first. But note that a particular order is not a "must"
+		// so, we don't need to have a single key column here, but later, we do need it, so let's fail early in case the given table does not yet have a single key column.
+		final String keyColumnName = columnBL.getSingleKeyColumn(tableName);
 
 		// AD_Table_ID
 		// get the "record" from DLM_PartionLine_Config.AD_Table_ID as the database record with the smallest ID
 		// that does not yet have a DLM_Partition_ID
-		final IQueryBuilderOrderByClause<IDLMAware> orderBy = Services.get(IQueryBL.class)
+		final IDLMAware record = Services.get(IQueryBL.class)
 				.createQueryBuilder(IDLMAware.class, tableName, new PlainContextAware(Env.getCtx()))
 				// .addOnlyActiveRecordsFilter() we want to partition both active and inactive records
 				.addEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, null)
-				.orderBy();
-
-		for (final String keyColumnName : keyColumnNames)
-		{
-			orderBy.addColumn(keyColumnName);
-		}
-
-		final IDLMAware record = orderBy
+				.orderBy()
+				.addColumn(keyColumnName)
 				.endOrderBy()
 				.create()
 				.first();
+		logger.debug("Retrieved unpartitioned IDLMAware={} from table={}", record, tableName);
 		return record;
 	}
 
@@ -119,25 +110,41 @@ public class PartitionerService implements IPartitionerService
 		final Set<IDLMAware> records = new HashSet<>();
 		if (!records.add(record))
 		{
+			logger.debug("IDLMAware={} was already added in a previous iteration. Returning", record);
 			return Collections.emptySet(); // avoid circles
 		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
+		final String trxName = InterfaceWrapperHelper.getTrxName(record);
+
+		// for each ref,
 		for (final PartionConfigReference ref : line.getReferences()) // DLM_PartionReference_Config
 		{
-			// for each ref,
-
 			// get the foreign key ID of
 			// table DLM_PartionLine_Config.AD_Table_ID,
 			// column DLM_PartionReference_Config.DLM_Referencing_Column_ID
+			final Integer foreignKey = InterfaceWrapperHelper.getValueOrNull(record, ref.getReferencingColumnName());
+			if (foreignKey == null)
+			{
+				logger.debug("IDLMAware={} does not reference anything via column={}", record, ref.getReferencingColumnName());
+				continue;
+			}
 
 			// load the foreign record from the table DLM_PartionReference_Config.DLM_Referenced_Table_ID
-			IDLMAware foreignRecord = null;
+			final IDLMAware foreignRecord = InterfaceWrapperHelper.create(ctx, ref.getReferencedTableName(), foreignKey, IDLMAware.class, trxName);
+			logger.debug("Loaded referenced IDLMAware={} via {}.{}={}", foreignRecord, ref.getReferencedTableName(), ref.getReferencingColumnName(), foreignKey);
 
 			// get the foreign record's PartitionerConfigLine (DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID)
-			PartitionerConfigLine foreignline = null;
+			// note: it's OK to have a referencedConfigLine that has itself no references, but it's not OK to have no
+			final PartitionerConfigLine referencedConfigLine = ref.getReferencedConfigLine();
+			if (referencedConfigLine == null)
+			{
+				logger.debug("Referenced IDLMAware={} does not reference any further DLM records", foreignRecord);
+				continue;
+			}
 
 			// recurse
-			records.addAll(recurse(foreignline, foreignRecord));
+			records.addAll(recurse(referencedConfigLine, foreignRecord));
 		}
 
 		return records;

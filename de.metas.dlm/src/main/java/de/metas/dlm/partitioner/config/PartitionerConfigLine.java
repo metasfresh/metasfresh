@@ -2,6 +2,9 @@ package de.metas.dlm.partitioner.config;
 
 import java.util.List;
 
+import de.metas.dlm.IDLMService;
+import de.metas.dlm.model.IDLMAware;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -24,9 +27,21 @@ import java.util.List;
  * #L%
  */
 
+/**
+ * Each instance of this class if about one table which was added to DLM (see {@link IDLMService#addTableToDLM(org.compiere.model.I_AD_Table)})
+ * and whose records shall be assigned to partitions so they can be moved to other DLM-Levels.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PartitionerConfigLine
 {
 
+	/**
+	 * The name of the DLM'ed table. Records of this table can be loaded as {@link IDLMAware} instances.
+	 *
+	 * @return
+	 */
 	public String getTableName()
 	{
 		// TODO Auto-generated method stub
@@ -34,6 +49,12 @@ public class PartitionerConfigLine
 	}
 
 	public List<PartionConfigReference> getReferences()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public PartitionerConfig getParent()
 	{
 		// TODO Auto-generated method stub
 		return null;

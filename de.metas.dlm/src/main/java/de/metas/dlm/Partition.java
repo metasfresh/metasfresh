@@ -1,6 +1,8 @@
-package de.metas.dlm.model;
+package de.metas.dlm;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import java.util.Collection;
+
+import de.metas.dlm.model.IDLMAware;
 
 /*
  * #%L
@@ -24,21 +26,17 @@ import org.adempiere.model.InterfaceWrapperHelper;
  * #L%
  */
 
-public interface IDLMAware
+/**
+ * A partition is a set of {@link IDLMAware} records that can be DLM'ed. Each an {@link IDLMAware} is only part of one partition.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class Partition
 {
-	/**
-	 * No getter for I_DLM_Partition records, because they might or might not exists at any given time.
-	 */
-	String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
-
-	int getDLM_Partition_ID();
-
-	String COLUMNNAME_DLM_Level = "DLM_Level";
-
-	int getDLM_Level();
-
-	default String getTableName()
+	public Collection<IDLMAware> getRecords()
 	{
-		return InterfaceWrapperHelper.getModelTableName(this);
+		// TODO
+		return null;
 	}
 }
