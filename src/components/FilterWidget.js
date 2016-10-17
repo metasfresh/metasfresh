@@ -7,6 +7,11 @@ import {
     findRowByPropName
 } from '../actions/WindowActions';
 
+import {
+    setFilter,
+} from '../actions/ListActions';
+
+
 import Datetime from 'react-datetime';
 import Lookup from './widget/Lookup';
 import List from './widget/List';
@@ -17,6 +22,8 @@ class FilterWidget extends Component {
     constructor(props) {
         super(props);
 
+        console.log(props);
+
         this.state = {
             cachedValue: null,
             updated: false
@@ -25,41 +32,28 @@ class FilterWidget extends Component {
 
 
     handlePatch = (property, value) => {
-        const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId, isAdvanced = false} = this.props;
-        const {cachedValue} = this.state;
-        let currRowId = rowId;
-        let ret = null;
-
-        if(rowId === "NEW"){
-            currRowId = relativeDocId;
+        const {dispatch, updateDocList, windowType} = this.props;
+        let filter = [
+          {
+            "filterId": "C_DocType_ID",
+            "parameters": [
+              {
+                "parameterName": "C_DocType_ID",
+        "value": {
+        "1000027": "Angebot"
         }
-        let customWindowType = windowType;
-        if(isAdvanced){
-            customWindowType += "&advanced=true";
-        }
+              }
+            ]
+          }
+        ]
 
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
 
-            //check if we should update store
-            //except button value
-            if(widgetType !== "Button"){
-                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
-            }
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
-        }
+        dispatch(setFilter(filter));
+        updateDocList('grid', windowType);
 
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: null
-        }));
-
-        //callback
-        if(onChange){
-            onChange();
-        }
-
-        return ret;
+        console.log(property);
+        console.log(value);
+        
     }
     //
     // This method may looks like a redundant for this one above,
@@ -129,31 +123,31 @@ class FilterWidget extends Component {
     }
 
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, isModal} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId} = this.props;
+        // const fields=[{
+        //     emptyText: "search",
+        //     firld: "C_DocType_ID",
+        //     source: "list"
+        // }]
+        console.log(widgetData);
         const {updated} = this.state;
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
+        if(widgetData){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
-                        <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
-                            <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                <RawWidget 
+                        <div className={"form-group row"}>
+                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{caption}</div>
+                            <div className="col-sm-9 ">
+                                <RawWidget
+                                    handlePatch={this.handlePatch} 
                                     widgetType={widgetType}
-                                    fields={fields}
+                                    fields={parameters}
                                     windowType={windowType}
-                                    dataId={dataId}
                                     type={type}
                                     widgetData={widgetData}
-                                    rowId={rowId}
-                                    tabId={tabId}
-                                    icon={icon}
-                                    gridAlign={gridAlign}
-                                    handlePatch={this.handlePatch}
-                                    handleChange={this.handleChange}
-                                    handleFocus={this.handleFocus}
-                                    updated={updated}
-                                    isModal={isModal}
+                                    filterWidget={true}
+                                    filterId={filterId}
+                                    parameterName={widgetData[0].parameterName}
                                 />
                             </div>
                         </div>

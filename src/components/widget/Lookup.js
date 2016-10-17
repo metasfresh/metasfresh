@@ -8,6 +8,7 @@ import update from 'react-addons-update';
 import {
     autocompleteRequest,
     dropdownRequest,
+    filterAutocompleteRequest
 } from '../../actions/AppActions';
 
 import {
@@ -53,7 +54,9 @@ class Lookup extends Component {
             properties,
             onChange,
             dataId,
-            fields
+            fields,
+            filterWidget,
+            parameterName
         } = this.props;
 
         const {
@@ -68,60 +71,70 @@ class Lookup extends Component {
             })
         );
 
-        // handling selection when main is not set or set.
-        if(this.state.property === "") {
-            const promise = onChange(mainProperty[0].field, select);
-            promise && promise.then(() => {
-                this.inputSearch.value = select[Object.keys(select)[0]];
-                // call for more properties
-                let batchArray = [];
-                if(propertiesCopy.length > 0){
+        if(filterWidget) {
+            console.log('sdsd');
+            console.log(select);
+            onChange(parameterName, select);
 
-                    let batch = new Promise((resolve, reject) => {
-                        propertiesCopy.map((item) => {
-                            dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
+        } else {
+            // handling selection when main is not set or set.
+            if(this.state.property === "") {
+                const promise = onChange(mainProperty[0].field, select);
+                promise && promise.then(() => {
+                    this.inputSearch.value = select[Object.keys(select)[0]];
+                    // call for more properties
+                    let batchArray = [];
+                    if(propertiesCopy.length > 0){
 
-                                this.setState(update(this.state, {
-                                    properties: {
-                                        [item.field]: {$set: response.data.values}
-                                    }
-                                }), () => {
-                                    batchArray.push('0');
+                        let batch = new Promise((resolve, reject) => {
+                            propertiesCopy.map((item) => {
+                                dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
 
-                                    if(batchArray.length === propertiesCopy.length){
-                                        resolve();
-                                    }
+                                    this.setState(update(this.state, {
+                                        properties: {
+                                            [item.field]: {$set: response.data.values}
+                                        }
+                                    }), () => {
+                                        batchArray.push('0');
+
+                                        if(batchArray.length === propertiesCopy.length){
+                                            resolve();
+                                        }
+                                    });
+
                                 });
-
                             });
                         });
-                    });
 
-                    batch.then(()=>{
-                        this.setState(Object.assign({}, this.state, {
-                            model: select
-                        }), () => {
-                            this.generatingPropsSelection();
+                        batch.then(()=>{
+                            this.setState(Object.assign({}, this.state, {
+                                model: select
+                            }), () => {
+                                this.generatingPropsSelection();
+                            });
                         });
-                    });
-                }else{
-                    this.handleBlur();
-                }
-            })
-        } else {
-            onChange(this.state.property, select);
+                    }else{
+                        this.handleBlur();
+                    }
+                })
+            } else {
+                onChange(this.state.property, select);
 
-            this.setState(
-                update(this.state, {
-                    properties:  {$apply: item => {
-                        delete item[this.state.property];
-                        return item;
-                    }}
-                }),
-                () => {
-                    this.generatingPropsSelection();
-                });
+                this.setState(
+                    update(this.state, {
+                        properties:  {$apply: item => {
+                            delete item[this.state.property];
+                            return item;
+                        }}
+                    }),
+                    () => {
+                        this.generatingPropsSelection();
+                    });
+            }
+
         }
+
+        
     }
 
     generatingPropsSelection = () => {
@@ -164,7 +177,7 @@ class Lookup extends Component {
     }
 
     handleChange = () => {
-        const {dispatch, recent, windowType, properties, dataId} = this.props;
+        const {dispatch, recent, windowType, properties, dataId, filterWidget, filterId, parameterName} = this.props;
         const {mainProperty} = this.state;
 
         this.dropdown.classList.add("input-dropdown-focused");
@@ -177,13 +190,27 @@ class Lookup extends Component {
                 query: this.inputSearch.value
             }));
 
-            dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId))
+
+            if(filterWidget){
+                dispatch(filterAutocompleteRequest(windowType, filterId, parameterName,  this.inputSearch.value ))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data.values,
                         loading: false
                     }));
                 })
+            }else {
+                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId))
+                .then((response)=>{
+                    this.setState(Object.assign({}, this.state, {
+                        list: response.data.values,
+                        loading: false
+                    }));
+                })
+            }
+
+
+            
         }else{
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,

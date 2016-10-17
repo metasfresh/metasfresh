@@ -16,13 +16,22 @@ class RawWidget extends Component {
     constructor(props) {
         super(props);
 
-
     }
 
 
-
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
-        const {handlePatch, handleChange, handleFocus, updated, isModal} = this.props;
+        const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName} = this.props;
+
+        console.log(data);
+
+        let widgetField = "";
+
+        if (filterWidget) {
+            widgetField = fields[0].parameterName;
+        } else {
+             widgetField = fields[0].field;
+        } 
+
 
         switch(widgetType){
             case "Date":
@@ -40,7 +49,7 @@ class RawWidget extends Component {
                             locale="de"
                             inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
-                            onChange={(date) => handlePatch(fields[0].field, date)}
+                            onChange={(date) => handlePatch(widgetField, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -60,7 +69,7 @@ class RawWidget extends Component {
                             locale="de"
                             inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
-                            onChange={(date) => handlePatch(fields[0].field, date)}
+                            onChange={(date) => handlePatch(widgetField, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -80,7 +89,7 @@ class RawWidget extends Component {
                             locale="de"
                             inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
                             value={data[0].value ? new Date(data[0].value) : null}
-                            onChange={(date) => handlePatch(fields[0].field, date)}
+                            onChange={(date) => handlePatch(widgetField, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -101,6 +110,9 @@ class RawWidget extends Component {
                         align={align}
                         isModal={isModal}
                         updated={updated}
+                        filterWidget={filterWidget}
+                        filterId={filterId}
+                        parameterName={parameterName}
                     />
                 )
             case "List":
@@ -115,9 +127,12 @@ class RawWidget extends Component {
                         windowType={windowType}
                         rowId={rowId}
                         tabId={tabId}
-                        onChange={(option) => handlePatch(fields[0].field, option)}
+                        onChange={(option) => handlePatch(widgetField, option)}
                         align={align}
                         updated={updated}
+                        filterWidget={filterWidget}
+                        filterId={filterId}
+                        parameterName={parameterName}
                     />
                 )
             case "Text":
@@ -137,8 +152,8 @@ class RawWidget extends Component {
                             placeholder={fields[0].emptyText}
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -159,8 +174,8 @@ class RawWidget extends Component {
                             disabled={data[0].readonly}
                             placeholder={fields[0].emptyText}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -182,8 +197,8 @@ class RawWidget extends Component {
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -204,7 +219,7 @@ class RawWidget extends Component {
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -226,8 +241,8 @@ class RawWidget extends Component {
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -249,8 +264,8 @@ class RawWidget extends Component {
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -270,8 +285,8 @@ class RawWidget extends Component {
                             value={data[0].value}
                             disabled={data[0].readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, fields[0].field)}
-                            onBlur={(e) => handlePatch(fields[0].field, e.target.value)}
+                            onChange={(e) => handleChange(e, widgetField)}
+                            onBlur={(e) => handlePatch(widgetField, e.target.value)}
                         />
                     </div>
                 )
@@ -285,7 +300,7 @@ class RawWidget extends Component {
                             type="checkbox"
                             checked={data[0].value}
                             disabled={data[0].readonly}
-                            onChange={(e) => handlePatch(fields[0].field, e.target.checked)}
+                            onChange={(e) => handlePatch(widgetField, e.target.checked)}
                         />
                         <div className={"input-checkbox-tick" + (updated ? " pulse" : "")}/>
                     </label>
@@ -302,7 +317,7 @@ class RawWidget extends Component {
                             type="checkbox"
                             checked={data[0].value}
                             disabled={data[0].readonly}
-                            onChange={(e) => handlePatch(fields[0].field, e.target.checked)}
+                            onChange={(e) => handlePatch(widgetField, e.target.checked)}
                         />
                         <div className={"input-slider" + (updated ? " pulse-on" : " pulse-off")} />
                     </label>
@@ -324,7 +339,7 @@ class RawWidget extends Component {
                             "btn btn-sm btn-meta-primary " +
                             (align ? "text-xs-" + align + " " : "")
                         }
-                        onClick={(e) => handlePatch(fields[0].field)}
+                        onClick={(e) => handlePatch(widgetField)}
                     >
                         {data[0].value[Object.keys(data[0].value)[0]]}
                     </button>
@@ -347,22 +362,12 @@ class RawWidget extends Component {
     }
     render() {
         const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign} = this.props;
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
-            return (
-                <div className="form-group row">
-                    <div className="col-xs-12">
-                        <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
-                            <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        }else{
-            return false;
-        }
+
+        return (
+            <div>
+                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
+            </div>
+        )
     }
 }
 

@@ -20,7 +20,7 @@ class Filters extends Component {
     }
 
     showFilter = (filterData) => {
-        console.log(filterData);
+        // console.log(filterData);
 
         const {openFilter} = this.state;
         this.setState(Object.assign({}, this.state, {
@@ -41,9 +41,9 @@ class Filters extends Component {
 
     render() {
         const {openList, openFilter, filterDataItem, open} = this.state;
-        const {filterData, windowType} = this.props;
+        const {filterData, windowType, updateDocList} = this.props;
 
-        console.log(filterData);
+        // console.log(filterData);
 
         return (
             <div className="filter-wrapper">
@@ -66,15 +66,12 @@ class Filters extends Component {
                             <div className="filter-menu filter-widget">
                                 <div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={this.hideFilter}>Clear filter <i className="meta-icon-trash"></i></span> </div>
                                 <div className="form-group row filter-content">
-                                    <div className="orm-control-label col-sm-4">
-                                        {filterDataItem.parameters[0].caption}
-                                    </div>
-                                    <div className="col-sm-8">
-                                        {filterDataItem.parameters[0].widgetType}
+                                    <div className="col-sm-12">
                                         <FilterWidget
                                             windowType={windowType}
                                             widgetData={filterDataItem.parameters}
                                             widgetType={filterDataItem.parameters[0].widgetType}
+                                            updateDocList={updateDocList}
                                             {...filterDataItem} />
                                     </div>
                                 </div>

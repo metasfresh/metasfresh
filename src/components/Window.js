@@ -102,7 +102,6 @@ class Window extends Component {
         return elements.map((elem, id)=> {
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, "ID").value;
-
             return (
                 <MasterWidget
                     key={'element' + id}

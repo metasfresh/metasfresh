@@ -23,12 +23,12 @@ class DocumentList extends Component {
     constructor(props){
         super(props);
         const {filters, type, windowType} = props;
+        console.log(props);
 
         this.state = {
             data: null,
             layout: null
         }
-
 
 
         this.updateData(type, windowType);
@@ -51,8 +51,15 @@ class DocumentList extends Component {
     }
 
     updateData = (type, windowType) => {
+
         const {dispatch, filters} = this.props;
+
+        
+        console.log('updated');
+        console.log(filters);
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
+            console.log('LAYOUT');
+            console.log(response.data);
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
@@ -180,7 +187,7 @@ class DocumentList extends Component {
                         </button>
                     </div>
 
-                    <Filters filterData={layout.filters} windowType={windowType}/>
+                    <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
 
 
                     <div>

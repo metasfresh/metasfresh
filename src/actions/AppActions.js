@@ -23,8 +23,10 @@ export function viewLayoutRequest(windowType, type){
 }
 
 export function browseViewRequest(viewId, page, pageLength, orderBy){
+    
     return (dispatch) => {
         const firstRow = pageLength * (page - 1);
+        console.log(viewId + ' ' + firstRow + ' ' + pageLength + ' ' + orderBy);
         return axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''))
     }
 }
@@ -52,4 +54,13 @@ export function deleteNotification(item){
 
 export function fireNotification(item){
 
+}
+
+export function filterDropdownRequest(type, filterId, parameterName) {
+    return dispatch => axios.get(config.API_URL + '/documentView/filters/parameter/dropdown?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName);
+}
+
+export function filterAutocompleteRequest(type, filterId, parameterName, query) {
+    query = encodeURIComponent(query);
+    return (dispatch) => axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
 }

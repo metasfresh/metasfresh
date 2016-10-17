@@ -3,6 +3,8 @@ import axios from 'axios';
 import config from '../config';
 
 export function setFilter(filter){
+    console.log('setFilter');
+    console.log(filter);
     return {
         type: types.SET_LIST_FILTERS,
         filter: filter

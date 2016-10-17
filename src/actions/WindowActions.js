@@ -130,7 +130,6 @@ export function indicatorState(state){
 }
 
 
-
 // THUNK ACTIONS
 
 /*

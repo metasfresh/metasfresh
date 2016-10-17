@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import {
-    dropdownRequest
+    dropdownRequest,
+    filterDropdownRequest
 } from '../../actions/AppActions';
 
 class List extends Component {
@@ -20,19 +21,29 @@ class List extends Component {
     }
     handleFocus = (e) => {
         e.preventDefault();
-        const {properties, dispatch, dataId, rowId, tabId, windowType} = this.props;
+        const {properties, dispatch, dataId, rowId, tabId, windowType, filterWidget, filterId, parameterName} = this.props;
 
         this.setState(Object.assign({}, this.state, {
             loading: true
         }));
 
+        if (filterWidget) {
+            dispatch(filterDropdownRequest(windowType, filterId, parameterName)).then((res) => {
+                this.setState(Object.assign({}, this.state, {
+                    list: res.data.values,
+                    loading: false
+                }));
+            });
+        } else {
+            dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
+                this.setState(Object.assign({}, this.state, {
+                    list: res.data.values,
+                    loading: false
+                }));
+            });
+        }
+        
 
-        dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
-            this.setState(Object.assign({}, this.state, {
-                list: res.data.values,
-                loading: false
-            }));
-        });
         this.dropdown.classList.add("input-dropdown-focused");
     }
     handleChange = (e) => {
