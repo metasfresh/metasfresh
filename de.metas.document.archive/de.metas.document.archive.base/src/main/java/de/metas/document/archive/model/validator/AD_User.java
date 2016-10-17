@@ -38,10 +38,20 @@ class AD_User
 		//
 		//retrieve latest log
 		final I_C_Doc_Outbound_Log docExchange = Services.get(IDocOutboundDAO.class).retrieveLog(new PlainContextAware(ctx), user.getC_BPartner_ID(), Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
+		if (docExchange == null)
+		{
+			return;
+		}
 		//
 		// update outbound log accordingly which will trigger a validator <code>C_Doc_Outbound_Log</code> which will create the notification
-		docExchange.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
-		InterfaceWrapperHelper.save(docExchange);
+		// update only for invoices
+		final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
+		if (AD_Table_ID == docExchange.getAD_Table_ID())
+		{
+			docExchange.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
+			InterfaceWrapperHelper.save(docExchange);
+		}
+		
 	}
 
 }
