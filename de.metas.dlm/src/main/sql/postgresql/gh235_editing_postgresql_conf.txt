@@ -2,7 +2,9 @@
 edit postgresql.conf:
 
 #search_path = '"$user",public'         # schema names
-# FRESH-180: adding the "dlm" schema to the search path, so by default our views like dlm.C_Invoice will be found.
+# gh #489: adding the "dlm" schema to the search path, so by default our views like dlm.C_Invoice will be found.
 search_path = '"$user",dlm,public'
 
-metasfresh.DLM_Level=0
+# gh #489
+custom_variable_classes = 'metasfresh'
+metasfresh.DLM_ArchiveLevel = '1'
