@@ -42,12 +42,19 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public boolean isInvoiceEmailEnabled(I_C_BPartner bpartner, I_AD_User user)
 	{
+		Check.assume(bpartner!=null, "Partner shoudl not be null!");
+		
 		final Boolean matchingisInvoiceEmailEnabled;
 		String isInvoiceEmailEnabled = bpartner.getIsInvoiceEmailEnabled();
 		//
 		// check flag from partner 
 		if (Check.isEmpty(isInvoiceEmailEnabled, true))
 		{
+			if (user == null)
+			{
+				return Boolean.TRUE;
+			}
+			
 			//
 			// if is empty in partner, check it in user
 			isInvoiceEmailEnabled = user.getIsInvoiceEmailEnabled();
