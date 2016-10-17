@@ -13,7 +13,6 @@ import {
 } from '../../actions/AppActions';
 
 import {
-    setFilter,
     setPagination,
     setSorting,
     clearListProps
@@ -52,18 +51,23 @@ class DocumentList extends Component {
 
     updateData = (type, windowType) => {
 
-        const {dispatch, filters} = this.props;
+        const {dispatch} = this.props;
 
-        
         console.log('updated');
-        console.log(filters);
+        
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
             console.log('LAYOUT');
             console.log(response.data);
+            const  { filters } = this.props
+            console.log('filters');
+            console.log(filters);
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
+               
                 dispatch(createViewRequest(windowType, type, 20, !!filters ? [filters] : [])).then((response) => {
+                    console.log('VIEW');
+                    console.log(response.data);
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -80,7 +84,7 @@ class DocumentList extends Component {
         const {data} = this.state;
         const {dispatch, page, sorting, windowType, query} = this.props;
         let urlQuery = "";
-
+     
 
         if(query && (query.sortby && query.sortdir)){
             urlQuery = this.getSortingQuery(query.sortdir, query.sortby);
@@ -104,6 +108,8 @@ class DocumentList extends Component {
         const {dispatch} = this.props;
 
         dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
+            console.log('DATA ');
+            console.log(response.data);
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))

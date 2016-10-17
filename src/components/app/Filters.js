@@ -1,5 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
 import FilterWidget from '../FilterWidget';
+
+import {
+    setFilter,
+} from '../../actions/ListActions';
 
 class Filters extends Component {
     constructor(props) {
@@ -39,6 +44,13 @@ class Filters extends Component {
         }))
     }
 
+    clearFilterData = () => {
+        const {windowType, updateDocList, dispatch} = this.props;
+        console.log(dispatch);
+        dispatch(setFilter(null));
+        updateDocList('grid', windowType);
+    }
+
     render() {
         const {openList, openFilter, filterDataItem, open} = this.state;
         const {filterData, windowType, updateDocList} = this.props;
@@ -64,7 +76,7 @@ class Filters extends Component {
                         }
                         { openFilter &&
                             <div className="filter-menu filter-widget">
-                                <div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={this.hideFilter}>Clear filter <i className="meta-icon-trash"></i></span> </div>
+                                <div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => {this.hideFilter(); this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
                                 <div className="form-group row filter-content">
                                     <div className="col-sm-12">
                                         <FilterWidget
@@ -89,5 +101,11 @@ class Filters extends Component {
         )
     }
 }
+
+Filters.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+Filters = connect()(Filters)
 
 export default Filters

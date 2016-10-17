@@ -33,19 +33,16 @@ class FilterWidget extends Component {
 
     handlePatch = (property, value) => {
         const {dispatch, updateDocList, windowType} = this.props;
-        let filter = [
+        let filter =
           {
-            "filterId": "C_DocType_ID",
-            "parameters": [
+            filterId: property,
+            parameters: [
               {
-                "parameterName": "C_DocType_ID",
-        "value": {
-        "1000027": "Angebot"
-        }
+                parameterName: property,
+                value: value
               }
             ]
           }
-        ]
 
 
         dispatch(setFilter(filter));
