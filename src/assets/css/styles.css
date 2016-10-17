@@ -321,12 +321,14 @@ body {
 .order-list-panel{
     position: fixed;
     display: none;
-    height:100%;
+    height: calc(100% - 55px);
     width: 472px;
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
     z-index: 200;
     right:0;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 .order-list-panel-open {
     display: block;
@@ -1344,4 +1346,3 @@ td.pulse-on input {
 td.pulse-off input {
     background: transparent !important;
 }
-
