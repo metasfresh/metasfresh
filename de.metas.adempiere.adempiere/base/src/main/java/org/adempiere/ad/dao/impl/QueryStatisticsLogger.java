@@ -1,8 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +14,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
@@ -108,7 +106,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
-	@ManagedOperation(description = "Enables statistics collector and tracing")
+	@ManagedOperation(description = "Enables statistics collector and console tracing of executed SQLs")
 	public void enableWithSqlTracing()
 	{
 		enable();
@@ -357,36 +355,36 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
-	private List<QueryStatistics> snapshotQueryStatisticsAsList()
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed executon time (descending)")
+	public String[] getTopTotalDurationQueriesAsString()
 	{
-		return sql2statistics.values()
-				.stream()
-				.map(stat -> stat.copy())
-				.collect(GuavaCollectors.toImmutableList());
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getTotalDuration));
 	}
 
 	@Override
 	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
-	public String[] getTopQueriesAsString()
+	public String[] getTopCountQueriesAsString()
 	{
-		final List<QueryStatistics> queryStatisticsList = snapshotQueryStatisticsAsList();
-		if (queryStatisticsList.isEmpty())
-		{
-			return new String[] {};
-		}
-		Collections.sort(queryStatisticsList, (s1, s2) -> s1.compareToByCounterDescending(s2));
-
-		final int size = queryStatisticsList.size();
-		final String[] result = new String[size];
-		for (int i = 0; i < size; i++)
-		{
-			final QueryStatistics queryStatistics = queryStatisticsList.get(i);
-			final String queryStatisticsStr = queryStatistics.toString();
-			result[i] = queryStatisticsStr;
-		}
-
-		return result;
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getCount));
 	}
+
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their average execution time (descending)")
+	public String[] getTopAverageDurationQueriesAsString()
+	{
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getAverageDuration));
+	}
+
+	private String[] getTopQueriesAsString(final Comparator<QueryStatistics> comparing)
+	{
+		return sql2statistics.values()
+				.stream()
+				.sorted(comparing.reversed())
+				.map(stat -> stat.toString())
+				.toArray(size -> new String[size]);
+	}
+
 
 	private static final class CountAndDuration
 	{
@@ -449,6 +447,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 			return durationTotal / count;
 		}
+
+		private long getTotalDuration()
+		{
+			return durationTotal;
+		}
 	}
 
 	private static final class QueryStatistics
@@ -463,23 +466,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			this.countAndDurationRef = new AtomicReference<>(CountAndDuration.ZERO);
 		}
 
-		private QueryStatistics(final String sql, final CountAndDuration countAndDuration)
-		{
-			super();
-			this.sql = sql;
-			this.countAndDurationRef = new AtomicReference<>(countAndDuration);
-		}
-
 		@Override
 		public String toString()
 		{
 			return "SQL: " + sql
 					+ "\n-- " + countAndDurationRef.get();
-		}
-
-		public final QueryStatistics copy()
-		{
-			return new QueryStatistics(sql, countAndDurationRef.get());
 		}
 
 		public CountAndDuration incrementAndGet(final long duration)
@@ -498,31 +489,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			return countAndDurationRef.get().getCount();
 		}
 
-		public int compareToByCounterDescending(final QueryStatistics other)
+		public long getTotalDuration()
 		{
-			if (this == other)
-			{
-				return 0;
-			}
-			if (other == null)
-			{
-				return +1;
-			}
+			return countAndDurationRef.get().getTotalDuration();
+		}
 
-			final long c1 = getCount();
-			final long c2 = other.getCount();
-			if (c1 == c2)
-			{
-				return 0;
-			}
-			else if (c1 < c2)
-			{
-				return +1;
-			}
-			else
-			{
-				return -1;
-			}
+		private double getAverageDuration()
+		{
+			return countAndDurationRef.get().getAverageDuration();
 		}
 	}
 }

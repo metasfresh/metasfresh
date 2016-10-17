@@ -48,12 +48,15 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.images.Images;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
@@ -102,8 +105,6 @@ import net.miginfocom.swing.MigLayout;
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			onFocusLost(); // make sure that direct edits to the text component are not lost in case the onscreen-keyboard-dialog is opend and canceled.
-
 			// show keyboard now!
 			showKeyboard();
 		}
@@ -225,7 +226,6 @@ import net.miginfocom.swing.MigLayout;
 
 	private class TextFieldValueChangedListener implements PropertyChangeListener
 	{
-
 		@Override
 		public void propertyChange(final PropertyChangeEvent evt)
 		{
@@ -435,14 +435,39 @@ import net.miginfocom.swing.MigLayout;
 		return textComponent.isFocusOwner();
 	}
 
+	/**
+	 * Call {@link JTextComponent#setText(String)} on our <code>textComponent</code> member.
+	 * <p>
+	 * Note that if our <code>textComponent</code> is a {@link JFormattedTextField}, then the value with we set here is the displayed one, but might be different from the field's <i>value</i>,
+	 * see the <a href="http://docs.oracle.com/javase/tutorial/uiswing/components/formattedtextfield.html">How to Use Formatted Text Fields</a> tutorial for details.<br>
+	 * Quote: "A formatted text field's text and its value are two different properties, and the value often lags behind the text."
+	 */
 	@Override
 	public void setText(final String text)
 	{
 		final String textOld = textComponent.getText();
 
-		logger.trace("this-ID={}, Name={}, text={}, textOld={}, this={}", System.identityHashCode(this), getName(), text, textOld, this);
+		logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; calling setText() on textComponent={}; this={}",
+				System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), textComponent, this);
 
 		textComponent.setText(text);
+
+		// TODO: gh #370: remove the commitEdit call (also un-edit the javadoc!) if this change doesn't help either
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean commit = sysConfigBL.getBooleanValue("de.metas.adempiere.form.terminal.swing.SwingTerminalTextField.directCommitEditOnSetText", true);
+		if (commit)
+		{
+			try
+			{
+				commitEdit();
+			}
+			catch (final ParseException e)
+			{
+				// don't do anything about the error. we just want to make sure that *if* the text is set from the outside and *if* that's successful, *then* the value is directly updated too.
+				logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; commitEdit() after setText() failed with exception={}, errorOffSet={} on textComponent={}; this={}",
+						System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), e, e.getErrorOffset(), textComponent, this);
+			}
+		}
 		firePropertyChanged(ITerminalTextField.PROPERTY_TextChanged, textOld, text);
 	}
 
@@ -471,12 +496,13 @@ import net.miginfocom.swing.MigLayout;
 	}
 
 	/**
-	 * Not implemented with <code>fireEvent</code>
+	 * Sets the "inner" value of our <code>textComponent</code> member. Also see {@link #setText(String)}.
 	 */
 	@Override
 	protected void setFieldValue(final String value, final boolean fireEvent)
 	{
-		logger.debug("value={}", value);
+		logger.debug("this-ID={}, setFieldValue with value={}, fireEvent={}, isEventDispatchThread={}, on this={}",
+				System.identityHashCode(this), value, fireEvent, SwingUtilities.isEventDispatchThread(), this);
 
 		if (textComponent instanceof JFormattedTextField)
 		{
@@ -496,6 +522,9 @@ import net.miginfocom.swing.MigLayout;
 			{
 				logger.info("Error parsing text: " + value, e);
 			}
+
+			logger.debug("this-ID={}, name={}, value={}, fireEvent={}, valueToUse={}, isEventDispatchThread={}; in method setFieldValue(), calling setValue() on textComponent={}; this={}",
+					System.identityHashCode(this), getName(), value, fireEvent, valueToUse, SwingUtilities.isEventDispatchThread(), textComponent, this);
 			((JFormattedTextField)textComponent).setValue(valueToUse);
 
 			if (fireEvent)
@@ -505,6 +534,8 @@ import net.miginfocom.swing.MigLayout;
 		}
 		else
 		{
+			logger.debug("this-ID={}, name={}, value={}, fireEvent={}, isEventDispatchThread={}; in method setFieldValue(), calling setText() on textComponent={}; this={}",
+					System.identityHashCode(this), getName(), value, fireEvent, SwingUtilities.isEventDispatchThread(), textComponent, this);
 			setText(value == null ? null : value.toString());
 		}
 	}
@@ -677,6 +708,7 @@ import net.miginfocom.swing.MigLayout;
 
 	/**
 	 * Execute focus lost event: commit edit, set text and fire {@link ITerminalTextField#PROPERTY_FocusLost}.
+	 *
 	 */
 	private final void onFocusLost()
 	{

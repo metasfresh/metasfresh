@@ -1,6 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<parent>
@@ -287,7 +285,9 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${metasfresh-dependency.version}</version>
+				<!-- version ranges don't work here, see http://stackoverflow.com/questions/20969586/using-scope-import-with-version-ranges -->
+				<!-- version>${metasfresh-dependency.version}</version -->
+				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

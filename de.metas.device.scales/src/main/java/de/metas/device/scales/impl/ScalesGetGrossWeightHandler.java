@@ -10,12 +10,12 @@ package de.metas.device.scales.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,15 +27,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.device.api.DeviceException;
+import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceRequestHandler;
 import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
-import de.metas.device.scales.request.GetGrossWeighRequest;
 import de.metas.device.scales.request.GetWeightResponse;
+import de.metas.logging.LogManager;
 
-public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceRequestHandler<GetGrossWeighRequest, GetWeightResponse>
+public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceRequestHandler<IDeviceRequest<GetWeightResponse>, GetWeightResponse>
 {
 
 	private static final transient Logger logger = LogManager.getLogger(ScalesGetGrossWeightHandler.class);
@@ -56,7 +56,7 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	private String uomFieldName;
 
 	@Override
-	public GetWeightResponse handleRequest(final GetGrossWeighRequest request)
+	public GetWeightResponse handleRequest(final IDeviceRequest<GetWeightResponse> request)
 	{
 		final String endpointResultStr = endpoint.sendCmd(cmd.getCmd());
 		logger.trace("Received result string {} from endpoint {}; command: {}", new Object[] { endpointResultStr, endpoint, cmd });
@@ -118,7 +118,7 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	/**
 	 * The weighing result number will be round to the given precision using {@link RoundingMode#HALF_UP}.<br>
 	 * If called with a value less than zero, or not called at all, then no rounding will be done.
-	 * 
+	 *
 	 * @param roundWeightToPrecision
 	 * @task http://dewiki908/mediawiki/index.php/09207_Wiegen_nur_eine_Nachkommastelle_%28101684670982%29
 	 */

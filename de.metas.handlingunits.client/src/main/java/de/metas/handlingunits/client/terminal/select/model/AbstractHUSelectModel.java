@@ -203,7 +203,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	/**
 	 * Refresh current lines
 	 *
-	 * @param forceRefresh if true then always refresh (even if is not needed)
+	 * @param forceRefresh if <code>true</code> then always refresh (even if is not needed)
 	 */
 	public void refreshLines(final boolean forceRefresh)
 	{
@@ -248,7 +248,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		{
 			// Update BPartner Key Layout:
 			final List<I_C_BPartner> bpartners = service.getBPartners(_lines);
-			vendorKeyLayout.setKeysFromBPartners(bpartners);
+			vendorKeyLayout.createAndSetKeysFromBPartners(bpartners);
 
 			// Update other custom key layouts
 			loadKeysFromLines(_lines);
@@ -611,8 +611,11 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		}
 
 		//
-		// Refresh lines (even if user canceled the editing)
-		refreshLines(true);
+		// Do not refresh the lines here, because this code is run within "AbstractHUSelect*Panel*.doProcessSelectedLines()"
+		// and that panel's doProcessSelectedLines() method is running within its own terminal references that are destroyed after that panel's doProcessSelectedLines() finished.
+		// This means, that *if* refreshLines() creates any buttons and stuffs, they will be disposed really soon
+		// refreshLines(true);
+
 	}
 
 	protected void processRows(final Set<IPOSTableRow> selectedRows, final HUEditorModel huEditorModel)
@@ -679,7 +682,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		final List<I_M_Warehouse> warehousesAll = service.retrieveWarehouses(getCtx());
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), warehousesAll);
 		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found");
-		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	protected final void setLayoutsEnabled(final boolean enabled)

@@ -10,12 +10,12 @@ package de.metas.fresh.picking.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,10 +34,12 @@ import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 
 /**
  * Gets HU by SSCC18 attribute and matches rows which have HU's products
- * 
+ * <p>
+ * Interesting detail: currently only matches HUs that have a C_BPartner set
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/06821_Kommissionier_Terminal_Extension_%28104171338645%29
- * 
+ *
  */
 public class SSCC18HUTableRowSearchSelectionMatcher extends AbstractHUTableRowSearchSelectionMatcher
 {
@@ -51,6 +53,9 @@ public class SSCC18HUTableRowSearchSelectionMatcher extends AbstractHUTableRowSe
 		this.sscc18 = sscc18.trim();
 	}
 
+	/**
+	 * @return the letter <code>S</code>
+	 */
 	@Override
 	public String getName()
 	{
@@ -72,7 +77,7 @@ public class SSCC18HUTableRowSearchSelectionMatcher extends AbstractHUTableRowSe
 		return huQueryBuilderInitial
 				// match SSCC18 attribute
 				.addOnlyWithAttribute(attr_sscc18, sscc18)
-				// only HU's with BPartner set shall be considered (fresh_06821)
+				// only HU's with BPartner set shall be considered (06821)
 				.setOnlyIfAssignedToBPartner(true);
 	}
 }

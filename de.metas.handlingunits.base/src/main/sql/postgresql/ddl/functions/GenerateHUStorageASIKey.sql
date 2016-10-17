@@ -18,8 +18,7 @@ $BODY$
 		) sub;
 $BODY$
   LANGUAGE sql STABLE;
-ALTER FUNCTION GenerateHUStorageASIKey(numeric, text)
-  OWNER TO adempiere;
+
 COMMENT ON FUNCTION GenerateHUStorageASIKey(numeric, text) IS 'Creates a string that contains the M_AttributeValue.Names of those M_Attributes that have IsMatchHUStorage=Y.
 Ff there are none, the fuction returns the given nullString.';
 
@@ -33,6 +32,5 @@ $BODY$
 $BODY$
   LANGUAGE sql STABLE;
 COMMENT ON FUNCTION GenerateHUStorageASIKey(numeric, text) IS 'Similar to GenerateHUStorageASIKey(asiId numeric), but returns the given string if there is no attribuate-value-string to return';
-ALTER FUNCTION GenerateHUStorageASIKey(numeric,text)
-  OWNER TO adempiere;
+
   

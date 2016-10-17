@@ -8,6 +8,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -131,7 +132,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		if (shipmentSched != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
-			if (date != null)               // don't blindly assume that the sched is already initialized
+			if (date != null)                // don't blindly assume that the sched is already initialized
 			{
 				return date;
 			}
@@ -162,16 +163,29 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 		final String productParamKey = MRPProductInfoSelector.mkProductParamKey(model);
 		final int productID = params.getParameterAsInt(productParamKey);
-		Check.errorIf(productID <= 0, "Missing param with name={}; model={}; params={}", productParamKey, model, params);
+		if (productID <= 0)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
+			return createOrNull(model);
+		}
 
 		final String attributeSetInstanceParamKey = MRPProductInfoSelector.mkAttributeSetInstanceParamKey(model);
 		final int asiID = params.getParameterAsInt(attributeSetInstanceParamKey);
-		// Check.errorIf(asiID <= 0, "Missing param with name={}; model={}; params={}", attributeSetInstanceParamKey, model, params); // might be 0
+		if (asiID < 0) // might be 0
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
+			return createOrNull(model);
+		}
 
 		final String dateParamKey = MRPProductInfoSelector.mkDateParamKey(model);
 		final Timestamp date = params.getParameterAsTimestamp(dateParamKey);
-		Check.errorIf(date == null, "Missing param with name={}; model={}; params={}", dateParamKey, model, params);
+		if (date == null)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
+			return createOrNull(model);
+		}
 
+		// if all values are OK, then use them. Otherwise they might not be consistent with each other
 		return new MRPProductInfoSelector(productID, asiID, date, model);
 	}
 
@@ -315,7 +329,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			{
 				final int attributeSetInstanceID = getM_AttributeSetInstance_ID();
 				asiKey = DB.getSQLValueString(ITrx.TRXNAME_None,
-						"SELECT GenerateHUStorageASIKey(?, '')",              // important to get an empty string instead of NULL
+						"SELECT GenerateHUStorageASIKey(?, '')",               // important to get an empty string instead of NULL
 						attributeSetInstanceID);
 			}
 			return asiKey;

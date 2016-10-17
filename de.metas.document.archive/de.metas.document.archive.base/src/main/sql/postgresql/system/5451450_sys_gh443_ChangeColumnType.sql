@@ -1,7 +1,3 @@
--- 29.09.2016 14:26
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BPartner ADD IsInvoiceEmailEnabled CHAR(1) DEFAULT 'Y' CHECK (IsInvoiceEmailEnabled IN ('Y','N')) NOT NULL
-;
 
 -- 30.09.2016 17:37
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

@@ -1181,7 +1181,7 @@ public class GridField
 	 */
 	public boolean isEncryptedField()
 	{
-		return m_vo.IsEncryptedField;
+		return m_vo.isEncryptedField();
 	}
 
 	/**
@@ -1191,7 +1191,7 @@ public class GridField
 	 */
 	public boolean isEncrypted()
 	{
-		if (m_vo.IsEncryptedField)
+		if (m_vo.isEncryptedField())
 			return true;
 		String ob = getObscureType();
 		if (ob != null && ob.length() > 0)

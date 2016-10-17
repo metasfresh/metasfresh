@@ -21,7 +21,6 @@ $$
 $$
   LANGUAGE SQL STABLE
   COST 100;
-ALTER FUNCTION "de.metas.handlingunits".huattributeinfo(numeric, varchar)
-  OWNER TO adempiere;
+
 
 COMMENT ON FUNCTION  "de.metas.handlingunits".huattributeinfo(numeric, varchar) IS 'fresh 06936: Track attribute values of given HU ID and M_Attribute.Value - i.e HU ID "1000000" and Attribute value "WeightNet"'

@@ -30,10 +30,13 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
+import de.metas.adempiere.form.terminal.AbstractTerminalTextField;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.adempiere.form.terminal.TerminalKeyDialog;
 
 /**
  * Terminal API Context which will provide following capabilities:
@@ -227,7 +230,7 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	ITerminalContextReferences newReferences();
 
 	/**
-	 * Destroy currentReferences instance and sets a new current one (stack-like).
+	 * Destroy the currentReferences instance and sets a new current one (stack-like).
 	 * <p>
 	 * Hint: if possible, don't use this method directly, but rather call {@link #newReferences()} in conjunction if a <code>try-with-resources</code> statement.
 	 *
@@ -235,4 +238,30 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	 *            Without this, a caller might blindly assume that its own {@link ITerminalContextReferences} instance was the top-most, while in reality it is not.
 	 */
 	void deleteReferences(ITerminalContextReferences currentReferences);
+
+	/**
+	 * Close the current/topmost {@link ITerminalContextReferences} so that further changes like {@link #setNumericKeyLayout(IKeyLayout)} or {@link #addToDisposableComponents(IDisposable)}
+	 * will not be forwarded to the current/topmost references instance, but to the one below (unless the one below is also already closed, etc).
+	 * <p>
+	 * Use case: {@link TerminalKeyDialog}s that are started from {@link AbstractTerminalTextField} have their own references instance (see {@link AbstractTerminalTextField#showKeyboard()} for why that is).<br>
+	 * But some actions performed with that keyboard cause other components to be created <i>outside</i> the on-screen keyboard (e.g. partner location buttons for a partner that is entered via the keyboard).<br>
+	 * Those disposable components shall not be added to the on-screen keyboard's references because they shall live on after the keyboard was closed.<br>
+	 * To achieve this, the on-screen keyboard calls this method after it created all its components.
+	 * <p>
+	 * Note that this method is unrelated to {@link ITerminalContextReferences#close()} which is declared by {@link AutoCloseable} in order to allow us to do <code>try-with-resources</code>.
+	 */
+	void closeCurrentReferences();
+
+	/**
+	 * Removes the currentReferences instance from the stack without destroying/disposing it and sets a new current one (stack-like).<br>
+	 * So, it's like {@link #deleteReferences(ITerminalContextReferences)} but without actually destroying/disposing the stuff that is stored in the given <code>currentReferences</code>.
+	 * <p>
+	 * Use this method if you created a bunch of {@link IDisposable}s within a long-living component and you want to be able to remove and recreate them later on, while the long-living component shall remain.
+	 *
+	 * @param currentReferences may not be <code>null</code>. We insist on this parameter so that the method's implementation can verify that the caller really knows which one is the currentReferences.
+	 *            Without this, a caller might blindly assume that its own {@link ITerminalContextReferences} instance was the top-most, while in reality it is not.
+	 * @see KeyLayout for the intended usage.
+	 * @task https://github.com/metasfresh/metasfresh/issues/458
+	 */
+	void detachReferences(ITerminalContextReferences currentReferences);
 }

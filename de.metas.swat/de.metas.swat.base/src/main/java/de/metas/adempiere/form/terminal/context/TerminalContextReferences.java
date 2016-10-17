@@ -48,6 +48,8 @@ import de.metas.logging.LogManager;
 	private IKeyLayout keyLayoutNumeric;
 	private IKeyLayout keyLayoutText;
 
+	private boolean referencesClosed;
+
 	/**
 	 *
 	 * @param terminalContext
@@ -58,6 +60,7 @@ import de.metas.logging.LogManager;
 		this.terminalContext = terminalContext;
 	}
 
+	@Override
 	public void dispose()
 	{
 		disposeComponents();
@@ -66,14 +69,12 @@ import de.metas.logging.LogManager;
 		disposePropertyChangeSupports();
 	}
 
-	@Override
 	public WeakPropertyChangeSupport createPropertyChangeSupport(final Object sourceBean)
 	{
 		final boolean weakDefault = false;
 		return createPropertyChangeSupport(sourceBean, weakDefault);
 	}
 
-	@Override
 	public WeakPropertyChangeSupport createPropertyChangeSupport(final Object sourceBean, final boolean weakDefault)
 	{
 		if (propertyChangeSupports == null)
@@ -87,7 +88,6 @@ import de.metas.logging.LogManager;
 		return pcs;
 	}
 
-	@Override
 	public final void addToDisposableComponents(final IDisposable comp)
 	{
 		if (comp == null)
@@ -97,25 +97,21 @@ import de.metas.logging.LogManager;
 		_disposableComponents.add(comp);
 	}
 
-	@Override
 	public IKeyLayout getNumericKeyLayout()
 	{
 		return keyLayoutNumeric;
 	}
 
-	@Override
 	public void setNumericKeyLayout(final IKeyLayout keyLayoutNumeric)
 	{
 		this.keyLayoutNumeric = keyLayoutNumeric;
 	}
 
-	@Override
 	public IKeyLayout getTextKeyLayout()
 	{
 		return keyLayoutText;
 	}
 
-	@Override
 	public void setTextKeyLayout(final IKeyLayout keyLayoutText)
 	{
 		this.keyLayoutText = keyLayoutText;
@@ -158,12 +154,26 @@ import de.metas.logging.LogManager;
 	@Override
 	public String toString()
 	{
-		return "TerminalContextReferences [propertyChangeSupports=" + propertyChangeSupports + ", _disposableComponents=" + _disposableComponents + "]";
+		return "TerminalContextReferences [referencesClosed=" + referencesClosed + ", propertyChangeSupports=" + propertyChangeSupports + ", _disposableComponents=" + _disposableComponents + "]";
 	}
 
 	@Override
 	public void close()
 	{
 		terminalContext.deleteReferences(this);
+	}
+
+	/**
+	 * Not to be mixed up with the {@link AutoCloseable} method {@link #close()}.<br>
+	 * See {@link ITerminalContext#closeCurrentReferences()} for what this is about.
+	 */
+	/* package */ void closeReferences()
+	{
+		referencesClosed = true;
+	}
+
+	boolean isReferencesClosed()
+	{
+		return referencesClosed;
 	}
 }

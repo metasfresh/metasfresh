@@ -115,8 +115,6 @@ GROUP BY
 ;
 $BODY$
   LANGUAGE sql STABLE;
-ALTER FUNCTION x_mrp_productinfo_attributeval_v(date, numeric)
-  OWNER TO adempiere;
 COMMENT ON FUNCTION x_mrp_productinfo_attributeval_v(date, numeric) IS 'This function is a union of X_MRP_ProductInfo_AttributeVal_V_Raw and the dimension spec''s attribute values that do *not* have matching X_MRP_ProductInfo_Detail_MV records for the given date';
 
 

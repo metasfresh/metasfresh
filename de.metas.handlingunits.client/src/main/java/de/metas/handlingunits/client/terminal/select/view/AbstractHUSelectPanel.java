@@ -140,6 +140,8 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 					{
 						throw AdempiereException.wrapIfNeeded(e);
 					}
+					// Refresh lines (even if user canceled the editing)
+					getModel().refreshLines(true);
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
 				{
@@ -183,7 +185,10 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	/**
 	 * Implement this method based on the requirements regarding processing in the Select Panel you are working on.
 	 *
-	 * NOTE: It is not mandatory to implement it only in case of a POS with lines.
+	 * Notes:
+	 * <li>It is not mandatory to implement it only in case of a POS with lines.
+	 * <li>Make sure not to create components that "lie outside" of the processed lines,
+	 * because this method is invoked with its on {@link ITerminalContextReferences} that will be deleted right after the method finishes.
 	 */
 	protected abstract void doProcessSelectedLines(MT model);
 

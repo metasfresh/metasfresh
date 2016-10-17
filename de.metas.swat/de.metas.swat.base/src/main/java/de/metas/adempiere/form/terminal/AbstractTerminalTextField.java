@@ -27,6 +27,7 @@ package de.metas.adempiere.form.terminal;
 
 import java.text.DecimalFormat;
 import java.text.Format;
+import java.text.ParseException;
 
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -124,7 +125,8 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}", System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
+		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}",
+				System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
 
 		// Case: valueOld=valueNew=null
 		if (valueOld == valueNew)
@@ -162,7 +164,11 @@ public abstract class AbstractTerminalTextField
 	/**
 	 * Trigger automatically keyboard showing.
 	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
-	 * When creating another (not-swing) implementation, please make sure that doesn't happen
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen.
+	 * <p>
+	 * Note: the keyboard is created with its own a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+	 * registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+	 * Otherwise, future key events to other text fields of our panel would update "our" text field.
 	 */
 	protected void showKeyboard()
 	{
@@ -190,10 +196,21 @@ public abstract class AbstractTerminalTextField
 			return;
 		}
 
+		final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
+		try
+		{
+			// make sure that direct edits to the text component with a hardware keyboard are not lost in case the on-screen-keyboard dialog is opened and canceled.
+			// (without this they might get lost because opening this on-screen keyboard does not trigger a focus-lost).
+			textField.commitEdit();
+		}
+		catch (ParseException e)
+		{
+			// do nothing. either the user will fix this value using the keyboard we are about to show, or they will get an error when they try to submit the input.
+		}
+
 		try
 		{
 			logger.debug("Show keyboard");
-			final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
 			final Object oldValue = textField.getText();
 
 			// we need a dedicated 'references' instance, because the on-screen keyboard's terminal components also
@@ -211,7 +228,6 @@ public abstract class AbstractTerminalTextField
 				activeKeyboard.activate();
 			}
 			activeKeyboard = null;
-
 
 			if (TerminalKeyDialog.ACTION_Cancel.equals(textField.getAction()))
 			{
