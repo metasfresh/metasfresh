@@ -198,15 +198,18 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader
-                    open={isSubheaderShow}
+                {isSubheaderShow && <Subheader
                     dataId={dataId}
                     references={references}
                     actions={actions}
                     windowType={windowType}
                     onClick={e => this.handleBackdropClick(false)}
-                />
-                {showSidelist && <SideList windowType={windowType} open={isSideListShow} />}
+                />}
+
+                {showSidelist && <SideList
+                    windowType={windowType}
+                    open={isSideListShow}
+                />}
             </div>
         )
     }

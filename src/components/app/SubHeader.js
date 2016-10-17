@@ -11,26 +11,46 @@ import {
     setFilter
 } from '../../actions/ListActions';
 
+import {
+    getRelatedDocuments,
+    setReferences,
+    getDocumentActions,
+    setActions
+} from '../../actions/MenuActions';
+
 class Subheader extends Component {
     constructor(props){
         super(props);
     }
+    componentDidMount() {
+        const {dispatch, windowType, dataId} = this.props;
+        dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
+            dispatch(setReferences(response.data.references));
+        });
+        dispatch(getDocumentActions(windowType, dataId)).then((response) => {
+            dispatch(setActions(response.data.actions));
+        });
+    }
+
     redirect = (where) => {
         const {dispatch} = this.props;
         dispatch(push(where));
     }
+
     openModal = (windowType) => {
         this.props.dispatch(openModal("Advanced edit", windowType));
     }
+
     handleReferenceClick = (type, filter) => {
         const {dispatch} = this.props;
         dispatch(setFilter(filter));
         dispatch(push("/window/" + type));
     }
+
     render() {
         const { windowType, onClick, references, actions, dataId } = this.props;
         return (
-            <div className={"subheader-container overlay-shadow " + (this.props.open ? "subheader-open" : "")}>
+            <div className={"subheader-container overlay-shadow subheader-open"}>
                 <div className="container-fluid">
                     <div className="row">
                         <div className="subheader-row">
