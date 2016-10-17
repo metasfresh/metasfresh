@@ -70,7 +70,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PriceList;
@@ -140,6 +139,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = "InvoiceCandBL_Status_InvoiceSchedule_Missing";
 	private static final String MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = "InvoiceCandBL_Below_Invoice_Min_Amt";
 	private static final String MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = "InvoiceCandBL_Status_Order_Not_CO";
+	private static final String MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P = "InvoiceCandBL_Unable_To_Convert_Qty";
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
@@ -193,7 +193,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)                        // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)    // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -287,7 +287,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                        // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                            // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -413,7 +413,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getLeft());
 
 			final BigDecimal netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
-			if (netAmtInvoiced == null)  // gh #428 flag the IC if we can't get NetAmtInvoiced
+			if (netAmtInvoiced == null)      // gh #428 flag the IC if we can't get NetAmtInvoiced
 			{
 				ic.setIsError(true);
 				ic.setErrorMsg("Unable to compute NetAmtInvoiced. Check UOM conversions");
@@ -423,7 +423,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				ic.setNetAmtInvoiced(netAmtInvoiced);
 			}
-
 		}
 
 		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
@@ -446,7 +445,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(ic);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		BigDecimal qtyInvoiced = BigDecimal.ZERO;
 		BigDecimal netAmtInvoiced = BigDecimal.ZERO;
@@ -473,14 +471,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal priceActual = ic.getPriceActual();
 			final BigDecimal rawNetAmtInvoiced = ila.getQtyInvoiced().multiply(priceActual);
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-
-			final BigDecimal amountInvoiced = uomConversionBL.convertFromProductUOM(ctx, ic.getM_Product(), ic.getPrice_UOM(), rawNetAmtInvoiced);
+			final BigDecimal amountInvoiced = convertToPriceUOM(rawNetAmtInvoiced, ic);
 			if (amountInvoiced == null)
 			{
-				logger.warn("Can't convert rawNetAmtInvoiced={} into price-UOM of ic={}; ", rawNetAmtInvoiced, ic);
 				netAmtInvoiced = null;
 			}
+
 			if (netAmtInvoiced != null)
 			{
 				netAmtInvoiced = netAmtInvoiced.add(amountInvoiced);
@@ -766,31 +762,23 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return qty;
 		}
 
-		final I_C_UOM productUOM = ic.getM_Product().getC_UOM();
-		if (productUOM == null || productUOM.getC_UOM_ID() <= 0)
-		{
-			logger.debug("returing param qty {} as result, because ic.getM_Product_ID()");
-			return qty;
-		}
-
-		final I_C_UOM priceUOM = ic.getPrice_UOM();
-		if (priceUOM == null || priceUOM.getC_UOM_ID() <= 0)
-		{
-			return qty;
-		}
-
-		if (priceUOM.getC_UOM_ID() == productUOM.getC_UOM_ID())
-		{
-			return qty;
-		}
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final I_M_Product product = ic.getM_Product();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, ic.getPrice_UOM(), qty);
 
-		final I_M_Product product = ic.getM_Product();
-		final BigDecimal qtyInPriceUOM = uomConversionBL.convertQty(product, qty, productUOM, priceUOM);
+		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}",
+				new Object[] { qty, product.getValue(), qtyInPriceUOM, ic });
 
-		logger.debug("converted qty {} of product {} from {} to {} => {} for ic {}",
-				new Object[] { qty, product.getValue(), productUOM.getName(), priceUOM.getName(), qtyInPriceUOM, ic });
+		if (qtyInPriceUOM == null)
+		{
+			logger.warn("Can't convert qty={} into price-UOM of ic={}; ", qty, ic);
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			amendSchedulerResult(ic,
+					msgBL.getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qty, ic.getPrice_UOM(), product.getValue() }));
+			ic.setIsError(true);
+		}
 		return qtyInPriceUOM;
 	}
 
@@ -1254,7 +1242,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))         // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))             // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1432,7 +1420,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)                        // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)                            // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1536,7 +1524,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoiceInPriceUOM(BigDecimal.ZERO);
 			ic.setQtyToInvoice(BigDecimal.ZERO);
 		}
-
 	}
 
 	@Override
@@ -1912,7 +1899,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                        // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                            // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered
