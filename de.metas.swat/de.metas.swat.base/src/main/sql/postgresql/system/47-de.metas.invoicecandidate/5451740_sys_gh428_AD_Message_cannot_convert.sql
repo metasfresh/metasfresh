@@ -10,7 +10,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- 13.10.2016 12:58
 -- URL zum Konzept
-UPDATE AD_Message SET MsgText='Die Menge (oder der Betrag {0}) konnte nicht in die Preiseinheit {1} umgerechnet werden. Bitte prüfen Sie die Mengen-Umrechnungsregeln für das Produkt {2}.',Updated=TO_TIMESTAMP('2016-10-13 12:58:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544207
+UPDATE AD_Message SET MsgText='Die Menge (oder der Betrag) {0} konnte nicht in die Preiseinheit {1} umgerechnet werden. Bitte prüfen Sie die Mengen-Umrechnungsregeln für das Produkt {2}.',Updated=TO_TIMESTAMP('2016-10-13 12:58:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544207
 ;
 
 -- 13.10.2016 12:58
