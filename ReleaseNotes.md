@@ -23,10 +23,9 @@ upcoming
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
 * #483 Gebindeübersicht Report Typo fix
 * #482 Unable to issue certain HUs to a PP_Order
+* #494 R_Request new Request context missing
 
 # metasfresh 4.39.38 (2016-41)
-
-this week's RC
 
 ## Features
 * #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
