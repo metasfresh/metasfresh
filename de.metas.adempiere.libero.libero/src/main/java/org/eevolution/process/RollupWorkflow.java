@@ -27,12 +27,12 @@ package org.eevolution.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,6 +49,7 @@ import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
@@ -65,11 +66,11 @@ import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 
 /**
- *	RollUp of Cost Manufacturing Workflow 
+ *	RollUp of Cost Manufacturing Workflow
  *	This process calculate the Labor, Overhead, Burden Cost
  *  @author Victor Perez, e-Evolution, S.C.
  *  @version $Id: RollupWorkflow.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
- *  
+ *
  *  @author Bogdan Ioan, www.arhipac.ro
  *  		<li>BF [ 2093001 ] Error in Cost Workflow & Process Details
  */
@@ -81,16 +82,16 @@ public class RollupWorkflow extends SvrProcess
 	/* Account Schema   */
 	private int             p_C_AcctSchema_ID = 0;
 	/* Cost Type 		*/
-	private int             p_M_CostType_ID = 0;    
+	private int             p_M_CostType_ID = 0;
 	/* Product 			*/
-	private int             p_M_Product_ID = 0;   
+	private int             p_M_Product_ID = 0;
 	/* Product Category */
 	private int 			p_M_Product_Category_ID = 0;
 	/* Costing Method 	*/
 	private String 			p_ConstingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
 
 	private MAcctSchema m_as = null;
-	
+
 	private RoutingService m_routingService = null;
 
 
@@ -103,21 +104,21 @@ public class RollupWorkflow extends SvrProcess
 
 			if (para.getParameter() == null)
 				;
-			else if (name.equals(MCost.COLUMNNAME_AD_Org_ID))  
-				p_AD_Org_ID = para.getParameterAsInt();       
+			else if (name.equals(MCost.COLUMNNAME_AD_Org_ID))
+				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
-			{	
-				p_C_AcctSchema_ID = para.getParameterAsInt();  
+			{
+				p_C_AcctSchema_ID = para.getParameterAsInt();
 				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-			}	
+			}
 			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
-				p_M_CostType_ID = para.getParameterAsInt();  
+				p_M_CostType_ID = para.getParameterAsInt();
 			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
 				p_ConstingMethod=(String)para.getParameter();
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID)) 
-				p_M_Product_ID = para.getParameterAsInt();  
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID)) 
-				p_M_Product_Category_ID = para.getParameterAsInt();  
+			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
+				p_M_Product_ID = para.getParameterAsInt();
+			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID))
+				p_M_Product_Category_ID = para.getParameterAsInt();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
@@ -125,12 +126,12 @@ public class RollupWorkflow extends SvrProcess
 
 	@SuppressWarnings("deprecation") // hide those to not polute our Warnings
 	@Override
-	protected String doIt() throws Exception                
+	protected String doIt() throws Exception
 	{
 		m_routingService = RoutingServiceFactory.get().getRoutingService(getAD_Client_ID());
 
 		for (MProduct product : getProducts())
-		{ 
+		{
 			log.info("Product: "+product);
 			int AD_Workflow_ID = 0;
 			MPPProductPlanning pp = null;
@@ -139,9 +140,9 @@ public class RollupWorkflow extends SvrProcess
 				AD_Workflow_ID = Services.get(IPPWorkflowDAO.class).retrieveWorkflowIdForProduct(product);
 			}
 			if(AD_Workflow_ID <= 0)
-			{	
-				pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID, 0, 0, product.get_ID(), get_TrxName());                 
-			
+			{
+				pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID, 0, 0, product.get_ID(), get_TrxName());
+
 				if (pp != null)
 				{
 				AD_Workflow_ID = pp.getAD_Workflow_ID();
@@ -150,7 +151,7 @@ public class RollupWorkflow extends SvrProcess
 				{
 				createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
 				}
-			}	
+			}
 
 			if(AD_Workflow_ID <= 0)
 			{
@@ -160,17 +161,17 @@ public class RollupWorkflow extends SvrProcess
 
 			MWorkflow workflow = new MWorkflow(getCtx(), AD_Workflow_ID, get_TrxName());
 			rollup(product, workflow);
-			
-			// Update Product Data Planning 
+
+			// Update Product Data Planning
 			if (pp != null)
 			{
 				pp.setYield(workflow.getYield());
 				pp.saveEx();
 			}
-		}                               
+		}
 		return "@OK@";
 	}
-	
+
 
 	private Collection<MProduct> getProducts()
 	{
@@ -185,24 +186,24 @@ public class RollupWorkflow extends SvrProcess
 		params.add(true);
 
 		if (p_M_Product_ID > 0)
-		{  
+		{
 			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
-		}	
+		}
 		else if (p_M_Product_Category_ID > 0)
 		{
 			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
 			params.add(p_M_Product_Category_ID);
-		}	
+		}
 
 		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
 											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
 											.setParameters(params)
-											.list();    
+											.list();
 		return products;
 	}
 
-	
+
 	public void rollup(MProduct product, MWorkflow workflow)
 	{
 		log.info("Workflow: "+workflow);
@@ -214,20 +215,20 @@ public class RollupWorkflow extends SvrProcess
 		int WaitingTime = 0;
 		int MovingTime = 0;
 		int WorkingTime = 0;
-		
+
 		MWFNode[] nodes = workflow.getNodes(false, getAD_Client_ID());
 		for (MWFNode node : nodes)
 		{
 			node.setCost(Env.ZERO);
 			if (node.getYield() != 0)
-			{	
+			{
 				Yield = Yield * ((double)node.getYield() / 100);
 			}
 			// We use node.getDuration() instead of m_routingService.estimateWorkingTime(node) because
 			// this will be the minimum duration of this node. So even if the node have defined units/cycle
 			// we consider entire duration of the node.
 			long nodeDuration = node.getDuration();
-			
+
 			QueuingTime += node.getQueuingTime();
 			SetupTime += node.getSetupTime();
 			Duration += nodeDuration;
@@ -244,13 +245,13 @@ public class RollupWorkflow extends SvrProcess
 		workflow.setMovingTime(MovingTime);
 		workflow.setWorkingTime(WorkingTime);
 
-		for (MCostElement element : MCostElement.getByCostingMethod(getCtx(), p_ConstingMethod))
+		for (I_M_CostElement element : MCostElement.getByCostingMethod(getCtx(), p_ConstingMethod))
 		{
 			if (!CostEngine.isActivityControlElement(element))
 			{
 				continue;
 			}
-			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.get_ID());
+			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getM_CostElement_ID());
 			final List<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
 			for (MCost cost : costs)
 			{
@@ -287,7 +288,7 @@ public class RollupWorkflow extends SvrProcess
 			node.saveEx();
 		}
 		workflow.saveEx();
-		log.info("Product: "+product.getName()+" WFCost: " + workflow.getCost());                                
+		log.info("Product: "+product.getName()+" WFCost: " + workflow.getCost());
 	}
 
 	/**

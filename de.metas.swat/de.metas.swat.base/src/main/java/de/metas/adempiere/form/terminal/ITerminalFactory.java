@@ -109,6 +109,7 @@ public interface ITerminalFactory
 
 	/**
 	 * Analog to {@link #createTerminalKeyPanel(IKeyLayout, ITerminalKeyListener)}, but with a {@link NullTerminalKeyListener}.
+	 *
 	 * @param keylayout
 	 * @return
 	 */
@@ -184,27 +185,14 @@ public interface ITerminalFactory
 	ITerminalNumericField createTerminalNumericField(String name, int displayType, float fontSize, boolean withButtons, boolean withLabel, String constraints);
 
 	/**
-	 * Calls {@link #createModalDialog(IComponent, String, IComponent, boolean)} with <code>maintainOwnContextReferences==true</code>.
+	 * Creates a modal dialog for the given <code>content</code> component.
+	 * <p>
+	 * <b>IMPORTANT:</b> you will most probably want to put this invocation into a <code>try-with-resources</code> block with {@link ITerminalContext#newReferences()},
+	 * and the given <code>content</code> as well as its model shall probably also be within that same block.
 	 *
-	 * @param parent
-	 * @param title
-	 * @param content
 	 * @return
 	 */
 	ITerminalDialog createModalDialog(IComponent parent, String title, IComponent content);
-
-	/**
-	 *
-	 * @param parent
-	 * @param title
-	 * @param content
-	 * @param maintainOwnContextReferences
-	 *            if <code>true</code>, then create a new set of references from this point, to be able to destroy them when the dialog closes.
-	 *            In this way we can avoid memory leaks right from this Dialog and from components, listeners etc that were created will using this dialog.
-	 *            Calls with <code>false</code> if there is a model that will be used with the dialog and that already has its own contextRefs.
-	 * @return
-	 */
-	ITerminalDialog createModalDialog(IComponent parent, String title, IComponent content, boolean maintainOwnContextReferences);
 
 	IPropertiesPanel createPropertiesPanel();
 

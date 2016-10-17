@@ -13,15 +13,14 @@ package de.metas.fresh.picking.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
@@ -49,6 +48,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane.ScrollPolicy;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.field.constraint.PositiveNumericFieldConstraint;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsRequest;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsResult;
@@ -365,7 +365,7 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 	@Override
 	public void dispose()
 	{
-		disposed  = true;
+		disposed = true;
 	}
 
 	@Override
@@ -503,17 +503,24 @@ public class DistributeQtyToNewHUsReadPanel implements IComponent, ITerminalDial
 		 */
 		public final DistributeQtyToNewHUsResult getResultOrNull()
 		{
-			final DistributeQtyToNewHUsReadPanel readPanel = new DistributeQtyToNewHUsReadPanel(this);
-			readPanel.setRequest(getRequest());
-			final ITerminalDialog readPanelDialog = getTerminalFactory().createModalDialog(getParentComponent(), getTitle(), readPanel);
-			readPanelDialog.setSize(new Dimension(450, 350));
-			readPanelDialog.activate();
-			if (readPanelDialog.isCanceled())
+			final DistributeQtyToNewHUsResult result;
+			try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 			{
-				return null;
-			}
+				final DistributeQtyToNewHUsReadPanel readPanel = new DistributeQtyToNewHUsReadPanel(this);
+				readPanel.setRequest(getRequest());
 
-			final DistributeQtyToNewHUsResult result = readPanel.getResult();
+				final ITerminalDialog readPanelDialog = getTerminalFactory().createModalDialog(getParentComponent(), getTitle(), readPanel);
+
+				readPanelDialog.setSize(new Dimension(450, 350));
+				readPanelDialog.activate();
+
+				if (readPanelDialog.isCanceled())
+				{
+					return null;
+				}
+
+				result = readPanel.getResult();
+			}
 			return result;
 		}
 

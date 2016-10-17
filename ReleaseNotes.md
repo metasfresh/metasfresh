@@ -21,19 +21,24 @@ upcoming
 ## Fixes
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
+* #483 Gebindeübersicht Report Typo fix
+* #482 Unable to issue certain HUs to a PP_Order
+* #494 R_Request new Request context missing
 
 # metasfresh 4.39.38 (2016-41)
 
-this week's RC
-
 ## Features
 * #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
+   - Changing the Field in Material Receipt Schedule fpr Packing Materiel. Swapped from pirtual to physical column.
 
 
 ## Fixes
 * #448 Rounding issue with partical credit memos
+   - Fixing a rounding issue which popped up after createing a partial credit memo for referenced invoice document.
 * #270 Purchase Order from Sales Order Process wrong Aggregation
+   - Optimized the Purchase Order creation process from Procurement candidates. Purchase Orders are now aggregated properly when identical Vendor and products (and further details).
 * #433 C_Order copy with details: Packing Instructions are not copied
+   - Fixed a Bug when using Copy with details in c_order. Packing Instructions are now copied too.
 
 # metasfresh 4.38.37 (2016-40)
 

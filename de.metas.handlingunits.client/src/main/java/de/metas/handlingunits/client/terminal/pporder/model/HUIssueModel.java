@@ -16,15 +16,14 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.sql.Timestamp;
@@ -50,6 +49,7 @@ import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -159,7 +159,7 @@ public class HUIssueModel implements IDisposable
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		disposed  = true;
+		disposed = true;
 	}
 
 	@Override
@@ -355,17 +355,19 @@ public class HUIssueModel implements IDisposable
 	{
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
 
-		final HUEditorModel editorModel = createIssueHUEditorModel();
-
-		final boolean edited = editorCallback.editHUs(editorModel);
-
-		if (edited)
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-			createIssues(selectedHUs);
+			final HUEditorModel editorModel = createIssueHUEditorModel();
+
+			final boolean edited = editorCallback.editHUs(editorModel);
+
+			if (edited)
+			{
+				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
+				createIssues(selectedHUs);
+			}
 		}
 
-		//
 		// Reload everything
 		loadManufacturingOrderKeyLayout();
 		loadOrderBOMLineKeyLayout();
