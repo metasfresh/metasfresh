@@ -191,7 +191,6 @@ public class DBException extends AdempiereException
 		super(msg);
 	}
 
-
 	/**
 	 * @return SQL Query or null
 	 */
@@ -331,22 +330,31 @@ public class DBException extends AdempiereException
 		return Check.equals(exceptionSQLState, sqlState);
 	}
 
-	private static final String extractSQLStateOrNull(final Throwable e)
+	/**
+	 * Try to get the {@link SQLException} from the given {@link Throwable}.
+	 *
+	 * @param Throwable t
+	 * @return {@link SQLException} if found or provided exception elsewhere
+	 */
+	public static final SQLException extractSQLExceptionOrNull(final Throwable t)
 	{
-		if (e == null)
+		if (t == null)
 		{
 			return null;
 		}
-		else if (e instanceof SQLException)
+
+		final Throwable cause = extractCause(t);
+
+		if (cause instanceof SQLException)
 		{
-			return ((SQLException)e).getSQLState();
+			return (SQLException)t;
 		}
-		else if (e instanceof DBException)
+		else if (cause instanceof DBException)
 		{
-			final SQLException sqlEx = ((DBException)e).getSQLException();
+			final SQLException sqlEx = ((DBException)t).getSQLException();
 			if (sqlEx != null)
 			{
-				return sqlEx.getSQLState();
+				return sqlEx;
 			}
 			else
 			{
@@ -354,6 +362,16 @@ public class DBException extends AdempiereException
 			}
 		}
 		return null;
+	}
+
+	private static final String extractSQLStateOrNull(final Throwable t)
+	{
+		final SQLException sqlException = extractSQLExceptionOrNull(t);
+		if (sqlException == null)
+		{
+			return null;
+		}
+		return sqlException.getSQLState();
 	}
 
 	/**
@@ -448,23 +466,4 @@ public class DBException extends AdempiereException
 		return isErrorCode(e, 40001); // not tested for oracle, just did a brief googling
 	}
 
-	/**
-	 * Try to get the {@link SQLException} from Exception
-	 *
-	 * @param e Exception
-	 * @return {@link SQLException} if found or provided exception elsewhere
-	 */
-	public static Exception getSQLException(final Exception e)
-	{
-		Throwable e1 = e;
-		while (e1 != null)
-		{
-			if (e1 instanceof SQLException)
-			{
-				return (SQLException)e1;
-			}
-			e1 = e1.getCause();
-		}
-		return e;
-	}
 }	// DBException

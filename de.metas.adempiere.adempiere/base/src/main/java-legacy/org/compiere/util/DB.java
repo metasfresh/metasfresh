@@ -1021,7 +1021,7 @@ public final class DB
 		}
 		catch (final Exception ex)
 		{
-			Exception sqlException = DBException.getSQLException(ex);
+			Exception sqlException = DBException.extractSQLExceptionOrNull(ex);
 			// metas-2009_0021_AP1_CR061: teo_sarca: begin
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
@@ -1343,7 +1343,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1429,7 +1429,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error("Error while executing: {}", sql, DBException.getSQLException(e));
+			log.error("Error while executing: {}", sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return retValue;
 	}
@@ -1515,7 +1515,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1600,7 +1600,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		return null;
 	}
@@ -1674,7 +1674,7 @@ public final class DB
 		}
 		catch (Exception e)
 		{
-			log.error(sql, DBException.getSQLException(e));
+			log.error(sql, DBException.extractSQLExceptionOrNull(e));
 		}
 		finally
 		{
@@ -1740,7 +1740,7 @@ public final class DB
 				}
 				catch (Exception ee)
 				{
-					ee = DBException.getSQLException(ee);
+					ee = DBException.extractSQLExceptionOrNull(ee);
 					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
 				}
 				finally
