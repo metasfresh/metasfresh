@@ -24,10 +24,10 @@ class Subheader extends Component {
     }
     componentDidMount() {
         const {dispatch, windowType, dataId} = this.props;
-        dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
+        windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
             dispatch(setReferences(response.data.references));
         });
-        dispatch(getDocumentActions(windowType, dataId)).then((response) => {
+        windowType && dataId && dispatch(getDocumentActions(windowType, dataId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
     }
