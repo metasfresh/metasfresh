@@ -44,10 +44,10 @@ export function addNotification(title, msg, time, notifType){
     }
 }
 
-export function deleteNotification(item){
+export function deleteNotification(id){
     return {
         type: types.DELETE_NOTIFICATION,
-        item: item
+        id: id
     }
 }
 
