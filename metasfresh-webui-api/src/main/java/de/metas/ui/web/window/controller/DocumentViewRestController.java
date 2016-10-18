@@ -150,7 +150,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody final List<JSONDocumentFilter> jsonFilters //
+			, @RequestBody(required = false) final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
 		loginService.assertLoggedIn();
