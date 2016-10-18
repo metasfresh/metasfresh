@@ -23,11 +23,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
@@ -35,14 +40,12 @@ import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
 import org.compiere.model.MQuery;
-import org.compiere.model.MRefTable;
-import org.compiere.model.MReference;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -70,7 +73,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	 * <p>
 	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
 	 */
-	final static String SQL =              //
+	private final static String SQL =              //
 	"  SELECT " //
 			+ "    rt.AD_RelationType_ID AS " + COLUMNNAME_AD_RelationType_ID //
 			+ ",   rt.Name AS " + COLUMNNAME_Name //
@@ -97,9 +100,9 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			+ "    AND tab.AD_Key=?" //
 			+ "  ORDER BY rt.Name";
 
-	final static String SQL_WINDOW_NAME = "SELECT Name FROM AD_Window WHERE AD_WINDOW_ID=?";
+	private final static String SQL_WINDOW_NAME = "SELECT Name FROM AD_Window WHERE AD_WINDOW_ID=?";
 
-	final static String SQL_WINDOW_NAME_TRL = "SELECT Name FROM AD_Window_Trl WHERE AD_WINDOW_ID=?";
+	private final static String SQL_WINDOW_NAME_TRL = "SELECT Name FROM AD_Window_Trl WHERE AD_WINDOW_ID=?";
 
 	/**
 	 *
@@ -138,7 +141,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		if (keyColumn == null)
 		{
 			logger.error("{} does not have a single key column", source);
-			PORelationException.throwWrongKeyColumnCount(source);
+			throw PORelationException.throwWrongKeyColumnCount(source);
 		}
 
 		final int colId = MColumn.getColumn_ID(source.getTableName(), keyColumn);
@@ -171,16 +174,13 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	{
 		checkDestinationRefId();
 
-		final Integer colIdx;
+		final int colIdx;
 		final String keyValue;
 
 		if (destinationRefId == getAD_Reference_Source_ID())
 		{
-
 			colIdx = this.get_ColumnIndex(COLUMNNAME_Role_Source);
 			keyValue = getRole_Source();
-			
-			
 		}
 		else
 		{
@@ -233,7 +233,8 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	 * @return a list of relation types whose
 	 * @throws SQLException
 	 */
-	private static List<IZoomProvider> evalResultSet(final IZoomSource source, final ResultSet rs) throws SQLException	{
+	private static List<IZoomProvider> evalResultSet(final IZoomSource source, final ResultSet rs) throws SQLException
+	{
 		final List<IZoomProvider> result = new ArrayList<>();
 
 		final Set<Integer> alreadySeen = new HashSet<>();
@@ -261,7 +262,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 				sourceRefId = newType.getAD_Reference_Target_ID();
 			}
 
-			final String sourceWhereClause = MReference.retrieveRefTable(source.getCtx(), sourceRefId, source.getTrxName()).getWhereClause();
+			final String sourceWhereClause = Services.get(ILookupDAO.class).retrieveTableRefInfo(sourceRefId).getWhereClause();
 			if (Check.isEmpty(sourceWhereClause) || whereClauseMatches(source, sourceWhereClause))
 			{
 				result.add(newType);
@@ -295,8 +296,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		{
 			// this relation type is from one table to the same table
 			// use the window-id to distinguish
-			final I_AD_Ref_Table sourceRefTable = MReference.retrieveRefTable(source.getCtx(), getAD_Reference_Source_ID(), source.getTrxName());
-
+			final ITableRefInfo sourceRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(getAD_Reference_Source_ID());
 			if (source.getAD_Window_ID() == retrieveWindowID(source, sourceRefTable))
 			{
 				destinationRefId = getAD_Reference_Target_ID();
@@ -344,10 +344,8 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		whereClause.append(keyColumn);
 		whereClause.append("=" + source.getRecord_ID() + " )");
 
-		final int id = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
-			.setOrderBy(keyColumn)
-			.firstId(); // using firstId might be a bit cheaper, because the DBMS might not have to load the actual row.
-		final boolean match = id > 0;
+		final boolean match = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
+				.match();
 
 		logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, source, match);
 		return match;
@@ -375,7 +373,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	public void checkDestinationRefId()
 	{
-		if (destinationRefId == 0)
+		if (destinationRefId <= 0)
 		{
 			throw new IllegalStateException(
 					"Can't create a destination query when I don't know which one of the two AD_Reference_ID is the destination.");
@@ -392,7 +390,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 	{
 		checkDestinationRefId();
 
-		final MRefTable refTable = MReference.retrieveRefTable(getCtx(), destinationRefId, get_TrxName());
+		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
 
 		final MQuery query = mkQuery(source, refTable);
 		evaluateQuery(query);
@@ -406,17 +404,18 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		}
 		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
 
-		return ImmutableList.of(ZoomInfoFactory.ZoomInfo.of(windowId, query, display));
+		final String zoomInfoId = "relationType-"+getAD_RelationType_ID();
+		return ImmutableList.of(ZoomInfo.of(zoomInfoId, windowId, query, display));
 	}
 
 	@Deprecated
-	private MQuery mkQuery(final PO po, final I_AD_Ref_Table refTable)
+	private MQuery mkQuery(final PO po, final ITableRefInfo refTable)
 	{
 		final IZoomSource source = POZoomSource.of(po);
 		return mkQuery(source, refTable);
 	}
 
-	private MQuery mkQuery(final IZoomSource source, final I_AD_Ref_Table refTable)
+	private MQuery mkQuery(final IZoomSource source, final ITableRefInfo refTable)
 	{
 		// FIXME: avoid direct SQL where clause because it's not friendly with webui
 		
@@ -439,14 +438,14 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			// "explicit" means that the where clause only defines a superset of possible relation elements.
 			// Therefore, we now need to append the actually existing elements to the wehre clause.
 
-			final String destinationKeyCol = MColumn.getColumnName(getCtx(), refTable.getAD_Key());
+			final String destinationKeyCol = refTable.getKeyColumn();
 
 			queryWhereClause.append(" AND ").append(destinationKeyCol).append(" IN ( -99 ");
 
-			final List<PO> targets = MRelation.retrieveDestinations(getCtx(), this, source.getAD_Table_ID(), source.getRecord_ID(), get_TrxName());
+			final List<PO> targets = MRelation.retrieveDestinations(getCtx(), this, source.getTableName(), source.getRecord_ID(), get_TrxName());
 			for (final PO target : targets)
 			{
-				assert target.get_Table_ID() == refTable.getAD_Table_ID() : "target=" + target + "; refTable=" + refTable;
+				assert Objects.equals(target.get_TableName(), refTable.getTableName()) : "target=" + target + "; refTable=" + refTable;
 				queryWhereClause.append(", ");
 				queryWhereClause.append(target.get_ID());
 			}
@@ -465,56 +464,45 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	/**
 	 *
-	 * @param po
+	 * @param source
 	 * @param refTable
 	 *
 	 * @return the <code>AD_Window_ID</code> for the given <code>refTable</code> or <code>PO</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
 	 */
-	@Deprecated
-	public int retrieveWindowID(final PO po, final MRefTable refTable)
+	private int retrieveWindowID(final IZoomSource source, final ITableRefInfo refTable)
 	{
-		final IZoomSource source = POZoomSource.of(po);
-		return retrieveWindowID(source, refTable);
-	}
-
-	private int retrieveWindowID(final IZoomSource source, final I_AD_Ref_Table refTable)
-	{
-		int windowId = refTable.getAD_Window_ID();
+		int windowId = refTable.getOverrideZoomWindow();
 		if(windowId > 0)
 		{
 			return windowId;
 		}
 		
 		
-		final I_AD_Table table = refTable.getAD_Table();
 		final boolean isSOTrx = source.isSOTrx();
 		if (isSOTrx)
 		{
-			windowId = table.getAD_Window_ID();
+			windowId = refTable.getZoomWindow();
 		}
 		else
 		{
-			windowId = table.getPO_Window_ID();
+			windowId = refTable.getZoomWindowPO();
 		}
 		if (windowId <= 0)
 		{
-			PORelationException.throwMissingWindowId(getAD_Reference_Target().getName(), table.getName(), isSOTrx);
+			throw PORelationException.throwMissingWindowId(getAD_Reference_Target().getName(), refTable.getTableName(), isSOTrx);
 		}
 		
 		return windowId;
 	}
 
-	public static MRelationType retrieveForInternalName(final Properties ctx, final String internalName, final String trxName)
+	public static I_AD_RelationType retrieveForInternalName(final Properties ctx, final String internalName, final String trxName)
 	{
-		// TODO us197:
-		// * Make 'InternalName' unique
-		final String wc = COLUMNNAME_InternalName + "=?";
-
-		return new Query(ctx, Table_Name, wc, trxName)
-				.setParameters(internalName)
-				.setOnlyActiveRecords(true)
-				.firstOnly();
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_RelationType.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_RelationType.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnly(I_AD_RelationType.class);
 	}
 
 	private static void evaluateQuery(final MQuery query)
@@ -522,15 +510,14 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
 
 		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
-
-		final int count = DB.getSQLValueEx(null, sqlCount);
+		final int count = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
 		query.setRecordCount(count);
 
 		if (count > 0)
 		{
 			final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
 
-			final int firstKey = DB.getSQLValueEx(null, sqlFirstKey);
+			final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
 			query.setZoomValue(firstKey);
 		}
 	}
@@ -553,19 +540,20 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 
 	private String retrieveTableName(final int refId)
 	{
-		return MReference.retrieveRefTable(getCtx(), refId, get_TrxName()).getAD_Table().getTableName();
+		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(refId);
+		return refTable.getTableName();
 	}
 
-	public String retrieveDestinationKeyColName()
+	private String retrieveDestinationKeyColName()
 	{
-		final int keyColumnId = MReference.retrieveRefTable(getCtx(), destinationRefId, get_TrxName()).getAD_Key();
-		return MColumn.getColumnName(getCtx(), keyColumnId);
+		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
+		return refTable.getKeyColumn();
 	}
 
 	@Override
 	public String toString()
 	{
-		final StringBuffer sb = new StringBuffer("MRelationType[");
+		final StringBuilder sb = new StringBuilder("MRelationType[");
 		//
 		sb.append(get_ID());
 		sb.append(", InternalName=").append(getInternalName());
@@ -600,7 +588,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 			return MRelation.retrieveDestinations(sourcePO.getCtx(), this, sourcePO, sourcePO.get_TrxName());
 		}
 		final int destinationRefId = findDestinationRefId(sourcePO, -1);
-		final MRefTable destinationRefTable = MReference.retrieveRefTable(getCtx(), destinationRefId, get_TrxName());
+		final ITableRefInfo destinationRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
 
 		final MQuery query = mkQuery(sourcePO, destinationRefTable);
 
