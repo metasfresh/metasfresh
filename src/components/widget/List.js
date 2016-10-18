@@ -52,9 +52,11 @@ class List extends Component {
         this.handleBlur();
     }
     handleSelect = (option) => {
-        const {onChange} = this.props;
+        const {onChange, setSelectedItem} = this.props;
         onChange(option);
+        setSelectedItem(option);
         this.handleBlur();
+
     }
     renderOptions = () => {
         return this.state.list.map((option, index) => (
@@ -66,6 +68,7 @@ class List extends Component {
     }
     render() {
         const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
+
         return (
             <div
                 tabIndex="0"

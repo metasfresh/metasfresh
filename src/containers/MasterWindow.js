@@ -12,7 +12,7 @@ import {
 
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
-import Widget from '../components/Widget';
+import MasterWidget from '../components/MasterWidget';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {

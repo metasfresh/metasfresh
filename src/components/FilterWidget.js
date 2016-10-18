@@ -22,8 +22,6 @@ class FilterWidget extends Component {
     constructor(props) {
         super(props);
 
-        console.log(props);
-
         this.state = {
             cachedValue: null,
             updated: false
@@ -47,9 +45,6 @@ class FilterWidget extends Component {
 
         dispatch(setFilter(filter));
         updateDocList('grid', windowType);
-
-        console.log(property);
-        console.log(value);
         
     }
     //
@@ -121,12 +116,6 @@ class FilterWidget extends Component {
 
     render() {
         const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId} = this.props;
-        // const fields=[{
-        //     emptyText: "search",
-        //     firld: "C_DocType_ID",
-        //     source: "list"
-        // }]
-        console.log(widgetData);
         const {updated} = this.state;
         if(widgetData){
             return (

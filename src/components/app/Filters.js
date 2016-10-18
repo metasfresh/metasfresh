@@ -25,7 +25,6 @@ class Filters extends Component {
     }
 
     showFilter = (filterData) => {
-        // console.log(filterData);
 
         const {openFilter} = this.state;
         this.setState(Object.assign({}, this.state, {
@@ -46,7 +45,6 @@ class Filters extends Component {
 
     clearFilterData = () => {
         const {windowType, updateDocList, dispatch} = this.props;
-        console.log(dispatch);
         dispatch(setFilter(null));
         updateDocList('grid', windowType);
     }
@@ -54,8 +52,6 @@ class Filters extends Component {
     render() {
         const {openList, openFilter, filterDataItem, open} = this.state;
         const {filterData, windowType, updateDocList} = this.props;
-
-        // console.log(filterData);
 
         return (
             <div className="filter-wrapper">

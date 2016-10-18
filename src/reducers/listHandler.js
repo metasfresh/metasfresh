@@ -14,7 +14,6 @@ const initialState = {
 export default function listHandler(state = initialState, action) {
     switch(action.type){
         case types.SET_LIST_FILTERS:
-            console.log(action.filter);
             return Object.assign({}, state, {
                 filters: action.filter
             })

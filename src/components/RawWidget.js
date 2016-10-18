@@ -15,21 +15,32 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            selectedItem: {}
+        }
 
+    }
+
+    setSelectedItem = (item) => {
+        this.setState(Object.assign({}, this.state, {
+            selectedItem: item
+        }));
     }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName} = this.props;
-
-        console.log(data);
+        const {selectedItem} = this.state;
 
         let widgetField = "";
+        let selectedField = "";
 
         if (filterWidget) {
             widgetField = fields[0].parameterName;
+            selectedField = selectedItem;
         } else {
-             widgetField = fields[0].field;
+            widgetField = fields[0].field;
+            selectedField = data[0].value;
         } 
 
 
@@ -113,6 +124,7 @@ class RawWidget extends Component {
                         filterWidget={filterWidget}
                         filterId={filterId}
                         parameterName={parameterName}
+                        setSelectedItem={this.setSelectedItem}
                     />
                 )
             case "List":
@@ -120,7 +132,7 @@ class RawWidget extends Component {
                     <List
                         dataId={dataId}
                         defaultValue={fields[0].emptyText}
-                        selected={data[0].value}
+                        selected={selectedField}
                         properties={fields}
                         readonly={data[0].readonly}
                         mandatory={data[0].mandatory}
@@ -133,6 +145,7 @@ class RawWidget extends Component {
                         filterWidget={filterWidget}
                         filterId={filterId}
                         parameterName={parameterName}
+                        setSelectedItem={this.setSelectedItem}
                     />
                 )
             case "Text":

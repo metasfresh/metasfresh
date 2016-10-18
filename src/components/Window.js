@@ -5,7 +5,6 @@ import {
     findRowByPropName
 } from '../actions/WindowActions';
 
-import Widget from '../components/Widget';
 import MasterWidget from '../components/MasterWidget';
 import Tabs from '../components/widget/Tabs';
 import TabPane from '../components/widget/TabPane';

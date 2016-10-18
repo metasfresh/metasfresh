@@ -56,7 +56,8 @@ class Lookup extends Component {
             dataId,
             fields,
             filterWidget,
-            parameterName
+            parameterName,
+            setSelectedItem
         } = this.props;
 
         const {
@@ -72,9 +73,13 @@ class Lookup extends Component {
         );
 
         if(filterWidget) {
-            console.log('sdsd');
-            console.log(select);
             onChange(parameterName, select);
+            setSelectedItem(select);
+
+            this.inputSearch.value = select[Object.keys(select)[0]];
+
+            this.handleBlur();
+
 
         } else {
             // handling selection when main is not set or set.

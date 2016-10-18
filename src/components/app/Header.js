@@ -7,7 +7,7 @@ import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
-import Widget from '../Widget';
+import MasterWidget from '../MasterWidget';
 import SideList from '../app/SideList';
 import Indicator from './Indicator';
 import MenuOverlay from './MenuOverlay';
@@ -121,7 +121,7 @@ class Header extends Component {
                 {docNo && <span className="divider">/</span>}
 
                 {docNo && <span className="header-input-id header-input-sm">
-                    <Widget
+                    <MasterWidget
                         windowType={windowType}
                         dataId={dataId}
                         widgetData={[docNoData]}
@@ -171,7 +171,7 @@ class Header extends Component {
                             </div>
                             <div className="header-right-side">
                                 {docStatus &&
-                                    <Widget
+                                    <MasterWidget
                                         windowType={windowType}
                                         dataId={dataId}
                                         widgetData={[docStatusData]}

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import Widget from '../Widget';
 import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
+import MasterWidget from '../MasterWidget';
+
 
 class TableCell extends Component {
     constructor(props) {
@@ -86,7 +87,7 @@ class TableCell extends Component {
             >
                 {
                     isEdited ?
-                        <Widget
+                        <MasterWidget
                             {...item}
                             dataId={docId}
                             widgetData={widgetData}

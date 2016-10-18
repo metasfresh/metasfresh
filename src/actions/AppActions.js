@@ -26,7 +26,6 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
     
     return (dispatch) => {
         const firstRow = pageLength * (page - 1);
-        console.log(viewId + ' ' + firstRow + ' ' + pageLength + ' ' + orderBy);
         return axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''))
     }
 }

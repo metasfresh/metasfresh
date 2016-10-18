@@ -22,7 +22,6 @@ class DocumentList extends Component {
     constructor(props){
         super(props);
         const {filters, type, windowType} = props;
-        console.log(props);
 
         this.state = {
             data: null,
@@ -52,22 +51,14 @@ class DocumentList extends Component {
     updateData = (type, windowType) => {
 
         const {dispatch} = this.props;
-
-        console.log('updated');
         
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
-            console.log('LAYOUT');
-            console.log(response.data);
             const  { filters } = this.props
-            console.log('filters');
-            console.log(filters);
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
                
                 dispatch(createViewRequest(windowType, type, 20, !!filters ? [filters] : [])).then((response) => {
-                    console.log('VIEW');
-                    console.log(response.data);
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -108,8 +99,6 @@ class DocumentList extends Component {
         const {dispatch} = this.props;
 
         dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
-            console.log('DATA ');
-            console.log(response.data);
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))
@@ -185,15 +174,10 @@ class DocumentList extends Component {
                             <span>Filters: </span>
                         }
                         <DatetimeRange />
-                        <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
-                            <i className="meta-icon-preview" />
-                            {filters ?
-                                " ..." : " No search filters"
-                            }
-                        </button>
+                        <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
                     </div>
 
-                    <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
+                    
 
 
                     <div>
