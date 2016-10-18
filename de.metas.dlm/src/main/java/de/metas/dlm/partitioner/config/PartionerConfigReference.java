@@ -45,6 +45,7 @@ public class PartionerConfigReference
 	private final String referencingColumnName;
 	private final PartitionerConfigLine referencedConfigLine;
 	private final PartitionerConfigLine parent;
+	private int DLM_Partion_Config_Reference_ID;
 
 	private PartionerConfigReference(final PartitionerConfigLine parent,
 			final String referencingColumnName,
@@ -80,7 +81,17 @@ public class PartionerConfigReference
 	@Override
 	public String toString()
 	{
-		return "PartionConfigReference [parent=" + parent + ", referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", referencedConfigLine=" + referencedConfigLine + "]";
+		return "PartionConfigReference [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", referencedConfigLine=" + referencedConfigLine + "]";
+	}
+
+	public int getDLM_Partion_Config_Reference_ID()
+	{
+		return DLM_Partion_Config_Reference_ID;
+	}
+
+	public void setDLM_Partion_Config_Reference_ID(final int DLM_Partion_Config_Reference_ID)
+	{
+		this.DLM_Partion_Config_Reference_ID = DLM_Partion_Config_Reference_ID;
 	}
 
 	public static class RefBuilder
@@ -111,6 +122,7 @@ public class PartionerConfigReference
 
 		/**
 		 * Set the table name of the {@link PartitionerConfigLine} that the ref build by this instance shall reference.
+		 * Note that the respective line itself only has to exist when the <code>build</code> method of {@link PartitionerConfig#builder()} is called, but ot yet when this method is called..
 		 *
 		 * @param referencedConfigLineTableName
 		 * @return

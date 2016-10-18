@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -16,7 +16,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1895632604L;
+	private static final long serialVersionUID = 1516052975L;
 
 	/** Standard Constructor */
 	public X_DLM_Partition(final Properties ctx, final int DLM_Partition_ID, final String trxName)
@@ -25,6 +25,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 		/**
 		 * if (DLM_Partition_ID == 0)
 		 * {
+		 * setDLM_Partion_Config_ID (0);
 		 * setDLM_Partition_ID (0);
 		 * }
 		 */
@@ -44,9 +45,55 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 		return poi;
 	}
 
+	@Override
+	public de.metas.dlm.model.I_DLM_Partion_Config getDLM_Partion_Config() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DLM_Partion_Config_ID, de.metas.dlm.model.I_DLM_Partion_Config.class);
+	}
+
+	@Override
+	public void setDLM_Partion_Config(final de.metas.dlm.model.I_DLM_Partion_Config DLM_Partion_Config)
+	{
+		set_ValueFromPO(COLUMNNAME_DLM_Partion_Config_ID, de.metas.dlm.model.I_DLM_Partion_Config.class, DLM_Partion_Config);
+	}
+
+	/**
+	 * Set DLM_Partion_Config.
+	 * 
+	 * @param DLM_Partion_Config_ID DLM_Partion_Config
+	 */
+	@Override
+	public void setDLM_Partion_Config_ID(final int DLM_Partion_Config_ID)
+	{
+		if (DLM_Partion_Config_ID < 1)
+		{
+			set_ValueNoCheck(COLUMNNAME_DLM_Partion_Config_ID, null);
+		}
+		else
+		{
+			set_ValueNoCheck(COLUMNNAME_DLM_Partion_Config_ID, Integer.valueOf(DLM_Partion_Config_ID));
+		}
+	}
+
+	/**
+	 * Get DLM_Partion_Config.
+	 * 
+	 * @return DLM_Partion_Config
+	 */
+	@Override
+	public int getDLM_Partion_Config_ID()
+	{
+		final Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partion_Config_ID);
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii.intValue();
+	}
+
 	/**
 	 * Set Partition.
-	 *
+	 * 
 	 * @param DLM_Partition_ID Partition
 	 */
 	@Override
@@ -64,7 +111,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 
 	/**
 	 * Get Partition.
-	 *
+	 * 
 	 * @return Partition
 	 */
 	@Override

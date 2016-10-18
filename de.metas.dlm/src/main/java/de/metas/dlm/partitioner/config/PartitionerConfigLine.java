@@ -43,6 +43,7 @@ public class PartitionerConfigLine
 	private final String tablename;
 	private final PartitionerConfig parent;
 	private final List<PartionerConfigReference> references = new ArrayList<>();
+	private int DLM_Partion_Config_Line_ID = 0;
 
 	private PartitionerConfigLine(final PartitionerConfig parent, final String tableName)
 	{
@@ -77,10 +78,20 @@ public class PartitionerConfigLine
 		return parent;
 	}
 
+	public int getDLM_Partion_Config_Line_ID()
+	{
+		return DLM_Partion_Config_Line_ID;
+	}
+
+	public void setDLM_Partion_Config_Line_ID(final int DLM_Partion_Config_Line_ID)
+	{
+		this.DLM_Partion_Config_Line_ID = DLM_Partion_Config_Line_ID;
+	}
+
 	@Override
 	public String toString()
 	{
-		return "PartitionerConfigLine [parent=" + parent + ", tablename=" + tablename + ", references=" + references + "]";
+		return "PartitionerConfigLine [tablename=" + tablename + ", references=" + references + "]";
 	}
 
 	public static class LineBuilder
@@ -143,5 +154,4 @@ public class PartitionerConfigLine
 
 		}
 	}
-
 }

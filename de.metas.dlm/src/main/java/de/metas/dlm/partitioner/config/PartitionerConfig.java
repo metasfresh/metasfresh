@@ -33,11 +33,26 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 
 public class PartitionerConfig
 {
+	/**
+	 * If this instance is already persisted on DB, then this is its key.
+	 */
+	private int DLM_Partion_Config_ID = 0;
+
 	private final List<PartitionerConfigLine> lines;
 
 	private PartitionerConfig()
 	{
 		lines = new ArrayList<>();
+	}
+
+	public int getDLM_Partion_Config_ID()
+	{
+		return DLM_Partion_Config_ID;
+	}
+
+	public void setDLM_Partion_Config_ID(final int dlm_Partion_Config_ID)
+	{
+		DLM_Partion_Config_ID = dlm_Partion_Config_ID;
 	}
 
 	/**
@@ -71,6 +86,12 @@ public class PartitionerConfig
 				.filter(l -> l.getTableName().equalsIgnoreCase(tableName))
 				.findFirst()
 				.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
+	}
+
+	@Override
+	public String toString()
+	{
+		return "PartitionerConfig [DLM_Partion_Config_ID=" + DLM_Partion_Config_ID + ", lines=" + lines + "]";
 	}
 
 	public static class Builder
