@@ -2,7 +2,7 @@ import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
 const initialState = {
-    filters: null,
+    filters: [],
     sorting: {
         prop: null,
         dir: null,
@@ -32,7 +32,7 @@ export default function listHandler(state = initialState, action) {
             })
         case types.CLEAR_LIST_PROPS:
             return Object.assign({}, state, {
-                filters: null,
+                filters: [],
                 page: 1,
                 sorting: {},
                 windowType: null
