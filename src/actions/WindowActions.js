@@ -143,7 +143,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
         // this chain is really important,
         // to do not re-render widgets on init
-        dispatch(initWindow(windowType, docId, tabId, rowId))
+        return dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
 
                 if(docId == "NEW" && !isModal){
@@ -163,12 +163,6 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
-                    dispatch(getRelatedDocuments(windowType, docId)).then((response) => {
-                        dispatch(setReferences(response.data.references));
-                    })
-                    dispatch(getDocumentActions(windowType, docId)).then((response) => {
-                        dispatch(setActions(response.data.actions));
-                    })
                 }
             }).then(response =>
                 dispatch(initLayout(windowType, tabId))

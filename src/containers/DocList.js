@@ -9,6 +9,10 @@ import {
     getWindowBreadcrumb
 } from '../actions/MenuActions';
 
+import {
+    updateUri
+} from '../actions/AppActions';
+
 class DocList extends Component {
     constructor(props){
         super(props);
@@ -19,15 +23,15 @@ class DocList extends Component {
         dispatch(getWindowBreadcrumb(windowType))
     }
 
-    sortingCallback = (asc, field) => {
-        const {dispatch, windowType} = this.props;
-        dispatch(replace('/window/' + windowType + '?sortby=' + field + '&sortdir=' + asc));
+    updateUriCallback = (prop, value) => {
+        const {dispatch, query, pathname} = this.props;
+        dispatch(updateUri(pathname, query, prop, value));
     }
 
     renderDocumentList = (windowType, query) => {
         return (<DocumentList
             type="grid"
-            sortingCallback={this.sortingCallback}
+            updateUri={this.updateUriCallback}
             windowType={windowType}
             query={query}
         />)
@@ -51,6 +55,8 @@ DocList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired,
     query: PropTypes.object.isRequired,
+    search: PropTypes.string.isRequired,
+    pathname: PropTypes.string.isRequired
 }
 
 function mapStateToProps(state) {
@@ -63,14 +69,21 @@ function mapStateToProps(state) {
     }
 
     const {
-        query
+        query,
+        search,
+        pathname
     } = routing.locationBeforeTransitions || {
-        query: {}
+        query: {},
+        search: "",
+        pathname: ""
     }
+
 
     return {
         breadcrumb,
-        query
+        query,
+        search,
+        pathname
     }
 }
 

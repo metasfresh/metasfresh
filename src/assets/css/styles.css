@@ -321,12 +321,14 @@ body {
 .order-list-panel{
     position: fixed;
     display: none;
-    height:100%;
+    height: calc(100% - 55px);
     width: 472px;
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
     z-index: 200;
     right:0;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 .order-list-panel-open {
     display: block;
@@ -1268,6 +1270,8 @@ th {
 .notification-item {
     text-align: left;
     width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
     display: inline-block;
     border: 2px solid red;
     border-radius: 3px;

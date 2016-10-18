@@ -39,10 +39,15 @@ class Header extends Component {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: !this.state.isSubheaderShow}));
     }
     handleSideListToggle = () => {
-        this.setState(Object.assign({}, this.state, {isSideListShow: !this.state.isSideListShow}));
+        const {isSideListShow} = this.state;
+        this.toggleScrollScope(!isSideListShow);
+
+        this.setState(Object.assign({}, this.state, {isSideListShow: !isSideListShow}));
     }
-    handleCloseSideList= (callback) => {
+    handleCloseSideList = (callback) => {
         this.setState(Object.assign({}, this.state, {isSideListShow: false}), callback);
+        this.toggleScrollScope(false);
+
     }
     handleBackdropClick = (callback) => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
@@ -73,22 +78,30 @@ class Header extends Component {
     }
 
     handleScroll = (event) => {
-      let scrollTop = event.srcElement.body.scrollTop;
+        let scrollTop = event.srcElement.body.scrollTop;
 
-      if(scrollTop > 0) {
-        this.setState(Object.assign({}, this.state, {
-            scrolled: true
-        }))
-      } else {
-        this.setState(Object.assign({}, this.state, {
-            scrolled: false
-        }))
-      }
+        if(scrollTop > 0) {
+            this.setState(Object.assign({}, this.state, {
+                scrolled: true
+            }))
+        } else {
+            this.setState(Object.assign({}, this.state, {
+                scrolled: false
+            }))
+        }
     }
 
     handleDashboardLink = () => {
         const {dispatch} = this.props;
         dispatch(push("/"));
+    }
+
+    toggleScrollScope = (open) => {
+        if(!open){
+            document.body.style.overflow = "auto";
+        }else{
+            document.body.style.overflow = "hidden";
+        }
     }
 
     renderBreadcrumb = () => {
@@ -198,15 +211,18 @@ class Header extends Component {
                     </div>
                 </nav>
 
-                <Subheader
-                    open={isSubheaderShow}
+                {isSubheaderShow && <Subheader
                     dataId={dataId}
                     references={references}
                     actions={actions}
                     windowType={windowType}
                     onClick={e => this.handleBackdropClick(false)}
-                />
-                {showSidelist && <SideList windowType={windowType} open={isSideListShow} />}
+                />}
+
+                {showSidelist && <SideList
+                    windowType={windowType}
+                    open={isSideListShow}
+                />}
             </div>
         )
     }
