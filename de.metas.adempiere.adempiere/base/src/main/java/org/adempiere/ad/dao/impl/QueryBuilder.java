@@ -78,8 +78,17 @@ import com.google.common.collect.ImmutableMap;
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
 		this.modelClass = modelClass;
-		this.tableName = tableName; // when the table's name is required, use the modelClass to obtain it
-		filters = factory.createCompositeQueryFilter(modelClass);
+
+		if (Check.isEmpty(tableName, true))
+		{
+			filters = factory.createCompositeQueryFilter(modelClass);
+			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		}
+		else
+		{
+			filters = factory.createCompositeQueryFilter(tableName);
+			this.tableName = tableName; // when the table's name is required, don't use the modelClass to obtain it but go with the given table name.
+		}
 	}
 
 	private QueryBuilder(final QueryBuilder<T> from)

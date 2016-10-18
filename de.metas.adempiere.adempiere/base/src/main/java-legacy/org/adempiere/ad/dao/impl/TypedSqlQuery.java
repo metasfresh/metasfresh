@@ -122,7 +122,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (Check.isEmpty(tableName, true))
 		{
 			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
-			Check.errorIf(Check.isEmpty(tableName, true),
+			Check.errorIf(Check.isEmpty(this.tableName, true),
 					"Parameter 'tableName' is empty, and tableName can not be deducted from modelClass={}; trxName={}; whereClause={}; ctx={}",
 					modelClass, trxName, whereClause, ctx);
 		}

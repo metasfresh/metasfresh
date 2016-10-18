@@ -36,13 +36,17 @@ import org.compiere.model.IQuery;
 public class PlainQueryBuilderDAO extends AbstractQueryBuilderDAO
 {
 	@Override
-	protected <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters)
+	protected <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx,
+			final ISqlQueryFilter sqlFilters,
+			final IQueryFilter<T> nonSqlFilters)
 	{
 		final Class<T> modelClass = queryBuildCtx.getModelClass();
+		final String tableName = queryBuildCtx.getTableName();
+
 		final Properties ctx = queryBuildCtx.getCtx();
 		final String trxName = queryBuildCtx.getTrxName();
 
-		final POJOQuery<T> query = new POJOQuery<T>(ctx, modelClass, trxName)
+		final POJOQuery<T> query = new POJOQuery<T>(ctx, modelClass, tableName, trxName)
 				.setOrderBy(queryBuildCtx.getQueryOrderBy())
 				.setLimit(queryBuildCtx.getQueryLimit())
 				.setOnlySelection(queryBuildCtx.getQueryOnlySelectionId())

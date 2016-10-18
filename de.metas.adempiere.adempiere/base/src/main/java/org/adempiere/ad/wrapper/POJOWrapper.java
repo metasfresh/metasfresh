@@ -13,15 +13,14 @@ package org.adempiere.ad.wrapper;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -37,8 +36,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -55,6 +52,9 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
@@ -105,8 +105,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		@SuppressWarnings("unchecked")
 		final T object = (T)Proxy.newProxyInstance(interfaceClass.getClassLoader(),
 				new Class<?>[] { interfaceClass },
-				wrapper
-				);
+				wrapper);
 
 		setTrxName(object, trxName);
 		return object;
@@ -269,7 +268,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		@SuppressWarnings("unchecked")
 		final T modelCopy = (T)Proxy.newProxyInstance(
-				wrapper.interfaceClass.getClassLoader(), // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
+				wrapper.interfaceClass.getClassLoader(),    // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
 				new Class<?>[] { wrapper.interfaceClass },
 				wrapperCopy);
 

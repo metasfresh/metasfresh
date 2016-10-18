@@ -24,6 +24,7 @@ package org.adempiere.ad.dao;
 
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 
 public interface IQueryBL extends ISingletonService
@@ -53,7 +54,19 @@ public interface IQueryBL extends ISingletonService
 
 	IQueryOrderBy createSqlQueryOrderBy(String orderBy);
 
+	/**
+	 *
+	 * @param modelClass the model class. Assumes that the table name can be obtained from the model class via {@link InterfaceWrapperHelper#getTableName(Class)}.
+	 * @return
+	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(Class<T> modelClass);
+
+	/**
+	 *
+	 * @param tableName name of the table in question.
+	 * @return
+	 */
+	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);
 
