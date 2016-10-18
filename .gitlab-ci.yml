@@ -12,7 +12,6 @@ build:
     paths:
       - dist/
   only:
-    - rc
     - dev
 
 deploy-dev:
@@ -24,13 +23,3 @@ deploy-dev:
   only:
     - dev
   environment: dev
-
-deploy-rc:
-  stage: deploy
-  script:
-    - ci-run-remote ansible/deploy.yml -v
-  dependencies:
-    - build
-  only:
-    - rc
-  environment: rc
