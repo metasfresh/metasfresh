@@ -27,6 +27,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -796,7 +797,7 @@ public class CalloutOrder extends CalloutEngine
 //				}
 				
 				if (available == null)
-					available = Env.ZERO;
+					available = BigDecimal.ZERO;
 				if (available.signum() == 0)
 				{
 					// metas: disable user message
@@ -817,7 +818,7 @@ public class CalloutOrder extends CalloutEngine
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
-						notReserved = Env.ZERO;
+						notReserved = BigDecimal.ZERO;
 					BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{
@@ -872,10 +873,10 @@ public class CalloutOrder extends CalloutEngine
 			{
 				orderLine.setPriceEntered(rs.getBigDecimal(1));
 				orderLine.setPriceActual(rs.getBigDecimal(1));
-				orderLine.setPriceLimit(Env.ZERO);
-				orderLine.setPriceList(Env.ZERO);
-				orderLine.setDiscount(Env.ZERO);
-				orderLine.setPriceStd(Env.ZERO); // metas
+				orderLine.setPriceLimit(BigDecimal.ZERO);
+				orderLine.setPriceList(BigDecimal.ZERO);
+				orderLine.setDiscount(BigDecimal.ZERO);
+				orderLine.setPriceStd(BigDecimal.ZERO); // metas
 
 				// metas: also displaying PLV-ID
 				orderLine.setM_PriceList_Version(null);
@@ -920,7 +921,7 @@ public class CalloutOrder extends CalloutEngine
 		// Check Product
 		final int M_Product_ID = ol.getM_Product_ID();
 		final int C_Charge_ID = ol.getC_Charge_ID();
-		log.debug("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
+		log.debug("Product={}, C_Charge_ID={}", M_Product_ID, C_Charge_ID);
 		if (M_Product_ID <= 0 && C_Charge_ID <= 0)
 			return amt(calloutField); //
 
@@ -931,38 +932,38 @@ public class CalloutOrder extends CalloutEngine
 			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
 		if (shipC_BPartner_Location_ID <= 0)
 			return amt(calloutField); //
-		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
 		if(billDate == null)
 			billDate = order.getDateOrdered();
-		log.debug("Bill Date=" + billDate);
+		log.debug("Bill Date={}", billDate);
 
 		Timestamp shipDate = ol.getDatePromised();
 		if(shipDate == null)
 			shipDate = order.getDatePromised();
-		log.debug("Ship Date=" + shipDate);
+		log.debug("Ship Date={}", shipDate);
 
 		int AD_Org_ID = ol.getAD_Org_ID();
-		log.debug("Org=" + AD_Org_ID);
+		log.debug("Org={}", AD_Org_ID);
 
 		int M_Warehouse_ID = ol.getM_Warehouse_ID();
 		if(M_Warehouse_ID <= 0)
 			M_Warehouse_ID = order.getM_Warehouse_ID();
-		log.debug("Warehouse=" + M_Warehouse_ID);
+		log.debug("Warehouse={}", M_Warehouse_ID);
 
 		int billC_BPartner_Location_ID = order.getBill_Location_ID();
 		if (billC_BPartner_Location_ID <= 0)
 			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
-		log.debug("Bill BP_Location=" + billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
 
 		//
 		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
 				shipDate, AD_Org_ID, M_Warehouse_ID,
 				billC_BPartner_Location_ID, shipC_BPartner_Location_ID
 				, order.isSOTrx());
-		log.info("Tax ID=" + C_Tax_ID);
+		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
@@ -1002,7 +1003,7 @@ public class CalloutOrder extends CalloutEngine
 		// get values
 		final BigDecimal QtyEntered = orderLine.getQtyEntered();
 		final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-		log.debug("QtyEntered=" + QtyEntered + ", Ordered=" + QtyOrdered + ", UOM=" + C_UOM_To_ID);
+		log.debug("QtyEntered={}, Ordered={}, UOM={}", QtyEntered, QtyOrdered, C_UOM_To_ID);
 		//
 		BigDecimal PriceEntered = orderLine.getPriceEntered();
 		BigDecimal PriceActual = orderLine.getPriceActual();
@@ -1070,7 +1071,7 @@ public class CalloutOrder extends CalloutEngine
 		else
 		{
 			if (PriceList.intValue() == 0)
-				Discount = Env.ZERO;
+				Discount = BigDecimal.ZERO;
 			// metas
 			// else
 			// Discount = new BigDecimal(
@@ -1121,7 +1122,6 @@ public class CalloutOrder extends CalloutEngine
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
 		if (LineNetAmt.scale() > StdPrecision)
 			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-		log.info("LineNetAmt=" + LineNetAmt);
 		orderLine.setLineNetAmt(LineNetAmt);
 
 		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(ctx, orderLine, ITrx.TRXNAME_None);
@@ -1154,18 +1154,22 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
-			final int C_UOM_From_ID = ((Integer)calloutField.getOldValue()).intValue();
-			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
+			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
+			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
+			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
+			
+			
+			BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
+				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
 				QtyEntered = QtyEntered1;
 				orderLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal QtyOrdered = MUOMConversion.convert(C_UOM_From_ID, C_UOM_To_ID, QtyEntered, true); // StdPrecision=true
+			BigDecimal QtyOrdered = uomConverter.convertQty(QtyEntered1, uomFrom, uomTo);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;
@@ -1241,7 +1245,7 @@ public class CalloutOrder extends CalloutEngine
 				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
 				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
 				if (available == null)
-					available = Env.ZERO;
+					available = BigDecimal.ZERO;
 				
 				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
 //				// metas: if we have the respective field, display the available qty
@@ -1271,7 +1275,7 @@ public class CalloutOrder extends CalloutEngine
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
-						notReserved = Env.ZERO;
+						notReserved = BigDecimal.ZERO;
 					BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{

@@ -36,7 +36,6 @@
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
 		</dependency>
-
 	</dependencies>
 
 	<build>

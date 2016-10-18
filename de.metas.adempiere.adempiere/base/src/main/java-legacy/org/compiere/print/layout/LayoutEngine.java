@@ -39,8 +39,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -48,6 +46,7 @@ import javax.print.attribute.DocAttributeSet;
 
 import org.compiere.Adempiere;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.ArchiveEngine;
@@ -68,6 +67,9 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Adempiere Print Engine.
@@ -1283,7 +1285,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 			return null;
 		}
 		MQuery query = new MQuery(format.getAD_Table_ID());
-		query.addRestriction(item.getColumnName(), MQuery.EQUAL, new Integer(Record_ID));
+		query.addRestriction(item.getColumnName(), Operator.EQUAL, new Integer(Record_ID));
 		format.setTranslationViewQuery(query);
 		log.debug(query.toString());
 		//

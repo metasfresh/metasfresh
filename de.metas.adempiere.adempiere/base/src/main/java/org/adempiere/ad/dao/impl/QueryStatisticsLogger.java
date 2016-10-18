@@ -283,7 +283,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 					//
 					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
 					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
-					|| methodName.startsWith("access$0")
+					|| methodName.startsWith("access$")
 			//
 			)
 			{
