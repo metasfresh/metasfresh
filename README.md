@@ -22,3 +22,7 @@
 
 ## In case of build static version execute (you're gonna need webpack installed globally):
 > webpack --config webpack.prod.js
+
+### Notice: CI/CD legacy
+
+Submodule meta-frontend-ansible.git and .gitlab-ci.yml file are legacy of CI/CD.
