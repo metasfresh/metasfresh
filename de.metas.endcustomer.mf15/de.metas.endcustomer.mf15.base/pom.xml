@@ -1,6 +1,5 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -43,6 +42,17 @@
 			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

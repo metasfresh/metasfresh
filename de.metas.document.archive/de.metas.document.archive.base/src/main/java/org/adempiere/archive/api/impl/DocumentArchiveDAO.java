@@ -30,7 +30,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 
@@ -45,7 +45,7 @@ public class DocumentArchiveDAO extends ArchiveDAO
 		//
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+		final IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
 
 		final Object contextProvider = model;
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);

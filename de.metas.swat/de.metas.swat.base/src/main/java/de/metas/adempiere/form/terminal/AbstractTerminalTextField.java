@@ -27,6 +27,7 @@ package de.metas.adempiere.form.terminal;
 
 import java.text.DecimalFormat;
 import java.text.Format;
+import java.text.ParseException;
 
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -124,7 +125,8 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}", System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
+		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}",
+				System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
 
 		// Case: valueOld=valueNew=null
 		if (valueOld == valueNew)
@@ -194,10 +196,21 @@ public abstract class AbstractTerminalTextField
 			return;
 		}
 
+		final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
+		try
+		{
+			// make sure that direct edits to the text component with a hardware keyboard are not lost in case the on-screen-keyboard dialog is opened and canceled.
+			// (without this they might get lost because opening this on-screen keyboard does not trigger a focus-lost).
+			textField.commitEdit();
+		}
+		catch (ParseException e)
+		{
+			// do nothing. either the user will fix this value using the keyboard we are about to show, or they will get an error when they try to submit the input.
+		}
+
 		try
 		{
 			logger.debug("Show keyboard");
-			final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
 			final Object oldValue = textField.getText();
 
 			// we need a dedicated 'references' instance, because the on-screen keyboard's terminal components also

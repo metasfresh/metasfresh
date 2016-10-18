@@ -27,7 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.model.MRelation;
+import org.adempiere.model.I_AD_Relation;
+import org.adempiere.model.I_AD_RelationType;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationExplicitv1;
 import org.adempiere.model.MRelationExplicitv1.SourceOrTarget;
 import org.adempiere.model.MRelationType;
@@ -43,8 +45,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IStoragePA;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 import de.metas.purchasing.service.IPurchaseScheduleBL;
@@ -61,11 +63,13 @@ public final class PurchaseModelValidator implements ModelValidator
 
 	private int ad_Client_ID = -1;
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
@@ -84,11 +88,13 @@ public final class PurchaseModelValidator implements ModelValidator
 		// schedules
 	}
 
+	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		return null;
 	}
 
+	@Override
 	public String modelChange(final PO po, final int type) throws Exception
 	{
 		if (po instanceof I_M_Storage)
@@ -138,6 +144,7 @@ public final class PurchaseModelValidator implements ModelValidator
 		}
 	}
 
+	@Override
 	public String docValidate(final PO po, final int timing)
 	{
 		final Set<MMPurchaseSchedule> purchaseScheds = new HashSet<MMPurchaseSchedule>();
@@ -166,14 +173,13 @@ public final class PurchaseModelValidator implements ModelValidator
 
 			if (doUpdate && !order.isSOTrx())
 			{
-				final MRelationType relType =
-						MRelationType.retrieveForInternalName(order.getCtx(), MMPurchaseSchedule.RELTYPE_CURRENT_PO_INT_NAME, order.get_TrxName());
+				final I_AD_RelationType relType = MRelationType.retrieveForInternalName(order.getCtx(), MMPurchaseSchedule.RELTYPE_CURRENT_PO_INT_NAME, order.get_TrxName());
 				for (final MOrderLine ol : order.getLines())
 				{
 					for (MRelationExplicitv1 relExp : MRelationExplicitv1.retrieveFor(ol, relType, SourceOrTarget.TARGET))
 					{
-						final MRelation relation = (MRelation)relExp.getAD_Relation();
-						relation.deleteEx(false);
+						final I_AD_Relation relation = relExp.getAD_Relation();
+						InterfaceWrapperHelper.delete(relation);
 					}
 				}
 				unsetPurchaseOrderReference(order);

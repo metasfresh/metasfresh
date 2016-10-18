@@ -1,0 +1,5 @@
+-- 05.10.2016 17:06
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2016-10-05 17:06:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=544923
+;
+

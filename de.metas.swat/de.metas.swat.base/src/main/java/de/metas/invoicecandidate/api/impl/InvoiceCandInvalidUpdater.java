@@ -251,7 +251,7 @@ import de.metas.lock.api.ILock;
 		final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
 
 		// update the Discount value of 'ic'. We will need it for the priceActual further down
-		invoiceCandBL.setDiscountFromOrderLine(ctx, ic);
+		invoiceCandBL.set_Discount(ctx, ic);
 
 		// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
 		// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
@@ -546,7 +546,13 @@ import de.metas.lock.api.ILock;
 
 			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(item, I_C_Invoice_Candidate.class);
 
-			invoiceCandBL.discardChangesAndSetError(ic, e);
+			// gh #428: don't discard changes that were already made, because they might include a change of QtyInvoice.
+			// in that case, a formerly Processed IC might need to be flagged as unprocessed.
+			// if we discard all changes in this case, then we will have IsError='Y' and also an error message in the IC,
+			// but the user will probably ignore it, because the IC is still flagged as processed.
+			invoiceCandBL.setError(ic, e);
+			//invoiceCandBL.discardChangesAndSetError(ic, e);
+
 			invoiceCandDAO.save(ic);
 		}
 	}

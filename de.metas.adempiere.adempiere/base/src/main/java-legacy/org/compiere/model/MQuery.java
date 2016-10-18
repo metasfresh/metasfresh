@@ -787,6 +787,21 @@ public final class MQuery implements Serializable
 	{
 		m_TableName = TableName;
 	}	// setTableName
+	
+	public boolean isDirectWhereClause(final int index)
+	{
+		if (index < 0 || index >= m_list.size())
+			return false;
+		return m_list.get(index).isDirectWhereClause();
+	}
+	
+	public String getDirectWhereClause(final int index)
+	{
+		if (index < 0 || index >= m_list.size())
+			return null;
+		return m_list.get(index).getDirectWhereClause();
+	}
+
 
 	/*************************************************************************
 	 * Get ColumnName of index
@@ -1305,6 +1320,16 @@ public final class MQuery implements Serializable
 			return code.toString();
 		else
 			return null;
+	}
+	
+	public boolean isDirectWhereClause()
+	{
+		return directWhereClause != null;
+	}
+	
+	public String getDirectWhereClause()
+	{
+		return directWhereClause;
 	}
 
 	/**

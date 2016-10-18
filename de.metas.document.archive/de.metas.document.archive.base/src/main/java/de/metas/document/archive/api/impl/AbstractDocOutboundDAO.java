@@ -27,21 +27,23 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 
-public abstract class AbstractArchiveDAO implements IArchiveDAO
+public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 {
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
@@ -128,5 +130,30 @@ public abstract class AbstractArchiveDAO implements IArchiveDAO
 		// Order by latest log line first
 		queryBuilder.orderBy()
 				.addColumn(I_C_Doc_Outbound_Log_Line.COLUMN_C_Doc_Outbound_Log_Line_ID, Direction.Descending, Nulls.Last);
+	}
+	
+	@Override
+	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
+	{
+		
+		//
+		// Services
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, AD_Table_ID);
+		
+		// Order by
+		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_C_Doc_Outbound_Log.class)
+				.addColumn(I_C_Doc_Outbound_Log.COLUMNNAME_Created, false)
+				.createQueryOrderBy();
+
+		return queryBuilder
+				.create()
+				.setOrderBy(queryOrderBy)
+				.first(I_C_Doc_Outbound_Log.class);
+		
 	}
 }
