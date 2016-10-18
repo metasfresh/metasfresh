@@ -1,9 +1,7 @@
 package de.metas.banking.process;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.process.SvrProcess;
 
@@ -40,9 +38,9 @@ import de.metas.banking.payment.IPaySelectionBL;
 public class C_PaySelection_ReActivate extends SvrProcess implements ISvrProcessPrecondition
 {
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(gridTab, I_C_PaySelection.class);
+		final I_C_PaySelection paySelection = context.getModel(I_C_PaySelection.class);
 		if (!paySelection.isProcessed())
 		{
 			return false;

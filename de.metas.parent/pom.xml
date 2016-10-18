@@ -38,11 +38,12 @@
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
 
-		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
+		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
 
 		<!-- this is the spring version from the dependency tree of spring-boot-1.3.3
 		Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason.	-->
-		<spring.version>4.2.5.RELEASE</spring.version>
+		<!-- For versions info, see https://github.com/spring-projects/spring-boot/blob/v1.4.1.RELEASE/spring-boot-dependencies/pom.xml -->
+		<spring.version>4.3.3.RELEASE</spring.version>
 
 		<guava.version>18.0</guava.version>
 
@@ -90,6 +91,21 @@
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
+				<exclusions>
+					<!-- excluding Lucene dependencies because they are conflicting with org.elasticsearch:elasticsearch -->
+					<exclusion>
+			          <groupId>org.apache.lucene</groupId>
+			          <artifactId>lucene-core</artifactId>
+			        </exclusion>
+					<exclusion>
+			          <groupId>org.apache.lucene</groupId>
+			          <artifactId>lucene-analyzers-common</artifactId>
+			        </exclusion>
+					<exclusion>
+			          <groupId>org.apache.lucene</groupId>
+			          <artifactId>lucene-queryparser</artifactId>
+			        </exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>

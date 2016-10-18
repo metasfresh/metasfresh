@@ -45,7 +45,6 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_I_BankStatement;
@@ -141,11 +140,11 @@ public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements IS
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is completed or closed.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (I_C_BankStatement.Table_Name.equals(gridTab.get_TableName()))
+		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
+			final I_C_BankStatement bankStatement = context.getModel(I_C_BankStatement.class);
 			return docActionBL.isStatusOneOf(bankStatement,
 					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 		}

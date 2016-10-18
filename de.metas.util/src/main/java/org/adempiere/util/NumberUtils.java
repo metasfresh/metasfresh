@@ -22,8 +22,8 @@ package org.adempiere.util;
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Number Utils
@@ -56,7 +56,8 @@ public final class NumberUtils
 		BigDecimal result = bd.stripTrailingZeros();
 
 		// Fix very weird java 6 bug: stripTrailingZeros doesn't work on 0 itself
-		// http://stackoverflow.com/questions/5239137/clarification-on-behavior-of-bigdecimal-striptrailingzeroes
+		// see http://stackoverflow.com/questions/5239137/clarification-on-behavior-of-bigdecimal-striptrailingzeroes
+		// see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6480539 => fixed in 8 (b100)
 		if (result.signum() == 0)
 		{
 			result = BigDecimal.ZERO;
@@ -67,6 +68,31 @@ public final class NumberUtils
 		if (result.scale() < 0)
 		{
 			result = result.setScale(0);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Converts given <code>bd</code> to a big decimal which has at least <code>minScale</code> decimals.
+	 * 
+	 * If it has more decimals (and not trailing zeros) the value will not be changed.
+	 * 
+	 * @param bd
+	 * @param minScale
+	 */
+	public static final BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
+	{
+		BigDecimal result = bd;
+		if (result.scale() < minScale)
+		{
+			return result.setScale(minScale, RoundingMode.UNNECESSARY);
+		}
+
+		result = stripTrailingDecimalZeros(result);
+		if (result.scale() < minScale)
+		{
+			return result.setScale(minScale, RoundingMode.UNNECESSARY);
 		}
 
 		return result;
@@ -95,14 +121,15 @@ public final class NumberUtils
 		}
 		return BigDecimal.ONE.movePointLeft(scale);
 	}
-	
+
 	/**
 	 * Converts given <code>value</code> to BigDecimal.
 	 * 
 	 * @param value
 	 * @param defaultValue
-	 * @return <ul>
-	 *         <li> {@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
+	 * @return
+	 * 		<ul>
+	 *         <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
 	 */
@@ -138,7 +165,8 @@ public final class NumberUtils
 	 * 
 	 * @param value
 	 * @param defaultValue
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>integer value if the value is a integer or its string representation can be converted to integer
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 *         </ul>

@@ -27,7 +27,6 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.MTable;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
@@ -75,14 +74,14 @@ public class C_FlatrateTerm_Create_From_OLCand extends SvrProcess implements ISv
 	 * @param gridTab
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (!I_C_OLCand.Table_Name.equals(gridTab.get_TableName()))
+		if (!I_C_OLCand.Table_Name.equals(context.getTableName()))
 		{
 			return false;
 		}
 
-		final I_C_OLCand olCand = InterfaceWrapperHelper.create(gridTab, I_C_OLCand.class);
+		final I_C_OLCand olCand = context.getModel(I_C_OLCand.class);
 		if(olCand.isError())
 		{
 			return false;

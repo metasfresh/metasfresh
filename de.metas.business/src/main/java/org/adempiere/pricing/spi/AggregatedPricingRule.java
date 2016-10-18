@@ -28,17 +28,15 @@ package org.adempiere.pricing.spi;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class which aggregates multiple {@link IPricingRule}s.
@@ -78,17 +76,17 @@ public final class AggregatedPricingRule implements IPricingRule
 		{
 			if (rule.equals(r))
 			{
-				logger.info("PricingRule already registered: " + rule + " [SKIP]");
+				logger.debug("PricingRule already registered: " + rule + " [SKIP]");
 				return;
 			}
 			if (rule.getClass().equals(r.getClass()))
 			{
-				logger.info("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
+				logger.debug("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
 				return;
 			}
 		}
 
-		logger.info("PricingRule registered: {}", rule);
+		logger.trace("PricingRule registered: {}", rule);
 		rules.add(rule);
 	}
 

@@ -29,7 +29,6 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
@@ -53,9 +52,9 @@ public class PP_MRP_RecreateForDocument extends SvrProcess implements ISvrProces
 	private Object model;
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final String tableName = gridTab.getTableName();
+		final String tableName = context.getTableName();
 		return mrpSupplyProducerFactory.getAllSupplyProducers().isRecreatedMRPRecordsSupported(tableName);
 	}
 
