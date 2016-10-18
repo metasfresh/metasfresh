@@ -40,6 +40,14 @@ public class DocumentFilterParam
 	{
 		try
 		{
+			if (mquery.isDirectWhereClause(restrictionIndex))
+			{
+				final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
+				final String sqlWhereClause = mquery.getDirectWhereClause(restrictionIndex);
+
+				return new DocumentFilterParam(joinAnd, sqlWhereClause);
+			}
+			
 			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
 			final String fieldName = mquery.getColumnName(restrictionIndex);
 			final Operator operator = mquery.getOperator(restrictionIndex);
@@ -68,6 +76,8 @@ public class DocumentFilterParam
 	private final Operator operator;
 	private final Object value;
 	private final Object valueTo;
+	//
+	private final String sqlWhereClause;
 
 	private DocumentFilterParam(final Builder builder)
 	{
@@ -83,23 +93,51 @@ public class DocumentFilterParam
 
 		value = builder.value;
 		valueTo = builder.valueTo;
+
+		sqlWhereClause = null;
+	}
+
+	private DocumentFilterParam(final boolean joinAnd, final String sqlWhereClause)
+	{
+		super();
+
+		this.joinAnd = joinAnd;
+
+		fieldName = null;
+		operator = null;
+		value = null;
+		valueTo = null;
+
+		this.sqlWhereClause = sqlWhereClause;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("join", joinAnd ? "AND" : "OR")
 				.add("fieldName", fieldName)
 				.add("operator", operator)
 				.add("value", value)
 				.add("valueTo", valueTo)
+				.add("sqlWhereClause", sqlWhereClause)
 				.toString();
 	}
 
 	public boolean isJoinAnd()
 	{
 		return joinAnd;
+	}
+
+	public boolean isSqlFilter()
+	{
+		return sqlWhereClause != null;
+	}
+
+	public String getSqlWhereClause()
+	{
+		return sqlWhereClause;
 	}
 
 	public String getFieldName()

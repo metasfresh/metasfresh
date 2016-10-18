@@ -283,6 +283,15 @@ class SqlDocumentQueryBuilder
 	/** Build document filter parameter where clause */
 	private IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilterParam filterParam)
 	{
+		//
+		// SQL filter
+		if(filterParam.isSqlFilter())
+		{
+			return IStringExpression.compile(filterParam.getSqlWhereClause());
+		}
+
+		//
+		// Regular filter
 		final String fieldName = filterParam.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 

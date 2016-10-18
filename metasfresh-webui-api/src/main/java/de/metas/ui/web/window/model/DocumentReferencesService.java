@@ -1,17 +1,20 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -40,22 +43,27 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 @Service
 public class DocumentReferencesService
 {
-	public List<ZoomInfo> getDocumentReferences(final Document document)
+	public Map<String, DocumentReference> getDocumentReferences(final Document document)
 	{
 		if (document == null || document.isNew())
 		{
-			return ImmutableList.of();
+			return ImmutableMap.of();
 		}
-		
+
 		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
-		
-		final List<ZoomInfo> zoomInfos = ZoomInfoFactory.get().retrieveZoomInfos(zoomSource);
-		return zoomInfos;
+
+		return ZoomInfoFactory.get()
+				.retrieveZoomInfos(zoomSource)
+				.stream()
+				.map(zoomInfo -> DocumentReference.of(zoomInfo))
+				.collect(GuavaCollectors.toImmutableMapByKey(DocumentReference::getId));
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource
 	{
 		private final Properties ctx;
+		private final DocumentEvaluatee evaluationContext;
+		
 		private final int adWindowId;
 		private final String tableName;
 		private final int adTableId;
@@ -67,6 +75,8 @@ public class DocumentReferencesService
 		{
 			super();
 			ctx = document.getCtx();
+			evaluationContext = document.asEvaluatee();
+			
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			adWindowId = entityDescriptor.getAD_Window_ID();
 			tableName = entityDescriptor.getTableName();
@@ -122,6 +132,12 @@ public class DocumentReferencesService
 		public int getRecord_ID()
 		{
 			return recordId;
+		}
+
+		@Override
+		public Evaluatee createEvaluationContext()
+		{
+			return evaluationContext;
 		}
 	}
 }

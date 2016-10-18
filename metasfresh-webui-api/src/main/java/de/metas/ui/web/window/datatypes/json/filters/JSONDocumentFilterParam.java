@@ -34,6 +34,10 @@ final class JSONDocumentFilterParam implements Serializable
 {
 	/* package */static final JSONDocumentFilterParam of(final DocumentFilterParam filterParam)
 	{
+		if(filterParam.isSqlFilter())
+		{
+			throw new IllegalArgumentException("Sql filters are not allowed to be converted to JSON filters: " + filterParam);
+		}
 		return new JSONDocumentFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
 	}
 

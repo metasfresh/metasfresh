@@ -185,7 +185,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		if (orderBys.isEmpty())
 		{
-			return null;
+			return IStringExpression.NULL;
 		}
 
 		final IStringExpression sqlOrderByFinal = orderBys

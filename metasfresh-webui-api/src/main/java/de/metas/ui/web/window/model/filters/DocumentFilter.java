@@ -52,7 +52,7 @@ public final class DocumentFilter
 		}
 
 		final String filterId;
-		if (parameters.size() == 1)
+		if (parameters.size() == 1 && !parameters.get(0).isSqlFilter())
 		{
 			filterId = parameters.get(0).getFieldName();
 		}

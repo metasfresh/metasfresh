@@ -26,6 +26,8 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
+import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
+import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 /*
@@ -64,10 +66,10 @@ public class UserSession implements InitializingBean, Serializable
 	private Locale locale;
 
 	private final Map<String, Object> properties = new ConcurrentHashMap<>();
-	
+
 	@Value("${metasfresh.webui.debug.showColumnNamesForCaption:false}")
 	private boolean default_showColumnNamesForCaption;
-	
+
 	@Value("${metasfresh.webui.userSession.dashboardUrl:}")
 	private String dashboardUrl;
 
@@ -92,10 +94,10 @@ public class UserSession implements InitializingBean, Serializable
 		{
 			logger.warn("Failed setting the language, but moving on", e);
 		}
-		
+
 		logger.trace("User session created: {}", this);
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -107,7 +109,7 @@ public class UserSession implements InitializingBean, Serializable
 				.add("userPreferences", userPreference)
 				.toString();
 	}
-	
+
 	@Override
 	public void afterPropertiesSet() throws Exception
 	{
@@ -156,11 +158,11 @@ public class UserSession implements InitializingBean, Serializable
 
 	public void setLoggedIn(final boolean loggedIn)
 	{
-		if(this.loggedIn == loggedIn)
+		if (this.loggedIn == loggedIn)
 		{
 			return;
 		}
-		
+
 		if (loggedIn)
 		{
 			this.loggedIn = true;
@@ -172,6 +174,22 @@ public class UserSession implements InitializingBean, Serializable
 			this.loggedIn = false;
 			userPreference = new UserPreference();
 			logger.trace("User session logged out: {}", this);
+		}
+	}
+
+	public void assertLoggedIn()
+	{
+		if (!isLoggedIn())
+		{
+			throw new NotLoggedInException();
+		}
+	}
+
+	public void assertNotLoggedIn()
+	{
+		if (isLoggedIn())
+		{
+			throw new AlreadyLoggedInException();
 		}
 	}
 
@@ -195,7 +213,7 @@ public class UserSession implements InitializingBean, Serializable
 
 		Env.verifyLanguage(lang);
 		final String adLanguageNew = lang.getAD_Language();
-		
+
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguageNew);
 		locale = lang.getLocale();
 		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
@@ -218,12 +236,12 @@ public class UserSession implements InitializingBean, Serializable
 		// TODO: cache the permissions key
 		return UserRolePermissionsKey.of(getCtx());
 	}
-	
+
 	public IUserRolePermissions getUserRolePermissions()
 	{
 		return Env.getUserRolePermissions(getCtx());
 	}
-	
+
 	public String getDashboardUrl()
 	{
 		return dashboardUrl;

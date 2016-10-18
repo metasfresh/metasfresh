@@ -115,7 +115,7 @@ public class DocumentViewRestController
 
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
@@ -150,10 +150,10 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody final List<JSONDocumentFilter> jsonFilters //
+			, @RequestBody(required = false) final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory
 				.getDocumentDescriptor(adWindowId)
@@ -194,7 +194,7 @@ public class DocumentViewRestController
 	@RequestMapping(value = "/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
 	public void deleteView(@PathVariable(PARAM_ViewId) final String viewId)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		documentViewsRepo.deleteView(viewId);
 	}
@@ -207,7 +207,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 
@@ -224,7 +224,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 
@@ -245,7 +245,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_FilterParameterName, required = true) final String parameterName //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 

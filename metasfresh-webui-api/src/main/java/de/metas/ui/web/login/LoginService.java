@@ -39,20 +39,30 @@ public class LoginService
 	@Autowired
 	private UserSession userSession;
 
-	public void autologin()
+	public void assertLoggedIn()
+	{
+		// FIXME: only for testing
+		if (!userSession.isLoggedIn())
+		{
+			autologin();
+		}
+
+		// userSession.assertLoggedIn();
+	}
+
+	private void autologin()
 	{
 		// WindowConstants.setProtocolDebugging(true);
-		
-		// FIXME: only for testing
+
 		final Properties ctx = userSession.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
 		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
-		Env.setContext(ctx, "#C_UOM_ID", 100);
-		
-		if(Check.isEmpty(userSession.getAD_Language()))
+		Env.setContext(ctx, "#C_UOM_ID", 100); // Ea
+
+		if (Check.isEmpty(userSession.getAD_Language()))
 		{
 			userSession.setAD_Language("en_US");
 		}

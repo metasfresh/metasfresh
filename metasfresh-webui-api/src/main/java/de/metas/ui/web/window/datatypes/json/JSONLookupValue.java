@@ -46,6 +46,12 @@ public final class JSONLookupValue implements Serializable
 		return new JSONLookupValue(ImmutableMap.of(key, value == null ? "" : value));
 	}
 
+	public static final JSONLookupValue of(final int key, final String value)
+	{
+		final String keyStr = String.valueOf(key);
+		return new JSONLookupValue(ImmutableMap.of(keyStr, value == null ? "" : value));
+	}
+
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
 		return of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
@@ -119,6 +125,11 @@ public final class JSONLookupValue implements Serializable
 	public Map<String, String> getMap()
 	{
 		return map;
+	}
+	
+	public Map.Entry<String, String> entry()
+	{
+		return map.entrySet().iterator().next();
 	}
 
 	@JsonAnySetter

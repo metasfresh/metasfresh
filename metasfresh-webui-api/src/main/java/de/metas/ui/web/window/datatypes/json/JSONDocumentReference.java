@@ -1,12 +1,12 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
+import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
@@ -33,21 +33,23 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 public class JSONDocumentReference
 {
-	public static final JSONDocumentReference of(final ZoomInfo zoomInfo, final JSONFilteringOptions jsonOpts)
+	public static final JSONDocumentReference of(final DocumentReference documentReference, final JSONFilteringOptions jsonOpts)
 	{
 		try
 		{
-			return new JSONDocumentReference(zoomInfo, jsonOpts);
+			return new JSONDocumentReference(documentReference, jsonOpts);
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed convering {} to {}. Skipped", zoomInfo, JSONDocumentReference.class, ex);
+			logger.warn("Failed convering {} to {}. Skipped", documentReference, JSONDocumentReference.class, ex);
 			return null;
 		}
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(JSONDocumentReference.class);
 
+	@JsonProperty("id")
+	private final String id;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("documentType")
@@ -57,15 +59,21 @@ public class JSONDocumentReference
 	@JsonProperty("filter")
 	private final JSONDocumentFilter filter;
 
-	private JSONDocumentReference(final ZoomInfo zoomInfo, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentReference(final DocumentReference documentReference, final JSONFilteringOptions jsonOpts)
 	{
 		super();
-		caption = zoomInfo.getLabel();
-		documentType = String.valueOf(zoomInfo.getAD_Window_ID());
-		documentsCount = zoomInfo.getRecordCount();
+		id = documentReference.getId();
+		caption = documentReference.getCaption(jsonOpts.getAD_Language());
+		documentType = String.valueOf(documentReference.getAD_Window_ID());
+		documentsCount = documentReference.getDocumentsCount();
 
-		final DocumentFilter filter = DocumentFilter.of(zoomInfo.getQuery());
+		final DocumentFilter filter = documentReference.getFilter();
 		this.filter = JSONDocumentFilter.of(filter);
+	}
+	
+	public String getId()
+	{
+		return id;
 	}
 
 	public String getCaption()

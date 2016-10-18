@@ -1,20 +1,29 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import io.swagger.annotations.ApiModel;
 
@@ -72,10 +81,26 @@ public class JSONLookupValuesList implements Serializable
 		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), ImmutableMap.of());
 	}
 
+	public static final Collector<JSONLookupValue, ?, JSONLookupValuesList> collect()
+	{
+		final Supplier<List<JSONLookupValue>> supplier = ArrayList::new;
+		final BiConsumer<List<JSONLookupValue>, JSONLookupValue> accumulator = List::add;
+		final BinaryOperator<List<JSONLookupValue>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<List<JSONLookupValue>, JSONLookupValuesList> finisher = JSONLookupValuesList::ofJSONLookupValuesList;
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 	private static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
 
 	@JsonProperty("values")
 	private final List<JSONLookupValue> values;
+
+	@JsonProperty("defaultValue")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	private String defaultValue;
 
 	private LinkedHashMap<String, String> otherProperties;
 
@@ -126,4 +151,27 @@ public class JSONLookupValuesList implements Serializable
 		otherProperties.put(name, jsonValue);
 	}
 
+	public JSONLookupValuesList setDefaultValue(final JSONLookupValue defaultValue)
+	{
+		this.defaultValue = defaultValue == null ? null : defaultValue.entry().getKey();
+		return this;
+	}
+
+	public JSONLookupValuesList setDefaultValue(final LookupValue defaultValue)
+	{
+		this.defaultValue = defaultValue == null ? null : defaultValue.getIdAsString();
+		return this;
+	}
+
+	@JsonSetter
+	public JSONLookupValuesList setDefaultValue(final String defaultValue)
+	{
+		this.defaultValue = defaultValue;
+		return this;
+	}
+
+	public String getDefaultValue()
+	{
+		return defaultValue;
+	}
 }
