@@ -13,11 +13,11 @@ package org.adempiere.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 
@@ -129,8 +131,10 @@ public final class Check
 	}
 
 	/**
-	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because <li>assert is
-	 * globally switched on and off and you never know what else libs are using assert</li> <li>there are critical assumptions that should always be validated. Not only during development time or when
+	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
+	 * <li>assert is
+	 * globally switched on and off and you never know what else libs are using assert</li>
+	 * <li>there are critical assumptions that should always be validated. Not only during development time or when
 	 * someone minds to use the -ea cmdline parameter</li>
 	 *
 	 * @param cond
@@ -455,6 +459,35 @@ public final class Check
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
+	}
+
+	/**
+	 * Supplier for an exception. Can be used with {@link Optional#orElseThrow(Supplier)}.
+	 *
+	 * @param errMsg
+	 * @param params
+	 * @return
+	 */
+	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Object... params)
+	{
+		return supplyEx(errMsg, defaultExClazz, params);
+	}
+
+	/**
+	 * Like {@link #supplyEx(String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
+	 *
+	 * @param errMsg
+	 * @param exceptionClass
+	 * @param params
+	 * @return
+	 */
+	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Class<? extends RuntimeException> exceptionClass, final Object... params)
+	{
+		return () -> {
+			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+			final RuntimeException ex = mkEx(exceptionClass, errMsgFormated);
+			return ex;
+		};
 	}
 
 	public static boolean isEmpty(final String str)
