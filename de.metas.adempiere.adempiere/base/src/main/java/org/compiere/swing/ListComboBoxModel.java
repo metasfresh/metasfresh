@@ -44,6 +44,19 @@ import org.adempiere.util.Check;
 public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboBoxModel<E>
 {
 	private static final long serialVersionUID = -6815830373015828943L;
+	
+	public static final <E> ListComboBoxModel<E> ofNullable(final Collection<E> list)
+	{
+		if(list == null)
+		{
+			return new ListComboBoxModel<>();
+		}
+		else
+		{
+			return new ListComboBoxModel<>(list);
+		}
+	}
+	
 	private final List<E> list;
 	private E selected = null;
 
@@ -53,7 +66,7 @@ public class ListComboBoxModel<E> extends AbstractListModel<E> implements ComboB
 		this.list = new ArrayList<>();
 	}
 
-	public ListComboBoxModel(final List<E> list)
+	public ListComboBoxModel(final Collection<E> list)
 	{
 		super();
 		this.list = new ArrayList<>(list);

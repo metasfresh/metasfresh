@@ -69,6 +69,7 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MClient;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
@@ -1175,7 +1176,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			{
 				String infoName = Msg.translate(ctx, keyColumns[0]);
 				String infoDisplay = String.valueOf(pi.getRecord_ID());
-				query.addRestriction(keyColumns[0], MQuery.EQUAL, pi.getRecord_ID(), infoName, infoDisplay);
+				query.addRestriction(keyColumns[0], Operator.EQUAL, pi.getRecord_ID(), infoName, infoDisplay);
 			}
 		} // metas end
 
@@ -1547,7 +1548,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			format.setTranslationLanguage(language);
 		//	query
 		MQuery query = new MQuery(format.getAD_Table_ID());
-		query.addRestriction(DOC_IDS[type], MQuery.EQUAL, Record_ID);
+		query.addRestriction(DOC_IDS[type], Operator.EQUAL, Record_ID);
 	//	log.info( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
 		//
 		
@@ -1686,38 +1687,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				log.error("Updated records=" + no + " - should be just one");
 		}
 	}	//	printConfirm
-
-
-	/*************************************************************************
-	 * 	Test
-	 * 	@param args args
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startupEnvironment(true);
-		//
-		int AD_Table_ID = 100;
-		MQuery q = new MQuery("AD_Table");
-		q.addRestriction("AD_Table_ID", "<", 108);
-		//
-		MPrintFormat f = MPrintFormat.createFromTable(Env.getCtx(), AD_Table_ID);
-		PrintInfo i = new PrintInfo("test", AD_Table_ID, 108, 0);
-		i.setAD_Table_ID(AD_Table_ID);
-		ReportEngine re = new ReportEngine(Env.getCtx(), f, q, i);
-		re.layout();
-		/**
-		re.createCSV(new File("C:\\Temp\\test.csv"), ',', Language.getLanguage());
-		re.createHTML(new File("C:\\Temp\\test.html"), false, Language.getLanguage());
-		re.createXML(new File("C:\\Temp\\test.xml"));
-		re.createPS(new File ("C:\\Temp\\test.ps"));
-		re.createPDF(new File("C:\\Temp\\test.pdf"));
-		/****/
-		re.print();
-	//	re.print(true, 1, false, "Epson Stylus COLOR 900 ESC/P 2");		//	Dialog
-	//	re.print(true, 1, false, "HP LaserJet 3300 Series PCL 6");		//	Dialog
-	//	re.print(false, 1, false, "Epson Stylus COLOR 900 ESC/P 2");	//	Dialog
-		System.exit(0);
-	}	//	main
 
 	public void setWhereExtended(String whereExtended) {
 		m_whereExtended = whereExtended;

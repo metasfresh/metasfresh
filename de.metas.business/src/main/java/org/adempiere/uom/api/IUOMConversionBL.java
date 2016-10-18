@@ -125,8 +125,9 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uomTo The targeted UOM
 	 * @param useStdPrecision if true, standard precision, if false costing precision
 	 * @return amount
-	 * @depreciated should not be used
+	 * @deprecated should not be used
 	 */
+	@Deprecated
 	BigDecimal convert(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty, boolean useStdPrecision);
 
 	/**

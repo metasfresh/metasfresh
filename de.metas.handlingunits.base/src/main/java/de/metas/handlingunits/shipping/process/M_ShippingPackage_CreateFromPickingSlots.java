@@ -24,8 +24,6 @@ package de.metas.handlingunits.shipping.process;
 
 
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,11 +33,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.slf4j.Logger;
+
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUPickingSlotBL;
@@ -48,6 +47,7 @@ import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.shipping.api.IShipperDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -88,10 +88,10 @@ public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess impleme
 	private I_M_Shipper shipper;
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
 		// task 06058: if the document is processed, we not allowed to run this process
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(gridTab, I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = context.getModel(I_M_ShipperTransportation.class);
 		return !shipperTransportation.isProcessed();
 	}
 

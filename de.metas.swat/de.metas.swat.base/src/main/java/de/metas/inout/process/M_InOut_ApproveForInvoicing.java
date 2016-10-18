@@ -26,7 +26,6 @@ package de.metas.inout.process;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -77,15 +76,15 @@ public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProce
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 		// Make this process only available for inout entries that are active and have the status Completed or Closed
 
-		if (I_M_InOut.Table_Name.equals(gridTab.get_TableName()))
+		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_InOut inOut = InterfaceWrapperHelper.create(gridTab, I_M_InOut.class);
+			final I_M_InOut inOut = context.getModel(I_M_InOut.class);
 			return docActionBL.isStatusOneOf(inOut.getDocStatus(),
 					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 		}

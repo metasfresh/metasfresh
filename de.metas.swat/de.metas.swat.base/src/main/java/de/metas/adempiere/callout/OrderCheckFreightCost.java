@@ -62,8 +62,7 @@ public class OrderCheckFreightCost extends CalloutEngine
 		}
 
 		final Properties ctx = field.getCtx();
-		final Object oldValue = field.getOldValue();
-		return doCheckAndUpdate(ctx, order, oldValue);
+		return doCheckAndUpdate(ctx, order);
 	}
 
 	public String deliveryVia(final ICalloutField field)
@@ -81,8 +80,7 @@ public class OrderCheckFreightCost extends CalloutEngine
 		}
 
 		final Properties ctx = field.getCtx();
-		final Object oldValue = field.getOldValue();
-		return doCheckAndUpdate(ctx, order, oldValue);
+		return doCheckAndUpdate(ctx, order);
 	}
 
 	private boolean isCalloutActiveOrNotSOTrx(final I_C_Order order)
@@ -124,11 +122,10 @@ public class OrderCheckFreightCost extends CalloutEngine
 		}
 
 		final Properties ctx = field.getCtx();
-		final Object oldValue = field.getOldValue();
-		return doCheckAndUpdate(ctx, order, oldValue);
+		return doCheckAndUpdate(ctx, order);
 	}
 
-	private String doCheckAndUpdate(final Properties ctx, final I_C_Order order, final Object oldValue)
+	private String doCheckAndUpdate(final Properties ctx, final I_C_Order order)
 	{
 		// make sure that the freight amount is up to date
 		final IOrderBL orderBL = Services.get(IOrderBL.class);

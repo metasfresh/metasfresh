@@ -1,6 +1,9 @@
 package de.metas.i18n;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.base.Strings;
 
 import de.metas.i18n.impl.NullModelTranslation;
 
@@ -43,4 +46,27 @@ public interface IModelTranslationMap
 	 * @return all {@link IModelTranslation}s indexed by AD_Language
 	 */
 	Map<String, IModelTranslation> getAllTranslations();
+
+	/**
+	 * @param columnName
+	 * @param defaultValue default value to be used in case a translation is missing
+	 * @return {@link ITranslatableString} for given column name
+	 */
+	default ITranslatableString getColumnTrl(final String columnName, final String defaultValue)
+	{
+		final Map<String, String> columnTrls = new HashMap<>();
+		for (final IModelTranslation modelTrl : getAllTranslations().values())
+		{
+			if (!modelTrl.isTranslated(columnName))
+			{
+				continue;
+			}
+
+			final String adLanguage = modelTrl.getAD_Language();
+			final String columnTrl = modelTrl.getTranslation(columnName);
+			columnTrls.put(adLanguage, Strings.nullToEmpty(columnTrl));
+		}
+
+		return ImmutableTranslatableString.ofMap(columnTrls, defaultValue);
+	}
 }

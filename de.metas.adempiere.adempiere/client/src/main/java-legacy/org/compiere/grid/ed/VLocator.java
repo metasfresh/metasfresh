@@ -27,8 +27,6 @@ import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
@@ -50,13 +48,17 @@ import org.compiere.model.GridField;
 import org.compiere.model.MLocator;
 import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Warehouse Locator Control
@@ -510,7 +512,7 @@ public class VLocator extends JComponent
 		AWindow frame = new AWindow();
 		
 		MQuery zoomQuery = new MQuery();
-		zoomQuery.addRestriction(MLocator.COLUMNNAME_M_Locator_ID, MQuery.EQUAL, getValue());
+		zoomQuery.addRestriction(MLocator.COLUMNNAME_M_Locator_ID, Operator.EQUAL, getValue());
 		zoomQuery.setRecordCount(1);	//	guess
 		
 		if (!frame.initWindow(AD_Window_ID, zoomQuery))

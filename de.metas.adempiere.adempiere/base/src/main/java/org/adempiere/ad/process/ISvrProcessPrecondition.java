@@ -1,28 +1,5 @@
 package org.adempiere.ad.process;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
 /**
@@ -33,14 +10,23 @@ import org.compiere.process.SvrProcess;
  */
 public interface ISvrProcessPrecondition
 {
+	public static interface PreconditionsContext
+	{
+		String getTableName();
+
+		<T> T getModel(final Class<T> modelClass);
+	}
+
 	/**
-	 * Determines if a process should be displayed for the current tab.
+	 * Determines if a process should be displayed in current context.
 	 * <p>
 	 * <b>IMPORTANT:</b> this method will not be invoked on the same instance that shall later execute <code>prepare()</code> {@link SvrProcess#doIt(String, String, Object[])}, so it does not make any
 	 * sense to set any values to be used later.
 	 *
-	 * @param gridTab
+	 * @param context
 	 * @return true if the process will be displayed.
 	 */
-	boolean isPreconditionApplicable(GridTab gridTab);
+	boolean isPreconditionApplicable(PreconditionsContext context);
+
+	// boolean isPreconditionApplicable(GridTab gridTab);
 }

@@ -1007,7 +1007,7 @@ public class Util
 	 */
 	public static ArrayKey mkKey(final Object... input)
 	{
-		return new ArrayKey(input);
+		return ArrayKey.of(input);
 	}
 
 	/**
@@ -1015,7 +1015,7 @@ public class Util
 	 */
 	public static ArrayKeyBuilder mkKey()
 	{
-		return new ArrayKeyBuilder();
+		return ArrayKey.builder();
 	}
 
 	/**
@@ -1029,6 +1029,16 @@ public class Util
 	 */
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
+		public static final ArrayKey of(final Object...input)
+		{
+			return new ArrayKey(input);
+		}
+		
+		public static final ArrayKeyBuilder builder()
+		{
+			return new ArrayKeyBuilder();
+		}
+		
 		private final Object[] array;
 		private String _stringBuilt = null;
 
