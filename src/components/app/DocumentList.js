@@ -52,7 +52,8 @@ class DocumentList extends Component {
         const {dispatch} = this.props;
         
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
-            const  { filters } = this.props
+            const  { filters } = this.props;
+            console.log(filters);
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {

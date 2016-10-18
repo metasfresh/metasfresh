@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 import FilterWidget from '../FilterWidget';
 
 import {
@@ -15,6 +16,16 @@ class Filters extends Component {
             openFilter: false,
             filterDataItem: ''
         };
+    }
+
+    handleClickOutside = (e) => {
+        this.closeFilterMenu();
+    }
+
+    closeFilterMenu = () => {
+        this.setState(Object.assign({}, this.state, {
+            open: false
+        }))
     }
 
     toggleFilterMenu = () => {
@@ -102,6 +113,6 @@ Filters.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Filters = connect()(Filters)
+Filters = connect()(onClickOutside(Filters))
 
 export default Filters
