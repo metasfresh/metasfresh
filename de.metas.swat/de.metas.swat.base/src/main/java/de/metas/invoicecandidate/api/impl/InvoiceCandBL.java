@@ -193,7 +193,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
-			if (ic.getC_InvoiceSchedule_ID() <= 0)    // that's a paddlin'
+			if (ic.getC_InvoiceSchedule_ID() <= 0)        // that's a paddlin'
 			{
 				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
 			}
@@ -287,7 +287,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final Timestamp middleDayOfMonth = TimeUtil.getMonthMiddleDay(dateDayOfMonth);
 
-		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                            // task 08869
+		if (dateDayOfMonth.compareTo(middleDayOfMonth) <= 0)                                // task 08869
 		{
 			return middleDayOfMonth;
 		}
@@ -413,16 +413,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyInvoiced(qtyAndNetAmtInvoiced.getLeft());
 
 			final BigDecimal netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
-			if (netAmtInvoiced == null)      // gh #428 flag the IC if we can't get NetAmtInvoiced
-			{
-				ic.setIsError(true);
-				ic.setErrorMsg("Unable to compute NetAmtInvoiced. Check UOM conversions");
-				ic.setNetAmtInvoiced(null);
-			}
-			else
-			{
-				ic.setNetAmtInvoiced(netAmtInvoiced);
-			}
+			ic.setNetAmtInvoiced(netAmtInvoiced);
 		}
 
 		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
@@ -782,6 +773,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return qtyInPriceUOM;
 	}
 
+	/**
+	 * Adds the given <code>amendment</code> to the given <code>ic</code>'s <code>SchedulerResult</code> value, <b>unless</b> the given string is already part of the <code>SchedulerResult</code>.
+	 * <p>
+	 * Note: the given <code>ic</code> might already contain the string because one method might be called multiple times and always try to add the same error-message.
+	 *
+	 * @param ic
+	 * @param amendment
+	 */
 	private void amendSchedulerResult(final I_C_Invoice_Candidate ic, final String amendment)
 	{
 		if (Check.isEmpty(amendment))
@@ -795,7 +794,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			ic.setSchedulerResult(amendment);
 		}
-		else
+		else if (!currentVal.contains(amendment))   // this IC might already contain the given amendment
 		{
 			ic.setSchedulerResult(currentVal + "\n" + amendment);
 		}
@@ -1242,7 +1241,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public boolean isTaxIncluded(final I_C_Invoice_Candidate ic)
 	{
 		final Boolean taxIncludedOverride;
-		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))             // note: currently, "not set" translates to the empty string, not to null
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override))                 // note: currently, "not set" translates to the empty string, not to null
 		{
 			taxIncludedOverride = null;
 		}
@@ -1420,7 +1419,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 			}
 
-			if (il.getRef_InvoiceLine_ID() > 0)                            // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
+			if (il.getRef_InvoiceLine_ID() > 0)                                // note: this is (also) the case for credit memos, see IInvoiceBL.creditInvoice() and the invocations it makes
 			{
 				//
 				// task 08927: if il e.g. belongs to the credit memo of an inoutLine or a quality inspection, still get the invoice candidate
@@ -1899,7 +1898,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                            // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
 			{
 				// 07847
 				// Use the maximum between qtyOrdered and qtyDelivered

@@ -2,8 +2,11 @@ package de.metas.request.model.validator;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.util.Services;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
@@ -35,6 +38,13 @@ import org.compiere.model.ModelValidator;
 public class R_Request
 {
 
+	
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+	
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_R_RequestType_ID)
 	@CalloutMethod(columnNames = { I_R_Request.COLUMNNAME_R_RequestType_ID })
 	public void onRequestTypeChange(final I_R_Request request)

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -47,6 +48,7 @@ import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
@@ -74,9 +76,12 @@ import de.metas.handlingunits.client.terminal.mmovement.model.split.impl.HUSplit
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable
 {
+	private static final transient Logger logger = LogManager.getLogger(HUEditorModel.class);
+
 	// services
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -163,6 +168,11 @@ public class HUEditorModel implements IDisposable
 
 	private boolean disposed = false;
 
+	/**
+	 * Creates a new instance and adds itself to the given <code>terminalContext</code>'s disposable components.
+	 *
+	 * @param terminalContext
+	 */
 	public HUEditorModel(final ITerminalContext terminalContext)
 	{
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
@@ -778,6 +788,8 @@ public class HUEditorModel implements IDisposable
 			{
 				selectionChanged = true;
 			}
+			logger.debug("updateSelectedKey(): this-ID={}: added keyId={}, huKey={} to _selectedKeyIds; selectionChanged={}; this={}",
+					System.identityHashCode(this), keyId, huKey, selectionChanged, this);
 		}
 		else
 		{
@@ -786,6 +798,8 @@ public class HUEditorModel implements IDisposable
 			{
 				selectionChanged = true;
 			}
+			logger.debug("updateSelectedKey(): this-ID={}: removed keyId={}, huKey={} from _selectedKeyIds; selectionChanged={}; this={}",
+					System.identityHashCode(this), keyId, huKey, selectionChanged, this);
 		}
 
 		if (selectionChanged)
@@ -807,7 +821,7 @@ public class HUEditorModel implements IDisposable
 		final boolean selectedNew = !selectedOld;
 		setSelected0(huKey, selectedNew);
 
-		fireHUKeyStatusChangedRecursivelly(getRootHUKey());
+		fireHUKeyStatusChangedRecursively(getRootHUKey());
 
 		return selectedNew;
 	}
@@ -823,19 +837,20 @@ public class HUEditorModel implements IDisposable
 		{
 			// shall not happen
 			// return: not selected
+			logger.warn("setSelected(): this-ID={}: huKey={} is not selectable; this={}", System.identityHashCode(this), huKey, this);
 			return false;
 		}
 
 		final boolean selected = isSelected(huKey);
 		if (selected)
 		{
-			// already selected
-			return true;
+			logger.debug("setSelected(): this-ID={}: huKey={} is already selected; this={}", System.identityHashCode(this), huKey, this);
+			return true; // already selected
 		}
 
 		setSelected0(huKey, true);
 
-		fireHUKeyStatusChangedRecursivelly(getRootHUKey());
+		fireHUKeyStatusChangedRecursively(getRootHUKey());
 
 		return true;
 	}
@@ -852,6 +867,7 @@ public class HUEditorModel implements IDisposable
 		{
 			// shall not happen
 			// return: not selected
+			logger.warn("setSelected(): this-ID={} parameter 'hu' is null; this={}", System.identityHashCode(this), this);
 			return false;
 		}
 
@@ -862,8 +878,8 @@ public class HUEditorModel implements IDisposable
 		final IHUKey rootKey = getRootHUKey();
 		if (rootKey == null)
 		{
-			// no root key???
-			return false;
+			logger.warn("setSelected(): this-ID={} rootKey=null; this={}", System.identityHashCode(this), this);
+			return false; // no root key???
 		}
 
 		//
@@ -871,7 +887,6 @@ public class HUEditorModel implements IDisposable
 		final List<IHUKey> huKeysForId = new ArrayList<IHUKey>();
 		rootKey.iterate(new HUKeyVisitorAdapter()
 		{
-
 			@Override
 			public VisitResult beforeVisit(final IHUKey key)
 			{
@@ -888,6 +903,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Select what we found
+		logger.debug("setSelected(): this-ID={}m hu={}: found huKeysForId={}; this={}", System.identityHashCode(this), hu, huKeysForId, this);
 		boolean selected = false;
 		for (final IHUKey huKey : huKeysForId)
 		{
@@ -900,13 +916,13 @@ public class HUEditorModel implements IDisposable
 		return selected;
 	}
 
-	private void fireHUKeyStatusChangedRecursivelly(final IHUKey huKey)
+	private void fireHUKeyStatusChangedRecursively(final IHUKey huKey)
 	{
 		huKey.fireStatusChanged();
 		// TODO: consider getting only the loaded children because if they are not loaded for sure there is no status listener
 		for (final IHUKey child : huKey.getChildren())
 		{
-			fireHUKeyStatusChangedRecursivelly(child);
+			fireHUKeyStatusChangedRecursively(child);
 		}
 	}
 
@@ -915,57 +931,29 @@ public class HUEditorModel implements IDisposable
 		return !_selectedKeyIds.isEmpty();
 	}
 
+	/**
+	 *
+	 * @return the <code>M_HU_ID</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HU-IDs are returned.
+	 */
 	public Set<Integer> getSelectedHUIds()
 	{
-		final Set<Integer> huIds = new HashSet<Integer>();
-		for (final IHUKey key : _selectedKeyIds.values())
-		{
-			if (!isSelected(key))
-			{
-				continue;
-			}
-
-			final HUKey huKey = HUKey.castIfPossible(key);
-			if (huKey == null)
-			{
-				continue;
-			}
-
-			final int huId = huKey.getM_HU().getM_HU_ID();
-			huIds.add(huId);
-		}
-
+		final Set<Integer> huIds = getSelectedHUKeys()
+				.stream()
+				.map(key -> key.getM_HU().getM_HU_ID())
+				.collect(Collectors.toSet());
 		return huIds;
 	}
 
+	/**
+	 *
+	 * @return the <code>M_HU</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HUs are returned.
+	 */
 	public Set<I_M_HU> getSelectedHUs()
 	{
-		final Set<Integer> huIds = new HashSet<Integer>();
-		final Set<I_M_HU> hus = new HashSet<I_M_HU>();
-		for (final IHUKey key : _selectedKeyIds.values())
-		{
-			if (!isSelected(key))
-			{
-				continue;
-			}
-
-			final HUKey huKey = HUKey.castIfPossible(key);
-			if (huKey == null)
-			{
-				continue;
-			}
-
-			final I_M_HU hu = huKey.getM_HU();
-			final int huId = hu.getM_HU_ID();
-			if (!huIds.add(huId))
-			{
-				// already added
-				continue;
-			}
-
-			hus.add(hu);
-		}
-
+		final Set<I_M_HU> hus = getSelectedHUKeys()
+				.stream()
+				.map(key -> key.getM_HU())
+				.collect(Collectors.toSet());
 		return hus;
 	}
 
@@ -986,7 +974,6 @@ public class HUEditorModel implements IDisposable
 
 			productStorages.add(productStorage);
 		}
-
 		return productStorages;
 	}
 
@@ -1019,12 +1006,14 @@ public class HUEditorModel implements IDisposable
 		{
 			if (!isSelected(key))
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because it is not selected; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
 			final HUKey huKey = HUKey.castIfPossible(key);
 			if (huKey == null)
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because it does not wrap a HU; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
@@ -1034,15 +1023,18 @@ public class HUEditorModel implements IDisposable
 			if (!huIds.add(huId))
 			{
 				// already added
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because its M_HU_ID was already added to the selection; this={}", System.identityHashCode(this), key, this);
 				continue;
 			}
 
 			// If there is a filter, ask it we accepts current Key
 			if (filter != null && !filter.evaluate(key))
 			{
+				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because the given filter={} evaluated to false; this={}", System.identityHashCode(this), key, filter, this);
 				continue;
 			}
 
+			logger.debug("getSelectedHUKeys: this-ID={} adding key={} to the selection; this={}", System.identityHashCode(this), key, filter, this);
 			huKeys.add(huKey);
 		}
 
