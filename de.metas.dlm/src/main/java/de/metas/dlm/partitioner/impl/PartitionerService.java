@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -20,7 +21,7 @@ import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.IPartitionerService;
-import de.metas.dlm.partitioner.config.PartionConfigReference;
+import de.metas.dlm.partitioner.config.PartionerConfigReference;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.logging.LogManager;
@@ -59,9 +60,16 @@ public class PartitionerService implements IPartitionerService
 
 		// we need to get to the "first" line(s),
 		// i.e. those DLM_PartionLine_Configs that are not referenced via any DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID
-		// i think we can also live with circles, i.e. if there is no "first", but for those "firsts" that there are, we need to start with them
+		// i think we can also live with circles, i.e. if there is no "first", but for those "firsts" we should pick one and start with it
+		// also, for the case of >1 "firsts", we need to be able to backtrack
 		final List<PartitionerConfigLine> lines = config.getLines(); // DLM_PartionLine_Config
 
+		if (lines.isEmpty())
+		{
+			return new Partition(config, records); // return empty partition
+		}
+
+		// iterate the lines
 		for (final PartitionerConfigLine line : lines)
 		{
 			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName());
@@ -69,6 +77,7 @@ public class PartitionerService implements IPartitionerService
 			{
 				continue;  // looks like we partitioned *every* record of the given table
 			}
+
 			records.add(record);
 			recurse(line, record, records);
 		}
@@ -92,6 +101,7 @@ public class PartitionerService implements IPartitionerService
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
+			logger.info("Caught {}; going to retry with an augmented config", e.toString());
 
 			final PartitionerConfig newConfig = PartitionerConfig
 					.builder(config)
@@ -148,19 +158,25 @@ public class PartitionerService implements IPartitionerService
 
 	/**
 	 *
-	 * @param line
-	 * @param record used to get and load further records which reference the given <code>record</code>.
-	 *
+	 * @param line the line's <code>tableName</code> matches the given <code>record</code>. The line's <code>references</code> descripe which foraeign records the give <code>record</code> might reference. This method loads them and adds the to the given <code>records</code> set.
+	 * @param record used to get and load further records this parameter references.
 	 * @param records the set of records we will eventually return. Needed to detect circles by checking if a record was already added. the given <code>record</code> is already included.
+	 *
 	 * @return
 	 */
-	private Set<IDLMAware> recurse(final PartitionerConfigLine line, final IDLMAware record, final Set<IDLMAware> records)
+	private Set<IDLMAware> recurse(
+			final PartitionerConfigLine line,
+			final IDLMAware record,
+			final Set<IDLMAware> records)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
 		final String trxName = InterfaceWrapperHelper.getTrxName(record);
 
-		// for each ref,
-		for (final PartionConfigReference ref : line.getReferences()) // DLM_PartionReference_Config
+		final List<PartionerConfigReference> references = line.getReferences();
+
+		// GO FORWARD
+		// for each ref, load the referenced record and recurse with that record
+		for (final PartionerConfigReference ref : references) // DLM_PartionReference_Config
 		{
 			// get the foreign key ID of
 			// table DLM_PartionLine_Config.AD_Table_ID,
@@ -172,24 +188,35 @@ public class PartitionerService implements IPartitionerService
 				continue;
 			}
 
+			// the table name of the foreign record which has 'foreignKey' as its ID
+			final String foreignTableName = ref.getReferencedTableName();
+
 			// load the foreign record from the table DLM_PartionReference_Config.DLM_Referenced_Table_ID
-			final IDLMAware foreignRecord = InterfaceWrapperHelper.create(ctx, ref.getReferencedTableName(), foreignKey, IDLMAware.class, trxName);
-			logger.debug("Loaded referenced IDLMAware={} from table={} via {}.{}={}", foreignRecord, ref.getReferencedTableName(), line.getTableName(), ref.getReferencingColumnName(), foreignKey);
+			final IDLMAware foreignRecord = InterfaceWrapperHelper.create(ctx, foreignTableName, foreignKey, IDLMAware.class, trxName);
+			logger.debug("Loaded referenced IDLMAware={} from table={} via {}.{}={}", foreignRecord, foreignTableName, line.getTableName(), ref.getReferencingColumnName(), foreignKey);
 
 			final boolean recordWasNotYetAddedBefore = records.add(foreignRecord);
 
-			// get the foreign record's PartitionerConfigLine (DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID)
-			// note: it's OK to have a referencedConfigLine that has itself no references, but it's not OK to have no
-			final PartitionerConfigLine referencedConfigLine = ref.getReferencedConfigLine();
-			if (referencedConfigLine == null)
-			{
-				logger.debug("Referenced IDLMAware={} does not reference any further DLM records", foreignRecord);
-				continue;
-			}
-
 			if (recordWasNotYetAddedBefore)
 			{
-				recurse(referencedConfigLine, foreignRecord, records);
+				// get the foreign record's PartitionerConfigLine (DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID)
+				// note: it's OK to have a referencedConfigLine that has itself no references, but it's not OK to have no
+				final PartitionerConfigLine referencedConfigLine = ref.getReferencedConfigLine();
+				if (referencedConfigLine != null)
+				{
+					recurse(referencedConfigLine, foreignRecord, records);
+				}
+				else
+				{
+					logger.debug("Referenced IDLMAware={} does not reference any further DLM records", foreignRecord);
+				}
+
+				// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
+				backTrack(line.getParent(),
+						InterfaceWrapperHelper.getContextAware(record),  // make it clear that record is only needed for ctx
+						records,
+						foreignTableName,
+						foreignKey);
 			}
 			else
 			{
@@ -197,7 +224,51 @@ public class PartitionerService implements IPartitionerService
 			}
 		}
 
+		// GO BACKWARDS, i.e. get records which reference 'record'
+		backTrack(line.getParent(),
+				InterfaceWrapperHelper.getContextAware(record),  // make it clear that record is only needed for ctx
+				records,
+				line.getTableName(),
+				InterfaceWrapperHelper.getId(record));
+
 		return records;
+	}
+
+	/**
+	 *
+	 * @param config
+	 * @param contextProvider
+	 * @param records
+	 * @param remainingLines
+	 * @param tableName
+	 * @param key
+	 */
+	private void backTrack(final PartitionerConfig config,
+			final IContextAware contextProvider,
+			final Set<IDLMAware> records,
+			final String tableName,
+			final Integer key)
+	{
+		final List<PartionerConfigReference> backwardReferences = config.getReferences(tableName);
+		for (final PartionerConfigReference backwardRef : backwardReferences)
+		{
+			final PartitionerConfigLine backwardLine = backwardRef.getParent();
+
+			// load all records which reference foreignRecord
+			final List<IDLMAware> backwardRecords = Services.get(IQueryBL.class)
+					.createQueryBuilder(IDLMAware.class, backwardLine.getTableName(), contextProvider)
+					.addEqualsFilter(backwardRef.getReferencingColumnName(), key)
+					.create()
+					.list();
+			for (final IDLMAware backwardRecord : backwardRecords)
+			{
+				final boolean backwardRecordWasNotYetAddedBefore = records.add(backwardRecord);
+				if (backwardRecordWasNotYetAddedBefore)
+				{
+					recurse(backwardLine, backwardRecord, records);
+				}
+			}
+		}
 	}
 
 }

@@ -38,12 +38,11 @@ import com.google.common.annotations.VisibleForTesting;
  * Augments {@link DBException}. With this instance being registered, {@link DBException} can wrap an {@link SQLException} into a {@link DLMException}<br>
  * Registered via {@link DBException#registerExceptionWrapper(IExceptionWrapper)}
  *
- * the "HINT" from an error message from the database looks like this:
+ * the "DETAIL" from an error message from the database looks like this:
  *
- * <pre>
- * DLM_Referencing_Table_Name = c_bankstatementline_ref;
- * DLM_Referencig_Column_Name = c_payment_id;
- * </pre>
+ *
+ * DLM_Referenced_Table_Name = c_payment_tbl; DLM_Referencing_Table_Name = c_bankstatementline_ref; DLM_Referencig_Column_Name = c_payment_id;
+ *
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -60,7 +59,15 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 	 */
 	private static final String PG_SQLSTATE_Referencing_Table_Has_No_DLM_LEvel = "235N5";
 
-	private static final Pattern HINT_REGEXP = Pattern.compile("[;, ]*DLM_Referencing_Table_Name *= *([a-zA-Z0-9_]+)[;, ]+DLM_Referencig_Column_Name *= *([a-zA-Z0-9_]+)[;, ]*");
+	/**
+	 * This pattern is used to parse the postgresql error message. some notes:
+	 * <li>we try to be tolerant with minor variations in the string, as long as the important parts are still correct.
+	 * <li>for the two groups of <code>([a-zA-Z0-9_]+?)(_tbl)?</code>, and an input of either <code>c_payment</code> or <code>c_payment_tbl</code>, the first group always matches <code>c_payment</code>.<br>
+	 * This is what we want, because we are not interested in the <code>_tbl</code> prefix.<br>
+	 * It works because the first group is "reluctant" and the second one is "greedy".
+	 */
+	private static final Pattern DETAIL_REGEXP = Pattern.compile("[;, ]*DLM_Referenced_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencing_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencig_Column_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]*",
+			Pattern.CASE_INSENSITIVE);
 
 	public static DLMExceptionWrapper INSTANCE = new DLMExceptionWrapper();
 
@@ -93,25 +100,25 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 		final ServerErrorMessage serverErrorMessage = psqlException.getServerErrorMessage();
 		Check.errorIf(serverErrorMessage == null, "ServerErrorMessage of PSQLException={} may not be null", psqlException);
 
-		final String hint = serverErrorMessage.getHint();
-		Check.errorIf(Check.isEmpty(hint, true), "HINT ServerErrorMessage={} from of PSQLException={} may not be null", serverErrorMessage, psqlException);
+		final String detail = serverErrorMessage.getDetail();
+		Check.errorIf(Check.isEmpty(detail, true), "DETAIL ServerErrorMessage={} from of PSQLException={} may not be null", serverErrorMessage, psqlException);
 
-		final String[] infos = extractInfos(hint);
+		final String[] infos = extractInfos(detail);
 
 		return new DLMException(t, referencingTableHasDLMLevel, infos[0], infos[1], infos[2]);
 	}
 
 	@VisibleForTesting
-	static String[] extractInfos(final String hint)
+	static String[] extractInfos(final String detail)
 	{
-		final Matcher matcher = HINT_REGEXP.matcher(hint);
+		final Matcher matcher = DETAIL_REGEXP.matcher(detail);
 
 		final boolean matches = matcher.matches();
-		Check.errorUnless(matches, "given string={} does not match our regexp={}", hint, HINT_REGEXP);
+		Check.errorUnless(matches, "given string={} does not match our regexp={}", detail, DETAIL_REGEXP);
 
 		final String referencedTableName = matcher.group(1);
-		final String referencingTableName = matcher.group(2);
-		final String referencingColumnName = matcher.group(3);
+		final String referencingTableName = matcher.group(3);
+		final String referencingColumnName = matcher.group(5);
 
 		return new String[] { referencedTableName, referencingTableName, referencingColumnName };
 	}

@@ -85,5 +85,4 @@ public class DLMException extends DBException
 		return "DLMException [referencedTableName=" + referencedTableName + ", referencingTableName=" + referencingTableName + ", referencingColumnName=" + referencingColumnName + ", referencingTableHasDLMLevel=" + referencingTableHasDLMLevel + "]";
 	}
 
-
 }

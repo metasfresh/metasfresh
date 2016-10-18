@@ -2,10 +2,11 @@ package de.metas.dlm.partitioner.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
 
-import de.metas.dlm.partitioner.config.PartionConfigReference.RefBuilder;
+import de.metas.dlm.partitioner.config.PartionerConfigReference.RefBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 
 /*
@@ -55,10 +56,11 @@ public class PartitionerConfig
 
 	/**
 	 * Creates a new builder and "prepopulates" it using the lines and references from the given <code>config</code>.
+	 *
 	 * @param config
 	 * @return
 	 */
-	public static Builder builder(PartitionerConfig config)
+	public static Builder builder(final PartitionerConfig config)
 	{
 		return new Builder(config);
 	}
@@ -80,12 +82,12 @@ public class PartitionerConfig
 			this(null);
 		}
 
-		public Builder(PartitionerConfig config)
+		public Builder(final PartitionerConfig config)
 		{
 			initializeFromconfig(config);
 		}
 
-		private void initializeFromconfig(PartitionerConfig config)
+		private void initializeFromconfig(final PartitionerConfig config)
 		{
 			if (config == null)
 			{
@@ -93,8 +95,8 @@ public class PartitionerConfig
 			}
 			for (final PartitionerConfigLine line : config.getLines())
 			{
-				final LineBuilder lineBuilder = this.newLine().setTableName(line.getTableName());
-				for (final PartionConfigReference ref : line.getReferences())
+				final LineBuilder lineBuilder = newLine().setTableName(line.getTableName());
+				for (final PartionerConfigReference ref : line.getReferences())
 				{
 					final RefBuilder refBuilder = lineBuilder.newRef().setReferencedTableName(ref.getReferencedTableName()).setReferencingColumnName(ref.getReferencingColumnName());
 					if (ref.getReferencedConfigLine() != null)
@@ -131,5 +133,19 @@ public class PartitionerConfig
 			}
 			return partitionerConfig;
 		}
+	}
+
+	/**
+	 *
+	 * @param tableName
+	 * @return a list of {@link PartionerConfigReference}s which reference the given table name (ignoring upper/lower case).
+	 */
+	public List<PartionerConfigReference> getReferences(final String tableName)
+	{
+		final List<PartionerConfigReference> references = getLines().stream()
+				.flatMap(line -> line.getReferences().stream()) // get a stream of all references
+				.filter(ref -> tableName.equalsIgnoreCase(ref.getReferencedTableName())) // filter those who refer to 'tablename'
+				.collect(Collectors.toList());
+		return references;
 	}
 }

@@ -1,4 +1,4 @@
-
+﻿
 DROP VIEW IF EXISTS dlm.triggers;
 CREATE OR REPLACE VIEW dlm.triggers AS
 SELECT 

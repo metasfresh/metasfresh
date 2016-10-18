@@ -39,14 +39,14 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PartionConfigReference
+public class PartionerConfigReference
 {
 	private final String referencedTableName;
 	private final String referencingColumnName;
 	private final PartitionerConfigLine referencedConfigLine;
 	private final PartitionerConfigLine parent;
 
-	private PartionConfigReference(final PartitionerConfigLine parent,
+	private PartionerConfigReference(final PartitionerConfigLine parent,
 			final String referencingColumnName,
 			final String referencedTableName,
 			final PartitionerConfigLine referencedConfigLine)
@@ -142,7 +142,7 @@ public class PartionConfigReference
 		 * @param parent
 		 * @return
 		 */
-		/* package */ PartionConfigReference build(final PartitionerConfigLine parent)
+		/* package */ PartionerConfigReference build(final PartitionerConfigLine parent)
 		{
 			final PartitionerConfigLine referencedConfigLine;
 			if (Check.isEmpty(referencedConfigLineTableName, true))
@@ -154,7 +154,7 @@ public class PartionConfigReference
 				referencedConfigLine = parent.getParent().getLine(referencedConfigLineTableName);
 			}
 
-			return new PartionConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
+			return new PartionerConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
 		}
 
 	}

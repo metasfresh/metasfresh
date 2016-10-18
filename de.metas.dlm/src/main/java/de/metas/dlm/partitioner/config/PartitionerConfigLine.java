@@ -42,7 +42,7 @@ public class PartitionerConfigLine
 
 	private final String tablename;
 	private final PartitionerConfig parent;
-	private final List<PartionConfigReference> references = new ArrayList<>();
+	private final List<PartionerConfigReference> references = new ArrayList<>();
 
 	private PartitionerConfigLine(final PartitionerConfig parent, final String tableName)
 	{
@@ -67,7 +67,7 @@ public class PartitionerConfigLine
 	 *
 	 * @return never <code>null</code>
 	 */
-	public List<PartionConfigReference> getReferences()
+	public List<PartionerConfigReference> getReferences()
 	{
 		return references;
 	}
@@ -89,7 +89,7 @@ public class PartitionerConfigLine
 
 		private String tableName;
 
-		private final List<PartionConfigReference.RefBuilder> refBuilders = new ArrayList<>();
+		private final List<PartionerConfigReference.RefBuilder> refBuilders = new ArrayList<>();
 
 		private PartitionerConfigLine buildLine;
 
@@ -125,9 +125,9 @@ public class PartitionerConfigLine
 			return buildLine;
 		}
 
-		public PartionConfigReference.RefBuilder newRef()
+		public PartionerConfigReference.RefBuilder newRef()
 		{
-			final PartionConfigReference.RefBuilder refBuilder = new PartionConfigReference.RefBuilder(this);
+			final PartionerConfigReference.RefBuilder refBuilder = new PartionerConfigReference.RefBuilder(this);
 			refBuilders.add(refBuilder);
 
 			return refBuilder;
@@ -135,9 +135,9 @@ public class PartitionerConfigLine
 
 		public void buildRefs()
 		{
-			for (final PartionConfigReference.RefBuilder refBuilder : refBuilders)
+			for (final PartionerConfigReference.RefBuilder refBuilder : refBuilders)
 			{
-				final PartionConfigReference ref = refBuilder.build(buildLine);
+				final PartionerConfigReference ref = refBuilder.build(buildLine);
 				buildLine.references.add(ref);
 			}
 

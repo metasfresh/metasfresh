@@ -11,6 +11,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.junit.Before;
 import org.junit.Test;
@@ -238,6 +239,62 @@ public class PartitionerServiceTests
 		final Partition secondPartition = partitionerService.createPartition(partition.getConfig());
 
 		assertThat(secondPartition.getRecords().isEmpty(), is(true)); // we create add additional records, the partitioner shall *not* return the already partitioned ones.
+	}
+
+	/**
+	 * Verifies that also a scenario works like the following works
+	 * <li>C_Invoice references C_Order
+	 * <li>C_OrdeeLine also references C_Order
+	 *
+	 * So, if i start a partition with a C_Invoice record, then i know to also the C_Order record that is references by the invoice.<br>
+	 * However, i also need to add the C_OrderLine records which also reference the C_Order
+	 */
+	@Test
+	public void test_multiple_roots()
+	{
+		test_multiple_roots0();
+	}
+
+	private Partition test_multiple_roots0()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+
+		// invoice -> order
+				.newLine().setTableName(I_C_Invoice.Table_Name)
+				.newRef().setReferencingColumnName(I_C_Invoice.COLUMNNAME_C_Order_ID).setReferencedTableName(I_C_Order.Table_Name).endRef()
+
+		// orderLine -> order
+				.newLine().setTableName(I_C_OrderLine.Table_Name)
+				.newRef().setReferencingColumnName(I_C_OrderLine.COLUMNNAME_C_Order_ID).setReferencedTableName(I_C_Order.Table_Name).endRef()
+
+		.endLine().build();
+
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order, "order");
+		InterfaceWrapperHelper.save(order);
+
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		POJOWrapper.setInstanceName(invoice, "invoice");
+		invoice.setC_Order(order);
+		InterfaceWrapperHelper.save(invoice);
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+		POJOWrapper.setInstanceName(orderLine, "orderLine");
+		orderLine.setC_Order(order);
+		InterfaceWrapperHelper.save(orderLine);
+
+		// catch: there is a second order which is unrelated and shall therefore *not* end up in the partition.
+		final I_C_Order order2 = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order2, "order2");
+		InterfaceWrapperHelper.save(order2);
+
+		final Partition partition = partitionerService.createPartition(config);
+		assertThat(partition.getRecords().size(), is(3));
+		assertThat(partition.getRecords().contains(order), is(true));
+		assertThat(partition.getRecords().contains(orderLine), is(true));
+		assertThat(partition.getRecords().contains(invoice), is(true));
+
+		return partition;
 	}
 
 	private Partition testCircularReferences_within_same_table0()

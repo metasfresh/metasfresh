@@ -2,7 +2,7 @@ package de.metas.dlm.model;
 
 /**
  * Generated Interface for DLM_Partition
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
