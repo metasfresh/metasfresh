@@ -53,6 +53,7 @@ export function deleteNotification(item){
 
 export function updateUri(pathname, query, prop, value) {
     return (dispatch) => {
+        console.log(pathname, query, prop)
         let url = pathname;
         url += "?";
 

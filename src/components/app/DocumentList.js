@@ -131,7 +131,7 @@ class DocumentList extends Component {
         const {sorting, page, dispatch, windowType, updateUri} = this.props;
         const {data} = this.state;
 
-        !!updateUri && updateUri("sort", (asc?"+":"-")+field);
+        asc && field && !!updateUri && updateUri("sort", (asc?"+":"-")+field);
 
         dispatch(setSorting(field, asc, windowType));
 
