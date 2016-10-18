@@ -70,7 +70,7 @@ public class MigratorService implements IMigratorService
 				new TrxRunnable()
 				{
 					@Override
-					public void run(String localTrxName) throws Exception
+					public void run(final String localTrxName) throws Exception
 					{
 						final ITrxSavepoint savepoint = trxManager.getTrx(localTrxName).createTrxSavepoint(localTrxName + "_geforeChanges");
 
@@ -79,7 +79,7 @@ public class MigratorService implements IMigratorService
 						trxListenerManager.registerListener(new TrxListenerAdapter()
 						{
 							@Override
-							public void afterCommit(ITrx trx)
+							public void afterCommit(final ITrx trx)
 							{
 								trx.rollback(savepoint);
 							}
@@ -91,7 +91,7 @@ public class MigratorService implements IMigratorService
 				});
 	}
 
-	private void updateDLMLevel0(final Map<String, List<IDLMAware>> table2Record, final int targetDlmLevel, IContextAware partition)
+	private void updateDLMLevel0(final Map<String, List<IDLMAware>> table2Record, final int targetDlmLevel, final IContextAware partition)
 	{
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

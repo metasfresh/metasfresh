@@ -46,10 +46,10 @@ public class PartionConfigReference
 	private final PartitionerConfigLine referencedConfigLine;
 	private final PartitionerConfigLine parent;
 
-	private PartionConfigReference(PartitionerConfigLine parent,
-			String referencingColumnName,
-			String referencedTableName,
-			PartitionerConfigLine referencedConfigLine)
+	private PartionConfigReference(final PartitionerConfigLine parent,
+			final String referencingColumnName,
+			final String referencedTableName,
+			final PartitionerConfigLine referencedConfigLine)
 	{
 		this.parent = parent;
 		this.referencingColumnName = referencingColumnName;
@@ -92,18 +92,18 @@ public class PartionConfigReference
 
 		private final PartitionerConfigLine.LineBuilder parentbuilder;
 
-		RefBuilder(PartitionerConfigLine.LineBuilder parentBuilder)
+		RefBuilder(final PartitionerConfigLine.LineBuilder parentBuilder)
 		{
-			this.parentbuilder = parentBuilder;
+			parentbuilder = parentBuilder;
 		}
 
-		public RefBuilder setReferencedTableName(String referencedTableName)
+		public RefBuilder setReferencedTableName(final String referencedTableName)
 		{
 			this.referencedTableName = referencedTableName;
 			return this;
 		}
 
-		public RefBuilder setReferencingColumnName(String referencingColumnName)
+		public RefBuilder setReferencingColumnName(final String referencingColumnName)
 		{
 			this.referencingColumnName = referencingColumnName;
 			return this;
@@ -115,7 +115,7 @@ public class PartionConfigReference
 		 * @param referencedConfigLineTableName
 		 * @return
 		 */
-		public RefBuilder setReferencedConfigLine(String referencedConfigLineTableName)
+		public RefBuilder setReferencedConfigLine(final String referencedConfigLineTableName)
 		{
 			this.referencedConfigLineTableName = referencedConfigLineTableName;
 			return this;
@@ -142,7 +142,7 @@ public class PartionConfigReference
 		 * @param parent
 		 * @return
 		 */
-		/* package */ PartionConfigReference build(PartitionerConfigLine parent)
+		/* package */ PartionConfigReference build(final PartitionerConfigLine parent)
 		{
 			final PartitionerConfigLine referencedConfigLine;
 			if (Check.isEmpty(referencedConfigLineTableName, true))

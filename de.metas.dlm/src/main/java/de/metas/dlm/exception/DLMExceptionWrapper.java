@@ -53,7 +53,7 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 	}
 
 	@Override
-	public DBException wrapIfNeededOrReturnNull(Throwable t)
+	public DBException wrapIfNeededOrReturnNull(final Throwable t)
 	{
 		if (DBException.isSQLState(t, PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level))
 		{

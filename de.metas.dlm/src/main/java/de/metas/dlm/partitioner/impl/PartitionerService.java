@@ -98,7 +98,7 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	@Override
-	public void storePartition(Partition partition)
+	public void storePartition(final Partition partition)
 	{
 		final I_DLM_Partition partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
 		// TODO: also let the new DLM_Partition record reference the config's DB records

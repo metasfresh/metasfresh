@@ -44,13 +44,13 @@ public class PartitionerConfigLine
 	private final PartitionerConfig parent;
 	private final List<PartionConfigReference> references = new ArrayList<>();
 
-	private PartitionerConfigLine(PartitionerConfig parent, String tableName)
+	private PartitionerConfigLine(final PartitionerConfig parent, final String tableName)
 	{
 		Check.assumeNotNull(parent, "Paramter 'parent is not null");
 		Check.assumeNotEmpty(tableName, "Parameter 'tableName' is not empty");
 
 		this.parent = parent;
-		this.tablename = tableName;
+		tablename = tableName;
 	}
 
 	/**
@@ -93,12 +93,12 @@ public class PartitionerConfigLine
 
 		private PartitionerConfigLine buildLine;
 
-		LineBuilder(PartitionerConfig.Builder parentBuilder)
+		LineBuilder(final PartitionerConfig.Builder parentBuilder)
 		{
 			this.parentBuilder = parentBuilder;
 		}
 
-		public LineBuilder setTableName(String tableName)
+		public LineBuilder setTableName(final String tableName)
 		{
 			this.tableName = tableName;
 			return this;
@@ -119,7 +119,7 @@ public class PartitionerConfigLine
 			return parentBuilder;
 		}
 
-		public PartitionerConfigLine buildLine(PartitionerConfig parent)
+		public PartitionerConfigLine buildLine(final PartitionerConfig parent)
 		{
 			buildLine = new PartitionerConfigLine(parent, tableName);
 			return buildLine;
@@ -135,7 +135,7 @@ public class PartitionerConfigLine
 
 		public void buildRefs()
 		{
-			for (PartionConfigReference.RefBuilder refBuilder : refBuilders)
+			for (final PartionConfigReference.RefBuilder refBuilder : refBuilders)
 			{
 				final PartionConfigReference ref = refBuilder.build(buildLine);
 				buildLine.references.add(ref);

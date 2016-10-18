@@ -28,9 +28,12 @@ public interface IDLMAware
 	 * No getter for I_DLM_Partition records, because they might or might not exists at any given time.
 	 */
 	String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
+
 	int getDLM_Partition_ID();
+
 	void setDLM_Partition_ID(int DLM_Partition_ID);
 
 	String COLUMNNAME_DLM_Level = "DLM_Level";
+
 	int getDLM_Level();
 }

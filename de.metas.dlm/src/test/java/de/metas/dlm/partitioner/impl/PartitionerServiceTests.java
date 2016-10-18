@@ -319,7 +319,7 @@ public class PartitionerServiceTests
 		Services.registerService(IMigratorService.class, new IMigratorService()
 		{
 			@Override
-			public void testMigratePartition(Partition partition)
+			public void testMigratePartition(final Partition partition)
 			{
 				final boolean partitionHasInvoice = partition.getRecords().stream().anyMatch(r -> I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(r)));
 				if (!partitionHasInvoice)

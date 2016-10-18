@@ -50,7 +50,7 @@ public class PartitionerConfig
 		return new Builder();
 	}
 
-	public PartitionerConfigLine getLine(String tableName)
+	public PartitionerConfigLine getLine(final String tableName)
 	{
 		return lines.stream()
 				.filter(l -> l.getTableName().equals(tableName))
@@ -60,11 +60,11 @@ public class PartitionerConfig
 
 	public static class Builder
 	{
-		private List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
+		private final List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
 
 		public PartitionerConfigLine.LineBuilder newLine()
 		{
-			PartitionerConfigLine.LineBuilder lineBuilder = new PartitionerConfigLine.LineBuilder(this);
+			final PartitionerConfigLine.LineBuilder lineBuilder = new PartitionerConfigLine.LineBuilder(this);
 			lineBuilders.add(lineBuilder);
 			return lineBuilder;
 		}
@@ -74,13 +74,13 @@ public class PartitionerConfig
 			final PartitionerConfig partitionerConfig = new PartitionerConfig();
 
 			// first build the lines
-			for (PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
+			for (final PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
 			{
-				PartitionerConfigLine line = lineBuilder.buildLine(partitionerConfig);
+				final PartitionerConfigLine line = lineBuilder.buildLine(partitionerConfig);
 				partitionerConfig.lines.add(line);
 			}
 
-			for (PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
+			for (final PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
 			{
 				lineBuilder.buildRefs();
 			}

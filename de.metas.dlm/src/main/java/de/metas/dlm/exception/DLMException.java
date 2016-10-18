@@ -36,10 +36,10 @@ public class DLMException extends DBException
 {
 	private static final long serialVersionUID = -4557251479983766242L;
 
-	private boolean referencingTableHasDLMLevel;
+	private final boolean referencingTableHasDLMLevel;
 
 	@VisibleForTesting
-	public DLMException(Throwable cause, final boolean referencingTableHasDLMLevel)
+	public DLMException(final Throwable cause, final boolean referencingTableHasDLMLevel)
 	{
 		super("Another record still references the given record", cause);
 		this.referencingTableHasDLMLevel = referencingTableHasDLMLevel;
