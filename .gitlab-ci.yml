@@ -4,6 +4,10 @@ stages:
   - build
   - deploy
 
+before_script:
+  - rm -rf ansible/
+  - git submodule update --init --recursive
+
 build:
   stage: build
   script:

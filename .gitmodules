@@ -1,3 +1,3 @@
 [submodule "ansible"]
 	path = ansible
-	url = git@git.jazzy.pro:metasfresh/meta-frontend-ansible.git
+	url = ../meta-frontend-ansible.git
