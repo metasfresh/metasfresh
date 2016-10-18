@@ -1,11 +1,11 @@
 package de.metas.ui.web.window.controller;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -42,6 +42,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentActionsList;
 import de.metas.ui.web.window.model.DocumentActionsService;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
@@ -425,8 +426,8 @@ public class WindowRestController implements IWindowRestController
 		final DocumentPath documentPath = DocumentPath.singleDocumentPath(adWindowId, idStr, detailId, rowIdStr);
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final List<ZoomInfo> zoomInfos = documentReferencesService.getDocumentReferences(document);
-		return JSONDocumentReferencesList.of(zoomInfos, newJSONFilteringOptions().build());
+		final Collection<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(document).values();
+		return JSONDocumentReferencesList.of(documentReferences, newJSONFilteringOptions().build());
 	}
 
 }

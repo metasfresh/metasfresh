@@ -1,12 +1,14 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.window.model.DocumentReference;
 
 /*
  * #%L
@@ -32,20 +34,19 @@ import com.google.common.base.MoreObjects;
 
 public class JSONDocumentReferencesList
 {
-
-	public static JSONDocumentReferencesList of(final List<ZoomInfo> zoomInfos, final JSONFilteringOptions jsonOpts)
+	public static JSONDocumentReferencesList of(final Collection<DocumentReference> documentReferences, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDocumentReferencesList(zoomInfos, jsonOpts);
+		return new JSONDocumentReferencesList(documentReferences, jsonOpts);
 	}
 
 	@JsonProperty("references")
 	private final List<JSONDocumentReference> references;
 
-	private JSONDocumentReferencesList(final List<ZoomInfo> zoomInfos, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentReferencesList(final Collection<DocumentReference> documentReferences, final JSONFilteringOptions jsonOpts)
 	{
 		super();
-		references = zoomInfos.stream()
-				.map(zoomInfo -> JSONDocumentReference.of(zoomInfo, jsonOpts))
+		references = documentReferences.stream()
+				.map(documentReference -> JSONDocumentReference.of(documentReference, jsonOpts))
 				.filter(jsonDocumentReference -> jsonDocumentReference != null)
 				.collect(GuavaCollectors.toImmutableList());
 	}
