@@ -138,23 +138,26 @@ class MenuOverlay extends Component {
     	const {path} = this.state;
 
         return (
-            <div className="column-wrapper">
-                {node.nodeId != 0 &&
-                    <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
-                        {this.renderPath(path)}
-                    </p>
-                }
-                {node && node.children.map((item,index) =>
-                    <MenuOverlayContainer
-                        key={index}
-                        handleClickOnFolder={this.handleDeeper}
-                        handleRedirect={this.handleRedirect}
-                        handleNewRedirect={this.handleNewRedirect}
-                        handlePath={this.handlePath}
-                        parent={node}
-                        {...item}
-                    />
-                )}
+             <div className="menu-overlay-container-column-wrapper">
+                    {node.nodeId != 0 &&
+                        <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
+                            {this.renderPath(path)}
+                        </p>
+                    }
+                <div className="column-wrapper">
+                    
+                    {node && node.children.map((item,index) =>
+                        <MenuOverlayContainer
+                            key={index}
+                            handleClickOnFolder={this.handleDeeper}
+                            handleRedirect={this.handleRedirect}
+                            handleNewRedirect={this.handleNewRedirect}
+                            handlePath={this.handlePath}
+                            parent={node}
+                            {...item}
+                        />
+                    )}
+                </div>
             </div>
         )
     }
@@ -207,9 +210,9 @@ class MenuOverlay extends Component {
                                 </div>
                             }
                             <div className="menu-overlay-root-body">
-                                <div className="menu-overlay-container-column-wrapper">
+
                                     {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
-                                </div>
+
                                 <div className="menu-overlay-query">
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>

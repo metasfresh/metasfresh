@@ -52,9 +52,9 @@ class List extends Component {
         this.handleBlur();
     }
     handleSelect = (option) => {
-        const {onChange, setSelectedItem} = this.props;
+        const {onChange} = this.props;
         onChange(option);
-        setSelectedItem(option);
+        // setSelectedItem(option);
         this.handleBlur();
 
     }

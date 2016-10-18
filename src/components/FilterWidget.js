@@ -30,9 +30,9 @@ class FilterWidget extends Component {
 
 
     handlePatch = (property, value) => {
-        const {dispatch, updateDocList, windowType} = this.props;
+        const {dispatch, updateDocList, windowType, closeFilterMenu} = this.props;
         let filter =
-          {
+          [{
             filterId: property,
             parameters: [
               {
@@ -40,13 +40,20 @@ class FilterWidget extends Component {
                 value: value
               }
             ]
-          }
+          }]
+
+
+        // this.setSelectedItem(value);
 
 
         dispatch(setFilter(filter));
         updateDocList('grid', windowType);
+        // closeFilterMenu();
+
+
         
     }
+
     //
     // This method may looks like a redundant for this one above,
     // but is need to handle controlled components if
@@ -115,7 +122,7 @@ class FilterWidget extends Component {
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem} = this.props;
         const {updated} = this.state;
         if(widgetData){
             return (
@@ -134,6 +141,8 @@ class FilterWidget extends Component {
                                     filterWidget={true}
                                     filterId={filterId}
                                     parameterName={widgetData[0].parameterName}
+                                    setSelectedItem={setSelectedItem}
+                                    selectedItem={selectedItem}
                                 />
                             </div>
                         </div>

@@ -15,22 +15,23 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            selectedItem: {}
-        }
+
+       
 
     }
 
-    setSelectedItem = (item) => {
-        this.setState(Object.assign({}, this.state, {
-            selectedItem: item
-        }));
-    }
+    // setSelectedItem = (item) => {
+    //     this.setState(Object.assign({}, this.state, {
+    //         selectedItem: item
+    //     }));
+    // }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
-        const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName} = this.props;
-        const {selectedItem} = this.state;
+        const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName, setSelectedItem, selectedItem} = this.props;
+        
+
+        // console.log(this.state.selectedItem);
 
         let widgetField = "";
         let selectedField = "";
@@ -124,7 +125,7 @@ class RawWidget extends Component {
                         filterWidget={filterWidget}
                         filterId={filterId}
                         parameterName={parameterName}
-                        setSelectedItem={this.setSelectedItem}
+                        setSelectedItem={setSelectedItem}
                     />
                 )
             case "List":
@@ -145,7 +146,7 @@ class RawWidget extends Component {
                         filterWidget={filterWidget}
                         filterId={filterId}
                         parameterName={parameterName}
-                        setSelectedItem={this.setSelectedItem}
+                        setSelectedItem={setSelectedItem}
                     />
                 )
             case "Text":
