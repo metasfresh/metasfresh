@@ -50,7 +50,6 @@ class DocumentList extends Component {
     updateData = (type, windowType) => {
 
         const {dispatch, filters} = this.props;
-        console.log(filters);
 
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
             const  { filters } = this.props
