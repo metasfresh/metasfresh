@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import de.metas.dlm.partitioner.config.PartionConfigReference.RefBuilder;
+import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -50,10 +53,20 @@ public class PartitionerConfig
 		return new Builder();
 	}
 
+	/**
+	 * Creates a new builder and "prepopulates" it using the lines and references from the given <code>config</code>.
+	 * @param config
+	 * @return
+	 */
+	public static Builder builder(PartitionerConfig config)
+	{
+		return new Builder(config);
+	}
+
 	public PartitionerConfigLine getLine(final String tableName)
 	{
 		return lines.stream()
-				.filter(l -> l.getTableName().equals(tableName))
+				.filter(l -> l.getTableName().equalsIgnoreCase(tableName))
 				.findFirst()
 				.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
 	}
@@ -61,6 +74,38 @@ public class PartitionerConfig
 	public static class Builder
 	{
 		private final List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
+
+		public Builder()
+		{
+			this(null);
+		}
+
+		public Builder(PartitionerConfig config)
+		{
+			initializeFromconfig(config);
+		}
+
+		private void initializeFromconfig(PartitionerConfig config)
+		{
+			if (config == null)
+			{
+				return;
+			}
+			for (final PartitionerConfigLine line : config.getLines())
+			{
+				final LineBuilder lineBuilder = this.newLine().setTableName(line.getTableName());
+				for (final PartionConfigReference ref : line.getReferences())
+				{
+					final RefBuilder refBuilder = lineBuilder.newRef().setReferencedTableName(ref.getReferencedTableName()).setReferencingColumnName(ref.getReferencingColumnName());
+					if (ref.getReferencedConfigLine() != null)
+					{
+						refBuilder.setReferencedConfigLine(ref.getReferencedConfigLine().getTableName());
+					}
+					refBuilder.endRef();
+				}
+				lineBuilder.endLine();
+			}
+		}
 
 		public PartitionerConfigLine.LineBuilder newLine()
 		{
@@ -84,7 +129,6 @@ public class PartitionerConfig
 			{
 				lineBuilder.buildRefs();
 			}
-
 			return partitionerConfig;
 		}
 	}

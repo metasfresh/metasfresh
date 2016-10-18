@@ -38,10 +38,52 @@ public class DLMException extends DBException
 
 	private final boolean referencingTableHasDLMLevel;
 
+	private final String referencingTableName;
+
+	private final String referencingColumnName;
+
+	private final String referencedTableName;
+
 	@VisibleForTesting
-	public DLMException(final Throwable cause, final boolean referencingTableHasDLMLevel)
+	public DLMException(final Throwable cause,
+			final boolean referencingTableHasDLMLevel,
+			final String referencedTableName,
+			final String referencingTableName,
+			final String referencingColumnName)
 	{
 		super("Another record still references the given record", cause);
+
 		this.referencingTableHasDLMLevel = referencingTableHasDLMLevel;
+		this.referencedTableName = referencedTableName;
+		this.referencingTableName = referencingTableName;
+		this.referencingColumnName = referencingColumnName;
 	}
+
+	public boolean isReferencingTableHasDLMLevel()
+	{
+		return referencingTableHasDLMLevel;
+	}
+
+	public String getReferencingTableName()
+	{
+		return referencingTableName;
+	}
+
+	public String getReferencingColumnName()
+	{
+		return referencingColumnName;
+	}
+
+	public String getReferencedTableName()
+	{
+		return referencedTableName;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "DLMException [referencedTableName=" + referencedTableName + ", referencingTableName=" + referencingTableName + ", referencingColumnName=" + referencingColumnName + ", referencingTableHasDLMLevel=" + referencingTableHasDLMLevel + "]";
+	}
+
+
 }

@@ -58,8 +58,8 @@ public class PartitionerService implements IPartitionerService
 		final Set<IDLMAware> records = new HashSet<>();
 
 		// we need to get to the "first" line(s),
-		// i.e. those DLM_PartionLine_Configs that are not referenced via DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID
-		// i think we can also live with circles, i.e. if there is no "first", but for those "firsts" that there ware, we need to start with them
+		// i.e. those DLM_PartionLine_Configs that are not referenced via any DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID
+		// i think we can also live with circles, i.e. if there is no "first", but for those "firsts" that there are, we need to start with them
 		final List<PartitionerConfigLine> lines = config.getLines(); // DLM_PartionLine_Config
 
 		for (final PartitionerConfigLine line : lines)
@@ -85,14 +85,22 @@ public class PartitionerService implements IPartitionerService
 		}
 		catch (final DLMException e)
 		{
+			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then again depending on out config,
+			// throw an exception or DLM it on the fly.
+
 			// if there is a DLMException, then depending on our config (LATER),
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
 
-			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then again depending on out config,
-			// throw an exception or DLM it on the fly.
-
+			final PartitionerConfig newConfig = PartitionerConfig
+					.builder(config)
+					.newLine().setTableName(e.getReferencingTableName())
+					.newRef().setReferencingColumnName(e.getReferencingColumnName()).setReferencedTableName(e.getReferencedTableName())
+					.endRef()
+					.endLine()
+					.build();
+			return createPartition(newConfig);
 		}
 		return partition;
 	}

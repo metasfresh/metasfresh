@@ -31,7 +31,49 @@ import org.junit.Test;
 public class ConfigBuilderTest
 {
 	@Test
-	public void test()
+	public void testConfigBuilder()
+	{
+		final PartitionerConfig config = createAndCheckBuilder0();
+		assertThat(config.getLines().size(), is(2));
+	}
+
+	@Test
+	public void testExtendConfigBuilder()
+	{
+		final PartitionerConfig config = createAndCheckBuilder0();
+		assertThat(config.getLines().size(), is(2));
+
+		final PartitionerConfig extendedConfig = PartitionerConfig.builder(config)
+				.newLine().setTableName("XYZ")
+				.newRef().setReferencedTableName("123").setReferencingColumnName("XYZ_columnName").setReferencedConfigLine("123").endRef()
+				.endLine()
+				.build();
+
+		checkConfig(extendedConfig);
+		assertThat(extendedConfig.getLines().size(), is(3));
+
+		assertThat(extendedConfig.getLines().get(2).getTableName(), is("XYZ"));
+
+		assertThat(extendedConfig.getLine("XYZ").getTableName(), is("XYZ"));
+		assertNotNull(extendedConfig.getLine("XYZ").getReferences());
+		assertThat(extendedConfig.getLine("XYZ").getReferences().get(0).getReferencedTableName(), is("123"));
+		assertThat(extendedConfig.getLine("XYZ").getReferences().get(0).getReferencingColumnName(), is("XYZ_columnName"));
+		assertThat(extendedConfig.getLine("XYZ").getReferences().get(0).getReferencedConfigLine(), is(extendedConfig.getLine("123")));
+	}
+
+	private void checkConfig(final PartitionerConfig config)
+	{
+		assertThat(config.getLines().get(0).getTableName(), is("ABC"));
+		assertThat(config.getLines().get(1).getTableName(), is("123"));
+
+		assertThat(config.getLine("ABC").getTableName(), is("ABC"));
+		assertNotNull(config.getLine("ABC").getReferences());
+		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedTableName(), is("123"));
+		assertThat(config.getLine("ABC").getReferences().get(0).getReferencingColumnName(), is("ABC_columnName"));
+		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedConfigLine(), is(config.getLine("123")));
+	}
+
+	private PartitionerConfig createAndCheckBuilder0()
 	{
 		final PartitionerConfig config = PartitionerConfig.builder()
 				.newLine().setTableName("ABC")
@@ -42,15 +84,8 @@ public class ConfigBuilderTest
 
 		assertNotNull(config);
 		assertNotNull(config.getLines());
-		assertThat(config.getLines().size(), is(2));
+		checkConfig(config);
 
-		assertThat(config.getLines().get(0).getTableName(), is("ABC"));
-		assertThat(config.getLines().get(1).getTableName(), is("123"));
-
-		assertThat(config.getLine("ABC").getTableName(), is("ABC"));
-		assertNotNull(config.getLine("ABC").getReferences());
-		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedTableName(), is("123"));
-		assertThat(config.getLine("ABC").getReferences().get(0).getReferencingColumnName(), is("ABC_columnName"));
-		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedConfigLine(), is(config.getLine("123")));
+		return config;
 	}
 }

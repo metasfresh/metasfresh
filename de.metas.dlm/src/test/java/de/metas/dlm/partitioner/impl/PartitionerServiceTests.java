@@ -1,6 +1,7 @@
 package de.metas.dlm.partitioner.impl;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -119,7 +120,8 @@ public class PartitionerServiceTests
 				.newLine().setTableName(I_C_Order.Table_Name).endLine()
 				.build();
 
-		testWithOrderAndInvoice(config);
+		final Partition partition = testWithOrderAndInvoice(config);
+		assertThat(partition.getConfig(), is(config));
 	}
 
 	/**
@@ -134,7 +136,8 @@ public class PartitionerServiceTests
 				.endLine()
 				.build();
 
-		testWithOrderAndInvoice(config);
+		final Partition partition = testWithOrderAndInvoice(config);
+		assertThat(partition.getConfig(), is(config));
 	}
 
 	/**
@@ -145,11 +148,14 @@ public class PartitionerServiceTests
 	{
 		//
 		// create a config that only covers the C_Order table.
+		// we expect the partitioner to create an augmented version of this config.
+		// the augmented version shall in addition have a line with tableName=C_Invoice and a reference with referencingColumn=C_Order_ID and referencedTable=C_Order
 		final PartitionerConfig config = PartitionerConfig.builder()
 				.newLine().setTableName(I_C_Order.Table_Name).endLine()
 				.build();
 
-		final Partition testWithOrderAndInvoice = testWithOrderAndInvoice(config);
+		final Partition partition = testWithOrderAndInvoice(config);
+		assertThat(partition.getConfig(), is(not(config)));
 	}
 
 	@Test(timeout = 10000)
@@ -301,7 +307,6 @@ public class PartitionerServiceTests
 		//
 		// verify
 		assertNotNull(partition);
-		assertThat(partition.getConfig(), is(config));
 
 		assertNotNull(partition.getRecords());
 		assertThat(partition.getRecords().size(), is(2));
@@ -322,9 +327,14 @@ public class PartitionerServiceTests
 			public void testMigratePartition(final Partition partition)
 			{
 				final boolean partitionHasInvoice = partition.getRecords().stream().anyMatch(r -> I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(r)));
-				if (!partitionHasInvoice)
+				final boolean partitionHasOrder = partition.getRecords().stream().anyMatch(r -> I_C_Order.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(r)));
+				if (partitionHasOrder && !partitionHasInvoice)
 				{
-					throw new DLMException(null, false);
+					// note that we use the lower-case table and column name, because that's what we would also get from the DB
+					throw new DLMException(null, false,
+							I_C_Order.Table_Name.toLowerCase(),
+							I_C_Invoice.Table_Name.toLowerCase(),
+							I_C_Invoice.COLUMNNAME_C_Order_ID.toLowerCase());
 				}
 			}
 		});
