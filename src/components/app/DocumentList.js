@@ -50,15 +50,15 @@ class DocumentList extends Component {
     updateData = (type, windowType) => {
 
         const {dispatch} = this.props;
-        
+
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
             const  { filters } = this.props;
             console.log(filters);
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
-               
-                dispatch(createViewRequest(windowType, type, 20, !!filters ? [filters] : [])).then((response) => {
+
+                dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data
                     }), () => {
@@ -190,7 +190,7 @@ class DocumentList extends Component {
                         <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
                     </div>
 
-                    
+
 
 
                     <div>
@@ -227,7 +227,8 @@ class DocumentList extends Component {
 DocumentList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     page: PropTypes.number.isRequired,
-    sorting: PropTypes.object.isRequired
+    sorting: PropTypes.object.isRequired,
+    filters: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
@@ -238,7 +239,7 @@ function mapStateToProps(state) {
         page,
         sorting
     } = listHandler || {
-        filters: null,
+        filters: [],
         page: 1,
         sorting: {}
     }
