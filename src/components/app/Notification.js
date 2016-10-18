@@ -13,36 +13,36 @@ class Notification extends Component {
         }
     }
 
-    renderNotification = (item) => {
-      const {dispatch} = this.props;
-      const {notificationMounted} = this.state;
+    renderNotification = (item, index) => {
+        const {dispatch} = this.props;
+        const {notificationMounted} = this.state;
 
-      return (
-        <div className={"notification-item " + (item.notifType ? item.notifType : 'error') + (notificationMounted ? ' notif-animate' : '')}>
-          <div className="notification-header"> {item.title} <i onClick={() => this.closeNotification(item)} className="meta-icon-close-1"></i></div>
-          <div className="notification-content"> {item.msg} </div>
-        </div> 
-      )
+        return (
+            <div className={"notification-item " + (item.notifType ? item.notifType : 'error') + (notificationMounted ? ' notif-animate' : '')}>
+                <div className="notification-header"> {item.title} <i onClick={() => this.closeNotification(index)} className="meta-icon-close-1"></i></div>
+                <div className="notification-content"> {item.msg} </div>
+            </div>
+        )
     }
 
-    closeNotification = (item) => {
-      const {dispatch} = this.props;
+    closeNotification = (id) => {
+        const {dispatch} = this.props;
 
-      this.setState(Object.assign({}, this.state, {
-        notificationMounted: false
-      }))
+        this.setState(Object.assign({}, this.state, {
+            notificationMounted: false
+        }))
 
-      setTimeout(function(){
-        dispatch(deleteNotification(item));
-      }, 300);
+        setTimeout(function(){
+            dispatch(deleteNotification(id));
+        }, 300);
     }
 
     componentDidMount() {
-      const {item, dispatch} = this.props;
+      const {item, index, dispatch} = this.props;
 
       if(item.time > 0) {
         setTimeout(function(){
-          dispatch(deleteNotification(item));
+          dispatch(deleteNotification(index));
         }, item.time);
       }
       let th = this;
@@ -61,12 +61,10 @@ class Notification extends Component {
 
 
     render() {
-        const {notification, item} = this.props;
+        const {notification, item, index} = this.props;
         return (
           <div>
-          {item && 
-              this.renderNotification(item)
-          }
+            {item && this.renderNotification(item, index)}
           </div>
         )
     }

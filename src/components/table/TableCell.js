@@ -66,7 +66,7 @@ class TableCell extends Component {
     }
 
     render() {
-        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly} = this.props;
+        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly, updatedRow} = this.props;
         const {updatedCell} = this.state;
         return (
             <td
@@ -82,7 +82,7 @@ class TableCell extends Component {
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType==="Text" ? "td-md " : "") +
                     (item.widgetType) +
-                    (updatedCell ? " pulse-on" : " pulse-off")
+                    ((updatedCell || updatedRow) ? " pulse-on" : " pulse-off")
                 }
             >
                 {

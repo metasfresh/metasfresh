@@ -65,7 +65,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly, mainTable } = this.props;
+        const { type, docId, rowId, tabId,readonly, mainTable, updatedRow} = this.props;
         const { edited } = this.state;
 
         //iterate over layout settings
@@ -88,6 +88,7 @@ class TableItem extends Component {
                     onClickOutside={(e) => this.handleEditProperty(e)}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
+                    updatedRow={updatedRow}
                 />
             )
         })
@@ -98,9 +99,10 @@ class TableItem extends Component {
             <tr
                 onContextMenu = {onContextMenu}
                 onMouseDown ={onMouseDown}
-                className={isSelected ? "row-selected" : null}
                 onDoubleClick={onDoubleClick}
-                className={updatedRow?"pulse-on":"pulse-off"}
+                className={
+                    (isSelected ? "row-selected" : "")
+                }
             >
                 {this.renderCells(cols, fields)}
             </tr>

@@ -13,38 +13,38 @@ class NotificationHandler extends Component {
     }
 
     render() {
-
-        const {notification} = this.props;
+        const {notifications} = this.props;
 
         return (
-          <div className="notification-handler"> 
+            <div className="notification-handler">
 
-          {notification.notifications && notification.notifications.map((item,index) =>
-              <Notification 
-                key={index} 
-                item={item} 
-              />
-          )}
+            {notifications && notifications.map((item,index) =>
+                <Notification
+                    key={index}
+                    index={index}
+                    item={item}
+                />
+            )}
 
-          </div>
+            </div>
         )
     }
 }
 
 NotificationHandler.propTypes = {
-    notification: PropTypes.object.isRequired
+    notifications: PropTypes.array.isRequired
 };
 
 function mapStateToProps(state) {
     const {appHandler} = state;
     const {
-        notification
+        notifications
     } = appHandler || {
-        notification: {}
+        notifications: []
     }
 
     return {
-      notification
+        notifications
     }
 }
 

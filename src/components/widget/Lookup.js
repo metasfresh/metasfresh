@@ -37,7 +37,6 @@ class Lookup extends Component {
 
     componentDidMount() {
         this.handleValueChanged();
-        
     }
 
     componentDidUpdate() {
@@ -139,7 +138,7 @@ class Lookup extends Component {
 
         }
 
-        
+
     }
 
     generatingPropsSelection = () => {
@@ -215,8 +214,9 @@ class Lookup extends Component {
             }
 
 
-            
+
         }else{
+
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
                 list: recent
@@ -233,14 +233,15 @@ class Lookup extends Component {
             onChange(item.field, "");
         })
 
-        this.setState({
+        this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
             property: "",
-            loading: false
-        });
+            loading: false,
+            propertiesCopy: []
+        }));
 
         this.handleBlur();
     }
@@ -312,7 +313,8 @@ class Lookup extends Component {
             if(inputValue !== oldValue){
                 this.inputSearch.value = inputValue
                 this.setState(Object.assign({}, this.state, {
-                    oldValue: inputValue
+                    oldValue: inputValue,
+                    isInputEmpty: false
                 }));
             }
         }
@@ -324,7 +326,7 @@ class Lookup extends Component {
 
     render() {
         const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated} = this.props;
-        const {propertiesCopy} = this.state;
+        const {propertiesCopy,isInputEmpty} = this.state;
 
         return (
             <div
@@ -355,8 +357,7 @@ class Lookup extends Component {
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
                     </div>
-
-                    {this.state.isInputEmpty ?
+                    {isInputEmpty ?
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />
                         </div> :
