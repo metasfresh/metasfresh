@@ -2,9 +2,7 @@ import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
 
 const initialState = {
-	notification: {
-		notifications: []
-	}
+	notifications: []
 }
 
 export default function appHandler(state = initialState, action) {
@@ -13,25 +11,20 @@ export default function appHandler(state = initialState, action) {
     	// NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
             return Object.assign({}, state, {
-                notification: Object.assign({}, state.notification, {
-                	notifications: update(state.notification.notifications, {$push:
-                        [{
-                            title: action.title,
-                            msg: action.msg,
-                            time: action.time,
-                            notifType: action.notifType
-                        }]
-                    })
+            	notifications: update(state.notifications, {$push:
+                    [{
+                        title: action.title,
+                        msg: action.msg,
+                        time: action.time,
+                        notifType: action.notifType
+                    }]
                 })
 	        });
 
 	    case types.DELETE_NOTIFICATION:
 	        return Object.assign({}, state, {
-                notification: Object.assign({}, state.notification, {
-                	notifications: update(state.notification.notifications, {$splice: [[action.id,1]]})
-                })
+            	notifications: update(state.notifications, {$splice: [[action.id,1]]})
 	        });
-
 
         // END OF NOTIFICATION ACTIONS
 
