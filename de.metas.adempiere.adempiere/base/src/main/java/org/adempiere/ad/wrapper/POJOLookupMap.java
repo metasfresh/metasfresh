@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -75,7 +73,9 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
@@ -262,7 +262,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
+		Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
 		if (tableRecords == null || tableRecords.isEmpty())
 		{
 			throw new RuntimeException("No cached object found for clazz=" + clazz + ", id=" + id);
@@ -295,7 +295,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public <T> T lookup(final String tableName, final int recordId)
 	{
-		final Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
+		final Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
 		if (tableRecords == null)
 		{
 			return null;
@@ -389,12 +389,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					wrapper.setId(id);
 				}
 
-				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
+				Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
 				if (tableRecords == null)
 				{
 					// we use LinkedHashMap to preserve the order in which the objects are saved
 					tableRecords = new LinkedHashMap<Integer, Object>();
-					cachedObjects.put(tableName, tableRecords);
+					cachedObjects.put(tableName.toLowerCase(), tableRecords);
 				}
 
 				putCopy(tableRecords, id, model, isNew);
@@ -503,7 +503,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		assertSameTableName(tableName, clazz);
 
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return Collections.emptyList();
@@ -533,7 +533,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public List<Object> getRawRecords(final String tableName)
 	{
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return Collections.emptyList();
@@ -607,7 +607,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
 
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return false;
@@ -671,7 +671,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		for (String tableName : tableNamesToUse)
 		{
-			final Map<Integer, Object> map = cachedObjects.get(tableName);
+			final Map<Integer, Object> map = cachedObjects.get(tableName.toLowerCase());
 			if (map == null || map.isEmpty())
 			{
 				continue;
@@ -722,7 +722,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		final String tableName = wrapper.getTableName();
 
-		final Map<Integer, Object> tableCachedObjects = cachedObjects.get(tableName);
+		final Map<Integer, Object> tableCachedObjects = cachedObjects.get(tableName.toLowerCase());
 		if (tableCachedObjects == null)
 		{
 			// not exists
