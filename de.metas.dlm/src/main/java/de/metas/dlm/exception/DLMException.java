@@ -2,6 +2,8 @@ package de.metas.dlm.exception;
 
 import org.adempiere.exceptions.DBException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -36,7 +38,8 @@ public class DLMException extends DBException
 
 	private boolean referencingTableHasDLMLevel;
 
-	/* package */ DLMException(Throwable cause, final boolean referencingTableHasDLMLevel)
+	@VisibleForTesting
+	public DLMException(Throwable cause, final boolean referencingTableHasDLMLevel)
 	{
 		super("Another record still references the given record", cause);
 		this.referencingTableHasDLMLevel = referencingTableHasDLMLevel;

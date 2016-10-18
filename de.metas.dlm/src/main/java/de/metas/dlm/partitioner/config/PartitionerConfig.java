@@ -1,6 +1,9 @@
 package de.metas.dlm.partitioner.config;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.adempiere.util.Check;
 
 /*
  * #%L
@@ -26,8 +29,63 @@ import java.util.List;
 
 public class PartitionerConfig
 {
+	private final List<PartitionerConfigLine> lines;
+
+	private PartitionerConfig()
+	{
+		lines = new ArrayList<>();
+	}
+
+	/**
+	 *
+	 * @return never <code>null</code>.
+	 */
 	public List<PartitionerConfigLine> getLines()
 	{
-return null;
+		return lines;
+	}
+
+	public static Builder builder()
+	{
+		return new Builder();
+	}
+
+	public PartitionerConfigLine getLine(String tableName)
+	{
+		return lines.stream()
+				.filter(l -> l.getTableName().equals(tableName))
+				.findFirst()
+				.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
+	}
+
+	public static class Builder
+	{
+		private List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
+
+		public PartitionerConfigLine.LineBuilder newLine()
+		{
+			PartitionerConfigLine.LineBuilder lineBuilder = new PartitionerConfigLine.LineBuilder(this);
+			lineBuilders.add(lineBuilder);
+			return lineBuilder;
+		}
+
+		public PartitionerConfig build()
+		{
+			final PartitionerConfig partitionerConfig = new PartitionerConfig();
+
+			// first build the lines
+			for (PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
+			{
+				PartitionerConfigLine line = lineBuilder.buildLine(partitionerConfig);
+				partitionerConfig.lines.add(line);
+			}
+
+			for (PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)
+			{
+				lineBuilder.buildRefs();
+			}
+
+			return partitionerConfig;
+		}
 	}
 }

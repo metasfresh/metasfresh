@@ -2,6 +2,7 @@ package de.metas.dlm.partitioner;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.dlm.Partition;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 
 /*
@@ -29,9 +30,17 @@ import de.metas.dlm.partitioner.config.PartitionerConfig;
 public interface IPartitionerService extends ISingletonService
 {
 	/**
-	 * Use the given config and create a partition.
+	 * Use the given config and create a partition. Note that the records which are part of the partition are not modified by this method.
 	 *
 	 * @param config
+	 * @return
 	 */
-	void createPartition(PartitionerConfig config);
+	Partition createPartition(PartitionerConfig config);
+
+	/**
+	 * Update the DLM_Partion_ID of the records we found.
+	 *
+	 * @param partition
+	 */
+	void storePartition(Partition partition);
 }

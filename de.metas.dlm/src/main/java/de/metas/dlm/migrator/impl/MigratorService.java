@@ -49,8 +49,6 @@ public class MigratorService implements IMigratorService
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
-	public static final int DLM_Level_TEST = 1;
-
 	@Override
 	public void testMigratePartition(final Partition partition)
 	{
@@ -65,7 +63,7 @@ public class MigratorService implements IMigratorService
 
 		final Map<String, List<IDLMAware>> table2Record = partition.getRecords()
 				.stream()
-				.collect(Collectors.groupingBy(IDLMAware::getTableName));
+				.collect(Collectors.groupingBy(dlmAware -> InterfaceWrapperHelper.getModelTableName(dlmAware)));
 
 		// note that a TrxRunnable suffices. We need no TrxRunnable2 etc, because we don'T intend to do error handling in this method.
 		trxManager.run(
@@ -104,11 +102,11 @@ public class MigratorService implements IMigratorService
 			final String tableName = tableWithRecords.getKey();
 			final String keyColumn = columnBL.getSingleKeyColumn(tableName);
 
-			final String[] recordIds = tableWithRecords
+			final Integer[] recordIds = tableWithRecords
 					.getValue()
 					.stream()
 					.map(r -> InterfaceWrapperHelper.getId(r))
-					.toArray(size -> new String[size]);
+					.toArray(size -> new Integer[size]);
 
 			final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, partition)
 					.addInArrayFilter(keyColumn, recordIds)

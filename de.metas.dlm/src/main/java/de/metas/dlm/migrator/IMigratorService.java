@@ -28,8 +28,13 @@ import de.metas.dlm.Partition;
 
 public interface IMigratorService extends ISingletonService
 {
+	public static final int DLM_Level_TEST = 1;
+
 	/**
-	 * Checks if the given partition could be migrated. This is the case if the partition is "complete", meaning that there would be no records left behind with dangling references, if we migrated the partition.
+	 * Checks if the given partition could be migrated.
+	 * This is the case if the partition is "complete", meaning that there would be no records left behind with dangling references, if we migrated the partition.
+	 * <p>
+	 * Make the test by temporarily setting <code>DLM_Level</code> to {@link #DLM_Level_TEST}. If it works, then undo the change.
 	 *
 	 * @param partition
 	 * @throws {@link DLMException} if the given migration is not complete and therefore cannot be migrated.

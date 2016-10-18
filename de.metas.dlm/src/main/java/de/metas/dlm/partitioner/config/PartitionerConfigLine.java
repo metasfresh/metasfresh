@@ -1,6 +1,9 @@
 package de.metas.dlm.partitioner.config;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.adempiere.util.Check;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.IDLMAware;
@@ -37,27 +40,108 @@ import de.metas.dlm.model.IDLMAware;
 public class PartitionerConfigLine
 {
 
+	private final String tablename;
+	private final PartitionerConfig parent;
+	private final List<PartionConfigReference> references = new ArrayList<>();
+
+	private PartitionerConfigLine(PartitionerConfig parent, String tableName)
+	{
+		Check.assumeNotNull(parent, "Paramter 'parent is not null");
+		Check.assumeNotEmpty(tableName, "Parameter 'tableName' is not empty");
+
+		this.parent = parent;
+		this.tablename = tableName;
+	}
+
 	/**
 	 * The name of the DLM'ed table. Records of this table can be loaded as {@link IDLMAware} instances.
 	 *
-	 * @return
+	 * @return never <code>null</code>, but always a real table name
 	 */
 	public String getTableName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return tablename;
 	}
 
+	/**
+	 *
+	 * @return never <code>null</code>
+	 */
 	public List<PartionConfigReference> getReferences()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return references;
 	}
 
 	public PartitionerConfig getParent()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return parent;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "PartitionerConfigLine [parent=" + parent + ", tablename=" + tablename + ", references=" + references + "]";
+	}
+
+	public static class LineBuilder
+	{
+		private final PartitionerConfig.Builder parentBuilder;
+
+		private String tableName;
+
+		private final List<PartionConfigReference.RefBuilder> refBuilders = new ArrayList<>();
+
+		private PartitionerConfigLine buildLine;
+
+		LineBuilder(PartitionerConfig.Builder parentBuilder)
+		{
+			this.parentBuilder = parentBuilder;
+		}
+
+		public LineBuilder setTableName(String tableName)
+		{
+			this.tableName = tableName;
+			return this;
+		}
+
+		/**
+		 * Convenience method to end the current line builder and start a new one.
+		 *
+		 * @return the new line builder, <b>not</b> this instance.
+		 */
+		public LineBuilder newLine()
+		{
+			return endLine().newLine();
+		}
+
+		public PartitionerConfig.Builder endLine()
+		{
+			return parentBuilder;
+		}
+
+		public PartitionerConfigLine buildLine(PartitionerConfig parent)
+		{
+			buildLine = new PartitionerConfigLine(parent, tableName);
+			return buildLine;
+		}
+
+		public PartionConfigReference.RefBuilder newRef()
+		{
+			final PartionConfigReference.RefBuilder refBuilder = new PartionConfigReference.RefBuilder(this);
+			refBuilders.add(refBuilder);
+
+			return refBuilder;
+		}
+
+		public void buildRefs()
+		{
+			for (PartionConfigReference.RefBuilder refBuilder : refBuilders)
+			{
+				final PartionConfigReference ref = refBuilder.build(buildLine);
+				buildLine.references.add(ref);
+			}
+
+		}
 	}
 
 }

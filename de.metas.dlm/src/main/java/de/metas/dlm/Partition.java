@@ -1,8 +1,12 @@
 package de.metas.dlm;
 
 import java.util.Collection;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.partitioner.config.PartitionerConfig;
 
 /*
  * #%L
@@ -34,9 +38,26 @@ import de.metas.dlm.model.IDLMAware;
  */
 public class Partition
 {
-	public Collection<IDLMAware> getRecords()
+	private final List<IDLMAware> records;
+
+	/**
+	 * the method is final, but as of now, the config is *not* immutable.
+	 */
+	private final PartitionerConfig config;
+
+	public Partition(final PartitionerConfig config, final Collection<IDLMAware> records)
 	{
-		// TODO
-		return null;
+		this.config = config;
+		this.records = ImmutableList.copyOf(records);
+	}
+
+	public List<IDLMAware> getRecords()
+	{
+		return records;
+	}
+
+	public PartitionerConfig getConfig()
+	{
+		return config;
 	}
 }

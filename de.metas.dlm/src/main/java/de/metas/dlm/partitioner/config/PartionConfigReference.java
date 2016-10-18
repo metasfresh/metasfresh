@@ -1,5 +1,9 @@
 package de.metas.dlm.partitioner.config;
 
+import org.adempiere.util.Check;
+
+import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -37,29 +41,121 @@ package de.metas.dlm.partitioner.config;
  */
 public class PartionConfigReference
 {
+	private final String referencedTableName;
+	private final String referencingColumnName;
+	private final PartitionerConfigLine referencedConfigLine;
+	private final PartitionerConfigLine parent;
+
+	private PartionConfigReference(PartitionerConfigLine parent,
+			String referencingColumnName,
+			String referencedTableName,
+			PartitionerConfigLine referencedConfigLine)
+	{
+		this.parent = parent;
+		this.referencingColumnName = referencingColumnName;
+		this.referencedTableName = referencedTableName;
+		this.referencedConfigLine = referencedConfigLine;
+	}
 
 	public String getReferencedTableName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return referencedTableName;
 	}
 
 	public String getReferencingColumnName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return referencingColumnName;
 	}
 
 	public PartitionerConfigLine getReferencedConfigLine()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return referencedConfigLine;
 	}
 
 	public PartitionerConfigLine getParent()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return parent;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "PartionConfigReference [parent=" + parent + ", referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", referencedConfigLine=" + referencedConfigLine + "]";
+	}
+
+	public static class RefBuilder
+	{
+		private String referencedTableName;
+		private String referencingColumnName;
+
+		private String referencedConfigLineTableName;
+
+		private final PartitionerConfigLine.LineBuilder parentbuilder;
+
+		RefBuilder(PartitionerConfigLine.LineBuilder parentBuilder)
+		{
+			this.parentbuilder = parentBuilder;
+		}
+
+		public RefBuilder setReferencedTableName(String referencedTableName)
+		{
+			this.referencedTableName = referencedTableName;
+			return this;
+		}
+
+		public RefBuilder setReferencingColumnName(String referencingColumnName)
+		{
+			this.referencingColumnName = referencingColumnName;
+			return this;
+		}
+
+		/**
+		 * Set the table name of the {@link PartitionerConfigLine} that the ref build by this instance shall reference.
+		 *
+		 * @param referencedConfigLineTableName
+		 * @return
+		 */
+		public RefBuilder setReferencedConfigLine(String referencedConfigLineTableName)
+		{
+			this.referencedConfigLineTableName = referencedConfigLineTableName;
+			return this;
+		}
+
+		public LineBuilder endRef()
+		{
+			return parentbuilder;
+		}
+
+		/**
+		 * Convenience method to end the current ref builder and start a new one.
+		 *
+		 * @return the new reference builder, <b>not</b> this instance.
+		 */
+		public RefBuilder newRef()
+		{
+			return endRef().newRef();
+		}
+
+		/**
+		 * Supposed to be called only by the parent builder.
+		 *
+		 * @param parent
+		 * @return
+		 */
+		/* package */ PartionConfigReference build(PartitionerConfigLine parent)
+		{
+			final PartitionerConfigLine referencedConfigLine;
+			if (Check.isEmpty(referencedConfigLineTableName, true))
+			{
+				referencedConfigLine = null;
+			}
+			else
+			{
+				referencedConfigLine = parent.getParent().getLine(referencedConfigLineTableName);
+			}
+
+			return new PartionConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
+		}
+
+	}
 }
