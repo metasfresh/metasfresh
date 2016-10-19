@@ -96,13 +96,45 @@ public class ColumnBL implements IColumnBL
 		}
 
 		// try with Prefix_Table_ID
-
 		tableColumnName = prefix + "Table_ID";
 
 		contextADTableID = Env.getContextAsInt(m_ctx, tableColumnName);
 
 		// the found context table ID or 0 if not found
 		return contextADTableID;
+	}
+
+	@Override
+	public String getTableColumnName(final String tableName, final String recordColumnName)
+	{
+		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordColumnName);
+		Check.assumeNotEmpty(tableName, "Paramter 'recordColumnName' is empty; tableName={}", recordColumnName, tableName);
+
+		final String prefix = extractPrefixFromRecordColumn(recordColumnName);
+
+		if (Adempiere.isUnitTestMode())
+		{
+			return prefix + "AD_Table_ID";
+		}
+
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+		// Try with Prefix_AD_Table_ID
+		String tableColumnName = prefix + "AD_Table_ID";
+		if (poInfo.hasColumnName(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		// try with Prefix_Table_ID
+		tableColumnName = prefix + "Table_ID";
+		if (poInfo.hasColumnName(tableColumnName))
+		{
+			return tableColumnName;
+		}
+
+		Check.errorIf(true, "Table={} has no table column name for recordColumnName={}", tableName, recordColumnName);
+		return null;
 	}
 
 	private String extractPrefixFromRecordColumn(final String columnName)

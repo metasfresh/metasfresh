@@ -2,6 +2,7 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 
 /*
@@ -49,6 +50,23 @@ public interface IColumnBL extends ISingletonService
 	 */
 	boolean isRecordColumnName(String columnName);
 
+	/**
+	 * Get the primary key column for the given <code>tableName</code>.
+	 * The difference to {@link InterfaceWrapperHelper#getKeyColumnName(String)} is that this method shall return the "real" column name from {@link org.compiere.model.POInfo}
+	 * and that it shall throw an exception if there are more or less than one key column.
+	 *
+	 * @param tableName
+	 * @return
+	 */
 	String getSingleKeyColumn(String tableName);
+
+	/**
+	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>. Fail if this column can't be found.
+	 *
+	 * @param tableName
+	 * @param recordColumnName
+	 * @return
+	 */
+	String getTableColumnName(String tableName, String recordColumnName);
 
 }

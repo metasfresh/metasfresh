@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -59,7 +59,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 
 	/**
 	 * Set DLM_Partion_Config.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_ID DLM_Partion_Config
 	 */
 	@Override
@@ -77,7 +77,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 
 	/**
 	 * Get DLM_Partion_Config.
-	 * 
+	 *
 	 * @return DLM_Partion_Config
 	 */
 	@Override
@@ -93,7 +93,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 
 	/**
 	 * Set Partition.
-	 * 
+	 *
 	 * @param DLM_Partition_ID Partition
 	 */
 	@Override
@@ -111,7 +111,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 
 	/**
 	 * Get Partition.
-	 * 
+	 *
 	 * @return Partition
 	 */
 	@Override

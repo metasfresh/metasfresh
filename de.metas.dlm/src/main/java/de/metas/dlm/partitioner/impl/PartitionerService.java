@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
@@ -172,9 +173,10 @@ public class PartitionerService implements IPartitionerService
 
 	/**
 	 *
-	 * @param line the line's <code>tableName</code> matches the given <code>record</code>. The line's <code>references</code> descripe which foraeign records the give <code>record</code> might reference. This method loads them and adds the to the given <code>records</code> set.
-	 * @param record used to get and load further records this parameter references.
-	 * @param records the set of records we will eventually return. Needed to detect circles by checking if a record was already added. the given <code>record</code> is already included.
+	 * @param line the line's <code>tableName</code> matches the given <code>record</code>. The line's <code>references</code> describe which foreign records the given <code>record</code> might reference.
+	 *            This method loads them and adds the to the given <code>records</code> set.
+	 * @param record used to get and load further records which this given record references.
+	 * @param records the set of records we will eventually return. Needed to detect circles by checking if a record was already added. The given <code>record</code> is already included.
 	 *
 	 * @return
 	 */
@@ -192,18 +194,35 @@ public class PartitionerService implements IPartitionerService
 		// for each ref, load the referenced record and recurse with that record
 		for (final PartionerConfigReference ref : references) // DLM_PartionReference_Config
 		{
+			// the table name for the foreign record which has 'foreignKey' as its ID
+			final String foreignTableName = ref.getReferencedTableName();
+
+			// first check if this is all about a Record_ID/AD_Table_ID reference.
+			// if that is the case, then we need to verify that the AD_Table_ID of 'record' actually points to the table named 'foreignTableName'
+			final IColumnBL columnBL = Services.get(IColumnBL.class);
+			if (columnBL.isRecordColumnName(ref.getReferencingColumnName()))
+			{
+				final String tableColumnName = columnBL.getTableColumnName(line.getTableName(), ref.getReferencingColumnName());
+				final int tableId = InterfaceWrapperHelper.getValueOrNull(record, tableColumnName);
+
+				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+				final String tableName = adTableDAO.retrieveTableName(tableId);
+				if (!tableName.equalsIgnoreCase(foreignTableName))
+				{
+					logger.debug("The column={} of IDLMAware={} does not reference a {}-record, but a {}-record; skipping", ref.getReferencingColumnName(), record, foreignTableName, tableColumnName);
+					continue;
+				}
+			}
+
 			// get the foreign key ID of
 			// table DLM_PartionLine_Config.AD_Table_ID,
 			// column DLM_PartionReference_Config.DLM_Referencing_Column_ID
 			final Integer foreignKey = InterfaceWrapperHelper.getValueOrNull(record, ref.getReferencingColumnName());
 			if (foreignKey == null || foreignKey <= 0)
 			{
-				logger.debug("IDLMAware={} does not reference anything via column={}", record, ref.getReferencingColumnName());
+				logger.debug("The column={} of IDLMAware={} does not reference anything; skipping", ref.getReferencingColumnName(), record);
 				continue;
 			}
-
-			// the table name of the foreign record which has 'foreignKey' as its ID
-			final String foreignTableName = ref.getReferencedTableName();
 
 			// load the foreign record from the table DLM_PartionReference_Config.DLM_Referenced_Table_ID
 			final IDLMAware foreignRecord = InterfaceWrapperHelper.create(ctx, foreignTableName, foreignKey, IDLMAware.class, trxName);
@@ -222,12 +241,12 @@ public class PartitionerService implements IPartitionerService
 				}
 				else
 				{
-					logger.debug("Referenced IDLMAware={} does not reference any further DLM records", foreignRecord);
+					logger.debug("The referenced IDLMAware={} does not reference any further DLM records", foreignRecord);
 				}
 
 				// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
 				backTrack(line.getParent(),
-						InterfaceWrapperHelper.getContextAware(record),             // make it clear that record is only needed for ctx
+						InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
 						records,
 						foreignTableName,
 						foreignKey);
@@ -240,7 +259,7 @@ public class PartitionerService implements IPartitionerService
 
 		// GO BACKWARDS, i.e. get records which reference 'record'
 		backTrack(line.getParent(),
-				InterfaceWrapperHelper.getContextAware(record),             // make it clear that record is only needed for ctx
+				InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
 				records,
 				line.getTableName(),
 				InterfaceWrapperHelper.getId(record));
@@ -249,6 +268,9 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	/**
+	 * For the given <code>tableName</code> and <code>key</code>, method loads all record that reference the respective record.
+	 * <p>
+	 * Note that there needs to be {@link PartitionerConfigLine}s with {@link PartionerConfigReference}s for those referencing records (same as with forward references).
 	 *
 	 * @param config
 	 * @param contextProvider
@@ -261,17 +283,33 @@ public class PartitionerService implements IPartitionerService
 			final IContextAware contextProvider,
 			final Set<IDLMAware> records,
 			final String tableName,
-			final Integer key)
+			final int key)
 	{
 		final List<PartionerConfigReference> backwardReferences = config.getReferences(tableName);
 		for (final PartionerConfigReference backwardRef : backwardReferences)
 		{
 			final PartitionerConfigLine backwardLine = backwardRef.getParent();
+			final String backwardTableName = backwardLine.getTableName();
 
 			// load all records which reference foreignRecord
-			final List<IDLMAware> backwardRecords = Services.get(IQueryBL.class)
-					.createQueryBuilder(IDLMAware.class, backwardLine.getTableName(), contextProvider)
-					.addEqualsFilter(backwardRef.getReferencingColumnName(), key)
+			final IQueryBuilder<IDLMAware> queryBuilder = Services.get(IQueryBL.class)
+					.createQueryBuilder(IDLMAware.class, backwardTableName, contextProvider)
+					.addEqualsFilter(backwardRef.getReferencingColumnName(), key);
+
+			// if we have a case of AD_Table_ID/Record_ID,
+			// then we need to make sure to only load records whose AD_Table_ID references the
+			final IColumnBL columnBL = Services.get(IColumnBL.class);
+			if (columnBL.isRecordColumnName(backwardRef.getReferencingColumnName()))
+			{
+				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+				final String referencedTableColumnName = columnBL.getTableColumnName(backwardTableName, backwardRef.getReferencingColumnName()); // referencedTableColumnName=AD_Table_ID, in most cases
+				final int referencedTableID = adTableDAO.retrieveTableId(tableName);
+
+				queryBuilder.addEqualsFilter(referencedTableColumnName, referencedTableID);
+			}
+
+			final List<IDLMAware> backwardRecords = queryBuilder
 					.create()
 					.list();
 			for (final IDLMAware backwardRecord : backwardRecords)
@@ -361,7 +399,7 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	@Override
-	public PartitionerConfig loadPartitionConfig(I_DLM_Partion_Config configDB)
+	public PartitionerConfig loadPartitionConfig(final I_DLM_Partion_Config configDB)
 	{
 
 		final Builder configBuilder = PartitionerConfig.builder();
@@ -373,7 +411,7 @@ public class PartitionerService implements IPartitionerService
 				.create()
 				.list();
 
-		for (I_DLM_Partion_Config_Line line : lines)
+		for (final I_DLM_Partion_Config_Line line : lines)
 		{
 			final LineBuilder lineBuilder = configBuilder.newLine().setTableName(line.getDLM_Referencing_Table().getTableName());
 
@@ -383,7 +421,7 @@ public class PartitionerService implements IPartitionerService
 					.create()
 					.list();
 
-			for (I_DLM_Partion_Config_Reference ref : refs)
+			for (final I_DLM_Partion_Config_Reference ref : refs)
 			{
 				final RefBuilder refBuilder = lineBuilder.newRef()
 						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())

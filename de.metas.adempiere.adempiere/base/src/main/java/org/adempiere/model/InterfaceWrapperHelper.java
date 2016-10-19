@@ -648,7 +648,7 @@ public class InterfaceWrapperHelper
 		final boolean strict = false;
 		return helpers.getPO(model, strict);
 	}
-	
+
 	public static <T extends PO> T getStrictPO(final Object model)
 	{
 		final boolean strict = true;
@@ -767,19 +767,26 @@ public class InterfaceWrapperHelper
 		return getKeyColumnName(tableName);
 	}
 
+	/**
+	 * Returns <code>tableName + "_ID"</code>.
+	 * <p>
+	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
+	 *
+	 * @param tableName
+	 * @return
+	 */
 	public static final String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
 		return keyColumnName;
 	}
-	
+
 	public static final String getModelKeyColumnName(final Object model)
 	{
 		final String tableName = getModelTableName(model);
 		return getKeyColumnName(tableName);
 	}
-
 
 	/**
 	 * Get Table_ID of wrapped model. If model is null, an exception will be thrown
@@ -1097,7 +1104,7 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
-		
+
 		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 
@@ -1357,11 +1364,11 @@ public class InterfaceWrapperHelper
 	public static boolean isPOValueChanged(final Object model, final String columnName)
 	{
 		final PO po = POWrapper.getStrictPO(model);
-		if(po == null)
+		if (po == null)
 		{
 			return false;
 		}
-		
+
 		return POWrapper.isValueChanged(po, columnName);
 	}
 
@@ -1559,7 +1566,7 @@ public class InterfaceWrapperHelper
 	{
 		return POWrapper.getFirstValidIdByColumnName(columnName);
 	}
-	
+
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
 	public static final Object checkZeroIdValue(final String columnName, final Object value)
 	{

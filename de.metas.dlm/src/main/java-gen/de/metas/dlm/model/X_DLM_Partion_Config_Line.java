@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partion_Config_Line
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -48,7 +48,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Set Beschreibung.
-	 * 
+	 *
 	 * @param Description Beschreibung
 	 */
 	@Override
@@ -59,7 +59,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Get Beschreibung.
-	 * 
+	 *
 	 * @return Beschreibung
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Set DLM_Partion_Config.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_ID DLM_Partion_Config
 	 */
 	@Override
@@ -100,7 +100,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Get DLM_Partion_Config.
-	 * 
+	 *
 	 * @return DLM_Partion_Config
 	 */
 	@Override
@@ -116,7 +116,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Set DLM_Partion_Config_Line.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_Line_ID DLM_Partion_Config_Line
 	 */
 	@Override
@@ -134,7 +134,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Get DLM_Partion_Config_Line.
-	 * 
+	 *
 	 * @return DLM_Partion_Config_Line
 	 */
 	@Override
@@ -162,7 +162,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Set Referenzierende Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referencing_Table_ID Referenzierende Tabelle
 	 */
 	@Override
@@ -180,7 +180,7 @@ public class X_DLM_Partion_Config_Line extends org.compiere.model.PO implements 
 
 	/**
 	 * Get Referenzierende Tabelle.
-	 * 
+	 *
 	 * @return Referenzierende Tabelle
 	 */
 	@Override

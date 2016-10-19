@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partion_Config_Reference
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -60,7 +60,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Set DLM_Partion_Config_Line.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_Line_ID DLM_Partion_Config_Line
 	 */
 	@Override
@@ -78,7 +78,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Get DLM_Partion_Config_Line.
-	 * 
+	 *
 	 * @return DLM_Partion_Config_Line
 	 */
 	@Override
@@ -94,7 +94,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Set DLM_Partion_Config_Reference.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_Reference_ID DLM_Partion_Config_Reference
 	 */
 	@Override
@@ -112,7 +112,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Get DLM_Partion_Config_Reference.
-	 * 
+	 *
 	 * @return DLM_Partion_Config_Reference
 	 */
 	@Override
@@ -140,7 +140,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Set Referenzierte Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referenced_Table_ID Referenzierte Tabelle
 	 */
 	@Override
@@ -158,7 +158,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Get Referenzierte Tabelle.
-	 * 
+	 *
 	 * @return Referenzierte Tabelle
 	 */
 	@Override
@@ -186,7 +186,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Set Konfig-Zeile zur referenzierten Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referenced_Table_Partion_Config_Line_ID Konfig-Zeile zur referenzierten Tabelle
 	 */
 	@Override
@@ -204,7 +204,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Get Konfig-Zeile zur referenzierten Tabelle.
-	 * 
+	 *
 	 * @return Konfig-Zeile zur referenzierten Tabelle
 	 */
 	@Override
@@ -232,7 +232,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Set Referenzierende Spalte.
-	 * 
+	 *
 	 * @param DLM_Referencing_Column_ID Referenzierende Spalte
 	 */
 	@Override
@@ -250,7 +250,7 @@ public class X_DLM_Partion_Config_Reference extends org.compiere.model.PO implem
 
 	/**
 	 * Get Referenzierende Spalte.
-	 * 
+	 *
 	 * @return Referenzierende Spalte
 	 */
 	@Override

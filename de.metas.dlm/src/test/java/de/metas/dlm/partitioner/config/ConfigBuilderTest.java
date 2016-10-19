@@ -30,6 +30,9 @@ import org.junit.Test;
 
 public class ConfigBuilderTest
 {
+	/**
+	 * Verifies tha {@link PartitionerConfig#builder()} works.
+	 */
 	@Test
 	public void testConfigBuilder()
 	{
@@ -37,6 +40,10 @@ public class ConfigBuilderTest
 		assertThat(config.getLines().size(), is(2));
 	}
 
+	/**
+	 * Verifies that {@link PartitionerConfig#builder(PartitionerConfig)} works.
+	 * If this test fails, I recommend to first check if {@link #testConfigBuilder()} also fails.
+	 */
 	@Test
 	public void testExtendConfigBuilder()
 	{
@@ -77,7 +84,7 @@ public class ConfigBuilderTest
 	{
 		final PartitionerConfig config = PartitionerConfig.builder()
 				.newLine().setTableName("ABC")
-				.newRef().setReferencedTableName("123").setReferencingColumnName("ABC_columnName").setReferencedConfigLine("123").endRef()
+				.newRef().setReferencedTableName("123").setReferencingColumnName("Record_ID").setReferencedConfigLine("123").endRef()
 				.newLine().setTableName("123")
 				.endLine()
 				.build();

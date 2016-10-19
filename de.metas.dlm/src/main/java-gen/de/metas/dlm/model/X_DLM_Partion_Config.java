@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partion_Config
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -46,7 +46,7 @@ public class X_DLM_Partion_Config extends org.compiere.model.PO implements I_DLM
 
 	/**
 	 * Set Beschreibung.
-	 * 
+	 *
 	 * @param Description Beschreibung
 	 */
 	@Override
@@ -57,7 +57,7 @@ public class X_DLM_Partion_Config extends org.compiere.model.PO implements I_DLM
 
 	/**
 	 * Get Beschreibung.
-	 * 
+	 *
 	 * @return Beschreibung
 	 */
 	@Override
@@ -68,7 +68,7 @@ public class X_DLM_Partion_Config extends org.compiere.model.PO implements I_DLM
 
 	/**
 	 * Set DLM_Partion_Config.
-	 * 
+	 *
 	 * @param DLM_Partion_Config_ID DLM_Partion_Config
 	 */
 	@Override
@@ -86,7 +86,7 @@ public class X_DLM_Partion_Config extends org.compiere.model.PO implements I_DLM
 
 	/**
 	 * Get DLM_Partion_Config.
-	 * 
+	 *
 	 * @return DLM_Partion_Config
 	 */
 	@Override

@@ -5,14 +5,17 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_R_Request;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -242,11 +245,11 @@ public class PartitionerServiceTests
 	}
 
 	/**
-	 * Verifies that also a scenario works like the following works
+	 * Verifies that also a scenario like the following works:
 	 * <li>C_Invoice references C_Order
-	 * <li>C_OrdeeLine also references C_Order
+	 * <li>C_OrderLine also references C_Order
 	 *
-	 * So, if i start a partition with a C_Invoice record, then i know to also the C_Order record that is references by the invoice.<br>
+	 * So, if i start a partition with a C_Invoice record, then i know to also add the C_Order record that is referenced by the invoice.<br>
 	 * However, i also need to add the C_OrderLine records which also reference the C_Order
 	 */
 	@Test
@@ -374,7 +377,7 @@ public class PartitionerServiceTests
 	}
 
 	/**
-	 * Emulate the database, throw a DLMException if the invoice record is not contained
+	 * Emulate the database, throw a DLMException if an order record but no invoice record is contained.
 	 */
 	private void setupMigratorServiceMock()
 	{
@@ -396,4 +399,137 @@ public class PartitionerServiceTests
 			}
 		});
 	}
+
+	/**
+	 * Verifies that also references made via <code>AD_Table_ID</code> and <code>Record_ID</code> work
+	 */
+	@Test
+	public void testADTableID_RecordID()
+	{
+		final PartitionerConfig config = createADTableID_RecordIDConfig();
+
+		// create an order
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order, "order");
+		InterfaceWrapperHelper.save(order);
+
+		// create a request that references the order
+		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
+		POJOWrapper.setInstanceName(request, "request");
+
+		final ITableRecordReference orderTableRecordReference = ITableRecordReference.FromModelConverter.convert(order);
+		request.setAD_Table_ID(orderTableRecordReference.getAD_Table_ID());
+		request.setRecord_ID(orderTableRecordReference.getRecord_ID());
+		InterfaceWrapperHelper.save(request);
+
+		// create another, unrelated order2
+		final I_C_Order order2 = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order2, "order2");
+		InterfaceWrapperHelper.save(order2);
+
+		final Partition partition = partitionerService.createPartition(config);
+
+		assertThat(partition.getRecords().size(), is(2));
+		assertThat(partition.getRecords().contains(request), is(true));
+		assertThat(partition.getRecords().contains(order), is(true));
+	}
+
+	@Test
+	public void testADTableID_RecordID_ignore_unrelated()
+	{
+		final PartitionerConfig config = createADTableID_RecordIDConfig();
+
+		// create another, unrelated order2
+		final I_C_Order order2 = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order2, "order2");
+		InterfaceWrapperHelper.save(order2);
+
+		// create a second request too
+		// the second request's AD_Table_ID does not point to C_Order. Only the Record_ID has "by chance" the value that also happens to be order2's ID
+		// still, there is no relation between request2 and order2
+		final I_R_Request request2 = InterfaceWrapperHelper.newInstance(I_R_Request.class);
+		POJOWrapper.setInstanceName(request2, "request2");
+
+		request2.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
+		request2.setRecord_ID(order2.getC_Order_ID());
+		InterfaceWrapperHelper.save(request2);
+
+		final Partition partition = partitionerService.createPartition(config);
+
+		assertThat(partition.getRecords().contains(order2), is(false));
+		assertThat(partition.getRecords().contains(request2), is(true));
+		assertThat(partition.getRecords().size(), is(1));
+	}
+
+	private PartitionerConfig createADTableID_RecordIDConfig()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+
+		// request -> order, via AD_Table_ID/Record_ID, as indicated by the referencing column name
+				.newLine().setTableName(I_R_Request.Table_Name)
+				.newRef().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_R_Request.COLUMNNAME_Record_ID)
+				.endRef().endLine().build();
+		return config;
+	}
+
+	/**
+	 * Similar to {@link #test_multiple_roots()}; Verifies that also a scenario like the following works:
+	 * <li>C_Invoice references C_Order
+	 * <li>R_Request can also reference C_Order via AD_Table_ID/Record_ID
+	 *
+	 * So, if i start a partition with a C_Invoice record, then I know to also add the C_Order record that is referenced by the invoice.<br>
+	 * However, i also need to add the C_OrderLine records which also reference the C_Order
+	 */
+	@Test
+	public void testADTableID_RecordID_multiple_roots()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+
+		// invoice -> order
+				.newLine().setTableName(I_C_Invoice.Table_Name)
+				.newRef().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_C_Invoice.COLUMNNAME_C_Order_ID).endRef()
+
+		// request -> order, via AD_Table_ID/Record_ID, as indicated by the referencing column name
+				.newLine().setTableName(I_R_Request.Table_Name)
+				.newRef().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_R_Request.COLUMNNAME_Record_ID).endRef()
+
+		.endLine().build();
+
+		// create an order
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order, "order");
+		InterfaceWrapperHelper.save(order);
+
+		// create a request that references the order
+		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
+		POJOWrapper.setInstanceName(request, "request");
+
+		final ITableRecordReference orderTableRecordReference = ITableRecordReference.FromModelConverter.convert(order);
+		request.setAD_Table_ID(orderTableRecordReference.getAD_Table_ID());
+		request.setRecord_ID(orderTableRecordReference.getRecord_ID());
+		InterfaceWrapperHelper.save(request);
+
+		// create another request2 that happens to have the same Record_ID value, but references not C_Order but C_Payment
+		final I_R_Request request2 = InterfaceWrapperHelper.newInstance(I_R_Request.class);
+		POJOWrapper.setInstanceName(request2, "request2");
+		request2.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Payment.Table_Name));
+		request2.setRecord_ID(orderTableRecordReference.getRecord_ID());
+		InterfaceWrapperHelper.save(request2);
+
+		// create an invoice
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		POJOWrapper.setInstanceName(invoice, "invoice");
+		invoice.setC_Order(order);
+		InterfaceWrapperHelper.save(invoice);
+
+		final Partition partition = partitionerService.createPartition(config);
+
+		assertThat(partition.getRecords().contains(request2), is(false));
+		assertThat(partition.getRecords().contains(order), is(true));
+		assertThat(partition.getRecords().contains(request), is(true));
+		assertThat(partition.getRecords().contains(invoice), is(true));
+
+		assertThat(partition.getRecords().size(), is(3));
+	}
+
 }

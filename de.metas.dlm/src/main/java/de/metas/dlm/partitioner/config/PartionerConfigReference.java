@@ -31,7 +31,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
  * <p>
  * E.g. if the parent's table name is <code>C_Invoice</code>, then this instance might be about
  * <li>{@link #getReferencingColumnName()} <code>=_C_Order_ID</code></li>
- * <li>{@link #getReferencedTableName()} <code>=C_Order</code></li>
+ * <li>{@link #getReferencedTableName()} <code>= C_Order</code></li>
  * Meaning that this instance, together with its parents tells the engine that <code>C_Invoice</code> records can reference <code>C_Order</code> records via the foreign key column <code>C_Invoice.C_Order_ID</code>.
  *
  * Further, if {@link #getReferencedConfigLine()} is not <code>null</code>, it means that <code>C_Order</code> is also a DLM'ed table and might have its own list of config references.

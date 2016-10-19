@@ -39,6 +39,9 @@ import org.junit.Test;
 public class ConfigTests
 {
 
+	/**
+	 * Verifies that {@link PartitionerConfig#getReferences(String)} works.
+	 */
 	@Test
 	public void testGetReferences()
 	{
