@@ -54,8 +54,8 @@ class RawWidget extends Component {
             case "Date":
                 return (
                     <div className={"input-icon-container input-block " +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (updated ? " pulse-on" : " pulse-off")
@@ -64,7 +64,7 @@ class RawWidget extends Component {
                             timeFormat={false}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
+                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={selectedField ? new Date(selectedField) : null}
                             onChange={(date) => handlePatch(widgetField, date)}
                         />
@@ -74,8 +74,8 @@ class RawWidget extends Component {
             case "DateTime":
                 return (
                     <div className={"input-icon-container input-block " +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (updated ? " pulse-on" : " pulse-off")
@@ -84,8 +84,8 @@ class RawWidget extends Component {
                             timeFormat={true}
                             dateFormat={true}
                             locale="de"
-                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
-                            value={data[0].value ? new Date(data[0].value) : null}
+                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
+                            value={widgetData.value ? new Date(widgetData.value) : null}
                             onChange={(date) => handlePatch(widgetField, date)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -96,15 +96,15 @@ class RawWidget extends Component {
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <Datetime
                             timeFormat={true}
                             dateFormat={false}
                             locale="de"
-                            inputProps={{placeholder: fields[0].emptyText, disabled: data[0].readonly}}
+                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={selectedField ? new Date(selectedField) : null}
                             onChange={(date) => handlePatch(widgetField, date)}
                         />
@@ -160,9 +160,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block input-icon-container " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (data[0].readonly ? "input-disabled " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -205,8 +205,8 @@ class RawWidget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -228,8 +228,8 @@ class RawWidget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -249,8 +249,8 @@ class RawWidget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -272,8 +272,8 @@ class RawWidget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -295,8 +295,8 @@ class RawWidget extends Component {
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (align ? "text-xs-" + align + " " : "") +
-                        (data[0].readonly ? "input-disabled " : "") +
-                        (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "") +
+                        (widgetData.readonly ? "input-disabled " : "") +
+                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
                         <input
@@ -330,8 +330,8 @@ class RawWidget extends Component {
                     <label
                         className={
                             "input-switch " +
-                            (data[0].readonly ? "input-disabled " : "") +
-                            (data[0].mandatory && data[0].value.length === 0 ? "input-mandatory " : "")
+                            (widgetData.readonly ? "input-disabled " : "") +
+                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
                         }>
                         <input
                             type="checkbox"
@@ -349,7 +349,7 @@ class RawWidget extends Component {
                             "tag tag-warning " +
                             (align ? "text-xs-" + align + " " : "")
                         }
-                    >{data[0].value}</div>
+                    >{widgetData.value}</div>
                 )
             case "Button":
                 return (
@@ -361,13 +361,13 @@ class RawWidget extends Component {
                         }
                         onClick={(e) => handlePatch(widgetField)}
                     >
-                        {data[0].value[Object.keys(data[0].value)[0]]}
+                        {widgetData.value[Object.keys(widgetData.value)[0]]}
                     </button>
                 )
             case "ActionButton":
                 return (
                     <ActionButton
-                        data={data[0]}
+                        data={widgetData}
                         windowType={windowType}
                         fields={fields}
                         dataId={dataId}

@@ -31,7 +31,7 @@ class FilterWidget extends Component {
 
     handlePatch = (property, value, id) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId} = this.props;
-
+        console.log('handle patch');
 
         let filter =
           [{

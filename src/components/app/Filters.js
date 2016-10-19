@@ -116,7 +116,13 @@ class Filters extends Component {
 							<div className="filter-menu">
 								<ul>
 									{filterData && filterData.map((item, index) => 
-										<li key={index} onClick={ () => this.showFilter(item) }>{item.caption}</li>
+										<div key={index}> 
+											{!item.frequent &&
+												<li onClick={ () => this.showFilter(item) }>{item.caption}</li>
+											}
+										</div>
+											
+										
 									)}
 								</ul>
 							</div>
