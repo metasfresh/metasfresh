@@ -1414,3 +1414,21 @@ td.pulse-off input {
 .btn i {
     padding-right: 4px;
 }
+
+.login-container {
+     display: flex;
+     width:100%;
+     height:100%;
+     flex-direction: row;
+     justify-content: center;
+     align-items: center;
+ }
+
+ .login-form {
+     width: 20%;
+     min-width:300px;
+ }
+
+ .login-form div {
+     margin: 10px;
+ }

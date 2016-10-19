@@ -3,6 +3,17 @@ import axios from 'axios';
 import config from '../config';
 import {push,replace} from 'react-router-redux';
 
+export function loginSuccess() {
+    return {
+        type: types.LOGIN_SUCCESS
+    }
+}
+export function logoutSuccess() {
+    return {
+        type: types.LOGOUT_SUCCESS
+    }
+}
+
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
     query = encodeURIComponent(query);
     return (dispatch) => axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query);
@@ -68,6 +79,16 @@ export function updateUri(pathname, query, prop, value) {
 
         dispatch(replace(url));
     }
+}
+
+export function loginRequest(login, passwd){
+    return (dispatch) => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
+}
+export function loginCompletionRequest(role){
+    return (dispatch) => axios.post(config.API_URL + '/login/loginComplete', role);
+}
+export function logoutRequest(item){
+    return (dispatch) => axios.get(config.API_URL + '/login/logout');
 }
 
 export function filterDropdownRequest(type, filterId, parameterName) {
