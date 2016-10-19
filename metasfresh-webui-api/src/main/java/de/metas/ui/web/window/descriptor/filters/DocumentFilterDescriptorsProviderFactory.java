@@ -53,11 +53,16 @@ public final class DocumentFilterDescriptorsProviderFactory
 	{
 		//
 		// Standard field filters: filters created from document fields which are flagged with AllowFiltering
-		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters = fields
+		final DocumentFilterDescriptor standardFieldsFilter = fields
 				.stream()
 				.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
-				.map(field -> createFilter(field))
-				.collect(ImmutableDocumentFilterDescriptorsProvider.collector());
+				.map(field -> createFilterParam(field))
+				.collect(DocumentFilterDescriptor.builder().collectParameters())
+				.setFilterId("standard")
+				.setDisplayName("Standard") // TODO trl
+				.setFrequentUsed(false)
+				.build();
+		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters = ImmutableDocumentFilterDescriptorsProvider.of(standardFieldsFilter);
 
 		//
 		// User query filters: filters created from user queries
@@ -67,26 +72,21 @@ public final class DocumentFilterDescriptorsProviderFactory
 		return CompositeDocumentFilterDescriptorsProvider.of(userQueryFilters, standardFieldFilters);
 	}
 
-	private final DocumentFilterDescriptor createFilter(final DocumentFieldDescriptor field)
+	private final DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
-		
+
 		final DocumentFieldDataBindingDescriptor dataBinding = field.getDataBinding().orElse(null);
 		final LookupDescriptor lookupDescriptor = dataBinding == null ? null : dataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
 
-		return DocumentFilterDescriptor.builder()
-				.setFilterId(fieldName)
+		return DocumentFilterParamDescriptor.builder()
 				.setDisplayName(displayName)
-				.setFrequentUsed(false)
-				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setDisplayName(displayName)
-						.setFieldName(fieldName)
-						.setWidgetType(widgetType)
-						.setOperator(Operator.EQUAL)
-						.setLookupDescriptor(lookupDescriptor))
-				.build();
+				.setFieldName(fieldName)
+				.setWidgetType(widgetType)
+				.setOperator(Operator.EQUAL)
+				.setLookupDescriptor(lookupDescriptor);
 	}
 
 }
