@@ -584,6 +584,7 @@ body {
 }
 
 .tab-content {
+    flex-grow: 1;
     border: 1px solid $brand-border-color;
     border-top: 0;
     background-color: #fff;
