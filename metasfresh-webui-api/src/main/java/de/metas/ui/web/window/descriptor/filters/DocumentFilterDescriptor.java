@@ -201,6 +201,11 @@ public final class DocumentFilterDescriptor
 			this.frequentUsed = frequentUsed;
 			return this;
 		}
+		
+		public boolean hasParameters()
+		{
+			return !parameters.isEmpty();
+		}
 
 		public Builder addParameter(final DocumentFilterParamDescriptor.Builder parameter)
 		{
