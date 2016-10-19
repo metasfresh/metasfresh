@@ -15,10 +15,10 @@ BEGIN
 		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Level already exists in %. Nothing do to', p_table_name||'_tbl';
     END;
 		BEGIN
-		EXECUTE 'ALTER TABLE ' || p_table_name || '_tbl ADD COLUMN DLM_Partion_ID numeric(10,0);';
-		RAISE NOTICE 'Added column DLM_Partion_ID to table %', p_table_name||'_tbl';
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_tbl ADD COLUMN DLM_Partition_ID numeric(10,0);';
+		RAISE NOTICE 'Added column DLM_Partition_ID to table %', p_table_name||'_tbl';
 	EXCEPTION
-		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Partion_ID already exists in %. Nothing do to', p_table_name||'_tbl';
+		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Partition_ID already exists in %. Nothing do to', p_table_name||'_tbl';
     END;
 	
 	/* 
@@ -54,9 +54,76 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE; 
 COMMENT ON FUNCTION dlm.add_table_to_dlm(text) IS 'gh #235, #489: DLMs the given table:
-* Adds a DLM_Level and DLM_Partion_ID column to the table.
+* Adds a DLM_Level and DLM_Partition_ID column to the table.
 * Renames the table to "<tablename>_tbl" and creates a view named <tablename> that selects * from the table, but has a where-clause to make it select only records with DLM_Level <= current_setting(''metasfresh.DLM_Level'')
 * Creates an index for the new DLM_Level column
 * iterates "incoming" FK constraints for the table and creates a trigger&triggerfunction to avoid "dangling" references in case a record''s DLM_Level is increased. See the view dlm.triggers for more details.
 * Does an analyze on the table
 ';
+
+
+CREATE OR REPLACE FUNCTION dlm.remove_table_from_dlm(p_table_name text, p_retain_dlm_column boolean DEFAULT true)
+  RETURNS void AS
+$BODY$
+DECLARE 
+	v_trigger_view_row dlm.triggers;
+BEGIN
+	EXECUTE 'DROP VIEW IF EXISTS dlm.' || p_table_name;
+	EXECUTE 'DROP INDEX IF EXISTS ' || p_table_name || '_DLM_Level;';
+	
+	IF p_retain_dlm_column = false
+	THEN
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Level;';
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Partition_ID;';
+		RAISE NOTICE 'Dropped columns DLM_Level and DLM_Partition_ID from table % (if they existed)', p_table_name;
+		
+	ELSE
+		RAISE NOTICE 'Retained columns DLM_Level and DLM_Partition_ID of table %', p_table_name;
+	END IF;
+
+	FOR v_trigger_view_row IN 
+		EXECUTE 'SELECT * FROM dlm.triggers v WHERE lower(v.foreign_table_name) = lower('''|| p_table_name ||'_tbl'')'
+	LOOP
+		EXECUTE v_trigger_view_row.drop_dlm_trigger_ddl;
+	
+		RAISE NOTICE 'Dropped dlm trigger analog to FK constraint %', v_trigger_view_row.constraint_name;
+	END LOOP;
+	
+	EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl RENAME TO ' || p_table_name || ';';
+	RAISE NOTICE 'Renamed table % back to % ', p_table_name||'_Tbl', p_table_name;
+ END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE;
+COMMENT ON FUNCTION dlm.remove_table_from_dlm(text, boolean) IS 'gh #235, #489: Un-DLMs the given table:
+* drops the view and removes the "_tbl" suffix from the table name
+* drops partial indices
+* drops the tiggers and triggerfunctions that were created using the dlm.triggers view.
+* optionally drops the DLM_Level and DLM_Partition_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
+
+
+
+
+
+DROP FUNCTION IF EXISTS dlm.get_dlm_records(text, numeric(10,0));
+CREATE OR REPLACE FUNCTION dlm.get_dlm_records(p_Table_Name text, p_DLM_Partition_ID numeric(10,0))
+	RETURNS TABLE(TableName text, DLM_Partition_ID numeric(10,0), Record_ID numeric(10,0)) AS
+$BODY$
+BEGIN
+	RETURN QUERY EXECUTE 'SELECT '||p_Table_Name||', '||p_DLM_Partition_ID||', '||p_Table_Name||'_ID AS Record_ID FROM '||p_Table_Name||' WHERE DLM_Partition_ID='||p_DLM_Partition_ID||';';
+END;	
+$BODY$
+	LANGUAGE plpgsql STABLE;
+
+CREATE VIEW DLM_Partition_Records AS
+SELECT 
+	c.DLM_Partition_Config_ID, p.DLM_Partition_ID, t.TableName, t.IsDLM, t.AD_Table_ID, r.Record_ID
+FROM DLM_Partition p
+	JOIN DLM_Partition_Config c 
+			ON p.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID
+	JOIN DLM_Partition_Config_Line l 
+			ON l.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID
+		JOIN AD_Table t 
+				ON t.AD_Table_ID=l.DLM_Referencing_Table_ID
+
+	JOIN LATERAL (SELECT dlm.get_dlm_records(t.TableName, p.DLM_Partition_ID) ) records ON true
+;

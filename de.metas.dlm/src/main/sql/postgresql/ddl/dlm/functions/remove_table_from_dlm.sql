@@ -11,11 +11,11 @@ BEGIN
 	IF p_retain_dlm_column = false
 	THEN
 		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Level;';
-		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Partion_ID;';
-		RAISE NOTICE 'Dropped columns DLM_Level and DLM_Partion_ID from table % (if they existed)', p_table_name;
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Partition_ID;';
+		RAISE NOTICE 'Dropped columns DLM_Level and DLM_Partition_ID from table % (if they existed)', p_table_name;
 		
 	ELSE
-		RAISE NOTICE 'Retained columns DLM_Level and DLM_Partion_ID of table %', p_table_name;
+		RAISE NOTICE 'Retained columns DLM_Level and DLM_Partition_ID of table %', p_table_name;
 	END IF;
 
 	FOR v_trigger_view_row IN 
@@ -35,4 +35,4 @@ COMMENT ON FUNCTION dlm.remove_table_from_dlm(text, boolean) IS 'gh #235, #489: 
 * drops the view and removes the "_tbl" suffix from the table name
 * drops partial indices
 * drops the tiggers and triggerfunctions that were created using the dlm.triggers view.
-* optionally drops the DLM_Level and DLM_Partion_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
+* optionally drops the DLM_Level and DLM_Partition_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
