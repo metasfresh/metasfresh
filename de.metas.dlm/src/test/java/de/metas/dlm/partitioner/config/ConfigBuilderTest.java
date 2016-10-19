@@ -68,6 +68,22 @@ public class ConfigBuilderTest
 		assertThat(extendedConfig.getLine("XYZ").getReferences().get(0).getReferencedConfigLine(), is(extendedConfig.getLine("123")));
 	}
 
+	private PartitionerConfig createAndCheckBuilder0()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+				.newLine().setTableName("ABC")
+				.newRef().setReferencedTableName("123").setReferencingColumnName("ABC_columnName").setReferencedConfigLine("123").endRef()
+				.newLine().setTableName("123")
+				.endLine()
+				.build();
+
+		assertNotNull(config);
+		assertNotNull(config.getLines());
+		checkConfig(config);
+
+		return config;
+	}
+
 	private void checkConfig(final PartitionerConfig config)
 	{
 		assertThat(config.getLines().get(0).getTableName(), is("ABC"));
@@ -78,21 +94,5 @@ public class ConfigBuilderTest
 		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedTableName(), is("123"));
 		assertThat(config.getLine("ABC").getReferences().get(0).getReferencingColumnName(), is("ABC_columnName"));
 		assertThat(config.getLine("ABC").getReferences().get(0).getReferencedConfigLine(), is(config.getLine("123")));
-	}
-
-	private PartitionerConfig createAndCheckBuilder0()
-	{
-		final PartitionerConfig config = PartitionerConfig.builder()
-				.newLine().setTableName("ABC")
-				.newRef().setReferencedTableName("123").setReferencingColumnName("Record_ID").setReferencedConfigLine("123").endRef()
-				.newLine().setTableName("123")
-				.endLine()
-				.build();
-
-		assertNotNull(config);
-		assertNotNull(config.getLines());
-		checkConfig(config);
-
-		return config;
 	}
 }

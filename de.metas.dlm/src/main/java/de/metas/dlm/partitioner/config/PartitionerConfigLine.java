@@ -42,8 +42,8 @@ public class PartitionerConfigLine
 
 	private final String tablename;
 	private final PartitionerConfig parent;
-	private final List<PartionerConfigReference> references = new ArrayList<>();
-	private int DLM_Partion_Config_Line_ID = 0;
+	private final List<PartitionerConfigReference> references = new ArrayList<>();
+	private int DLM_Partition_Config_Line_ID = 0;
 
 	private PartitionerConfigLine(final PartitionerConfig parent, final String tableName)
 	{
@@ -68,7 +68,7 @@ public class PartitionerConfigLine
 	 *
 	 * @return never <code>null</code>
 	 */
-	public List<PartionerConfigReference> getReferences()
+	public List<PartitionerConfigReference> getReferences()
 	{
 		return references;
 	}
@@ -78,14 +78,14 @@ public class PartitionerConfigLine
 		return parent;
 	}
 
-	public int getDLM_Partion_Config_Line_ID()
+	public int getDLM_Partition_Config_Line_ID()
 	{
-		return DLM_Partion_Config_Line_ID;
+		return DLM_Partition_Config_Line_ID;
 	}
 
-	public void setDLM_Partion_Config_Line_ID(final int DLM_Partion_Config_Line_ID)
+	public void setDLM_Partition_Config_Line_ID(final int DLM_Partition_Config_Line_ID)
 	{
-		this.DLM_Partion_Config_Line_ID = DLM_Partion_Config_Line_ID;
+		this.DLM_Partition_Config_Line_ID = DLM_Partition_Config_Line_ID;
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class PartitionerConfigLine
 
 		private String tableName;
 
-		private final List<PartionerConfigReference.RefBuilder> refBuilders = new ArrayList<>();
+		private final List<PartitionerConfigReference.RefBuilder> refBuilders = new ArrayList<>();
 
 		private PartitionerConfigLine buildLine;
 
@@ -136,9 +136,9 @@ public class PartitionerConfigLine
 			return buildLine;
 		}
 
-		public PartionerConfigReference.RefBuilder newRef()
+		public PartitionerConfigReference.RefBuilder newRef()
 		{
-			final PartionerConfigReference.RefBuilder refBuilder = new PartionerConfigReference.RefBuilder(this);
+			final PartitionerConfigReference.RefBuilder refBuilder = new PartitionerConfigReference.RefBuilder(this);
 			refBuilders.add(refBuilder);
 
 			return refBuilder;
@@ -146,9 +146,9 @@ public class PartitionerConfigLine
 
 		public void buildRefs()
 		{
-			for (final PartionerConfigReference.RefBuilder refBuilder : refBuilders)
+			for (final PartitionerConfigReference.RefBuilder refBuilder : refBuilders)
 			{
-				final PartionerConfigReference ref = refBuilder.build(buildLine);
+				final PartitionerConfigReference ref = refBuilder.build(buildLine);
 				buildLine.references.add(ref);
 			}
 

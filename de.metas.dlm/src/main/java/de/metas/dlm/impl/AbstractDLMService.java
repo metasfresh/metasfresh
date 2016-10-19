@@ -61,6 +61,7 @@ public abstract class AbstractDLMService implements IDLMService
 		column.setHelp(element.getHelp());
 
 		column.setAD_Reference_ID(DisplayType.Integer);
+		column.setDDL_NoForeignKey(true); // doesn't really matter for DLM_Level, but is important for DLM_Partition_ID
 		column.setIsActive(true);
 
 		InterfaceWrapperHelper.save(column);

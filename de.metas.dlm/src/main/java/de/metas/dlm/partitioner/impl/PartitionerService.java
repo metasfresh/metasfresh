@@ -23,17 +23,17 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.exception.DLMException;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
-import de.metas.dlm.model.I_DLM_Partion_Config;
-import de.metas.dlm.model.I_DLM_Partion_Config_Line;
-import de.metas.dlm.model.I_DLM_Partion_Config_Reference;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.dlm.partitioner.IPartitionerService;
-import de.metas.dlm.partitioner.config.PartionerConfigReference;
-import de.metas.dlm.partitioner.config.PartionerConfigReference.RefBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfig.Builder;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
+import de.metas.dlm.partitioner.config.PartitionerConfigReference;
+import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
 import de.metas.logging.LogManager;
 
 /*
@@ -69,10 +69,10 @@ public class PartitionerService implements IPartitionerService
 		final Set<IDLMAware> records = new HashSet<>();
 
 		// we need to get to the "first" line(s),
-		// i.e. those DLM_PartionLine_Configs that are not referenced via any DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID
+		// i.e. those DLM_PartitionLine_Configs that are not referenced via any DLM_PartitionReference_Config.DLM_Referencing_PartitionLine_Config_ID
 		// i think we can also live with circles, i.e. if there is no "first", but for those "firsts" we should pick one and start with it
 		// also, for the case of >1 "firsts", we need to be able to backtrack
-		final List<PartitionerConfigLine> lines = config.getLines(); // DLM_PartionLine_Config
+		final List<PartitionerConfigLine> lines = config.getLines(); // DLM_PartitionLine_Config
 
 		if (lines.isEmpty())
 		{
@@ -130,8 +130,8 @@ public class PartitionerService implements IPartitionerService
 	{
 		final I_DLM_Partition partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
 
-		final I_DLM_Partion_Config partitionConfigDB = storePartitionConfig(partition.getConfig());
-		partitionDB.setDLM_Partion_Config(partitionConfigDB);
+		final I_DLM_Partition_Config partitionConfigDB = storePartitionConfig(partition.getConfig());
+		partitionDB.setDLM_Partition_Config(partitionConfigDB);
 
 		InterfaceWrapperHelper.save(partitionDB);
 
@@ -156,7 +156,7 @@ public class PartitionerService implements IPartitionerService
 		final String keyColumnName = columnBL.getSingleKeyColumn(tableName);
 
 		// AD_Table_ID
-		// get the "record" from DLM_PartionLine_Config.AD_Table_ID as the database record with the smallest ID
+		// get the "record" from DLM_PartitionLine_Config.AD_Table_ID as the database record with the smallest ID
 		// that does not yet have a DLM_Partition_ID
 		final IDLMAware record = Services.get(IQueryBL.class)
 				.createQueryBuilder(IDLMAware.class, tableName, new PlainContextAware(Env.getCtx()))
@@ -188,11 +188,11 @@ public class PartitionerService implements IPartitionerService
 		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
 		final String trxName = InterfaceWrapperHelper.getTrxName(record);
 
-		final List<PartionerConfigReference> references = line.getReferences();
+		final List<PartitionerConfigReference> references = line.getReferences();
 
 		// GO FORWARD
 		// for each ref, load the referenced record and recurse with that record
-		for (final PartionerConfigReference ref : references) // DLM_PartionReference_Config
+		for (final PartitionerConfigReference ref : references) // DLM_PartitionReference_Config
 		{
 			// the table name for the foreign record which has 'foreignKey' as its ID
 			final String foreignTableName = ref.getReferencedTableName();
@@ -215,8 +215,8 @@ public class PartitionerService implements IPartitionerService
 			}
 
 			// get the foreign key ID of
-			// table DLM_PartionLine_Config.AD_Table_ID,
-			// column DLM_PartionReference_Config.DLM_Referencing_Column_ID
+			// table DLM_PartitionLine_Config.AD_Table_ID,
+			// column DLM_PartitionReference_Config.DLM_Referencing_Column_ID
 			final Integer foreignKey = InterfaceWrapperHelper.getValueOrNull(record, ref.getReferencingColumnName());
 			if (foreignKey == null || foreignKey <= 0)
 			{
@@ -224,7 +224,7 @@ public class PartitionerService implements IPartitionerService
 				continue;
 			}
 
-			// load the foreign record from the table DLM_PartionReference_Config.DLM_Referenced_Table_ID
+			// load the foreign record from the table DLM_PartitionReference_Config.DLM_Referenced_Table_ID
 			final IDLMAware foreignRecord = InterfaceWrapperHelper.create(ctx, foreignTableName, foreignKey, IDLMAware.class, trxName);
 			logger.debug("Loaded referenced IDLMAware={} from table={} via {}.{}={}", foreignRecord, foreignTableName, line.getTableName(), ref.getReferencingColumnName(), foreignKey);
 
@@ -232,7 +232,7 @@ public class PartitionerService implements IPartitionerService
 
 			if (recordWasNotYetAddedBefore)
 			{
-				// get the foreign record's PartitionerConfigLine (DLM_PartionReference_Config.DLM_Referencing_PartionLine_Config_ID)
+				// get the foreign record's PartitionerConfigLine (DLM_PartitionReference_Config.DLM_Referencing_PartitionLine_Config_ID)
 				// note: it's OK to have a referencedConfigLine that has itself no references, but it's not OK to have no
 				final PartitionerConfigLine referencedConfigLine = ref.getReferencedConfigLine();
 				if (referencedConfigLine != null)
@@ -270,7 +270,7 @@ public class PartitionerService implements IPartitionerService
 	/**
 	 * For the given <code>tableName</code> and <code>key</code>, method loads all record that reference the respective record.
 	 * <p>
-	 * Note that there needs to be {@link PartitionerConfigLine}s with {@link PartionerConfigReference}s for those referencing records (same as with forward references).
+	 * Note that there needs to be {@link PartitionerConfigLine}s with {@link PartitionerConfigReference}s for those referencing records (same as with forward references).
 	 *
 	 * @param config
 	 * @param contextProvider
@@ -285,8 +285,8 @@ public class PartitionerService implements IPartitionerService
 			final String tableName,
 			final int key)
 	{
-		final List<PartionerConfigReference> backwardReferences = config.getReferences(tableName);
-		for (final PartionerConfigReference backwardRef : backwardReferences)
+		final List<PartitionerConfigReference> backwardReferences = config.getReferences(tableName);
+		for (final PartitionerConfigReference backwardRef : backwardReferences)
 		{
 			final PartitionerConfigLine backwardLine = backwardRef.getParent();
 			final String backwardTableName = backwardLine.getTableName();
@@ -324,57 +324,57 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	@Override
-	public I_DLM_Partion_Config storePartitionConfig(final PartitionerConfig config)
+	public I_DLM_Partition_Config storePartitionConfig(final PartitionerConfig config)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		I_DLM_Partion_Config configDB;
-		if (config.getDLM_Partion_Config_ID() > 0)
+		I_DLM_Partition_Config configDB;
+		if (config.getDLM_Partition_Config_ID() > 0)
 		{
-			configDB = InterfaceWrapperHelper.create(Env.getCtx(), config.getDLM_Partion_Config_ID(), I_DLM_Partion_Config.class, ITrx.TRXNAME_ThreadInherited);
+			configDB = InterfaceWrapperHelper.create(Env.getCtx(), config.getDLM_Partition_Config_ID(), I_DLM_Partition_Config.class, ITrx.TRXNAME_ThreadInherited);
 		}
 		else
 		{
-			configDB = InterfaceWrapperHelper.newInstance(I_DLM_Partion_Config.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+			configDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Config.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 			InterfaceWrapperHelper.save(configDB);
-			config.setDLM_Partion_Config_ID(configDB.getDLM_Partion_Config_ID());
+			config.setDLM_Partition_Config_ID(configDB.getDLM_Partition_Config_ID());
 		}
 
 		// we first need to persist only the lines,
-		// so that we can be sure to later have all the IDs for DLM_Partion_Config_Reference.DLM_Partion_Config_Reference_ID
+		// so that we can be sure to later have all the IDs for DLM_Partition_Config_Reference.DLM_Partition_Config_Reference_ID
 		for (final PartitionerConfigLine line : config.getLines())
 		{
-			I_DLM_Partion_Config_Line configLineDB;
-			if (line.getDLM_Partion_Config_Line_ID() > 0)
+			I_DLM_Partition_Config_Line configLineDB;
+			if (line.getDLM_Partition_Config_Line_ID() > 0)
 			{
-				configLineDB = InterfaceWrapperHelper.create(Env.getCtx(), line.getDLM_Partion_Config_Line_ID(), I_DLM_Partion_Config_Line.class, ITrx.TRXNAME_ThreadInherited);
+				configLineDB = InterfaceWrapperHelper.create(Env.getCtx(), line.getDLM_Partition_Config_Line_ID(), I_DLM_Partition_Config_Line.class, ITrx.TRXNAME_ThreadInherited);
 			}
 			else
 			{
-				configLineDB = InterfaceWrapperHelper.newInstance(I_DLM_Partion_Config_Line.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+				configLineDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Config_Line.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 			}
-			configLineDB.setDLM_Partion_Config(configDB);
+			configLineDB.setDLM_Partition_Config(configDB);
 
 			final int referencingTableID = adTableDAO.retrieveTableId(line.getTableName());
 			configLineDB.setDLM_Referencing_Table_ID(referencingTableID);
 			InterfaceWrapperHelper.save(configLineDB);
-			line.setDLM_Partion_Config_Line_ID(configLineDB.getDLM_Partion_Config_Line_ID());
+			line.setDLM_Partition_Config_Line_ID(configLineDB.getDLM_Partition_Config_Line_ID());
 		}
 
 		for (final PartitionerConfigLine line : config.getLines())
 		{
-			for (final PartionerConfigReference ref : line.getReferences())
+			for (final PartitionerConfigReference ref : line.getReferences())
 			{
-				I_DLM_Partion_Config_Reference configRefDB;
-				if (ref.getDLM_Partion_Config_Reference_ID() > 0)
+				I_DLM_Partition_Config_Reference configRefDB;
+				if (ref.getDLM_Partition_Config_Reference_ID() > 0)
 				{
-					configRefDB = InterfaceWrapperHelper.create(Env.getCtx(), line.getDLM_Partion_Config_Line_ID(), I_DLM_Partion_Config_Reference.class, ITrx.TRXNAME_ThreadInherited);
+					configRefDB = InterfaceWrapperHelper.create(Env.getCtx(), line.getDLM_Partition_Config_Line_ID(), I_DLM_Partition_Config_Reference.class, ITrx.TRXNAME_ThreadInherited);
 				}
 				else
 				{
-					configRefDB = InterfaceWrapperHelper.newInstance(I_DLM_Partion_Config_Reference.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+					configRefDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Config_Reference.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 				}
-				configRefDB.setDLM_Partion_Config_Line_ID(line.getDLM_Partion_Config_Line_ID());
+				configRefDB.setDLM_Partition_Config_Line_ID(line.getDLM_Partition_Config_Line_ID());
 
 				final int referencedTableID = adTableDAO.retrieveTableId(ref.getReferencedTableName());
 				configRefDB.setDLM_Referenced_Table_ID(referencedTableID);
@@ -385,52 +385,52 @@ public class PartitionerService implements IPartitionerService
 				final PartitionerConfigLine referencedConfigLine = ref.getReferencedConfigLine();
 				if (referencedConfigLine == null)
 				{
-					configRefDB.setDLM_Partion_Config_Reference_ID(0);
+					configRefDB.setDLM_Partition_Config_Reference_ID(0);
 				}
 				else
 				{
-					configRefDB.setDLM_Partion_Config_Reference_ID(referencedConfigLine.getDLM_Partion_Config_Line_ID());
+					configRefDB.setDLM_Partition_Config_Reference_ID(referencedConfigLine.getDLM_Partition_Config_Line_ID());
 				}
 				InterfaceWrapperHelper.save(configRefDB);
-				ref.setDLM_Partion_Config_Reference_ID(configRefDB.getDLM_Partion_Config_Reference_ID());
+				ref.setDLM_Partition_Config_Reference_ID(configRefDB.getDLM_Partition_Config_Reference_ID());
 			}
 		}
 		return configDB;
 	}
 
 	@Override
-	public PartitionerConfig loadPartitionConfig(final I_DLM_Partion_Config configDB)
+	public PartitionerConfig loadPartitionConfig(final I_DLM_Partition_Config configDB)
 	{
 
 		final Builder configBuilder = PartitionerConfig.builder();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_DLM_Partion_Config_Line> lines = queryBL.createQueryBuilder(I_DLM_Partion_Config_Line.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited))
+		final List<I_DLM_Partition_Config_Line> lines = queryBL.createQueryBuilder(I_DLM_Partition_Config_Line.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited))
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DLM_Partion_Config_Line.COLUMN_DLM_Partion_Config_ID, configDB.getDLM_Partion_Config_ID())
+				.addEqualsFilter(I_DLM_Partition_Config_Line.COLUMN_DLM_Partition_Config_ID, configDB.getDLM_Partition_Config_ID())
 				.create()
 				.list();
 
-		for (final I_DLM_Partion_Config_Line line : lines)
+		for (final I_DLM_Partition_Config_Line line : lines)
 		{
 			final LineBuilder lineBuilder = configBuilder.newLine().setTableName(line.getDLM_Referencing_Table().getTableName());
 
-			final List<I_DLM_Partion_Config_Reference> refs = queryBL.createQueryBuilder(I_DLM_Partion_Config_Reference.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited))
+			final List<I_DLM_Partition_Config_Reference> refs = queryBL.createQueryBuilder(I_DLM_Partition_Config_Reference.class, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited))
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_DLM_Partion_Config_Reference.COLUMN_DLM_Partion_Config_Line_ID, line.getDLM_Partion_Config_Line_ID())
+					.addEqualsFilter(I_DLM_Partition_Config_Reference.COLUMN_DLM_Partition_Config_Line_ID, line.getDLM_Partition_Config_Line_ID())
 					.create()
 					.list();
 
-			for (final I_DLM_Partion_Config_Reference ref : refs)
+			for (final I_DLM_Partition_Config_Reference ref : refs)
 			{
 				final RefBuilder refBuilder = lineBuilder.newRef()
 						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())
 						.setReferencingColumnName(ref.getDLM_Referencing_Column().getColumnName());
 
-				if (ref.getDLM_Referenced_Table_Partion_Config_Line_ID() > 0)
+				if (ref.getDLM_Referenced_Table_Partition_Config_Line_ID() > 0)
 				{
 					refBuilder.setReferencedConfigLine(
-							ref.getDLM_Referenced_Table_Partion_Config_Line().getDLM_Referencing_Table().getTableName());
+							ref.getDLM_Referenced_Table_Partition_Config_Line().getDLM_Referencing_Table().getTableName());
 				}
 				refBuilder.endRef();
 			}

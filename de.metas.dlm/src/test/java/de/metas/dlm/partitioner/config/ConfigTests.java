@@ -54,16 +54,16 @@ public class ConfigTests
 				.endLine()
 				.build();
 
-		final List<PartionerConfigReference> referencingLines = config.getReferences("mno"); // also need to work with different case
+		final List<PartitionerConfigReference> referencingLines = config.getReferences("mno"); // also need to work with different case
 
 		assertThat(referencingLines.size(), is(2));
 
-		final Optional<PartionerConfigReference> refLine1 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("ABC_columnName")).findFirst();
+		final Optional<PartitionerConfigReference> refLine1 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("ABC_columnName")).findFirst();
 		assertThat(refLine1.isPresent(), is(true));
 		assertThat(refLine1.get().getParent().getTableName(), is("ABC"));
 		assertThat(refLine1.get().getReferencedTableName(), is("MNO"));
 
-		final Optional<PartionerConfigReference> refLine2 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("XYZ_columnName")).findFirst();
+		final Optional<PartitionerConfigReference> refLine2 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("XYZ_columnName")).findFirst();
 		assertThat(refLine2.isPresent(), is(true));
 		assertThat(refLine2.get().getParent().getTableName(), is("XYZ"));
 		assertThat(refLine2.get().getReferencedTableName(), is("MNO"));

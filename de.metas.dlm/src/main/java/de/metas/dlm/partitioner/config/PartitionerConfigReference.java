@@ -39,15 +39,15 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PartionerConfigReference
+public class PartitionerConfigReference
 {
 	private final String referencedTableName;
 	private final String referencingColumnName;
 	private final PartitionerConfigLine referencedConfigLine;
 	private final PartitionerConfigLine parent;
-	private int DLM_Partion_Config_Reference_ID;
+	private int DLM_Partition_Config_Reference_ID;
 
-	private PartionerConfigReference(final PartitionerConfigLine parent,
+	private PartitionerConfigReference(final PartitionerConfigLine parent,
 			final String referencingColumnName,
 			final String referencedTableName,
 			final PartitionerConfigLine referencedConfigLine)
@@ -81,17 +81,17 @@ public class PartionerConfigReference
 	@Override
 	public String toString()
 	{
-		return "PartionConfigReference [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", referencedConfigLine=" + referencedConfigLine + "]";
+		return "PartitionConfigReference [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", referencedConfigLine=" + referencedConfigLine + "]";
 	}
 
-	public int getDLM_Partion_Config_Reference_ID()
+	public int getDLM_Partition_Config_Reference_ID()
 	{
-		return DLM_Partion_Config_Reference_ID;
+		return DLM_Partition_Config_Reference_ID;
 	}
 
-	public void setDLM_Partion_Config_Reference_ID(final int DLM_Partion_Config_Reference_ID)
+	public void setDLM_Partition_Config_Reference_ID(final int DLM_Partition_Config_Reference_ID)
 	{
-		this.DLM_Partion_Config_Reference_ID = DLM_Partion_Config_Reference_ID;
+		this.DLM_Partition_Config_Reference_ID = DLM_Partition_Config_Reference_ID;
 	}
 
 	public static class RefBuilder
@@ -154,7 +154,7 @@ public class PartionerConfigReference
 		 * @param parent
 		 * @return
 		 */
-		/* package */ PartionerConfigReference build(final PartitionerConfigLine parent)
+		/* package */ PartitionerConfigReference build(final PartitionerConfigLine parent)
 		{
 			final PartitionerConfigLine referencedConfigLine;
 			if (Check.isEmpty(referencedConfigLineTableName, true))
@@ -166,7 +166,7 @@ public class PartionerConfigReference
 				referencedConfigLine = parent.getParent().getLine(referencedConfigLineTableName);
 			}
 
-			return new PartionerConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
+			return new PartitionerConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
 		}
 
 	}

@@ -3,8 +3,8 @@ package de.metas.dlm.partitioner;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.dlm.Partition;
-import de.metas.dlm.model.I_DLM_Partion_Config;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 
 /*
@@ -53,7 +53,7 @@ public interface IPartitionerService extends ISingletonService
 	 * @param config
 	 * @return
 	 */
-	I_DLM_Partion_Config storePartitionConfig(PartitionerConfig config);
+	I_DLM_Partition_Config storePartitionConfig(PartitionerConfig config);
 
-	PartitionerConfig loadPartitionConfig(I_DLM_Partion_Config configDB);
+	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
 }

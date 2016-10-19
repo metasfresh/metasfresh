@@ -1,5 +1,8 @@
 package de.metas.dlm.impl;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -24,17 +27,15 @@ package de.metas.dlm.impl;
 
 public class DLMService extends AbstractDLMService
 {
-
 	@Override
 	void executeDBFunction_add_table_to_dlm(final String tableName)
 	{
-		// nothing to do
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "select dlm.add_table_to_dlm(?)", new Object[] { tableName });
 	}
 
 	@Override
 	void executeDBFunction_remove_table_from_dlm(final String tableName)
 	{
-		// nothing to do
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "select dlm.remove_table_from_dlm(?)", new Object[] { tableName });
 	}
-
 }
