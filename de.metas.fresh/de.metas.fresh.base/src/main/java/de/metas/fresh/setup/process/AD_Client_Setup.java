@@ -13,17 +13,18 @@ package de.metas.fresh.setup.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.GridField;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CacheMgt;
@@ -62,8 +63,10 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 	private ClientSetup _clientSetup;
 
 	@Override
-	public Object getParameterDefaultValue(final String name)
+	public Object getParameterDefaultValue(final GridField field)
 	{
+		final String name = field.getColumnName();
+
 		final ClientSetup clientSetup = getClientSetup();
 		if (PARAM_CompanyName.equalsIgnoreCase(name))
 		{
@@ -247,7 +250,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 			return MSG_OK;
 		}
 	}
-	
+
 	@Override
 	protected void postProcess(final boolean success)
 	{
@@ -255,7 +258,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 		{
 			return;
 		}
-		
+
 		// Fully reset the cache
 		CacheMgt.get().reset();
 	}

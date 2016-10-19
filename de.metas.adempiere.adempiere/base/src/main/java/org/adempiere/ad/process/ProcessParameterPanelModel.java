@@ -33,8 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -55,6 +53,9 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class ProcessParameterPanelModel
 {
@@ -286,7 +287,7 @@ public class ProcessParameterPanelModel
 			final String parameterName = gridField.getColumnName();
 			try
 			{
-				defaultValue = defaultsProvider.getParameterDefaultValue(parameterName);
+				defaultValue = defaultsProvider.getParameterDefaultValue(gridField);
 			}
 			catch (Exception e)
 			{
