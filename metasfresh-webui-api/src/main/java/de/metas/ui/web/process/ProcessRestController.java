@@ -140,9 +140,9 @@ public class ProcessRestController
 	public void startProcess(@PathVariable("pinstanceId") final int pinstanceId)
 	{
 		loginService.assertLoggedIn();
-
-		// TODO
-		throw new UnsupportedOperationException();
+		
+		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
+		processInstance.startProcess();
 	}
 	
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters/{parameterName}/typeahead", method = RequestMethod.GET)

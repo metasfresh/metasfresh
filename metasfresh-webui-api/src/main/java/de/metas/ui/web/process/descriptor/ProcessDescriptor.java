@@ -76,6 +76,11 @@ public final class ProcessDescriptor
 	{
 		return actionId;
 	}
+	
+	public String getCaption(final String adLanguage)
+	{
+		return getLayout().getCaption(adLanguage);
+	}
 
 	public ProcessDescriptorType getType()
 	{

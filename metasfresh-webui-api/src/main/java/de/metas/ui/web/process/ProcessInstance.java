@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessCtl;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.Document;
@@ -95,10 +96,20 @@ public class ProcessInstance
 
 	public void startProcess()
 	{
+		// TODO: make sure it's saved in database
+		
 		final ProcessInfo pi = createProcessInfo();
-//		ProcessCtl
+
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				// .setWindowNo(windowNo)
+				// .setAsyncParent(asyncParent)
+				.executeSync();
+
+		// TODO
+		throw new UnsupportedOperationException();
 	}
-	
+
 	private final ProcessInfo createProcessInfo()
 	{
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
@@ -106,14 +117,14 @@ public class ProcessInstance
 		final int adPInstanceId = getAD_PInstance_ID();
 		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		Check.assumeNotNull(adPInstance, "Parameter pInstance is not null");
-		
 
+		final ProcessDescriptor processDescriptor = getDescriptor();
 		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = getDescriptor().getLayout().getCaption(adLanguage);
+		final String name = processDescriptor.getCaption(adLanguage);
 		final int adProcessId = adPInstance.getAD_Process_ID();
 		final int AD_Table_ID = adPInstance.getAD_Table_ID();
 		final int Record_ID = adPInstance.getRecord_ID();
-		final String classname = getDescriptor().getProcessClassname();
+		final String classname = processDescriptor.getProcessClassname();
 		final ProcessInfo pi = new ProcessInfo(name, adProcessId, AD_Table_ID, Record_ID);
 		pi.setClassName(classname);
 		pi.setCtx(ctx);
