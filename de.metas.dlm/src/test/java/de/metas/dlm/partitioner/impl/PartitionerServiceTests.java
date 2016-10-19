@@ -11,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -58,6 +59,17 @@ public class PartitionerServiceTests
 	{
 		AdempiereTestHelper.get().init();
 		LogManager.setLevel(Level.DEBUG);
+
+		// create two AD_Elements required by the IDLMService implementation
+		{
+		final I_AD_Element elementDLMLevel = InterfaceWrapperHelper.newInstance(I_AD_Element.class);
+		elementDLMLevel.setColumnName(IDLMAware.COLUMNNAME_DLM_Level);
+		InterfaceWrapperHelper.save(elementDLMLevel);
+
+		final I_AD_Element elementPartitionId = InterfaceWrapperHelper.newInstance(I_AD_Element.class);
+		elementPartitionId.setColumnName(IDLMAware.COLUMNNAME_DLM_Partition_ID);
+		InterfaceWrapperHelper.save(elementPartitionId);
+		}
 	}
 
 	/**
@@ -391,7 +403,8 @@ public class PartitionerServiceTests
 				if (partitionHasOrder && !partitionHasInvoice)
 				{
 					// note that we use the lower-case table and column name, because that's what we would also get from the DB
-					throw new DLMException(null, false,
+					throw new DLMException(null,
+							true,
 							I_C_Order.Table_Name.toLowerCase(),
 							I_C_Invoice.Table_Name.toLowerCase(),
 							I_C_Invoice.COLUMNNAME_C_Order_ID.toLowerCase());

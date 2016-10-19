@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -30,7 +31,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName)
+				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName, UpperCaseQueryFilterModifier.instance)
 				//
 				.andCollectChildren(I_AD_Column.COLUMN_AD_Table_ID)
 				.addOnlyActiveRecordsFilter()
@@ -60,9 +61,9 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 
 	/**
 	 * Gets the ColumnName from given {@link I_AD_ColumnCallout}.
-	 * 
+	 *
 	 * The only reason why we have this here, is because the {@link I_AD_ColumnCallout#getColumnName()} is a SQL virtual column which is NOT supported in JUnit testing mode.
-	 * 
+	 *
 	 * @param cc
 	 * @return ColumnName
 	 */
