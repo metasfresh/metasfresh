@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.process.descriptor.ProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;

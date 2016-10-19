@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process;
 
 import java.util.Properties;
 
@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;

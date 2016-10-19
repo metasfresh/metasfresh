@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process;
 
 import java.util.List;
 
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
+import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.process.descriptor.ProcessInstance;
+import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 

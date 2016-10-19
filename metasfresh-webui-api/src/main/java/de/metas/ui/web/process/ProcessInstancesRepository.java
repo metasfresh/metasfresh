@@ -1,4 +1,4 @@
-package de.metas.ui.web.process.descriptor;
+package de.metas.ui.web.process;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +19,8 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
