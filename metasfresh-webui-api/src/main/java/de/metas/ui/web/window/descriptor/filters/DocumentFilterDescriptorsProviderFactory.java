@@ -2,6 +2,8 @@ package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery.Operator;
 
 import de.metas.i18n.ITranslatableString;
@@ -44,6 +46,9 @@ public final class DocumentFilterDescriptorsProviderFactory
 {
 	public static final transient DocumentFilterDescriptorsProviderFactory instance = new DocumentFilterDescriptorsProviderFactory();
 
+	// services
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	private DocumentFilterDescriptorsProviderFactory()
 	{
 		super();
@@ -58,8 +63,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
 				.map(field -> createFilterParam(field))
 				.collect(DocumentFilterDescriptor.builder().collectParameters())
-				.setFilterId("standard")
-				.setDisplayName("Standard") // TODO trl
+				.setFilterId("default")
+				.setDisplayName(msgBL.getTranslatableMsgText("default"))
 				.setFrequentUsed(false)
 				.build();
 		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters = ImmutableDocumentFilterDescriptorsProvider.of(standardFieldsFilter);
