@@ -15,14 +15,19 @@ class Filters extends Component {
 			openList: true,
 			openFilter: false,
 			filterDataItem: '',
-			selectedItem: {}
+			selectedItem: ''
 		};
 	}
 
-	setSelectedItem = (item) => {
+	setSelectedItem = (item, close) => {
+		let th = this;
 		this.setState(Object.assign({}, this.state, {
 			selectedItem: item
-		}));
+		}), () => {
+			if(close){
+				th.hideFilter();
+			}
+		});
 
 		
 	}
@@ -69,8 +74,28 @@ class Filters extends Component {
 		
 		dispatch(setFilter([]));
 		updateDocList('grid', windowType);
-		this.setSelectedItem('');
-		this.hideFilter();
+		this.setSelectedItem('', true);
+		
+	}
+
+	renderFilterWidget = (item, index) => {
+		const {filterData, windowType, updateDocList} = this.props;
+		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
+
+		return(
+			<FilterWidget
+			key={index}
+			id={index}
+			windowType={windowType}
+			widgetData={item}
+			widgetType={item.widgetType}
+			updateDocList={updateDocList}
+			closeFilterMenu={this.closeFilterMenu}
+			setSelectedItem={this.setSelectedItem}
+			selectedItem={selectedItem}
+			{...filterDataItem} />
+
+		)
 
 		
 	}
@@ -101,15 +126,9 @@ class Filters extends Component {
 								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
 								<div className="form-group row filter-content">
 									<div className="col-sm-12">
-										<FilterWidget
-											windowType={windowType}
-											widgetData={filterDataItem.parameters}
-											widgetType={filterDataItem.parameters[0].widgetType}
-											updateDocList={updateDocList}
-											closeFilterMenu={this.closeFilterMenu}
-											setSelectedItem={this.setSelectedItem}
-											selectedItem={selectedItem}
-											{...filterDataItem} />
+										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) => 
+											this.renderFilterWidget(item, index)
+										)}
 									</div>
 								</div>
 							</div>

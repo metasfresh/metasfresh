@@ -1359,7 +1359,7 @@ td.pulse-off input {
     border-radius: 3px;
     display: inline-block;
     position: absolute;
-    z-index: 2;
+    z-index: 4;
     left: 0;
     top: 31px;
 }

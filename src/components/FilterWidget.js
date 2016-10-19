@@ -29,11 +29,13 @@ class FilterWidget extends Component {
     }
 
 
-    handlePatch = (property, value) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu} = this.props;
+    handlePatch = (property, value, id) => {
+        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId} = this.props;
+
+
         let filter =
           [{
-            filterId: property,
+            filterId: filterId,
             parameters: [
               {
                 parameterName: property,
@@ -44,6 +46,8 @@ class FilterWidget extends Component {
 
 
         // this.setSelectedItem(value);
+
+        setSelectedItem(value);
 
 
         dispatch(setFilter(filter));
@@ -60,19 +64,20 @@ class FilterWidget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
-        let currRowId = rowId;
+        // const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
+        // let currRowId = rowId;
 
-        if(!this.validatePrecision(e.target.value)){
-            return;
-        }
+        // if(!this.validatePrecision(e.target.value)){
+        //     return;
+        // }
 
-        if(rowId === "NEW"){
-            currRowId = relativeDocId;
-        }
+        // if(rowId === "NEW"){
+        //     currRowId = relativeDocId;
+        // }
 
-        e.preventDefault();
-        dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+        // e.preventDefault();
+        // dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+        // console.log('handle change');
     }
 
     handleFocus = (e, value) => {
@@ -105,7 +110,7 @@ class FilterWidget extends Component {
             updateCell();
         }
 
-        if(this.props.widgetData[0].value!==nextProps.widgetData[0].value) {
+        if(this.props.widgetData.value!==nextProps.widgetData.value) {
             let th = this;
             this.setState(
                 Object.assign({}, this.state, {
@@ -122,7 +127,7 @@ class FilterWidget extends Component {
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id} = this.props;
         const {updated} = this.state;
         if(widgetData){
             return (
@@ -134,15 +139,17 @@ class FilterWidget extends Component {
                                 <RawWidget
                                     handlePatch={this.handlePatch} 
                                     widgetType={widgetType}
-                                    fields={parameters}
+                                    fields={widgetData}
                                     windowType={windowType}
                                     type={type}
                                     widgetData={widgetData}
                                     filterWidget={true}
                                     filterId={filterId}
-                                    parameterName={widgetData[0].parameterName}
+                                    parameterName={widgetData.parameterName}
                                     setSelectedItem={setSelectedItem}
                                     selectedItem={selectedItem}
+                                    handleFocus={this.handleFocus}
+                                    id={id}
                                 />
                             </div>
                         </div>
