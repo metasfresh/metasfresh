@@ -73,7 +73,7 @@ public class ProcessRestController
 			@RequestParam(name = "type", required = true) final int adProcessId //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final ProcessLayout layout = instancesRepository.getProcessDescriptor(adProcessId).getLayout();
 		return JSONProcessLayout.of(layout, newJsonOpts());
@@ -84,7 +84,7 @@ public class ProcessRestController
 			@RequestParam(name = "type", required = true) final int adProcessId//
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
 			final ProcessInstance pinstance = instancesRepository.createNewProcessInstance(adProcessId);
@@ -95,7 +95,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/instance/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(@PathVariable("pinstanceId") final int pinstanceId)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		final ProcessInstance pinstance = instancesRepository.getProcessInstanceForReading(pinstanceId);
 		return JSONProcessInstance.of(pinstance, newJsonOpts());
@@ -107,7 +107,7 @@ public class ProcessRestController
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.commit", () -> {
 			final ProcessInstance pinstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
@@ -138,7 +138,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/instance/{pinstanceId}", method = RequestMethod.PATCH)
 	public void startProcess(@PathVariable("pinstanceId") final int pinstanceId)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		// TODO
 		throw new UnsupportedOperationException();
@@ -151,7 +151,7 @@ public class ProcessRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		return instancesRepository.getProcessInstanceForReading(pinstanceId)
 				.getParameterLookupValuesForQuery(parameterName, query)
@@ -164,7 +164,7 @@ public class ProcessRestController
 			, @PathVariable("parameterName") final String parameterName //
 	)
 	{
-		loginService.autologin();
+		loginService.assertLoggedIn();
 
 		return instancesRepository.getProcessInstanceForReading(pinstanceId)
 				.getParameterLookupValues(parameterName)

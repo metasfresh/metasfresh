@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.compiere.model.MQuery.Operator;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -73,8 +72,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
 		
-		final DocumentFieldDataBindingDescriptor dataBinding = field.getDataBinding().orElse(null);
-		final LookupDescriptor lookupDescriptor = dataBinding == null ? null : dataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
+		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
 
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(fieldName)
