@@ -31,11 +31,6 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters){
-	// FIXME: ugly workaround to fix the case when for some reason "filters" is not an array!
-	if (filters != null && !(filters instanceof Array)) filters = [ filters ];
-	//console.log("filters="+JSON.stringify(filters));
-	//console.log(new Error().stack);
-	
     return (dispatch) => axios.put(config.API_URL + '/documentView/?type=' + windowType + '&viewType=' + viewType, filters);
 }
 
