@@ -22,10 +22,11 @@ package org.adempiere.util.api;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+
+import de.metas.i18n.ITranslatableString;
 
 public interface IMsgBL extends ISingletonService
 {
@@ -85,4 +86,11 @@ public interface IMsgBL extends ISingletonService
 	String translate(Properties ctx, String text);
 
 	String translate(Properties ctx, String text, boolean isSOTrx);
+
+	/**
+	 * @param adMessage AD_Message
+	 * @param msgParameters optional AD_Message parameters
+	 * @return AD_Message as translatable string
+	 */
+	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
 }

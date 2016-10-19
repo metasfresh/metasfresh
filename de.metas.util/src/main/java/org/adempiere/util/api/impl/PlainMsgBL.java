@@ -28,6 +28,9 @@ import java.util.Properties;
 
 import org.adempiere.util.api.IMsgBL;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+
 public class PlainMsgBL implements IMsgBL
 {
 	@Override
@@ -70,5 +73,11 @@ public class PlainMsgBL implements IMsgBL
 	public String translate(Properties ctx, String text, boolean isSOTrx)
 	{
 		return text;
+	}
+
+	@Override
+	public ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters)
+	{
+		return ImmutableTranslatableString.constant(adMessage);
 	}
 }
