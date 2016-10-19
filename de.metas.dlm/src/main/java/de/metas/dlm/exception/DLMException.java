@@ -51,7 +51,7 @@ public class DLMException extends DBException
 			final String referencingTableName,
 			final String referencingColumnName)
 	{
-		super("Another record still references the given record", cause);
+		super("Another record references the given record", cause);
 
 		this.referencingTableHasDLMLevel = referencingTableHasDLMLevel;
 		this.referencedTableName = referencedTableName;

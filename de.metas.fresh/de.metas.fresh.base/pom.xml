@@ -52,10 +52,15 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dlm</groupId>
+			<artifactId>metasfresh-dlm</artifactId>
 		</dependency>
 
 		<dependency>
@@ -153,7 +158,7 @@
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
@@ -176,7 +181,7 @@
 			<version>${metasfresh-dependency.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
@@ -187,7 +192,7 @@
 			<artifactId>de.metas.procurement.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>

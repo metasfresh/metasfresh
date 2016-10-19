@@ -25,6 +25,7 @@ package org.adempiere.ad.table.api;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
@@ -124,4 +125,15 @@ public interface IADTableDAO extends ISingletonService
 	 * @param table
 	 */
 	void onTableNameRename(final I_AD_Table table);
+
+	/**
+	 * REtrieves a query builder for the given parameters (case insensitive!) that can be refined further.
+	 *
+	 * @param tableName
+	 * @param columnName
+	 * @return
+	 */
+	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName);
+
+	<T extends I_AD_Table> T retrieveTable(String tableName, Class<T> clazz);
 }

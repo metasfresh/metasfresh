@@ -33,6 +33,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -74,7 +75,8 @@ public class ADTableDAO implements IADTableDAO
 				.match();
 	}
 
-	private IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName, final String columnName)
+	@Override
+	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName, final String columnName)
 	{
 		//
 		// Create queryBuilder with default context (not needed for tables)
@@ -218,5 +220,17 @@ public class ADTableDAO implements IADTableDAO
 				.create()
 				.firstOnly(I_AD_Element.class);
 		return element;
+	}
+
+	@Override
+	public <T extends I_AD_Table> T retrieveTable(final String tableName, final Class<T> clazz)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(clazz, new PlainContextAware(Env.getCtx()))
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Table.COLUMNNAME_TableName, tableName, UpperCaseQueryFilterModifier.instance)
+				.create()
+				.firstOnly(clazz);
 	}
 }

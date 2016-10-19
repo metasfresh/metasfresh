@@ -19,10 +19,12 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.exception.DLMException;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
@@ -104,22 +106,33 @@ public class PartitionerService implements IPartitionerService
 		}
 		catch (final DLMException e)
 		{
-			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then again depending on out config,
-			// throw an exception or DLM it on the fly.
+			final String referencingTableName = e.getReferencingTableName();
 
 			// if there is a DLMException, then depending on our config (LATER),
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			logger.info("Caught {}; going to retry with an augmented config", e.toString());
+			logger.info("Caught {}; going to retry with an augmented config which also includes referencingTable={}", e.toString(), referencingTableName);
 
 			final PartitionerConfig newConfig = PartitionerConfig
 					.builder(config)
-					.newLine().setTableName(e.getReferencingTableName())
+					.newLine().setTableName(referencingTableName)
 					.newRef().setReferencingColumnName(e.getReferencingColumnName()).setReferencedTableName(e.getReferencedTableName())
 					.endRef()
 					.endLine()
 					.build();
+
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+			final IDLMService dlmService = Services.get(IDLMService.class);
+
+			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then again depending on out config,
+			// throw an exception or DLM it on the fly.
+			final I_AD_Table referencingTable = adTableDAO.retrieveTable(referencingTableName, I_AD_Table.class);
+			if (!referencingTable.isDLM())
+			{
+				logger.info("ReferencingTable={} is not yet DLM'ed; doing it now", referencingTableName);
+				dlmService.addTableToDLM(referencingTable);
+			}
 			return createPartition(newConfig);
 		}
 		return partition;
@@ -246,7 +259,7 @@ public class PartitionerService implements IPartitionerService
 
 				// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
 				backTrack(line.getParent(),
-						InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
+						InterfaceWrapperHelper.getContextAware(record),                            // make it clear that record is only needed for ctx
 						records,
 						foreignTableName,
 						foreignKey);
@@ -259,7 +272,7 @@ public class PartitionerService implements IPartitionerService
 
 		// GO BACKWARDS, i.e. get records which reference 'record'
 		backTrack(line.getParent(),
-				InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
+				InterfaceWrapperHelper.getContextAware(record),                            // make it clear that record is only needed for ctx
 				records,
 				line.getTableName(),
 				InterfaceWrapperHelper.getId(record));

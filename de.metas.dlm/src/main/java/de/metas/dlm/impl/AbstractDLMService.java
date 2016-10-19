@@ -1,15 +1,16 @@
 package de.metas.dlm.impl;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_Table;
 import org.compiere.util.DisplayType;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_AD_Table;
 
 /*
  * #%L
@@ -42,19 +43,25 @@ public abstract class AbstractDLMService implements IDLMService
 		executeDBFunction_add_table_to_dlm(table.getTableName());
 		createOrUpdateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Level);
 		createOrUpdateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Partition_ID);
+
+		table.setIsDLM(true);
+		InterfaceWrapperHelper.save(table);
 	}
 
 	private void createOrUpdateDlmColumn(final I_AD_Table table, final String columnName)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		I_AD_Column column = adTableDAO.retrieveColumnOrNull(table.getTableName(), columnName);
+
+		// retrieve the column if it exists, even with IsActive='N'
+		final IQueryBuilder<I_AD_Column> columnQueryBuilder = adTableDAO.retrieveColumnQueryBuilder(table.getTableName(), columnName);
+		I_AD_Column column = columnQueryBuilder.create().firstOnly(I_AD_Column.class);
 		if (column == null)
 		{
 			column = InterfaceWrapperHelper.newInstance(I_AD_Column.class, table);
 		}
 
 		final I_AD_Element element = adTableDAO.retrieveElement(columnName);
-
+		column.setAD_Table(table);
 		column.setColumnName(element.getColumnName());
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
@@ -73,6 +80,9 @@ public abstract class AbstractDLMService implements IDLMService
 		executeDBFunction_remove_table_from_dlm(table.getTableName());
 		deactivateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Level);
 		deactivateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Partition_ID);
+
+		table.setIsDLM(false);
+		InterfaceWrapperHelper.save(table);
 	}
 
 	private void deactivateDlmColumn(final I_AD_Table table, final String columnName)

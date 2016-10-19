@@ -94,17 +94,17 @@
 				<exclusions>
 					<!-- excluding Lucene dependencies because they are conflicting with org.elasticsearch:elasticsearch -->
 					<exclusion>
-			          <groupId>org.apache.lucene</groupId>
-			          <artifactId>lucene-core</artifactId>
-			        </exclusion>
+						<groupId>org.apache.lucene</groupId>
+						<artifactId>lucene-core</artifactId>
+					</exclusion>
 					<exclusion>
-			          <groupId>org.apache.lucene</groupId>
-			          <artifactId>lucene-analyzers-common</artifactId>
-			        </exclusion>
+						<groupId>org.apache.lucene</groupId>
+						<artifactId>lucene-analyzers-common</artifactId>
+					</exclusion>
 					<exclusion>
-			          <groupId>org.apache.lucene</groupId>
-			          <artifactId>lucene-queryparser</artifactId>
-			        </exclusion>
+						<groupId>org.apache.lucene</groupId>
+						<artifactId>lucene-queryparser</artifactId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 
@@ -338,6 +338,11 @@
 			<dependency>
 				<artifactId>de.metas.dimension</artifactId>
 				<groupId>de.metas.dimension</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.dlm</groupId>
+				<artifactId>metasfresh-dlm</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
