@@ -10,9 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.x.x (2016-43)
+
+## Features
+
+## Fixes
+
 # metasfresh 4.40.39 (2016-42)
 
-upcoming
+this week's RC
 
 ## Features
 * #443 Add is to be sent as email to doc outbound log
