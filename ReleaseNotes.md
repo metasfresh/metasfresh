@@ -10,9 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.40 (2016-43)
+# metasfresh 4.41.40 (2016-43)
 
 ## Features
+* #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
 
 ## Fixes
 * #487 Attribute editor dialog stores empty field as ''
