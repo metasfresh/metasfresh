@@ -10,15 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.x.40 (2016-43)
+
+## Features
+
+## Fixes
+* #487 Attribute editor dialog stores empty field as ''
+
 # metasfresh 4.40.39 (2016-42)
 
-upcoming
+this week's RC
 
 ## Features
 * #443 Add is to be sent as email to doc outbound log
 * #418 Improve sales and purchase tracking reports
 
 ## Fixes
+* #407 CCache always creates HashMap cache even if LRU was requested
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
 * #483 Gebindeübersicht Report Typo fix
