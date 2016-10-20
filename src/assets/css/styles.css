@@ -68,8 +68,8 @@ body {
 }
 
 /*
- *  Extension for bootstrap grid
- */
+*  Extension for bootstrap grid
+*/
 @media (min-width: 1900px){
     .container {
         max-width: 1824px;
@@ -204,35 +204,35 @@ body {
 }
 
 .panel-prompt {
-  width: 584px;
-  height: 347px;
-  border: solid 0 $brand-border-color;
+    width: 584px;
+    height: 347px;
+    border: solid 0 $brand-border-color;
 }
 
 .panel-prompt-header {
-  box-shadow: none;
-  i {
-    cursor: pointer;
-  }
+    box-shadow: none;
+    i {
+        cursor: pointer;
+    }
 }
 
 .panel-prompt-content {
-  height: calc(100% - 150px);
-  padding: 2rem;
+    height: calc(100% - 150px);
+    padding: 2rem;
 }
 
 .panel-prompt-footer {
-      border-top: 1px solid $brand-border-color;
-      border-bottom: none;
+    border-top: 1px solid $brand-border-color;
+    border-bottom: none;
 }
 
 .panel-prompt-footer .btn-sm {
-  min-width: 74px;
+    min-width: 74px;
 }
 
 .prompt-button-wrapper {
-  width: 100%;
-  text-align: right;
+    width: 100%;
+    text-align: right;
 }
 
 .table {
@@ -638,7 +638,7 @@ body {
 }
 
 .screen-prompt-freeze {
-  background-color: transparent;
+    background-color: transparent;
 }
 
 .rotate {
@@ -652,12 +652,12 @@ body {
 }
 
 @keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .empty-info-text {
@@ -685,17 +685,17 @@ body {
 }
 
 .indicator .success {
-  color: $brand-success-color;
-  opacity: 1;
-  transition: all 1.5s ease;
+    color: $brand-success-color;
+    opacity: 1;
+    transition: all 1.5s ease;
 }
 
 .indicator .saved-animation {
-  opacity: 0;
+    opacity: 0;
 }
 
 .indicator .error {
-  color: $brand-font-color-danger;
+    color: $brand-font-color-danger;
 }
 
 table .input-field {
@@ -736,73 +736,73 @@ table .input-mandatory input {
 }
 
 .rdtPicker {
-  left: -.75rem;
-  margin-top: 7px;
+    left: -.75rem;
+    margin-top: 7px;
 }
 
 .rdtPicker table {
-  margin: 0;
+    margin: 0;
 }
 
 table .input-dropdown-list {
-  /*left: -.75rem;*/
-  /*width: calc(100% + 1.5rem);*/
+    /*left: -.75rem;*/
+    /*width: calc(100% + 1.5rem);*/
 }
 
 
 table .input-dropdown .input-field {
-  background: transparent;
-  color: $brand-font-color;
-  font-style: italic;
+    background: transparent;
+    color: $brand-font-color;
+    font-style: italic;
 }
 
 table .input-dropdown {
-  border: none;
-  /*padding-left: .50rem;
-  padding-right: .50rem;*/
+    border: none;
+    /*padding-left: .50rem;
+    padding-right: .50rem;*/
 }
 
 table .List .input-dropdown-item-title {
-  font-weight: normal;
+    font-weight: normal;
 }
 
 .input-disabled .input-field::-webkit-outer-spin-button, .input-disabled .input-field::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .input-disabled .meta-icon-calendar {
-  display: none;
+    display: none;
 }
 
 table .input-secondary .input-icon-right {
-  color: $brand-icon-color;
+    color: $brand-icon-color;
 }
 
 table .input-icon {
-  color: $brand-icon-color;
+    color: $brand-icon-color;
 }
 
 .table .rdtPicker thead th {
-  background-color: white;
-  color: #6b7b86;
+    background-color: white;
+    color: #6b7b86;
 }
 
 .table.table-bordered-vertically .rdtPicker td {
-  border-right: 0;
+    border-right: 0;
 }
 
 .table-striped tbody .rdtPicker tr:nth-of-type(odd) {
-  background-color: white;
+    background-color: white;
 }
 
 
 table .rdtPicker tbody {
-  background-color: white;
+    background-color: white;
 }
 
 table .rdtPicker td, .rdtPicker th {
-  height: 28px;
+    height: 28px;
 }
 
 table .rdtPicker table td, .rdtPicker table th {
@@ -819,50 +819,50 @@ table .rdtPicker table td, .rdtPicker table th {
     margin-right: .5rem;
 }
 .map-tree-wrapper {
-  padding-top: 55px;
+    padding-top: 55px;
 }
 .map-tree-wrapper .subheader-container {
-  top: 55px;
+    top: 55px;
 }
 
 .nav-tree-children {
-  padding-left: 20px;
+    padding-left: 20px;
 }
 
 .nav-tree-item {
-  padding-top: 10px;
-  display: inline-block;
+    padding-top: 10px;
+    display: inline-block;
 }
 
 .nav-tree-header {
-  font-weight: 500;
-  text-transform: uppercase;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
 .header-super-faded {
-  box-shadow: none;
-  transition: all 0.2s ease;
+    box-shadow: none;
+    transition: all 0.2s ease;
 }
 
 .header-shadow {
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
 }
 
 .overlay-shadow {
-  box-shadow: 0 0px 15px 0 rgba(165, 165, 165, 0.8);
+    box-shadow: 0 5px 15px 0 rgba(165, 165, 165, 0.8);
 }
 
 .breadcrumbs-shadow {
-  box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
 }
 
 .prompt-shadow {
-  box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
+    box-shadow: 0 0 30px 0 rgba(165, 165, 165, 0.8);
 }
 
 .table td {
-  width: 75px;
-  overflow: hidden;
+    width: 75px;
+    overflow: hidden;
 }
 
 .th-lg {
@@ -877,8 +877,8 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .table .td-lg {
-  width: 225px;
-  max-width: 225px;
+    width: 225px;
+    max-width: 225px;
 }
 
 .td-lg .input-dropdown-list {
@@ -886,16 +886,16 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .table .td-md {
-  width: 144px;
-  max-width: 144px;
+    width: 144px;
+    max-width: 144px;
 }
 .td-lg .input-dropdown-list {
     width: 144px;
 }
 
 .Lookup .input-icon {
-  height: 16px;
-  bottom: 0;
+    height: 16px;
+    bottom: 0;
 }
 
 .pagination {
@@ -1278,8 +1278,8 @@ body {
 
 .sort-menu:hover {
     .th-caption {
-       color: $brand-font-color;
-       text-decoration: underline;
+        color: $brand-font-color;
+        text-decoration: underline;
     }
     .sort-ico {
         color: $brand-font-color;

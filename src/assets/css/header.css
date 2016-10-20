@@ -53,9 +53,6 @@
 }
 
 @media (max-width: $breakpoint){
-    .header {
-        border-bottom: 3px solid $brand-border-color;
-    }
     .header-breadcrumb{
         top: 54px;
         left: 0px;
@@ -63,6 +60,7 @@
         background-color: #fff;
         width: 100%;
         border-bottom: 1px solid $brand-border-color;
+        border-top: 1px solid $brand-border-color;
         padding:4px 0;
     }
     .header-sticky-distance {
@@ -157,6 +155,16 @@
 .subheader-column {
     width: 25%;
     border-right: 1px solid #e1e7ec;
+}
+@media (max-width: $breakpoint) {
+    .subheader-container {
+        top: 55px;
+        z-index: 201;
+    }
+    .subheader-column {
+        width: 100%;
+        border-bottom: 1px solid $brand-border-color;
+    }
 }
 
 .subheader-item {
