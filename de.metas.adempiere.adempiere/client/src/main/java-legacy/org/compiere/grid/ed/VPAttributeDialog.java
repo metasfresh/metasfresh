@@ -1137,7 +1137,7 @@ public class VPAttributeDialog extends CDialog
 			{
 				final VString editorString = (VString)editor;
 				final String value = editorString.getText();
-				if (attribute.isMandatory() && Check.isEmpty(value, false))
+				if (attribute.isMandatory() && Check.isEmpty(value, true))
 				{
 					mandatory.add(attribute.getName());
 				}
