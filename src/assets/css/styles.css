@@ -815,7 +815,7 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 
-.document-list-header > *:not(last-child) {
+.document-list-header > *:not(:last-child) {
     margin-right: .5rem;
 }
 .map-tree-wrapper {
@@ -1073,6 +1073,7 @@ th {
 .notification {
     width: 20px;
     height: 20px;
+    margin-right: 10px;
     font-size: 18px;
     color: $brand-link-color;
     display: inline-block;

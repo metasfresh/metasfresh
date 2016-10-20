@@ -27,6 +27,10 @@
 }
 
 @media (max-width: $breakpoint){
+    .header .container-fluid {
+        padding-left:0;
+        padding-right:0;
+    }
     .header-logo {
         height: 20px;
     }

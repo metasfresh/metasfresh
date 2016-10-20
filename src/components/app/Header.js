@@ -11,7 +11,6 @@ import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../MasterWidget';
 import SideList from '../app/SideList';
 import Indicator from './Indicator';
-import MenuOverlay from './MenuOverlay';
 
 
 import {
