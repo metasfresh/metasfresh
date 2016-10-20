@@ -36,8 +36,8 @@ body {
 }
 
 .container-fluid {
-    padding-left: 70px;
-    padding-right: 70px;
+    padding-left: 3rem;
+    padding-right: 3rem;
     height: 100%;
 }
 
