@@ -69,6 +69,8 @@ class MenuOverlay extends Component {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))
+
+            this.handlePath(nodeId);
         })
     }
 
@@ -109,7 +111,7 @@ class MenuOverlay extends Component {
 
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
-
+        console.log(nodeId)
         dispatch(pathRequest(nodeId)).then(response => {
 
             let pathArray = [];
@@ -154,7 +156,6 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
     	const {path} = this.state;
-
         return (
              <div className="menu-overlay-container-column-wrapper">
                 {node.nodeId != 0 &&
