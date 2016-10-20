@@ -28,3 +28,5 @@ $brand-pulse-effect: #faf66d;
 $brand-icon-color: #7180b6;
 
 $checkbox-unchecked: rgba(107, 123, 134, 0.2);
+
+$breakpoint: 543px;

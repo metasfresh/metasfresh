@@ -64,7 +64,7 @@ class Window extends Component {
         return columns.map((elem, id)=> {
             const elementGroups = elem.elementGroups;
             return (
-                <div className={"col-xs-" + colWidth} key={'col' + id}>
+                <div className={"col-sm-" + colWidth} key={'col' + id}>
                     {elementGroups && this.renderElementGroups(elementGroups)}
                 </div>
             )

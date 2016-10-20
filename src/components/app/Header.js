@@ -7,6 +7,7 @@ import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
+import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../MasterWidget';
 import SideList from '../app/SideList';
 import Indicator from './Indicator';
@@ -28,11 +29,6 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false
         }
-    }
-
-    linkToPage = (page) => {
-        const {dispatch} = this.props;
-        dispatch(push("/window/"+page));
     }
 
     handleSubheaderOpen = () => {
@@ -104,62 +100,8 @@ class Header extends Component {
         }
     }
 
-    renderBreadcrumb = () => {
-        const {breadcrumb, windowType, docNo, docNoData, docSummaryData, dataId, siteName} = this.props;
-        const {menuOverlay} = this.state;
-
-        return (
-            <span className="header-breadcrumb">
-                {breadcrumb && breadcrumb.map((item, index) =>
-                    <span key={index}>
-                        {!!index && <span className="divider">/</span>}
-                        <span title={(index === 0 ? "" : item.children.captionBreadcrumb)}
-                            className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
-                            onClick={ !item.children.elementId ?  e => this.handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
-                        >
-                            {(index === 0) ? <i className="meta-icon-menu" /> : item && item.children && item.children.captionBreadcrumb}
-                        </span>
-                        {menuOverlay === item.nodeId &&
-                            <MenuOverlay
-                                nodeId={item.nodeId}
-                                node={item}
-                                onClickOutside={e => this.handleMenuOverlay(e, "")}
-                                disableOnClickOutside={menuOverlay !== item.nodeId}
-                                siteName={siteName}
-                                index={index}
-                            />
-                        }
-                    </span>
-                )}
-                {docNo && <span className="divider">/</span>}
-
-                {docNo && <span className="header-input-id header-input-sm">
-                    <MasterWidget
-                        windowType={windowType}
-                        dataId={dataId}
-                        widgetData={[docNoData]}
-                        noLabel={true}
-                        icon={true}
-                        {...docNo}
-                    />
-                </span>}
-
-                {docSummaryData && <div className="header-breadcrumb">
-                    <span>{docSummaryData.value}</span>
-                </div>}
-
-                {siteName && <span className="divider">/</span>}
-
-                {siteName && <div className="header-breadcrumb">
-                    <span>{siteName}</span>
-                </div>}
-
-            </span>
-        )
-    }
-
     render() {
-        const {docSummaryData, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references,actions} = this.props;
+        const {docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references, actions} = this.props;
         const {isSubheaderShow, isSideListShow, indicator, menuOverlay} = this.state;
 
         return (
@@ -177,21 +119,34 @@ class Header extends Component {
                                     <i className="meta-icon-more" />
                                 </div>
 
-                                {this.renderBreadcrumb()}
+                                <Breadcrumb
+                                    breadcrumb={breadcrumb}
+                                    windowType={windowType}
+                                    docNo={docNo}
+                                    docNoData={docNoData}
+                                    docSummaryData={docSummaryData}
+                                    dataId={dataId}
+                                    siteName={siteName}
+                                    menuOverlay={menuOverlay}
+                                    handleMenuOverlay={this.handleMenuOverlay}
+                                />
+
                             </div>
                             <div className="header-center">
                                 <img src={logo} className="header-logo pointer" onClick={() => this.handleDashboardLink()} />
                             </div>
                             <div className="header-right-side">
                                 {docStatus &&
-                                    <MasterWidget
-                                        windowType={windowType}
-                                        dataId={dataId}
-                                        widgetData={[docStatusData]}
-                                        noLabel={true}
-                                        type="primary"
-                                        {...docStatus}
-                                    />
+                                    <div className="hidden-sm-down">
+                                        <MasterWidget
+                                            windowType={windowType}
+                                            dataId={dataId}
+                                            widgetData={[docStatusData]}
+                                            noLabel={true}
+                                            type="primary"
+                                            {...docStatus}
+                                        />
+                                    </div>
                                 }
 
                                 <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>

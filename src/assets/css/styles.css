@@ -41,6 +41,13 @@ body {
     height: 100%;
 }
 
+@media (max-width: 768px){
+    .container-fluid {
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+}
+
 .window-wrapper {
     height: 100%;
     display: flex;
@@ -101,6 +108,8 @@ body {
     color: $brand-color-primary;
 }
 
+
+
 .panel {
     display: block;
     width: 100%;
@@ -141,6 +150,16 @@ body {
 .panel-primary {
     border-color: $brand-border-color;
     background-color: #FFF;
+}
+
+@media (max-width: $breakpoint){
+    .panel-distance {
+        margin-top: .5rem;
+        margin-bottom: .5rem;
+    }
+    .panel-spaced {
+        padding: .5rem;
+    }
 }
 
 .panel-modal-header{
