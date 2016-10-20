@@ -1434,3 +1434,8 @@ td.pulse-off input {
 .btn i {
     padding-right: 4px;
 }
+
+.filter-btn-wrapper {
+    text-align: right;
+    padding-top: 10px;
+}

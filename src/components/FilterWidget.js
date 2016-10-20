@@ -2,6 +2,12 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import {
+    updateFiltersParameters,
+    initFiltersParameters,
+    deleteFiltersParameters
+} from '../actions/AppActions';
+
+import {
     patch,
     updateProperty,
     findRowByPropName
@@ -26,12 +32,18 @@ class FilterWidget extends Component {
             cachedValue: null,
             updated: false
         }
+
     }
 
 
-    handlePatch = (property, value, id) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId} = this.props;
-        console.log('handle patch');
+    handlePatch = (property, value, paramId) => {
+        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
+        console.log('filters-----------');
+        console.log(filters);
+
+
+        // dispatch(updateFiltersParameters(filterId, property, value));
+
 
         let filter =
           [{
@@ -47,12 +59,15 @@ class FilterWidget extends Component {
 
         // this.setSelectedItem(value);
 
-        setSelectedItem(value);
+        // setSelectedItem(value);
 
 
-        dispatch(setFilter(filter));
-        updateDocList('grid', windowType);
+        // dispatch(setFilter(filter));
+        // updateDocList('grid', windowType);
         // closeFilterMenu();
+
+
+        dispatch(updateFiltersParameters(filterId, property, value));
 
 
         
@@ -124,11 +139,20 @@ class FilterWidget extends Component {
                 }
             );
         }
+
+
+
+        console.log('Filter widget props filters');
+        console.log(this.props.filters);
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, filters} = this.props;
         const {updated} = this.state;
+
+        console.log('selectedItem');
+        // console.log(filters.parameters[id].value);
+        // console.log(filters.parameters[id].value);
         if(widgetData){
             return (
                 <div className="form-group row">
@@ -147,7 +171,7 @@ class FilterWidget extends Component {
                                     filterId={filterId}
                                     parameterName={widgetData.parameterName}
                                     setSelectedItem={setSelectedItem}
-                                    selectedItem={selectedItem}
+                                    selectedItem={filters.parameters.length? ( Object.keys(filters.parameters[id].value).length !== 0 ? filters.parameters[id].value : '' ) : ''}
                                     handleFocus={this.handleFocus}
                                     id={id}
                                 />
@@ -163,9 +187,23 @@ class FilterWidget extends Component {
 }
 
 FilterWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    filters: PropTypes.object.isRequired
 };
 
-FilterWidget = connect()(FilterWidget)
+function mapStateToProps(state) {
+    const {appHandler} = state;
+    const {
+        filters
+    } = appHandler || {
+        filters: []
+    }
+
+    return {
+        filters
+    }
+}
+
+FilterWidget = connect(mapStateToProps)(FilterWidget)
 
 export default FilterWidget
