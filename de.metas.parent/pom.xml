@@ -967,6 +967,27 @@
 									</ignoreClasses>
 								</dependency>
 
+								<!-- this is a dependency of spring-boot-starter-test 1.4.1
+								the error message we are avoiding this was goes like this:
+								=================
+								Duplicate classes found:
+								
+								  Found in:
+								    org.ow2.asm:asm:jar:5.0.3:test
+								    net.minidev:accessors-smart:jar:1.1:test
+								  Duplicate classes:
+								    org/objectweb/asm/Type.class
+								[...]
+								=================
+								-->
+								<dependency>
+									<groupId>net.minidev</groupId>
+									<artifactId>accessors-smart</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.objectweb.asm.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
 							</dependencies>
 
 							<findAllDuplicates>true</findAllDuplicates>

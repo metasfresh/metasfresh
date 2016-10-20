@@ -292,6 +292,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
 						return AppsAction.builder()
 								.setAction(buttonText)
+								.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.
 								.setToolTipText(buttonText)
 								.build();
 					}
