@@ -19,6 +19,7 @@ upcoming
 * #418 Improve sales and purchase tracking reports
 
 ## Fixes
+* #407 CCache always creates HashMap cache even if LRU was requested
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
 * #483 Gebindeübersicht Report Typo fix
