@@ -89,7 +89,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		}
 
 		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
-		rangeParameter = param.getOperator().isRangeOperator();
+		rangeParameter = param.isRange();
 
 		defaultValue = Values.valueToJsonObject(param.getDefaultValue());
 		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());

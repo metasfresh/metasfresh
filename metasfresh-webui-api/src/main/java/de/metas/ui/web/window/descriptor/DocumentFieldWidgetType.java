@@ -113,4 +113,9 @@ public enum DocumentFieldWidgetType
 	{
 		return TYPES_WithRageFilteringSupport.contains(this);
 	}
+	
+	public final boolean isDateOrTime()
+	{
+		return TYPES_Date.contains(this);
+	}
 }

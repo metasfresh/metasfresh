@@ -7,6 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -185,16 +190,46 @@ public final class DocumentFilterDescriptor
 			return this;
 		}
 
+		public Builder setDisplayName(final String displayName)
+		{
+			displayNameTrls = ImmutableTranslatableString.constant(displayName);
+			return this;
+		}
+
 		public Builder setFrequentUsed(final boolean frequentUsed)
 		{
 			this.frequentUsed = frequentUsed;
 			return this;
+		}
+		
+		public boolean hasParameters()
+		{
+			return !parameters.isEmpty();
 		}
 
 		public Builder addParameter(final DocumentFilterParamDescriptor.Builder parameter)
 		{
 			parameters.add(parameter);
 			return this;
+		}
+
+		private Builder addParameters(final Collection<DocumentFilterParamDescriptor.Builder> parameters)
+		{
+			this.parameters.addAll(parameters);
+			return this;
+		}
+
+		public Collector<DocumentFilterParamDescriptor.Builder, ?, Builder> collectParameters()
+		{
+			final Supplier<List<DocumentFilterParamDescriptor.Builder>> supplier = ArrayList::new;
+			final BiConsumer<List<DocumentFilterParamDescriptor.Builder>, DocumentFilterParamDescriptor.Builder> accumulator = (list, filter) -> list.add(filter);
+			final BinaryOperator<List<DocumentFilterParamDescriptor.Builder>> combiner = (list1, list2) -> {
+				list1.addAll(list2);
+				return list1;
+			};
+			final Function<List<DocumentFilterParamDescriptor.Builder>, Builder> finisher = (params) -> addParameters(params);
+
+			return Collector.of(supplier, accumulator, combiner, finisher);
 		}
 
 		public Builder addInternalParameter(final DocumentFilterParam parameter)

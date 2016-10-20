@@ -124,6 +124,11 @@ public class DocumentFilterParamDescriptor
 	{
 		return operator;
 	}
+	
+	public boolean isRange()
+	{
+		return operator != null && operator.isRangeOperator();
+	}
 
 	public Object getDefaultValue()
 	{
@@ -190,6 +195,11 @@ public class DocumentFilterParamDescriptor
 			this.widgetType = widgetType;
 			return this;
 		}
+		
+		public DocumentFieldWidgetType getWidgetType()
+		{
+			return this.widgetType;
+		}
 
 		public Builder setDisplayName(final ITranslatableString displayName)
 		{
@@ -201,6 +211,11 @@ public class DocumentFilterParamDescriptor
 		{
 			this.displayName = ImmutableTranslatableString.constant(displayName);
 			return this;
+		}
+		
+		public ITranslatableString getDisplayName()
+		{
+			return displayName;
 		}
 
 		public Builder setOperator(Operator operator)

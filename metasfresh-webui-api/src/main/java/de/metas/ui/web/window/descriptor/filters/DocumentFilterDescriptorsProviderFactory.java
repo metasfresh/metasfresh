@@ -1,7 +1,10 @@
 package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery.Operator;
 
 import de.metas.i18n.ITranslatableString;
@@ -43,6 +46,9 @@ public final class DocumentFilterDescriptorsProviderFactory
 {
 	public static final transient DocumentFilterDescriptorsProviderFactory instance = new DocumentFilterDescriptorsProviderFactory();
 
+	// services
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	private DocumentFilterDescriptorsProviderFactory()
 	{
 		super();
@@ -52,11 +58,39 @@ public final class DocumentFilterDescriptorsProviderFactory
 	{
 		//
 		// Standard field filters: filters created from document fields which are flagged with AllowFiltering
-		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters = fields
-				.stream()
-				.filter(field -> field.hasCharacteristic(Characteristic.AllowFiltering))
-				.map(field -> createFilter(field))
-				.collect(ImmutableDocumentFilterDescriptorsProvider.collector());
+		final ImmutableDocumentFilterDescriptorsProvider standardFieldFilters;
+		{
+			final DocumentFilterDescriptor.Builder defaultFilter = DocumentFilterDescriptor.builder()
+					.setFilterId("default")
+					.setDisplayName(msgBL.getTranslatableMsgText("default"))
+					.setFrequentUsed(false);
+			final DocumentFilterDescriptor.Builder defaultDateFilter = DocumentFilterDescriptor.builder()
+					.setFilterId("default-date")
+					.setFrequentUsed(true);
+			for (final DocumentFieldDescriptor field : fields)
+			{
+				if (!field.hasCharacteristic(Characteristic.AllowFiltering))
+				{
+					continue;
+				}
+
+				final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
+				if (!defaultDateFilter.hasParameters() && filterParam.getWidgetType().isDateOrTime())
+				{
+					defaultDateFilter.setDisplayName(filterParam.getDisplayName());
+					defaultDateFilter.addParameter(filterParam);
+				}
+				else
+				{
+					defaultFilter.addParameter(filterParam);
+				}
+			}
+
+			standardFieldFilters = Stream.of(defaultDateFilter, defaultFilter)
+					.filter(filterBuilder -> filterBuilder.hasParameters())
+					.map(filterBuilder -> filterBuilder.build())
+					.collect(ImmutableDocumentFilterDescriptorsProvider.collector());
+		}
 
 		//
 		// User query filters: filters created from user queries
@@ -66,25 +100,30 @@ public final class DocumentFilterDescriptorsProviderFactory
 		return CompositeDocumentFilterDescriptorsProvider.of(userQueryFilters, standardFieldFilters);
 	}
 
-	private final DocumentFilterDescriptor createFilter(final DocumentFieldDescriptor field)
+	private final DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
 		
 		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
+		
+		final Operator operator;
+		if (widgetType.isRangeFilteringSupported())
+		{
+			operator = Operator.BETWEEN;
+		}
+		else
+		{
+			operator = Operator.EQUAL;
+		}
 
-		return DocumentFilterDescriptor.builder()
-				.setFilterId(fieldName)
+		return DocumentFilterParamDescriptor.builder()
 				.setDisplayName(displayName)
-				.setFrequentUsed(false)
-				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setDisplayName(displayName)
-						.setFieldName(fieldName)
-						.setWidgetType(widgetType)
-						.setOperator(Operator.EQUAL)
-						.setLookupDescriptor(lookupDescriptor))
-				.build();
+				.setFieldName(fieldName)
+				.setWidgetType(widgetType)
+				.setOperator(operator)
+				.setLookupDescriptor(lookupDescriptor);
 	}
 
 }

@@ -50,6 +50,15 @@ final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilter
 		return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
 	}
 
+	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor descriptor)
+	{
+		if (descriptor == null)
+		{
+			return NULL;
+		}
+		return new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of(descriptor));
+	}
+
 	public static final Collector<DocumentFilterDescriptor, ?, ImmutableDocumentFilterDescriptorsProvider> collector()
 	{
 		final Supplier<List<DocumentFilterDescriptor>> supplier = ArrayList::new;
