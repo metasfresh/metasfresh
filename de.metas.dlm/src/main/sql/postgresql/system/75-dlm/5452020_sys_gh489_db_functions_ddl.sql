@@ -30,12 +30,14 @@ BEGIN
 	*/
 	
 	/* 
-	   non-partial index; it's large and grows with the table, but so does everything else, and the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
+	   non-partial index; it's large and grows with the table, but so does everything else, and at most times the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
 	   And this way we have the flexibility to go with current_setting('metasfresh.DLM_Level').
 	*/
-	EXECUTE 'CREATE INDEX ' || p_table_name || '_DLM_Level ON ' || p_table_name || '_tbl (COALESCE(DLM_Level,0::smallint))';   
+	EXECUTE 'CREATE INDEX ' || p_table_name || '_DLM_Level ON ' || p_table_name || '_tbl (DLM_Level)';   
+	RAISE NOTICE 'Created index %_DLM_Level', p_table_name;
 	
-	EXECUTE 'CREATE VIEW dlm.' || p_table_name || ' AS SELECT * FROM ' || p_table_name || '_tbl WHERE COALESCE(DLM_Level,0::smallint) <= current_setting(''metasfresh.DLM_Level'')::smallint;';
+	EXECUTE 'CREATE VIEW dlm.' || p_table_name || ' AS SELECT * FROM ' || p_table_name || '_tbl WHERE COALESCE(DLM_Level, current_setting(''metasfresh.DLM_Coalesce_Level'')::smallint) <= current_setting(''metasfresh.DLM_Level'')::smallint;';
+	EXECUTE 'COMMENT ON VIEW dlm.' || p_table_name || ' IS ''This view selects records according to the metasfresh.DLM_Coalesce_Level and metasfresh.DLM_Level DBMS parameters. See task gh #489'';';
 	RAISE NOTICE 'Created view dlm.%', p_table_name;
 
 	FOR v_trigger_view_row IN 
