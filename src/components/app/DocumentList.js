@@ -48,14 +48,12 @@ class DocumentList extends Component {
     }
 
     updateData = (type, windowType) => {
-        const {dispatch} = this.props;
+        const {dispatch,filters} = this.props;
 
         windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
-            const {filters} = this.props;
             this.setState(Object.assign({}, this.state, {
                 layout: response.data
             }), () => {
-
                 dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
                     this.setState(Object.assign({}, this.state, {
                         data: response.data

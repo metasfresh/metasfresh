@@ -121,12 +121,12 @@ class Window extends Component {
         const {sections, type, tabs} = this.props.layout;
         const {data, isModal} = this.props;
         return (
-            <div>
-                <div key="window">
+            <div key="window" className="window-wrapper">
+                <div className="sections-wrapper">
                     {sections && this.renderSections(sections)}
-                    <div className="m-t-1 m-b-2">
-                        {tabs && this.renderTabs(tabs)}
-                    </div>
+                </div>
+                <div className="m-t-1 tabs-wrapper">
+                    {tabs && this.renderTabs(tabs)}
                 </div>
             </div>
         );

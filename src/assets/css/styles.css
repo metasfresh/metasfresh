@@ -41,6 +41,25 @@ body {
     height: 100%;
 }
 
+.window-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.sections-wrapper {
+    flex-grow:0;
+}
+
+.tabs-wrapper,
+.tabs-wrapper > div {
+    flex-grow:1;
+    display: flex;
+    flex-direction: column;
+}
+
 /*
  *  Extension for bootstrap grid
  */
@@ -565,6 +584,7 @@ body {
 }
 
 .tab-content {
+    flex-grow: 1;
     border: 1px solid $brand-border-color;
     border-top: 0;
     background-color: #fff;
