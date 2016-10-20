@@ -10,11 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-43)
+# metasfresh 4.x.40 (2016-43)
 
 ## Features
 
 ## Fixes
+* #487 Attribute editor dialog stores empty field as ''
 
 # metasfresh 4.40.39 (2016-42)
 
