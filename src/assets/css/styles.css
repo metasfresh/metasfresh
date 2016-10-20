@@ -368,6 +368,12 @@ body {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+@media (max-width: $breakpoint){
+    .order-list-panel{
+        width: 100%;
+        height: calc(100% - 80px);
+    }
+}
 .order-list-panel-open {
     display: block;
 }

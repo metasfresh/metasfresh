@@ -160,6 +160,8 @@
     .subheader-container {
         top: 55px;
         z-index: 201;
+        max-height: calc(100vh - 55px);
+        overflow: scroll;
     }
     .subheader-column {
         width: 100%;
