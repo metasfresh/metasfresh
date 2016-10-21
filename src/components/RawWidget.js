@@ -35,6 +35,7 @@ class RawWidget extends Component {
         let selectedField = "";
         let widgetData = "";
         let widgetFields = "";
+        let fieldsArray = "";
 
 
         if (filterWidget) {
@@ -42,11 +43,13 @@ class RawWidget extends Component {
             selectedField = selectedItem;
             widgetData = data;
             widgetFields = fields;
+            fieldsArray = [fields];
         } else {
             widgetField = fields[0].field;
             selectedField = data[0].value;
             widgetData = data[0];
             widgetFields = fields[0];
+            fieldsArray = fields;
         } 
 
 
@@ -116,7 +119,7 @@ class RawWidget extends Component {
                     <Lookup
                         recent={[]}
                         dataId={dataId}
-                        properties={[fields]}
+                        properties={fieldsArray}
                         windowType={windowType}
                         defaultValue={data}
                         placeholder={widgetFields.emptyText}

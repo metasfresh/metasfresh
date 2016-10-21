@@ -1417,6 +1417,7 @@ td.pulse-off input {
 
 .filter-wrapper {
     position: relative;
+    display: inline-block;
 }
 
 .filter-menu {

@@ -18,6 +18,7 @@ import {
 class Lookup extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             query: "",
             list: [],
