@@ -173,21 +173,18 @@ class DocumentList extends Component {
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         {type === "grid" &&
                             <button
-                                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                                className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
                                 onClick={() => dispatch(push('/window/' + windowType + '/new'))}
                             >
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>
                         }
                         {type === "grid" &&
-                            <span>Filters: </span>
+                            <span className="hidden-sm-down">Filters: </span>
                         }
                         <DatetimeRange />
                         <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
                     </div>
-
-
-
 
                     <div>
                         <Table

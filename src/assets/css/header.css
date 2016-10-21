@@ -19,11 +19,21 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
 }
 
 .header-logo {
     height: 31px;
+}
+
+@media (max-width: $breakpoint){
+    .header .container-fluid {
+        padding-left:0;
+        padding-right:0;
+    }
+    .header-logo {
+        height: 20px;
+    }
 }
 
 .header-middle {
@@ -40,6 +50,22 @@
     flex-wrap: nowrap;
     flex-direction: row;
     overflow: hidden;
+}
+
+@media (max-width: $breakpoint){
+    .header-breadcrumb{
+        top: 54px;
+        left: 0px;
+        position: absolute;
+        background-color: #fff;
+        width: 100%;
+        border-bottom: 1px solid $brand-border-color;
+        border-top: 1px solid $brand-border-color;
+        padding:4px 0;
+    }
+    .header-sticky-distance {
+        margin-top: 83px;
+    }
 }
 
 .header-breadcrumb a {
@@ -130,6 +156,18 @@
     width: 25%;
     border-right: 1px solid #e1e7ec;
 }
+@media (max-width: $breakpoint) {
+    .subheader-container {
+        top: 55px;
+        z-index: 201;
+        max-height: calc(100vh - 55px);
+        overflow: scroll;
+    }
+    .subheader-column {
+        width: 100%;
+        border-bottom: 1px solid $brand-border-color;
+    }
+}
 
 .subheader-item {
     color: inherit;
@@ -213,7 +251,7 @@
 
 
 .menu-overlay {
-    position: absolute;
+    position: fixed;
     z-index:100;
     margin-top: -1.57rem;
     pointer-events: none;
@@ -225,6 +263,8 @@
     z-index:1;
     margin-top:-1px;
     pointer-events: all;
+    overflow: auto;
+    max-height: calc(100vh - 80px);
 }
 
 .menu-overlay-root-body {

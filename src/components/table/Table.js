@@ -232,9 +232,9 @@ class Table extends Component {
                 if(selected.length > 1) {
 
                 } else {
-                   onDoubleClick(selected[selected.length-1]); 
+                   onDoubleClick(selected[selected.length-1]);
                 }
-                
+
                 break;
         }
     }
