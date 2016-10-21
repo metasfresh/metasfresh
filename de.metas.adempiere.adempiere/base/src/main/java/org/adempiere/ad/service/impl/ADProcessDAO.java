@@ -22,7 +22,6 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,28 +145,27 @@ public class ADProcessDAO implements IADProcessDAO
 			return Collections.emptyList();
 		}
 
-		return new ArrayList<Integer>(processIds);
+		return new ArrayList<>(processIds);
 	}
 
 	// @Cached
 	@Override
 	public final List<I_AD_Process> retrieveProcessesForTable(final Properties ctx, final int adTableId)
 	{
-		final IQueryBuilder<I_AD_Process> queryBuilder = retrieveProcessesForTableQueryBuilder(ctx, adTableId);
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
+		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.list(I_AD_Process.class);
 	}
-	
+
 	@Override
-	public final List<Integer> retrieveProcessesIdsForTable(final Properties ctx, final int adTableId)
+	public final List<Integer> retrieveProcessesIdsForTable(@CacheCtx final Properties ctx, final int adTableId)
 	{
-		final IQueryBuilder<I_AD_Process> queryBuilder = retrieveProcessesForTableQueryBuilder(ctx, adTableId);
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
+		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.listIds();
 	}
-
 
 	@Override
 	public final List<I_AD_Process> retrieveReportProcessesForTable(final Properties ctx, final String tableName)
@@ -242,7 +240,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
-	
+
 	@Override
 	public List<I_AD_Process_Para> retrieveProcessParameters(final I_AD_Process process)
 	{
@@ -251,7 +249,7 @@ public class ADProcessDAO implements IADProcessDAO
 		final int adProcessId = process.getAD_Process_ID();
 		return retrieveProcessParameters(ctx, adProcessId, trxName);
 	}
-	
+
 	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
 	public List<I_AD_Process_Para> retrieveProcessParameters(@CacheCtx final Properties ctx, final int adProcessId, @CacheTrx final String trxName)
 	{
