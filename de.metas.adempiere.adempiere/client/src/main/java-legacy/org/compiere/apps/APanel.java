@@ -2924,7 +2924,7 @@ public class APanel extends CPanel
 			}
 
 			isProcessMandatory = true;
-			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, vButton, record_ID);
+			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, record_ID);
 			// Something to select from?
 			if (vda.getNumberOfOptions() == 0)
 			{
