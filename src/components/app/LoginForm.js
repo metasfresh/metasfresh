@@ -45,28 +45,31 @@ class LoginForm extends Component {
     render() {
         const {roleSelect, roles} = this.state;
         return (
-            <div className="login-form panel panel-spaced panel-bordered panel-primary text-xs-center">
-            <img src={logo} className="header-logo" />
-
-            {roleSelect ? <div>
-                    Select role
-                    <div>
-                        <select ref={c => this.role = c}>
-                            {roles.map((item, index) => <option key={index} value={index}>{item.caption}</option>)}
-                        </select>
-                    </div>
-                </div>:
-                <div>
-                    <div>
-                        <input type="text" className="input-primary" ref={c => this.login = c} />
-                    </div>
-                    <div>
-                        <input type="password" className="input-primary" ref={c => this.passwd = c} />
-                    </div>
+            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+                <div className="text-xs-center">
+                    <img src={logo} className="header-logo m-t-2 m-b-2" />
                 </div>
-            }
-                <div>
-                    <button className="btn btn-sm btn-meta-primary" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
+                {roleSelect ? <div>
+                        Select role
+                        <div>
+                            <select ref={c => this.role = c}>
+                                {roles.map((item, index) => <option key={index} value={index}>{item.caption}</option>)}
+                            </select>
+                        </div>
+                    </div>:
+                    <div>
+                        <div>
+                            <div className={"form-control-label"}><small>E-mail</small></div>
+                            <input type="text" className="input-primary input-block" ref={c => this.login = c} />
+                        </div>
+                        <div>
+                            <div className={"form-control-label"}><small>Password</small></div>
+                            <input type="password" className="input-primary input-block" ref={c => this.passwd = c} />
+                        </div>
+                    </div>
+                }
+                <div className="m-t-2">
+                    <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
                 </div>
             </div>
         )

@@ -148,9 +148,15 @@ body {
 .panel-spaced-sm {
     padding: .75rem .5rem;
 }
+.panel-spaced-lg {
+    padding: 2rem 2rem;
+}
 .panel-bordered {
     border: 1px solid;
     border-radius: 3px;
+}
+.panel-shadowed {
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
 }
 .panel-bordered-force {
     overflow:auto;
@@ -1495,9 +1501,7 @@ td.pulse-off input {
      min-width:300px;
  }
 
- .login-form div {
-     margin: 10px;
- }
+
 .filter-btn-wrapper {
     text-align: right;
     padding-top: 10px;
