@@ -333,7 +333,7 @@ class Lookup extends Component {
         const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected} = this.props;
         const {propertiesCopy,isInputEmpty} = this.state;
 
-        console.log(selected);
+        // console.log(selected);
 
         return (
             <div

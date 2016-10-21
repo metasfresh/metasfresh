@@ -71,8 +71,8 @@ class List extends Component {
     }
     render() {
         const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
-        console.log('selected');
-        console.log(selected)
+        // console.log('selected');
+        // console.log(selected)
 
         return (
             <div

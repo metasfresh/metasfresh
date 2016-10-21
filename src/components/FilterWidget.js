@@ -38,8 +38,8 @@ class FilterWidget extends Component {
 
     handlePatch = (property, value, paramId) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
-        console.log('filters-----------');
-        console.log(filters);
+        // console.log('filters-----------');
+        // console.log(filters);
 
 
         // dispatch(updateFiltersParameters(filterId, property, value));
@@ -142,23 +142,23 @@ class FilterWidget extends Component {
 
 
 
-        console.log('Filter widget props filters');
-        console.log(this.props.filters);
+        // console.log('Filter widget props filters');
+        // console.log(this.props.filters);
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, filters} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, item, filters} = this.props;
         const {updated} = this.state;
 
-        console.log('selectedItem');
+        // console.log('selectedItem');
         // console.log(filters.parameters[id].value);
-        // console.log(filters.parameters[id].value);
+        // console.log(filters);
         if(widgetData){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row"}>
-                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{caption}</div>
+                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
                             <div className="col-sm-9 ">
                                 <RawWidget
                                     handlePatch={this.handlePatch} 
@@ -171,7 +171,7 @@ class FilterWidget extends Component {
                                     filterId={filterId}
                                     parameterName={widgetData.parameterName}
                                     setSelectedItem={setSelectedItem}
-                                    selectedItem={filters.parameters.length? ( Object.keys(filters.parameters[id].value).length !== 0 ? filters.parameters[id].value : '' ) : ''}
+                                    selectedItem={filters.parameters.length? ( filters.parameters[id].value  ? filters.parameters[id].value : '' ) : ''}
                                     handleFocus={this.handleFocus}
                                     id={id}
                                 />

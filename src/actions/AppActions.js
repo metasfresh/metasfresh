@@ -80,10 +80,10 @@ export function filterAutocompleteRequest(type, filterId, parameterName, query) 
 }
 
 export function updateFiltersParameters(filterId, property, value){
-    console.log('updateFiltersParameters');
-    console.log(filterId);
-    console.log(property);
-    console.log(value);
+    // console.log('updateFiltersParameters');
+    // console.log(filterId);
+    // console.log(property);
+    // console.log(value);
 
     return {
         type: types.UPDATE_FILTERS_PARAMETERS,
@@ -94,7 +94,7 @@ export function updateFiltersParameters(filterId, property, value){
 }
 
 export function deleteFiltersParameters(){
-    console.log('deleteFiltersParameters');
+    // console.log('deleteFiltersParameters');
 
     return {
         type: types.DELETE_FILTERS_PARAMETERS
@@ -102,9 +102,9 @@ export function deleteFiltersParameters(){
 }
 
 export function initFiltersParameters(filterId, parameters){
-    console.log('initFiltersParameters');
-    console.log(filterId);
-    console.log(parameters);
+    // console.log('initFiltersParameters');
+    // console.log(filterId);
+    // console.log(parameters);
     return {
         type: types.INIT_FILTERS_PARAMETERS,
         filterId: filterId,

@@ -66,20 +66,20 @@ class Filters extends Component {
 			filterDataItem: filterData,
 			openList: false
 		}), () => {
-				console.log('filterData');
-				console.log(filterData);
+				// console.log('filterData');
+				// console.log(filterData);
 
 				let parameters = [];
 
 				filterData.parameters.map((item, id) => {
 					parameters = update(parameters, {$push: [{
 						parameterName: item.parameterName,
-						value: {}
+						value: null
 					}]});
 
 				})
 
-				console.log(parameters);
+				// console.log(parameters);
 
 				dispatch(initFiltersParameters(filterData.filterId, parameters));
 
@@ -89,11 +89,11 @@ class Filters extends Component {
 	}
 
 	applyFilters = () => {
-		console.log('apply filters');
+		// console.log('apply filters');
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
 
-		console.log(filters);
+		// console.log(filters);
 
 		// let filter =
   //         [{
@@ -147,6 +147,16 @@ class Filters extends Component {
 	clearFilterData = () => {
 
 		const {windowType, updateDocList, dispatch} = this.props;
+		const {filterDataItem} = this.state;
+
+		let parameters = [];
+
+		filterDataItem.parameters.map((item, id) => {
+			// console.log(item);
+			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
+		})
+
+		
 		
 		dispatch(setFilter([]));
 		updateDocList('grid', windowType);
@@ -155,7 +165,7 @@ class Filters extends Component {
 	}
 
 	componentDidMount() {
-		console.log('mounted');
+		// console.log('mounted');
 		const {filterData, dispatch} = this.props;
 
 		// let filterItem = {
@@ -212,6 +222,7 @@ class Filters extends Component {
 			id={index}
 			windowType={windowType}
 			widgetData={item}
+			item={item}
 			widgetType={item.widgetType}
 			updateDocList={updateDocList}
 			closeFilterMenu={this.closeFilterMenu}
