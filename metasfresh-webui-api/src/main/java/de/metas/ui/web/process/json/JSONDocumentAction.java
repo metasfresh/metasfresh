@@ -1,15 +1,17 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.process.json;
 
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.window.model.DocumentAction;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 /*
  * #%L
@@ -35,10 +37,10 @@ import de.metas.ui.web.window.model.DocumentAction;
 
 public class JSONDocumentAction
 {
-	public static final List<JSONDocumentAction> ofList(final List<DocumentAction> documentActions, final JSONFilteringOptions jsonOpts)
+	static final List<JSONDocumentAction> ofList(final List<ProcessDescriptor> processDescriptors, final JSONFilteringOptions jsonOpts)
 	{
-		return documentActions.stream()
-				.map(action -> new JSONDocumentAction(action, jsonOpts))
+		return processDescriptors.stream()
+				.map(processDescriptor -> new JSONDocumentAction(processDescriptor, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -51,21 +53,24 @@ public class JSONDocumentAction
 
 	private final Map<String, Object> debugProperties;
 
-	private JSONDocumentAction(final DocumentAction action, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONFilteringOptions jsonOpts)
 	{
 		super();
-		actionId = action.getActionId();
-		caption = action.getCaption().translate(jsonOpts.getAD_Language());
-		description = action.getDescription().translate(jsonOpts.getAD_Language());
+		
+		final String adLanguage = jsonOpts.getAD_Language();
+		
+		actionId = processDescriptor.getActionId();
+		caption = processDescriptor.getCaption(adLanguage);
+		description = processDescriptor.getDescription(adLanguage);
 
 		if (jsonOpts.isProtocolDebugging())
 		{
 			final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
-			debugProperties.put("debug-has-preconditions", action.hasPreconditions());
 
-			if (action.getPreconditionsClass() != null)
+			final Class<? extends ISvrProcessPrecondition> preconditionsClass = processDescriptor.getPreconditionsClass();
+			if (preconditionsClass != null)
 			{
-				debugProperties.put("debug-classname", action.getPreconditionsClass().getName());
+				debugProperties.put("debug-classname", preconditionsClass.getName());
 			}
 
 			this.debugProperties = debugProperties.build();

@@ -54,7 +54,7 @@ public class ProcessInstancesRepository
 	//
 	// Services
 	@Autowired
-	private ProcessDescriptorsFactory descriptorFactory;
+	private ProcessDescriptorsFactory processDescriptorFactory;
 
 	private final LoadingCache<Integer, ProcessInstance> processInstances = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<Integer, ProcessInstance>()
@@ -82,7 +82,7 @@ public class ProcessInstancesRepository
 
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
 	{
-		return descriptorFactory.getProcessDescriptor(adProcessId);
+		return processDescriptorFactory.getProcessDescriptor(adProcessId);
 	}
 
 	public void checkin(final ProcessInstance processInstance)

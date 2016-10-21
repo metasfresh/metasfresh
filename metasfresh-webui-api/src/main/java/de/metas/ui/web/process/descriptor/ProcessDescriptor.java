@@ -1,7 +1,10 @@
 package de.metas.ui.web.process.descriptor;
 
+import java.util.Optional;
+
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
@@ -45,6 +48,7 @@ public final class ProcessDescriptor
 	};
 
 	private final int actionId;
+	private final int adProcessId;
 	private final ProcessDescriptorType type;
 	private final Class<? extends ISvrProcessPrecondition> preconditionsClass;
 	private final String processClassname;
@@ -56,30 +60,37 @@ public final class ProcessDescriptor
 	{
 		super();
 
-		actionId = builder.actionId;
-		Check.assume(actionId > 0, "actionId > 0");
+		adProcessId = builder.getAD_Process_ID();
+		actionId = builder.getActionId();
 
-		type = builder.type;
-		Check.assumeNotNull(type, "Parameter type is not null");
+		type = builder.getType();
 
-		preconditionsClass = builder.getPreconditionsClass();
 		processClassname = builder.getProcessClassname();
+		preconditionsClass = builder.getPreconditionsClass();
 
-		parametersDescriptor = builder.parametersDescriptor;
-		Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
+		parametersDescriptor = builder.getParametersDescriptor();
 
-		layout = builder.layout;
-		Check.assumeNotNull(layout, "Parameter layout is not null");
+		layout = builder.getLayout();
 	}
 
 	public int getActionId()
 	{
 		return actionId;
 	}
-	
+
+	private int getAD_Process_ID()
+	{
+		return adProcessId;
+	}
+
 	public String getCaption(final String adLanguage)
 	{
 		return getLayout().getCaption(adLanguage);
+	}
+
+	public String getDescription(final String adLanguage)
+	{
+		return getLayout().getDescription(adLanguage);
 	}
 
 	public ProcessDescriptorType getType()
@@ -102,7 +113,26 @@ public final class ProcessDescriptor
 		return preconditionsClass;
 	}
 
-	public boolean isApplicableOn(final PreconditionsContext context)
+	public boolean isExecutionGranted(final IUserRolePermissions permissions)
+	{
+		// Filter out processes on which we don't have access
+		final int adProcessId = getAD_Process_ID();
+		final Boolean accessRW = permissions.checkProcessAccess(adProcessId);
+		if (accessRW == null)
+		{
+			// no access at all => cannot execute
+			return false;
+		}
+		else if (!accessRW)
+		{
+			// has just readonly access => cannot execute
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean isPreconditionsApplicable(final PreconditionsContext context)
 	{
 		if (!hasPreconditions())
 		{
@@ -120,7 +150,7 @@ public final class ProcessDescriptor
 			return false;
 		}
 	}
-
+	
 	public DocumentEntityDescriptor getParametersDescriptor()
 	{
 		return parametersDescriptor;
@@ -133,9 +163,11 @@ public final class ProcessDescriptor
 
 	public static final class Builder
 	{
-		private int actionId;
 		private ProcessDescriptorType type;
+		private int adProcessId;
+
 		public String processClassname;
+		private Optional<Class<?>> processClass = Optional.empty();
 
 		private DocumentEntityDescriptor parametersDescriptor;
 		private ProcessLayout layout;
@@ -150,10 +182,21 @@ public final class ProcessDescriptor
 			return new ProcessDescriptor(this);
 		}
 
-		public Builder setActionId(final int actionId)
+		private int getActionId()
 		{
-			this.actionId = actionId;
+			return getAD_Process_ID();
+		}
+
+		public Builder setAD_Process_ID(final int adProcessId)
+		{
+			this.adProcessId = adProcessId;
 			return this;
+		}
+
+		private int getAD_Process_ID()
+		{
+			Check.assume(adProcessId > 0, "adProcessId > 0");
+			return adProcessId;
 		}
 
 		public Builder setType(final ProcessDescriptorType type)
@@ -162,38 +205,53 @@ public final class ProcessDescriptor
 			return this;
 		}
 
+		private ProcessDescriptorType getType()
+		{
+			Check.assumeNotNull(type, "Parameter type is not null");
+			return type;
+		}
+
 		public Builder setProcessClassname(final String processClassname)
 		{
 			this.processClassname = processClassname;
+			processClass = loadProcessClass(processClassname);
 			return this;
 		}
-		
+
 		private String getProcessClassname()
 		{
 			return processClassname;
 		}
 
-		private Class<? extends ISvrProcessPrecondition> getPreconditionsClass()
+		private Class<?> getProcessClassOrNull()
 		{
-			final String classname = getProcessClassname();
-			if (classname == null)
+			return processClass.orElse(null);
+		}
+
+		private static Optional<Class<?>> loadProcessClass(final String classname)
+		{
+			if (Check.isEmpty(classname, true))
 			{
-				return null;
+				return Optional.empty();
 			}
 
 			final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			final Class<?> processClass;
 			try
 			{
-				processClass = classLoader.loadClass(classname);
+				final Class<?> processClass = classLoader.loadClass(classname);
+				return Optional.of(processClass);
 			}
 			catch (final ClassNotFoundException e)
 			{
 				logger.error("Cannot load class: " + classname, e);
-				return null;
+				return Optional.empty();
 			}
+		}
 
-			if (!ISvrProcessPrecondition.class.isAssignableFrom(processClass))
+		private Class<? extends ISvrProcessPrecondition> getPreconditionsClass()
+		{
+			final Class<?> processClass = getProcessClassOrNull();
+			if (processClass == null || !ISvrProcessPrecondition.class.isAssignableFrom(processClass))
 			{
 				return null;
 			}
@@ -215,10 +273,22 @@ public final class ProcessDescriptor
 			return this;
 		}
 
+		private DocumentEntityDescriptor getParametersDescriptor()
+		{
+			Check.assumeNotNull(parametersDescriptor, "Parameter parametersDescriptor is not null");
+			return parametersDescriptor;
+		}
+
 		public Builder setLayout(final ProcessLayout layout)
 		{
 			this.layout = layout;
 			return this;
+		}
+
+		private ProcessLayout getLayout()
+		{
+			Check.assumeNotNull(layout, "Parameter layout is not null");
+			return layout;
 		}
 	}
 

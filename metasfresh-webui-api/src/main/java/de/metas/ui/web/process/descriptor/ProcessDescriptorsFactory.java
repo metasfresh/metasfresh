@@ -1,9 +1,7 @@
 package de.metas.ui.web.process.descriptor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -16,20 +14,17 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.logging.LogManager;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -74,53 +69,34 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 public class ProcessDescriptorsFactory
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ProcessDescriptorsFactory.class);
+	// private static final transient Logger logger = LogManager.getLogger(ProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = new DefaultValueExpressionsFactory(false);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final CCache<Integer, ProcessDescriptor> cache = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors", 200, 0);
+	private final CCache<Integer, ProcessDescriptor> cacheByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
 	@Autowired
 	private UserSession userSession;
 
 	public List<ProcessDescriptor> getDocumentRelatedProcesses(final String tableName)
 	{
-		final IUserRolePermissions role = userSession.getUserRolePermissions();
-
-		final Properties ctx = userSession.getCtx();
 		final int adTableId = adTableDAO.retrieveTableId(tableName);
-		final List<I_AD_Process> adProcesses = adProcessDAO.retrieveProcessesForTable(ctx, adTableId);
-
-		final List<ProcessDescriptor> processDescriptors = new ArrayList<>(adProcesses.size());
-		for (final I_AD_Process adProcess : adProcesses)
-		{
-			// Filter out processes on which we don't have access
-			final Boolean accessRW = role.checkProcessAccess(adProcess.getAD_Process_ID());
-			if (accessRW == null)
-			{
-				logger.debug("Removing process {} because user has no access at all to it", adProcess);
-				continue;
-			}
-			else if (!accessRW)
-			{
-				logger.debug("Removing process {} because user has only readonly access to it", adProcess);
-				continue;
-			}
-
-			final ProcessDescriptor processDescriptor = retrieveProcessDescriptor(adProcess);
-			processDescriptors.add(processDescriptor);
-		}
-
-		return ImmutableList.copyOf(processDescriptors);
+		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
+		return adProcessDAO.retrieveProcessesIdsForTable(Env.getCtx(), adTableId)
+				.stream()
+				.map(adProcessId -> getProcessDescriptor(adProcessId))
+				.filter(processDescriptor -> processDescriptor.isExecutionGranted(userRolePermissions))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
 	{
-		// TODO: caching!!!
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
-		return retrieveProcessDescriptor(adProcess);
+		return cacheByProcessId.getOrLoad(adProcessId, () -> {
+			final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
+			return retrieveProcessDescriptor(adProcess);
+		});
 	}
 
 	public ProcessDescriptor retrieveProcessDescriptor(final I_AD_Process adProcess)
@@ -155,7 +131,7 @@ public class ProcessDescriptorsFactory
 		}
 
 		return ProcessDescriptor.builder()
-				.setActionId(adProcessId)
+				.setAD_Process_ID(adProcessId)
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor.build())
