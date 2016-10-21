@@ -3,6 +3,7 @@ import update from 'react-addons-update';
 
 const initialState = {
 	notifications: [],
+    isLogged: false,
     filters: {
         filterId: "",
         parameters: []
@@ -11,6 +12,15 @@ const initialState = {
 
 export default function appHandler(state = initialState, action) {
     switch(action.type){
+        case types.LOGIN_SUCCESS:
+            return Object.assign({}, state, {
+                isLogged: true
+            })
+
+        case types.LOGOUT_SUCCESS:
+            return Object.assign({}, state, {
+                isLogged: false
+            })
 
     	// NOTIFICATION ACTIONS
         case types.ADD_NOTIFICATION:
@@ -42,7 +52,7 @@ export default function appHandler(state = initialState, action) {
                 filters: Object.assign({}, state.filters, {
                     filterId: action.filterId,
                     parameters: action.parameters
-                    
+
                 })
             })
 
@@ -51,7 +61,7 @@ export default function appHandler(state = initialState, action) {
                 filters: Object.assign({}, state.filters, {
                     filterId: "",
                     parameters: []
-                    
+
                 })
             })
 
@@ -59,15 +69,15 @@ export default function appHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 filters: Object.assign({}, state.filters, {
                     filterId: action.filterId,
-                    parameters: state.filters.parameters.map(item => 
+                    parameters: state.filters.parameters.map(item =>
                         item.parameterName === action.property?
                         Object.assign({}, item, { value: action.value }) :
                         item
                     )
-                    
+
                 })
             })
-       
+
 
         // END OF NOTIFICATION ACTIONS
 

@@ -64,7 +64,7 @@ class Subheader extends Component {
                                 <div className="subheader-item"><i className="meta-icon-duplicate" /> Clone</div>
                                 <div className="subheader-item"><i className="meta-icon-delete" /> Delete</div>
                                 <div className="subheader-item"><i className="meta-icon-settings" /> Settings</div>
-                                <div className="subheader-item"><i className="meta-icon-logout" /> Log out</div>
+                                <div className="subheader-item" onClick={()=> this.redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>
                             <div className=" subheader-column">
                                 <div className="subheader-header">Actions</div>
