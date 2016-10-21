@@ -115,8 +115,7 @@ public class AD_BoilerPlate_Report extends SvrProcess
 	
 	private void startJasper()
 	{
-		ProcessInfoParameter[] params = new ProcessInfoParameter[] {
-		};
+		final ProcessInfoParameter[] params = new ProcessInfoParameter[] {};
 		//
 		ProcessInfo pi = new ProcessInfo("", 0, MTable.getTable_ID(I_T_BoilerPlate_Spool.Table_Name), -1);
 		pi.setAD_Client_ID(getAD_Client_ID());
