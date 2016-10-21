@@ -146,12 +146,6 @@ public class MPInstance extends X_AD_PInstance
 		this(process, 0, 0); // adTableId=0, recordId=0
 	}
 
-	public MPInstance (final MProcess process, final ProcessInfo pi)
-	{
-		this(process, pi.getTable_ID(), pi.getRecord_ID());
-		setWhereClause(pi.getWhereClause());
-	}
-
 	public MPInstance (final Properties ctx, ProcessInfo pi)
 	{
 		this(ctx, pi.getAD_Process_ID(), pi.getTable_ID(), pi.getRecord_ID());
