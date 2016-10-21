@@ -1501,6 +1501,10 @@ td.pulse-off input {
      min-width:300px;
  }
 
+ .login-form select {
+     width: 100%;
+ }
+
 
 .filter-btn-wrapper {
     text-align: right;
