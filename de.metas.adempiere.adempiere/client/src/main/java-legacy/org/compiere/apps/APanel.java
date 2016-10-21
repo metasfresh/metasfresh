@@ -117,6 +117,7 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
+import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessClassInfo;
@@ -2576,7 +2577,7 @@ public class APanel extends CPanel
 				.setFromGridTab(m_curTab)
 				.setPrintPreview(printPreview)
 				.setASyncParent(this)
-				.show();
+				.showModal(getCurrentFrame());
 	}
 
 	/**
@@ -3114,6 +3115,8 @@ public class APanel extends CPanel
 					.setFromGridTab(m_curTab)
 					.setASyncParent(this)
 					.setAD_Process_ID(vButton.getProcess_ID())
+					.setShowHelp(startWOasking ? X_AD_Process.SHOWHELP_RunSilently_TakeDefaults : null)
+					.setAllowProcessReRun(startWOasking ? Boolean.FALSE : null)
 					.showModal(getCurrentFrame());
 		}
 	}	// actionButton

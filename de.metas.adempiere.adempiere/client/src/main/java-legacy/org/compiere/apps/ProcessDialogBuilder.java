@@ -1,10 +1,13 @@
 package org.compiere.apps;
 
+import java.util.function.Supplier;
+
 import javax.swing.JFrame;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
 import org.compiere.model.GridTab;
+import org.compiere.model.X_AD_Process;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 
@@ -45,6 +48,11 @@ public final class ProcessDialogBuilder
 	private boolean skipResultsPanel = false;
 	private ASyncProcess asyncParent;
 	private boolean printPreview;
+	/**
+	 * @see X_AD_Process#SHOWHELP_AD_Reference_ID
+	 */
+	private String showHelp = null;
+	private Boolean allowProcessReRun = null;
 
 	ProcessDialogBuilder()
 	{
@@ -177,6 +185,21 @@ public final class ProcessDialogBuilder
 		return Record_ID;
 	}
 
+	/**
+	 * @param showHelp
+	 * @see X_AD_Process#SHOWHELP_AD_Reference_ID
+	 */
+	public ProcessDialogBuilder setShowHelp(final String showHelp)
+	{
+		this.showHelp = showHelp;
+		return this;
+	}
+
+	String getShowHelp()
+	{
+		return showHelp;
+	}
+
 	ProcessDialogBuilder skipResultsPanel()
 	{
 		skipResultsPanel = true;
@@ -187,19 +210,30 @@ public final class ProcessDialogBuilder
 	{
 		return skipResultsPanel;
 	}
+	
+	public ProcessDialogBuilder setAllowProcessReRun(final Boolean allowProcessReRun)
+	{
+		this.allowProcessReRun = allowProcessReRun;
+		return this;
+	}
+	
+	boolean isAllowProcessReRun(final Supplier<Boolean> defaultValueSupplier)
+	{
+		return allowProcessReRun != null ? allowProcessReRun : defaultValueSupplier.get();
+	}
 
 	public ProcessDialogBuilder setFromGridTab(GridTab gridTab)
 	{
 		final int windowNo = gridTab.getWindowNo();
 		final int tabNo = gridTab.getTabNo();
-		
+
 		setWindowAndTabNo(windowNo, tabNo);
 		setIsSOTrx(Env.isSOTrx(gridTab.getCtx(), windowNo));
 		setGridTabSummaryInfo(gridTab.getLastSummaryInfo());
 		setTableAndRecord(gridTab.getAD_Table_ID(), gridTab.getRecord_ID());
 		setWhereClause(gridTab.getTableModel().getSelectWhereClauseFinal());
 		skipResultsPanel();
-		
+
 		return this;
 	}
 
@@ -208,18 +242,18 @@ public final class ProcessDialogBuilder
 		this.asyncParent = asyncParent;
 		return this;
 	}
-	
+
 	public ASyncProcess getAsyncParent()
 	{
 		return asyncParent;
 	}
-	
+
 	public ProcessDialogBuilder setPrintPreview(final boolean printPreview)
 	{
 		this.printPreview = printPreview;
 		return this;
 	}
-	
+
 	public boolean isPrintPreview()
 	{
 		return printPreview;

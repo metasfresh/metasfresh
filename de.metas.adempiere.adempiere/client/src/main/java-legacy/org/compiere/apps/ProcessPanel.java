@@ -74,26 +74,23 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final String whereClause;
 	private final int adTableId;
 	private final int recordId;
-	private final boolean skipResultsPanel;
+	private final boolean m_IsReport;
 	private final boolean printPreview;
 	private final ASyncProcess asyncParent;
 
-	private String _processName;
-	private String _processClassname;
+	private final String _processName;
+	private final String _processDescription;
+	private final String _processHelp;
+	private final String _processClassname;
 
-	private boolean m_IsReport = false;
-	private boolean _allowProcessReRun = true;
+	/** Determine if a Help Process Window is shown */
+	private final String m_ShowHelp;
+	private final boolean _allowProcessReRun;
+	private final boolean skipResultsPanel;
 
 	@SuppressWarnings("unused")
 	private boolean m_isLocked = false;
 	private boolean _disposed = false;
-
-	/**
-	 * Determine if a Help Process Window is shown
-	 */
-	private String m_ShowHelp = null;
-	/** Logger */
-	//
 
 	/**
 	 * Dialog to start Process
@@ -125,14 +122,36 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		printPreview = builder.isPrintPreview();
 		asyncParent = builder.getAsyncParent();
 
+		//
+		// Load process definition from database
+		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), m_AD_Process_ID, I_AD_Process.class, ITrx.TRXNAME_None);
+		if (process == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + m_AD_Process_ID);
+		}
+		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(Env.getCtx()));
+		_processName = processTrl.getName();
+		_processDescription = processTrl.getDescription();
+		_processHelp = processTrl.getHelp();
+		m_IsReport = processTrl.isReport();
+
+		final String showHelp = builder.getShowHelp();
+		if (showHelp == null)
+		{
+			m_ShowHelp = processTrl.getShowHelp();
+		}
+		else
+		{
+			m_ShowHelp = showHelp;
+		}
+
+		_allowProcessReRun = builder.isAllowProcessReRun(processTrl::isAllowProcessReRun);
+		_processClassname = processTrl.getClassname();
+
 		try
 		{
 			jbInit();
-			if (!init())
-			{
-				dispose();
-				return;
-			}
+			init();
 		}
 		catch (final Exception ex)
 		{
@@ -345,50 +364,12 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	 *
 	 * @return true, if there is something to process (start from menu)
 	 */
-	private boolean init()
+	private void init()
 	{
-		log.info("");
-
-		//
-		// Load process definition from database
-		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), m_AD_Process_ID, I_AD_Process.class, ITrx.TRXNAME_None);
-		if (process == null)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + m_AD_Process_ID);
-		}
-		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(Env.getCtx()));
-		_processName = processTrl.getName();
-		final String description = processTrl.getDescription();
-		final String help = processTrl.getHelp();
-		m_IsReport = processTrl.isReport();
-		m_ShowHelp = processTrl.getShowHelp();
-		_allowProcessReRun = processTrl.isAllowProcessReRun();
-		_processClassname = processTrl.getClassname();
-
-		//
-		// Build the top message (Process description and help).
-		final StringBuilder messageText = new StringBuilder();
-		// Description
-		messageText.append("<b>");
-		if (Check.isEmpty(description))
-		{
-			messageText.append(msgBL.getMsg(Env.getCtx(), "StartProcess?"));
-		}
-		else
-		{
-			messageText.append(description);
-		}
-		messageText.append("</b>");
-		// Help
-		if (!Check.isEmpty(help))
-		{
-			messageText.append("<p>").append(help).append("</p>");
-		}
-
 		//
 		// Update UI
 		window.setTitle(_processName);
-		messageTop.setText(messageText.toString());
+		messageTop.setText(buildProcessMessageText());
 
 		//
 		// Create process parameters panel
@@ -433,8 +414,33 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		}
 
 		dialog.revalidate();
-		return true;
 	}	// init
+
+	/**
+	 * Build the top message (Process description and help).
+	 */
+	private String buildProcessMessageText()
+	{
+		final StringBuilder messageText = new StringBuilder();
+		// Description
+		messageText.append("<b>");
+		if (Check.isEmpty(_processDescription))
+		{
+			messageText.append(msgBL.getMsg(Env.getCtx(), "StartProcess?"));
+		}
+		else
+		{
+			messageText.append(_processDescription);
+		}
+		messageText.append("</b>");
+		// Help
+		if (!Check.isEmpty(_processHelp))
+		{
+			messageText.append("<p>").append(_processHelp).append("</p>");
+		}
+
+		return messageText.toString();
+	}
 
 	private final ProcessInfo createProcessInfo()
 	{
