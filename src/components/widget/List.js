@@ -52,12 +52,15 @@ class List extends Component {
         this.handleBlur();
     }
     handleSelect = (option) => {
-        const {onChange} = this.props;
+        const {onChange, setSelectedItem, filterWidget} = this.props;
         onChange(option);
-        // setSelectedItem(option);
+        if(filterWidget){
+            setSelectedItem(option);
+        }
         this.handleBlur();
 
     }
+
     renderOptions = () => {
         return this.state.list.map((option, index) => (
                 <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
@@ -68,6 +71,8 @@ class List extends Component {
     }
     render() {
         const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
+        // console.log('selected');
+        // console.log(selected)
 
         return (
             <div

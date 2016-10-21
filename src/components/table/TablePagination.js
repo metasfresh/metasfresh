@@ -32,7 +32,7 @@ class TablePagination extends Component {
 
             if(value <= pages && value > 0){
 
-                handleChangePage(value);
+                handleChangePage(Number(value));
                 deselect();
 
                 this.setState(Object.assign({}, this.state, {
@@ -64,7 +64,7 @@ class TablePagination extends Component {
     }
 
     renderFirstPartPagination = (pagination, pages) => {
-        const {handleChangePage} = this.props;
+        const {handleChangePage, deselect} = this.props;
         const {firstDotsState, secondDotsState, value} = this.state;
         pagination.push(
             <li className="page-item" key={1} onClick={() => {handleChangePage(1); deselect()} }>

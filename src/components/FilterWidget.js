@@ -2,6 +2,12 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import {
+    updateFiltersParameters,
+    initFiltersParameters,
+    deleteFiltersParameters
+} from '../actions/AppActions';
+
+import {
     patch,
     updateProperty,
     findRowByPropName
@@ -26,14 +32,22 @@ class FilterWidget extends Component {
             cachedValue: null,
             updated: false
         }
+
     }
 
 
-    handlePatch = (property, value) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu} = this.props;
+    handlePatch = (property, value, paramId) => {
+        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
+        // console.log('filters-----------');
+        // console.log(filters);
+
+
+        // dispatch(updateFiltersParameters(filterId, property, value));
+
+
         let filter =
           [{
-            filterId: property,
+            filterId: filterId,
             parameters: [
               {
                 parameterName: property,
@@ -45,10 +59,15 @@ class FilterWidget extends Component {
 
         // this.setSelectedItem(value);
 
+        // setSelectedItem(value);
 
-        dispatch(setFilter(filter));
-        updateDocList('grid', windowType);
+
+        // dispatch(setFilter(filter));
+        // updateDocList('grid', windowType);
         // closeFilterMenu();
+
+
+        dispatch(updateFiltersParameters(filterId, property, value));
 
 
         
@@ -60,19 +79,20 @@ class FilterWidget extends Component {
     // they patch on other event than onchange
     //
     handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
-        let currRowId = rowId;
+        // const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
+        // let currRowId = rowId;
 
-        if(!this.validatePrecision(e.target.value)){
-            return;
-        }
+        // if(!this.validatePrecision(e.target.value)){
+        //     return;
+        // }
 
-        if(rowId === "NEW"){
-            currRowId = relativeDocId;
-        }
+        // if(rowId === "NEW"){
+        //     currRowId = relativeDocId;
+        // }
 
-        e.preventDefault();
-        dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+        // e.preventDefault();
+        // dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+        // console.log('handle change');
     }
 
     handleFocus = (e, value) => {
@@ -105,7 +125,7 @@ class FilterWidget extends Component {
             updateCell();
         }
 
-        if(this.props.widgetData[0].value!==nextProps.widgetData[0].value) {
+        if(this.props.widgetData.value!==nextProps.widgetData.value) {
             let th = this;
             this.setState(
                 Object.assign({}, this.state, {
@@ -119,30 +139,41 @@ class FilterWidget extends Component {
                 }
             );
         }
+
+
+
+        // console.log('Filter widget props filters');
+        // console.log(this.props.filters);
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem} = this.props;
+        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, item, filters} = this.props;
         const {updated} = this.state;
+
+        // console.log('selectedItem');
+        // console.log(filters.parameters[id].value);
+        // console.log(filters);
         if(widgetData){
             return (
                 <div className="form-group row">
                     <div className="col-xs-12">
                         <div className={"form-group row"}>
-                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{caption}</div>
+                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
                             <div className="col-sm-9 ">
                                 <RawWidget
                                     handlePatch={this.handlePatch} 
                                     widgetType={widgetType}
-                                    fields={parameters}
+                                    fields={widgetData}
                                     windowType={windowType}
                                     type={type}
                                     widgetData={widgetData}
                                     filterWidget={true}
                                     filterId={filterId}
-                                    parameterName={widgetData[0].parameterName}
+                                    parameterName={widgetData.parameterName}
                                     setSelectedItem={setSelectedItem}
-                                    selectedItem={selectedItem}
+                                    selectedItem={filters.parameters.length? ( filters.parameters[id].value  ? filters.parameters[id].value : '' ) : ''}
+                                    handleFocus={this.handleFocus}
+                                    id={id}
                                 />
                             </div>
                         </div>
@@ -156,9 +187,23 @@ class FilterWidget extends Component {
 }
 
 FilterWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    filters: PropTypes.object.isRequired
 };
 
-FilterWidget = connect()(FilterWidget)
+function mapStateToProps(state) {
+    const {appHandler} = state;
+    const {
+        filters
+    } = appHandler || {
+        filters: []
+    }
+
+    return {
+        filters
+    }
+}
+
+FilterWidget = connect(mapStateToProps)(FilterWidget)
 
 export default FilterWidget

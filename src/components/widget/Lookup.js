@@ -304,20 +304,25 @@ class Lookup extends Component {
 
     handleValueChanged = () => {
 
-        const {defaultValue} = this.props;
+        const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
-        if(!!defaultValue[0].value && this.inputSearch) {
-            const init = defaultValue[0].value;
-            let inputValue = init[Object.keys(init)[0]];
-            if(inputValue !== oldValue){
-                this.inputSearch.value = inputValue
-                this.setState(Object.assign({}, this.state, {
-                    oldValue: inputValue,
-                    isInputEmpty: false
-                }));
+        if(!filterWidget) {
+            if(!!defaultValue[0].value && this.inputSearch) {
+                const init = defaultValue[0].value;
+                let inputValue = init[Object.keys(init)[0]];
+                if(inputValue !== oldValue){
+                    this.inputSearch.value = inputValue
+                    this.setState(Object.assign({}, this.state, {
+                        oldValue: inputValue,
+                        isInputEmpty: false
+                    }));
+                }
             }
+
         }
+
+        
     }
 
     renderLookup = () => {
@@ -325,8 +330,10 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated} = this.props;
+        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected} = this.props;
         const {propertiesCopy,isInputEmpty} = this.state;
+
+        // console.log(selected);
 
         return (
             <div
@@ -349,6 +356,8 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
+                            
+                            
                         />
                     </div>
                     <div className="input-rest">

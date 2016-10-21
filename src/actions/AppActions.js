@@ -99,3 +99,36 @@ export function filterAutocompleteRequest(type, filterId, parameterName, query) 
     query = encodeURIComponent(query);
     return (dispatch) => axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
 }
+
+export function updateFiltersParameters(filterId, property, value){
+    // console.log('updateFiltersParameters');
+    // console.log(filterId);
+    // console.log(property);
+    // console.log(value);
+
+    return {
+        type: types.UPDATE_FILTERS_PARAMETERS,
+        filterId: filterId,
+        property: property,
+        value: value
+    }
+}
+
+export function deleteFiltersParameters(){
+    // console.log('deleteFiltersParameters');
+
+    return {
+        type: types.DELETE_FILTERS_PARAMETERS
+    }
+}
+
+export function initFiltersParameters(filterId, parameters){
+    // console.log('initFiltersParameters');
+    // console.log(filterId);
+    // console.log(parameters);
+    return {
+        type: types.INIT_FILTERS_PARAMETERS,
+        filterId: filterId,
+        parameters: parameters
+    }
+}
