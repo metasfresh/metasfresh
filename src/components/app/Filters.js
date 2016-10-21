@@ -61,11 +61,19 @@ class Filters extends Component {
 		if(standardFilter){
 			this.setState(Object.assign({}, this.state, {
 				open: !open
-			}))
+			}), () => {
+				this.setState(Object.assign({}, this.state, {
+					openDateMenu: false
+				}))
+			})
 		} else {
 			this.setState(Object.assign({}, this.state, {
 				openDateMenu: !openDateMenu
-			}))
+			}), () => {
+				this.setState(Object.assign({}, this.state, {
+					open: false
+				}))
+			})
 		}
 		
 	}
@@ -295,6 +303,10 @@ class Filters extends Component {
 		)
 	}
 
+	handleEvent = (event, picker) => {
+       console.log('datepicker event');
+    }
+
 	renderDateFilter = () => {
 		const {openList, openFilter, filterDataItem, openDateMenu, selectedItem, startDate, endDate} = this.state;
 		const {filterData, windowType, updateDocList} = this.props;
@@ -318,11 +330,13 @@ class Filters extends Component {
 
 						{ openList &&
 							<div className="filter-menu">
+							<DateRangePicker onEvent={this.handleEvent} />
+							<span>asasas</span>
 								<ul>
 									{filterData && filterData.map((item, index) => 
 										<div key={index}> 
-											{item.frequent &&
-												<li >
+											{item.frequent &&	
+												<li>
 													<DateRangePicker
 														startDate={Moment(new Date('1/1/2014'))}
 										                endDate={Moment(new Date('3/1/2014'))}
