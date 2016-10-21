@@ -159,6 +159,7 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
+	// @Cached(cacheName = I_AD_Process.Table_Name + "#by#AD_Table_ID") // NOTE: before considering caching it, pls make sure the cache is reset when a new process is programatically registered
 	public final List<Integer> retrieveProcessesIdsForTable(@CacheCtx final Properties ctx, final int adTableId)
 	{
 		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
