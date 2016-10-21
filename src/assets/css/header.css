@@ -251,7 +251,7 @@
 
 
 .menu-overlay {
-    position: absolute;
+    position: fixed;
     z-index:100;
     margin-top: -1.57rem;
     pointer-events: none;
@@ -263,6 +263,8 @@
     z-index:1;
     margin-top:-1px;
     pointer-events: all;
+    overflow: auto;
+    max-height: calc(100vh - 80px);
 }
 
 .menu-overlay-root-body {

@@ -234,7 +234,7 @@ class MenuOverlay extends Component {
 
                                 {this.renderNaviagtion(deepNode ? deepNode : nodeData)}
 
-                                <div className="menu-overlay-query">
+                                <div className="menu-overlay-query hidden-sm-down">
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
                                         <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
