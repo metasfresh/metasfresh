@@ -20,7 +20,7 @@ import {
 export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
             if( !localStorage.isLogged ){
-                replace('/login');
+                store.dispatch(push('/login'));
                 callback();
             }else{
                 callback();
