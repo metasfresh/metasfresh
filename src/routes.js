@@ -18,7 +18,7 @@ import {
 
 export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
-            if( !store.getState().appHandler.isLogged ){
+            if( !localStorage.isLogged ){
                 replace('/login');
                 callback();
             }else{

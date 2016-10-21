@@ -4,13 +4,13 @@ import config from '../config';
 import {push,replace} from 'react-router-redux';
 
 export function loginSuccess() {
-    return {
-        type: types.LOGIN_SUCCESS
+    return dispatch => {
+        localStorage.setItem('isLogged', true)
     }
 }
 export function logoutSuccess() {
-    return {
-        type: types.LOGOUT_SUCCESS
+    return dispatch => {
+        localStorage.removeItem('isLogged')
     }
 }
 
