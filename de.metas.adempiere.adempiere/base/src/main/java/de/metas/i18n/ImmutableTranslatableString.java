@@ -43,25 +43,35 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class ImmutableTranslatableString implements ITranslatableString
 {
-	public static final ImmutableTranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
+	public static final ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
 	{
 		if ((trlMap == null || trlMap.isEmpty())
 				&& (defaultValue == null || defaultValue.isEmpty()))
 		{
-			return EMPTY;
+			return ConstantTranslatableString.EMPTY;
 		}
 
 		return new ImmutableTranslatableString(trlMap, defaultValue);
 	}
 
-	public static final ImmutableTranslatableString ofMap(final Map<String, String> trlMap)
+	public static final ITranslatableString ofMap(final Map<String, String> trlMap)
 	{
 		if (trlMap == null || trlMap.isEmpty())
 		{
-			return EMPTY;
+			return ConstantTranslatableString.EMPTY;
 		}
 
-		return new ImmutableTranslatableString(trlMap, EMPTY.defaultValue);
+		return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+	}
+
+	public static final ITranslatableString constant(final String value)
+	{
+		return ConstantTranslatableString.of(value);
+	}
+	
+	public static final ITranslatableString empty()
+	{
+		return ConstantTranslatableString.EMPTY;
 	}
 
 	public static final Builder builder()
@@ -69,27 +79,31 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		return new Builder();
 	}
 
-	public static final ImmutableTranslatableString copyOf(final ITranslatableString trl)
+	public static final ITranslatableString copyOf(final ITranslatableString trl)
 	{
 		Preconditions.checkNotNull(trl, "trl");
 		return copyOfNullable(trl);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param trl
 	 * @return {@link ImmutableTranslatableString} or {@link #EMPTY} if <code>trl</code> was null
 	 */
-	public static final ImmutableTranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
+	public static final ITranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
 	{
-		if(trl == null)
+		if (trl == null)
 		{
-			return ImmutableTranslatableString.EMPTY;
+			return ConstantTranslatableString.EMPTY;
 		}
-		
+
+		if (trl instanceof ConstantTranslatableString)
+		{
+			return trl;
+		}
 		if (trl instanceof ImmutableTranslatableString)
 		{
-			return (ImmutableTranslatableString)trl;
+			return trl;
 		}
 
 		final Set<String> adLanguages = trl.getAD_Languages();
@@ -107,8 +121,6 @@ public final class ImmutableTranslatableString implements ITranslatableString
 
 		return ofMap(trlMap, trl.getDefaultValue());
 	}
-
-	public static final ImmutableTranslatableString EMPTY = new ImmutableTranslatableString();
 
 	private final Map<String, String> trlMap;
 	private final String defaultValue;
@@ -137,9 +149,9 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
+		return MoreObjects.toStringHelper("trlString")
 				.omitNullValues()
-				.add("trls", trlMap)
+				.add("trls", trlMap.isEmpty() ? null : trlMap)
 				.add("default", defaultValue)
 				.toString();
 	}

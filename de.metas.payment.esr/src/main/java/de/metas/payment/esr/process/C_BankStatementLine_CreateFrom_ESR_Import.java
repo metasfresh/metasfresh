@@ -35,7 +35,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.process.DocAction;
@@ -88,11 +87,11 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 	 * @return <code>true</code> if the given gridTab belongs to a bank statement that is drafted or in progress
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (I_C_BankStatement.Table_Name.equals(gridTab.get_TableName()))
+		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
+			final I_C_BankStatement bankStatement = context.getModel(I_C_BankStatement.class);
 			return docActionBL.isStatusOneOf(bankStatement,
 					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress);
 		}

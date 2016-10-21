@@ -89,12 +89,6 @@ public class OLCandGenerator extends AbstractModelInterceptor
 		}
 	}
 
-	@Override
-	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
-	{
-		// nothing to do
-	}
-
 	/**
 	 * Register the existing candidate generators.
 	 *
@@ -170,7 +164,7 @@ public class OLCandGenerator extends AbstractModelInterceptor
 		}
 		else
 		{
-			final I_C_OLCandGenerator olCandGeneratorOld = InterfaceWrapperHelper.create(olCandGenerator, I_C_OLCandGenerator.class, true);
+			final I_C_OLCandGenerator olCandGeneratorOld = InterfaceWrapperHelper.createOld(olCandGenerator, I_C_OLCandGenerator.class);
 			unregisterClassName = olCandGeneratorOld.getOCGeneratorImpl();
 		}
 

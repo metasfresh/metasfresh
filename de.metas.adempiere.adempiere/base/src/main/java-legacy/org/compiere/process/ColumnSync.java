@@ -17,9 +17,7 @@
 package org.compiere.process;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
@@ -42,6 +40,7 @@ public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParameter();
@@ -61,6 +60,7 @@ public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("C_Column_ID=" + p_AD_Column_ID);
@@ -82,9 +82,9 @@ public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
 	}	//	doIt
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_AD_Column column = InterfaceWrapperHelper.create(gridTab, I_AD_Column.class);
+		final I_AD_Column column = context.getModel(I_AD_Column.class);
 		final String columnSQL = column.getColumnSQL();
 
 		if (!Check.isEmpty(columnSQL, true))

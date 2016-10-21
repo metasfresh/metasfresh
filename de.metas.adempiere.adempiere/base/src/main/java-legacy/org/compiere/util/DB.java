@@ -2004,6 +2004,22 @@ public final class DB
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
 	}
+	
+	/**
+	 * @param comment
+	 * @return SQL multiline comment 
+	 */
+	public static final String TO_COMMENT(final String comment)
+	{
+		if (Check.isEmpty(comment, true))
+		{
+			return "";
+		}
+		
+		return "/* "
+				+ comment.replace("/*", " ").replace("*/", " ")
+				+" */";
+	}
 
 	/**
 	 * convenient method to close result set

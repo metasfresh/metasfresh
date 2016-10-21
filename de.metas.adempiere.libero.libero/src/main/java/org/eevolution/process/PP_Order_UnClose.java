@@ -31,7 +31,6 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
@@ -64,9 +63,9 @@ public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondit
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(gridTab, I_PP_Order.class);
+		final I_PP_Order ppOrder = context.getModel(I_PP_Order.class);
 		return isEligible(ppOrder);
 	}
 

@@ -44,6 +44,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
+import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -64,6 +65,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -125,7 +127,7 @@ import de.metas.logging.MetasfreshLastError;
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
  * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
-public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord
+public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord, ISvrProcessPrecondition.PreconditionsContext
 {
 
 	/**
@@ -2784,6 +2786,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		return InterfaceWrapperHelper.create(this, modelClass);
 	}
+	
+	@Override
+	public <T> T getModelBeforeChanges(final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.createOld(this, modelClass);
+	}
 
 	/**
 	 * Get Key ID of row
@@ -3978,13 +3986,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				if (queryColumn.endsWith("_ID"))
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							new Integer(Env.getContextAsInt(ctx, getWindowNo(), queryColumn)),
 							infoName, infoDisplay);
 				}
 				else
 				{
-					query.addRestriction(queryColumn, MQuery.EQUAL,
+					query.addRestriction(queryColumn, Operator.EQUAL,
 							Env.getContext(ctx, getWindowNo(), queryColumn),
 							infoName, infoDisplay);
 				}

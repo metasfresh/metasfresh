@@ -14,8 +14,6 @@
 package de.metas.ui.web.base.session;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -23,6 +21,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
@@ -139,6 +138,7 @@ public final class UserPreference implements Serializable
 			if (preference == null)
 			{
 				preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, ITrx.TRXNAME_ThreadInherited);
+				preference.setAD_User_ID(m_AD_User_ID);
 				preference.setAttribute(attribute);
 			}
 
@@ -158,7 +158,7 @@ public final class UserPreference implements Serializable
 
 	private static final Map<String, I_AD_Preference> retrievePreferencesMap(final Properties ctx, final int adUserId)
 	{
-		final List<I_AD_Preference> preferencesList = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Client_ID, Env.getAD_Client_ID(ctx))
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.getAD_Org_ID(ctx))
@@ -173,23 +173,9 @@ public final class UserPreference implements Serializable
 				.endOrderBy()
 				//
 				.create()
-				.list(I_AD_Preference.class);
-
-		final Map<String, I_AD_Preference> preferencesMap = new HashMap<>();
-		for (final I_AD_Preference preference : preferencesList)
-		{
-			final String attribute = preference.getAttribute();
-
-			// Skip preference if already loaded (shall not happen)
-			if (preferencesMap.containsKey(attribute))
-			{
-				continue;
-			}
-
-			preferencesMap.put(attribute, preference);
-		}
-
-		return preferencesMap;
+				.list(I_AD_Preference.class)
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(I_AD_Preference::getAttribute));
 	}
 
 	/**

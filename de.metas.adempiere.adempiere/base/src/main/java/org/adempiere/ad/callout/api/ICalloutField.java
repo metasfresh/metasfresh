@@ -24,6 +24,7 @@ package org.adempiere.ad.callout.api;
 
 import java.util.Properties;
 
+import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -38,7 +39,7 @@ public interface ICalloutField
 {
 
 	boolean isTriggerCalloutAllowed();
-	
+
 	ICalloutRecord getCalloutRecord();
 
 	Properties getCtx();
@@ -47,11 +48,34 @@ public interface ICalloutField
 
 	Object getValue();
 
+	/**
+	 * @return old/previous value (from when the underlying model was checked out for changing)
+	 */
 	Object getOldValue();
 
 	String getColumnName();
 
-	<T> T getModel(Class<T> modelClass);
+	/**
+	 * @see ICalloutRecord#getModel(Class)
+	 */
+	default <T> T getModel(final Class<T> modelClass)
+	{
+		final ICalloutRecord calloutRecord = getCalloutRecord();
+		final T model = calloutRecord.getModel(modelClass);
+		Check.assumeNotNull(model, "model not null");
+		return model;
+	}
+
+	/**
+	 * @see ICalloutRecord#getModelBeforeChanges(Class)
+	 */
+	default <T> T getModelBeforeChanges(final Class<T> modelClass)
+	{
+		final ICalloutRecord calloutRecord = getCalloutRecord();
+		final T model = calloutRecord.getModelBeforeChanges(modelClass);
+		Check.assumeNotNull(model, "model not null");
+		return model;
+	}
 
 	int getWindowNo();
 
@@ -68,7 +92,7 @@ public interface ICalloutField
 	boolean isRecordCopyingModeIncludingDetails();
 
 	ICalloutExecutor getCurrentCalloutExecutor();
-	
+
 	/**
 	 * Create and fire Data Status Error Event
 	 *
@@ -77,7 +101,7 @@ public interface ICalloutField
 	 * @param isError if not true, it is a Warning
 	 */
 	void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError);
-	
+
 	/**
 	 * Create and fire Data Status Error Event (from Error Log)
 	 *
@@ -100,22 +124,22 @@ public interface ICalloutField
 	{
 		Env.setContext(getCtx(), name, value);
 	}
-	
+
 	default void putContext(final String name, final int value)
 	{
 		Env.setContext(getCtx(), name, value);
 	}
-	
+
 	default int getGlobalContextAsInt(final String name)
 	{
 		return Env.getContextAsInt(getCtx(), name);
 	}
-	
+
 	default int getTabInfoContextAsInt(final String name)
 	{
 		return Env.getContextAsInt(getCtx(), getWindowNo(), Env.TAB_INFO, name);
 	}
-	
+
 	default boolean getContextAsBoolean(final String name)
 	{
 		return DisplayType.toBoolean(Env.getContext(getCtx(), getWindowNo(), name));
