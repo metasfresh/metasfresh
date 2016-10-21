@@ -9,7 +9,8 @@ import DocList from './containers/DocList.js';
 import NavigationTree from './containers/NavigationTree.js';
 
 import {
-    logoutRequest
+    logoutRequest,
+    logoutSuccess
 } from './actions/AppActions';
 
 import {
@@ -26,9 +27,11 @@ export const getRoutes = (store) => {
             }
         }
     const logout = () => {
-        store.dispatch(logoutRequest()).then(() =>
-            replace('/login')
-        )
+        store.dispatch(logoutRequest()).then(()=>
+            store.dispatch(logoutSuccess())
+        ).then(()=>
+            store.dispatch(push('/login'))
+        );
     }
     return (
         <Route path="/">
