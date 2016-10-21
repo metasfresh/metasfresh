@@ -46,6 +46,14 @@ body {
         padding-left: .5rem;
         padding-right: .5rem;
     }
+    .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    [class^="col-"],[class*=" col-"] {
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
 }
 
 .window-wrapper {
