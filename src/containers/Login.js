@@ -13,7 +13,6 @@ class Login extends Component {
     render() {
         return (
             <div>
-                <NotificationHandler />
                 <div className="login-container">
                     <LoginForm />
                 </div>

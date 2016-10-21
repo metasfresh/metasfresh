@@ -15,7 +15,8 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
-            roleSelect: false
+            roleSelect: false,
+            err: ""
         }
     }
 
@@ -38,12 +39,16 @@ class LoginForm extends Component {
                         roles: response.data.roles
                     }))
                 }
-            });
+            }).catch(err => {
+                this.setState(Object.assign({}, this.state, {
+                    err: err.response.data.message
+                }));
+            })
         }
     }
 
     render() {
-        const {roleSelect, roles} = this.state;
+        const {roleSelect, roles, err} = this.state;
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
                 <div className="text-xs-center">
@@ -58,13 +63,29 @@ class LoginForm extends Component {
                         </div>
                     </div>:
                     <div>
+                        {
+                            err && <div className="input-error">
+                                {err}
+                            </div>
+                        }
                         <div>
-                            <div className={"form-control-label"}><small>E-mail</small></div>
-                            <input type="text" className="input-primary input-block" ref={c => this.login = c} />
+                            <div className={"form-control-label"}><small>Login</small></div>
+                            <input
+                                type="text"
+                                className={
+                                    "input-primary input-block " +
+                                    (err ? "input-error " : "")}
+                                ref={c => this.login = c} />
                         </div>
                         <div>
                             <div className={"form-control-label"}><small>Password</small></div>
-                            <input type="password" className="input-primary input-block" ref={c => this.passwd = c} />
+                            <input
+                                type="password"
+                                className={
+                                    "input-primary input-block " +
+                                    (err ? "input-error " : "")}
+                                ref={c => this.passwd = c}
+                            />
                         </div>
                     </div>
                 }
