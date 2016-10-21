@@ -36,7 +36,7 @@ class Indicator extends Component {
   }
   render() {
       return (
-        <div className="indicator">
+        <div className="indicator hidden-sm-down">
           {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
         </div>
       )

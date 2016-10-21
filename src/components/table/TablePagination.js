@@ -153,13 +153,13 @@ class TablePagination extends Component {
         return (
             <div className="pagination-wrapper">
                 <div className="pagination-row">
-                    <div>
+                    <div className="hidden-sm-down">
                         <div>{selected.length > 0 ? selected.length + " items selected" : "No items selected"}</div>
                         <div className="pagination-link pointer" onClick={handleSelectAll}>Select all on this page</div>
                     </div>
 
                     <div className="items-row-2 pagination-part">
-                        <div>
+                        <div className="hidden-sm-down">
                             <div>Total items {size}</div>
                         </div>
                         <div>

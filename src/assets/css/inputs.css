@@ -391,6 +391,26 @@ input:checked + .input-slider:before {
     margin-right: 5px;
     display: flex;
 }
+
+@media (max-width: $breakpoint){
+    .input-dropdown-container .input-dropdown{
+        flex-direction: column;
+    }
+    .input-dropdown .input-icon {
+        top: -9px;
+    }
+    .input-editable {
+        flex: 1 1 50%;
+        flex-shrink: 1;
+    }
+    .input-rest {
+        flex-direction: column;
+        align-items: baseline;
+
+    }
+}
+
+
 .input-rest span {
     overflow: hidden;
     text-overflow: ellipsis;
