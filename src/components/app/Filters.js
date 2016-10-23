@@ -150,9 +150,10 @@ class Filters extends Component {
 //               }
 //             ]
 //           }]
+		console.log(filters);
+		dispatch(setFilter(filters));
+		setTimeout(() => { updateDocList('grid', windowType); }, 1)
 
-		dispatch(setFilter([filters]));
-		updateDocList('grid', windowType);
         this.closeFilterMenu();
 
 	}
@@ -180,8 +181,12 @@ class Filters extends Component {
 
 		
 		
-		dispatch(setFilter([]));
-		updateDocList('grid', windowType);
+		deleteFiltersParameters();
+		dispatch(setFilter(null));
+		setTimeout(() => { updateDocList('grid', windowType); }, 1)
+
+
+
 		this.setSelectedItem('', true);
 		
 	}

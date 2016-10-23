@@ -150,9 +150,7 @@ class FilterWidget extends Component {
         const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, item, filters} = this.props;
         const {updated} = this.state;
 
-        // console.log('selectedItem');
-        // console.log(filters.parameters[id].value);
-        // console.log(filters);
+
         if(widgetData){
             return (
                 <div className="form-group row">
