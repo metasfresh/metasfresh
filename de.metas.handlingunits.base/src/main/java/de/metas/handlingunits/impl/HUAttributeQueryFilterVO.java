@@ -269,7 +269,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 	/**
 	 * @return attribute; never return <code>null</code>
 	 */
-	public final I_M_Attribute getM_Attribute()
+	private final I_M_Attribute getM_Attribute()
 	{
 		return attribute;
 	}
@@ -292,7 +292,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		return this;
 	}
 
-	public ModelColumn<I_M_HU_Attribute, Object> getHUAttributeValueColumn()
+	private ModelColumn<I_M_HU_Attribute, Object> getHUAttributeValueColumn()
 	{
 		return huAttributeValueColumn;
 	}
@@ -302,7 +302,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		return _values;
 	}
 
-	public Set<Object> getValuesAndSubstitutes()
+	private Set<Object> getValuesAndSubstitutes()
 	{
 		if (_valuesAndSubstitutes != null)
 		{
