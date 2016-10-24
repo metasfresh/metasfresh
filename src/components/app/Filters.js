@@ -107,7 +107,6 @@ class Filters extends Component {
 	}
 
 	applyFilters = () => {
-<<<<<<< HEAD
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
 
