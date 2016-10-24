@@ -253,8 +253,10 @@ public class SvrProcessTests
 
 		//
 		// Create ProcessInfo descriptor
-		final int AD_Process_ID = 0; // N/A
-		final ProcessInfo pi = new ProcessInfo("Test", AD_Process_ID);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle("Test")
+				.setAD_Process_ID(0) // N/A
+				.build();
 		pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
 		return pi;
 	}

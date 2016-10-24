@@ -30,6 +30,8 @@ import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Process;
 import de.metas.logging.LogManager;
@@ -444,17 +446,20 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 
 	private final ProcessInfo createProcessInfo()
 	{
-		final ProcessInfo pi = new ProcessInfo(_processName, m_AD_Process_ID);
-		pi.setWindowNo(m_WindowNo);
-		pi.setTabNo(m_TabNo);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle(_processName)
+				.setAD_Process_ID(m_AD_Process_ID)
+				.setWhereClause(whereClause)
+				.setRecord(adTableId, recordId)
+				.setWindowNo(m_WindowNo).setTabNo(m_TabNo)
+				.addParameters(parameterPanel == null ? ImmutableList.of() : parameterPanel.createParameters())
+				.setPrintPreview(printPreview)
+				.build();
+		
 		pi.setAD_User_ID(_adUserId);
 		pi.setAD_Client_ID(_adClientId);
 		pi.setClassName(_processClassname);
-		pi.setWhereClause(whereClause);
-		pi.setTable_ID(adTableId);
-		pi.setRecord_ID(recordId);
 		pi.setGridTabSummaryInfo(gridTabSummaryInfo);
-		pi.setPrintPreview(printPreview);
 		return pi;
 	}
 
@@ -484,7 +489,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 			if (CARDNAME_ProcessParameters.equals(currentCardName))
 			{
 				final ProcessInfo pi = createProcessInfo();
-				pi.setParameter(parameterPanel.createParameters());
 
 				ProcessCtl.builder()
 						.setAsyncParent(SwingASyncProcess.of(this))

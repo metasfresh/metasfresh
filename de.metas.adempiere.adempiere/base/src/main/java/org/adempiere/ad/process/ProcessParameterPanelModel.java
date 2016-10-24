@@ -24,6 +24,7 @@ import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -471,11 +472,11 @@ public class ProcessParameterPanelModel
 	{
 		final GridField gridField = getField(fieldIndex);
 		final String columnName = gridField.getColumnName();
-		final Object value = gridField.getValue();
+		Object value = gridField.getValue();
 		final String displayValue = displayValueProvider.getDisplayValue(gridField);
 
 		final GridField gridFieldTo = getFieldTo(fieldIndex);
-		final Object valueTo;
+		Object valueTo;
 		final String displayValueTo;
 		if (gridFieldTo != null)
 		{
@@ -491,6 +492,18 @@ public class ProcessParameterPanelModel
 		if (value == null && valueTo == null)
 		{
 			return null;
+		}
+		
+		//
+		// FIXME: legacy: convert Boolean to String because some of the SvrProcess implementations are checking boolean parametes as:
+		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
+		if(value instanceof Boolean)
+		{
+			value = DisplayType.toBooleanString((Boolean)value);
+		}
+		if(valueTo instanceof Boolean)
+		{
+			valueTo = DisplayType.toBooleanString((Boolean)valueTo);
 		}
 		
 		return new ProcessInfoParameter(columnName, value, valueTo, displayValue, displayValueTo);

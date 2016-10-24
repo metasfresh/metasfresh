@@ -53,6 +53,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
 import org.compiere.model.MAsset;
@@ -66,7 +67,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MPayment;
-import org.compiere.model.MProcess;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MRMA;
@@ -149,7 +149,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
 		//
 		// Get Process
-		final MProcess process = new Query(Env.getCtx(), MProcess.Table_Name, MProcess.COLUMNNAME_Classname + "=?", null)
+		final I_AD_Process process = new Query(Env.getCtx(), I_AD_Process.Table_Name, I_AD_Process.COLUMNNAME_Classname + "=?", null)
 				.setParameters(new Object[] {
 						"de.metas.letters.report.AD_BoilerPlate_Report",
 						// AD_BoilerPlate_Report.class.getCanonicalName()
@@ -158,15 +158,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		// Create Instance
 		final MPInstance pInstance = new MPInstance(process); // adTableId=0, recordId=0
 		pInstance.saveEx();
-		// Create Process Info
-		final ProcessInfoParameter[] params = new ProcessInfoParameter[] {
-				new ProcessInfoParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text, null, null, null)
-		};
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), 0, 0);
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle(process.getName())
+				.setAD_Process_ID(process.getAD_Process_ID())
+				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
+				.build();
+		
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-		pi.setParameter(params);
 		
 		ProcessCtl.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);

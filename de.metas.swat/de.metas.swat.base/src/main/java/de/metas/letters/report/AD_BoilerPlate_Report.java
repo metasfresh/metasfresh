@@ -28,7 +28,6 @@ package de.metas.letters.report;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
 import org.compiere.process.ProcessInfo;
@@ -115,12 +114,12 @@ public class AD_BoilerPlate_Report extends SvrProcess
 	
 	private void startJasper()
 	{
-		final ProcessInfoParameter[] params = new ProcessInfoParameter[] {};
-		//
-		ProcessInfo pi = new ProcessInfo("", 0, MTable.getTable_ID(I_T_BoilerPlate_Spool.Table_Name), -1);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_Process_ID(0)
+				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
+				.build();
 		pi.setAD_Client_ID(getAD_Client_ID());
 		pi.setAD_User_ID(getAD_User_ID());
-		pi.setParameter(params);
 		pi.setAD_PInstance_ID(getAD_PInstance_ID());
 		//
 		ReportStarter proc = new ReportStarter();

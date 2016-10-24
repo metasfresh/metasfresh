@@ -141,7 +141,7 @@ public class MPInstance extends X_AD_PInstance
 		}
 	}	// MPInstance
 
-	public MPInstance (final MProcess process)
+	public MPInstance (final I_AD_Process process)
 	{
 		this(process, 0, 0); // adTableId=0, recordId=0
 	}

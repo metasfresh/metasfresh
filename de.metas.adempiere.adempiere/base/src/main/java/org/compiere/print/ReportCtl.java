@@ -27,7 +27,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -295,12 +294,13 @@ public final class ReportCtl
 
 		if (printFormat.getJasperProcess_ID() > 0)
 		{
-			final ProcessInfo jasperProcessInfo = new ProcessInfo("", printFormat.getJasperProcess_ID(), tableId, re.getPrintInfo().getRecord_ID());
-			jasperProcessInfo.setPrintPreview(!isDirectPrint);
-			jasperProcessInfo.setWindowNo(windowNo);
-			jasperProcessInfo.setParameter(new ProcessInfoParameter[] {
-					new ProcessInfoParameter(ProcessInfoParameter.PARAM_PRINT_FORMAT, printFormat, null, null, null) //
-			});
+			final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+					.setWindowNo(windowNo)
+					.setAD_Process_ID(printFormat.getJasperProcess_ID())
+					.setRecord(tableId, re.getPrintInfo().getRecord_ID())
+					.setPrintPreview(!isDirectPrint)
+					.setReportLanguage(printFormat.getLanguage())
+					.build();
 
 			// Execute Process
 			ProcessCtl.builder()

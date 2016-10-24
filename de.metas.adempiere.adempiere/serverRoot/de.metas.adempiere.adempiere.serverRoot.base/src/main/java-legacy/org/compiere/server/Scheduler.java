@@ -49,7 +49,6 @@ import org.compiere.model.I_AD_Task;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MNote;
 import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.MTask;
@@ -214,8 +213,7 @@ public class Scheduler extends AdempiereServer
 				//
 				// Create process info
 				// metas-ts using process with scheduler-ctx
-				final MProcess process = new MProcess(schedulerCtx, m_model.getAD_Process_ID(), ITrx.TRXNAME_None);
-
+				final I_AD_Process process = InterfaceWrapperHelper.create(schedulerCtx, m_model.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
 				final ProcessInfo pi = createProcessInfo(process);
 				m_AD_PInstance_ID = pi.getAD_PInstance_ID();
 
@@ -338,7 +336,7 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
+	private String runReport(final ProcessInfo pi, final I_AD_Process process) throws Exception
 	{
 		log.debug("Run report: {}", process);
 
@@ -436,9 +434,13 @@ public class Scheduler extends AdempiereServer
 		final I_AD_PInstance pInstance = new MPInstance(ctx, process, AD_Table_ID, Record_ID);
 		fillParameter(pInstance);
 
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), AD_Table_ID, Record_ID);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setTitle(process.getName())
+				.setAD_Process_ID(process.getAD_Process_ID())
+				.setRecord(AD_Table_ID, Record_ID)
+				.build();
 		pi.setClassName(process.getClassname());
-		pi.setCtx(ctx);
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		pi.setAD_Org_ID(Env.getAD_Org_ID(ctx));

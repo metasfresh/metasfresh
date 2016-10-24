@@ -41,7 +41,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 
 /**
@@ -60,7 +59,7 @@ public class ProcessParametersPanel extends CPanel //implements IProcessParamete
 
 	// Services
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
-	private final transient IClientUI clientUI = Services.get(IClientUI.class);
+	// private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
 	private final ProcessParameterPanelModel model;
 	private final List<JLabel> fieldLabels = new ArrayList<JLabel>();

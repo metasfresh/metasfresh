@@ -81,9 +81,11 @@ public class DocWorkflowManager implements DocWorkflowMgr
 	 *	@return true if WF started
 	 */
 	@Override
-	public boolean process (final PO document, final int AD_Table_ID)
+	public boolean process (final PO document)
 	{
 		m_noCalled++;
+		
+		final int AD_Table_ID = document.get_Table_ID();
 		MWorkflow[] wfs = MWorkflow.getDocValue (document.getCtx(), 
 			document.getAD_Client_ID(), AD_Table_ID
 			, document.get_TrxName() // Bug 1568766 Trx should be kept all along the road	
@@ -123,8 +125,11 @@ public class DocWorkflowManager implements DocWorkflowMgr
 		
 			//	Start Workflow
 			log.debug(logic);
-			int AD_Process_ID = 305;		//	HARDCODED
-			ProcessInfo pi = new ProcessInfo (wf.getName(), AD_Process_ID, AD_Table_ID, document.get_ID());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setTitle(wf.getName())
+					.setAD_Process_ID(305) // FIXME HARDCODED
+					.setRecord(AD_Table_ID, document.get_ID())
+					.build();
 			pi.setAD_User_ID (Env.getAD_User_ID(document.getCtx()));
 			pi.setAD_Client_ID(document.getAD_Client_ID());
 			//

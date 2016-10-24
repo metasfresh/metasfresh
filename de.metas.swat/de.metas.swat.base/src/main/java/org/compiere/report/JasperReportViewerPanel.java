@@ -69,10 +69,10 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -147,8 +147,12 @@ public class JasperReportViewerPanel extends JRViewer
 
 			final ProcessInfo oldPi = getProcessInfo();
 
-			final ProcessInfo newPi = new ProcessInfo(oldPi.getTitle(), jasperProcessId, oldPi.getTable_ID(), oldPi.getRecord_ID());
-			newPi.setParameter(oldPi.getParameter());
+			final ProcessInfo newPi = ProcessInfo.builder()
+					.setTitle(oldPi.getTitle())
+					.setAD_Process_ID(jasperProcessId)
+					.setRecord(oldPi.getTable_ID(), oldPi.getRecord_ID())
+					.addParameters(oldPi.getParameter())
+					.build();
 
 			JasperPrint newJasperPrint = null;
 			try

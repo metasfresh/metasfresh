@@ -3067,12 +3067,15 @@ public class APanel extends CPanel
 			String title = vButton.getDescription();
 			if (title == null || title.length() == 0)
 				title = vButton.getName();
-			final ProcessInfo pi = new ProcessInfo(title, vButton.getProcess_ID(), table_ID, record_ID);
-			pi.setWindowNo(m_curWindowNo);
-			pi.setTabNo(getTabNo());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setTitle(title)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.setRecord(table_ID, record_ID)
+					.setWindowNo(m_curWindowNo).setTabNo(getTabNo())
+					.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal())
+					.build();
 			pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
 			pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-			pi.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal());
 			pi.setGridTabSummaryInfo(m_curTab.getSummaryInfo());
 			ff.setProcessInfo(pi);
 			ff.addWindowListener(new WindowAdapter()

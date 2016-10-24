@@ -687,8 +687,11 @@ public final class ProcessCtl
 
 			//
 			// Save Parameters to AD_PInstance_Para, if needed
-			final ProcessInfoParameter[] parameters = pi.getParameter();
-			adPInstanceDAO.saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
+			final ProcessInfoParameter[] parameters = pi.getParametersNoLoad();
+			if(parameters != null && parameters.length > 0)
+			{
+				adPInstanceDAO.saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
+			}
 		}
 
 		public Builder setProcessInfo(final ProcessInfo pi)

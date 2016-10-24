@@ -381,12 +381,45 @@ public class HUReportModel implements IDisposable
 		final ITrxManager trxManagerService = Services.get(ITrxManager.class);
 
 		//
+		// Collect HU's C_BPartner_IDs and M_HU_IDs
+		final Set<Integer> huBPartnerIds = new HashSet<>();
+		final List<Integer> huIds = new ArrayList<>();
+		for (final I_M_HU hu : getHUsToProcess())
+		{
+			final int huId = hu.getM_HU_ID();
+			huIds.add(huId);
+
+			// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
+			final int bpartnerId = hu.getC_BPartner_ID();
+			if (bpartnerId > 0)
+			{
+				huBPartnerIds.add(bpartnerId);
+			}
+		}
+
+		//
+		// Use BPartner's Language as reporting language if our HUs have an unique BPartner
+		final Language reportLanguage;
+		if (huBPartnerIds.size() == 1)
+		{
+			final int bpartnerId = huBPartnerIds.iterator().next();
+			reportLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
+		}
+		else
+		{
+			reportLanguage = null; // N/A
+		}
+
+		//
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-		pi.setWindowNo(getTerminalContext().getWindowNo());
-
-		final Set<Integer> huBPartnerIds = new HashSet<>();
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle(process.getName())
+				.setAD_Process_ID(process.getAD_Process_ID())
+				.setWindowNo(getTerminalContext().getWindowNo())
+				.setTableName(I_M_HU.Table_Name)
+				.setReportLanguage(reportLanguage)
+				.build();
 
 		// 05978: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
 		// transaction.
@@ -425,34 +458,8 @@ public class HUReportModel implements IDisposable
 
 				//
 				// ProcessInfo
-				pi.setTableName(I_M_HU.Table_Name);
-				// pi.setRecord_ID(selectedHUId);
-				pi.setTitle(process.getName());
 				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
 
-				final List<Integer> huIds = new ArrayList<>();
-
-				for (final I_M_HU hu : getHUsToProcess())
-				{
-					final int huId = hu.getM_HU_ID();
-					huIds.add(huId);
-
-					// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
-					final int bpartnerId = hu.getC_BPartner_ID();
-					if (bpartnerId > 0)
-					{
-						huBPartnerIds.add(bpartnerId);
-					}
-				}
-
-				//
-				// Use BPartner's Language as reporting language if our HUs have an unique BPartner
-				if (huBPartnerIds.size() == 1)
-				{
-					final int bpartnerId = huBPartnerIds.iterator().next();
-					final Language bpartnerLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
-					pi.setReportLanguage(bpartnerLanguage);
-				}
 
 				DB.createT_Selection(pinstance.getAD_PInstance_ID(), huIds, localTrxName);
 			}
@@ -460,15 +467,8 @@ public class HUReportModel implements IDisposable
 
 		//
 		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				ProcessCtl.builder()
-						.setProcessInfo(pi)
-						.executeSync();
-			}
-		});
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.executeSync();
 	}
 }

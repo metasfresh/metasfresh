@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -63,41 +62,40 @@ import de.metas.logging.LogManager;
  */
 public final class ProcessInfo implements Serializable
 {
-	/**
-	 * Constructor
-	 *
-	 * @param Title Title
-	 * @param AD_Process_ID AD_Process_ID
-	 * @param Table_ID AD_Table_ID
-	 * @param Record_ID Record_ID
-	 */
-	public ProcessInfo(String Title, int AD_Process_ID, int Table_ID, int Record_ID)
+	public static final ProcessInfoBuilder builder()
+	{
+		return new ProcessInfoBuilder();
+	}
+
+	private ProcessInfo(final ProcessInfoBuilder builder)
 	{
 		super();
-		setTitle(Title);
-		setAD_Process_ID(AD_Process_ID);
-		setTable_ID(Table_ID);
-		setRecord_ID(Record_ID);
-		if (Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
+		ctx = builder.getCtx();
+		m_Title = builder.getTitle();
+		m_AD_Process_ID = builder.getAD_Process_ID();
+
+		m_Table_ID = builder.getAD_Table_ID();
+		m_Record_ID = builder.getRecord_ID();
+		m_whereClause = builder.getWhereClause();
+
+		m_windowNo = builder.getWindowNo();
+		m_tabNo = builder.getTabNo();
+
+		m_printPreview = builder.isPrintPreview();
+		reportLanguage = builder.getReportLanguage();
+
+		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
+		if (parameters == null)
 		{
-			m_printPreview = true;
+			this.m_parameter = null;
+			this.m_parameterLoaded = false;
 		}
 		else
 		{
-			m_printPreview = false;
+			this.m_parameter = parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+			this.m_parameterLoaded = true;
 		}
-	}   // ProcessInfo
-
-	/**
-	 * Constructor
-	 *
-	 * @param Title Title
-	 * @param AD_Process_ID AD_Process_ID
-	 */
-	public ProcessInfo(String Title, int AD_Process_ID)
-	{
-		this(Title, AD_Process_ID, 0, 0);
-	}   // ProcessInfo
+	}
 
 	/** Serialization Info **/
 	static final long serialVersionUID = -1993220053515488725L;
@@ -111,9 +109,9 @@ public final class ProcessInfo implements Serializable
 	private int m_AD_Process_ID;
 	private transient I_AD_Process _processModel;
 	/** Table ID if the Process */
-	private int m_Table_ID;
+	private final int m_Table_ID;
 	/** Record ID if the Process */
-	private int m_Record_ID;
+	private final int m_Record_ID;
 	/** User_ID */
 	private Integer m_AD_User_ID;
 	/** Client_ID */
@@ -152,13 +150,11 @@ public final class ProcessInfo implements Serializable
 	private ProcessInfoParameter[] m_parameter = null;
 	private boolean m_parameterLoaded = false;
 
-	private Properties ctx;
+	private final Properties ctx;
 
 	private boolean m_printPreview = false;
 
 	private boolean m_reportingProcess = false;
-	// FR 1906632
-	private File m_pdf_report = null;
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
@@ -192,12 +188,12 @@ public final class ProcessInfo implements Serializable
 			sb.append(",Transient=").append(m_TransientObject);
 		if (m_SerializableObject != null)
 			sb.append(",Serializable=").append(m_SerializableObject);
-		
+
 		sb.append(",Summary=").append(getSummary());
-		
+
 		final List<ProcessInfoLog> logs = _logs;
 		sb.append(",Log=").append(logs == null ? 0 : logs.size());
-		
+
 		sb.append("]");
 		return sb.toString();
 	}   // toString
@@ -205,11 +201,6 @@ public final class ProcessInfo implements Serializable
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
-	}
-
-	public void setCtx(final Properties ctx)
-	{
-		this.ctx = ctx;
 	}
 
 	/**************************************************************************
@@ -269,12 +260,12 @@ public final class ProcessInfo implements Serializable
 	{
 		return m_Error;
 	}	// isError
-	
+
 	public void setErrorWasReportedToUser()
 	{
 		m_ErrorWasReportedToUser = true;
 	}
-	
+
 	public boolean isErrorWasReportedToUser()
 	{
 		return m_ErrorWasReportedToUser;
@@ -386,7 +377,7 @@ public final class ProcessInfo implements Serializable
 			{
 				sb.append("\n");
 			}
-			
+
 			//
 			if (log.getP_Date() != null)
 			{
@@ -483,6 +474,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @param AD_Process_ID int
 	 */
+	@Deprecated
 	public void setAD_Process_ID(int AD_Process_ID)
 	{
 		m_AD_Process_ID = AD_Process_ID;
@@ -604,46 +596,9 @@ public final class ProcessInfo implements Serializable
 		return m_Table_ID;
 	}
 
-	/**
-	 * Method setTable_ID
-	 *
-	 * @param AD_Table_ID int
-	 */
-	public void setTable_ID(int AD_Table_ID)
-	{
-		m_Table_ID = AD_Table_ID;
-	}
-
-	public void setTableName(final String tableName)
-	{
-		if (tableName == null)
-		{
-			m_Table_ID = -1;
-		}
-		else
-		{
-			m_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		}
-	}
-
-	/**
-	 * Method getRecord_ID
-	 *
-	 * @return int
-	 */
 	public int getRecord_ID()
 	{
 		return m_Record_ID;
-	}
-
-	/**
-	 * Method setRecord_ID
-	 *
-	 * @param Record_ID int
-	 */
-	public void setRecord_ID(int Record_ID)
-	{
-		m_Record_ID = Record_ID;
 	}
 
 	/**
@@ -738,6 +693,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * @param process title/name
 	 */
+	@Deprecated
 	public void setTitle(String Title)
 	{
 		m_Title = Title;
@@ -801,6 +757,11 @@ public final class ProcessInfo implements Serializable
 		return m_parameter;
 	}	// getParameter
 
+	public final ProcessInfoParameter[] getParametersNoLoad()
+	{
+		return m_parameter;
+	}
+
 	/**
 	 * Get Process Parameters as IParams instance.
 	 */
@@ -816,31 +777,12 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @param parameter Parameter Array
 	 */
+	@Deprecated
 	public void setParameter(final ProcessInfoParameter[] parameter)
 	{
 		m_parameter = parameter;
 		m_parameterLoaded = true;
 	}	// setParameter
-	
-	public void setParameter(final List<ProcessInfoParameter> parameter)
-	{
-		if(parameter == null || parameter.isEmpty())
-		{
-			m_parameter = new ProcessInfoParameter[]{};
-		}
-		else
-		{
-			m_parameter = parameter.toArray(new ProcessInfoParameter[parameter.size()]);
-		}
-		m_parameterLoaded = true;
-	}	// setParameter
-
-	
-	public void setParameterNotLoaded()
-	{
-		m_parameter = null;
-		m_parameterLoaded = false;
-	}
 
 	/**************************************************************************
 	 * Add to Log
@@ -892,7 +834,7 @@ public final class ProcessInfo implements Serializable
 		{
 			logs = _logs;
 		}
-		
+
 		logs.add(logEntry);
 	}
 
@@ -905,13 +847,13 @@ public final class ProcessInfo implements Serializable
 	 */
 	private final List<ProcessInfoLog> getLogsInnerList()
 	{
-		if(_logs == null)
+		if (_logs == null)
 		{
 			_logs = new ArrayList<>(ProcessInfoUtil.retrieveLogsFromDB(getAD_PInstance_ID()));
 		}
 		return _logs;
 	}
-	
+
 	public void markLogsAsStale()
 	{
 		// TODO: shall we save existing ones ?!
@@ -923,7 +865,7 @@ public final class ProcessInfo implements Serializable
 	 * 
 	 * This method will not load the logs.
 	 * 
-	 * @return current logs 
+	 * @return current logs
 	 */
 	/* package */List<ProcessInfoLog> getCurrentLogs()
 	{
@@ -931,13 +873,14 @@ public final class ProcessInfo implements Serializable
 		final List<ProcessInfoLog> logs = _logs;
 		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
 	}
-	
+
 	/**
 	 * Set print preview flag, only relevant if this is a reporting process.
 	 * A <code>false</code> parameter can be overridden by the {@link Ini#P_PRINTPREVIEW} property
 	 *
 	 * @param b
 	 */
+	@Deprecated
 	public void setPrintPreview(boolean b)
 	{
 		m_printPreview = b;
@@ -968,30 +911,10 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @param f
 	 */
+	@Deprecated
 	public void setReportingProcess(boolean f)
 	{
 		m_reportingProcess = f;
-	}
-
-	// FR 1906632
-	/**
-	 * Set PDF file generate to Jasper Report
-	 *
-	 * @param PDF File
-	 */
-	public void setPDFReport(File f)
-	{
-		m_pdf_report = f;
-	}
-
-	/**
-	 * Get PDF file generate to Jasper Report
-	 *
-	 * @param f
-	 */
-	public File getPDFReport()
-	{
-		return m_pdf_report;
 	}
 
 	// metas: begin
@@ -1112,17 +1035,9 @@ public final class ProcessInfo implements Serializable
 		return new TypedSqlQueryFilter<T>(m_whereClause);
 	}
 
-	/**
-	 * @param whereClause the m_whereClause to set
-	 */
-	public void setWhereClause(String whereClause)
-	{
-		this.m_whereClause = whereClause;
-	}
+	private final String m_whereClause;
 
-	private String m_whereClause = "";
-
-	private Language reportLanguage = null;
+	private final Language reportLanguage;
 
 	/**
 	 *
@@ -1132,18 +1047,6 @@ public final class ProcessInfo implements Serializable
 	{
 		return this.reportLanguage;
 	}
-
-	/**
-	 * Sets language to be used in reports.
-	 *
-	 * @param reportLanguage
-	 */
-	public void setReportLanguage(final Language reportLanguage)
-	{
-		this.reportLanguage = reportLanguage;
-	}
-
-	// metas end
 
 	private IGridTabSummaryInfo _gridTabSummaryInfo;
 
@@ -1261,4 +1164,212 @@ public final class ProcessInfo implements Serializable
 		OnError, /** Never display them */
 		Never,
 	};
+
+	public static final class ProcessInfoBuilder
+	{
+		private Properties ctx;
+		private String title = "";
+		private int adProcessId;
+		private int adTableId;
+		private int recordId;
+
+		private String whereClause = "";
+
+		private int windowNo = Env.WINDOW_None;
+		private int tabNo = Env.TAB_None;
+
+		private Language reportLanguage;
+		private Boolean printPreview;
+
+		private List<ProcessInfoParameter> parameters = null;
+
+		private ProcessInfoBuilder()
+		{
+			super();
+		}
+
+		public ProcessInfo build()
+		{
+			return new ProcessInfo(this);
+		}
+		
+		public ProcessInfoBuilder setCtx(final Properties ctx)
+		{
+			this.ctx = ctx;
+			return this;
+		}
+		
+		private Properties getCtx()
+		{
+			return ctx;
+		}
+
+		private String getTitle()
+		{
+			return title;
+		}
+
+		public ProcessInfoBuilder setTitle(String title)
+		{
+			this.title = title;
+			return this;
+		}
+
+		private int getAD_Process_ID()
+		{
+			return adProcessId;
+		}
+
+		public ProcessInfoBuilder setAD_Process_ID(final int adProcessId)
+		{
+			this.adProcessId = adProcessId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setTableName(final String tableName)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(final int adTableId, final int recordId)
+		{
+			this.adTableId = adTableId;
+			this.recordId = recordId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(final String tableName, final int recordId)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = recordId;
+			return this;
+		}
+
+		private int getAD_Table_ID()
+		{
+			return adTableId;
+		}
+
+		private int getRecord_ID()
+		{
+			return recordId;
+		}
+
+		/**
+		 * Sets language to be used in reports.
+		 * 
+		 * @param reportLanguage optional report language
+		 * @return
+		 */
+		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
+		{
+			this.reportLanguage = reportLanguage;
+			return this;
+		}
+
+		private Language getReportLanguage()
+		{
+			return reportLanguage;
+		}
+
+		public ProcessInfoBuilder setPrintPreview(final boolean printPreview)
+		{
+			this.printPreview = printPreview;
+			return this;
+		}
+
+		public boolean isPrintPreview()
+		{
+			final Boolean printPreview = this.printPreview;
+			if (printPreview != null)
+			{
+				return printPreview;
+			}
+
+			return Ini.isPropertyBool(Ini.P_PRINTPREVIEW);
+		}
+
+		public ProcessInfoBuilder setWindowNo(int windowNo)
+		{
+			this.windowNo = windowNo;
+			return this;
+		}
+
+		private int getWindowNo()
+		{
+			return windowNo;
+		}
+
+		public ProcessInfoBuilder setTabNo(int tabNo)
+		{
+			this.tabNo = tabNo;
+			return this;
+		}
+
+		private int getTabNo()
+		{
+			return tabNo;
+		}
+
+		public ProcessInfoBuilder setWhereClause(String whereClause)
+		{
+			this.whereClause = whereClause;
+			return this;
+		}
+
+		private String getWhereClause()
+		{
+			return whereClause;
+		}
+
+		private List<ProcessInfoParameter> getParametersOrNull()
+		{
+			return parameters;
+		}
+
+		public ProcessInfoBuilder addParameter(ProcessInfoParameter param)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+			parameters.add(param);
+
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameters(final ProcessInfoParameter[] params)
+		{
+			if (params == null || params.length == 0)
+			{
+				return this;
+			}
+
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+
+			for (ProcessInfoParameter param : params)
+			{
+				parameters.add(param);
+			}
+
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameters(final List<ProcessInfoParameter> params)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+
+			parameters.addAll(params);
+
+			return this;
+		}
+
+	}
 }   // ProcessInfo

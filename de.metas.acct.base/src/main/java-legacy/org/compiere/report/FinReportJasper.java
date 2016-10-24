@@ -16,14 +16,8 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_PA_Report;
-import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 
@@ -47,31 +41,18 @@ public class FinReportJasper extends FinReport
 			return;
 		}
 
-		// Now invoke the associated jasper report (must report on the T_Report table)
-		final List<ProcessInfoParameter> param = new ArrayList<>();
-
-		// Copy the list of parameters from the financial report
-		for (final ProcessInfoParameter oldpara : getParameter())
-			param.add(oldpara);
-		// and add the T_Report_AD_PInstance_ID parameter
-		param.add(new ProcessInfoParameter("T_Report_AD_PInstance_ID", getAD_PInstance_ID(), null, null, null));
-
 		// Load Report Definition
 		final I_PA_Report paReport = getPA_Report();
-
 		final I_AD_Process proc = paReport.getJasperProcess();
-		MPInstance instance = new MPInstance(proc, getTable_ID(), getRecord_ID());
-		instance.setWhereClause(getProcessInfo().getWhereClause());
-		instance.save();
 
-		final ProcessInfo pi = new ProcessInfo(proc.getName(), proc.getAD_Process_ID());
-		pi.setParameter(param.toArray(new ProcessInfoParameter[param.size()]));
-		pi.setTable_ID(getTable_ID());
-		pi.setRecord_ID(getRecord_ID());
-		pi.setAD_Process_ID(proc.getAD_Process_ID());
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
-
-		Services.get(IADPInstanceDAO.class).saveParameterToDB(pi); // 07154
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle(proc.getName())
+				.setAD_Process_ID(proc.getAD_Process_ID())
+				.setRecord(getTable_ID(), getRecord_ID())
+				.setWhereClause(getProcessInfo().getWhereClause())
+				.addParameters(getParameter()) // Copy the list of parameters from the financial report
+				.addParameter(ProcessInfoParameter.of("T_Report_AD_PInstance_ID", getAD_PInstance_ID()))
+				.build();
 
 		ProcessCtl.builder()
 				.setProcessInfo(pi)

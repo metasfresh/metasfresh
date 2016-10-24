@@ -40,6 +40,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MAttachment;
@@ -1000,11 +1001,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// Process
 			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			process.set_TrxName(trx != null ? trx.getTrxName() : null);
-			if (!process.isReport() || process.getAD_ReportView_ID() == 0)
+			if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
-			ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(),
-					getAD_Table_ID(), getRecord_ID());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setTitle(m_node.getName(true))
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.build();
 			pi.setAD_User_ID(getAD_User_ID());
 			pi.setAD_Client_ID(getAD_Client_ID());
 			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
@@ -1036,11 +1040,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
 			fillParameter(pInstance, trx);
 			//
-			final ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setTitle(m_node.getName(true))
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.build();
 			pi.setAD_User_ID(getAD_User_ID());
 			pi.setAD_Client_ID(getAD_Client_ID());
 			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());

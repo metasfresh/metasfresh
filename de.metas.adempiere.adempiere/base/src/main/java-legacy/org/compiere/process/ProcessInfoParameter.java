@@ -38,6 +38,23 @@ public final class ProcessInfoParameter implements Serializable
 	 */
 	private static final long serialVersionUID = 4536416337960754407L;
 	
+	public static final ProcessInfoParameter of(final String parameterName, final int parameterValue)
+	{
+		final Object parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+	
+	public static final ProcessInfoParameter of(final String parameterName, final String parameterValue)
+	{
+		final Object parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	
 	//
 	// Constants used to pass process parameters to Jasper Process
 	public static final String PARAM_PRINT_FORMAT = "PRINT_FORMAT";
