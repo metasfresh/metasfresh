@@ -1046,6 +1046,29 @@ public interface I_R_Request
     public static final String COLUMNNAME_NextAction = "NextAction";
 
 	/**
+	 * Set PerformanceType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPerformanceType (java.lang.String PerformanceType);
+
+	/**
+	 * Get PerformanceType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPerformanceType();
+
+    /** Column definition for PerformanceType */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PerformanceType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PerformanceType", null);
+    /** Column name PerformanceType */
+    public static final String COLUMNNAME_PerformanceType = "PerformanceType";
+
+	/**
 	 * Set Priority.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
@@ -1195,6 +1218,7 @@ public interface I_R_Request
     /** Column name QtySpent */
     public static final String COLUMNNAME_QtySpent = "QtySpent";
 
+	
 	/**
 	 * Set Category.
 	 * Request Category
