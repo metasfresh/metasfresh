@@ -323,7 +323,7 @@ class Lookup extends Component {
 
         }
 
-        
+
     }
 
     renderLookup = () => {
@@ -333,8 +333,6 @@ class Lookup extends Component {
     render() {
         const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected} = this.props;
         const {propertiesCopy,isInputEmpty} = this.state;
-
-        // console.log(selected);
 
         return (
             <div
@@ -357,8 +355,8 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
-                            
-                            
+
+
                         />
                     </div>
                     <div className="input-rest">

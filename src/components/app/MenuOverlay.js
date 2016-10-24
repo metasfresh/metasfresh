@@ -111,7 +111,6 @@ class MenuOverlay extends Component {
 
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
-        console.log(nodeId)
         dispatch(pathRequest(nodeId)).then(response => {
 
             let pathArray = [];

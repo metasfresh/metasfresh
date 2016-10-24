@@ -42,7 +42,7 @@ class List extends Component {
                 }));
             });
         }
-        
+
 
         this.dropdown.classList.add("input-dropdown-focused");
     }
@@ -71,8 +71,6 @@ class List extends Component {
     }
     render() {
         const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
-        // console.log('selected');
-        // console.log(selected)
 
         return (
             <div

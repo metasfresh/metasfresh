@@ -38,9 +38,6 @@ class FilterWidget extends Component {
 
     handlePatch = (property, value, paramId) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
-        // console.log('filters-----------');
-        // console.log(filters);
-
 
         // dispatch(updateFiltersParameters(filterId, property, value));
 
@@ -70,7 +67,7 @@ class FilterWidget extends Component {
         dispatch(updateFiltersParameters(filterId, property, value));
 
 
-        
+
     }
 
     //
@@ -92,7 +89,6 @@ class FilterWidget extends Component {
 
         // e.preventDefault();
         // dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
-        // console.log('handle change');
     }
 
     handleFocus = (e, value) => {
@@ -140,19 +136,12 @@ class FilterWidget extends Component {
             );
         }
 
-
-
-        // console.log('Filter widget props filters');
-        // console.log(this.props.filters);
     }
 
     render() {
         const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, item, filters} = this.props;
         const {updated} = this.state;
 
-        // console.log('selectedItem');
-        // console.log(filters.parameters[id].value);
-        // console.log(filters);
         if(widgetData){
             return (
                 <div className="form-group row">
@@ -161,7 +150,7 @@ class FilterWidget extends Component {
                             <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
                             <div className="col-sm-9 ">
                                 <RawWidget
-                                    handlePatch={this.handlePatch} 
+                                    handlePatch={this.handlePatch}
                                     widgetType={widgetType}
                                     fields={widgetData}
                                     windowType={windowType}

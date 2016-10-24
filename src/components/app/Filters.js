@@ -42,7 +42,7 @@ class Filters extends Component {
 			}
 		});
 
-		
+
 	}
 
 	handleClickOutside = (e) => {
@@ -67,7 +67,7 @@ class Filters extends Component {
 				openDateMenu: !openDateMenu
 			}))
 		}
-		
+
 	}
 
 	showFilter = (filterData) => {
@@ -80,9 +80,6 @@ class Filters extends Component {
 			filterDataItem: filterData,
 			openList: false
 		}), () => {
-				// console.log('filterData');
-				// console.log(filterData);
-
 				let parameters = [];
 
 				filterData.parameters.map((item, id) => {
@@ -93,8 +90,6 @@ class Filters extends Component {
 
 				})
 
-				// console.log(parameters);
-
 				dispatch(initFiltersParameters(filterData.filterId, parameters));
 
 		})
@@ -103,11 +98,7 @@ class Filters extends Component {
 	}
 
 	applyFilters = () => {
-		// console.log('apply filters');
-
 		const {filters, dispatch, updateDocList, windowType} = this.props;
-
-		// console.log(filters);
 
 		// let filter =
   //         [{
@@ -166,20 +157,18 @@ class Filters extends Component {
 		let parameters = [];
 
 		filterDataItem.parameters.map((item, id) => {
-			// console.log(item);
 			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
 		})
 
-		
-		
+
+
 		dispatch(setFilter([]));
 		updateDocList('grid', windowType);
 		this.setSelectedItem('', true);
-		
+
 	}
 
 	componentDidMount() {
-		// console.log('mounted');
 		const {filterData, dispatch} = this.props;
 
 		// let filterItem = {
@@ -214,7 +203,6 @@ class Filters extends Component {
 
 
 
-			// console.log(item);
 
 		});
 
@@ -224,11 +212,6 @@ class Filters extends Component {
 	renderFilterWidget = (item, index) => {
 		const {dispatch, filterData, windowType, updateDocList} = this.props;
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-
-		// console.log('filterData');
-		// console.log(filterDataItem);
-
-		
 
 		return(
 			<FilterWidget
@@ -246,7 +229,7 @@ class Filters extends Component {
 
 		)
 
-		
+
 	}
 
 
@@ -264,8 +247,8 @@ class Filters extends Component {
 						{ openList &&
 							<div className="filter-menu">
 								<ul>
-									{filterData && filterData.map((item, index) => 
-										<div key={index}> 
+									{filterData && filterData.map((item, index) =>
+										<div key={index}>
 											{!item.frequent &&
 												<li onClick={ () => this.showFilter(item) }>{item.caption}</li>
 											}
@@ -279,7 +262,7 @@ class Filters extends Component {
 								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
 								<div className="form-group row filter-content">
 									<div className="col-sm-12">
-										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) => 
+										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
 											this.renderFilterWidget(item, index)
 										)}
 									</div>
@@ -312,15 +295,15 @@ class Filters extends Component {
                     <i className="meta-icon-calendar" />
                         { filterDataItem? 'Filter: '+filterDataItem.caption : 'No data filters'}
                 </button>
-				
+
 				{ openDateMenu &&
 					<div className="filters-overlay">
 
 						{ openList &&
 							<div className="filter-menu">
 								<ul>
-									{filterData && filterData.map((item, index) => 
-										<div key={index}> 
+									{filterData && filterData.map((item, index) =>
+										<div key={index}>
 											{item.frequent &&
 												<li >
 													<DateRangePicker
@@ -352,7 +335,7 @@ class Filters extends Component {
 								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
 								<div className="form-group row filter-content">
 									<div className="col-sm-12">
-										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) => 
+										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
 											this.renderFilterWidget(item, index)
 										)}
 									</div>
@@ -372,14 +355,12 @@ class Filters extends Component {
 		const {dispatch} = this.props;
 		const {filterDataItem} = this.state;
 
-		
+
 	}
 
 	render() {
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
 		const {filterData, windowType, updateDocList} = this.props;
-
-		// console.log(filterData);
 
 		return (
 			<div>
@@ -387,7 +368,7 @@ class Filters extends Component {
 				<div className="filter-wrapper">{this.renderDateFilter()}</div>
 				<div className="filter-wrapper">{this.renderStandardFilter()}</div>
 			</div>
-			
+
 
 		)
 	}
