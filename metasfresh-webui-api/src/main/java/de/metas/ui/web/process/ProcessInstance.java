@@ -125,9 +125,13 @@ public class ProcessInstance
 		final int AD_Table_ID = adPInstance.getAD_Table_ID();
 		final int Record_ID = adPInstance.getRecord_ID();
 		final String classname = processDescriptor.getProcessClassname();
-		final ProcessInfo pi = new ProcessInfo(name, adProcessId, AD_Table_ID, Record_ID);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setTitle(name)
+				.setAD_Process_ID(adProcessId)
+				.setRecord(AD_Table_ID, Record_ID)
+				.build();
 		pi.setClassName(classname);
-		pi.setCtx(ctx);
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		pi.setAD_Org_ID(Env.getAD_Org_ID(ctx));

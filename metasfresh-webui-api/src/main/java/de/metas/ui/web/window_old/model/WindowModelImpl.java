@@ -37,9 +37,9 @@ import de.metas.ui.web.window_old.descriptor.PropertyDescriptor;
 import de.metas.ui.web.window_old.descriptor.legacy.VOPropertyDescriptorProvider;
 import de.metas.ui.web.window_old.model.action.ActionsManager;
 import de.metas.ui.web.window_old.shared.action.Action;
+import de.metas.ui.web.window_old.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window_old.shared.action.ActionGroup;
 import de.metas.ui.web.window_old.shared.action.ActionsList;
-import de.metas.ui.web.window_old.shared.action.Action.ActionEvent;
 import de.metas.ui.web.window_old.shared.command.ViewCommand;
 import de.metas.ui.web.window_old.shared.command.ViewCommandResult;
 import de.metas.ui.web.window_old.shared.datatype.GridRowId;
@@ -811,12 +811,16 @@ public class WindowModelImpl implements WindowModel
 		final int table_ID = recordRef.getAD_Table_ID();
 		final int record_ID = recordRef.getRecord_ID();
 		final String title = ""; // TODO
-		final ProcessInfo pi = new ProcessInfo(title, printProcessId, table_ID, record_ID);
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setTitle(title)
+				.setAD_Process_ID(printProcessId)
+				.setRecord(table_ID, record_ID)
+				.setWindowNo(windowNo)
+				// .setTabNo(getTabNo()); // TODO
+				.setPrintPreview(printPreview)
+				.build();
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setPrintPreview(printPreview);
-		pi.setWindowNo(windowNo); // metas: 03040
-		// pi.setTabNo(getTabNo()); // TODO
 
 		Services.get(IWebProcessCtl.class).reportAsync(pi, event);
 	}
