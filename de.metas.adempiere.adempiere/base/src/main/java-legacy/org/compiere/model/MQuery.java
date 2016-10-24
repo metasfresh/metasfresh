@@ -1509,7 +1509,7 @@ public final class MQuery implements Serializable
 				else
 				{
 					final String sqlValue = toSqlValue(code_ToUse.toString(), sqlParams);
-					sqlWhereClause.append(DB.TO_STRING(sqlValue));
+					sqlWhereClause.append(sqlValue);
 				}
 			}
 			else
@@ -1565,7 +1565,8 @@ public final class MQuery implements Serializable
 		else if(value instanceof java.util.Date)
 		{
 			final java.util.Date date = (java.util.Date)value;
-			return " TIMESTAMP '" + TimeUtil.asTimestamp(date).toString() + "'";
+			final String dateAsString = TimeUtil.asTimestamp(date).toString(); // date string (JDBC format)
+			return " TIMESTAMP " + DB.TO_STRING(dateAsString);
 		}
 		else
 		{
