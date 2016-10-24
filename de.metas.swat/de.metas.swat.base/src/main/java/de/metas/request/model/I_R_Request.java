@@ -34,30 +34,51 @@ public interface I_R_Request extends org.compiere.model.I_R_Request
 	public static final String IsMaterialReturned_Returned = "Y";
 	public static final String IsMaterialReturned_Partially = "P";
 	// @formatter:on
-	
+
 	// @formatter:off
 	public static final String COLUMNNAME_DateDelivered = "DateDelivered";
 
 	public void setDateDelivered(java.sql.Timestamp DateDelivered);
 	public java.sql.Timestamp getDateDelivered();
 	// @formatter:on
-	
+
 	// @formatter:off
 	public static final String COLUMNNAME_PerformanceType = "PerformanceType";
 		
+	@Override
 	public void setPerformanceType(String PerformanceType);
+	@Override
 	public String getPerformanceType();
 	
 	public static final String PerformanceType_DeliveryPerformance = "LP";
 	public static final String PerformanceType_QualityPerformance = "QP";
 	
 	// @formatter:on
-	
+
 	// @formatter:off
-	public static final String COLUMNNAME_QualityNote = "QualityNote";
-		
-	public void setQualityNote(String QualityNote);
-	public String getQualityNote();
+	
+    /** Column definition for QualityNote */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QualityNote = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QualityNote", null);
+    /** Column name QualityNote */
+    public static final String COLUMNNAME_QualityNote = "QualityNote";
+    
+	/**
+	 * Set Qualität-Notiz.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQualityNote (java.lang.String QualityNote);
+
+	/**
+	 * Get Qualität-Notiz.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getQualityNote();
 	// @formatter:on
 
 }
