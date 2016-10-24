@@ -74,12 +74,12 @@ class Modal extends Component {
 
     render() {
         const {data, layout, indicator, modalTitle, tabId, rowId, dataId, handleUpdateClick} = this.props;
-        const {isAdvanced} = this.state
+        const {isAdvanced,scrolled} = this.state
 
         return (
             data.length > 0 && <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
-                    <div className={"panel-modal-header " + (this.state.scrolled ? "header-shadow": "")}>
+                    <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose} onMouseDown={() => handleUpdateClick()}>

@@ -302,6 +302,10 @@ export function updateProperty(property, value, tabid, rowid, isModal){
             }
         }else{
             dispatch(updateDataProperty(property, value, getScope(isModal)))
+            if(isModal){
+                //update the master field too if exist
+                dispatch(updateDataProperty(property, value, "master"))
+            }
         }
     }
 }

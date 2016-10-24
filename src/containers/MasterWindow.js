@@ -19,7 +19,6 @@ class MasterWindow extends Component {
     constructor(props){
         super(props);
         this.state = {
-            data: [],
             updatedRow: false
         };
     }
@@ -27,12 +26,6 @@ class MasterWindow extends Component {
     handleUpdateClick =()=> {
         const {dispatch} = this.props;
         const {docId, windowType} = this.props.params;
-
-        dispatch(getData(windowType, docId)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data[0].fields
-            }))
-        });
 
         let th = this;
         this.setState(
@@ -48,17 +41,10 @@ class MasterWindow extends Component {
         );
     }
 
-    componentWillReceiveProps(props) {
-        const {master} = this.props;
-        this.setState(Object.assign({}, this.state, {
-            data: master.data
-        }))
-    }
-
     render() {
-        const {master, connectionError, modal, breadcrumb, references,actions} = this.props;
+        const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const {data, updatedRow} = this.state;
+        const {updatedRow} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
 
@@ -98,7 +84,7 @@ class MasterWindow extends Component {
                      />
                  }
                 <Window
-                    data={data}
+                    data={master.data}
                     layout={master.layout}
                     rowData={master.rowData}
                     dataId={dataId}

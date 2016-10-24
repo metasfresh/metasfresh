@@ -15,21 +15,12 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
-
-       // console.log(props.selectedItem)
-
     }
-
-    // setSelectedItem = (item) => {
-    //     this.setState(Object.assign({}, this.state, {
-    //         selectedItem: item
-    //     }));
-    // }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName, setSelectedItem, selectedItem, id} = this.props;
-        
+
 
         let widgetField = "";
         let selectedField = "";
@@ -50,7 +41,8 @@ class RawWidget extends Component {
             widgetData = data[0];
             widgetFields = fields[0];
             fieldsArray = fields;
-        } 
+        }
+
 
 
         switch(widgetType){
@@ -171,7 +163,7 @@ class RawWidget extends Component {
                         <input
                             type="text"
                             className="input-field js-input-field"
-                            value={selectedField}
+                            value={data[0].value}
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
