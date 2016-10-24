@@ -342,13 +342,14 @@ class Table extends Component {
                 return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
             }
     }
+
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, tabId, rowId));
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, updatedRow} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, newRow} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -374,6 +375,7 @@ class Table extends Component {
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
                         mainTable={mainTable}
+                        newRow={i === keys.length-1 ? newRow : false}
                     />
                 );
             }

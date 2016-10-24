@@ -12,13 +12,14 @@ import {
 class Modal extends Component {
     constructor(props) {
         super(props);
+        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
 
         this.state = {
-          scrolled: false,
-          isAdvanced: false
+            scrolled: false,
+            isAdvanced: false,
+            isNew: rowId === "NEW"
         }
 
-        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
         dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
             this.handleClose();
         });
@@ -67,7 +68,13 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        this.props.dispatch(closeModal());
+        const {dispatch, closeCallback} = this.props;
+        const {isNew} = this.state;
+        dispatch(closeModal());
+
+        if(isNew){
+            closeCallback();
+        }
 
         document.body.style.overflow = "auto";
     }

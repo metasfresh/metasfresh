@@ -66,7 +66,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly, mainTable} = this.props;
+        const { type, docId, rowId, tabId,readonly, mainTable, newRow} = this.props;
         const { edited, updatedRow } = this.state;
 
         //iterate over layout settings
@@ -89,7 +89,7 @@ class TableItem extends Component {
                     onClickOutside={(e) => this.handleEditProperty(e)}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
-                    updatedRow={updatedRow}
+                    updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
                 />
             )

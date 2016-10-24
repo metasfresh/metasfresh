@@ -18,10 +18,29 @@ import Container from '../components/Container';
 class MasterWindow extends Component {
     constructor(props){
         super(props);
+
+        this.state = {
+            newRow: false
+        }
+    }
+
+    closeModalCallback = () => {
+        this.setState(
+            Object.assign({}, this.state, {
+                newRow: true
+            }), () => {
+                setTimeout(() => {
+                    this.setState(Object.assign({}, this.state, {
+                        newRow: false
+                    }))
+                }, 250);
+            }
+        )
     }
 
     render() {
         const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
+        const {newRow} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
@@ -58,6 +77,7 @@ class MasterWindow extends Component {
                         tabId={modal.tabId}
                         rowId={modal.rowId}
                         modalTitle={modal.title}
+                        closeCallback={this.closeModalCallback}
                      />
                  }
                 <Window
@@ -66,6 +86,7 @@ class MasterWindow extends Component {
                     rowData={master.rowData}
                     dataId={dataId}
                     isModal={false}
+                    newRow={newRow}
                 />
             </Container>
         );
