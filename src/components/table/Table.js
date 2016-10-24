@@ -374,7 +374,6 @@ class Table extends Component {
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
                         mainTable={mainTable}
-                        updatedRow={i===keys.length-1 ? updatedRow : false}
                     />
                 );
             }

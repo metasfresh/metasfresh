@@ -18,7 +18,7 @@ class Window extends Component {
     }
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
-        const {data, rowData, updatedRow} = this.props;
+        const {data, rowData} = this.props;
         const dataId = findRowByPropName(data,"ID").value;
 
         return(
@@ -39,7 +39,6 @@ class Window extends Component {
                                     docId={dataId}
                                     emptyText={emptyResultText}
                                     emptyHint={emptyResultHint}
-                                    updatedRow={updatedRow}
                                 />
                             </TabPane>
                         )

@@ -11,7 +11,8 @@ class TableItem extends Component {
         super(props);
         this.state = {
             edited: "",
-            activeCell: ""
+            activeCell: "",
+            updatedRow: false
         };
     }
     handleEditProperty = (e,property, callback) => {
@@ -65,8 +66,8 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly, mainTable, updatedRow} = this.props;
-        const { edited } = this.state;
+        const { type, docId, rowId, tabId,readonly, mainTable} = this.props;
+        const { edited, updatedRow } = this.state;
 
         //iterate over layout settings
         return cols && cols.map((item, index) => {
@@ -89,12 +90,28 @@ class TableItem extends Component {
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
                     updatedRow={updatedRow}
+                    updateRow={this.updateRow}
                 />
             )
         })
     }
+
+    updateRow = () => {
+        this.setState(
+            Object.assign({}, this.state, {
+                updatedRow: true
+            }), () => {
+                setTimeout(() => {
+                    this.setState(Object.assign({}, this.state, {
+                        updatedRow: false
+                    }))
+                }, 250);
+            }
+        )
+    }
+
     render() {
-        const {isSelected, fields, selectedProducts, onContextMenu, rowId, cols, onMouseDown, onDoubleClick, updatedRow} = this.props;
+        const {isSelected, fields, selectedProducts, onContextMenu, rowId, cols, onMouseDown, onDoubleClick} = this.props;
         return (
             <tr
                 onContextMenu = {onContextMenu}

@@ -7,9 +7,12 @@ import MasterWidget from '../MasterWidget';
 class TableCell extends Component {
     constructor(props) {
         super(props);
+    }
 
-        this.state = {
-            updatedCell: false
+    componentWillReceiveProps(nextProps) {
+        const {widgetData, updateRow} = this.props;
+        if(widgetData[0].value !== nextProps.widgetData[0].value) {
+            updateRow();
         }
     }
 
@@ -49,25 +52,8 @@ class TableCell extends Component {
         }
     }
 
-    updateCell = () => {
-
-        let th = this;
-        this.setState(
-            Object.assign({}, this.state, {
-                updatedCell: true
-            }), () => {
-                setTimeout(function(){
-                  th.setState(Object.assign({}, this.state, {
-                    updatedCell: false
-                  }))
-                }, 250);
-            }
-        );
-    }
-
     render() {
         const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly, updatedRow} = this.props;
-        const {updatedCell} = this.state;
         return (
             <td
                 tabIndex="0"
@@ -82,7 +68,7 @@ class TableCell extends Component {
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType==="Text" ? "td-md " : "") +
                     (item.widgetType) +
-                    ((updatedCell || updatedRow) ? " pulse-on" : " pulse-off")
+                    ((updatedRow) ? " pulse-on" : " pulse-off")
                 }
             >
                 {
@@ -96,7 +82,6 @@ class TableCell extends Component {
                             tabId={tabId}
                             noLabel={true}
                             gridAlign={item.gridAlign}
-                            updateCell={this.updateCell}
                         />
                     :
                         this.fieldToString(widgetData[0].value, item.widgetType)
