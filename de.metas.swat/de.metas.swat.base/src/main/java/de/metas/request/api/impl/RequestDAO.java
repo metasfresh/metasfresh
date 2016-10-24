@@ -3,11 +3,14 @@ package de.metas.request.api.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
@@ -43,6 +46,7 @@ public class RequestDAO implements IRequestDAO
 {
 	public static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
 
+	public static final String ATTR_NAME_QualityNotice = "QualityNotice";
 
 	@Override
 	public void createRequestFromInOutLine(final I_M_InOutLine line)
@@ -73,7 +77,11 @@ public class RequestDAO implements IRequestDAO
 		// data from line
 		request.setM_InOut_ID(inOutID);
 		request.setM_Product_ID(line.getM_Product_ID());
-		request.setQualityNote(line.getQualityNote());
+
+		final String qualityNoteName = line.getQualityNote();
+
+		// set QualityNote based on the string provided in the inout line
+		setQualityNote(request, qualityNoteName);
 
 		// data from inout
 		final I_M_InOut inOut = line.getM_InOut();
@@ -113,10 +121,51 @@ public class RequestDAO implements IRequestDAO
 			request.setSalesRep(userInCharge);
 		}
 
-		// configential type internal
+		// confidential type internal
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
 
 		// save the request
 		InterfaceWrapperHelper.save(request);
+	}
+
+	/**
+	 * When coming from an inoutLine the quality Note is a String.
+	 * This method's purpose is to find the M_AttributeValue entry of the attribute QualityNote that has a similar name and set it in the Request.
+	 * 
+	 * @param request
+	 * @param QualityNoteName
+	 */
+	private void setQualityNote(final I_R_Request request, final String qualityNoteName)
+	{
+		if (qualityNoteName == null)
+		{
+			// Requests can be created from inout lines even if they do not have a quality Notice set but they have a quality Discoutn Percent.
+			request.setQualityNote(null);
+		}
+
+		else
+		{
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(request);
+
+			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+			final I_M_Attribute qualityNoteAttr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_NAME_QualityNotice, I_M_Attribute.class);
+
+			final I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull_ForName(qualityNoteAttr, qualityNoteName);
+
+			if (attributeValue == null)
+			{
+				request.setQualityNote(null);
+			}
+
+			else
+			{
+
+				// set the found value in the Request's qualityNote even if it is null
+				request.setQualityNote(attributeValue.getValue());
+			}
+
+		}
 	}
 }
