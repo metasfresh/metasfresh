@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -190,4 +189,14 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
+
+	/**
+	 * Retrieve an M_AttributeValue entry by it's attribute and Name.
+	 * Only use if you are sure there aren't several attribute values with the same name!
+	 * 
+	 * @param attribute
+	 * @param name
+	 * @return
+	 */
+	I_M_AttributeValue retrieveAttributeValueOrNull_ForName(I_M_Attribute attribute, String name);
 }

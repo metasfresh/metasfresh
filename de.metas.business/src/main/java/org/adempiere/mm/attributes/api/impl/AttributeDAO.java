@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -114,7 +113,7 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// search by Value
 		final I_M_AttributeValue avDirect = map.get(value);
-		
+
 		if (avDirect != null)
 		{
 			return avDirect;
@@ -123,6 +122,19 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// Nothing found so far, return null
 		return null;
+	}
+
+	@Override
+	public I_M_AttributeValue retrieveAttributeValueOrNull_ForName(final I_M_Attribute attribute, final String name)
+	{
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeValue.class, attribute)
+				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_AttributeValue.COLUMN_Name, name)
+				.create()
+				.firstOnly(I_M_AttributeValue.class);
+
 	}
 
 	@Override
@@ -138,7 +150,7 @@ public class AttributeDAO implements IAttributeDAO
 		// NOTE:
 		// * atm we assume if we have a validation rule, we are dealing with high volume lists
 		// * in future, maybe we could add a flag for that (or something)
-		// * atm, the only case/example that we have is the "Karoten ID" from 
+		// * atm, the only case/example that we have is the "Karoten ID" from
 		return attribute.getAD_Val_Rule_ID() > 0;
 	}
 
