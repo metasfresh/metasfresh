@@ -15,20 +15,27 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
-
-       // console.log(props.selectedItem)
+       
+       this.state = {
+            textValue: props.selectedItem
+       }
 
     }
 
-    // setSelectedItem = (item) => {
-    //     this.setState(Object.assign({}, this.state, {
-    //         selectedItem: item
-    //     }));
-    // }
+    handleSelectedValue = (item) => {
+        const {setSelectedItem} = this.props
+        this.setState(Object.assign({}, this.state, {
+            textValue: item
+        }))
+
+        setSelectedItem(item);
+    }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName, setSelectedItem, selectedItem, id} = this.props;
+        const {textValue} = this.state;
+        
         
 
         let widgetField = "";
@@ -193,11 +200,11 @@ class RawWidget extends Component {
                     }>
                         <textarea
                             className="input-field js-input-field"
-                            value={selectedField}
+                            value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
                             placeholder={widgetFields.emptyText}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(e, widgetField)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>

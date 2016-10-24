@@ -11,6 +11,14 @@ export function setFilter(filter){
     }
 }
 
+export function setFilterRequest(filter){
+    return dispatch => new Promise( (resolve, reject) => {
+        dispatch(setFilter(filter));
+
+        resolve();
+    })
+}
+
 export function setSorting(prop, dir, windowType){
     return {
         type: types.SET_LIST_SORTING,

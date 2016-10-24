@@ -9,6 +9,7 @@ import DateRangePicker from 'react-bootstrap-daterangepicker';
 import DatetimeRange from './DatetimeRange';
 import {
 	setFilter,
+	setFilterRequest
 } from '../../actions/ListActions';
 
 import {
@@ -16,6 +17,10 @@ import {
     initFiltersParameters,
     deleteFiltersParameters
 } from '../../actions/AppActions';
+
+import {
+	getRootBreadcrumb
+} from '../../actions/MenuActions';
 
 class Filters extends Component {
 	constructor(props) {
@@ -32,17 +37,16 @@ class Filters extends Component {
 		};
 	}
 
+
 	setSelectedItem = (item, close) => {
-		let th = this;
+
 		this.setState(Object.assign({}, this.state, {
 			selectedItem: item
 		}), () => {
 			if(close){
-				th.hideFilter();
+				this.hideFilter();
 			}
 		});
-
-		
 	}
 
 	handleClickOutside = (e) => {
@@ -88,8 +92,6 @@ class Filters extends Component {
 			filterDataItem: filterData,
 			openList: false
 		}), () => {
-				// console.log('filterData');
-				// console.log(filterData);
 
 				let parameters = [];
 
@@ -101,57 +103,16 @@ class Filters extends Component {
 
 				})
 
-				// console.log(parameters);
-
 				dispatch(initFiltersParameters(filterData.filterId, parameters));
-
 		})
-
-
 	}
 
 	applyFilters = () => {
-		// console.log('apply filters');
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
 
-		// console.log(filters);
-
-		// let filter =
-  //         [{
-  //           filterId: "default",
-  //           parameters: [
-  //             {
-  //               parameterName: "C_BPartner_ID",
-  //               value: {
-  //               	2156425:"G0001_Musterfrau, Lisasssder"
-  //               }
-  //             },{
-  //               parameterName: "BPartnerAddress",
-  //               value: "qweqweqwe"
-  //             },{
-  //               parameterName: "C_DocType_ID",
-  //               value: {
-  //               	1000007:"Abgleich Rechnung"
-  //               }
-  //             }
-  //           ]
-  //         }]
-
-//   let filter =
-//           [{
-//             filterId: "default",
-//             parameters: [
-// {
-//                 parameterName: "C_DocType_ID",
-//                 value: {
-//                 	2156425:"G0001_Musterfrau, Lisasssder"
-//                 }
-//               }
-//             ]
-//           }]
-		console.log(filters);
 		dispatch(setFilter(filters));
+
 		setTimeout(() => { updateDocList('grid', windowType); }, 1)
 
         this.closeFilterMenu();
@@ -175,14 +136,13 @@ class Filters extends Component {
 		let parameters = [];
 
 		filterDataItem.parameters.map((item, id) => {
-			// console.log(item);
 			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
 		})
 
 		
 		
-		deleteFiltersParameters();
-		dispatch(setFilter(null));
+		dispatch(deleteFiltersParameters());
+		setTimeout(() => { dispatch(setFilter(null)); }, 1)
 		setTimeout(() => { updateDocList('grid', windowType); }, 1)
 
 
@@ -191,57 +151,10 @@ class Filters extends Component {
 		
 	}
 
-	componentDidMount() {
-		// console.log('mounted');
-		const {filterData, dispatch} = this.props;
-
-		// let filterItem = {
-		// 	filterId: "",
-		// 	parameters: [
-		// 		parameterName: "",
-		// 		value: {}
-		// 	]
-
-		// };
-
-
-		filterData.map((item, index) => {
-
-
-
-			// if(!item.frequent){
-			// 	dispatch(updateFiltersParameters({
-			// 		filterId: item.filterId,
-			// 		parameters: item.parameters
-			// 	}));
-			// }
-
-			// if(!item.frequent){
-			// 	dispatch(updateFiltersParameters({
-			// 		filterId: item.filterId,
-			// 		parameters: item.parameters.map((it, id) => {
-			// 			parameterName: it.parameterName
-			// 		})
-			// 	}));
-			// }
-
-
-
-			// console.log(item);
-
-		});
-
-		// dispatch(updateFiltersParameters(filterData));
-	}
 
 	renderFilterWidget = (item, index) => {
 		const {dispatch, filterData, windowType, updateDocList} = this.props;
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-
-		// console.log('filterData');
-		// console.log(filterDataItem);
-
-		
 
 		return(
 			<FilterWidget
@@ -309,7 +222,7 @@ class Filters extends Component {
 	}
 
 	handleEvent = (event, picker) => {
-       console.log('datepicker event');
+       
     }
 
 	renderDateFilter = () => {
@@ -358,7 +271,6 @@ class Filters extends Component {
 													</DateRangePicker>
 
 
-
 												</li>
 											}
 										</div>
@@ -398,7 +310,6 @@ class Filters extends Component {
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
 		const {filterData, windowType, updateDocList} = this.props;
 
-		// console.log(filterData);
 
 		return (
 			<div>
