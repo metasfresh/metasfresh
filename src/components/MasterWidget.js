@@ -31,37 +31,44 @@ class Widget extends Component {
         let currRowId = rowId;
         let ret = null;
 
-        if(rowId === "NEW"){
-            currRowId = relativeDocId;
-        }
-        let customWindowType = windowType;
-        if(isAdvanced){
-            customWindowType += "&advanced=true";
-        }
-
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
-
-            //check if we should update store
-            //except button value
-            if(widgetType !== "Button"){
-                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
-            }
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
-        }
 
         this.setState(Object.assign({}, this.state, {
-            edited: true,
-            cachedValue: null
-        }));
+            edited: true
+        }), () => {
 
-        //callback
-        if(onChange){
-            onChange();
-        }
+            if(rowId === "NEW"){
+                currRowId = relativeDocId;
+            }
+            let customWindowType = windowType;
+            if(isAdvanced){
+                customWindowType += "&advanced=true";
+            }
 
-        return ret;
+
+            //do patch only when value is not equal state
+            //or cache is set and it is not equal value
+            if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+
+                //check if we should update store
+                //except button value
+                if(widgetType !== "Button"){
+                    dispatch(updateProperty(property, value, tabId, currRowId, isModal));
+                }
+                ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
+            }
+
+            this.setState(Object.assign({}, this.state, {
+                cachedValue: null
+            }));
+
+            //callback
+            if(onChange){
+                onChange();
+            }
+
+            return ret;
+
+        });
     }
     //
     // This method may looks like a redundant for this one above,
