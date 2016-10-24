@@ -79,7 +79,7 @@ class Filters extends Component {
 				}))
 			})
 		}
-		
+
 	}
 
 	showFilter = (filterData) => {
@@ -92,7 +92,6 @@ class Filters extends Component {
 			filterDataItem: filterData,
 			openList: false
 		}), () => {
-
 				let parameters = [];
 
 				filterData.parameters.map((item, id) => {
@@ -108,6 +107,7 @@ class Filters extends Component {
 	}
 
 	applyFilters = () => {
+<<<<<<< HEAD
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
 
@@ -138,14 +138,11 @@ class Filters extends Component {
 		filterDataItem.parameters.map((item, id) => {
 			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
 		})
-
 		
 		
 		dispatch(deleteFiltersParameters());
 		setTimeout(() => { dispatch(setFilter(null)); }, 1)
 		setTimeout(() => { updateDocList('grid', windowType); }, 1)
-
-
 
 		this.setSelectedItem('', true);
 		
@@ -172,7 +169,7 @@ class Filters extends Component {
 
 		)
 
-		
+
 	}
 
 
@@ -190,8 +187,8 @@ class Filters extends Component {
 						{ openList &&
 							<div className="filter-menu">
 								<ul>
-									{filterData && filterData.map((item, index) => 
-										<div key={index}> 
+									{filterData && filterData.map((item, index) =>
+										<div key={index}>
 											{!item.frequent &&
 												<li onClick={ () => this.showFilter(item) }>{item.caption}</li>
 											}
@@ -205,7 +202,7 @@ class Filters extends Component {
 								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
 								<div className="form-group row filter-content">
 									<div className="col-sm-12">
-										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) => 
+										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
 											this.renderFilterWidget(item, index)
 										)}
 									</div>
@@ -242,7 +239,7 @@ class Filters extends Component {
                     <i className="meta-icon-calendar" />
                         { filterDataItem? 'Filter: '+filterDataItem.caption : 'No data filters'}
                 </button>
-				
+
 				{ openDateMenu &&
 					<div className="filters-overlay">
 
@@ -283,7 +280,7 @@ class Filters extends Component {
 								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
 								<div className="form-group row filter-content">
 									<div className="col-sm-12">
-										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) => 
+										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
 											this.renderFilterWidget(item, index)
 										)}
 									</div>
@@ -303,13 +300,12 @@ class Filters extends Component {
 		const {dispatch} = this.props;
 		const {filterDataItem} = this.state;
 
-		
+
 	}
 
 	render() {
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
 		const {filterData, windowType, updateDocList} = this.props;
-
 
 		return (
 			<div>
@@ -317,7 +313,7 @@ class Filters extends Component {
 				<div className="filter-wrapper">{this.renderDateFilter()}</div>
 				<div className="filter-wrapper">{this.renderStandardFilter()}</div>
 			</div>
-			
+
 
 		)
 	}

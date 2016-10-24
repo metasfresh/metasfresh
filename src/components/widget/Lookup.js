@@ -334,7 +334,7 @@ class Lookup extends Component {
 
         }
 
-        
+
     }
 
     renderLookup = () => {
@@ -366,6 +366,7 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
+
                         />
                     </div>
                     <div className="input-rest">

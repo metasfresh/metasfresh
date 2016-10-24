@@ -39,9 +39,8 @@ class FilterWidget extends Component {
     handlePatch = (property, value, paramId) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
 
-
         dispatch(updateFiltersParameters(filterId, property, value));
-        
+
     }
 
     //
@@ -49,6 +48,7 @@ class FilterWidget extends Component {
     // but is need to handle controlled components if
     // they patch on other event than onchange
     //
+
 
     handleFocus = (e, value) => {
         e.preventDefault();
@@ -109,7 +109,7 @@ class FilterWidget extends Component {
                             <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
                             <div className="col-sm-9 ">
                                 <RawWidget
-                                    handlePatch={this.handlePatch} 
+                                    handlePatch={this.handlePatch}
                                     widgetType={widgetType}
                                     fields={widgetData}
                                     windowType={windowType}

@@ -26,31 +26,31 @@ export function setActions(actions){
 
 // THUNK ACTIONS
 export function getDashboardLink() {
-    return dispatch => axios.get(config.API_URL + '/userSession/dashboardUrl');
+    return () => axios.get(config.API_URL + '/userSession/dashboardUrl');
 }
 
 export function pathRequest(nodeId) {
-    return dispatch => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
+    return () => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
 }
 
 export function nodePathsRequest(nodeId, limit) {
-    return dispatch => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function elementPathRequest(pathType, elementId) {
-    return dispatch => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
+    return () => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
 }
 
 export function queryPathsRequest(query, limit, child) {
-    return dispatch => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : "") + (child ? '&childrenInclusive=true':''));
+    return () => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : "") + (child ? '&childrenInclusive=true':''));
 }
 
 export function rootRequest(limit) {
-    return dispatch => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function getRootBreadcrumb() {
-    return dispatch => {
+    return (dispatch) => {
         dispatch(rootRequest(6)).then(root => {
             dispatch(setBreadcrumb([{nodeId: "0", children: root.data}]));
         });
@@ -65,7 +65,7 @@ export function getWindowBreadcrumb(id){
 
 
             // promise to get all of the breadcrumb menu options
-            let breadcrumbProcess = new Promise((resolve, reject) => {
+            let breadcrumbProcess = new Promise((resolve) => {
 
                 for(let i = 0; i < pathData.length; i++){
                     const node = pathData[i];
@@ -97,18 +97,18 @@ export function getWindowBreadcrumb(id){
             return breadcrumbProcess;
         }).then((item) => {
             dispatch(setBreadcrumb(item.reverse()));
-        }).catch((err) => {
+        }).catch(() => {
             dispatch(setBreadcrumb([]));
         });
     }
 }
 
 export function getRelatedDocuments(type, id){
-    return dispatch => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
+    return () => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
 }
 
 export function getDocumentActions(type, id){
-    return dispatch => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
+    return () => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
 }
 
 

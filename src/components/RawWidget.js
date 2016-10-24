@@ -37,7 +37,6 @@ class RawWidget extends Component {
         const {textValue} = this.state;
         
         
-
         let widgetField = "";
         let selectedField = "";
         let widgetData = "";
@@ -57,7 +56,8 @@ class RawWidget extends Component {
             widgetData = data[0];
             widgetFields = fields[0];
             fieldsArray = fields;
-        } 
+        }
+
 
 
         switch(widgetType){
@@ -178,7 +178,7 @@ class RawWidget extends Component {
                         <input
                             type="text"
                             className="input-field js-input-field"
-                            value={selectedField}
+                            value={data[0].value}
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
@@ -391,8 +391,7 @@ class RawWidget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign} = this.props;
-
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, updated} = this.props;
         return (
             <div>
                 {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}

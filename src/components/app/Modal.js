@@ -12,13 +12,14 @@ import {
 class Modal extends Component {
     constructor(props) {
         super(props);
+        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
 
         this.state = {
-          scrolled: false,
-          isAdvanced: false
+            scrolled: false,
+            isAdvanced: false,
+            isNew: rowId === "NEW"
         }
 
-        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
         dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
             this.handleClose();
         });
@@ -67,22 +68,28 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        this.props.dispatch(closeModal());
+        const {dispatch, closeCallback} = this.props;
+        const {isNew} = this.state;
+        dispatch(closeModal());
+
+        if(isNew){
+            closeCallback();
+        }
 
         document.body.style.overflow = "auto";
     }
 
     render() {
-        const {data, layout, indicator, modalTitle, tabId, rowId, dataId, handleUpdateClick} = this.props;
-        const {isAdvanced} = this.state
+        const {data, layout, indicator, modalTitle, tabId, rowId, dataId} = this.props;
+        const {isAdvanced,scrolled} = this.state
 
         return (
             data.length > 0 && <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">
-                    <div className={"panel-modal-header " + (this.state.scrolled ? "header-shadow": "")}>
+                    <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
-                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose} onMouseDown={() => handleUpdateClick()}>
+                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
                                 Done
                             </span>
 
