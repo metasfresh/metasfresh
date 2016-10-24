@@ -4,11 +4,7 @@ import config from '../config';
 import {push, replace} from 'react-router-redux';
 
 import {
-    getWindowBreadcrumb,
-    getRelatedDocuments,
-    setReferences,
-    getDocumentActions,
-    setActions
+    getWindowBreadcrumb
 } from './MenuActions';
 
 import {
@@ -164,7 +160,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-            }).then(response =>
+            }).then(() =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data, getScope(isModal)))
@@ -221,7 +217,7 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 
     }
 
-    return dispatch => axios.patch(
+    return () => axios.patch(
         config.API_URL +
         '/window/commit?type=' +
         windowType +
@@ -311,7 +307,7 @@ export function updateProperty(property, value, tabid, rowid, isModal){
 }
 
 export function initLayout(windowType, tabId){
-    return dispatch => axios.get(
+    return () => axios.get(
         config.API_URL +
         '/window/layout?type=' + windowType +
         (tabId ? "&tabid=" + tabId : "")
@@ -319,7 +315,7 @@ export function initLayout(windowType, tabId){
 }
 
 export function getData(windowType, id, tabId, rowId) {
-    return dispatch => axios.get(
+    return () => axios.get(
         config.API_URL +
         '/window/data?type=' + windowType +
         '&id=' + id +
@@ -363,7 +359,7 @@ export function findRowByPropName(arr, name) {
 export function getItemsByProperty(arr, prop, value) {
     let ret = [];
 
-    arr.map((item, index) => {
+    arr.map((item) => {
         if(item[prop] === value){
             ret.push(item);
         }
@@ -374,7 +370,7 @@ export function getItemsByProperty(arr, prop, value) {
 
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
-    return dispatch => axios.delete(
+    return () => axios.delete(
         config.API_URL +
         '/window/delete?type=' + windowType +
         '&id=' + id +
