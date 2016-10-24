@@ -64,10 +64,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	// services
 	private static final Logger log = LogManager.getLogger(ProcessPanel.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	// private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
 	private final ProcessPanelWindow window;
-	private final int m_AD_Process_ID;
+	private final I_AD_Process _adProcessTrl;
 	private final int m_WindowNo;
 	private final int m_TabNo;
 	private final int _adUserId;
@@ -79,11 +78,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final boolean m_IsReport;
 	private final boolean printPreview;
 	private final ASyncProcess asyncParent;
-
-	private final String _processName;
-	private final String _processDescription;
-	private final String _processHelp;
-	private final String _processClassname;
 
 	/** Determine if a Help Process Window is shown */
 	private final String m_ShowHelp;
@@ -106,8 +100,17 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		this.window = builder.getWindow();
 		window.enableWindowEvents(AWTEvent.WINDOW_EVENT_MASK);
 
+		//
+		// Load process definition from database
 		final Properties ctx = Env.getCtx();
-		m_AD_Process_ID = builder.getAD_Process_ID();
+		//m_AD_Process_ID = builder.getAD_Process_ID();
+		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), builder.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		if (process == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + builder.getAD_Process_ID());
+		}
+		this._adProcessTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(Env.getCtx()));
+
 
 		this.m_WindowNo = builder.getWindowNo();
 		this.m_TabNo = builder.getTabNo();
@@ -126,29 +129,10 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 
 		//
 		// Load process definition from database
-		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), m_AD_Process_ID, I_AD_Process.class, ITrx.TRXNAME_None);
-		if (process == null)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + m_AD_Process_ID);
-		}
-		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(Env.getCtx()));
-		_processName = processTrl.getName();
-		_processDescription = processTrl.getDescription();
-		_processHelp = processTrl.getHelp();
-		m_IsReport = processTrl.isReport();
+		m_IsReport = _adProcessTrl.isReport();
 
-		final String showHelp = builder.getShowHelp();
-		if (showHelp == null)
-		{
-			m_ShowHelp = processTrl.getShowHelp();
-		}
-		else
-		{
-			m_ShowHelp = showHelp;
-		}
-
-		_allowProcessReRun = builder.isAllowProcessReRun(processTrl::isAllowProcessReRun);
-		_processClassname = processTrl.getClassname();
+		m_ShowHelp = builder.getShowHelp(_adProcessTrl::getShowHelp);
+		_allowProcessReRun = builder.isAllowProcessReRun(_adProcessTrl::isAllowProcessReRun);
 
 		try
 		{
@@ -164,27 +148,25 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	}	// ProcessDialog
 
 	/** The main panel */
-	private CPanel dialog = new CPanel()
+	@SuppressWarnings("serial")
+	private final CPanel dialog = new CPanel()
 	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 428410337428677817L;
-
 		@Override
 		public Dimension getPreferredSize()
 		{
-			Dimension d = super.getPreferredSize();
-			Dimension m = getMinimumSize();
+			final Dimension d = super.getPreferredSize();
+			final Dimension m = getMinimumSize();
 			if (d.height < m.height || d.width < m.width)
 			{
-				Dimension d1 = new Dimension();
+				final Dimension d1 = new Dimension();
 				d1.height = Math.max(d.height, m.height);
 				d1.width = Math.max(d.width, m.width);
 				return d1;
 			}
 			else
+			{
 				return d;
+			}
 		}
 	};
 
@@ -370,7 +352,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	{
 		//
 		// Update UI
-		window.setTitle(_processName);
+		window.setTitle(_adProcessTrl.getName());
 		messageTop.setText(buildProcessMessageText());
 
 		//
@@ -424,21 +406,27 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private String buildProcessMessageText()
 	{
 		final StringBuilder messageText = new StringBuilder();
+
+		//
 		// Description
+		final String processDescription = _adProcessTrl.getDescription();
 		messageText.append("<b>");
-		if (Check.isEmpty(_processDescription))
+		if (Check.isEmpty(processDescription))
 		{
 			messageText.append(msgBL.getMsg(Env.getCtx(), "StartProcess?"));
 		}
 		else
 		{
-			messageText.append(_processDescription);
+			messageText.append(processDescription);
 		}
 		messageText.append("</b>");
+		
+		//
 		// Help
-		if (!Check.isEmpty(_processHelp))
+		final String processHelp = _adProcessTrl.getHelp();
+		if (!Check.isEmpty(processHelp))
 		{
-			messageText.append("<p>").append(_processHelp).append("</p>");
+			messageText.append("<p>").append(processHelp).append("</p>");
 		}
 
 		return messageText.toString();
@@ -447,8 +435,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final ProcessInfo createProcessInfo()
 	{
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle(_processName)
-				.setAD_Process_ID(m_AD_Process_ID)
+				.setFromAD_Process(_adProcessTrl)
 				.setWhereClause(whereClause)
 				.setRecord(adTableId, recordId)
 				.setWindowNo(m_WindowNo).setTabNo(m_TabNo)
@@ -458,7 +445,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		
 		pi.setAD_User_ID(_adUserId);
 		pi.setAD_Client_ID(_adClientId);
-		pi.setClassName(_processClassname);
 		pi.setGridTabSummaryInfo(gridTabSummaryInfo);
 		return pi;
 	}

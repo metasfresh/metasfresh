@@ -65,7 +65,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MPayment;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
@@ -155,19 +154,14 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 						// AD_BoilerPlate_Report.class.getCanonicalName()
 				})
 				.firstOnly();
-		// Create Instance
-		final MPInstance pInstance = new MPInstance(process); // adTableId=0, recordId=0
-		pInstance.saveEx();
 		
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle(process.getName())
-				.setAD_Process_ID(process.getAD_Process_ID())
+				.setFromAD_Process(process)
 				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
 				.build();
 		
 		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
 		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
 		
 		ProcessCtl.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);

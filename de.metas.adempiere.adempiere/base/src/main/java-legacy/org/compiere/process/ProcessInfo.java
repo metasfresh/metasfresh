@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -46,7 +47,6 @@ import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
@@ -71,8 +71,11 @@ public final class ProcessInfo implements Serializable
 	{
 		super();
 		ctx = builder.getCtx();
+		
 		m_Title = builder.getTitle();
 		m_AD_Process_ID = builder.getAD_Process_ID();
+		_className = builder.getClassname();
+		_refreshAllAfterExecution = builder.isRefreshAllAfterExecution();
 
 		m_Table_ID = builder.getAD_Table_ID();
 		m_Record_ID = builder.getRecord_ID();
@@ -107,7 +110,6 @@ public final class ProcessInfo implements Serializable
 	private String m_Title;
 	/** Process ID */
 	private int m_AD_Process_ID;
-	private transient I_AD_Process _processModel;
 	/** Table ID if the Process */
 	private final int m_Table_ID;
 	/** Record ID if the Process */
@@ -117,8 +119,7 @@ public final class ProcessInfo implements Serializable
 	/** Client_ID */
 	private Integer m_AD_Client_ID;
 	/** Class Name */
-	private String _className = null;
-	private boolean _classNameSet = false;
+	private Optional<String> _className = Optional.empty();
 
 	// -- Optional --
 
@@ -162,7 +163,7 @@ public final class ProcessInfo implements Serializable
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	private Throwable m_throwable = null;
 
-	private Boolean _refreshAllAfterExecution;
+	private boolean _refreshAllAfterExecution;
 
 	private ITableRecordReference _recordToSelectAfterExecution = null;
 
@@ -450,25 +451,6 @@ public final class ProcessInfo implements Serializable
 		return m_AD_Process_ID;
 	}
 
-	/** Gets/Loads the underlying {@link I_AD_Process} definition */
-	private I_AD_Process getAD_ProcessOrNull()
-	{
-		final int processId = getAD_Process_ID();
-		if (processId <= 0)
-		{
-			return null;
-		}
-		if (_processModel != null && _processModel.getAD_Process_ID() != processId)
-		{
-			_processModel = null;
-		}
-		if (_processModel == null)
-		{
-			_processModel = InterfaceWrapperHelper.create(getCtx(), processId, I_AD_Process.class, ITrx.TRXNAME_None);
-		}
-		return _processModel;
-	}
-
 	/**
 	 * Method setAD_Process_ID
 	 *
@@ -487,16 +469,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public String getClassName()
 	{
-		if (!_classNameSet)
-		{
-			// Try to load it from underlying process definition (if available)
-			final I_AD_Process process = getAD_ProcessOrNull();
-			if (process != null)
-			{
-				setClassName(process.getClassname());
-			}
-		}
-		return _className;
+		return _className.orElse(null);
 	}
 
 	/**
@@ -508,13 +481,12 @@ public final class ProcessInfo implements Serializable
 	{
 		if (Check.isEmpty(classname, true))
 		{
-			_className = null;
+			_className = Optional.empty();
 		}
 		else
 		{
-			_className = classname.trim();
+			_className = Optional.of(classname.trim());
 		}
-		_classNameSet = true;
 	}
 
 	/**
@@ -659,24 +631,24 @@ public final class ProcessInfo implements Serializable
 		final String tableName = getTableNameOrNull();
 		if (Check.isEmpty(tableName, true))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		if (!Check.equals(tableName, modelTableName))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		final int recordId = getRecord_ID();
 		if (recordId < 0)
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		final ModelType record = InterfaceWrapperHelper.create(getCtx(), tableName, recordId, modelClass, trxName);
 		if (record == null || InterfaceWrapperHelper.isNew(record))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		return Optional.of(record);
@@ -1116,18 +1088,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public boolean isRefreshAllAfterExecution()
 	{
-		if (_refreshAllAfterExecution != null)
-		{
-			return _refreshAllAfterExecution;
-		}
-
-		final I_AD_Process process = getAD_ProcessOrNull();
-		if (process == null)
-		{
-			return false;
-		}
-
-		return process.isRefreshAllAfterExecution();
+		return _refreshAllAfterExecution;
 	}
 
 	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
@@ -1168,8 +1129,13 @@ public final class ProcessInfo implements Serializable
 	public static final class ProcessInfoBuilder
 	{
 		private Properties ctx;
+		
 		private String title = "";
+		private I_AD_Process _adProcess;
 		private int adProcessId;
+		private Optional<String> classname;
+		private Boolean refreshAllAfterExecution;
+		
 		private int adTableId;
 		private int recordId;
 
@@ -1219,12 +1185,99 @@ public final class ProcessInfo implements Serializable
 		{
 			return adProcessId;
 		}
+		
+		public ProcessInfoBuilder setFromAD_Process(final org.compiere.model.I_AD_Process adProcess)
+		{
+			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
+			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			setTitle(_adProcess.getName());
+			setClassname(_adProcess.getClassname());
+			return this;
+		}
+		
+		private I_AD_Process getAD_ProcessOrNull()
+		{
+			final int processId = getAD_Process_ID();
+			if (processId <= 0)
+			{
+				return null;
+			}
+			if (_adProcess != null && _adProcess.getAD_Process_ID() != processId)
+			{
+				_adProcess = null;
+			}
+			if (_adProcess == null)
+			{
+				final Properties ctx = Env.coalesce(getCtx());
+				_adProcess = InterfaceWrapperHelper.create(ctx, processId, I_AD_Process.class, ITrx.TRXNAME_None);
+			}
+			return _adProcess;
+		}
 
 		public ProcessInfoBuilder setAD_Process_ID(final int adProcessId)
 		{
 			this.adProcessId = adProcessId;
 			return this;
 		}
+		
+		public ProcessInfoBuilder setClassname(final String classname)
+		{
+			if (Check.isEmpty(classname, true))
+			{
+				this.classname = Optional.empty();
+			}
+			else
+			{
+				this.classname = Optional.of(classname.trim());
+			}
+			return this;
+		}
+		
+		private Optional<String> getClassname()
+		{
+			if (this.classname == null)
+			{
+				// Try to load it from underlying process definition (if available)
+				final I_AD_Process process = getAD_ProcessOrNull();
+				final String classname = process == null ? null : process.getClassname();
+				if (Check.isEmpty(classname, true))
+				{
+					this.classname = Optional.empty();
+				}
+				else
+				{
+					this.classname = Optional.of(classname.trim());
+				}
+
+			}
+			
+			return classname;
+		}
+		
+		/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) 
+		 * @return */
+		public ProcessInfoBuilder setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
+		{
+			this.refreshAllAfterExecution = refreshAllAfterExecution;
+			return this;
+		}
+		
+		private boolean isRefreshAllAfterExecution()
+		{
+			if (refreshAllAfterExecution != null)
+			{
+				return refreshAllAfterExecution;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return false;
+			}
+
+			return process.isRefreshAllAfterExecution();
+		}
+
 
 		public ProcessInfoBuilder setTableName(final String tableName)
 		{

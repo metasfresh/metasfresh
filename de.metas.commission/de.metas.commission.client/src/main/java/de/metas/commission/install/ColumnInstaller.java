@@ -174,8 +174,8 @@ public final class ColumnInstaller extends Installer {
 		final int processId = MProcess.getProcess_ID("AD_Column Sync", trxName);
 
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle("AD_Column Sync")
 				.setAD_Process_ID(processId)
+				.setTitle("AD_Column Sync")
 				.setRecord(I_AD_Column.Table_Name, column.getAD_Column_ID())
 				.build();
 

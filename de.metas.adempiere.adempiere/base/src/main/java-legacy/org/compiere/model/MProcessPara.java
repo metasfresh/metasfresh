@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
 
@@ -36,28 +34,6 @@ public class MProcessPara extends X_AD_Process_Para
 	 * 
 	 */
 	private static final long serialVersionUID = -2387741816477468470L;
-
-
-	/**
-	 * 	Get MProcessPara from Cache
-	 *	@param ctx context
-	 *	@param AD_Process_Para_ID id
-	 *	@return MProcessPara
-	 */
-	public static MProcessPara get (final Properties ctx, final int AD_Process_Para_ID)
-	{
-		Integer key = AD_Process_Para_ID;
-		MProcessPara retValue = s_cache.get (key);
-		if (retValue != null)
-			return retValue;
-		retValue = new MProcessPara (ctx, AD_Process_Para_ID, ITrx.TRXNAME_None);
-		if (retValue.getAD_Process_Para_ID() > 0)
-			s_cache.put (key, retValue);
-		return retValue;
-	}	//	get
-
-	/**	Cache						*/
-	private static CCache<Integer, MProcessPara> s_cache = new CCache<>(I_AD_Process_Para.Table_Name, 20);	
 	
 	/**************************************************************************
 	 * 	Constructor
@@ -116,7 +92,7 @@ public class MProcessPara extends X_AD_Process_Para
 	 * and saves
 	 * @param source 
 	 */
-	public void copyFrom (final I_AD_Process_Para source)
+	void copyFrom (final I_AD_Process_Para source)
 	{
 		log.debug("Copying from:" + source + ", to: " + this);
 		setAD_Element_ID(source.getAD_Element_ID());

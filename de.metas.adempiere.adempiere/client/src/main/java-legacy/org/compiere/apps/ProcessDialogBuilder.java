@@ -195,9 +195,9 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	String getShowHelp()
+	String getShowHelp(final Supplier<String> defaultValueSupplier)
 	{
-		return showHelp;
+		return showHelp != null ? showHelp : defaultValueSupplier.get(); 
 	}
 
 	ProcessDialogBuilder skipResultsPanel()

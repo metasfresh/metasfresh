@@ -3068,8 +3068,8 @@ public class APanel extends CPanel
 			if (title == null || title.length() == 0)
 				title = vButton.getName();
 			final ProcessInfo pi = ProcessInfo.builder()
-					.setTitle(title)
 					.setAD_Process_ID(vButton.getProcess_ID())
+					.setTitle(title)
 					.setRecord(table_ID, record_ID)
 					.setWindowNo(m_curWindowNo).setTabNo(getTabNo())
 					.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal())

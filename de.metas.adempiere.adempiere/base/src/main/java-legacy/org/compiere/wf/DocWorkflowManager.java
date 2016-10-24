@@ -126,8 +126,8 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			//	Start Workflow
 			log.debug(logic);
 			final ProcessInfo pi = ProcessInfo.builder()
-					.setTitle(wf.getName())
 					.setAD_Process_ID(305) // FIXME HARDCODED
+					.setTitle(wf.getName())
 					.setRecord(AD_Table_ID, document.get_ID())
 					.build();
 			pi.setAD_User_ID (Env.getAD_User_ID(document.getCtx()));

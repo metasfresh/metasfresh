@@ -51,7 +51,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
@@ -441,17 +440,13 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		final int AD_Form_ID = packageTerminalPanel.getParent().getPickingFrame().getAD_Form_ID();
 		final IADProcessDAO processPA = Services.get(IADProcessDAO.class);
 		final I_AD_Process process = processPA.retrieveProcessByForm(getCtx(), AD_Form_ID);
-		final MPInstance instance = new MPInstance(Env.getCtx(), process.getAD_Process_ID(), 0, 0);
-		instance.saveEx();
 
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle(process.getName())
-				.setAD_Process_ID(process.getAD_Process_ID())
+				.setFromAD_Process(process)
 				.addParameter(ProcessInfoParameter.of("M_PackagingTree_ID", M_PackagingTree_ID))
 				.addParameter(ProcessInfoParameter.of("C_BPartner_ID", model.getPackingTreeModel().getBp_id()))
 				.addParameter(ProcessInfoParameter.of("shipper", model.selectedShipperId))
 				.build();
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
 		try
 		{

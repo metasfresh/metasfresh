@@ -40,7 +40,7 @@ public final class ProcessInfoParameter implements Serializable
 	
 	public static final ProcessInfoParameter of(final String parameterName, final int parameterValue)
 	{
-		final Object parameterValueTo = null;
+		final Integer parameterValueTo = null;
 		final String info = null;
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
@@ -48,7 +48,23 @@ public final class ProcessInfoParameter implements Serializable
 	
 	public static final ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
-		final Object parameterValueTo = null;
+		final String parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	public static final ProcessInfoParameter of(final String parameterName, final BigDecimal parameterValue)
+	{
+		final BigDecimal parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue)
+	{
+		final java.util.Date parameterValueTo = null;
 		final String info = null;
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);

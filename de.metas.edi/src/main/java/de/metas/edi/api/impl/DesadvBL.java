@@ -443,8 +443,7 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessInfo processInfo = ProcessInfo.builder()
-				.setTitle(process.getName())
-				.setAD_Process_ID(process.getAD_Process_ID())
+				.setFromAD_Process(process)
 				.build();
 		processInfo.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
 

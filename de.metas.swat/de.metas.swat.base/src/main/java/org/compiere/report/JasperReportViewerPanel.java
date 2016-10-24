@@ -148,8 +148,8 @@ public class JasperReportViewerPanel extends JRViewer
 			final ProcessInfo oldPi = getProcessInfo();
 
 			final ProcessInfo newPi = ProcessInfo.builder()
-					.setTitle(oldPi.getTitle())
 					.setAD_Process_ID(jasperProcessId)
+					.setTitle(oldPi.getTitle())
 					.setRecord(oldPi.getTable_ID(), oldPi.getRecord_ID())
 					.addParameters(oldPi.getParameter())
 					.build();

@@ -414,8 +414,7 @@ public class HUReportModel implements IDisposable
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle(process.getName())
-				.setAD_Process_ID(process.getAD_Process_ID())
+				.setFromAD_Process(process)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguage)

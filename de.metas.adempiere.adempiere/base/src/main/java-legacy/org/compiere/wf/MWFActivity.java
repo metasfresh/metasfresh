@@ -1005,8 +1005,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
-					.setTitle(m_node.getName(true))
 					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
 			pi.setAD_User_ID(getAD_User_ID());
@@ -1045,8 +1045,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			fillParameter(pInstance, trx);
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
-					.setTitle(m_node.getName(true))
 					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
 			pi.setAD_User_ID(getAD_User_ID());
