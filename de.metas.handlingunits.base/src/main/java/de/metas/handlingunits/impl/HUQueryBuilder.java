@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -888,6 +889,15 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final HUAttributeQueryFilterVO attributeFilterVO = getAttributeFilterVO(attribute, attributeValueType);
 		attributeFilterVO.addValues(values);
 
+		return this;
+	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object ... values)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final List<Object> valuesAsList = Arrays.asList(values);
+		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
 		return this;
 	}
 
