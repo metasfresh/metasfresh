@@ -44,7 +44,12 @@ class Filters extends Component {
 			selectedItem: item
 		}), () => {
 			if(close){
-				this.hideFilter();
+				this.setState(Object.assign({}, this.state, {
+					openFilter: false,
+					openList: true,
+					open: false,
+					filterDataItem: ''
+				}))
 			}
 		});
 	}
