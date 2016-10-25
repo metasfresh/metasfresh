@@ -34,41 +34,40 @@ class Widget extends Component {
 
         this.setState(Object.assign({}, this.state, {
             edited: true
-        }), () => {
+        }));
 
-            if(rowId === "NEW"){
-                currRowId = relativeDocId;
+        if(rowId === "NEW"){
+            currRowId = relativeDocId;
+        }
+
+        let customWindowType = windowType;
+        if(isAdvanced){
+            customWindowType += "&advanced=true";
+        }
+
+
+        //do patch only when value is not equal state
+        //or cache is set and it is not equal value
+        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+
+            //check if we should update store
+            //except button value
+            if(widgetType !== "Button"){
+                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
-            let customWindowType = windowType;
-            if(isAdvanced){
-                customWindowType += "&advanced=true";
-            }
+            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
+        }
 
+        this.setState(Object.assign({}, this.state, {
+            cachedValue: null
+        }));
 
-            //do patch only when value is not equal state
-            //or cache is set and it is not equal value
-            if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+        //callback
+        if(onChange){
+            onChange();
+        }
 
-                //check if we should update store
-                //except button value
-                if(widgetType !== "Button"){
-                    dispatch(updateProperty(property, value, tabId, currRowId, isModal));
-                }
-                ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
-            }
-
-            this.setState(Object.assign({}, this.state, {
-                cachedValue: null
-            }));
-
-            //callback
-            if(onChange){
-                onChange();
-            }
-
-            return ret;
-
-        });
+        return ret;
     }
     //
     // This method may looks like a redundant for this one above,
@@ -133,7 +132,7 @@ class Widget extends Component {
                         this.setState(Object.assign({}, this.state, {
                             updated: false
                         }))
-                    }, 250);
+                    }, 1000);
                 }
             )
         }

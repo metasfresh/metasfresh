@@ -33,7 +33,7 @@ class MasterWindow extends Component {
                     this.setState(Object.assign({}, this.state, {
                         newRow: false
                     }))
-                }, 250);
+                }, 1000);
             }
         )
     }

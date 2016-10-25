@@ -90,7 +90,7 @@ class FilterWidget extends Component {
                       th.setState(Object.assign({}, this.state, {
                         updated: false
                       }))
-                    }, 250);
+                    }, 1000);
                 }
             );
         }
