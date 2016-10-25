@@ -12,7 +12,7 @@ export function setFilter(filter){
 }
 
 export function setFilterRequest(filter){
-    return dispatch => new Promise( (resolve, reject) => {
+    return dispatch => new Promise( (resolve) => {
         dispatch(setFilter(filter));
 
         resolve();

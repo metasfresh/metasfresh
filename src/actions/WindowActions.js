@@ -279,8 +279,10 @@ function mapDataToState(data, isModal, rowId){
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
-
                     }else{
+                        // TODO
+                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(false)))
+                        //
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
                     }
                 });
