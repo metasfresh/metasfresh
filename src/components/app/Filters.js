@@ -176,6 +176,29 @@ class Filters extends Component {
 
 	}
 
+	renderWidgetStructure = () => {
+		const {filterData} = this.props;
+		console.log(filterData);
+		return(
+		<div>
+			{filterData && filterData.map((item, index) =>
+				<div key={index}>
+					{item.frequent && this.renderFrequentFilter()}
+				</div>	
+
+			)}
+		</div>
+		)
+		
+
+	}
+
+	renderFrequentFilter = () => {
+		return(
+			<div>frequent filter</div>
+		)
+	}
+
 
 	renderStandardFilter = () => {
 		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
@@ -331,7 +354,8 @@ class Filters extends Component {
 
 		return (
 			<div>
-				 <span className="hidden-sm-down">Filters: </span>
+				<div>{this.renderWidgetStructure()}</div>
+				<span className="hidden-sm-down">Filters: </span>
 				<div className="filter-wrapper">{this.renderDateFilter()}</div>
 				<div className="filter-wrapper">{this.renderStandardFilter()}</div>
 			</div>
