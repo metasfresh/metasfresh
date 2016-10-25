@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition_Config_Reference
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -61,7 +61,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Set DLM Partitionierungskonfigzeile.
-	 * 
+	 *
 	 * @param DLM_Partition_Config_Line_ID DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -79,7 +79,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Get DLM Partitionierungskonfigzeile.
-	 * 
+	 *
 	 * @return DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -95,7 +95,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Set DLM Partitionierungkonfigurationsreferenz.
-	 * 
+	 *
 	 * @param DLM_Partition_Config_Reference_ID DLM Partitionierungkonfigurationsreferenz
 	 */
 	@Override
@@ -113,7 +113,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Get DLM Partitionierungkonfigurationsreferenz.
-	 * 
+	 *
 	 * @return DLM Partitionierungkonfigurationsreferenz
 	 */
 	@Override
@@ -141,7 +141,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Set Referenzierte Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referenced_Table_ID Referenzierte Tabelle
 	 */
 	@Override
@@ -159,7 +159,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Get Referenzierte Tabelle.
-	 * 
+	 *
 	 * @return Referenzierte Tabelle
 	 */
 	@Override
@@ -187,7 +187,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Set Konfig-Zeile zur referenzierten Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referenced_Table_Partition_Config_Line_ID Konfig-Zeile zur referenzierten Tabelle
 	 */
 	@Override
@@ -205,7 +205,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Get Konfig-Zeile zur referenzierten Tabelle.
-	 * 
+	 *
 	 * @return Konfig-Zeile zur referenzierten Tabelle
 	 */
 	@Override
@@ -233,7 +233,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Set Referenzierende Spalte.
-	 * 
+	 *
 	 * @param DLM_Referencing_Column_ID Referenzierende Spalte
 	 */
 	@Override
@@ -251,7 +251,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 
 	/**
 	 * Get Referenzierende Spalte.
-	 * 
+	 *
 	 * @return Referenzierende Spalte
 	 */
 	@Override

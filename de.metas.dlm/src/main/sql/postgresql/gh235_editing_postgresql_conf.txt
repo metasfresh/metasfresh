@@ -3,7 +3,7 @@ edit postgresql.conf:
 
 #search_path = '"$user",public'         # schema names
 # gh #489: adding the "dlm" schema to the search path, so by default our views like dlm.C_Invoice will be found.
-search_path = '"$user",dlm,public'
+search_path = '"$user",public,dlm'
 
 
 # note: one needs to restart postgresl-9.5 after having added the following those parameters

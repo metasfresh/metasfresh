@@ -1,53 +1,50 @@
 package org.adempiere.ad.persistence;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.compiere.model.MOrder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
+import org.compiere.model.MTable;
 import org.compiere.model.PO;
+import org.junit.Before;
 import org.junit.Test;
-
-import de.metas.adempiere.model.I_C_Order;
 
 public class AdempiereTableModelClassLoaderTest
 {
 	private TableModelClassLoaderTester tester = new TableModelClassLoaderTester()
 			.setEntityTypeModelPackage(PO.ENTITYTYPE_Dictionary, null);
 
+	@Before
+	public void setup()
+	{
+		AdempiereTestHelper.get().init();
+
+		// create two tables to test with. Note that i avoided business object tables because on the longer perspective, those don't belong into this base probject.
+		final I_AD_Table tableTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		tableTable.setTableName(I_AD_Table.Table_Name);
+		InterfaceWrapperHelper.save(tableTable);
+
+		final I_AD_Table columnTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		columnTable.setTableName(I_AD_Column.Table_Name);
+		InterfaceWrapperHelper.save(columnTable);
+
+	}
+
 	@Test
 	public void test_LoadStandardClasses()
 	{
-		tester.setTableNameEntityType(I_C_Order.Table_Name, PO.ENTITYTYPE_Dictionary)
-				.assertClass(I_C_Order.Table_Name, MOrder.class)
+		tester.setTableNameEntityType(I_AD_Column.Table_Name, PO.ENTITYTYPE_Dictionary)
+				.assertClass(I_AD_Column.Table_Name, MColumn.class)
 				.cacheReset()
-				.assertClass(I_C_Order.Table_Name, MOrder.class);
+				.assertClass(I_AD_Column.Table_Name, MColumn.class);
 	}
 
 	@Test
 	public void test_EntityTypesAreReloadedAfterCacheReset()
 	{
 		tester
-				// Make sure our EntityType is not registeded yet
+				// Make sure our EntityType is not registered yet
 				.assertEntityTypeNotExists("MyEntityType")
 				// Add our EntityType to the map of entity types which will be loaded after cache reset
 				.setEntityTypeModelPackage("MyEntityType", null)
@@ -57,5 +54,16 @@ public class AdempiereTableModelClassLoaderTest
 				// and now they shall contain our entity type
 				.cacheReset()
 				.assertEntityTypeExists("MyEntityType");
+	}
+
+	/**
+	 * Verifies that the correct class is also loaded if the table name is given in lower case.
+	 */
+	@Test
+	public void testTableNameIgnoreCase()
+	{
+		tester.setTableNameEntityType(I_AD_Table.Table_Name, PO.ENTITYTYPE_Dictionary)
+				.assertClass(I_AD_Table.Table_Name, MTable.class) // guard
+				.assertClass(I_AD_Table.Table_Name.toLowerCase(), MTable.class);
 	}
 }

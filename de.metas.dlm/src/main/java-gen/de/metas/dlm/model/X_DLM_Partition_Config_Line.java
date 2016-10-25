@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition_Config_Line
- * 
+ *
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -48,7 +48,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set Beschreibung.
-	 * 
+	 *
 	 * @param Description Beschreibung
 	 */
 	@Override
@@ -59,7 +59,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get Beschreibung.
-	 * 
+	 *
 	 * @return Beschreibung
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set DLM Partitionierungskonfiguration.
-	 * 
+	 *
 	 * @param DLM_Partition_Config_ID DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -100,7 +100,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get DLM Partitionierungskonfiguration.
-	 * 
+	 *
 	 * @return DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -116,7 +116,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set DLM Partitionierungskonfigzeile.
-	 * 
+	 *
 	 * @param DLM_Partition_Config_Line_ID DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -134,7 +134,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get DLM Partitionierungskonfigzeile.
-	 * 
+	 *
 	 * @return DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -162,7 +162,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set Referenzierende Tabelle.
-	 * 
+	 *
 	 * @param DLM_Referencing_Table_ID Referenzierende Tabelle
 	 */
 	@Override
@@ -180,7 +180,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get Referenzierende Tabelle.
-	 * 
+	 *
 	 * @return Referenzierende Tabelle
 	 */
 	@Override

@@ -22,8 +22,6 @@ import java.beans.VetoableChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -31,12 +29,15 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 //import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 
 /**
  * Transaction Management. - Create new Transaction by Trx.get(name); - ..transactions.. - commit(); ---- start(); ---- commit(); - close();
- * 
+ *
  * @author Jorg Janke
  * @author Low Heng Sin - added rollback(boolean) and commit(boolean) [20070105] - remove unnecessary use of savepoint - use UUID for safer transaction name generation
  * @author Teo Sarca, http://www.arhipac.ro <li>FR [ 2080217 ] Implement TrxRunnable <li>BF [ 2876927 ] Oracle JDBC driver problem
@@ -48,7 +49,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 {
 	/**
 	 * trxName=null marker
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrx#TRXNAME_None} instead
 	 */
 	// metas
@@ -57,7 +58,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Get Transaction
-	 * 
+	 *
 	 * @param trxName trx name
 	 * @param createNew if false, null is returned if not found
 	 * @return Transaction or null
@@ -70,7 +71,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name <b>and instantly create the new trx</b>.
-	 * 
+	 *
 	 * @param prefix optional prefix
 	 * @return unique name
 	 */
@@ -81,9 +82,9 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name
-	 * 
+	 *
 	 * @param prefix optional prefix
-	 * 
+	 *
 	 * @return unique name
 	 */
 	public static String createTrxName(String prefix, final boolean createNew)
@@ -93,7 +94,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name
-	 * 
+	 *
 	 * @return unique name
 	 */
 	public static String createTrxName()
@@ -104,7 +105,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**************************************************************************
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 */
 	public Trx(final ITrxManager trxManager, final String trxName)
@@ -116,7 +117,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 * @param con optional connection ( ignore for remote transaction )
 	 * */
@@ -136,7 +137,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Get Connection
-	 * 
+	 *
 	 * @return connection
 	 */
 	public Connection getConnection()
@@ -178,7 +179,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Set Connection
-	 * 
+	 *
 	 * @param conn connection
 	 */
 	private void setConnection(Connection conn)
@@ -275,7 +276,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		catch (SQLException e)
 		{
 			// Do nothing. The Savepoint might have been discarded because of an intermediate commit or rollback
-			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case. 
+			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case.
 			// log.error(trxName, e);
 			// throw e;
 		}
@@ -301,7 +302,8 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 		catch (SQLException e)
 		{
-			log.error(m_trxName, e);
+// TODO make configurable!
+//			log.error(m_trxName, e);
 			if (throwException)
 			{
 				// m_active = false;
@@ -327,7 +329,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// NOTE: let the org.compiere.db.DB_PostgreSQL_ConnectionCustomizer to update the ApplicationName because
 			// it will be performed in a separate thread so here we don't have to wait.
 			// m_connection.setClientInfo("ApplicationName", "adempiere/CLOSED"); // task 08353
-			
+
 			m_connection.close();
 		}
 		catch (SQLException e)
@@ -340,7 +342,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	}	// close
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @return Savepoint
 	 * @throws SQLException
@@ -401,7 +403,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Vetoable Change. Called from CCache to close connections
-	 * 
+	 *
 	 * @param evt event
 	 * @throws PropertyVetoException
 	 */
@@ -424,7 +426,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(TrxRunnable)}
 	 */
 	// metas: backward compatibility
@@ -436,7 +438,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(String, TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(String, TrxRunnable)}
 	 */
 	// metas: backward compatibility
@@ -448,7 +450,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(String, boolean, TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(String, boolean, TrxRunnable)}
 	 */
 	// metas: added manageTrx parameter

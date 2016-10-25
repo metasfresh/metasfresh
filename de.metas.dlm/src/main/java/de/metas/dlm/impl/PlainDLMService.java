@@ -26,13 +26,13 @@ public class PlainDLMService extends AbstractDLMService
 {
 
 	@Override
-	void executeDBFunction_add_table_to_dlm(final String tableName)
+	void executeDBFunction_add_table_to_dlm(final String tableName, final String trxName)
 	{
 		// nothing to do
 	}
 
 	@Override
-	void executeDBFunction_remove_table_from_dlm(final String tableName)
+	void executeDBFunction_remove_table_from_dlm(final String tableName, final String trxName)
 	{
 		// nothing to do
 	}

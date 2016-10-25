@@ -1,9 +1,14 @@
 package de.metas.dlm.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 
 import de.metas.dlm.exception.DLMExceptionWrapper;
+import de.metas.dlm.trx.DLMSettingsTrxCustomizer;
 
 /*
  * #%L
@@ -30,8 +35,17 @@ import de.metas.dlm.exception.DLMExceptionWrapper;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	{
+		engine.addModelValidator(new DLM_Partition_Config(), client);
+		engine.addModelValidator(new DLM_Partition_Config_Line(), client);
+	}
+
+	@Override
 	protected void onAfterInit()
 	{
 		DBException.registerExceptionWrapper(DLMExceptionWrapper.INSTANCE);
+
+		Services.get(ITrxManager.class).registerTrxCustomizer(DLMSettingsTrxCustomizer.INSTANCE);
 	}
 }

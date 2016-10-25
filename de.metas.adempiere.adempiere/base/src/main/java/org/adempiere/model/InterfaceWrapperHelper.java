@@ -39,7 +39,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.wrapper.CompositeInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.GridTabInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
@@ -136,16 +135,16 @@ public class InterfaceWrapperHelper
 		//
 		// Get transaction name from contextProvider.
 		// If contextProvider's transaction name is NULL and we have a thread inherited transaction, then let's use that one
-		final ITrxManager trxManager = getTrxManager();
+//		final ITrxManager trxManager = getTrxManager();
 		String trxName = getTrxName(contextProvider);
-		if (trxManager.isNull(trxName))
-		{
-			final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
-			if (trxThreadInherited != null)
-			{
-				trxName = ITrx.TRXNAME_ThreadInherited;
-			}
-		}
+//		if (trxManager.isNull(trxName))
+//		{
+//			final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
+//			if (trxThreadInherited != null)
+//			{
+//				trxName = ITrx.TRXNAME_ThreadInherited;
+//			}
+//		}
 
 		return create(ctx, cl, trxName);
 	}

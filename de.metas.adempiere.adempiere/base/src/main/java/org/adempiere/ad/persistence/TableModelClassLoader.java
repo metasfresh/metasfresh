@@ -10,12 +10,12 @@ package org.adempiere.ad.persistence;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,8 +27,6 @@ import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -37,15 +35,18 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import de.metas.logging.LogManager;
+
 /**
  * Class responsible for loading model classes by given Table Name.
- * 
+ *
  * @author tsa
  *
  */
@@ -172,30 +173,36 @@ public class TableModelClassLoader
 		return modelClass;
 	}	// getClass
 
-	private final Class<?> findModelClassByTableName(final String tableName)
+
+	@VisibleForTesting
+	/* package */ final Class<?> findModelClassByTableName(final String tableName)
 	{
-		if (tableName == null || tableName.endsWith("_Trl"))
+		if (Check.isEmpty(tableName, true) || tableName.endsWith("_Trl"))
 		{
 			return NO_CLASS;
 		}
 
+		// given tableName may be in lower-case..we get the table and use its tableName
+		final I_AD_Table table = MTable.get(Env.getCtx(), tableName);
+		final String tableNameToUse = table.getTableName();
+
 		// Import Tables (Name conflict)
-		if (tableName.startsWith("I_"))
+		if (tableNameToUse.startsWith("I_"))
 		{
-			final Class<?> clazz = loadModelClassForClassname("org.compiere.model.X_" + tableName);
+			final Class<?> clazz = loadModelClassForClassname("org.compiere.model.X_" + tableNameToUse);
 			if (clazz != null)
 			{
 				return clazz;
 			}
 
-			log.warn("No class for import table: {}", tableName);
+			log.warn("No class for import table: {}", tableNameToUse);
 			return NO_CLASS;
 		}
 
 		// Special Naming
 		for (int i = 0; i < s_special.length; i++)
 		{
-			if (s_special[i++].equals(tableName))
+			if (s_special[i++].equals(tableNameToUse))
 			{
 				final Class<?> clazz = loadModelClassForClassname(s_special[i]);
 				if (clazz != null)
@@ -209,24 +216,24 @@ public class TableModelClassLoader
 		//
 		// Use ModelPackage if exists
 		// Initially introduced by [ 1784588 ], vpj-cd
-		final String modelpackage = getModelPackageForTableName(tableName);
+		final String modelpackage = getModelPackageForTableName(tableNameToUse);
 		if (modelpackage != null)
 		{
-			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableName, "_", ""));
+			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableNameToUse, "_", ""));
 			if (clazz != null)
 			{
 				return clazz;
 			}
-			clazz = loadModelClassForClassname(modelpackage + ".X_" + tableName);
+			clazz = loadModelClassForClassname(modelpackage + ".X_" + tableNameToUse);
 			if (clazz != null)
 			{
 				return clazz;
 			}
-			log.warn("No class for table with it entity: {}", tableName);
+			log.warn("No class for table with it entity: {}", tableNameToUse);
 		}
 
 		// Strip table name prefix (e.g. AD_) Customizations are 3/4
-		String className = tableName;
+		String className = tableNameToUse;
 		int index = className.indexOf('_');
 		if (index > 0)
 		{
@@ -252,7 +259,7 @@ public class TableModelClassLoader
 		}
 
 		// Adempiere Extension
-		Class<?> clazz = loadModelClassForClassname("adempiere.model.X_" + tableName);
+		Class<?> clazz = loadModelClassForClassname("adempiere.model.X_" + tableNameToUse);
 		if (clazz != null)
 		{
 			return clazz;
@@ -260,14 +267,14 @@ public class TableModelClassLoader
 
 		// hengsin - allow compatibility with compiere plugins
 		// Compiere Extension
-		clazz = loadModelClassForClassname("compiere.model.X_" + tableName);
+		clazz = loadModelClassForClassname("compiere.model.X_" + tableNameToUse);
 		if (clazz != null)
 		{
 			return clazz;
 		}
 
 		// Default
-		clazz = loadModelClassForClassname("org.compiere.model.X_" + tableName);
+		clazz = loadModelClassForClassname("org.compiere.model.X_" + tableNameToUse);
 		if (clazz != null)
 		{
 			return clazz;
@@ -297,7 +304,7 @@ public class TableModelClassLoader
 
 	/**
 	 * Get PO class.
-	 * 
+	 *
 	 * @param className fully qualified class name
 	 * @return class or <code>null</code> if model class was not found or it's not valid
 	 */

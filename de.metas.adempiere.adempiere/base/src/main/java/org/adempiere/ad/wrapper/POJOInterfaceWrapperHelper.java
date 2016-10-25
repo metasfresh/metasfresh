@@ -137,18 +137,21 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	@Override
 	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
 	{
+		final String columnNameToUse = columnName.toLowerCase();
+
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
 		if (useOverrideColumnIfAvailable)
 		{
 			final IModelInternalAccessor modelAccessor = wrapper.getModelInternalAccessor();
-			final T value = getValueOverrideOrNull(modelAccessor, columnName);
+			final T value = getValueOverrideOrNull(modelAccessor, columnNameToUse);
 			if (value != null)
 			{
 				return value;
 			}
 		}
 		//
-		if (!wrapper.hasColumnName(columnName))
+
+		if (!wrapper.hasColumnName(columnNameToUse))
 		{
 			if (throwExIfColumnNotFound)
 			{
@@ -160,7 +163,7 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 			}
 		}
 		@SuppressWarnings("unchecked")
-		final T value = (T)wrapper.getValuesMap().get(columnName);
+		final T value = (T)wrapper.getValuesMap().get(columnNameToUse);
 		return value;
 	}
 

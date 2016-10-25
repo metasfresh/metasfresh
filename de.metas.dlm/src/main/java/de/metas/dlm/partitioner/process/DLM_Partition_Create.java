@@ -51,6 +51,8 @@ public class DLM_Partition_Create extends SvrProcess
 		for (int i = 0; i < count; i++)
 		{
 			final Partition partition = partitionerService.createPartition(config);
+
+			// partitionerService.storePartitionConfig(partition.getConfig()); this is already done by storePartition
 			final I_DLM_Partition partitionDB = partitionerService.storePartition(partition);
 
 			addLog("@Created@ " + partitionDB);

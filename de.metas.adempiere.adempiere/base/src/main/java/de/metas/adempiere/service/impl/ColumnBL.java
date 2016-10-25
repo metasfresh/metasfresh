@@ -1,6 +1,7 @@
 package de.metas.adempiere.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -105,7 +106,7 @@ public class ColumnBL implements IColumnBL
 	}
 
 	@Override
-	public String getTableColumnName(final String tableName, final String recordColumnName)
+	public Optional<String> getTableColumnName(final String tableName, final String recordColumnName)
 	{
 		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordColumnName);
 		Check.assumeNotEmpty(tableName, "Paramter 'recordColumnName' is empty; tableName={}", recordColumnName, tableName);
@@ -114,7 +115,7 @@ public class ColumnBL implements IColumnBL
 
 		if (Adempiere.isUnitTestMode())
 		{
-			return prefix + "AD_Table_ID";
+			return Optional.of(prefix + "AD_Table_ID");
 		}
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
@@ -123,18 +124,16 @@ public class ColumnBL implements IColumnBL
 		String tableColumnName = prefix + "AD_Table_ID";
 		if (poInfo.hasColumnName(tableColumnName))
 		{
-			return tableColumnName;
+			return Optional.of(tableColumnName);
 		}
 
 		// try with Prefix_Table_ID
 		tableColumnName = prefix + "Table_ID";
 		if (poInfo.hasColumnName(tableColumnName))
 		{
-			return tableColumnName;
+			return Optional.of(tableColumnName);
 		}
-
-		Check.errorIf(true, "Table={} has no table column name for recordColumnName={}", tableName, recordColumnName);
-		return null;
+		return Optional.empty();
 	}
 
 	private String extractPrefixFromRecordColumn(final String columnName)

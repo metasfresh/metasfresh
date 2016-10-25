@@ -1,10 +1,11 @@
-package de.metas.dlm.impl;
+package org.adempiere.ad.trx.spi;
 
-import org.compiere.util.DB;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 
 /*
  * #%L
- * metasfresh-dlm
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -24,17 +25,14 @@ import org.compiere.util.DB;
  * #L%
  */
 
-public class DLMService extends AbstractDLMService
+/**
+ * Invoke {@link ITrxManager#registerTrxCustomizer(ITrxCustomizer)} to have the respective customer be invoked every time a new transaction is created.
+ * Note that this is different from {@link ITrxListener} in that it affects <b>every</b> single transaction that is newly created.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface ITrxCustomizer
 {
-	@Override
-	void executeDBFunction_add_table_to_dlm(final String tableName, final String trxName)
-	{
-		DB.executeFunctionCallEx(trxName, "select dlm.add_table_to_dlm(?)", new Object[] { tableName });
-	}
-
-	@Override
-	void executeDBFunction_remove_table_from_dlm(final String tableName, final String trxName)
-	{
-		DB.executeFunctionCallEx(trxName, "select dlm.remove_table_from_dlm(?)", new Object[] { tableName });
-	}
+	void onTrxCreated(ITrx trx);
 }

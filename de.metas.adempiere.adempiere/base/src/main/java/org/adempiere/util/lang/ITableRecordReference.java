@@ -10,18 +10,17 @@ package org.adempiere.util.lang;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.collections.Converter;
@@ -29,17 +28,17 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 /**
  * Table record reference.
- * 
+ *
  * Used to store references to models, without having to load them from the start (depends on implementation of this interface).
- * 
- * In case the underlying model is needed, developer will call {@link #getModel(IContextAware)} which will return the underlying model.
- * 
+ *
+ * In case the underlying model is needed, the developer can call {@link #getModel(IContextAware)} which will return the underlying model.
+ *
  * @author tsa
  *
  */
 public interface ITableRecordReference
 {
-	/** Coverts model to {@link ITableRecordReference} */
+	/** Converts a given model to {@link ITableRecordReference} */
 	Converter<ITableRecordReference, Object> FromModelConverter = new Converter<ITableRecordReference, Object>()
 	{
 		@Override
@@ -50,28 +49,28 @@ public interface ITableRecordReference
 	};
 
 	/**
-	 * 
+	 *
 	 * @return referenced model's TableName
 	 */
 	String getTableName();
 
 	/**
-	 * 
+	 *
 	 * @return referenced model's AD_Table_ID
 	 */
 	int getAD_Table_ID();
 
 	/**
-	 * 
+	 *
 	 * @return referenced model's ID
 	 */
 	int getRecord_ID();
 
 	/**
 	 * Gets referenced/underlying model using given context.
-	 * 
+	 *
 	 * NOTE: implementations of this method can cache the model but they always need to check if the cached model is valid in given context (e.g. has the same transaction etc).
-	 * 
+	 *
 	 * @param context
 	 * @return referenced model
 	 */
@@ -79,7 +78,7 @@ public interface ITableRecordReference
 
 	/**
 	 * Gets referenced/underlying model using given context and wraps it to provided <code>modelClass</code> interface.
-	 * 
+	 *
 	 * @param context
 	 * @param modelClass
 	 * @return referenced model wrapped to given model interface

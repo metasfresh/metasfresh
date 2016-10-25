@@ -13,15 +13,14 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +49,7 @@ import org.adempiere.ad.trx.exceptions.OnTrxMissingPolicyNotSupportedException;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.ad.trx.jmx.JMXTrxManager;
+import org.adempiere.ad.trx.spi.ITrxCustomizer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
@@ -174,6 +174,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 			trxName2trxLock.unlock();
 		}
 
+		trxCustomizers.forEach(
+				trxCustomizer -> trxCustomizer.onTrxCreated(trx));
+
 		return trx;
 	}
 
@@ -214,10 +217,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public final ITrx get(final String trxName, final boolean createNew)
 	{
-		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ?
-				OnTrxMissingPolicy.CreateNew
+		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ? OnTrxMissingPolicy.CreateNew
 				: OnTrxMissingPolicy.ReturnTrxNone // backward compatibility
-		;
+				;
 
 		return get(trxName, onTrxMissingPolicy);
 	}
@@ -690,7 +692,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 
 			// Actually execute the runnable
-			//runnable.run(trxName);
+			// runnable.run(trxName);
 			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
@@ -763,7 +765,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 							.setTrxRunConfig(cfg)
 							.setTrxName(trxName);
 				}
-			} // end rollback
+			}    // end rollback
 
 			//
 			// Propagate the caught exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
@@ -903,6 +905,15 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			throw new DBException(e);
 		}
+	}
+
+	private final List<ITrxCustomizer> trxCustomizers = new ArrayList<>();
+
+	@Override
+	public final void registerTrxCustomizer(final ITrxCustomizer trxCustomizer)
+	{
+		Check.assumeNotNull(trxCustomizer, "Param 'trxCustomizer' is not null");
+		trxCustomizers.add(trxCustomizer);
 	}
 
 	@Override
@@ -1093,7 +1104,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final String trxName = getThreadInheritedTrxName();
 		Check.assume(isNull(trxName), "ThreadInherited transaction shall NOT be set at this point");
 	}
-
 
 	@Override
 	public String setThreadInheritedTrxName(final String trxName)

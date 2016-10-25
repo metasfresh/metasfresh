@@ -31,7 +31,7 @@ import org.junit.Test;
  */
 
 /**
- * If tests fail in here, i recommend to first make sure all tests in {@link ConfigBuilderTest} succeed.
+ * If tests fail in here, i recommend to first make sure all tests in {@link PartitionerConfigBuilderTest} succeed.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -46,11 +46,11 @@ public class ConfigTests
 	public void testGetReferences()
 	{
 		final PartitionerConfig config = PartitionerConfig.builder()
-				.newLine().setTableName("ABC")
-				.newRef().setReferencedTableName("MNO").setReferencingColumnName("ABC_columnName").setReferencedConfigLine("MNO").endRef()
-				.newLine().setTableName("MNO") // this one is referenced by both "ABC" and "XYZ"
-				.newLine().setTableName("XYZ")
-				.newRef().setReferencedTableName("MNO").setReferencingColumnName("XYZ_columnName").setReferencedConfigLine("MNO").endRef()
+				.line("ABC")
+				.ref().setReferencedTableName("MNO").setReferencingColumnName("ABC_columnName").endRef()
+				.line("MNO") // this one is referenced by both "ABC" and "XYZ"
+				.line("XYZ")
+				.ref().setReferencedTableName("MNO").setReferencingColumnName("XYZ_columnName").endRef()
 				.endLine()
 				.build();
 

@@ -14,27 +14,23 @@ BEGIN
 	EXCEPTION
 		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Level already exists in %. Nothing do to', p_table_name||'_tbl';
     END;
-		BEGIN
+	BEGIN
 		EXECUTE 'ALTER TABLE ' || p_table_name || '_tbl ADD COLUMN DLM_Partition_ID numeric(10,0);';
 		RAISE NOTICE 'Added column DLM_Partition_ID to table %', p_table_name||'_tbl';
 	EXCEPTION
 		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Partition_ID already exists in %. Nothing do to', p_table_name||'_tbl';
     END;
-	
-	/* 
-	   partial index; we *wanted* postgresql to actually pick this one, because it's small and doesn't grow with the table (as long as we manage to limit the number of "production" records).
-	   But we can't have current_setting('metasfresh.DLM_Level') in the index predicate (a.k.a. where-clause) because current_setting() is not an immutable function.
-	   Also see http://stackoverflow.com/a/26031289/1012103
-	EXECUTE 'CREATE INDEX ' || p_table_name || '_DLM_Level ON ' || p_table_name || '_tbl (COALESCE(DLM_Level,0::smallint)) WHERE COALESCE(DLM_Level,0::smallint) = 0::smallint;'; 
-	RAISE NOTICE 'Created index %_DLM_Level', p_table_name;
-	*/
-	
-	/* 
-	   non-partial index; it's large and grows with the table, but so does everything else, and at most times the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
+
+	/* Generally, we would like to create indices concurrently because this DB-function might be executed on large tables and during production. 
+	   See https://www.postgresql.org/docs/9.5/static/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY.
+	   However, this doesn't work: "ERROR: CREATE INDEX CONCURRENTLY cannot be executed from a function or multi-command string"
+	 */
+	/* Non-partial indices; they large and grow with the table, but so does everything else, and at most times the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
 	   And this way we have the flexibility to go with current_setting('metasfresh.DLM_Level').
 	*/
-	EXECUTE 'CREATE INDEX ' || p_table_name || '_DLM_Level ON ' || p_table_name || '_tbl (DLM_Level)';   
-	RAISE NOTICE 'Created index %_DLM_Level', p_table_name;
+	EXECUTE 'CREATE INDEX IF NOT EXISTS ' || p_table_name || '_DLM_Level ON ' || p_table_name || '_tbl (DLM_Level)';   
+	EXECUTE 'CREATE INDEX IF NOT EXISTS ' || p_table_name || '_DLM_Partition_ID ON ' || p_table_name || '_tbl (DLM_Partition_ID)';   
+	RAISE NOTICE 'Created indices %_DLM_Level and %_DLM_Partition_ID', p_table_name, p_table_name;
 	
 	EXECUTE 'CREATE VIEW dlm.' || p_table_name || ' AS SELECT * FROM ' || p_table_name || '_tbl WHERE COALESCE(DLM_Level, current_setting(''metasfresh.DLM_Coalesce_Level'')::smallint) <= current_setting(''metasfresh.DLM_Level'')::smallint;';
 	EXECUTE 'COMMENT ON VIEW dlm.' || p_table_name || ' IS ''This view selects records according to the metasfresh.DLM_Coalesce_Level and metasfresh.DLM_Level DBMS parameters. See task gh #489'';';

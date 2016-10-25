@@ -1,5 +1,6 @@
 package de.metas.adempiere.service;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -61,12 +62,13 @@ public interface IColumnBL extends ISingletonService
 	String getSingleKeyColumn(String tableName);
 
 	/**
-	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>. Fail if this column can't be found.
+	 * For the given <code>tableName</code> and <code>recordColumnName</code>, return the name of the column that contains the respective <code>AD_Table_ID</code>.
+	 * Do not fail if this column can't be found.
 	 *
 	 * @param tableName
 	 * @param recordColumnName
 	 * @return
 	 */
-	String getTableColumnName(String tableName, String recordColumnName);
+	Optional<String> getTableColumnName(String tableName, String recordColumnName);
 
 }

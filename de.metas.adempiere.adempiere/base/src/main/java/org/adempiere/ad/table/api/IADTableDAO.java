@@ -131,9 +131,18 @@ public interface IADTableDAO extends ISingletonService
 	 *
 	 * @param tableName
 	 * @param columnName
+	 * @param trxname may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
 	 * @return
 	 */
-	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName);
+	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
 
-	<T extends I_AD_Table> T retrieveTable(String tableName, Class<T> clazz);
+	/**
+	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,
+	 * because tables are a bit sensitive and using the {@link org.adempiere.ad.dao.impl.QueryBL} and {@link org.adempiere.util.proxy.Cached} does not work under all circumstances.
+	 *
+	 *
+	 * @param tableName can be case-insensitive
+	 * @return
+	 */
+	I_AD_Table retrieveTable(String tableName);
 }

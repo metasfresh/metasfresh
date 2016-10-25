@@ -2,11 +2,13 @@ package de.metas.dlm.partitioner.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
 
 /*
  * #%L
@@ -104,6 +106,8 @@ public class PartitionerConfigLine
 
 		private PartitionerConfigLine buildLine;
 
+		private int dlm_Partition_Config_Line_ID;
+
 		LineBuilder(final PartitionerConfig.Builder parentBuilder)
 		{
 			this.parentBuilder = parentBuilder;
@@ -115,14 +119,25 @@ public class PartitionerConfigLine
 			return this;
 		}
 
+		public String getTableName()
+		{
+			return tableName;
+		}
+
+		public LineBuilder setDLM_Partition_Config_Line(final int dlm_Partition_Config_Line_ID)
+		{
+			this.dlm_Partition_Config_Line_ID = dlm_Partition_Config_Line_ID;
+			return this;
+		}
+
 		/**
 		 * Convenience method to end the current line builder and start a new one.
 		 *
 		 * @return the new line builder, <b>not</b> this instance.
 		 */
-		public LineBuilder newLine()
+		public LineBuilder line(final String tableName)
 		{
-			return endLine().newLine();
+			return endLine().line(tableName);
 		}
 
 		public PartitionerConfig.Builder endLine()
@@ -133,15 +148,25 @@ public class PartitionerConfigLine
 		public PartitionerConfigLine buildLine(final PartitionerConfig parent)
 		{
 			buildLine = new PartitionerConfigLine(parent, tableName);
+			buildLine.setDLM_Partition_Config_Line_ID(dlm_Partition_Config_Line_ID);
 			return buildLine;
 		}
 
-		public PartitionerConfigReference.RefBuilder newRef()
+		public PartitionerConfigReference.RefBuilder ref()
 		{
 			final PartitionerConfigReference.RefBuilder refBuilder = new PartitionerConfigReference.RefBuilder(this);
 			refBuilders.add(refBuilder);
 
 			return refBuilder;
+		}
+
+
+		public LineBuilder endRef()
+		{
+			final List<RefBuilder> distinctRefBuilders = refBuilders.stream().distinct().collect(Collectors.toList());
+			refBuilders.clear();
+			refBuilders.addAll(distinctRefBuilders);
+			return this;
 		}
 
 		public void buildRefs()
@@ -152,6 +177,12 @@ public class PartitionerConfigLine
 				buildLine.references.add(ref);
 			}
 
+		}
+
+		@Override
+		public String toString()
+		{
+			return "LineBuilder [parentBuilder=" + parentBuilder + ", DLM_Partition_Config_Line_ID=" + dlm_Partition_Config_Line_ID + ", tableName=" + tableName + ", refBuilders=" + refBuilders + ", buildLine=" + buildLine + "]";
 		}
 	}
 }

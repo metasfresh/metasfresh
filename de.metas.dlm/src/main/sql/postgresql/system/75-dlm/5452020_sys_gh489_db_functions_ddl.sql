@@ -127,5 +127,5 @@ FROM DLM_Partition p
 		JOIN AD_Table t 
 				ON t.AD_Table_ID=l.DLM_Referencing_Table_ID
 
-	JOIN LATERAL (SELECT dlm.get_dlm_records(t.TableName, p.DLM_Partition_ID) ) records ON true
+	JOIN LATERAL (SELECT dlm.get_dlm_records(t.TableName, p.DLM_Partition_ID) ) r ON true
 ;

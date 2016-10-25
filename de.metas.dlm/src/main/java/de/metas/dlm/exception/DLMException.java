@@ -4,6 +4,8 @@ import org.adempiere.exceptions.DBException;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -37,26 +39,17 @@ public class DLMException extends DBException
 	private static final long serialVersionUID = -4557251479983766242L;
 
 	private final boolean referencingTableHasDLMLevel;
-
-	private final String referencingTableName;
-
-	private final String referencingColumnName;
-
-	private final String referencedTableName;
+	private final TableReferenceDescriptor tableReferenceDescriptor;
 
 	@VisibleForTesting
 	public DLMException(final Throwable cause,
-			final boolean referencingTableHasDLMLevel,
-			final String referencedTableName,
-			final String referencingTableName,
-			final String referencingColumnName)
+			final TableReferenceDescriptor tableReferenceDescriptor,
+			final boolean referencingTableHasDLMLevel)
 	{
 		super("Another record references the given record", cause);
 
+		this.tableReferenceDescriptor = tableReferenceDescriptor;
 		this.referencingTableHasDLMLevel = referencingTableHasDLMLevel;
-		this.referencedTableName = referencedTableName;
-		this.referencingTableName = referencingTableName;
-		this.referencingColumnName = referencingColumnName;
 	}
 
 	public boolean isReferencingTableHasDLMLevel()
@@ -64,25 +57,14 @@ public class DLMException extends DBException
 		return referencingTableHasDLMLevel;
 	}
 
-	public String getReferencingTableName()
+	public TableReferenceDescriptor getTableReferenceDescriptor()
 	{
-		return referencingTableName;
-	}
-
-	public String getReferencingColumnName()
-	{
-		return referencingColumnName;
-	}
-
-	public String getReferencedTableName()
-	{
-		return referencedTableName;
+		return tableReferenceDescriptor;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "DLMException [referencedTableName=" + referencedTableName + ", referencingTableName=" + referencingTableName + ", referencingColumnName=" + referencingColumnName + ", referencingTableHasDLMLevel=" + referencingTableHasDLMLevel + "]";
+		return "DLMException [tableReferenceDescriptor=" + tableReferenceDescriptor + ", referencingTableHasDLMLevel=" + referencingTableHasDLMLevel + "]";
 	}
-
 }

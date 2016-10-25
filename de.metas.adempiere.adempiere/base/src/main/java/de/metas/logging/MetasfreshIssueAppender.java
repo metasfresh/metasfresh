@@ -4,6 +4,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Issue;
@@ -165,7 +166,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		{
 			return;
 		}
-		
+
 		// Don't report the issue if the reporting is currently disabled
 		if (!isIssueReportingEnabled())
 		{
@@ -297,7 +298,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 
 			//
 			// Create AD_Issue
-			final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class);
+			final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class, new PlainContextAware(Env.getCtx())); // create the new issue out-of-trx!
 			{
 				String summary = event.getMessage();
 				issue.setSourceClassName(extractSourceClassName(event));

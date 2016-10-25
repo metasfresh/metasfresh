@@ -12,6 +12,8 @@ import org.postgresql.util.ServerErrorMessage;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -52,12 +54,12 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 	/**
 	 * metasfresh-custom error code.
 	 */
-	private static final String PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level = "235D5";
+	private static final String PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level = "235D3";
 
 	/**
 	 * metasfresh-custom error code.
 	 */
-	private static final String PG_SQLSTATE_Referencing_Table_Has_No_DLM_LEvel = "235N5";
+	private static final String PG_SQLSTATE_Referencing_Table_Has_No_DLM_LEvel = "235N3";
 
 	/**
 	 * This pattern is used to parse the postgresql error message. some notes:
@@ -105,7 +107,7 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 
 		final String[] infos = extractInfos(detail);
 
-		return new DLMException(t, referencingTableHasDLMLevel, infos[0], infos[1], infos[2]);
+		return new DLMException(t,  TableReferenceDescriptor.of(infos[0], infos[1], infos[2]), referencingTableHasDLMLevel);
 	}
 
 	@VisibleForTesting

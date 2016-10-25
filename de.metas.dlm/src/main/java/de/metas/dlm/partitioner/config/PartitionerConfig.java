@@ -2,6 +2,7 @@ package de.metas.dlm.partitioner.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
@@ -80,12 +81,23 @@ public class PartitionerConfig
 		return new Builder(config);
 	}
 
-	public PartitionerConfigLine getLine(final String tableName)
+	/**
+	 * Use this method if you know the line exists. It throws an exception with a nice error-message for you if it doesn't exist after all.
+	 *
+	 * @param tableName
+	 * @return
+	 */
+	public PartitionerConfigLine getLineNotNull(final String tableName)
+	{
+		final Optional<PartitionerConfigLine> line = getLine(tableName);
+		return line.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
+	}
+
+	public Optional<PartitionerConfigLine> getLine(final String tableName)
 	{
 		return lines.stream()
 				.filter(l -> l.getTableName().equalsIgnoreCase(tableName))
-				.findFirst()
-				.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
+				.findFirst();
 	}
 
 	@Override
@@ -97,6 +109,8 @@ public class PartitionerConfig
 	public static class Builder
 	{
 		private final List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
+
+		private int DLM_Partition_Config_ID;
 
 		public Builder()
 		{
@@ -114,32 +128,79 @@ public class PartitionerConfig
 			{
 				return;
 			}
+			setDLM_Partition_Config_ID(config.getDLM_Partition_Config_ID());
+
 			for (final PartitionerConfigLine line : config.getLines())
 			{
-				final LineBuilder lineBuilder = newLine().setTableName(line.getTableName());
+				final LineBuilder lineBuilder = newLine()
+						.setTableName(line.getTableName())
+						.setDLM_Partition_Config_Line(line.getDLM_Partition_Config_Line_ID());
+
 				for (final PartitionerConfigReference ref : line.getReferences())
 				{
-					final RefBuilder refBuilder = lineBuilder.newRef().setReferencedTableName(ref.getReferencedTableName()).setReferencingColumnName(ref.getReferencingColumnName());
-					if (ref.getReferencedConfigLine() != null)
-					{
-						refBuilder.setReferencedConfigLine(ref.getReferencedConfigLine().getTableName());
-					}
+					final RefBuilder refBuilder = lineBuilder.ref()
+							.setReferencedTableName(ref.getReferencedTableName())
+							.setReferencingColumnName(ref.getReferencingColumnName())
+							.setDLM_Partition_Config_Reference(ref.getDLM_Partition_Config_Reference_ID());
+
 					refBuilder.endRef();
 				}
 				lineBuilder.endLine();
 			}
 		}
 
-		public PartitionerConfigLine.LineBuilder newLine()
+		public Builder setDLM_Partition_Config_ID(final int dlm_Partition_Config_ID)
 		{
+			DLM_Partition_Config_ID = dlm_Partition_Config_ID;
+			return this;
+		}
+
+		private PartitionerConfigLine.LineBuilder newLine()
+		{
+			assertLineTableNamesUnique();
+
 			final PartitionerConfigLine.LineBuilder lineBuilder = new PartitionerConfigLine.LineBuilder(this);
 			lineBuilders.add(lineBuilder);
 			return lineBuilder;
 		}
 
+		/**
+		 *
+		 * @param tableName
+		 * @return the already existing line builder for the given <code>tableName</code>, or a new one, if none existed yet.
+		 */
+		public LineBuilder line(final String tableName)
+		{
+			final Optional<LineBuilder> existingLineBuilder = lineBuilders
+					.stream()
+					.filter(b -> tableName.equalsIgnoreCase(b.getTableName()))
+					.findFirst();
+			if (existingLineBuilder.isPresent())
+			{
+				return existingLineBuilder.get();
+			}
+			return newLine().setTableName(tableName);
+		}
+
+		private void assertLineTableNamesUnique()
+		{
+			final List<LineBuilder> nonUniqueLines = lineBuilders.stream()
+					.collect(Collectors.groupingBy(r -> r.getTableName())) // group them by tableName; this returns a map
+					.entrySet().stream() // now stream the map's entries
+					.filter(e -> e.getValue().size() > 1) // now remove from the stream those that are OK
+					.flatMap(e -> e.getValue().stream()) // now get a stream with those that are not OK
+					.collect(Collectors.toList());
+
+			Check.errorUnless(nonUniqueLines.isEmpty(), "Found LineBuilders with duplicate tableNames: {}", nonUniqueLines);
+
+		}
+
 		public PartitionerConfig build()
 		{
+			assertLineTableNamesUnique();
+
 			final PartitionerConfig partitionerConfig = new PartitionerConfig();
+			partitionerConfig.setDLM_Partition_Config_ID(DLM_Partition_Config_ID);
 
 			// first build the lines
 			for (final PartitionerConfigLine.LineBuilder lineBuilder : lineBuilders)

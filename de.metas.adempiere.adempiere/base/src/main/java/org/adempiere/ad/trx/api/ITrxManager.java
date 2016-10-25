@@ -13,11 +13,11 @@ package org.adempiere.ad.trx.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
+import org.adempiere.ad.trx.spi.ITrxCustomizer;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.util.TrxRunnable;
@@ -246,8 +247,13 @@ public interface ITrxManager extends ISingletonService
 	void commit(String trxName);
 
 	/**
+	 * Note that a transaction customer differs from a {@link ITrxListenerManager} in that it applies to all new transactions, if they are created.
+	 */
+	void registerTrxCustomizer(ITrxCustomizer trxCustomizer);
+
+	/**
 	 * Gets {@link ITrxListenerManager} associated with given transaction, identified by <code>trxName</code>.
-	 * 
+	 *
 	 * @param trxName
 	 * @return {@link ITrxListenerManager}; never returns null
 	 * @throws TrxNotFoundException if transaction was not found

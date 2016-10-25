@@ -73,7 +73,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private static final String DYNATTR_IsJustCreated = POJOWrapper.class.getName() + "#IsJustCreated";
 
-	public static <T> T create(Properties ctx, Class<T> cl)
+	public static <T> T create(final Properties ctx, final Class<T> cl)
 	{
 		return create(ctx, cl, POJOLookupMap.get());
 	}
@@ -85,7 +85,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param trxName
 	 * @return
 	 */
-	public static <T> T create(Properties ctx, Class<T> cl, String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
 	{
 		final T object = create(ctx, cl);
 
@@ -111,7 +111,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return object;
 	}
 
-	public static <T> T create(Properties ctx, int id, Class<T> cl, String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
 	{
 		final T result = POJOLookupMap.get().lookup(cl, id);
 
@@ -122,14 +122,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return result;
 	}
 
-	public static <T> T create(Properties ctx, String tableName, int id, Class<T> cl, String trxName)
+	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> cl, final String trxName)
 	{
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final Object model = POJOLookupMap.get().lookup(tableId, id);
 		return create(model, cl);
 	}
 
-	public static <T> T create(Properties ctx, Class<T> cl, IPOJOLookupMap lookup)
+	public static <T> T create(final Properties ctx, final Class<T> cl, final IPOJOLookupMap lookup)
 	{
 		@SuppressWarnings("unchecked")
 		final T object = (T)Proxy.newProxyInstance(cl.getClassLoader(),
@@ -141,7 +141,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return object;
 	}
 
-	public static <T> T create(Object model, Class<T> cl)
+	public static <T> T create(final Object model, final Class<T> cl)
 	{
 		final Boolean useOldValues = null; // take this flag from model
 		return create(model, cl, useOldValues);
@@ -241,7 +241,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	public static <T> T copy(Object model)
+	public static <T> T copy(final Object model)
 	{
 		if (model == null)
 		{
@@ -268,7 +268,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		@SuppressWarnings("unchecked")
 		final T modelCopy = (T)Proxy.newProxyInstance(
-				wrapper.interfaceClass.getClassLoader(),    // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
+				wrapper.interfaceClass.getClassLoader(),     // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
 				new Class<?>[] { wrapper.interfaceClass },
 				wrapperCopy);
 
@@ -299,7 +299,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return valuesCopy;
 	}
 
-	public static Properties getCtx(Object model, boolean useClientOrgFromModel)
+	public static Properties getCtx(final Object model, final boolean useClientOrgFromModel)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 
@@ -358,7 +358,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	// task 05468: adding this field to get and set, just so that the pojoWrapper acts like a "real" ctx-provider that can pass on a trxName
 	private String _trxName = ITrx.TRXNAME_None;
 
-	public static String getTrxName(Object model)
+	public static String getTrxName(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		if (wrapper == null)
@@ -375,7 +375,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		wrapper.setTrxName(trxName);
 	}
 
-	public static POJOWrapper getWrapper(Object model)
+	public static POJOWrapper getWrapper(final Object model)
 	{
 		if (model == null)
 		{
@@ -384,10 +384,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		if (Proxy.isProxyClass(model.getClass()))
 		{
-			InvocationHandler ih = Proxy.getInvocationHandler(model);
+			final InvocationHandler ih = Proxy.getInvocationHandler(model);
 			if (ih instanceof POJOWrapper)
 			{
-				POJOWrapper wrapper = (POJOWrapper)ih;
+				final POJOWrapper wrapper = (POJOWrapper)ih;
 				return wrapper;
 			}
 			return null;
@@ -401,12 +401,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	}
 
-	public static boolean isHandled(Object model)
+	public static boolean isHandled(final Object model)
 	{
 		return getWrapper(model) != null;
 	}
 
-	public static void save(Object model)
+	public static void save(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		wrapper.getLookupMap().save(model);
@@ -453,28 +453,28 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		Check.assumeNotNull(tableName, "tableName not null (interfaceClass={})", interfaceClass);
 
-		this.instanceId = nextInstanceId.incrementAndGet();
+		instanceId = nextInstanceId.incrementAndGet();
 		this.ctx = ctx;
 		this.interfaceClass = interfaceClass;
 		this.tableName = tableName; // InterfaceWrapperHelper.getTableName(interfaceClass);
-		this.idColumnName = tableName + "_ID";
+		idColumnName = tableName + "_ID";
 		this.lookup = lookup;
 
 		this.values = new HashMap<String, Object>();
-		this.valuesRO = Collections.unmodifiableMap(this.values);
-		this.valuesOld = new HashMap<String, Object>();
+		valuesRO = Collections.unmodifiableMap(this.values);
+		valuesOld = new HashMap<String, Object>();
 
 		// Standard values:
-		this.values.put("IsActive", true);
+		this.values.put("IsActive".toLowerCase(), true);
 
 		if (!"AD_Client_ID".equals(idColumnName))
 		{
-			this.values.put("AD_Client_ID", Env.getAD_Client_ID(ctx));
+			this.values.put("AD_Client_ID".toLowerCase(), Env.getAD_Client_ID(ctx));
 		}
 
 		if (!"AD_Org_ID".equals(idColumnName))
 		{
-			this.values.put("AD_Org_ID", Env.getAD_Org_ID(ctx));
+			this.values.put("AD_Org_ID".toLowerCase(), Env.getAD_Org_ID(ctx));
 		}
 
 		if (values != null)
@@ -482,7 +482,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			this.values.putAll(values);
 		}
 
-		this.strictValues = strictValuesDefault;
+		strictValues = strictValuesDefault;
 
 		if (isNew())
 		{
@@ -490,7 +490,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	private POJOWrapper(Properties ctx, Class<?> interfaceClass, IPOJOLookupMap lookup)
+	private POJOWrapper(final Properties ctx, final Class<?> interfaceClass, final IPOJOLookupMap lookup)
 	{
 		this(ctx, InterfaceWrapperHelper.getTableName(interfaceClass), interfaceClass, null, lookup); // values = null
 	}
@@ -498,31 +498,31 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private POJOWrapper(final Class<?> interfaceClass, final POJOWrapper parentWrapper)
 	{
 		super();
-		this.instanceId = nextInstanceId.incrementAndGet();
-		this.ctx = parentWrapper.getCtx();
+		instanceId = nextInstanceId.incrementAndGet();
+		ctx = parentWrapper.getCtx();
 		this.interfaceClass = interfaceClass;
 
 		final String interfaceTableName = InterfaceWrapperHelper.getTableNameOrNull(interfaceClass);
 		if (interfaceTableName == null)
 		{
-			this.tableName = parentWrapper.tableName;
+			tableName = parentWrapper.tableName;
 		}
 		else
 		{
 			Check.assume(interfaceTableName.equals(parentWrapper.tableName), "Parent wrapper must use tablename '{}' instead of '{}'", interfaceTableName, parentWrapper.tableName);
-			this.tableName = interfaceTableName;
+			tableName = interfaceTableName;
 		}
-		Check.assumeNotNull(this.tableName, "No TableName found for {} using {}", interfaceClass, parentWrapper);
+		Check.assumeNotNull(tableName, "No TableName found for {} using {}", interfaceClass, parentWrapper);
 
-		this.idColumnName = parentWrapper.idColumnName;
+		idColumnName = parentWrapper.idColumnName;
 
-		this.lookup = parentWrapper.lookup;
+		lookup = parentWrapper.lookup;
 
 		// instead of copying the Map, we are directly linking to it, to avoid duplicating the data
-		this.values = parentWrapper.values;
-		this.valuesRO = parentWrapper.valuesRO;
-		this.valuesOld = parentWrapper.valuesOld;
-		this.strictValues = strictValuesDefault;
+		values = parentWrapper.values;
+		valuesRO = parentWrapper.valuesRO;
+		valuesOld = parentWrapper.valuesOld;
+		strictValues = strictValuesDefault;
 
 		if (parentWrapper.isJustCreated())
 		{
@@ -622,7 +622,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		else if (methodName.startsWith("is") && (args == null || args.length == 0))
 		{
 			final Map<String, Object> values = getInnerValues();
-			String propertyName = methodName.substring(2);
+			final String propertyName = methodName.substring(2);
 			final Object value;
 			if (values.containsKey(propertyName))
 			{
@@ -663,7 +663,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	void setReferencedObject(String propertyName, Object value)
+	void setReferencedObject(final String propertyName, final Object value)
 	{
 		final String idPropertyName = propertyName + "_ID";
 		if (value == null)
@@ -699,7 +699,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		sb.append(", ID=").append(getId());
 
-		sb.append(", trxName=").append(this._trxName);
+		sb.append(", trxName=").append(_trxName);
 
 		if (useOldValues)
 		{
@@ -740,7 +740,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 					}
 					else
 					{
-						List<String> trace2 = new ArrayList<String>(trace);
+						final List<String> trace2 = new ArrayList<String>(trace);
 						trace2.add(traceKey);
 						valueStr = wrapper.toString(trace2);
 					}
@@ -776,7 +776,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return sb.toString();
 	}
 
-	Object getReferencedObject(String columnName, Method method)
+	Object getReferencedObject(final String columnName, final Method method)
 	{
 		String propertyName = columnName;
 		if (propertyName.endsWith("_ID"))
@@ -789,7 +789,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return getModelValue(propertyName, returnType);
 	}
 
-	public <T> T getModelValue(final String propertyName, Class<T> returnType)
+	public <T> T getModelValue(final String propertyName, final Class<T> returnType)
 	{
 		//
 		// Get the column name which contains the ID of model that we are going to retrieve
@@ -908,16 +908,18 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return valueLoaded;
 	}
 
-	public Object getValue(String propertyName, Class<?> returnType)
+	public Object getValue(final String propertyName, final Class<?> returnType)
 	{
 		return getValue(propertyName, returnType, strictValues);
 	}
 
-	private Object getValue(String propertyName, Class<?> returnType, boolean enforceStrictValues)
+	private Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
 	{
 		final Map<String, Object> values = getInnerValues();
 
-		if (enforceStrictValues && !values.containsKey(propertyName))
+		final String propertyNameToUse = propertyName.toLowerCase();
+
+		if (enforceStrictValues && !values.containsKey(propertyNameToUse))
 		{
 			throw new IllegalStateException("No property " + propertyName + " was defined for bean " + this + "."
 					+ "\n\n You can:"
@@ -925,17 +927,19 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 					+ "\n * if it's not relevant you can turn off strict values in our test: POJOWrapper.setDefaultStrictValues(true);");
 		}
 
-		if (useOldValues && valuesOld.containsKey(propertyName))
+		if (useOldValues && valuesOld.containsKey(propertyNameToUse))
 		{
-			return valuesOld.get(propertyName);
+			return valuesOld.get(propertyNameToUse);
 		}
 
-		return values.get(propertyName);
+		return values.get(propertyNameToUse);
 	}
 
-	public void setValue(String propertyName, Object value)
+	public void setValue(final String propertyName, final Object value)
 	{
-		if (propertyName.equals(idColumnName))
+		final String propertyNameToUse = propertyName.toLowerCase();
+
+		if (propertyNameToUse.equalsIgnoreCase(idColumnName))
 		{
 			final int idOld = getId();
 			final int id = toId(value);
@@ -951,43 +955,44 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		final Map<String, Object> values = getInnerValuesToSet();
-		final Object valueOld = values.put(propertyName, value);
-		if (!valuesOld.containsKey(propertyName)
+		final Object valueOld = values.put(propertyNameToUse, value);
+
+		if (!valuesOld.containsKey(propertyNameToUse)
 				&& !Check.equals(valueOld, value))
 		{
-			valuesOld.put(propertyName, valueOld);
+			valuesOld.put(propertyNameToUse, valueOld);
 		}
 
 		//
 		// Reset cached model if any and if value is "-1"
-		if (propertyName.endsWith("_ID"))
+		if (propertyNameToUse.endsWith("_ID".toLowerCase()))
 		{
 			final int id = toId(value);
 			if (id < 0)
 			{
-				final String modelPropertyName = propertyName.substring(0, propertyName.length() - 3);
+				final String modelPropertyName = propertyNameToUse.substring(0, propertyNameToUse.length() - 3);
 				values.put(modelPropertyName, null);
 			}
 		}
 	}
 
-	private boolean isModelInterface(Class<?> cl)
+	private boolean isModelInterface(final Class<?> cl)
 	{
-		String tableName = InterfaceWrapperHelper.getTableNameOrNull(cl);
+		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(cl);
 		return tableName != null;
 	}
 
-	boolean invokeEquals(Object[] args)
+	boolean invokeEquals(final Object[] args)
 	{
 		final POJOWrapper wrapper2 = getWrapper(args[0]);
-		final boolean result = this.equals(wrapper2);
+		final boolean result = equals(wrapper2);
 
 		return result;
 	}
 
 	private Object invokeHashCode()
 	{
-		int result = hashCode();
+		final int result = hashCode();
 		return result;
 	}
 
@@ -997,7 +1002,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return id == null ? -1 : id.intValue();
 	}
 
-	public void setId(int id)
+	public void setId(final int id)
 	{
 		setValue(idColumnName, id);
 	}
@@ -1052,14 +1057,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((idColumnName == null) ? 0 : idColumnName.hashCode());
-		result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-		result = prime * result + ((values == null) ? 0 : values.hashCode());
+		result = prime * result + (idColumnName == null ? 0 : idColumnName.hashCode());
+		result = prime * result + (tableName == null ? 0 : tableName.hashCode());
+		result = prime * result + (values == null ? 0 : values.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -1112,7 +1117,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				return false;
 			}
 		}
-		else if (!Check.equals(this.copyValues(), other.copyValues()))
+		else if (!Check.equals(copyValues(), other.copyValues()))
 		{
 			return false;
 		}
@@ -1153,7 +1158,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return values;
 	}
 
-	public static void delete(Object model)
+	public static void delete(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		wrapper.getLookupMap().delete(model);
@@ -1166,7 +1171,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param columnName
 	 * @return true if columnName's value is null
 	 */
-	public static boolean isNull(Object model, String columnName)
+	public static boolean isNull(final Object model, final String columnName)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		if (wrapper == null)
@@ -1182,9 +1187,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		//
 		// Special case: lookup columns
-		if (columnName.endsWith("_ID")
+		if (columnName.toLowerCase().endsWith("_ID".toLowerCase())
 				&& value instanceof Integer
-				&& ((Integer)value) == DEFAULT_VALUE_ID)
+				&& (Integer)value == DEFAULT_VALUE_ID)
 		{
 			return true;
 		}
@@ -1225,7 +1230,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// Gather more info and build a nice exception
 		final Map<String, Object> values = getInnerValues();
 		final StringBuilder changedColumns = new StringBuilder();
-		for (Map.Entry<String, Object> e : valuesOld.entrySet())
+		for (final Map.Entry<String, Object> e : valuesOld.entrySet())
 		{
 			final String propertyName = e.getKey();
 			final Object valueOld = e.getValue();
@@ -1273,13 +1278,13 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		setTrxName(this, trxName); // doing it because this is also a side effect of PO.load(trxName) which is called when a PO is refreshed
 
-		final Object record = lookup.lookup(this.tableName, getId(), this.interfaceClass);
+		final Object record = lookup.lookup(tableName, getId(), interfaceClass);
 		final POJOWrapper recordWrapper = getWrapper(record);
 		if (recordWrapper == null)
 		{
 			throw new AdempiereException("No POJOWrapper was found in database for " + this
-					+ "\ninterfaceClass: " + this.interfaceClass
-					+ "\nTableName: " + this.tableName
+					+ "\ninterfaceClass: " + interfaceClass
+					+ "\nTableName: " + tableName
 					+ "\nID=" + getId());
 		}
 		else if (this == recordWrapper)
@@ -1297,10 +1302,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private final void loadComplete()
 	{
-		this.loadCount++;
+		loadCount++;
 	}
 
-	public void copyFrom(POJOWrapper from)
+	public void copyFrom(final POJOWrapper from)
 	{
 		final Map<String, Object> fromValues = from.getInnerValues();
 		if (fromValues == null)
@@ -1313,7 +1318,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		for (final Map.Entry<String, Object> e : fromValues.entrySet())
 		{
 			final String columnName = e.getKey();
-			if (idColumnName.equals(columnName))
+			if (idColumnName.equalsIgnoreCase(columnName))
 			{
 				// don't copy the ID column
 				continue;
@@ -1350,22 +1355,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	 *
 	 * @param strictValues
 	 */
-	public void setStrictValues(boolean strictValues)
+	public void setStrictValues(final boolean strictValues)
 	{
 		this.strictValues = strictValues;
 	}
 
 	public boolean isStrictValues()
 	{
-		return this.strictValues;
+		return strictValues;
 	}
 
-	public static void enableStrictValues(Object model)
+	public static void enableStrictValues(final Object model)
 	{
 		POJOWrapper.getWrapper(model).setStrictValues(true);
 	}
 
-	public static void disableStrictValues(Object model)
+	public static void disableStrictValues(final Object model)
 	{
 		POJOWrapper.getWrapper(model).setStrictValues(false);
 	}
@@ -1422,7 +1427,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return value;
 	}
 
-	public static boolean isNew(Object model)
+	public static boolean isNew(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		return wrapper.isNew();
@@ -1490,7 +1495,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	public static boolean hasColumnName(Class<?> modelClass, String columnName)
+	public static boolean hasColumnName(final Class<?> modelClass, final String columnName)
 	{
 		final String columnNameLC = columnName.toLowerCase();
 
@@ -1554,7 +1559,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return changed;
 	}
 
-	public static boolean isRecordChanged(Object model)
+	public static boolean isRecordChanged(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		Check.assumeNotNull(wrapper, "wrapper not null for model {}", model);
@@ -1565,7 +1570,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	public boolean isRecordChanged()
 	{
 		final Map<String, Object> values = getInnerValues();
-		for (String propertyName : values.keySet())
+		for (final String propertyName : values.keySet())
 		{
 			if (isValueChanged(propertyName))
 			{
@@ -1640,13 +1645,13 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public final String getTrxName()
 	{
-		return this._trxName;
+		return _trxName;
 	}
 
 	public final String setTrxName(final String trxName)
 	{
 		final String trxNameOld = _trxName;
-		this._trxName = trxName;
+		_trxName = trxName;
 		return trxNameOld;
 	}
 
@@ -1666,7 +1671,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 
 			@Override
-			public String get_ValueAsString(String variableName)
+			public String get_ValueAsString(final String variableName)
 			{
 				if (!has_Variable(variableName))
 				{
@@ -1677,13 +1682,13 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			}
 
 			@Override
-			public boolean has_Variable(String variableName)
+			public boolean has_Variable(final String variableName)
 			{
 				return POJOWrapper.this.hasColumnName(variableName);
 			}
 
 			@Override
-			public String get_ValueOldAsString(String variableName)
+			public String get_ValueOldAsString(final String variableName)
 			{
 				throw new UnsupportedOperationException("not implemented");
 			}
@@ -1701,7 +1706,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	POJOModelInternalAccessor _modelInternalAccessor = null;
 
-	public static IModelInternalAccessor getModelInternalAccessor(Object model)
+	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		if (wrapper == null)

@@ -33,7 +33,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -60,7 +59,7 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public I_AD_Column retrieveColumnOrNull(final String tableName, final String columnName)
 	{
-		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_AD_Column.class);
@@ -69,18 +68,23 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
-		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.match();
 	}
 
 	@Override
-	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName, final String columnName)
+	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
+			final String columnName,
+			final String trxName)
 	{
+		final String trxNametoUse = trxName == null ? ITrx.TRXNAME_None : trxName;
+
 		//
 		// Create queryBuilder with default context (not needed for tables)
-		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None);
+		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Column.class, Env.getCtx(), trxNametoUse);
 
 		//
 		// Filter by tableName
@@ -223,14 +227,8 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public <T extends I_AD_Table> T retrieveTable(final String tableName, final Class<T> clazz)
+	public I_AD_Table retrieveTable(final String tableName)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		return queryBL.createQueryBuilder(clazz, new PlainContextAware(Env.getCtx()))
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Table.COLUMNNAME_TableName, tableName, UpperCaseQueryFilterModifier.instance)
-				.create()
-				.firstOnly(clazz);
+		return MTable.get(Env.getCtx(), tableName);
 	}
 }

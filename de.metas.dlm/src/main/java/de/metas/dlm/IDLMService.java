@@ -1,10 +1,14 @@
 package de.metas.dlm;
 
+import java.util.List;
+
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
 
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -34,6 +38,9 @@ public interface IDLMService extends ISingletonService
 	 * Call the DB function <code>dlm.add_table_to_dlm()</code> with the given <code>table</code>'s name
 	 * and create new {@link I_AD_Column}s for the columns declared by {@link IDLMAware} if necessary.
 	 *
+	 * <b>WARNING:</b> this will require an <code>ACCESS EXCLUSIVE</code> from the DB, for the given <code>tableName</code>.
+	 * This means that even if there was only as much as a <b>SELECT</b> on the table and the select's <code>ACCESS SHARE</code> was not yet released, then this method will hang.
+	 *
 	 * @param table
 	 */
 	void addTableToDLM(final I_AD_Table table);
@@ -47,4 +54,13 @@ public interface IDLMService extends ISingletonService
 	 * @param table
 	 */
 	void removeTableFromDLM(final I_AD_Table table);
+
+	void directUpdateDLMColumn(IContextAware ctxAware, Partition partition, String columnName, int targetValue);
+
+	/**
+	 *
+	 * @return a map of <AD_Table_ID, List<AD_Table_ID>> where the key-<code>AD_Table_ID</code>'s DB-records are
+	 *         referenced by records from the <code>*Table_ID</code> and <code>*Record_ID</code> columns of the tables from value-<code>List<AD_Table_ID></code>.
+	 */
+	List<TableReferenceDescriptor> retrieveTableRecordReferences();
 }

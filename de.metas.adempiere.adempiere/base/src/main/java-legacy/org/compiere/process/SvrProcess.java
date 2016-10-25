@@ -276,7 +276,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			final boolean isLocalTrx = trxManager.isNull(trxExisting);
 			if (isLocalTrx)
 			{
-				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix);
+				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix + "_" + getClass().getSimpleName());
 				m_trx = trxManager.get(trxNameLocal, true);
 				Check.assumeNotNull(m_trx, "Local transaction shall be created for {}", trxNameLocal); // shall not happen
 			}

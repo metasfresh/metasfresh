@@ -304,7 +304,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> setOnlySelection(int AD_PInstance_ID);
 
 	/**
-	 * Start an aggregation of different columns, everything groupped by given <code>column</code>
+	 * Start an aggregation of different columns, everything grouped by given <code>column</code>
 	 *
 	 * @param column
 	 * @return aggregation builder

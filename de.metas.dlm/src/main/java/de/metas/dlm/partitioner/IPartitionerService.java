@@ -1,11 +1,14 @@
 package de.metas.dlm.partitioner;
 
+import java.util.List;
+
 import org.adempiere.util.ISingletonService;
 
 import de.metas.dlm.Partition;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -56,4 +59,6 @@ public interface IPartitionerService extends ISingletonService
 	I_DLM_Partition_Config storePartitionConfig(PartitionerConfig config);
 
 	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
+
+	PartitionerConfig augmentPartitionerConfig(PartitionerConfig config, List<TableReferenceDescriptor> descriptor);
 }

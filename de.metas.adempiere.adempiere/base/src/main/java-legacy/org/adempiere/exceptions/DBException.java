@@ -81,7 +81,7 @@ public class DBException extends AdempiereException
 			final DBException ex = exceptionWrapper.wrapIfNeededOrReturnNull(throwable);
 			if (ex != null)
 			{
-				throw ex;
+				return ex;
 			}
 		}
 

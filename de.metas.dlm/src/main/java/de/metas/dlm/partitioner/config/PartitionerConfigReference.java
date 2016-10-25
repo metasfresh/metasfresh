@@ -1,6 +1,8 @@
 package de.metas.dlm.partitioner.config;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
 
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 
@@ -68,10 +70,10 @@ public class PartitionerConfigReference
 		return referencingColumnName;
 	}
 
-	public PartitionerConfigLine getReferencedConfigLine()
-	{
-		return referencedConfigLine;
-	}
+//	public PartitionerConfigLine getReferencedConfigLine()
+//	{
+//		return referencedConfigLine;
+//	}
 
 	public PartitionerConfigLine getParent()
 	{
@@ -96,12 +98,13 @@ public class PartitionerConfigReference
 
 	public static class RefBuilder
 	{
-		private String referencedTableName;
-		private String referencingColumnName;
+		private String referencedTableName = "";
+		private String referencingColumnName = "";
 
-		private String referencedConfigLineTableName;
+		private String referencedConfigLineTableName = "";
 
 		private final PartitionerConfigLine.LineBuilder parentbuilder;
+		private int DLM_Partition_Config_Reference;
 
 		RefBuilder(final PartitionerConfigLine.LineBuilder parentBuilder)
 		{
@@ -120,22 +123,15 @@ public class PartitionerConfigReference
 			return this;
 		}
 
-		/**
-		 * Set the table name of the {@link PartitionerConfigLine} that the ref build by this instance shall reference.
-		 * Note that the respective line itself only has to exist when the <code>build</code> method of {@link PartitionerConfig#builder()} is called, but ot yet when this method is called..
-		 *
-		 * @param referencedConfigLineTableName
-		 * @return
-		 */
-		public RefBuilder setReferencedConfigLine(final String referencedConfigLineTableName)
+		public RefBuilder setDLM_Partition_Config_Reference(final int dlm_Partition_Config_Reference_ID)
 		{
-			this.referencedConfigLineTableName = referencedConfigLineTableName;
+			DLM_Partition_Config_Reference = dlm_Partition_Config_Reference_ID;
 			return this;
 		}
 
 		public LineBuilder endRef()
 		{
-			return parentbuilder;
+			return parentbuilder.endRef();
 		}
 
 		/**
@@ -145,7 +141,7 @@ public class PartitionerConfigReference
 		 */
 		public RefBuilder newRef()
 		{
-			return endRef().newRef();
+			return endRef().ref();
 		}
 
 		/**
@@ -163,11 +159,42 @@ public class PartitionerConfigReference
 			}
 			else
 			{
-				referencedConfigLine = parent.getParent().getLine(referencedConfigLineTableName);
+				referencedConfigLine = parent.getParent().getLineNotNull(referencedConfigLineTableName);
 			}
 
-			return new PartitionerConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
+			final PartitionerConfigReference partitionerConfigReference = new PartitionerConfigReference(parent, referencingColumnName, referencedTableName, referencedConfigLine);
+			partitionerConfigReference.setDLM_Partition_Config_Reference_ID(DLM_Partition_Config_Reference);
+			return partitionerConfigReference;
 		}
 
+		@Override
+		public int hashCode()
+		{
+			return new HashcodeBuilder()
+					.append(referencedTableName.toLowerCase())
+					.append(referencingColumnName.toLowerCase())
+					.append(parentbuilder)
+					.toHashcode();
+
+		};
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			final RefBuilder other = EqualsBuilder.getOther(this, obj);
+			if (other == null)
+			{
+				return false;
+			}
+			return new EqualsBuilder()
+					.append(referencedTableName.toLowerCase(), other.referencedTableName.toLowerCase())
+					.append(referencingColumnName.toLowerCase(), other.referencingColumnName.toLowerCase())
+					.append(parentbuilder, other.parentbuilder)
+					.isEqual();
+		}
 	}
 }
