@@ -218,6 +218,63 @@ class Filters extends Component {
 	}
 
 	handleEvent = (event, picker) => {
+
+		//tmp
+		// <button onClick={() => this.toggleFilterMenu(false)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (openDateMenu ? " btn-active": "")}>
+  //                   <i className="meta-icon-calendar" />
+  //                       { filterDataItem? 'Filter: '+filterDataItem.caption : 'No data filters'}
+  //               </button>
+
+		// 		{ openDateMenu &&
+		// 			<div className="filters-overlay">
+
+		// 				{ openList &&
+		// 					<div className="filter-menu">
+		// 						<ul>
+		// 							{filterData && filterData.map((item, index) => 
+		// 								<div key={index}> 
+		// 									{item.frequent &&	
+		// 										<li>
+		// 											<DateRangePicker
+		// 												startDate={Moment(new Date('1/1/2014'))}
+		// 								                endDate={Moment(new Date('3/1/2014'))}
+		// 								                ranges={ranges}
+		// 								                alwaysShowCalendars={true}
+		// 								                onApply={this.handleEvent}
+		// 											>
+		// 												<span className="">
+		// 							                        {!!startDate && !!endDate ?
+		// 							                            " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
+		// 							                            item.caption
+		// 							                        }
+		// 								                </span>
+		// 											</DateRangePicker>
+
+
+		// 										</li>
+		// 									}
+		// 								</div>
+		// 							)}
+		// 						</ul>
+		// 					</div>
+		// 				}
+		// 				{ openFilter &&
+		// 					<div className="filter-menu filter-widget">
+		// 						<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
+		// 						<div className="form-group row filter-content">
+		// 							<div className="col-sm-12">
+		// 								{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
+		// 									this.renderFilterWidget(item, index)
+		// 								)}
+		// 							</div>
+		// 						</div>
+		// 						<div className="filter-btn-wrapper">
+		// 							<button className="applyBtn btn btn-sm btn-success" onClick={() => this.applyFilters() }>Apply</button>
+		// 						</div>
+		// 					</div>
+		// 				}
+		// 			</div>
+		// 		}
        
     }
 
@@ -234,63 +291,24 @@ class Filters extends Component {
 		}
 		return (
 			<div>
-				<button onClick={() => this.toggleFilterMenu(false)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (openDateMenu ? " btn-active": "")}>
-                    <i className="meta-icon-calendar" />
-                        { filterDataItem? 'Filter: '+filterDataItem.caption : 'No data filters'}
-                </button>
 
-				{ openDateMenu &&
-					<div className="filters-overlay">
-
-						{ openList &&
-							<div className="filter-menu">
-							<DateRangePicker onEvent={this.handleEvent} />
-							<span>asasas</span>
-								<ul>
-									{filterData && filterData.map((item, index) => 
-										<div key={index}> 
-											{item.frequent &&	
-												<li>
-													<DateRangePicker
-														startDate={Moment(new Date('1/1/2014'))}
-										                endDate={Moment(new Date('3/1/2014'))}
-										                ranges={ranges}
-										                alwaysShowCalendars={true}
-										                onApply={this.handleEvent}
-													>
-														<span className="">
-									                        {!!startDate && !!endDate ?
-									                            " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
-									                            item.caption
-									                        }
-										                </span>
-													</DateRangePicker>
+				<DateRangePicker
+					startDate={Moment(new Date('1/1/2014'))}
+	                endDate={Moment(new Date('3/1/2014'))}
+	                ranges={ranges}
+	                alwaysShowCalendars={true}
+	                onApply={this.handleEvent}
+				>
+					<button onClick={() => this.toggleFilterMenu(false)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (openDateMenu ? " btn-active": "")}>
+                    	<i className="meta-icon-calendar" />
+                        { 'No data filters'}
+                	</button>
+				</DateRangePicker>
 
 
-												</li>
-											}
-										</div>
-									)}
-								</ul>
-							</div>
-						}
-						{ openFilter &&
-							<div className="filter-menu filter-widget">
-								<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
-								<div className="form-group row filter-content">
-									<div className="col-sm-12">
-										{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
-											this.renderFilterWidget(item, index)
-										)}
-									</div>
-								</div>
-								<div className="filter-btn-wrapper">
-									<button className="applyBtn btn btn-sm btn-success" onClick={() => this.applyFilters() }>Apply</button>
-								</div>
-							</div>
-						}
-					</div>
-				}
+
+
+				
 			</div>
 		)
 	}
