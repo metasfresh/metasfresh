@@ -105,7 +105,7 @@ class TableItem extends Component {
                     this.setState(Object.assign({}, this.state, {
                         updatedRow: false
                     }))
-                }, 250);
+                }, 1000);
             }
         )
     }

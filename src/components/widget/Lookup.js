@@ -43,15 +43,11 @@ class Lookup extends Component {
         if(filterWidget && selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }
-        
+
     }
 
     componentDidUpdate() {
         this.handleValueChanged();
-    }
-
-    componentWillReceiveProps() {
-        
     }
 
     handleClickOutside = () => {
@@ -75,14 +71,11 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-
-
         // removing selection
-        this.setState(
-            Object.assign({}, this.state, {
-                selected: null
-            })
-        );
+        this.setState(Object.assign({}, this.state, {
+            selected: null
+        }));
+
         if(filterWidget) {
             onChange(parameterName, select);
             setSelectedItem(select[Object.keys(select)[0]]);
@@ -90,17 +83,20 @@ class Lookup extends Component {
             this.inputSearch.value = select[Object.keys(select)[0]];
 
             this.handleBlur();
-
-
         } else {
             // handling selection when main is not set or set.
+
             if(this.state.property === "") {
+
                 const promise = onChange(mainProperty[0].field, select);
+
                 promise && promise.then(() => {
+
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     // call for more properties
-                    let batchArray = [];
                     if(propertiesCopy.length > 0){
+
+                        let batchArray = [];
 
                         let batch = new Promise((resolve, reject) => {
                             propertiesCopy.map((item) => {
@@ -135,7 +131,6 @@ class Lookup extends Component {
                 })
             } else {
                 onChange(this.state.property, select);
-
                 this.setState(
                     update(this.state, {
                         properties:  {$apply: item => {
@@ -145,7 +140,8 @@ class Lookup extends Component {
                     }),
                     () => {
                         this.generatingPropsSelection();
-                    });
+                    }
+                );
             }
 
         }
@@ -225,10 +221,7 @@ class Lookup extends Component {
                 })
             }
 
-
-
         }else{
-
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
                 list: recent
@@ -315,7 +308,6 @@ class Lookup extends Component {
     }
 
     handleValueChanged = () => {
-
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
@@ -331,10 +323,7 @@ class Lookup extends Component {
                     }));
                 }
             }
-
         }
-
-
     }
 
     renderLookup = () => {
@@ -356,7 +345,7 @@ class Lookup extends Component {
                 <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off") + (filterWidget ? " input-full" : "")}>
                     <div className={
                         "input-editable " +
-                        (align ? "text-xs-" + align + " " : "") 
+                        (align ? "text-xs-" + align + " " : "")
                     }>
                         <input
                             type="text"

@@ -1407,11 +1407,11 @@ th {
 
 .pulse-on {
     background: $brand-pulse-effect !important;
-    transition: all 0.250s linear;
+    transition: all .33s;
 }
 
 .pulse-off {
-    transition: all 4s cubic-bezier(0.785, 0.100, 0.760, 0.935);
+    transition: all 1.33s;
 }
 
 td.pulse-on input {
