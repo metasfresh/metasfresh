@@ -18,6 +18,7 @@ import {
 class Lookup extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             query: "",
             list: [],
@@ -37,6 +38,12 @@ class Lookup extends Component {
 
     componentDidMount() {
         this.handleValueChanged();
+        const {selected, filterWidget} = this.props;
+
+        if(filterWidget && selected) {
+            this.inputSearch.value = selected[Object.keys(selected)[0]];
+        }
+
     }
 
     componentDidUpdate() {
@@ -65,30 +72,31 @@ class Lookup extends Component {
         } = this.state;
 
         // removing selection
-        this.setState(
-            Object.assign({}, this.state, {
-                selected: null
-            })
-        );
+        this.setState(Object.assign({}, this.state, {
+            selected: null
+        }));
 
         if(filterWidget) {
             onChange(parameterName, select);
-            setSelectedItem(select);
+            setSelectedItem(select[Object.keys(select)[0]]);
 
             this.inputSearch.value = select[Object.keys(select)[0]];
 
             this.handleBlur();
-
-
         } else {
             // handling selection when main is not set or set.
+
             if(this.state.property === "") {
+
                 const promise = onChange(mainProperty[0].field, select);
+
                 promise && promise.then(() => {
+
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     // call for more properties
-                    let batchArray = [];
                     if(propertiesCopy.length > 0){
+
+                        let batchArray = [];
 
                         let batch = new Promise((resolve, reject) => {
                             propertiesCopy.map((item) => {
@@ -123,7 +131,6 @@ class Lookup extends Component {
                 })
             } else {
                 onChange(this.state.property, select);
-
                 this.setState(
                     update(this.state, {
                         properties:  {$apply: item => {
@@ -133,7 +140,8 @@ class Lookup extends Component {
                     }),
                     () => {
                         this.generatingPropsSelection();
-                    });
+                    }
+                );
             }
 
         }
@@ -213,10 +221,7 @@ class Lookup extends Component {
                 })
             }
 
-
-
         }else{
-
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
                 list: recent
@@ -303,7 +308,6 @@ class Lookup extends Component {
     }
 
     handleValueChanged = () => {
-
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
@@ -319,10 +323,7 @@ class Lookup extends Component {
                     }));
                 }
             }
-
         }
-
-        
     }
 
     renderLookup = () => {
@@ -330,10 +331,8 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected} = this.props;
+        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected, oldValue, filterWidget} = this.props;
         const {propertiesCopy,isInputEmpty} = this.state;
-
-        // console.log(selected);
 
         return (
             <div
@@ -343,7 +342,7 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off")}>
+                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off") + (filterWidget ? " input-full" : "")}>
                     <div className={
                         "input-editable " +
                         (align ? "text-xs-" + align + " " : "")
@@ -356,8 +355,7 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
-                            
-                            
+
                         />
                     </div>
                     <div className="input-rest">

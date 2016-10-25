@@ -45,6 +45,7 @@ class Table extends Component {
         const {rowData, tabid, keyProperty} = this.props;
         const property = keyProperty ? keyProperty : "rowId";
         const toSelect = rowData[tabid].map((item, index) => item[property]);
+
         this.selectRangeProduct(toSelect);
     }
 
@@ -53,17 +54,20 @@ class Table extends Component {
         return selected;
     }
 
+    triggerFocus = (idFocused, idFocusedDown) => {
+        if(idFocused){
+            document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+        }
+        if(idFocusedDown){
+            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+        }
+    }
+
     selectProduct = (id, idFocused, idFocusedDown) => {
         this.setState(Object.assign({}, this.state, {
             selected: this.state.selected.concat([id])
-        }), ()=> {
-            if(idFocused){
-                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
-            }
-            if(idFocusedDown){
-                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
-            }
-
+        }), () => {
+            this.triggerFocus(idFocused, idFocusedDown);
         })
     }
 
@@ -73,19 +77,13 @@ class Table extends Component {
         }))
     }
 
-    selectOneProduct = (id, idFocused, idFocusedDown) => {
+    selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
         this.setState(Object.assign({}, this.state, {
             selected: [id]
-        }), ()=> {
-            if(idFocused){
-                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
-            }
-            if(idFocusedDown){
-                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
-            }
-
+        }), () => {
+            this.triggerFocus(idFocused, idFocusedDown);
+            cb && cb();
         })
-
     }
 
     deselectProduct = (id) => {
@@ -94,10 +92,10 @@ class Table extends Component {
         }))
     }
 
-    deselectAllProducts = () => {
+    deselectAllProducts = (cb) => {
         this.setState(Object.assign({}, this.state, {
             selected: []
-        }))
+        }), cb && cb());
      }
 
 
@@ -132,7 +130,6 @@ class Table extends Component {
 
                 if(actualId < Object.keys(rowData[tabid]).length-1 ){
                     let newId = actualId+1;
-                    // this.state.selected = [Object.keys(rowData[tabid])[newId]];
 
                     if(!selectRange) {
                         this.selectOneProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
@@ -197,7 +194,6 @@ class Table extends Component {
 
                 if(actualId < array.length-1 ){
                     let newId = actualId+1;
-                    // this.state.selected = [Object.keys(rowData[tabid])[newId]];
 
                     if(!selectRange) {
                         this.selectOneProduct(array[newId]);
@@ -256,7 +252,6 @@ class Table extends Component {
             const selectRange = e.shiftKey;
             const isSelected = selected.indexOf(id) > -1;
             const isAnySelected = selected.length > 0;
-            const isMoreSelected = selected.length > 1;
 
             if(selectMore){
                 if(isSelected){
@@ -272,49 +267,35 @@ class Table extends Component {
                     this.selectOneProduct(id);
                 }
             }else{
-                if(isSelected){
-                    if(isMoreSelected){
-                        this.selectOneProduct(id);
-                    }else{
-                        // this.deselectAllProducts();
-                    }
-                }else{
-                    this.selectOneProduct(id);
-                }
+                this.selectOneProduct(id);
             }
         }
 
 
     }
+
     handleRightClick = (e, id) => {
         const {selected} = this.state;
-        const isAnySelected = selected.length > 0;
+            const {clientX, clientY} = e;
+            e.preventDefault();
 
-        if(!isAnySelected){
-            this.selectProduct(id);
-        } else if(selected.length === 1){
-            this.deselectAllProducts();
-            let t = this;
-            setTimeout(function(){
-                t.selectProduct(id);
-            }, 1);
-
-        }
-
-        e.preventDefault();
-        this.setState({
-            contextMenu: {
-                x: e.clientX,
-                y: e.clientY,
-                open: true
-            }
-        });
+            this.selectOneProduct(id, null, null, () => {
+                this.setState(Object.assign({}, this.state, {
+                    contextMenu: Object.assign({}, this.state.contextMenu, {
+                        x: clientX,
+                        y: clientY,
+                        open: true
+                    })
+                }));
+            });
     }
+
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
             return b[prop] == null ? a : a + b[prop];
         }, 0);
     }
+
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
         let arrayIndex;
@@ -335,6 +316,7 @@ class Table extends Component {
             selectIdA,
             selectIdB
         ];
+
         selected.sort((a,b) => a - b);
             if(keyProperty === 'id'){
                 return arrayIndex.slice(selected[0], selected[1]+1);
@@ -342,13 +324,14 @@ class Table extends Component {
                 return Object.keys(rowData[tabid]).slice(selected[0], selected[1]+1);
             }
     }
+
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, tabId, rowId));
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, updatedRow} = this.props;
+        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, newRow} = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -374,7 +357,7 @@ class Table extends Component {
                         changeListenOnFalse={() => this.changeListenOnFalse()}
                         readonly={readonly}
                         mainTable={mainTable}
-                        updatedRow={i===keys.length-1 ? updatedRow : false}
+                        newRow={i === keys.length-1 ? newRow : false}
                     />
                 );
             }

@@ -380,6 +380,18 @@ input:checked + .input-slider:before {
 .input-editable {
     flex: 2 1 30%;
 }
+.input-full {
+    flex: 2 1 100%;
+}
+
+.input-full .input-editable {
+    flex: 4 1 30%;
+}
+
+.input-full .input-rest {
+    flex: 0 0 20%;
+}
+
 .input-readonly {
     pointer-events: none;
 }

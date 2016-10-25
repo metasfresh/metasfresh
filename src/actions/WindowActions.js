@@ -4,11 +4,7 @@ import config from '../config';
 import {push, replace} from 'react-router-redux';
 
 import {
-    getWindowBreadcrumb,
-    getRelatedDocuments,
-    setReferences,
-    getDocumentActions,
-    setActions
+    getWindowBreadcrumb
 } from './MenuActions';
 
 import {
@@ -164,7 +160,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 if(!isModal){
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-            }).then(response =>
+            }).then(() =>
                 dispatch(initLayout(windowType, tabId))
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data, getScope(isModal)))
@@ -221,7 +217,7 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
 
     }
 
-    return dispatch => axios.patch(
+    return () => axios.patch(
         config.API_URL +
         '/window/commit?type=' +
         windowType +
@@ -257,16 +253,9 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 
 
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
-
-
             responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
-
-            // setTimeout(function(){
-            //     dispatch(indicatorState('saved'));
-            // }, 1000);
-
         })
     }
 }
@@ -282,9 +271,11 @@ function mapDataToState(data, isModal, rowId){
             }else{
                 item1.fields.map(item2 => {
                     if(rowId && !isModal){
-                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)))
-
+                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)));
                     }else{
+                        if(rowId){
+                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(false)));
+                        }
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
                     }
                 });
@@ -302,12 +293,16 @@ export function updateProperty(property, value, tabid, rowid, isModal){
             }
         }else{
             dispatch(updateDataProperty(property, value, getScope(isModal)))
+            if(isModal){
+                //update the master field too if exist
+                dispatch(updateDataProperty(property, value, "master"))
+            }
         }
     }
 }
 
 export function initLayout(windowType, tabId){
-    return dispatch => axios.get(
+    return () => axios.get(
         config.API_URL +
         '/window/layout?type=' + windowType +
         (tabId ? "&tabid=" + tabId : "")
@@ -315,7 +310,7 @@ export function initLayout(windowType, tabId){
 }
 
 export function getData(windowType, id, tabId, rowId) {
-    return dispatch => axios.get(
+    return () => axios.get(
         config.API_URL +
         '/window/data?type=' + windowType +
         '&id=' + id +
@@ -359,7 +354,7 @@ export function findRowByPropName(arr, name) {
 export function getItemsByProperty(arr, prop, value) {
     let ret = [];
 
-    arr.map((item, index) => {
+    arr.map((item) => {
         if(item[prop] === value){
             ret.push(item);
         }
@@ -370,7 +365,7 @@ export function getItemsByProperty(arr, prop, value) {
 
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
-    return dispatch => axios.delete(
+    return () => axios.delete(
         config.API_URL +
         '/window/delete?type=' + windowType +
         '&id=' + id +

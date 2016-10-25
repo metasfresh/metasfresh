@@ -18,47 +18,30 @@ import Container from '../components/Container';
 class MasterWindow extends Component {
     constructor(props){
         super(props);
+
         this.state = {
-            data: [],
-            updatedRow: false
-        };
+            newRow: false
+        }
     }
 
-    handleUpdateClick =()=> {
-        const {dispatch} = this.props;
-        const {docId, windowType} = this.props.params;
-
-        dispatch(getData(windowType, docId)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data[0].fields
-            }))
-        });
-
-        let th = this;
+    closeModalCallback = () => {
         this.setState(
             Object.assign({}, this.state, {
-                updatedRow: true
+                newRow: true
             }), () => {
-                setTimeout(function(){
-                  th.setState(Object.assign({}, this.state, {
-                    updatedRow: false
-                  }))
-                }, 250);
+                setTimeout(() => {
+                    this.setState(Object.assign({}, this.state, {
+                        newRow: false
+                    }))
+                }, 1000);
             }
-        );
-    }
-
-    componentWillReceiveProps(props) {
-        const {master} = this.props;
-        this.setState(Object.assign({}, this.state, {
-            data: master.data
-        }))
+        )
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb, references,actions} = this.props;
+        const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
+        const {newRow} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const {data, updatedRow} = this.state;
         const dataId = findRowByPropName(master.data, "ID").value;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
 
@@ -94,16 +77,16 @@ class MasterWindow extends Component {
                         tabId={modal.tabId}
                         rowId={modal.rowId}
                         modalTitle={modal.title}
-                        handleUpdateClick={e => this.handleUpdateClick()}
+                        closeCallback={this.closeModalCallback}
                      />
                  }
                 <Window
-                    data={data}
+                    data={master.data}
                     layout={master.layout}
                     rowData={master.rowData}
                     dataId={dataId}
                     isModal={false}
-                    updatedRow={updatedRow}
+                    newRow={newRow}
                 />
             </Container>
         );

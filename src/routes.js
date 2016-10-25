@@ -9,7 +9,8 @@ import DocList from './containers/DocList.js';
 import NavigationTree from './containers/NavigationTree.js';
 
 import {
-    logoutRequest
+    logoutRequest,
+    logoutSuccess
 } from './actions/AppActions';
 
 import {
@@ -19,16 +20,18 @@ import {
 export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
             if( !localStorage.isLogged ){
-                replace('/login');
+                store.dispatch(push('/login'));
                 callback();
             }else{
                 callback();
             }
         }
     const logout = () => {
-        store.dispatch(logoutRequest()).then(() =>
-            replace('/login')
-        )
+        store.dispatch(logoutRequest()).then(()=>
+            store.dispatch(logoutSuccess())
+        ).then(()=>
+            store.dispatch(push('/login'))
+        );
     }
     return (
         <Route path="/">

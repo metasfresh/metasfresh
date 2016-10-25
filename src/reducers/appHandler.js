@@ -70,13 +70,16 @@ export default function appHandler(state = initialState, action) {
                 filters: Object.assign({}, state.filters, {
                     filterId: action.filterId,
                     parameters: state.filters.parameters.map(item =>
-                        item.parameterName === action.property?
+
+                        (item.parameterName === action.property) ?
                         Object.assign({}, item, { value: action.value }) :
                         item
                     )
 
                 })
             })
+
+
 
 
         // END OF NOTIFICATION ACTIONS

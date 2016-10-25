@@ -14,8 +14,8 @@ const initialState = {
 export default function listHandler(state = initialState, action) {
     switch(action.type){
         case types.SET_LIST_FILTERS:
-            return update(state, {
-                filters: {$push: [action.filter]}
+            return Object.assign({}, state, {
+                filters:  action.filter != null ? [action.filter] : []
             })
         case types.SET_LIST_PAGINATION:
             return Object.assign({}, state, {

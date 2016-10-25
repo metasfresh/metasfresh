@@ -19,7 +19,8 @@ class Widget extends Component {
 
         this.state = {
             cachedValue: null,
-            updated: false
+            updated: false,
+            edited: false
         }
     }
 
@@ -30,13 +31,20 @@ class Widget extends Component {
         let currRowId = rowId;
         let ret = null;
 
+
+        this.setState(Object.assign({}, this.state, {
+            edited: true
+        }));
+
         if(rowId === "NEW"){
             currRowId = relativeDocId;
         }
+
         let customWindowType = windowType;
         if(isAdvanced){
             customWindowType += "&advanced=true";
         }
+
 
         //do patch only when value is not equal state
         //or cache is set and it is not equal value
@@ -69,17 +77,23 @@ class Widget extends Component {
     handleChange = (e, property) => {
         const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
         let currRowId = rowId;
-
-        if(!this.validatePrecision(e.target.value)){
-            return;
-        }
-
-        if(rowId === "NEW"){
-            currRowId = relativeDocId;
-        }
-
+        const val = e.target.value;
         e.preventDefault();
-        dispatch(updateProperty(property, e.target.value, tabId, currRowId, isModal));
+
+        this.setState(Object.assign({}, this.state, {
+            edited: true
+        }), () => {
+            if(!this.validatePrecision(val)){
+                return;
+            }
+
+            if(rowId === "NEW"){
+                currRowId = relativeDocId;
+            }
+
+            dispatch(updateProperty(property, val, tabId, currRowId, isModal));
+
+        });
     }
 
     handleFocus = (e, value) => {
@@ -107,30 +121,26 @@ class Widget extends Component {
 
 
     componentWillReceiveProps(nextProps) {
-        const {updateCell} = this.props;
-        if(updateCell){
-            updateCell();
-        }
-
-        if(this.props.widgetData[0].value!==nextProps.widgetData[0].value) {
-            let th = this;
+        const {widgetData} = this.props;
+        const {edited} = this.state;
+        if(widgetData[0].value !== nextProps.widgetData[0].value && !edited) {
             this.setState(
                 Object.assign({}, this.state, {
                     updated: true
                 }), () => {
-                    setTimeout(function(){
-                      th.setState(Object.assign({}, this.state, {
-                        updated: false
-                      }))
-                    }, 250);
+                    setTimeout(() => {
+                        this.setState(Object.assign({}, this.state, {
+                            updated: false
+                        }))
+                    }, 1000);
                 }
-            );
+            )
         }
     }
 
     render() {
         const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, isModal} = this.props;
-        const {updated} = this.state;
+        const {updated, edited} = this.state;
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
@@ -138,7 +148,7 @@ class Widget extends Component {
                         <div className={"form-group row " + (type === "primary" ? "" : "")}>
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
                             <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                <RawWidget 
+                                <RawWidget
                                     widgetType={widgetType}
                                     fields={fields}
                                     windowType={windowType}

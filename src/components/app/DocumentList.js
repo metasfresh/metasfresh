@@ -179,10 +179,6 @@ class DocumentList extends Component {
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>
                         }
-                        {type === "grid" &&
-                            <span className="hidden-sm-down">Filters: </span>
-                        }
-                        <DatetimeRange />
                         <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
                     </div>
 

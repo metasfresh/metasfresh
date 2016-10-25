@@ -15,26 +15,33 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
-
-       // console.log(props.selectedItem)
+       
+       this.state = {
+            textValue: props.selectedItem
+       }
 
     }
 
-    // setSelectedItem = (item) => {
-    //     this.setState(Object.assign({}, this.state, {
-    //         selectedItem: item
-    //     }));
-    // }
+    handleSelectedValue = (item) => {
+        const {setSelectedItem} = this.props
+        this.setState(Object.assign({}, this.state, {
+            textValue: item
+        }))
+
+        setSelectedItem(item);
+    }
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName, setSelectedItem, selectedItem, id} = this.props;
+        const {textValue} = this.state;
         
-
+        
         let widgetField = "";
         let selectedField = "";
         let widgetData = "";
         let widgetFields = "";
+        let fieldsArray = "";
 
 
         if (filterWidget) {
@@ -42,12 +49,15 @@ class RawWidget extends Component {
             selectedField = selectedItem;
             widgetData = data;
             widgetFields = fields;
+            fieldsArray = [fields];
         } else {
             widgetField = fields[0].field;
             selectedField = data[0].value;
             widgetData = data[0];
             widgetFields = fields[0];
-        } 
+            fieldsArray = fields;
+        }
+
 
 
         switch(widgetType){
@@ -116,7 +126,7 @@ class RawWidget extends Component {
                     <Lookup
                         recent={[]}
                         dataId={dataId}
-                        properties={[fields]}
+                        properties={fieldsArray}
                         windowType={windowType}
                         defaultValue={data}
                         placeholder={widgetFields.emptyText}
@@ -168,7 +178,7 @@ class RawWidget extends Component {
                         <input
                             type="text"
                             className="input-field js-input-field"
-                            value={selectedField}
+                            value={data[0].value}
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
@@ -190,11 +200,11 @@ class RawWidget extends Component {
                     }>
                         <textarea
                             className="input-field js-input-field"
-                            value={selectedField}
+                            value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
                             placeholder={widgetFields.emptyText}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(e, widgetField)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -381,8 +391,7 @@ class RawWidget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign} = this.props;
-
+        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, updated} = this.props;
         return (
             <div>
                 {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
