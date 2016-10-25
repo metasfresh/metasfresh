@@ -408,13 +408,15 @@ public class VPAttributeDialog extends CDialog
 		// Show Select existing ASI (if allowed)
 		if (allowSelectExistingASI)
 		{
-			// New/Edit - Selection
+			// New/Edit checkbox
 			if (isASITemplateNew)		// new ASI
 				cbNewEdit.setText(msgBL.getMsg(ctx, "NewRecord"));
 			else
 				cbNewEdit.setText(msgBL.getMsg(ctx, "EditRecord"));
 			cbNewEdit.addActionListener(this);
 			centerPanel.add(cbNewEdit, new ALayoutConstraint(m_row++, 0));
+			
+			// Select existing ASI button
 			bSelectExistingASI.setText(msgBL.getMsg(ctx, "SelectExisting"));
 			bSelectExistingASI.addActionListener(this);
 			centerPanel.add(bSelectExistingASI, null);
