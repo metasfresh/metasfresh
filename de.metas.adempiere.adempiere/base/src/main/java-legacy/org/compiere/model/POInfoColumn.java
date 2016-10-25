@@ -93,9 +93,10 @@ public final class POInfoColumn implements Serializable
 
 		ITableRefInfo tableRefInfo = null;
 
-		if (ad_Reference_Value_ID > 0)
+		if (ad_Reference_Value_ID > 0 && (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
 		{
-			tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfoOrNull(ad_Reference_Value_ID);
+			// permit warnings because we shouldn't have Table or Search types with no reference table IDs.
+			tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(ad_Reference_Value_ID);
 		}
 
 		// FIXME: HARDCODED
@@ -150,6 +151,26 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 	}   // Column
+
+	private boolean isSearchDisplayType(int displayType)
+	{
+		// Return true only for Search display type
+		if (org.compiere.util.DisplayType.Search == displayType)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isTableDisplayType(int displayType)
+	{
+		// Return true only for Table display type
+		if (org.compiere.util.DisplayType.Table == displayType)
+		{
+			return true;
+		}
+		return false;
+	}
 
 	/** Column ID */
 	final int AD_Column_ID;

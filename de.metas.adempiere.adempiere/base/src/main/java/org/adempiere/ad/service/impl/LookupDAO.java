@@ -443,7 +443,7 @@ public class LookupDAO implements ILookupDAO
 		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
 		if (tableRefInfo == null)
 		{
-			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
+			logger.error("no table ref={}", AD_Reference_ID);
 			return null;
 		}
 
@@ -598,15 +598,15 @@ public class LookupDAO implements ILookupDAO
 				"Direct_" + tableName,
 				tableName,
 				keyColumn,
-				null,    // DisplayColumn,
-				false,    // isValueDisplayed,
-				null,    // displayColumnSQL,
-				false,    // IsTranslated,
-				null,    // WhereClause,
-				null,    // OrderByClause,
-				-1,    // ZoomWindow,
-				-1,    // ZoomWindowPO,
-				-1,    // overrideZoomWindow
+				null,     // DisplayColumn,
+				false,     // isValueDisplayed,
+				null,     // displayColumnSQL,
+				false,     // IsTranslated,
+				null,     // WhereClause,
+				null,     // OrderByClause,
+				-1,     // ZoomWindow,
+				-1,     // ZoomWindowPO,
+				-1,     // overrideZoomWindow
 				autoComplete // autoComplete
 		);
 		return tableRefInfo;
