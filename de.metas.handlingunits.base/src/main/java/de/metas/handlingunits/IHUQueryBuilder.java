@@ -346,7 +346,21 @@ public interface IHUQueryBuilder
 	 * @param values list of accepted values
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object ... values);
+	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object... values);
+
+	/**
+	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
+
+	/**
+	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
 
 	/**
 	 * Filter only those HUs which have given internal barcode. Actually, just filter by <code>M_HU_Value</code>.

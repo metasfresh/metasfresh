@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.ModelColumn;
@@ -40,9 +39,11 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 
 /**
@@ -54,6 +55,13 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 /* package */final class HUAttributeQueryFilterVO
 {
 	public static final String ATTRIBUTEVALUETYPE_Unknown = null;
+	
+	public static enum AttributeValueMatchingType
+	{
+		NotNull,
+		MissingOrNull,
+		ValuesList,
+	};
 
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -64,6 +72,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 	private final I_M_Attribute attribute;
 	private final String attributeValueType;
 	private final ModelColumn<I_M_HU_Attribute, Object> huAttributeValueColumn;
+	private AttributeValueMatchingType matchingType = AttributeValueMatchingType.ValuesList;
 	private final Set<Object> _values = new HashSet<>();
 	private Set<Object> _valuesAndSubstitutes = null;
 
@@ -116,6 +125,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		attribute = from.attribute;
 		attributeValueType = from.attributeValueType;
 		huAttributeValueColumn = from.huAttributeValueColumn;
+		matchingType = from.matchingType;
 		_valuesAndSubstitutes = from._valuesAndSubstitutes == null ? null : new HashSet<>(_valuesAndSubstitutes);
 		_values.addAll(from._values);
 	}
@@ -128,6 +138,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 				// .append(attribute)
 				.append(attributeValueType)
 				.append(huAttributeValueColumn)
+				.append(matchingType)
 				.append(_values)
 				// .append(_valuesAndSubstitutes) // those are loaded on demand based on the other values
 				.toHashCode();
@@ -152,6 +163,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 				// .append(attribute)
 				.append(attributeValueType, other.attributeValueType)
 				.append(huAttributeValueColumn, other.huAttributeValueColumn)
+				.append(matchingType, other.matchingType)
 				.append(_values, other._values)
 				// .append(_valuesAndSubstitutes) // those are loaded on demand based on the other values
 				.isEqual();
@@ -184,34 +196,139 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		sb.append(attributeName).append(": ").append(valuesStr);
 		return sb.toString();
 	}
-
+	
 	/**
+	 * Builds the HU attributes filter and appends it to given HU filters.
+	 * 
 	 * NOTE: keep in sync with {@link #matches(IAttributeSet)}
 	 *
-	 * @param this
-	 * @return
+	 * @param contextProvider
+	 * @param huFilters
 	 */
-	public final IQueryFilter<I_M_HU_Attribute> createQueryFilter()
+	public final void appendQueryFilterTo(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
-		final ICompositeQueryFilter<I_M_HU_Attribute> attributeFilter = queryBL.createCompositeQueryFilter(I_M_HU_Attribute.class);
-		attributeFilter.setJoinAnd();
+		switch (matchingType)
+		{
+			case NotNull:
+				appendQueryFilter_NotNull(contextProvider, huFilters);
+				return;
+			case MissingOrNull:
+				appendQueryFilter_MissingOrNull(contextProvider, huFilters);
+				return;
+			case ValuesList:
+				appendQueryFilter_ValuesList(contextProvider, huFilters);
+				return;
+			default:
+				throw new IllegalStateException("MatchingType not supported: " + matchingType); // shall not happen
+		}
+	}
 
-		// Only HU_Attributes for our M_Attribute_ID
-		final int attributeId = getM_Attribute_ID();
-		attributeFilter.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, attributeId);
+	private final void appendQueryFilter_NotNull(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	{
+		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+				.addNotNull(getHUAttributeValueColumn())
+				.create();
 
-		//
-		// Only those M_HU_Attributes which are matching our Values list
-		final Set<Object> valuesAndSubstitutes = getValuesAndSubstitutes();
-		attributeFilter.addInArrayFilter(getHUAttributeValueColumn(), valuesAndSubstitutes);
+		huFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
+	}
 
-		return attributeFilter;
+	private final void appendQueryFilter_MissingOrNull(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	{
+		final ICompositeQueryFilter<I_M_HU> huFilterToAppend = queryBL.createCompositeQueryFilter(I_M_HU.class)
+				.setJoinOr();
+		
+		// Attribute Missing
+		{
+			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+					.create();
+			
+			huFilterToAppend.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
+		}
+		
+		// Attribute value is null
+		{
+			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+					.addEqualsFilter(getHUAttributeValueColumn(), null)
+					.create();
+			
+			huFilterToAppend.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
+		}
+
+		huFilters.addFilter(huFilterToAppend);
+	}
+
+	private final void appendQueryFilter_ValuesList(final Object contextProvider, final ICompositeQueryFilter<I_M_HU> huFilters)
+	{
+		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
+				.addInArrayFilter(getHUAttributeValueColumn(), getValuesAndSubstitutes())
+				.create();
+
+		huFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
 	}
 
 	/**
 	 * NOTE: keep in sync with {@link #createQueryFilter()}
 	 */
 	public final boolean matches(final IAttributeSet attributes)
+	{
+		switch (matchingType)
+		{
+			case NotNull:
+				return matches_NotNull(attributes);
+			case MissingOrNull:
+				return matches_MissingOrNull(attributes);
+			case ValuesList:
+				return matches_ValuesList(attributes);
+			default:
+				throw new IllegalStateException("MatchingType not supported: " + matchingType); // shall not happen
+		}
+	
+	}
+	
+	private boolean matches_NotNull(IAttributeSet attributes)
+	{
+		//
+		// Check if attribute set has our attribute
+		final int attributeId = getM_Attribute_ID();
+		final I_M_Attribute attribute = attributes.getAttributeByIdIfExists(attributeId);
+		if (attribute == null)
+		{
+			return false; // not matched
+		}
+
+		//
+		// Check if current attribute's value is in our list of values that we require
+		final Object recordAttributeValue = attributes.getValue(attribute);
+		return recordAttributeValue != null; // matched if NOT null
+	}
+
+	private boolean matches_MissingOrNull(IAttributeSet attributes)
+	{
+		//
+		// Check if attribute set has our attribute
+		final int attributeId = getM_Attribute_ID();
+		final I_M_Attribute attribute = attributes.getAttributeByIdIfExists(attributeId);
+		if (attribute == null)
+		{
+			// attribute is missing
+			return true; // matched
+		}
+
+		//
+		// Check if current attribute's value is in our list of values that we require
+		final Object recordAttributeValue = attributes.getValue(attribute);
+		return recordAttributeValue == null; // matched if null
+	}
+
+	private final boolean matches_ValuesList(final IAttributeSet attributes)
 	{
 		//
 		// Check if attribute set has our attribute
@@ -238,9 +355,17 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		// If we reach this point it means that the attribute set was matching our criterias
 		return true; // matched
 	}
+	
+	public HUAttributeQueryFilterVO setMatchingType(final AttributeValueMatchingType matchingType)
+	{
+		Check.assumeNotNull(matchingType, "Parameter matchingType is not null");
+		this.matchingType = matchingType;
+		return this;
+	}
 
 	public HUAttributeQueryFilterVO addValue(final Object value)
 	{
+		setMatchingType(AttributeValueMatchingType.ValuesList);
 		final boolean added = _values.add(value);
 		if (added)
 		{
@@ -252,6 +377,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 
 	public HUAttributeQueryFilterVO addValues(final Collection<? extends Object> values)
 	{
+		setMatchingType(AttributeValueMatchingType.ValuesList);
 		final boolean added = _values.addAll(values);
 		if (added)
 		{
@@ -261,7 +387,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		return this;
 	}
 
-	public final int getM_Attribute_ID()
+	private final int getM_Attribute_ID()
 	{
 		return attributeId;
 	}

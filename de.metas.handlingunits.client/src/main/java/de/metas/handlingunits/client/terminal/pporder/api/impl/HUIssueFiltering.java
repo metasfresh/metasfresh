@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
@@ -51,7 +52,9 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
+import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 
 /**
@@ -60,6 +63,8 @@ import de.metas.materialtracking.model.IMaterialTrackingAware;
  */
 public class HUIssueFiltering implements IHUIssueFiltering
 {
+	private static final String SYSCONFIG_FilterHUsByQualityInspection = "de.metas.handlingunits.client.terminal.pporder.api.impl.HUIssueFiltering.FilterHUsByQualityInspection";
+	
 	@Override
 	public List<I_M_Warehouse> retrieveWarehouse(final Properties ctx)
 	{
@@ -133,6 +138,7 @@ public class HUIssueFiltering implements IHUIssueFiltering
 				.addOnlyWithProductIds(productIds)
 				.addOnlyInWarehouseId(warehouseId);
 
+		//
 		// if the ppOrder is already associated to a material tracking, then don't allow the user to add others
 		final IMaterialTrackingAware materialTrackingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IMaterialTrackingAware.class);
 		if (materialTrackingAware != null && materialTrackingAware.getM_Material_Tracking_ID() > 0)
@@ -144,6 +150,21 @@ public class HUIssueFiltering implements IHUIssueFiltering
 					materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx),
 					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID())
 					);
+		}
+		
+		//
+		// Filter HUs by QualityInspection
+		if (Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_FilterHUsByQualityInspection, true))
+		{
+			final boolean qualityInspectionOrder = Services.get(IMaterialTrackingPPOrderBL.class).isQualityInspection(ppOrder);
+			if (qualityInspectionOrder)
+			{
+				huQueryBuilder.addOnlyWithAttributeNotNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+			}
+			else
+			{
+				huQueryBuilder.addOnlyWithAttributeMissingOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+			}
 		}
 
 		return huQueryBuilder;
