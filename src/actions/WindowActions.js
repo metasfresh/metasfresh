@@ -253,16 +253,9 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 
 
         return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
-
-
             responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
-
-            // setTimeout(function(){
-            //     dispatch(indicatorState('saved'));
-            // }, 1000);
-
         })
     }
 }
@@ -280,7 +273,9 @@ function mapDataToState(data, isModal, rowId){
                     if(rowId && !isModal){
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)));
                     }else{
-                        dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(false)));
+                        if(rowId){
+                            dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(false)));
+                        }
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
                     }
                 });
