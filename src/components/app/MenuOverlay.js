@@ -112,18 +112,19 @@ class MenuOverlay extends Component {
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
         dispatch(pathRequest(nodeId)).then(response => {
-
             let pathArray = [];
             let node = response.data;
 
             do{
-                let children = node.children[0];
+                const children = node.children && node.children[0];
                 node.children = undefined;
 
                 pathArray.push(node);
                 node = children;
-            }while(!!node.children);
+            }while(!!node);
 
+            //remove first MENU element
+            pathArray.shift();
 
             this.setState(Object.assign({}, this.state, {
                 path: pathArray
@@ -134,9 +135,22 @@ class MenuOverlay extends Component {
     handleSubPath = (nodeId) => {
         const {dispatch} = this.props;
         dispatch(pathRequest(nodeId)).then(response => {
+            let pathArray = [];
+            let node = response.data;
+
+            do{
+                const children = node.children && node.children[0];
+                node.children = undefined;
+
+                pathArray.push(node);
+                node = children;
+            }while(!!node);
+
+            //remove first MENU element
+            pathArray.shift();
 
             this.setState(Object.assign({}, this.state, {
-                subPath: response.data
+                subPath: pathArray
             }))
         });
     }
@@ -144,7 +158,7 @@ class MenuOverlay extends Component {
     renderPath = (path) => {
         return (
             <span>
-                {path.map((item, index) =>
+                {path && path.map((item, index) =>
                     <span key={index}>
                         {item.nodeId > 0 ? (item.captionBreadcrumb + ' / ') : item.captionBreadcrumb}
                     </span>
