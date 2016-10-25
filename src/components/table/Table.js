@@ -77,11 +77,12 @@ class Table extends Component {
         }))
     }
 
-    selectOneProduct = (id, idFocused, idFocusedDown) => {
+    selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
         this.setState(Object.assign({}, this.state, {
             selected: [id]
         }), () => {
             this.triggerFocus(idFocused, idFocusedDown);
+            cb && cb();
         })
     }
 
@@ -94,7 +95,7 @@ class Table extends Component {
     deselectAllProducts = (cb) => {
         this.setState(Object.assign({}, this.state, {
             selected: []
-        }), cb());
+        }), cb && cb());
      }
 
 
@@ -275,19 +276,18 @@ class Table extends Component {
 
     handleRightClick = (e, id) => {
         const {selected} = this.state;
+            const {clientX, clientY} = e;
+            e.preventDefault();
 
-        this.deselectAllProducts(() => {
-            this.selectProduct(id);
-        })
-
-        e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
-            contextMenu: {
-                x: e.clientX,
-                y: e.clientY,
-                open: true
-            }
-        }));
+            this.selectOneProduct(id, null, null, () => {
+                this.setState(Object.assign({}, this.state, {
+                    contextMenu: Object.assign({}, this.state.contextMenu, {
+                        x: clientX,
+                        y: clientY,
+                        open: true
+                    })
+                }));
+            });
     }
 
     sumProperty = (items, prop) => {
