@@ -136,7 +136,7 @@ public class ProcessRestController
 		});
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/instance/{pinstanceId}/start", method = RequestMethod.GET)
 	public void startProcess(@PathVariable("pinstanceId") final int pinstanceId)
 	{
 		loginService.assertLoggedIn();

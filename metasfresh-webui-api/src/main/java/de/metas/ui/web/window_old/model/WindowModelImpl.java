@@ -812,8 +812,8 @@ public class WindowModelImpl implements WindowModel
 		final int record_ID = recordRef.getRecord_ID();
 		final String title = ""; // TODO
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setTitle(title)
 				.setAD_Process_ID(printProcessId)
+				.setTitle(title)
 				.setRecord(table_ID, record_ID)
 				.setWindowNo(windowNo)
 				// .setTabNo(getTabNo()); // TODO
