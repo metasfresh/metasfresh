@@ -280,6 +280,12 @@ public class LoginRestController
 		// Mark session as logged in
 		userSession.setLoggedIn(true);
 	}
+	
+	@RequestMapping(value = "/isLoggedIn", method = RequestMethod.GET)
+	public boolean isLoggedIn()
+	{
+		return userSession.isLoggedIn();
+	}
 
 	@RequestMapping(value = "/language", method = RequestMethod.PUT)
 	public String setAD_Language(@RequestBody final String adLanguage)
