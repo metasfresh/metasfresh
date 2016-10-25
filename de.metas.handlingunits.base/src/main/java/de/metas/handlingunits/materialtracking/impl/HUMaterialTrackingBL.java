@@ -62,7 +62,7 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 	{
 		return AttributeStorageQualityInspectionSchedulable.of(this, context, attributeStorage);
 	}
-	
+
 	@Override
 	public void updateHUAttributeRecursive(final I_M_HU hu,
 			final I_M_Material_Tracking materialTracking,
@@ -70,13 +70,13 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 	{
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 		final I_M_Attribute materialTrackingAttribute = materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx);
 		final Object attributeValue = materialTracking == null ? null : materialTracking.getM_Material_Tracking_ID();
-		
-		huAttributesBL.updateHUAttributeRecursive(hu, 
-				materialTrackingAttribute, 
+
+		huAttributesBL.updateHUAttributeRecursive(hu,
+				materialTrackingAttribute,
 				attributeValue,
 				onlyHUStatus);
 	}
