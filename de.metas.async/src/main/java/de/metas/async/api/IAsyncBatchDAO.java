@@ -44,8 +44,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 public interface IAsyncBatchDAO extends ISingletonService
 {
 	
-	public static final String ASYNC_BATCH_TYPE_INVCAND = "InvoiceCandidate";
-	public static final String ASYNC_BATCH_TYPE_ESR = "ESRWizard";
 	public static final String ASYNC_BATCH_TYPE_DEFAULT = "Default";
 	
 	/**

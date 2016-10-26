@@ -30,7 +30,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.payment.esr.spi.impl.WithNextInvoiceESRActionHandler;
 
 /**
@@ -95,7 +94,7 @@ public final class ESRConstants
 	 */
 	public static int[] CHECK_String = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
 
-	public static final String C_Async_Batch_InternalName = IAsyncBatchDAO.ASYNC_BATCH_TYPE_ESR;
+	public static final String C_Async_Batch_InternalName = "ESRWizard";
 
 	/**
 	 * @return true if ESR module is enabled

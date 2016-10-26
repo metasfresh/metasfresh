@@ -111,6 +111,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	 * 
 	 * @param workpackageNotified
 	 */
-	void markWorckpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
+	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
 
 }

@@ -362,7 +362,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public void markWorckpackageNotified(final I_C_Queue_WorkPackage_Notified workpackageNotified)
+	public void markWorkpackageNotified(final I_C_Queue_WorkPackage_Notified workpackageNotified)
 	{
 		workpackageNotified.setIsNotified(true);
 		InterfaceWrapperHelper.save(workpackageNotified);
