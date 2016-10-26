@@ -8,17 +8,46 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
+
 Here come the actual release notes:
+
+# metasfresh 4.x.x (2016-44)
+
+upcoming
+ 
+# metasfresh 4.41.40 (2016-43)
+
+this week's RC
+
+## Features
+* metasfresh
+  * #505 Possibility to define multiple Washing Testcycles for Carrots
+  * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
+  * #412 Get rid of AD_Tab.OrderByClause
+  * #424 Migrate spring-boot from 1.3.3 to 1.4.x
+  
+* metasfresh-webui
+  * #27 Support for custom order bys in browseView
+  * #29 Adapt Invoice candidates window to webui
+  * #31 Implement document actions
+  * #32 Implement document references
+  * #33 Implement document filters from AD_UserQuery
+  * #20 Cache lookups
+
+## Fixes
+* metasfresh
+  * #487 Attribute editor dialog stores empty field as ''
 
 # metasfresh 4.40.39 (2016-42)
 
-upcoming
+this week's RC
 
 ## Features
 * #443 Add is to be sent as email to doc outbound log
 * #418 Improve sales and purchase tracking reports
 
 ## Fixes
+* #407 CCache always creates HashMap cache even if LRU was requested
 * #428 NPE when reversing an invoice including a product with inactive UOM conversion
 * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
 * #483 Gebindeübersicht Report Typo fix
