@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-07-11T15:46:51 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-25T17:39:09 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,6 +8,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="488"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -43,6 +44,7 @@
 	<field name="packinginstruction" class="java.lang.String"/>
 	<field name="deliverydate" class="java.sql.Timestamp"/>
 	<field name="isqualityinspection" class="java.lang.String"/>
+	<field name="qualityinspectioncycle" class="java.lang.String"/>
 	<detail>
 		<band height="842" splitType="Stretch">
 			<image>
@@ -365,11 +367,12 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 				<textFieldExpression><![CDATA[$F{lotnumberdate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="160" y="120" width="279" height="52" uuid="409e7eb9-f006-4462-9d03-18d8b17c5251"/>
+				<reportElement x="160" y="120" width="279" height="52" uuid="bc4a9beb-541b-4f81-ba27-c83e275ed95a"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="20" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[("Y").equals($F{isqualityinspection}) ?$R{isqualityinspection} : null]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{qualityinspectioncycle} !=null ? $F{qualityinspectioncycle} : (("Y").equals($F{isqualityinspection}) ?$R{isqualityinspection} : null)
+]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

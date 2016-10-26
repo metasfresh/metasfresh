@@ -54,6 +54,7 @@ import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -252,7 +253,8 @@ public final class Main extends AbstractModuleInterceptor
 		// Receipt schedule
 		{
 			Services.get(IReceiptScheduleProducerFactory.class)
-					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class);
+					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
+					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
 			Services.get(IHUDocumentFactoryService.class)

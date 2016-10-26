@@ -510,6 +510,20 @@ import com.google.common.collect.ImmutableMap;
 		filters.addNotEqualsFilter(column, value);
 		return this;
 	}
+	
+	@Override
+	public IQueryBuilder<T> addNotNull(final String columnName)
+	{
+		filters.addNotNull(columnName);
+		return this;
+	}
+	
+	@Override
+	public IQueryBuilder<T> addNotNull(final ModelColumn<T, ?> column)
+	{
+		filters.addNotNull(column);
+		return this;
+	}
 
 	@Override
 	public <CollectedType, ParentModelType> IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedType> column)

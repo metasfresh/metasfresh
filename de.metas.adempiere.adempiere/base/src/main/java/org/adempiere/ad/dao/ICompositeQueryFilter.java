@@ -255,6 +255,10 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
 
+	ICompositeQueryFilter<T> addNotNull(ModelColumn<T, ?> column);
+
+	ICompositeQueryFilter<T> addNotNull(String columnName);
+
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by OR.
 	 * 

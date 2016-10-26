@@ -102,7 +102,7 @@ begin
 			v_result.qualitynotice_attribute_id = v_hua.M_Attribute_ID;
 			v_result.qualitynotice_value = v_hua.Value;
 			v_result.qualitynotice_name = v_hua.ValueName;
-		elsif (v_hua.AttributeCode = '1000020') then --Zitrusfr�chte 
+		elsif (v_hua.AttributeCode = '1000020') then --Zitrusfr?chte 
 			v_result.Zitrus_Attribute_ID = v_hua.M_Attribute_ID;
 			v_result.Zitrus_Value = v_hua.Value;
 			v_result.Zitrus_Name = v_hua.ValueName;

@@ -353,12 +353,20 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		return match;
 	}
 
+	/**
+	 * Parses given <code>where</code>
+	 * 
+	 * @param source zoom source
+	 * @param where where clause to be parsed
+	 * @param throwEx true if an exception shall be thrown in case the parsing failed.
+	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
+	 */
 	public static String parseWhereClause(final IZoomSource source, final String where, final boolean throwEx)
 	{
-		final IStringExpression whereExpr = IStringExpression.compile(where);
+		final IStringExpression whereExpr = IStringExpression.compileOrDefault(where, IStringExpression.NULL);
 		if(whereExpr.isNullExpression())
 		{
-			return where;
+			return "";
 		}
 		
 		final Evaluatee evalCtx = source.createEvaluationContext();
@@ -366,7 +374,12 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		final String whereParsed = whereExpr.evaluate(evalCtx, onVariableNotFound);
 		if(whereExpr.isNoResult(whereParsed))
 		{
-			logger.warn("Could not parse where='{}' using {}", where, evalCtx);
+			// NOTE: logging as debug instead of warning because this might be a standard use case,
+			// i.e. we are checking if a given where clause has some results, so the method was called with throwEx=false
+			// and if we reached this point it means one of the context variables were not present and it has no default value.
+			// This is perfectly normal, a default value is really not needed because we don't want to execute an SQL command
+			// which would return no result. It's much more efficient to stop here.
+			logger.debug("Could not parse where clause:\n{} \n EvalCtx: {} \n ZoomSource: {}", where, evalCtx, source);
 			return "";
 		}
 		

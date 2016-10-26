@@ -522,6 +522,19 @@ import org.compiere.model.IQuery;
 		final String columnName = column.getColumnName();
 		return addNotEqualsFilter(columnName, value);
 	}
+	
+	@Override
+	public ICompositeQueryFilter<T> addNotNull(final String columnName)
+	{
+		return addNotEqualsFilter(columnName, null);
+	}
+	
+	@Override
+	public ICompositeQueryFilter<T> addNotNull(final ModelColumn<T, ?> column)
+	{
+		final String columnName = column.getColumnName();
+		return addNotEqualsFilter(columnName, null);
+	}
 
 	@Override
 	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final CompareQueryFilter.Operator operator, final Object value)
