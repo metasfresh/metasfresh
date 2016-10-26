@@ -1,4 +1,4 @@
-package org.compiere.db;
+package de.metas.connection.impl;
 
 /*
  * #%L
@@ -23,12 +23,13 @@ package org.compiere.db;
  */
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 
+import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.mchange.v2.c3p0.AbstractConnectionCustomizer;
 
+import de.metas.connection.IConnectionCustomizerService;
 import de.metas.logging.LogManager;
 
 /**
@@ -64,25 +65,19 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 	@Override
 	public void onCheckIn(Connection c, String parentDataSourceIdentityToken) throws Exception
 	{
-		// NOTE: it's much more efficient to reset the ApplicationName here because this method is called in anthoer thread
-		c.setClientInfo(CLIENTINFO_ApplicationName, "adempiere/CLOSED"); // task 08353
+		// NOTE: it's much more efficient to reset the ApplicationName here because this method is called in another thread
+		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh/returned-to-pool"); // task 08353
 	}
 
 	@Override
 	public void onCheckOut(Connection c, String parentDataSourceIdentityToken) throws Exception
 	{
-		final boolean perTrx = false;
+		// NOTE: it's much more efficient to reset the ApplicationName here because this method is called in another thread
+		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh/checked-out-from-pool"); // task 08353
 
-		// https://www.postgresql.org/docs/9.5/static/functions-admin.html
-		final PreparedStatement ps = c.prepareStatement("select set_config('metasfresh.DLM_Level', ?, ?)");
-		ps.setString(1, "1");
-		ps.setBoolean(2, perTrx);
-		ps.execute();
-		final PreparedStatement ps2 = c.prepareStatement("select set_config('metasfresh.DLM_Coalesce_Level', ?, ?)");
-		ps2.setString(1, "2");
-		ps2.setBoolean(2, perTrx);
-		ps2.execute();
-
+		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
+		connectionCustomizerService.getRegisteredCustomizers().forEach(
+				customizer -> customizer.customizeConnection(c));
 	}
 
 }

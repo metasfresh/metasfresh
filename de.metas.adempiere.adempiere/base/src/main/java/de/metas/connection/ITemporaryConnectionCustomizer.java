@@ -1,7 +1,4 @@
-package org.adempiere.ad.trx.spi;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
+package de.metas.connection;
 
 /*
  * #%L
@@ -26,13 +23,15 @@ import org.adempiere.ad.trx.api.ITrxManager;
  */
 
 /**
- * Invoke {@link ITrxManager#registerTrxCustomizer(ITrxCustomizer)} to have the respective customer be invoked every time a new transaction is created.
- * Note that this is different from {@link ITrxListener} in that it affects <b>every</b> single transaction that is newly created.
+ * A temporary customizer that can clean up when it's closed. See {@link IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface ITrxCustomizer
+public interface ITemporaryConnectionCustomizer extends IConnectionCustomizer
 {
-	void onTrxCreated(ITrx trx);
+	/**
+	 * Clean up. This method is called when the customizer is closed, see {@link IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}.
+	 */
+	void undoCustomization();
 }

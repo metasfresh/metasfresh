@@ -49,7 +49,6 @@ import org.adempiere.ad.trx.exceptions.OnTrxMissingPolicyNotSupportedException;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.ad.trx.jmx.JMXTrxManager;
-import org.adempiere.ad.trx.spi.ITrxCustomizer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
@@ -173,9 +172,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			trxName2trxLock.unlock();
 		}
-
-		trxCustomizers.forEach(
-				trxCustomizer -> trxCustomizer.onTrxCreated(trx));
 
 		return trx;
 	}
@@ -905,15 +901,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			throw new DBException(e);
 		}
-	}
-
-	private final List<ITrxCustomizer> trxCustomizers = new ArrayList<>();
-
-	@Override
-	public final void registerTrxCustomizer(final ITrxCustomizer trxCustomizer)
-	{
-		Check.assumeNotNull(trxCustomizer, "Param 'trxCustomizer' is not null");
-		trxCustomizers.add(trxCustomizer);
 	}
 
 	@Override

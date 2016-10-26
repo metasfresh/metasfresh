@@ -33,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
-import org.adempiere.ad.trx.spi.ITrxCustomizer;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.util.TrxRunnable;
@@ -245,11 +244,6 @@ public interface ITrxManager extends ISingletonService
 	 * @throws TrxException if transaction was not found or is null
 	 */
 	void commit(String trxName);
-
-	/**
-	 * Note that a transaction customer differs from a {@link ITrxListenerManager} in that it applies to all new transactions, if they are created.
-	 */
-	void registerTrxCustomizer(ITrxCustomizer trxCustomizer);
 
 	/**
 	 * Gets {@link ITrxListenerManager} associated with given transaction, identified by <code>trxName</code>.
