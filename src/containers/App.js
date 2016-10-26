@@ -30,7 +30,10 @@ axios.interceptors.response.use(function (response) {
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login'));
     }
-    store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
+
+    if(localStorage.isLogged){
+        store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
+    }
 
     if(!error.response){
         store.dispatch(noConnection(true));

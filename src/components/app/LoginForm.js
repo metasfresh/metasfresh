@@ -26,6 +26,14 @@ class LoginForm extends Component {
         }
     }
 
+    handleOnChange = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            err: ""
+        }))
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
         const {roleSelect,roles} = this.state;
@@ -78,6 +86,7 @@ class LoginForm extends Component {
                             <div className={"form-control-label"}><small>Login</small></div>
                             <input
                                 type="text"
+                                onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
                                     (err ? "input-error " : "")}
@@ -87,6 +96,7 @@ class LoginForm extends Component {
                             <div className={"form-control-label"}><small>Password</small></div>
                             <input
                                 type="password"
+                                onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
                                     (err ? "input-error " : "")}
