@@ -20,6 +20,12 @@ class LoginForm extends Component {
         }
     }
 
+    handleKeyPress = (e) => {
+        if(e.key === 'Enter'){
+            this.handleLogin();
+        }
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
         const {roleSelect,roles} = this.state;
@@ -50,7 +56,7 @@ class LoginForm extends Component {
     render() {
         const {roleSelect, roles, err} = this.state;
         return (
-            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo m-t-2 m-b-2" />
                 </div>

@@ -631,9 +631,11 @@ body {
     border-bottom-left-radius: 3px;
     padding: 1rem 1.2rem;
 }
+
 .tab-pane {
     display: none;
 }
+
 .tab-pane.active {
     display: block;
 }
