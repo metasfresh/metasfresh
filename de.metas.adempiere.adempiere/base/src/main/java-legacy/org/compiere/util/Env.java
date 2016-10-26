@@ -1101,7 +1101,7 @@ public final class Env
 			return null;
 		}
 
-		return "Y".equals(s);
+		return DisplayType.toBoolean(s);
 	}	// isSOTrx
 
 	/**

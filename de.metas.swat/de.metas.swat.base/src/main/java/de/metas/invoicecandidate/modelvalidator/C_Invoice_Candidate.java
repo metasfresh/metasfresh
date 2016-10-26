@@ -56,36 +56,7 @@ import de.metas.tax.api.ITaxDAO;
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
-
-	final String METHODNAME_setHeaderAggregationKey = de.metas.invoicecandidate.callout.InvoiceCandidate.class.getName()
-			+ "." + de.metas.invoicecandidate.callout.InvoiceCandidate.METHODNAME_setHeaderAggregationKey;
-
-// @formatter:off
-	// FIXME: register callouts somehow
-//	@Init
-//	public void setupCallouts()
-//	{
-//		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-//		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-//
-//		//
-//		// Setup callouts for Header Aggregation Key
-//		final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = aggregationBL.getHeaderAggregationKeyBuilder();
-//
-//		for (final String columnName : headerAggregationKeyBuilder.getDependsOnColumnNames())
-//		{
-//			programaticCalloutProvider
-//					.registerCallout(I_C_Invoice_Candidate.Table_Name, columnName, METHODNAME_setHeaderAggregationKey);
-//		}
-//		programaticCalloutProvider.registerCallout(I_C_Invoice_Candidate.Table_Name,
-//				I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID,
-//				METHODNAME_setHeaderAggregationKey);
-//
-//		// Setup callout C_Invoice_Candidate
-//		final IProgramaticCalloutProvider calloutProvider = programaticCalloutProvider;
-//		calloutProvider.registerAnnotatedCallout(new de.metas.invoicecandidate.callout.C_Invoice_Candidate());
-//	}
-	// @formatter:on
+	
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
 	 */
