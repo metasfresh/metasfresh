@@ -155,6 +155,7 @@ class Header extends Component {
 
                                 <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>
 
+                                <Indicator indicator={indicator} />
 
                                 {showSidelist &&
                                     <div

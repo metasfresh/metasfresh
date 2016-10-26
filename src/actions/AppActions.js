@@ -89,7 +89,7 @@ export function loginRequest(login, passwd){
 	return () => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
 }
 
-export function localLoginRequest(login, passwd){
+export function localLoginRequest(){
 	return () => axios.get(config.API_URL + '/login/isLoggedIn');
 }
 
