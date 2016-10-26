@@ -155,10 +155,9 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=554191 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 03.03.2016 17:17:45 OEZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE TABLE C_Queue_WorkPackage_Notified (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Async_Batch_ID NUMERIC(10) DEFAULT NULL , C_Queue_WorkPackage_ID NUMERIC(10) DEFAULT NULL , C_Queue_WorkPackage_Notified_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsNotified CHAR(1) DEFAULT 'N' CHECK (IsNotified IN ('Y','N')), Processed CHAR(1) DEFAULT 'N' CHECK (Processed IN ('Y','N')), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT C_Queue_WorkPackage_Notifi_Key PRIMARY KEY (C_Queue_WorkPackage_Notified_ID))
-;
+
+
+
 
 -- 03.03.2016 17:24:11 OEZ
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -387,10 +386,7 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=554192 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 03.03.2016 18:33:58 OEZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_Queue_WorkPackage_Notified ADD COLUMN BachWorkpackageSeqNo NUMERIC(10) DEFAULT NULL 
-;
+
 
 
 
@@ -424,8 +420,6 @@ UPDATE AD_Field SET SeqNo=40,IsDisplayed='Y' WHERE AD_Field_ID=556712
 UPDATE AD_Field SET SeqNo=50,IsDisplayed='Y' WHERE AD_Field_ID=556710
 ;
 
-ALTER TABLE C_Queue_WorkPackage_Notified DROP COLUMN Processed;
-
 
 -- 07.03.2016 19:46:23 OEZ
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -447,6 +441,29 @@ DELETE FROM AD_Column_Trl WHERE AD_Column_ID=554190
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Column WHERE AD_Column_ID=554190
 ;
+
+
+
+
+COMMIT;
+
+
+
+-- 03.03.2016 17:17:45 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE TABLE C_Queue_WorkPackage_Notified (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Async_Batch_ID NUMERIC(10) DEFAULT NULL , C_Queue_WorkPackage_ID NUMERIC(10) DEFAULT NULL , C_Queue_WorkPackage_Notified_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsNotified CHAR(1) DEFAULT 'N' CHECK (IsNotified IN ('Y','N')), Processed CHAR(1) DEFAULT 'N' CHECK (Processed IN ('Y','N')), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT C_Queue_WorkPackage_Notifi_Key PRIMARY KEY (C_Queue_WorkPackage_Notified_ID))
+;
+
+
+
+-- 03.03.2016 18:33:58 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE C_Queue_WorkPackage_Notified ADD COLUMN BachWorkpackageSeqNo NUMERIC(10) DEFAULT NULL 
+;
+
+
+ALTER TABLE C_Queue_WorkPackage_Notified DROP COLUMN Processed;
+
 
 
 
