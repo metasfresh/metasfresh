@@ -10,18 +10,17 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -39,11 +38,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * Plain key layout for BPartners
- * 
- * To add keys to this layout you can use {@link #setKeysFromBPartnerKNPs(Set)}.
- * 
+ *
+ * To add keys to this layout you can use {@link #createAndSetKeysFromBPartnerKNPs(Set)}.
+ *
  * @author tsa
- * 
+ *
  */
 public class BPartnerKeyLayout extends DefaultKeyLayout
 {
@@ -61,7 +60,7 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 	 */
 	private Set<KeyNamePair> _bpartnerKNPs = Collections.emptySet();
 
-	public void setKeysFromBPartnerKNPs(final Set<KeyNamePair> bpartners)
+	public void createAndSetKeysFromBPartnerKNPs(final Set<KeyNamePair> bpartners)
 	{
 		//
 		// Normalize and sort input parameter
@@ -74,7 +73,6 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 		{
 			bpartnersSorted = new TreeSet<KeyNamePair>(bpartners);
 		}
-
 		//
 		// Check if our keys are actually changed
 		if (Check.equals(this._bpartnerKNPs, bpartnersSorted))
@@ -82,21 +80,27 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 			return;
 		}
 
-		//
-		// Create Keys
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(bpartnersSorted.size());
-		for (final KeyNamePair bpartner : bpartnersSorted)
-		{
-			final BPartnerKey key = new BPartnerKey(getTerminalContext(), bpartner);
-			keys.add(key);
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
 
-		//
-		// Set new Keys list
-		setKeys(keys);
+					//
+					// Create Keys
+					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(bpartnersSorted.size());
+					for (final KeyNamePair bpartner : bpartnersSorted)
+					{
+						final BPartnerKey key = new BPartnerKey(getTerminalContext(), bpartner);
+						keys.add(key);
+					}
+
+					//
+					// Set new Keys list
+					setKeys(keys);
+					return null;
+				});
 		this._bpartnerKNPs = bpartnersSorted;
 	}
-	
+
 	public BPartnerKey getKeyByBPartnerId(final int bpartnerId)
 	{
 		final List<ITerminalKey> keys = getKeysOrNull();

@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.receipt.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
@@ -64,25 +64,36 @@ public class PurchaseOrderKeyLayout extends DefaultKeyLayout
 		return keyLayoutId;
 	}
 
-	public void setKeysFromOrders(final List<I_C_Order> orders)
+	/**
+	 * Disposes the currently existing keys. This is our responsibility, not the {@link ITerminalContext}'s - see {@link PurchaseOrderKey#PurchaseOrderKey(ITerminalContext, I_C_BPartner)} for further information.
+	 * Then it creates new keys for the given <code>orders</code> and adds them to this layout.
+	 *
+	 * @param bPartners
+	 */
+	public void createAndSetKeysFromOrders(final List<I_C_Order> orders)
 	{
-		if (orders == null || orders.isEmpty())
-		{
-			final List<ITerminalKey> keys = Collections.emptyList();
-			setKeys(keys);
-			return;
-		}
+		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
+		disposeCreateDetachReverences(
+				() -> {
+					if (orders == null || orders.isEmpty())
+					{
+						final List<ITerminalKey> keys = Collections.emptyList();
+						setKeys(keys);
+						return null;
+					}
 
-		//
-		// Create Keys
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
-		for (final I_C_Order order : orders)
-		{
-			final PurchaseOrderKey key = new PurchaseOrderKey(getTerminalContext(), order);
-			keys.add(key);
-		}
+					//
+					// Create Keys
+					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+					for (final I_C_Order order : orders)
+					{
+						final PurchaseOrderKey key = new PurchaseOrderKey(getTerminalContext(), order);
+						keys.add(key);
+					}
 
-		// Set new Keys list
-		setKeys(keys);
+					// Set new Keys list
+					setKeys(keys);
+					return null;
+				});
 	}
 }

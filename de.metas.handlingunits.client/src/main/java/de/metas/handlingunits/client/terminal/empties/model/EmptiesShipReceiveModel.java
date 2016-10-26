@@ -446,13 +446,13 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	{
 		if (getBPartner() == null)
 		{
-			_bpLocationKeyLayout.setKeysFromBPartnerLocations(null);
+			_bpLocationKeyLayout.createAndSetKeysFromBPartnerLocations(null);
 			return;
 		}
 
 		final I_C_BPartner bpartner = getC_BPartner();
 		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
-		_bpLocationKeyLayout.setKeysFromBPartnerLocations(shipToLocations);
+		_bpLocationKeyLayout.createAndSetKeysFromBPartnerLocations(shipToLocations);
 		_bpLocationKeyLayout.selectFirstKeyIfAny();
 	}
 

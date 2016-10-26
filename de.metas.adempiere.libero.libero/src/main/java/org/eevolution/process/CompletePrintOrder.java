@@ -20,6 +20,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
@@ -166,7 +167,7 @@ implements ClientProcess
 		}
 		// query
 		MQuery query = new MQuery(tableName);
-		query.addRestriction("PP_Order_ID", MQuery.EQUAL, p_PP_Order_ID);
+		query.addRestriction("PP_Order_ID", Operator.EQUAL, p_PP_Order_ID);
 		// Engine
 		PrintInfo info = new PrintInfo(tableName,  adTableId, p_PP_Order_ID);
 		ReportEngine re = new ReportEngine(getCtx(), format, query, info);

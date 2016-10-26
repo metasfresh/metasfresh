@@ -10,12 +10,12 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,8 +29,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -42,14 +40,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
+import de.metas.logging.LogManager;
+
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public abstract class AbstractTrx implements ITrx
 {
@@ -73,7 +74,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 */
 	public AbstractTrx(final ITrxManager trxManager, final String trxName)
@@ -143,9 +144,9 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Returns true if the transaction was just started but no actual actions were performed on this transaction.
-	 * 
+	 *
 	 * NOTE: This method shall be overwritten by actual transaction implementations and it's used for optimizations.
-	 * 
+	 *
 	 * @return true if the transaction was just started
 	 */
 	protected boolean isJustStarted()
@@ -177,7 +178,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback implementation.
-	 * 
+	 *
 	 * @param throwException
 	 * @return
 	 * @throws SQLException
@@ -218,7 +219,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback to savepoint implementation
-	 * 
+	 *
 	 * @param savepointNative
 	 * @return
 	 * @throws SQLException
@@ -257,7 +258,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) commit implementation
-	 * 
+	 *
 	 * @param throwException
 	 * @return
 	 * @throws SQLException
@@ -310,7 +311,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Release native savepoint
-	 * 
+	 *
 	 * @param savepointNative
 	 * @return true if released or if it was already realeased
 	 */
@@ -318,7 +319,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Commit
-	 * 
+	 *
 	 * @return true if success
 	 */
 	public boolean commit()
@@ -374,7 +375,7 @@ public abstract class AbstractTrx implements ITrx
 			m_active = false;
 
 			Services.get(IOpenTrxBL.class).onClose(this); // metas 02367
-			
+
 			getTrxListenerManager(false).fireAfterClose(this);
 
 			log.debug(getTrxName());
@@ -383,14 +384,14 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) transaction close implementation
-	 * 
+	 *
 	 * @return true on success
 	 */
 	protected abstract boolean closeNative();
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -399,7 +400,7 @@ public abstract class AbstractTrx implements ITrx
 		final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[")
 				.append(getTrxName())
 				.append(", Active=").append(isActive());
-		
+
 		final long lastStartTime = m_startTime;
 		if (lastStartTime > 0)
 		{
@@ -426,19 +427,19 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Current {@link ITrxListenerManager}
-	 * 
+	 *
 	 * @task 04265
 	 */
 	private ITrxListenerManager trxListenerManager = null;
 
 	/**
 	 * Gets the {@link ITrxListenerManager} associated with this transaction.
-	 * 
+	 *
 	 * If no {@link ITrxListenerManager} was already created and <code>create</code> is true, a new transaction listener manager will be created and returned
-	 * 
+	 *
 	 * @param create
 	 * @return
-	 * 
+	 *
 	 * @task 04265
 	 */
 	private ITrxListenerManager getTrxListenerManager(final boolean create)

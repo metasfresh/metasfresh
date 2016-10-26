@@ -35,6 +35,7 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -157,13 +158,13 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 
 			if (!Check.isEmpty(keyColumnName, true))
 			{
-				zoomQuery.addRestriction(keyColumnName, MQuery.EQUAL, value);
+				zoomQuery.addRestriction(keyColumnName, Operator.EQUAL, value);
 				zoomQuery.setZoomColumnName(keyColumnName);
 				zoomQuery.setZoomTableName(keyTableName);
 			}
 			else
 			{
-				zoomQuery.addRestriction(columnName, MQuery.EQUAL, value);
+				zoomQuery.addRestriction(columnName, Operator.EQUAL, value);
 				if (columnName.indexOf(".") > 0)
 				{
 					zoomQuery.setZoomColumnName(columnName.substring(columnName.indexOf(".") + 1));

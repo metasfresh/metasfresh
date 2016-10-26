@@ -53,6 +53,8 @@ import de.metas.logging.LogManager;
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
+	
+	public static final int MAIN_TabNo = 0;
 
 	/**************************************************************************
 	 *	Create MTab VO, ordered by <code>SeqNo</code>.

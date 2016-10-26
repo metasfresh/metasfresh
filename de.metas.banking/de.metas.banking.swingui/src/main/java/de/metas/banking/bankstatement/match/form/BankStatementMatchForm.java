@@ -6,7 +6,6 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.process.ProcessInfo;
 
@@ -85,10 +84,8 @@ public class BankStatementMatchForm
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		// final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
-
 		// TODO Auto-generated method stub
 
 		return true;

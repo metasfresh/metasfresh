@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -38,11 +37,11 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.storage.IStorageQuery;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
- * 
+ *
  * To create a new instance, please use {@link IHandlingUnitsDAO#createHUQueryBuilder()}.
  *
  * Defaults:
@@ -198,10 +197,10 @@ public interface IHUQueryBuilder
 	Set<Integer> getOnlyInWarehouseIds();
 
 	/**
-	 * Set if we shall exclude the after picking locators (i.e. where {@link I_M_Locator#isAfterPickingLocator()} returns <code>true</code>).
+	 * See {@link IStorageQuery#setExcludeAfterPickingLocator(boolean)}.
 	 *
 	 * @param excludeAfterPickingLocator
-	 * @return this
+	 * @return
 	 */
 	IHUQueryBuilder setExcludeAfterPickingLocator(boolean excludeAfterPickingLocator);
 
@@ -337,9 +336,36 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
 
 	/**
-	 * Filter only those HUs which have given internal barcode.
+	 * Filter only those HUs which have <code>attributeName</code> with any of the given <code>values</code>.
 	 *
-	 * NOTE: i.e. is searching for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode
+	 * <p>
+	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
+	 * opposed to any) of the specified attributes and values will match the query.
+	 *
+	 * @param attributeName
+	 * @param values list of accepted values
+	 * @return this
+	 */
+	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object... values);
+
+	/**
+	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
+
+	/**
+	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+
+	/**
+	 * Filter only those HUs which have given internal barcode. Actually, just filter by <code>M_HU_Value</code>.
+	 *
+	 * NOTE: i.e. search for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode.
 	 *
 	 * @param barcode
 	 * @return this
@@ -404,9 +430,9 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Adds HUs which shall be selected. No other HUs, beside those ones will be considered.
-	 * 
+	 *
 	 * If the given list is empty, this method will do nothing.
-	 * 
+	 *
 	 * @param onlyHUIds
 	 */
 	IHUQueryBuilder addOnlyHUIds(Collection<Integer> onlyHUIds);
@@ -467,8 +493,8 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setEmptyStorageOnly();
 
 	/**
-	 * Entries with  not empty storage will be the only ones retrieved
-	 * 
+	 * Entries with not empty storage will be the only ones retrieved
+	 *
 	 * @return
 	 */
 	IHUQueryBuilder setNotEmptyStorageOnly();

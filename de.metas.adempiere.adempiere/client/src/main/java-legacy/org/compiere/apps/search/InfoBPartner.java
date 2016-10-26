@@ -35,6 +35,7 @@ import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
@@ -652,7 +653,7 @@ public class InfoBPartner extends Info
 		// AEnv.zoom(MBPartner.Table_ID, C_BPartner_ID.intValue(), true); // SO
 
 		MQuery query = new MQuery("C_BPartner");
-		query.addRestriction("C_BPartner_ID", MQuery.EQUAL, C_BPartner_ID);
+		query.addRestriction("C_BPartner_ID", Operator.EQUAL, C_BPartner_ID);
 		query.setRecordCount(1);
 		int AD_WindowNo = getAD_Window_ID("C_BPartner", true); // SO
 		zoom(AD_WindowNo, query);

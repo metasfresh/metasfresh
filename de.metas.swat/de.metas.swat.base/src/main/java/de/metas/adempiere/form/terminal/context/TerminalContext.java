@@ -40,6 +40,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.collect.Lists;
+
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -108,6 +110,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 				+ ", screenHeight=" + screenHeight
 				// + ", ctx=" + ctx
 				// + ", factory=" + factory
+				+ ", referencesList=" + referencesList
 				+ "]";
 	}
 
@@ -144,9 +147,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	{
 		ctx = null;
 
-		//
-		// Cleanup references
-		disposeAllReferences();
+		assertAllReferencesDeleted();
+
 		disposeAllServices();
 
 		if (terminalFactory != null)
@@ -199,8 +201,8 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public IKeyLayout getNumericKeyLayout()
 	{
-				assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		assertCurrentReferencesNotNull();
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout numericKeyLayout = terminalContextReferences.getNumericKeyLayout();
@@ -216,14 +218,14 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public void setNumericKeyLayout(final IKeyLayout keyLayout)
 	{
 		assertCurrentReferencesNotNull();
-		currentReferences.setNumericKeyLayout(keyLayout);
+		getActiveReferences().setNumericKeyLayout(keyLayout);
 	}
 
 	@Override
 	public IKeyLayout getTextKeyLayout()
 	{
 		assertCurrentReferencesNotNull();
-		for (int i = referencesList.size() - 1; i <= 0; i--)
+		for (int i = referencesList.size() - 1; i >= 0; i--)
 		{
 			final TerminalContextReferences terminalContextReferences = referencesList.get(i);
 			final IKeyLayout textKeyLayout = terminalContextReferences.getTextKeyLayout();
@@ -239,7 +241,7 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public void setTextKeyLayout(final IKeyLayout keyLayout)
 	{
 		assertCurrentReferencesNotNull();
-		currentReferences.setTextKeyLayout(keyLayout);
+		getActiveReferences().setTextKeyLayout(keyLayout);
 	}
 
 	@Override
@@ -404,14 +406,31 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	@Override
 	public void deleteReferences(final ITerminalContextReferences references)
 	{
+		removeReferences(currentReferences, true);
+	}
+
+	@Override
+	public void detachReferences(final ITerminalContextReferences references)
+	{
+		removeReferences(references, false);
+	}
+
+	public void removeReferences(final ITerminalContextReferences references, final boolean dispose)
+	{
 		Check.assumeNotNull(references, "Param 'reference' is not null; this={}", this);
 
 		Check.errorIf(!Util.same(currentReferences, references),
-				"Param 'references'={} is not the same as currentReferences={}; this={}",
-				references, currentReferences, this);
+				"Param 'references is not the same as currentReferences; size of referencesList={}; references={} currentReferences={}; this={}",
+				referencesList == null ? "<null>" : referencesList.size(),
+				references,
+				currentReferences,
+				this);
 
-		// Destroy given references
-		currentReferences.dispose();
+		if (dispose)
+		{
+			// Destroy given references
+			currentReferences.dispose();
+		}
 
 		referencesList.remove(referencesList.size() - 1);
 
@@ -425,27 +444,11 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		}
 	}
 
-	/**
-	 * Destroys all {@link ITerminalContextReferences}, including the current one.
-	 *
-	 * This method will re-initialize the {@link #currentReferences} to leave the context in a consistent state.
-	 */
-	private final void disposeAllReferences()
+	private final void assertAllReferencesDeleted()
 	{
-		// Iterate all references and dispose them
-		for (final TerminalContextReferences references : referencesList)
-		{
-			references.dispose();
-		}
-		referencesList.clear();
+		Check.errorIf(!referencesList.isEmpty(), "referencesList is not (yet) empty; referencesList={}", referencesList);
 
-		// Make sure current references were also destroyed
-		// We do this just to be sure we destroyed everything, even this is pointless because "current references" were contained in references list
-		if (currentReferences != null)
-		{
-			currentReferences.dispose();
-			currentReferences = null;
-		}
+		Check.errorIf(currentReferences != null, "currentReferences is not (yet) null; currentReferences={}", currentReferences);
 	}
 
 	private final void disposeAllServices()
@@ -469,7 +472,6 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		_disposed = true;
 	}
 
-	@Override
 	public boolean isDisposed()
 	{
 		return _disposed;
@@ -479,21 +481,21 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 	public WeakPropertyChangeSupport createPropertyChangeSupport(final Object sourceBean)
 	{
 		assertCurrentReferencesNotNull();
-		return currentReferences.createPropertyChangeSupport(sourceBean);
+		return getActiveReferences().createPropertyChangeSupport(sourceBean);
 	}
 
 	@Override
 	public WeakPropertyChangeSupport createPropertyChangeSupport(final Object sourceBean, final boolean weakDefault)
 	{
 		assertCurrentReferencesNotNull();
-		return currentReferences.createPropertyChangeSupport(sourceBean, weakDefault);
+		return getActiveReferences().createPropertyChangeSupport(sourceBean, weakDefault);
 	}
 
 	@Override
 	public void addToDisposableComponents(final IDisposable comp)
 	{
 		assertCurrentReferencesNotNull();
-		currentReferences.addToDisposableComponents(comp);
+		getActiveReferences().addToDisposableComponents(comp);
 	}
 
 	private void assertCurrentReferencesNotNull()
@@ -517,9 +519,29 @@ public final class TerminalContext implements ITerminalContext, ITerminalContext
 		Env.setContext(ctx, windowNo, contextName, valueInt);
 	}
 
+	private TerminalContextReferences getActiveReferences()
+	{
+		for (final TerminalContextReferences ref : Lists.reverse(referencesList))
+		{
+			if (!ref.isReferencesClosed())
+			{
+				return ref;
+			}
+		}
+		Check.errorIf(true, "Missing active references; this={}", this);
+		return null;
+	}
+
 	@Override
 	public void close()
 	{
 		dispose();
+	}
+
+	@Override
+	public void closeCurrentReferences()
+	{
+		assertCurrentReferencesNotNull();
+		currentReferences.closeReferences();
 	}
 }

@@ -22,7 +22,6 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -34,40 +33,35 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.api.IProductPlanningDAO;
-import org.eevolution.drp.api.IDistributionNetworkDAO;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
+import de.metas.interfaces.I_C_OrderLine;
 
 /**
  *
  */
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
-
-	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, org.compiere.model.I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptScheduleFromOrderLine(orderLine);
 		return Collections.singletonList(receiptSchedule);
 	}
 
-	private I_M_ReceiptSchedule createReceiptScheduleFromOrderLine(final org.compiere.model.I_C_OrderLine line)
+	private I_M_ReceiptSchedule createReceiptScheduleFromOrderLine(final I_C_OrderLine line)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
@@ -91,6 +85,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setRecord_ID(line.getC_OrderLine_ID());
 			receiptSchedule.setC_Order_ID(line.getC_Order_ID());
 			receiptSchedule.setC_OrderLine_ID(line.getC_OrderLine_ID());
+
+			// #388
+			// set isPackagingMaterial according to the order line
+			receiptSchedule.setIsPackagingMaterial(line.isPackagingMaterial());
 
 			final int docTypeId = retrieveReceiptDocTypeId(line);
 			receiptSchedule.setC_DocType_ID(docTypeId);
@@ -147,9 +145,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			//
 			// Destination Warehouse
 			final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-			final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
 
-			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line, trxName);
+			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
 			receiptSchedule.setM_Warehouse_Dest(warehouseDest);
 		}
 
@@ -192,7 +189,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 * @param trxName
 	 * @return destination warehouse for given order line or <code>null</code>
 	 */
-	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line, final String trxName)
+	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
 	{
 		//
 		// If we deal with a drop shipment we shall not have any destination warehouse where we need to move after receipt (08402)
@@ -202,65 +199,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return null;
 		}
 
-		//
-		// Try to retrieve destination warehouse from planning
-		// see: http://dewiki908/mediawiki/index.php/07058_Destination_Warehouse_Wareneingang_%28102083181965%29#Development_infrastructure
-		final I_M_Warehouse distributionNetworkWarehouseDestination = getDistributionNetworkWarehouseDestination(ctx, line, trxName);
-		if (distributionNetworkWarehouseDestination != null)
-		{
-			return distributionNetworkWarehouseDestination;
-		}
-
-		//
-		// Fallback if no planning destination warehouse was found
-		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
-		final I_M_Locator locator = line.getM_Product().getM_Locator();
-		if (locator != null && locator.getM_Locator_ID() > 0)
-		{
-			return locator.getM_Warehouse();
-		}
-
-		//
-		// We don't have anything to match
-		return null;
-	}
-
-	/**
-	 * @param ctx
-	 * @param line
-	 * @param trxName
-	 * @return first planning-distribution (i.e. with lowest <code>PriorityNo</code>) network-warehouse destination found for product (no warehouse / source filter).
-	 */
-	private I_M_Warehouse getDistributionNetworkWarehouseDestination(final Properties ctx, final org.compiere.model.I_C_OrderLine line, final String trxName)
-	{
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(ctx,
-				line.getAD_Org_ID(),
-				0, // M_Warehouse_ID
-				0, // S_Resource_ID
-				line.getM_Product_ID(), trxName);
-
-		if (productPlanning == null)
-		{
-			return null;
-		}
-
-		final I_DD_NetworkDistribution distributionNetwork = productPlanning.getDD_NetworkDistribution();
-		if (distributionNetwork == null)
-		{
-			return null;
-		}
-
-		final List<I_DD_NetworkDistributionLine> distributionNetworkLines = distributionNetworkDAO
-				.retrieveNetworkLinesBySourceWarehouse(distributionNetwork, line.getM_Warehouse_ID());
-
-		if (distributionNetworkLines.isEmpty())
-		{
-			return null;
-		}
-
-		// the lines are ordered by PriorityNo, M_Shipper_ID
-		final I_DD_NetworkDistributionLine firstFoundDistributionNetworkLine = distributionNetworkLines.get(0);
-		return firstFoundDistributionNetworkLine.getM_Warehouse();
+		final IReceiptScheduleWarehouseDestProvider warehouseDestProvider = getWarehouseDestProvider();
+		return warehouseDestProvider.getWarehouseDest(OrderLineWarehouseDestProviderContext.of(ctx, line));
 	}
 
 	@Override
@@ -323,5 +263,72 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(ctx, X_C_DocType.DOCBASETYPE_MaterialReceipt,
 				orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID(),
 				trxName);
+	}
+
+	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */
+	private static final class OrderLineWarehouseDestProviderContext implements IReceiptScheduleWarehouseDestProvider.IContext
+	{
+		public static final OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
+		{
+			return new OrderLineWarehouseDestProviderContext(ctx, orderLine);
+		}
+
+		private final Properties ctx;
+		private final org.compiere.model.I_C_OrderLine orderLine;
+
+		private OrderLineWarehouseDestProviderContext(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
+		{
+			super();
+			this.ctx = ctx;
+			this.orderLine = orderLine;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).addValue(orderLine).toString();
+		}
+
+		@Override
+		public Properties getCtx()
+		{
+			return ctx;
+		}
+
+		@Override
+		public int getAD_Client_ID()
+		{
+			return orderLine.getAD_Client_ID();
+		}
+
+		@Override
+		public int getAD_Org_ID()
+		{
+			return orderLine.getAD_Org_ID();
+		}
+
+		@Override
+		public I_M_Product getM_Product()
+		{
+			return orderLine.getM_Product();
+		}
+
+		@Override
+		public int getM_Product_ID()
+		{
+			return orderLine.getM_Product_ID();
+		}
+
+		@Override
+		public int getM_Warehouse_ID()
+		{
+			return orderLine.getM_Warehouse_ID();
+		}
+
+		@Override
+		public I_M_AttributeSetInstance getM_AttributeSetInstance()
+		{
+			return orderLine.getM_AttributeSetInstance();
+		}
 	}
 }

@@ -13,17 +13,17 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,7 +60,6 @@ import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 
@@ -69,9 +68,9 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
  *
  * NOTE to developer: if you want to add a new filtering parameter, please make sure you are handling the parameters in following places:
  * <ul>
- * <li> {@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
- * <li> {@link #copy()} - make sure when copy is invoked, your new parameter is copied
- * <li> {@link #hashCode()}, {@link #equals(Object)} - make sure your new parameter is checked
+ * <li>{@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
+ * <li>{@link #copy()} - make sure when copy is invoked, your new parameter is copied
+ * <li>{@link #hashCode()}, {@link #equals(Object)} - make sure your new parameter is checked
  * </ul>
  *
  * @author tsa
@@ -303,7 +302,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		//
 		// get Query context
 		final Object contextProvider = getContextProvider();
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class,contextProvider);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, contextProvider);
 
 		// Only those HUs which are from our AD_Client
 		queryBuilder.addOnlyContextClient();
@@ -468,14 +467,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			// because each of them needs to be individually valid
 			for (final HUAttributeQueryFilterVO attributeFilterVO : onlyAttributeId2values.values())
 			{
-				final IQueryFilter<I_M_HU_Attribute> attributeFilter = attributeFilterVO.createQueryFilter();
-
-				final IQueryBuilder<I_M_HU_Attribute> attributesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, getContextProvider())
-						.addOnlyActiveRecordsFilter()
-						.filter(attributeFilter);
-				final IQuery<I_M_HU_Attribute> attributesQuery = attributesQueryBuilder.create();
-
-				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
+				attributeFilterVO.appendQueryFilterTo(getContextProvider(), filters);
 			}
 		}
 
@@ -492,7 +484,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		{
 			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
-
 
 		//
 		// Exclude specified HUs
@@ -883,7 +874,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		return addOnlyWithAttribute(attribute, value);
 	}
 
-
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<? extends Object> values)
 	{
@@ -891,6 +881,33 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final HUAttributeQueryFilterVO attributeFilterVO = getAttributeFilterVO(attribute, attributeValueType);
 		attributeFilterVO.addValues(values);
 
+		return this;
+	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object ... values)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final List<Object> valuesAsList = Arrays.asList(values);
+		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
+		return this;
+	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeNotNull(final String attributeName)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
+				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
+		return this;
+	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final String attributeName)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
+				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
 		return this;
 	}
 

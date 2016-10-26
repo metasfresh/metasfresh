@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.ddorder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,6 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
@@ -92,7 +91,6 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		}
 		ddOrderKeyLayout.addTerminalKeyListener(new TerminalKeyListenerAdapter()
 		{
-
 			@Override
 			public void keyReturned(final ITerminalKey key)
 			{
@@ -122,7 +120,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	{
 		final List<IPOSTableRow> lines = getRows();
 		final List<I_DD_Order> ddOrders = getService().getDDOrders(lines);
-		ddOrderKeyLayout.setKeysFromDDOrders(ddOrders);
+		ddOrderKeyLayout.createAndSetKeysFromDDOrders(ddOrders);
 
 		refreshLines(false);
 	}
@@ -157,7 +155,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	protected void loadKeysFromLines(final List<IPOSTableRow> lines)
 	{
 		final List<I_DD_Order> ddOrders = getService().getDDOrders(lines);
-		ddOrderKeyLayout.setKeysFromDDOrders(ddOrders);
+		ddOrderKeyLayout.createAndSetKeysFromDDOrders(ddOrders);
 	}
 
 	/**
@@ -267,7 +265,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	{
 		final DDOrderFiltering service = getService();
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		
+
 		//
 		// Fetch source Warehouse IDs from selected rows
 		final Set<Integer> sourceWarehouseIds = service.getSourceWarehouseIds(rows);
@@ -276,7 +274,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 			// no lines selected => no warehouses => nothing to do
 			return null;
 		}
-		
+
 		//
 		// Fetch product IDs
 		final Set<Integer> productIds = service.getProductIdsFromRows(rows);
@@ -298,7 +296,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		{
 			huQueryBuilder.addOnlyHUIds(huIdsScheduledToMove);
 		}
-		
+
 		return huQueryBuilder;
 	}
 
@@ -382,13 +380,5 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		{
 			return super.getM_Warehouse_ID();
 		}
-	}
-
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-
-		DisposableHelper.disposeAll(ddOrderKeyLayout);
 	}
 }

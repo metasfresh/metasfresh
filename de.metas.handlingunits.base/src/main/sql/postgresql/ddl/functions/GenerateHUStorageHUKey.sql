@@ -29,5 +29,4 @@ $BODY$
   LANGUAGE plpgsql STABLE
   COST 100;
 
-ALTER FUNCTION GenerateHUStorageHUKey(numeric)
-  OWNER TO adempiere;
+

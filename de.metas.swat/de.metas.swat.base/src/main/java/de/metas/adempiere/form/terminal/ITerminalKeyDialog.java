@@ -22,6 +22,12 @@ package de.metas.adempiere.form.terminal;
  * #L%
  */
 
+/**
+ * Implementors provide a dialog with an an on-screen keyboard.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface ITerminalKeyDialog extends IDisposable
 {
 	void init();

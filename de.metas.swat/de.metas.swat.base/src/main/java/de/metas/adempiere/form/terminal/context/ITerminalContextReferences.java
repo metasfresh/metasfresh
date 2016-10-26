@@ -25,78 +25,41 @@ package de.metas.adempiere.form.terminal.context;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.form.terminal.IDisposable;
-import de.metas.adempiere.form.terminal.IKeyLayout;
 
 /**
  * A {@link ITerminalContext}'s references.
  * Use {@link ITerminalContext#newReferences()} in a try-with-resources statement to get and destroy an instance for a particular terminal dialog.<br>
- * If try-with-resources is not feasible, use {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} to destroy an instance.
+ * If try-with-resources is not feasible, use {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} to destroy an instance.<br>
+ * If you need to do something else, check out {@link ITerminalContext#closeCurrentReferences()} and {@link ITerminalContext#detachReferences(ITerminalContextReferences)}.
  *
  * Implementations of this interface hold a link to all created {@link IDisposable} components and {@link WeakPropertyChangeSupport}s.
  *
  * When {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} is called,
- * then all {@link IDisposable} components registered with {@link #addToDisposableComponents(IDisposable)} are disposed.
- * Also, all property change support instances created with {@link #createPropertyChangeSupport(Object)} or {@link #createPropertyChangeSupport(Object, boolean)} are cleared.
+ * then all {@link IDisposable} components that were registered with {@link ITerminalContext#addToDisposableComponents(IDisposable)} are disposed.
+ * Also, all property change support instances created with {@link ITerminalContext#createPropertyChangeSupport(Object)} or {@link ITerminalContext#createPropertyChangeSupport(Object, boolean)} are cleared.
  * The goal of this is to avoid memory leaks.
  *
- * @author tsa
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ITerminalContextReferences extends AutoCloseable
 {
 	/**
-	 * Adds given component to the internal list of disposable components.
+	 * Call {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} with this instance.
+	 * <p>
+	 * Please don't directly call this method. It's intended to be called by a {@code try}-with-resources statement.
 	 *
-	 * @param comp
 	 */
-	void addToDisposableComponents(IDisposable comp);
+	@Override
+	void close();
 
 	/**
-	 * Creates a new {@link WeakPropertyChangeSupport} instance.
+	 * Disposes all components that were added to this instance and unregisters/destroys all property change support instances.
+	 * <p>
+	 * Hint: it is intended to only call this method on instances that were detached using {@link ITerminalContext#detachReferences(ITerminalContextReferences)}.
+	 * In all other cases you might want to call {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} with this instance as parameters.
 	 *
-	 * A link to this instance will be remembered so {@link #dispose()} will be able to clear the listeners.
-	 *
-	 * @param sourceBean
-	 * @return {@link WeakPropertyChangeSupport} instance
+	 * @task https://github.com/metasfresh/metasfresh/issues/458
 	 */
-	WeakPropertyChangeSupport createPropertyChangeSupport(Object sourceBean);
-
-	/**
-	 * Creates a new {@link WeakPropertyChangeSupport} instance.
-	 *
-	 * A link to this instance will be remembered so {@link #dispose()} will be able to clear the listeners.
-	 *
-	 * @param sourceBean
-	 * @param weakDefault
-	 * @return {@link WeakPropertyChangeSupport} instance
-	 */
-	WeakPropertyChangeSupport createPropertyChangeSupport(Object sourceBean, boolean weakDefault);
-
-	/**
-	 * Also see {@link ITerminalContext#getTextKeyLayout()}.
-	 *
-	 * @return default on-screen text (QWERTY) keyboard to be used
-	 */
-	IKeyLayout getTextKeyLayout();
-
-	/**
-	 * Set default on-screen text (QWERTY) keyboard to be used. Also see {@link ITerminalContext#setTextKeyLayout(IKeyLayout)}.
-	 *
-	 * @param keyLayout
-	 */
-	void setTextKeyLayout(IKeyLayout keyLayout);
-
-	/**
-	 * Analog to {@link #getTextKeyLayout()}.
-	 *
-	 * @return default on-screen numeric keyboard to be used
-	 */
-	IKeyLayout getNumericKeyLayout();
-
-	/**
-	 * Sets default on-screen numeric keyboard to be used. Analog to {@link #setTextKeyLayout(IKeyLayout)}.
-	 *
-	 * @param keyLayout
-	 */
-	void setNumericKeyLayout(IKeyLayout keyLayout);
+	void dispose();
 }

@@ -17,7 +17,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.SvrProcess;
@@ -228,10 +227,10 @@ public class M_Material_Tracking_Report_Line_Create
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
 		// This process is just for unprocessed reports
-		final I_M_Material_Tracking_Report report = InterfaceWrapperHelper.create(gridTab, I_M_Material_Tracking_Report.class);
+		final I_M_Material_Tracking_Report report = context.getModel(I_M_Material_Tracking_Report.class);
 
 		return !report.isProcessed();
 	}

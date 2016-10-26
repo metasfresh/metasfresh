@@ -44,7 +44,6 @@ import org.adempiere.util.net.NetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.MSession;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -220,7 +219,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * Task 04966: Queries the device API to find out if there are devices available for
 	 * <ul>
 	 * <li>the given <code>attribute</code> and</li>
-	 * <li>the current host IP (taken from {@link MSession#get(Properties, boolean)}).</li>
+	 * <li>the current host IP (taken from {@link NetUtils#getLocalHost()}).</li>
 	 * </ul>
 	 * If there are such devices, then this method creates a {@link InputMethod} for echa available {@link IDeviceRequest} that has an {@link ISingleValueResponse}.<br>
 	 * The background of this last restriction is that (at least for now) we want just one value to set it to the attribute propersies editor.
@@ -293,6 +292,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
 						return AppsAction.builder()
 								.setAction(buttonText)
+								.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.
 								.setToolTipText(buttonText)
 								.build();
 					}
@@ -493,7 +493,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * Background: We query the device API to find out if there are devices available for
 	 * <ul>
 	 * <li>the given <code>attribute</code> and</li>
-	 * <li>the current host IP (taken from {@link MSession#get(Properties, boolean)}).</li>
+	 * <li>the current host IP (taken from {@link NetUtils#getLocalHost()}).</li>
 	 * </ul>
 	 * If there are such devices, then this method creates a {@link InputMethod} for echa available {@link IDeviceRequest} that has an {@link ISingleValueResponse}.<br>
 	 * The background of this last restriction is that (at least for now) we want just one value to set it to the attribute propersies editor.

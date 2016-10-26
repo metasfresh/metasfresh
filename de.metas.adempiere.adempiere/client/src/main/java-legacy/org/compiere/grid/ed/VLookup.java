@@ -2041,13 +2041,15 @@ public class VLookup extends JComponent
 
 	/* package */IValidationContext getValidationContext()
 	{
+		final GridField gridField = m_mField;
+		
 		// In case there is no GridField set (e.g. VLookup was created from a custom swing form)
-		if (m_mField == null)
+		if (gridField == null)
 		{
 			return IValidationContext.DISABLED;
 		}
 
-		final IValidationContext evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(m_mField);
+		final IValidationContext evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(gridField);
 		
 		// In case grid field validation context could not be created, disable validation
 		// NOTE: in most of the cases when we reach this point is when we are in a custom form which used GridFields to create the lookups

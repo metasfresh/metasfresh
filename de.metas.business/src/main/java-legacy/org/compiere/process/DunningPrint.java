@@ -26,6 +26,7 @@ import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
 import org.compiere.model.MDunningRunEntry;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PrintInfo;
@@ -158,7 +159,7 @@ public class DunningPrint extends SvrProcess
 			}
 			//	query
 			MQuery query = new MQuery("C_Dunning_Header_v");
-			query.addRestriction("C_DunningRunEntry_ID", MQuery.EQUAL, 
+			query.addRestriction("C_DunningRunEntry_ID", Operator.EQUAL, 
 				new Integer(entry.getC_DunningRunEntry_ID()));
 
 			//	Engine

@@ -10,18 +10,17 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -55,6 +54,7 @@ import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -221,12 +221,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Setup tables for InTransaction only caching
 		for (final String tableName : Arrays.asList(
-				I_M_HU.Table_Name
-				, I_M_HU_Storage.Table_Name
-				, I_M_HU_Item.Table_Name
-				, I_M_HU_Item_Storage.Table_Name
-				, I_M_HU_Attribute.Table_Name
-				))
+				I_M_HU.Table_Name, I_M_HU_Storage.Table_Name, I_M_HU_Item.Table_Name, I_M_HU_Item_Storage.Table_Name, I_M_HU_Attribute.Table_Name))
 		{
 			cachingService.createTableCacheConfigBuilder(tableName)
 					.setEnabled(true)
@@ -244,7 +239,8 @@ public final class Main extends AbstractModuleInterceptor
 	{
 		//
 		// de.metas.storage: Register HU storage engine (07991)
-		Services.get(IStorageEngineService.class).registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
+		Services.get(IStorageEngineService.class)
+				.registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
 
 		//
 		// Weights Attributes
@@ -257,7 +253,8 @@ public final class Main extends AbstractModuleInterceptor
 		// Receipt schedule
 		{
 			Services.get(IReceiptScheduleProducerFactory.class)
-					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class);
+					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
+					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
 			Services.get(IHUDocumentFactoryService.class)

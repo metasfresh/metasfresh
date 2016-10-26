@@ -1,5 +1,7 @@
 package de.metas.inout.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -284,6 +286,32 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public BigDecimal getEffectiveStorageChange(final I_M_InOutLine iol)
+	{
+
+		final String movementType = iol.getM_InOut().getMovementType();
+		final BigDecimal multiplier;
+
+		if (X_M_InOut.MOVEMENTTYPE_CustomerReturns.equals(movementType)
+				|| X_M_InOut.MOVEMENTTYPE_VendorReceipts.equals(movementType))
+		{
+			multiplier = BigDecimal.ONE; // storage increase
+		}
+		else if (X_M_InOut.MOVEMENTTYPE_CustomerShipment.equals(movementType)
+				|| X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(movementType))
+		{
+			multiplier = BigDecimal.ONE.negate(); // storage decrease
+		}
+		else
+		{
+			Check.errorIf(true, "iol={} has an M_InOut with Unexpected MovementType={}", iol, movementType);
+			return BigDecimal.ZERO; // won't normally be reached.
+		}
+
+		return iol.getMovementQty().multiply(multiplier);
+	}
+
+	@Override
 	public List<I_M_InOutLine> sortLines(final I_M_InOut inOut)
 	{
 		//
@@ -321,7 +349,7 @@ public class InOutBL implements IInOutBL
 						? nextLine.getC_OrderLine().getC_Order_ID()
 						: 0;
 
-				if (nextID != 0)  // If this is a valid ID, put it into the Map.
+				if (nextID != 0)   // If this is a valid ID, put it into the Map.
 				{
 					valueIdToUse = nextID;
 					break;

@@ -33,7 +33,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.process.SvrProcess;
@@ -262,16 +261,16 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	 * @return <code>true</code> for orders and order lines with <code>SOTrx=N</code> (i.e. purchase order lines), <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (InterfaceWrapperHelper.isInstanceOf(gridTab, I_C_Order.class))
+		if(I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
+			final I_C_Order order = context.getModel(I_C_Order.class);
 			return !order.isSOTrx();
 		}
-		else if (InterfaceWrapperHelper.isInstanceOf(gridTab, I_C_OrderLine.class))
+		else if(I_C_OrderLine.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(gridTab, I_C_OrderLine.class);
+			final I_C_OrderLine orderLine = context.getModel(I_C_OrderLine.class);
 			return !orderLine.getC_Order().isSOTrx();
 		}
 

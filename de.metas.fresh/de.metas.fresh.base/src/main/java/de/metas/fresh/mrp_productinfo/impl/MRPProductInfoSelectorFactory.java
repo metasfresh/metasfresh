@@ -3,25 +3,30 @@ package de.metas.fresh.mrp_productinfo.impl;
 import java.sql.Timestamp;
 import java.util.Map;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -112,6 +117,12 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final Timestamp date = purchaseCandidate.getDatePromised();
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
+		if (InterfaceWrapperHelper.isInstanceOf(model, I_X_MRP_ProductInfo_Detail_MV.class))
+		{
+			I_X_MRP_ProductInfo_Detail_MV detail = InterfaceWrapperHelper.create(model, I_X_MRP_ProductInfo_Detail_MV.class);
+			return new MRPProductInfoSelector(detail.getM_Product_ID(), detail.getM_AttributeSetInstance_ID(), detail.getDateGeneral(), model);
+		}
+
 		return null;
 	}
 
@@ -121,7 +132,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		if (shipmentSched != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
-			if (date != null)      // don't blindly assume that the sched is already initialized
+			if (date != null)                // don't blindly assume that the sched is already initialized
 			{
 				return date;
 			}
@@ -142,24 +153,53 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 	}
 
 	@Override
-	public IMRPProductInfoSelector createOrNull(Object model, IParams params)
+	public IMRPProductInfoSelector createOrNull(final Object model, final IParams params)
 	{
+		Check.assumeNotNull(model, "param 'model' is not null");
+		if (params == null)
+		{
+			return createOrNull(model);
+		}
+
 		final String productParamKey = MRPProductInfoSelector.mkProductParamKey(model);
 		final int productID = params.getParameterAsInt(productParamKey);
+		if (productID <= 0)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
+			return createOrNull(model);
+		}
 
 		final String attributeSetInstanceParamKey = MRPProductInfoSelector.mkAttributeSetInstanceParamKey(model);
 		final int asiID = params.getParameterAsInt(attributeSetInstanceParamKey);
+		if (asiID < 0) // might be 0
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
+			return createOrNull(model);
+		}
 
 		final String dateParamKey = MRPProductInfoSelector.mkDateParamKey(model);
 		final Timestamp date = params.getParameterAsTimestamp(dateParamKey);
+		if (date == null)
+		{
+			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
+			return createOrNull(model);
+		}
 
+		// if all values are OK, then use them. Otherwise they might not be consistent with each other
 		return new MRPProductInfoSelector(productID, asiID, date, model);
 	}
 
+	/**
+	 * Important: check out the {@link #hashCode()} and {@link #equals(Object)} implementation before using instances in hashsets etc.
+	 *
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 */
 	static class MRPProductInfoSelector implements IMRPProductInfoSelector
 	{
 		private final int M_Product_ID;
 		private final int M_AttributeSetInstance_ID;
+		private String asiKey;
 		private final Timestamp date;
 		private final Object model;
 
@@ -268,6 +308,31 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 					+ ",M_Product_ID=" + getM_Product_ID()
 					+ ",M_AttributeSetInstance_ID=" + getM_AttributeSetInstance_ID()
 					+ "]";
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return new HashCodeBuilder().append(date).append(M_Product_ID).append(getASIKey()).build();
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			return obj instanceof MRPProductInfoSelector && hashCode() == obj.hashCode();
+		}
+
+		@Override
+		public String getASIKey()
+		{
+			if (asiKey == null)
+			{
+				final int attributeSetInstanceID = getM_AttributeSetInstance_ID();
+				asiKey = DB.getSQLValueString(ITrx.TRXNAME_None,
+						"SELECT GenerateHUStorageASIKey(?, '')",               // important to get an empty string instead of NULL
+						attributeSetInstanceID);
+			}
+			return asiKey;
 		}
 
 	}

@@ -56,38 +56,9 @@ import de.metas.tax.api.ITaxDAO;
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
-
-	final String METHODNAME_setHeaderAggregationKey = de.metas.invoicecandidate.callout.InvoiceCandidate.class.getName()
-			+ "." + de.metas.invoicecandidate.callout.InvoiceCandidate.METHODNAME_setHeaderAggregationKey;
-
-// @formatter:off
-	// FIXME: register callouts somehow
-//	@Init
-//	public void setupCallouts()
-//	{
-//		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-//		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-//
-//		//
-//		// Setup callouts for Header Aggregation Key
-//		final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = aggregationBL.getHeaderAggregationKeyBuilder();
-//
-//		for (final String columnName : headerAggregationKeyBuilder.getDependsOnColumnNames())
-//		{
-//			programaticCalloutProvider
-//					.registerCallout(I_C_Invoice_Candidate.Table_Name, columnName, METHODNAME_setHeaderAggregationKey);
-//		}
-//		programaticCalloutProvider.registerCallout(I_C_Invoice_Candidate.Table_Name,
-//				I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Override_ID,
-//				METHODNAME_setHeaderAggregationKey);
-//
-//		// Setup callout C_Invoice_Candidate
-//		final IProgramaticCalloutProvider calloutProvider = programaticCalloutProvider;
-//		calloutProvider.registerAnnotatedCallout(new de.metas.invoicecandidate.callout.C_Invoice_Candidate());
-//	}
-	// @formatter:on
+	
 	/**
-	 * Set QtyToInvoiceInPriceUOM, just to make sure is up2date.
+	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
@@ -311,9 +282,9 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 * 
+	 *
 	 * @param ic
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
@@ -378,7 +349,7 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-		if (ic.isProcessed() || isBackgroundProcessInProcess)
+		if (ic.isProcessed() || "Y".equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
 		}

@@ -35,6 +35,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_AD_InfoColumn;
+import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process;
@@ -265,5 +267,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
 	}
 }

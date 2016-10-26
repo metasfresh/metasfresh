@@ -10,18 +10,17 @@ package de.metas.device.adempiere.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceBL;
@@ -51,6 +49,7 @@ import de.metas.device.api.request.DeviceRequestConfigureDevice;
 import de.metas.device.api.request.DeviceRequestGetConfigParams;
 import de.metas.device.api.request.IDeviceConfigParam;
 import de.metas.device.api.request.IDeviceResponseGetConfigParams;
+import de.metas.logging.LogManager;
 
 public class DeviceBL implements IDeviceBL
 {
@@ -79,8 +78,7 @@ public class DeviceBL implements IDeviceBL
 
 			// 1. is it configured to work with the given 'attribute'?
 			final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + currentDeviceName + ".AttributeInternalName";
-			final Map<String, String> attribsForCurrentDevice =
-					sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, ad_Client_ID, ad_Org_ID);
+			final Map<String, String> attribsForCurrentDevice = sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, ad_Client_ID, ad_Org_ID);
 
 			if (!attribsForCurrentDevice.containsValue(attribute.getValue()))
 			{
@@ -92,9 +90,8 @@ public class DeviceBL implements IDeviceBL
 
 			// 2. is there an "AvailableOn"-record with the given 'hostName'
 			final String availableOnSysConfigPrefix = CFG_DEVICE_PREFIX + "." + currentDeviceName + ".AvailableOn";
-			final Map<String, String> availiabilitesForCurrentDevice =
-					sysConfigBL.getValuesForPrefix(availableOnSysConfigPrefix, ad_Client_ID, ad_Org_ID);
-			
+			final Map<String, String> availiabilitesForCurrentDevice = sysConfigBL.getValuesForPrefix(availableOnSysConfigPrefix, ad_Client_ID, ad_Org_ID);
+
 			boolean hostMatches = false;
 			for (final String currentAddressOrHostName : availiabilitesForCurrentDevice.values())
 			{
@@ -137,7 +134,7 @@ public class DeviceBL implements IDeviceBL
 			return existingDevice;
 		}
 
-		final String deviceClass = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, host, "DeviceClass", ad_Client_ID, ad_Org_ID);
+		final String deviceClass = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, host, "DeviceClass", ad_Client_ID, ad_Org_ID, null);
 
 		Check.errorIf(deviceClass == null, "Missing AD_SysConfig record {}", CFG_DEVICE_PREFIX + "." + deviceName + ".<host-identifier '" + host + "'>.DeviceClass");
 
@@ -147,7 +144,7 @@ public class DeviceBL implements IDeviceBL
 		final List<IDeviceConfigParam> deviceParams = deviceParamsResponse.getParams();
 		for (final IDeviceConfigParam param : deviceParams)
 		{
-			final String paramValue = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, host, param.getSystemName(), ad_Client_ID, ad_Org_ID);
+			final String paramValue = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, host, param.getSystemName(), ad_Client_ID, ad_Org_ID, param.getDefaultValue());
 			if (paramValue != null)
 			{
 				param.setValue(paramValue);
@@ -161,16 +158,22 @@ public class DeviceBL implements IDeviceBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param prefix
 	 * @param host
 	 * @param suffix
 	 * @param ad_Client_ID
 	 * @param ad_Org_ID
+	 * @param defaultStr
 	 * @return
-	 * @throws DeviceConfigException is a config parameter was not found.
+	 * @throws DeviceConfigException is a config parameter was not found and given <code>defaultStr</code> is <code>null</code>.
 	 */
-	private String getSysconfigValueWithHostNameFallback(final String prefix, final IHostIdentifier host, final String suffix, final int ad_Client_ID, final int ad_Org_ID)
+	private String getSysconfigValueWithHostNameFallback(final String prefix,
+			final IHostIdentifier host,
+			final String suffix,
+			final int ad_Client_ID,
+			final int ad_Org_ID,
+			final String defaultStr)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -193,6 +196,10 @@ public class DeviceBL implements IDeviceBL
 
 		if (value == null)
 		{
+			if (defaultStr != null)
+			{
+				return defaultStr;
+			}
 			final String msg = "@NotFound@: @AD_SysConfig@ " + deviceKeyWithHostName + ", " + deviceKeyWithIP + ", " + deviceKeyWithWildCard
 					+ "; @AD_Client_ID@=" + ad_Client_ID + " @AD_Org_ID@=" + ad_Org_ID;
 			throw new DeviceConfigException(msg);

@@ -49,6 +49,4 @@ $BODY$
 	LANGUAGE plpgsql STABLE
 	COST 100;
 --
-ALTER FUNCTION "de.metas.handlingunits".huInfo(numeric)
-OWNER TO adempiere;
 

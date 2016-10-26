@@ -1,5 +1,7 @@
 package de.metas.inout;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -151,5 +153,12 @@ public interface IInOutBL extends ISingletonService
 	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
+
+	/**
+	 *
+	 * @param iol
+	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
+	 */
+	BigDecimal getEffectiveStorageChange(I_M_InOutLine iol);
 
 }

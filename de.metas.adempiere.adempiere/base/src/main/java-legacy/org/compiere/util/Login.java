@@ -20,8 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,6 +33,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -55,11 +56,13 @@ import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
 
 /**
  * Login Manager
@@ -184,45 +187,44 @@ public class Login
 	/**
 	 * Login and get roles.
 	 *
-	 * @param app_user user
-	 * @param app_pwd pwd
+	 * @param username user
+	 * @param password pwd
 	 * @param force ignore pwd
-	 * @return role array or null if in error. The error (NoDatabase, UserPwdError, DBLogin) is saved in the log
+	 * @return available roles; never null or empty
+	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public KeyNamePair[] getRoles(final String app_user, String app_pwd)
+	public Set<KeyNamePair> authenticate(final String username, String password)
 	{
-		log.debug("User={}", app_user);
+		log.debug("User={}", username);
 
-		if (app_user == null)
+		if (Check.isEmpty(username, true))
 		{
-			log.warn("No Apps User");
-			return null;
+			throw new AdempiereException("No user"); // TODO: trl
 		}
 
 		//
 		// Authentification
-		if (app_pwd == null || app_pwd.length() == 0)
+		if (Check.isEmpty(password, false))
 		{
-			log.warn("No Apps Password");
-			return null;
+			throw new AdempiereException("UserPwdError"); // TODO: trl
 		}
 
 		//
 		// Try auth via LDAP
+		final LoginContext ctx = getCtx();
 		boolean authenticated = false;
 		if (!authenticated)
 		{
-			authenticated = authLDAP(app_user, app_pwd);
+			authenticated = authLDAP(ctx, username, password);
 		}
 
 		//
 		// If we were authenticated, reset the password becuse we no longer need it
 		if (authenticated)
 		{
-			app_pwd = null;
+			password = null;
 		}
 
-		final LoginContext ctx = getCtx();
 
 		//
 		// If not authenticated so far, use AD_User as backup
@@ -230,14 +232,13 @@ public class Login
 		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
 		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 		final I_AD_Session session = startSession();
-		if (!app_user.equals(session.getLoginUsername()))
+		if (!username.equals(session.getLoginUsername()))
 		{
-			session.setLoginUsername(app_user);
+			session.setLoginUsername(username);
 			InterfaceWrapperHelper.save(session);
 		}
 
-		KeyNamePair[] retValue = null;
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		final Set<KeyNamePair> roles = new LinkedHashSet<>();
 		//
 		final StringBuilder sql = new StringBuilder("SELECT u.AD_User_ID, r.AD_Role_ID,r.Name, ")
 				.append(" u.LoginFailureCount, u.IsAccountLocked , u.Password , u.LoginFailureDate, ") // metas: ab
@@ -261,19 +262,17 @@ public class Login
 		try
 		{
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
-			pstmt.setString(1, app_pwd);
-			pstmt.setString(2, SecureEngine.encrypt(app_pwd));
-			pstmt.setString(3, app_user);
-			pstmt.setString(4, app_user); // US362: Login using email address (2010070610000359)
+			pstmt.setString(1, password);
+			pstmt.setString(2, SecureEngine.encrypt(password));
+			pstmt.setString(3, username);
+			pstmt.setString(4, username); // US362: Login using email address (2010070610000359)
 
 			// execute a query
 			rs = pstmt.executeQuery();
 
-			if (!rs.next()) 		// no record found
+			if (!rs.next())  		// no record found
 			{
-				DB.close(rs, pstmt); // not really needed
-				MetasfreshLastError.saveError(log, "UserPwdError", app_user, false);
-				return null;
+				throw new AdempiereException("@UserPwdError@"); // TODO: specific exception
 			}
 
 			final int adUserId = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
@@ -301,8 +300,7 @@ public class Login
 				}
 				else
 				{
-					MetasfreshLastError.saveError(log, "UserAccountLockedError", app_user, false);
-					return null;
+					throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 				}
 			}
 			boolean isPasswordValid = authenticated;
@@ -320,17 +318,13 @@ public class Login
 					InterfaceWrapperHelper.save(user);
 
 					destroySessionOnLoginIncorrect(session);
-
-					MetasfreshLastError.saveError(log, "UserAccountLockedError", app_user, false);
-					return null;
+					throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 				}
 
 				InterfaceWrapperHelper.save(user);
 
 				destroySessionOnLoginIncorrect(session);
-
-				MetasfreshLastError.saveError(log, "UserPwdError", app_user, false);
-				return null;
+				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 			}
 			else
 			{
@@ -340,17 +334,17 @@ public class Login
 			}
 
 			final int AD_User_ID = rs.getInt(1);
-			ctx.setUser(AD_User_ID, app_user);
+			ctx.setUser(AD_User_ID, username);
 
 			//
 			if (Ini.isClient())
 			{
 				if (MSystem.isSwingRememberUserAllowed())
-					Ini.setProperty(Ini.P_UID, app_user);
+					Ini.setProperty(Ini.P_UID, username);
 				else
 					Ini.setProperty(Ini.P_UID, "");
 				if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
-					Ini.setProperty(Ini.P_PWD, app_pwd);
+					Ini.setProperty(Ini.P_PWD, password);
 			}
 
 			do	// read all roles
@@ -362,19 +356,22 @@ public class Login
 				}
 				final String roleName = rs.getString(3);
 				final KeyNamePair roleKNP = KeyNamePair.of(AD_Role_ID, roleName);
-				list.add(roleKNP);
+				roles.add(roleKNP);
 			}
 			while (rs.next());
-			//
-			retValue = new KeyNamePair[list.size()];
-			list.toArray(retValue);
-			log.debug("User={} - roles #{}", app_user, retValue.length);
+			
+			if (roles.isEmpty())
+			{
+				throw new AdempiereException("No roles"); // TODO: specific exception
+			}
+
+			log.debug("User={} - roles #{}", username, roles);
+			return roles;
 		}
-		catch (Exception ex)
+		catch (SQLException ex)
 		{
-			log.error(sql.toString(), ex);
-			MetasfreshLastError.saveError(log, "DBLogin", ex);
-			retValue = null;
+			log.error("SQL error: {}", sql, ex);
+			throw new AdempiereException("@DBLogin@", ex); // TODO: specific exception
 		}
 		finally
 		{
@@ -382,9 +379,7 @@ public class Login
 			rs = null;
 			pstmt = null;
 		}
-		// long ms = System.currentTimeMillis() - start;
-		return retValue;
-	}	// getRoles
+	}
 
 	private I_AD_Session startSession()
 	{
@@ -415,7 +410,7 @@ public class Login
 		getCtx().resetAD_Session_ID();
 	}
 
-	private final boolean authLDAP(final String app_user, final String app_pwd)
+	private static final boolean authLDAP(final LoginContext ctx, final String app_user, final String app_pwd)
 	{
 		// LDAP auth is not currently supported in JUnit testing mode
 		if (Adempiere.isUnitTestMode())
@@ -423,7 +418,6 @@ public class Login
 			return false;
 		}
 
-		final LoginContext ctx = getCtx();
 		final MSystem system = MSystem.get(ctx.getSessionContext());
 		if (system == null)
 		{
@@ -446,27 +440,25 @@ public class Login
 	 * @param role role information
 	 * @return list of valid client {@link KeyNamePair}s or null if in error
 	 */
-	public KeyNamePair[] getClients(final KeyNamePair role)
+	public Set<KeyNamePair> setRoleAndGetClients(final KeyNamePair role)
 	{
-		if (role == null)
+		if (role == null || role.getKey() < 0)
 			throw new IllegalArgumentException("Role missing");
 
 		//
 		// Get user role
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = -1; // N/A
 		final int AD_Role_ID = role.getKey();
 		final int AD_User_ID = ctx.getAD_User_ID();
-		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
+		final IUserRolePermissions rolePermissions = getUserRolePermissions(AD_Role_ID, AD_User_ID);
 
 		//
 		// Get login AD_Clients
 		final Set<KeyNamePair> clientsList = rolePermissions.getLoginClients();
 		if (clientsList.isEmpty())
 		{
-			log.error("No Clients for Role: " + role.toStringX());
-			return null;
+			// shall not happen because in this case rolePermissions retrieving should fail
+			throw new AdempiereException("No Clients for Role: " + role.toStringX());
 		}
 
 		//
@@ -475,26 +467,71 @@ public class Login
 		ctx.setRoleUserLevel(rolePermissions.getUserLevel());
 		ctx.setAllowLoginDateOverride(rolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowLoginDateOverride));
 
-		return clientsList.toArray(new KeyNamePair[clientsList.size()]);
+		return clientsList;
+	}
+	
+	private IUserRolePermissions getUserRolePermissions(final int AD_Role_ID, final int AD_User_ID)
+	{
+		//
+		// Get user role
+		final int AD_Client_ID = -1; // N/A
+		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
+		return rolePermissions;
+	}
+	
+	public Set<KeyNamePair> getAvailableClients(final int AD_Role_ID, final int AD_User_ID)
+	{
+		//
+		// Get user role
+		final IUserRolePermissions rolePermissions = getUserRolePermissions(AD_Role_ID, AD_User_ID);
+
+		//
+		// Get login AD_Clients
+		final Set<KeyNamePair> clientsList = rolePermissions.getLoginClients();
+		if (clientsList.isEmpty())
+		{
+			// shall not happen because in this case rolePermissions retrieving should fail
+			throw new AdempiereException("No Clients for AD_Role_ID: " + AD_Role_ID);
+		}
+		
+		return clientsList;
 	}
 
 	/**
 	 * Sets current client in context and retrieves organizations on which we can login
 	 *
 	 * @param client client information
-	 * @return list of valid Org KeyNodePairs or null if in error
+	 * @return list of valid organizations; never returns null
 	 */
-	public KeyNamePair[] getOrgs(final KeyNamePair client)
+	public Set<KeyNamePair> setClientAndGetOrgs(final KeyNamePair client)
 	{
-		if (client == null)
+		if (client == null || client.getKey() < 0)
 			throw new IllegalArgumentException("Client missing");
 
 		//
-		// Get user role
+		// Get login organizations
 		final LoginContext ctx = getCtx();
 		final int AD_Client_ID = client.getKey();
 		final int AD_Role_ID = ctx.getAD_Role_ID();
 		final int AD_User_ID = ctx.getAD_User_ID();
+		final Set<KeyNamePair> orgsList = getAvailableOrgs(AD_Role_ID, AD_User_ID, AD_Client_ID);
+
+		//
+		// Update login context
+		ctx.setClient(client.getKey(), client.getName());
+
+		return orgsList;
+	}
+	
+	public Set<KeyNamePair> getAvailableOrgs(final int AD_Role_ID, final int AD_User_ID, final int AD_Client_ID)
+	{
+		Check.assume(AD_Role_ID >= 0, "AD_Role_ID >= 0");
+		Check.assume(AD_User_ID >= 0, "AD_User_ID >= 0");
+		Check.assume(AD_Client_ID >= 0, "AD_Client_ID >= 0");
+		
+		//
+		// Get user role
 		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
 		final IUserRolePermissions role = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
 
@@ -508,18 +545,11 @@ public class Login
 		// No Orgs
 		if (orgsList.isEmpty())
 		{
-			log.warn("No Org for Client: " + client.toStringX()
-					+ ", AD_Role_ID=" + AD_Role_ID
-					+ ", AD_User_ID=" + AD_User_ID
-					+ "\n Permissions: " + role);
-			return null;
+			log.warn("No Org for AD_Client_ID={}, AD_Role_ID={}, AD_User_ID={} \nPermissions: {}", AD_Client_ID, AD_Role_ID, AD_User_ID, role);
+			return ImmutableSet.of();
 		}
-
-		//
-		// Update login context
-		ctx.setClient(client.getKey(), client.getName());
-
-		return orgsList.toArray(new KeyNamePair[orgsList.size()]);
+		
+		return orgsList;
 	}
 
 	/**
@@ -528,14 +558,14 @@ public class Login
 	 * @param org organization
 	 * @return Array of Warehouse Info
 	 */
-	public KeyNamePair[] getWarehouses(final KeyNamePair org)
+	public Set<KeyNamePair> getWarehouses(final KeyNamePair org)
 	{
 		if (org == null)
 			throw new IllegalArgumentException("Org missing");
 
 		if (!isShowWarehouseOnLogin())
 		{
-			return new KeyNamePair[] {};
+			return ImmutableSet.of();
 		}
 
 		final LoginContext ctx = getCtx();
@@ -556,7 +586,7 @@ public class Login
 			warehouses.add(warehouseKNP);
 		}
 
-		return warehouses.toArray(new KeyNamePair[warehouses.size()]);
+		return warehouses;
 	}
 
 	/**
@@ -635,8 +665,7 @@ public class Login
 	public String loadPreferences(
 			final KeyNamePair org,
 			final KeyNamePair warehouse,
-			final java.sql.Timestamp timestamp,
-			final String printerName)
+			final java.sql.Timestamp timestamp)
 	{
 		Check.assumeNotNull(org, "Parameter org is not null");
 
@@ -689,7 +718,7 @@ public class Login
 		}
 
 		// Other
-		ctx.setPrinterName(printerName); // Optional Printer
+		ctx.setPrinterName(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // Optional Printer
 		ctx.setAutoCommit(Ini.isPropertyBool(Ini.P_A_COMMIT));
 		ctx.setAutoNew(Ini.isPropertyBool(Ini.P_A_NEW));
 		ctx.setProperty(Env.CTXNAME_ShowAcct, Services.get(IPostingService.class).isEnabled()
@@ -1013,5 +1042,10 @@ public class Login
 	{
 		final boolean defaultValue = true;
 		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, defaultValue, Env.CTXVALUE_AD_Client_ID_System, Env.CTXVALUE_AD_Org_ID_System);
+	}
+	
+	public boolean isAllowLoginDateOverride()
+	{
+		return getCtx().isAllowLoginDateOverride();
 	}
 }	// Login

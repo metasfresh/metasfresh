@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 /**
- * Little tool class fpr {@link IDisposable}. The methods are lenient against parameters that are empty, <code>null</code> or have a non-IDisposable type.
+ * Little tool class for {@link IDisposable}. The methods are lenient against parameters that are empty, <code>null</code> or have a non-IDisposable type.
  *
  * @author tsa
  *

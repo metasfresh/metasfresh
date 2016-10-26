@@ -100,7 +100,7 @@ public final class Env
 	public static void setContextProvider(final ContextProvider provider)
 	{
 		Check.assumeNotNull(provider, "provider not null");
-		
+
 		final ContextProvider providerOld = contextProvider;
 		contextProvider = provider;
 		s_log.info("Changed context provider: {} -> {}", providerOld, contextProvider);
@@ -139,7 +139,7 @@ public final class Env
 	public static void exitEnv(final int status)
 	{
 		s_log.info("Exiting environment with status={}", status);
-		
+
 		// hengsin, avoid unncessary query of session when exit without log in
 		if (DB.isConnected())
 		{
@@ -476,7 +476,7 @@ public final class Env
 	private static final void setProperty(final Properties ctx, final String key, final String value)
 	{
 		ctx.setProperty(key, value);
-		
+
 		s_log.trace("Set {}=={}", key, value);
 	}
 
@@ -1101,7 +1101,7 @@ public final class Env
 			return null;
 		}
 
-		return "Y".equals(s);
+		return DisplayType.toBoolean(s);
 	}	// isSOTrx
 
 	/**
@@ -1187,7 +1187,7 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
-	
+
 //	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
 //	{
 //		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
@@ -1204,12 +1204,12 @@ public final class Env
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
-	
+
 	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
 	{
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
 	}
-	
+
 	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
@@ -1442,7 +1442,7 @@ public final class Env
 		//
 		// Get available languages, having BaseLanguage first and then System Language
 		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
-		
+
 		//
 		// Check if we have a perfect match
 		if(AD_Languages.contains(searchAD_Language))
@@ -1816,7 +1816,7 @@ public final class Env
 		{
 			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
 		}
-		
+
 		return null;
 	}
 
@@ -1975,7 +1975,7 @@ public final class Env
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
 		}
-		
+
 		if (window.getAD_Window_ID() > 0)         	// workbench
 		{
 			if (s_hiddenWindows.add(window))
@@ -2146,10 +2146,22 @@ public final class Env
 	 * Static Variables
 	 */
 
-	/** Big Decimal 0 */
+	/**
+	 * Big Decimal 0.
+	 *
+	 * @deprecated please use {@link BigDecimal#ZERO} instead.
+	 */
+	@Deprecated
 	static final public BigDecimal ZERO = new BigDecimal(0.0);
-	/** Big Decimal 1 */
+
+	/**
+	 * Big Decimal 1
+	 *
+	 * @deprecated please use {@link BigDecimal#ONE} instead.
+	 */
+	@Deprecated
 	static final public BigDecimal ONE = new BigDecimal(1.0);
+
 	/** Big Decimal 100 */
 	static final public BigDecimal ONEHUNDRED = new BigDecimal(100.0);
 
@@ -2205,7 +2217,7 @@ public final class Env
 	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final Scope scope)
 	{
 		Check.assumeNotNull(ctx, "ctx not null");
-		
+
 		final CtxName name = CtxName.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
@@ -2580,10 +2592,10 @@ public final class Env
 	{
 		return Adempiere.instance;
 	}
-	
+
 	/**
 	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
-	 * 
+	 *
 	 * @param bean
 	 */
 	public static void autowireBean(final Object bean)

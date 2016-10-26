@@ -1,66 +1,32 @@
 package org.adempiere.ad.dao.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.lang.management.ManagementFactory;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLoggerMBean;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CStatementVO;
-import org.slf4j.Logger;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Stopwatch;
 
-import de.metas.logging.LogManager;
-
+@Service
+@ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
 public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStatisticsCollector
 {
-	private static final Logger logger = LogManager.getLogger(QueryStatisticsLogger.class);
-
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
 
@@ -75,49 +41,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public QueryStatisticsLogger()
 	{
 		super();
-
-		registerJMX();
-	}
-
-	private void registerJMX()
-	{
-		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		final JMXQueryStatisticsLoggerMBean jmxBean = new JMXQueryStatisticsLogger();
-		final String jmxName = getClass().getName() + ":type=Statistics";
-
-		final ObjectName name;
-		try
-		{
-			name = new ObjectName(jmxName);
-		}
-		catch (final MalformedObjectNameException e)
-		{
-			logger.warn("Unable to create ObjectName: " + jmxName, e);
-			return;
-		}
-
-		try
-		{
-			if (!mbs.isRegistered(name))
-			{
-				mbs.registerMBean(jmxBean, name);
-			}
-		}
-		catch (final InstanceAlreadyExistsException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final MBeanRegistrationException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final NotCompliantMBeanException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
 	}
 
 	@Override
@@ -172,6 +95,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector")
 	public void enable()
 	{
 		enabled = false;
@@ -182,6 +106,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector and console tracing of executed SQLs")
 	public void enableWithSqlTracing()
 	{
 		enable();
@@ -203,6 +128,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Disables statistics collector (and tracing)")
 	public void disable()
 	{
 		enabled = false;
@@ -212,6 +138,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Resets currently collected statistics and counters")
 	public void reset()
 	{
 		sql2statistics.clear();
@@ -219,6 +146,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Sets a filter for SQLs which are collected for statistics. NOTE: this is not affecting the SQL tracing.")
 	public void setFilterBy(final String filterBy)
 	{
 		if (Check.equals(this.filterBy, filterBy))
@@ -234,12 +162,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the SQL query filter")
 	public String getFilterBy()
 	{
 		return filterBy;
 	}
 
 	@Override
+	@ManagedOperation(description = "Clears the current SQL query filter, if any")
 	public void clearFilterBy()
 	{
 		setFilterBy(null);
@@ -264,6 +194,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the timestamp from when we started to collect the statistics")
 	public Date getValidFrom()
 	{
 		return validFrom;
@@ -352,7 +283,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 					//
 					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
 					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
-					|| methodName.startsWith("access$0")
+					|| methodName.startsWith("access$")
 			//
 			)
 			{
@@ -424,35 +355,36 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
-	private List<QueryStatistics> snapshotQueryStatisticsAsList()
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed executon time (descending)")
+	public String[] getTopTotalDurationQueriesAsString()
 	{
-		return sql2statistics.values()
-				.stream()
-				.map(stat -> stat.copy())
-				.collect(GuavaCollectors.toImmutableList());
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getTotalDuration));
 	}
 
 	@Override
-	public String[] getTopQueriesAsString()
+	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
+	public String[] getTopCountQueriesAsString()
 	{
-		final List<QueryStatistics> queryStatisticsList = snapshotQueryStatisticsAsList();
-		if (queryStatisticsList.isEmpty())
-		{
-			return new String[] {};
-		}
-		Collections.sort(queryStatisticsList, (s1, s2) -> s1.compareToByCounterDescending(s2));
-
-		final int size = queryStatisticsList.size();
-		final String[] result = new String[size];
-		for (int i = 0; i < size; i++)
-		{
-			final QueryStatistics queryStatistics = queryStatisticsList.get(i);
-			final String queryStatisticsStr = queryStatistics.toString();
-			result[i] = queryStatisticsStr;
-		}
-
-		return result;
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getCount));
 	}
+
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their average execution time (descending)")
+	public String[] getTopAverageDurationQueriesAsString()
+	{
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getAverageDuration));
+	}
+
+	private String[] getTopQueriesAsString(final Comparator<QueryStatistics> comparing)
+	{
+		return sql2statistics.values()
+				.stream()
+				.sorted(comparing.reversed())
+				.map(stat -> stat.toString())
+				.toArray(size -> new String[size]);
+	}
+
 
 	private static final class CountAndDuration
 	{
@@ -515,6 +447,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 			return durationTotal / count;
 		}
+
+		private long getTotalDuration()
+		{
+			return durationTotal;
+		}
 	}
 
 	private static final class QueryStatistics
@@ -529,23 +466,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			this.countAndDurationRef = new AtomicReference<>(CountAndDuration.ZERO);
 		}
 
-		private QueryStatistics(final String sql, final CountAndDuration countAndDuration)
-		{
-			super();
-			this.sql = sql;
-			this.countAndDurationRef = new AtomicReference<>(countAndDuration);
-		}
-
 		@Override
 		public String toString()
 		{
 			return "SQL: " + sql
 					+ "\n-- " + countAndDurationRef.get();
-		}
-
-		public final QueryStatistics copy()
-		{
-			return new QueryStatistics(sql, countAndDurationRef.get());
 		}
 
 		public CountAndDuration incrementAndGet(final long duration)
@@ -564,31 +489,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			return countAndDurationRef.get().getCount();
 		}
 
-		public int compareToByCounterDescending(final QueryStatistics other)
+		public long getTotalDuration()
 		{
-			if (this == other)
-			{
-				return 0;
-			}
-			if (other == null)
-			{
-				return +1;
-			}
+			return countAndDurationRef.get().getTotalDuration();
+		}
 
-			final long c1 = getCount();
-			final long c2 = other.getCount();
-			if (c1 == c2)
-			{
-				return 0;
-			}
-			else if (c1 < c2)
-			{
-				return +1;
-			}
-			else
-			{
-				return -1;
-			}
+		private double getAverageDuration()
+		{
+			return countAndDurationRef.get().getAverageDuration();
 		}
 	}
 }

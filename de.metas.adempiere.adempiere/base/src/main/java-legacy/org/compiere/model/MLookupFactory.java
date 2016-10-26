@@ -433,7 +433,7 @@ public class MLookupFactory
 
 		final ArrayKey cacheKey = createCacheKey(tableRefInfo);
 		final MLookupInfo lookupInfo = s_cacheRefTable.getOrLoad(cacheKey, ()->buildLookupInfo(windowNo, tableRefInfo));
-		return lookupInfo == null ? null : lookupInfo.cloneIt();
+		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 	}
 	
 	private static final MLookupInfo buildLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)

@@ -63,4 +63,18 @@ public interface IMRPProductInfoSelector extends Comparable<IMRPProductInfoSelec
 	 *         The keys are prefixed with the model's table name and <code>Record_ID</code>. The map returned by this method matches the parameter which {@link IMRPProductInfoSelectorFactory#createOrNull(Object, org.adempiere.util.api.IParams)} expects.
 	 */
 	Map<String, Object> asMap();
+
+	/**
+	 *
+	 * @return the asi key value for this selector's ASI. Never <code>null</code>, but might return the empty string.
+	 */
+	String getASIKey();
+
+	/**
+	 *
+	 * @param obj
+	 * @return <code>true</code> if <code>object</code> has an equal <code>M_Product_ID</code>, <code>Date</code> and <code>ASIKey</code> (but might have a different <code>M_AttributeSetInstance_ID</code>!).
+	 */
+	@Override
+	boolean equals(Object obj);
 }
