@@ -24,17 +24,42 @@ class Widget extends Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        const {widgetData} = this.props;
+        const {edited} = this.state;
+
+
+        if(widgetData[0].value !== nextProps.widgetData[0].value) {
+
+            if(!edited) {
+                this.setState(
+                    Object.assign({}, this.state, {
+                        updated: true
+                    }), () => {
+                        setTimeout(() => {
+                            this.setState(Object.assign({}, this.state, {
+                                updated: false
+                            }))
+                        }, 1000);
+                    }
+                )
+            }else{
+                this.setState(Object.assign({}, this.state, {
+                    edited: false
+                }));
+            }
+        }
+    }
 
     handlePatch = (property, value) => {
-        const {isModal, widgetType, widgetData, dataId, windowType, dispatch, rowId, tabId, onChange, relativeDocId, isAdvanced = false} = this.props;
+        const {
+            isModal, widgetType, widgetData, dataId, windowType, dispatch,
+            rowId, tabId, onChange, relativeDocId, isAdvanced = false
+        } = this.props;
+
         const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
-
-
-        this.setState(Object.assign({}, this.state, {
-            edited: true
-        }));
 
         if(rowId === "NEW"){
             currRowId = relativeDocId;
@@ -66,7 +91,6 @@ class Widget extends Component {
         if(onChange){
             onChange();
         }
-
         return ret;
     }
     //
@@ -120,23 +144,7 @@ class Widget extends Component {
     }
 
 
-    componentWillReceiveProps(nextProps) {
-        const {widgetData} = this.props;
-        const {edited} = this.state;
-        if(widgetData[0].value !== nextProps.widgetData[0].value && !edited) {
-            this.setState(
-                Object.assign({}, this.state, {
-                    updated: true
-                }), () => {
-                    setTimeout(() => {
-                        this.setState(Object.assign({}, this.state, {
-                            updated: false
-                        }))
-                    }, 1000);
-                }
-            )
-        }
-    }
+
 
     render() {
         const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, isModal} = this.props;

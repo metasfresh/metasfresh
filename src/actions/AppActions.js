@@ -89,6 +89,10 @@ export function loginRequest(login, passwd){
 	return () => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
 }
 
+export function localLoginRequest(login, passwd){
+	return () => axios.get(config.API_URL + '/login/isLoggedIn');
+}
+
 export function loginCompletionRequest(role){
 	return () => axios.post(config.API_URL + '/login/loginComplete', role);
 }
