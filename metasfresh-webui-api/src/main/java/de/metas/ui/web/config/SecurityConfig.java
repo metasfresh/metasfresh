@@ -102,8 +102,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 						.permitAll() // FIXME: until we really implement the spring security it's better to permit ALL
 						// .authenticated()
 				//
-				.and()
-				.httpBasic()
+//				.and()
+//				.httpBasic()
 		;
 		//@formatter:on
 	}
