@@ -6,7 +6,7 @@ import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
 import config from '../config.js';
 
-import { syncHistoryWithStore } from 'react-router-redux';
+import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, Route, browserHistory } from 'react-router';
 
 import {
@@ -14,18 +14,22 @@ import {
 } from '../actions/WindowActions'
 
 import {
-    addNotification
+    addNotification,
+    logoutSuccess
 } from '../actions/AppActions';
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
-
 
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(function (response) {
     return response;
 }, function (error) {
+    if(error.response.status == 403){
+        store.dispatch(logoutSuccess());
+        store.dispatch(push('/login'));
+    }
     store.dispatch(addNotification('Error', error.response.data.message, 5000, 'error'));
 
     if(!error.response){
