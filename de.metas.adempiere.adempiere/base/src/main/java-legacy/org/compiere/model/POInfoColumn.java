@@ -93,16 +93,19 @@ public final class POInfoColumn implements Serializable
 
 		ITableRefInfo tableRefInfo = null;
 
+		// task #500: For DisplayType=Table or Search and AD_Reference_Value_ID > 0, retrieve the ITableRefInfo
 		if (ad_Reference_Value_ID > 0 && (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
 		{
-			// permit warnings because we shouldn't have Table or Search types with no reference table IDs.
+			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
+			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
 			tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(ad_Reference_Value_ID);
 		}
 
 		// FIXME: HARDCODED
 		if (columnName.equals("AD_Language") ||
 				columnName.equals("EntityType") ||
-				// task #500: Also allow type String for non-numeric types with a reference value
+				// task #500: Also allow type String for non-numeric types with a reference value (Table and search)
+				// Note that the column shall not be a numeric key
 				(tableRefInfo != null && !tableRefInfo.isNumericKey()))
 
 		{
@@ -152,9 +155,14 @@ public final class POInfoColumn implements Serializable
 		IsAllowLogging = isAllowLogging;
 	}   // Column
 
+	/**
+	 * Return true only for Search display type
+	 * 
+	 * @param displayType
+	 * @return
+	 */
 	private boolean isSearchDisplayType(int displayType)
 	{
-		// Return true only for Search display type
 		if (org.compiere.util.DisplayType.Search == displayType)
 		{
 			return true;
@@ -162,9 +170,14 @@ public final class POInfoColumn implements Serializable
 		return false;
 	}
 
+	/**
+	 * Return true only for Table display type
+	 * 
+	 * @param displayType
+	 * @return
+	 */
 	private boolean isTableDisplayType(int displayType)
 	{
-		// Return true only for Table display type
 		if (org.compiere.util.DisplayType.Table == displayType)
 		{
 			return true;
