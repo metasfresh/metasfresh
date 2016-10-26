@@ -24,7 +24,6 @@ class Header extends Component {
         this.state = {
             isSubheaderShow: false,
             isSideListShow: false,
-            indicator: 'saved',
             menuOverlay: null,
             scrolled: false
         }
@@ -100,8 +99,14 @@ class Header extends Component {
     }
 
     render() {
-        const {docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData, windowType, dataId, breadcrumb, showSidelist, references, actions} = this.props;
-        const {isSubheaderShow, isSideListShow, indicator, menuOverlay} = this.state;
+        const {
+            docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
+            windowType, dataId, breadcrumb, showSidelist, references, actions, indicator
+        } = this.props;
+
+        const {
+            isSubheaderShow, isSideListShow, menuOverlay
+        } = this.state;
 
         return (
             <div>
@@ -150,7 +155,6 @@ class Header extends Component {
 
                                 <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>
 
-                                <Indicator indicator={this.props.indicator} />
 
                                 {showSidelist &&
                                     <div

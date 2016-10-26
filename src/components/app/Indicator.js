@@ -7,49 +7,46 @@ import saved from '../../assets/images/state3.png';
 import unsaved from '../../assets/images/state1.png';
 
 class Indicator extends Component {
-  constructor(props){
-      super(props);
-  }
-  renderPending = () => {
-    return (
-      <div>
-        <img src={loader} />
-        <small>Saving</small>
-      </div>
-    )
-  }
-  renderError = () => {
-    return (
-      <div>
-        <img src={unsaved} />
-        <small className="error">Error</small>
-      </div>
-    )
-  }
-  renderSaved = () => {
-    return (
-      <div>
-        <img src={saved} />
-        <small className="success saved-animation">Saved</small>
-      </div>
-    )
-  }
-  render() {
-      return (
-        <div className="indicator hidden-sm-down">
-          {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
-        </div>
-      )
-  }
+    constructor(props){
+        super(props);
+    }
+    renderPending = () => {
+        return (
+            <div>
+                <img src={loader} />
+                <small>Saving</small>
+            </div>
+        )
+    }
+    renderError = () => {
+        return (
+            <div>
+                <img src={unsaved} />
+                <small className="error">Error</small>
+            </div>
+        )
+    }
+    renderSaved = () => {
+        return (
+            <div>
+                <img src={saved} />
+                <small className="success saved-animation">Saved</small>
+            </div>
+        )
+    }
+    render() {
+        return (
+            <div className="indicator hidden-sm-down">
+                {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
+            </div>
+        )
+    }
 }
 
 Indicator.propTypes = {
     dispatch: PropTypes.func.isRequired
-};
-function mapStateToProps(state) {
-    return {
-    }
 }
-Indicator = connect(mapStateToProps)(Indicator);
+
+Indicator = connect()(Indicator);
 
 export default Indicator

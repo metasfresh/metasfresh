@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Window from '../Window';
-import Indicator from './Indicator';
 
 import {
     closeModal,
@@ -17,7 +16,8 @@ class Modal extends Component {
         this.state = {
             scrolled: false,
             isAdvanced: false,
-            isNew: rowId === "NEW"
+            isNew: rowId === "NEW",
+            init: false
         }
 
         dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
@@ -80,8 +80,8 @@ class Modal extends Component {
     }
 
     render() {
-        const {data, layout, indicator, modalTitle, tabId, rowId, dataId} = this.props;
-        const {isAdvanced,scrolled} = this.state
+        const {data, layout, modalTitle, tabId, rowId, dataId} = this.props;
+        const {isAdvanced, scrolled} = this.state
 
         return (
             data.length > 0 && <div className="screen-freeze">
@@ -117,13 +117,6 @@ Modal.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const { indicator } = state.windowHandler;
-    return {
-        indicator
-    }
-}
-
-Modal = connect(mapStateToProps)(Modal)
+Modal = connect()(Modal)
 
 export default Modal
