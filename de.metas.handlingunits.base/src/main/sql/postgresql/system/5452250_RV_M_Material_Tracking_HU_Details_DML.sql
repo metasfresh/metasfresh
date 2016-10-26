@@ -1,3 +1,22 @@
+
+--
+-- clean up legacies that are still around on some systems:
+--
+DELETE from ad_field where ad_column_id=552794; -- "M_InOut_Receipt_ID"
+DELETE from ad_field where ad_column_id=552795; -- 'M_InOut_Shipment_ID'; 
+
+ALTER TABLE ad_changelog DROP CONSTRAINT IF EXISTS adtable_adchangelog;
+ALTER TABLE ad_changelog DROP CONSTRAINT IF EXISTS adcolumn_adchangelog;
+
+DELETE FROM AD_Column WHERE ad_column_id=552794; -- 'M_InOut_Receipt_ID'; 
+DELETE FROM AD_Column WHERE ad_column_id=552795; -- 'M_InOut_Shipment_ID'; 
+
+DELETE FROM AD_Element WHERE columnname = 'M_InOut_Receipt_ID'; 
+DELETE FROM AD_Element WHERE columnname = 'M_InOut_Shipment_ID'; 
+
+--
+-- now for the actual migration script:
+--
 -- Oct 25, 2016 12:04 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543203,0,'qualityinspectioncycle',TO_TIMESTAMP('2016-10-25 00:04:14','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','qualityinspectioncycle','qualityinspectioncycle',TO_TIMESTAMP('2016-10-25 00:04:14','YYYY-MM-DD HH24:MI:SS'),100)
