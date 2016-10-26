@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.Adempiere;
@@ -156,8 +157,10 @@ public class ColumnBL implements IColumnBL
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		final List<String> keyColumnNames = poInfo.getKeyColumnNames();
 
-		Check.errorIf(keyColumnNames.size() != 1, "Table={} has these {} key columns: {}; it shall have exactly one", tableName, keyColumnNames.size(), keyColumnNames);
-
+		if (keyColumnNames.size() != 1)
+		{
+			throw new NoSingleKeyColumnException(poInfo);
+		}
 		return keyColumnNames.get(0);
 	}
 }

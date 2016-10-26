@@ -58,6 +58,7 @@ public interface IColumnBL extends ISingletonService
 	 *
 	 * @param tableName
 	 * @return
+	 * @throws org.adempiere.ad.table.exception.NoSingleKeyColumnException if the given table does not have exactly one key column.
 	 */
 	String getSingleKeyColumn(String tableName);
 
