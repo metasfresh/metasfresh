@@ -29,12 +29,12 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
  */
 
 /**
- * Instances of this exceptions should be created by {@link DBException#wrapIfNeeded(Throwable)} via {@link DLMExceptionWrapper}.
+ * Instances of this exceptions should be created by {@link DBException#wrapIfNeeded(Throwable)} via {@link DLMReferenceExceptionWrapper}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLMException extends DBException
+public class DLMReferenceException extends DBException
 {
 	private static final long serialVersionUID = -4557251479983766242L;
 
@@ -42,7 +42,7 @@ public class DLMException extends DBException
 	private final TableReferenceDescriptor tableReferenceDescriptor;
 
 	@VisibleForTesting
-	public DLMException(final Throwable cause,
+	public DLMReferenceException(final Throwable cause,
 			final TableReferenceDescriptor tableReferenceDescriptor,
 			final boolean referencingTableHasDLMLevel)
 	{

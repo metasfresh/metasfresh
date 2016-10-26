@@ -64,7 +64,7 @@ public class MigratorService implements IMigratorService
 
 			updateDLMLevel0(partition, DLM_Level_TEST, new PlainContextAware(Env.getCtx(), localTrxName));
 			localTrx.commit(true);
-			logger.info("Update of {} records to DLM_Level={} succeeeded!", partition.getRecords().size());
+			logger.info("Update of {} records to DLM_Level={} succeeeded!", partition.getRecords().size(), DLM_Level_TEST);
 
 			updateDLMLevel0(partition, dlmLevelBkp, new PlainContextAware(Env.getCtx(), localTrxName));
 			localTrx.commit(true);
@@ -89,7 +89,8 @@ public class MigratorService implements IMigratorService
 	{
 		final String columnName = IDLMAware.COLUMNNAME_DLM_Level;
 
-		Services.get(IDLMService.class).directUpdateDLMColumn(ctxAware, partition, columnName, targetDlmLevel);
+		final IDLMService dlmService = Services.get(IDLMService.class);
+		dlmService.directUpdateDLMColumn(ctxAware, partition, columnName, targetDlmLevel);
 	}
 
 }

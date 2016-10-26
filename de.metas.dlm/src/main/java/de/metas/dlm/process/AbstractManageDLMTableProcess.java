@@ -1,4 +1,4 @@
-package de.metas.dlm.partitioner.process;
+package de.metas.dlm.process;
 
 import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.ad.process.ISvrProcessPrecondition;

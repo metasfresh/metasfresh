@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Column;
@@ -65,6 +66,8 @@ public abstract class AbstractDLMService implements IDLMService
 	public void addTableToDLM(final I_AD_Table table)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(table);
+
+		Services.get(IColumnBL.class).getSingleKeyColumn(table.getTableName());
 
 		executeDBFunction_add_table_to_dlm(table.getTableName(), trxName); // make sure that the DB call and the changes to table take place in the same trx.
 
@@ -118,7 +121,10 @@ public abstract class AbstractDLMService implements IDLMService
 	}
 
 	@Override
-	public void directUpdateDLMColumn(final IContextAware ctxAware, final Partition partition, final String columnName, final int targetValue)
+	public void directUpdateDLMColumn(final IContextAware ctxAware,
+			final Partition partition,
+			final String columnName,
+			final int targetValue)
 	{
 		final Map<String, List<IDLMAware>> table2Record = partition
 				.getRecords()
@@ -145,7 +151,10 @@ public abstract class AbstractDLMService implements IDLMService
 					.updateDirectly()
 					.addSetColumnValue(columnName, targetValue)
 					.execute();
-			logger.debug("Table {}: updated {} record(s) to DLM_Level={} (but not yet committed!)", tableName, updated, targetValue);
+			Check.errorIf(updated != recordIds.length, "We attempted to update {} record(s) of table {} to {}={}, but instead we updated {} records",
+					recordIds.length, tableName, columnName, targetValue, updated);
+
+			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", tableName, updated, columnName, targetValue);
 		}
 	}
 

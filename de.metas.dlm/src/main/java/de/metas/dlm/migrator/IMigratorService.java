@@ -28,7 +28,11 @@ import de.metas.dlm.Partition;
 
 public interface IMigratorService extends ISingletonService
 {
+	public static final int DLM_Level_LIVE = 0;
+
 	public static final int DLM_Level_TEST = 1;
+
+	public static final int DLM_Level_ARCHIVE = 2;
 
 	/**
 	 * Checks if the given partition could be migrated.
@@ -37,7 +41,7 @@ public interface IMigratorService extends ISingletonService
 	 * Make the test by temporarily setting <code>DLM_Level</code> to {@link #DLM_Level_TEST}. If it works, then undo the change.
 	 *
 	 * @param partition
-	 * @throws {@link DLMException} if the given migration is not complete and therefore cannot be migrated.
+	 * @throws {@link DLMReferenceException} if the given migration is not complete and therefore cannot be migrated.
 	 */
 	void testMigratePartition(Partition partition);
 }

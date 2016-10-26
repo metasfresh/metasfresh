@@ -37,7 +37,7 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
  */
 
 /**
- * Augments {@link DBException}. With this instance being registered, {@link DBException} can wrap an {@link SQLException} into a {@link DLMException}<br>
+ * Augments {@link DBException}. With this instance being registered, {@link DBException} can wrap an {@link SQLException} into a {@link DLMReferenceException}<br>
  * Registered via {@link DBException#registerExceptionWrapper(IExceptionWrapper)}
  *
  * the "DETAIL" from an error message from the database looks like this:
@@ -49,7 +49,7 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
+public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBException>
 {
 	/**
 	 * metasfresh-custom error code.
@@ -71,9 +71,9 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 	private static final Pattern DETAIL_REGEXP = Pattern.compile("[;, ]*DLM_Referenced_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencing_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencig_Column_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]*",
 			Pattern.CASE_INSENSITIVE);
 
-	public static DLMExceptionWrapper INSTANCE = new DLMExceptionWrapper();
+	public static DLMReferenceExceptionWrapper INSTANCE = new DLMReferenceExceptionWrapper();
 
-	private DLMExceptionWrapper()
+	private DLMReferenceExceptionWrapper()
 	{
 	}
 
@@ -107,7 +107,7 @@ public class DLMExceptionWrapper implements IExceptionWrapper<DBException>
 
 		final String[] infos = extractInfos(detail);
 
-		return new DLMException(t,  TableReferenceDescriptor.of(infos[0], infos[1], infos[2]), referencingTableHasDLMLevel);
+		return new DLMReferenceException(t, TableReferenceDescriptor.of(infos[0], infos[1], infos[2]), referencingTableHasDLMLevel);
 	}
 
 	@VisibleForTesting

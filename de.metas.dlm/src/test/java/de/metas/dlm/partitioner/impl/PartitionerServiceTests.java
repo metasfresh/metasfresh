@@ -63,7 +63,7 @@ public class PartitionerServiceTests
 		testAugmentPartitionSimple(config, descriptors);
 	}
 
-	private PartitionerConfig testAugmentPartitionSimple(final PartitionerConfig configtoAugment, List<TableReferenceDescriptor> descriptors)
+	private PartitionerConfig testAugmentPartitionSimple(final PartitionerConfig configtoAugment, final List<TableReferenceDescriptor> descriptors)
 	{
 		final I_AD_Field adField = InterfaceWrapperHelper.newInstance(I_AD_Field.class);
 		InterfaceWrapperHelper.save(adField);

@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.connection.ITemporaryConnectionCustomizer;
 import de.metas.dlm.Partition;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
@@ -37,10 +39,10 @@ public interface IPartitionerService extends ISingletonService
 	/**
 	 * Use the given config and create a partition. Note that the records which are part of the partition are not modified by this method.
 	 *
-	 * @param config
+	 * @param request
 	 * @return
 	 */
-	Partition createPartition(PartitionerConfig config);
+	Partition createPartition(CreatePartitionRequest request);
 
 	/**
 	 * Create a new DLM_Partition_Record in the DB and Update the DLM_Partion_ID of the records we found.
@@ -61,4 +63,12 @@ public interface IPartitionerService extends ISingletonService
 	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
 
 	PartitionerConfig augmentPartitionerConfig(PartitionerConfig config, List<TableReferenceDescriptor> descriptor);
+
+	/**
+	 * Creates a connection customizer that should be registered via {@link de.metas.connection.IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}
+	 * for the time that {@link #createPartition(CreatePartitionRequest)} and {@link #storePartition(Partition)} are invoked.
+	 *
+	 * @return
+	 */
+	ITemporaryConnectionCustomizer createConnectionCustomizer();
 }

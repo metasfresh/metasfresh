@@ -7,6 +7,15 @@ DECLARE
 BEGIN
 	EXECUTE 'DROP VIEW IF EXISTS dlm.' || p_table_name;
 	EXECUTE 'DROP INDEX IF EXISTS ' || p_table_name || '_DLM_Level;';
+
+	/* drop the triggers first, because they depends on the DLM_Level column (important in case of p_retain_dlm_column=false). */
+	FOR v_trigger_view_row IN 
+		EXECUTE 'SELECT * FROM dlm.triggers v WHERE lower(v.foreign_table_name) = lower('''|| p_table_name ||'_tbl'')'
+	LOOP
+		EXECUTE v_trigger_view_row.drop_dlm_trigger_ddl;
+	
+		RAISE NOTICE 'Dropped dlm trigger analog to FK constraint %', v_trigger_view_row.constraint_name;
+	END LOOP;
 	
 	IF p_retain_dlm_column = false
 	THEN
@@ -17,14 +26,6 @@ BEGIN
 	ELSE
 		RAISE NOTICE 'Retained columns DLM_Level and DLM_Partition_ID of table %', p_table_name;
 	END IF;
-
-	FOR v_trigger_view_row IN 
-		EXECUTE 'SELECT * FROM dlm.triggers v WHERE lower(v.foreign_table_name) = lower('''|| p_table_name ||'_tbl'')'
-	LOOP
-		EXECUTE v_trigger_view_row.drop_dlm_trigger_ddl;
-	
-		RAISE NOTICE 'Dropped dlm trigger analog to FK constraint %', v_trigger_view_row.constraint_name;
-	END LOOP;
 	
 	EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl RENAME TO ' || p_table_name || ';';
 	RAISE NOTICE 'Renamed table % back to % ', p_table_name||'_Tbl', p_table_name;

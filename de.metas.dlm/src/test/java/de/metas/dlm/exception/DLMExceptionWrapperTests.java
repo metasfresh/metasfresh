@@ -32,7 +32,7 @@ public class DLMExceptionWrapperTests
 	@Test(expected = RuntimeException.class)
 	public void testInvalidString()
 	{
-		DLMExceptionWrapper.extractInfos("");
+		DLMReferenceExceptionWrapper.extractInfos("");
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class DLMExceptionWrapperTests
 
 	private void assertOK(final String string)
 	{
-		final String[] infos = DLMExceptionWrapper.extractInfos(string);
+		final String[] infos = DLMReferenceExceptionWrapper.extractInfos(string);
 
 		assertThat(infos[0], is("c_payment"));
 		assertThat(infos[1], is("c_bankstatementline_ref"));

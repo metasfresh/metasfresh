@@ -20,6 +20,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -29,9 +30,12 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.connection.ITemporaryConnectionCustomizer;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
-import de.metas.dlm.exception.DLMException;
+import de.metas.dlm.connection.DLMConnectionCustomizer;
+import de.metas.dlm.exception.DLMReferenceException;
+import de.metas.dlm.exception.TableNotAddedToDLMException;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
@@ -40,6 +44,9 @@ import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.dlm.partitioner.IPartitionerService;
+import de.metas.dlm.partitioner.PartitionRequestFactory;
+import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
+import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfig.Builder;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
@@ -77,9 +84,11 @@ public class PartitionerService implements IPartitionerService
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public Partition createPartition(final PartitionerConfig config)
+	public Partition createPartition(final CreatePartitionRequest request)
 	{
 		final Map<ITableRecordReference, IDLMAware> records = new HashMap<>();
+
+		final PartitionerConfig config = request.getConfig();
 
 		// we need to get to the "first" line(s),
 		// i.e. those DLM_PartitionLine_Configs that are not referenced via any DLM_PartitionReference_Config.DLM_Referencing_PartitionLine_Config_ID
@@ -92,13 +101,13 @@ public class PartitionerService implements IPartitionerService
 			return new Partition(config, records.values()); // return empty partition
 		}
 
-		lines.forEach(l -> addToDLMIfNeccesary(l.getTableName())); // make sure the tables are all ready for DLM
+		lines.forEach(l -> checkIfTableIsDLM(l.getTableName(), request.getOnNotDLMTable())); // make sure the tables are all ready for DLM
 
 		// iterate the lines and look for the first record out o
 		for (final PartitionerConfigLine line : lines)
 		{
-			addToDLMIfNeccesary(line.getTableName());
-			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName());
+
+			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName(), request.isOldestFirst());
 			if (record == null)
 			{
 				continue;  // looks like we partitioned *every* record of the given table
@@ -118,7 +127,7 @@ public class PartitionerService implements IPartitionerService
 			final IMigratorService migratorService = Services.get(IMigratorService.class);
 			migratorService.testMigratePartition(partition);
 		}
-		catch (final DLMException e)
+		catch (final DLMReferenceException e)
 		{
 			final TableReferenceDescriptor descriptor = e.getTableReferenceDescriptor();
 
@@ -126,40 +135,71 @@ public class PartitionerService implements IPartitionerService
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			logger.info("Caught {}; going to retry with an augmented config which also includes referencingTable={}", e.toString(), descriptor.getReferencingTableName());
+			final String msg = "Caught {}; going to retry with an augmented config that also includes referencingTable={}";
+			final Object[] msgParameters = { e.toString(), descriptor.getReferencingTableName() };
+			logger.info(msg, msgParameters);
+			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
 
 			final PartitionerConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 
 			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then DLM it on the fly.
-			addToDLMIfNeccesary(descriptor.getReferencingTableName());
+			checkIfTableIsDLM(descriptor.getReferencingTableName(), request.getOnNotDLMTable());
 
-			return createPartition(newConfig); // call this method again, i.e. start over with our augmented config
+			// call this method again, i.e. start over with our augmented config
+			final CreatePartitionRequest newRequest = PartitionRequestFactory
+					.builder(request)
+					.setConfig(newConfig)
+					.build();
+			return createPartition(newRequest);
 		}
 		return partition;
 	}
 
-	private void addToDLMIfNeccesary(final String tableName)
+	private void checkIfTableIsDLM(final String tableName, OnNotDLMTable onNotDLMTable)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return;
+		}
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		// don't use IADTableDAO, because in this particular case, we don't want the table's trxName to be "NONE"
+		final I_AD_Table referencingTable = queryBL.createQueryBuilder(I_AD_Table.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(org.compiere.model.I_AD_Table.COLUMNNAME_TableName, tableName, UpperCaseQueryFilterModifier.instance)
+				.create()
+				.firstOnly(I_AD_Table.class);
+		Check.errorIf(referencingTable == null, "I_AD_Table record for tableName={} is null", tableName); // this can happen in unit test mode
+
+		if (referencingTable.isDLM())
+		{
+			return; // nothing to do
+		}
+
+		if (onNotDLMTable == OnNotDLMTable.FAIL)
+		{
+			throw new TableNotAddedToDLMException(referencingTable);
+		}
 
 		//
 		// first commit our current trx. see the javadoc of addTableToDLM for details.
 		//
 
-		if (!Adempiere.isUnitTestMode())
+		// we want to verify there is an inherited trx to commit
+		// because otherwise, it would mean that we have no clue what's going on.
+		final ITrx currentTrx = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.Fail);
+		try
 		{
-			// in unit test mode we don't care, but in normal mode, we want to verify there is an inherited trx to commit
-			// because otherwise, it would mean that we have no clue what's going on.
-			final ITrx currentTrx = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.Fail);
-			try
-			{
-				currentTrx.commit(true);
-			}
-			catch (final SQLException e)
-			{
-				throw DBException.wrapIfNeeded(e);
-			}
+			currentTrx.commit(true);
 		}
+		catch (final SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e);
+		}
+
 		//
 		// then the the table, and if necessary, DLM it.
 		//
@@ -168,20 +208,14 @@ public class PartitionerService implements IPartitionerService
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IQueryBL queryBL = Services.get(IQueryBL.class);
 				final IDLMService dlmService = Services.get(IDLMService.class);
-
-				// don't use IADTableDAO, because in this particular case, we don't want the table's trxName to be "NONE"
-				final I_AD_Table referencingTable = queryBL.createQueryBuilder(I_AD_Table.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(org.compiere.model.I_AD_Table.COLUMNNAME_TableName, tableName, UpperCaseQueryFilterModifier.instance)
-						.create()
-						.firstOnly(I_AD_Table.class);
-				Check.errorIf(referencingTable == null, "I_AD_Table record for tableName={} is null", tableName); // this can happen in unit test mode
 
 				if (!referencingTable.isDLM())
 				{
-					logger.info("ReferencingTable={} is not yet DLM'ed; doing it now", tableName);
+					final String msg = "ReferencingTable={} is not yet DLM'ed; doing it now";
+					logger.info(msg, tableName);
+					ILoggable.THREADLOCAL.getLoggable().addLog(msg, tableName);
+
 					dlmService.addTableToDLM(referencingTable);
 				}
 			}
@@ -205,10 +239,17 @@ public class PartitionerService implements IPartitionerService
 		final IDLMService dlmService = Services.get(IDLMService.class);
 		dlmService.directUpdateDLMColumn(ctxAware, partition, IDLMAware.COLUMNNAME_DLM_Partition_ID, partitionDB.getDLM_Partition_ID());
 
+		final String msg = "Stored the partition {} with {} records";
+		final Object[] msgParameters = { partitionDB, partition.getRecords() };
+		logger.info(msg, msgParameters);
+		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+
 		return partitionDB;
 	}
 
-	private IDLMAware retrieveUnpartitionedRecod(final String tableName)
+	private IDLMAware retrieveUnpartitionedRecod(
+			final String tableName,
+			final boolean oldestFirst)
 	{
 		Check.assumeNotNull(tableName, "Parameter 'tableName' is not null");
 
@@ -226,7 +267,7 @@ public class PartitionerService implements IPartitionerService
 				// .addOnlyActiveRecordsFilter() we want to partition both active and inactive records
 				.addEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, null)
 				.orderBy()
-				.addColumn(keyColumnName)
+				.addColumn(keyColumnName, oldestFirst)
 				.endOrderBy()
 				.create()
 				.first();
@@ -279,7 +320,7 @@ public class PartitionerService implements IPartitionerService
 				final String tableName = adTableDAO.retrieveTableName(tableId);
 				if (!tableName.equalsIgnoreCase(foreignTableName))
 				{
-					logger.debug("The column={} of IDLMAware={} does not reference a {}-record, but a {}-record; skipping", ref.getReferencingColumnName(), record, foreignTableName, tableColumnName);
+					logger.debug("The column={} of IDLMAware={} does not reference a {}-record, but a {}-record; skipping", ref.getReferencingColumnName(), record, foreignTableName, tableName);
 					continue;
 				}
 			}
@@ -318,7 +359,7 @@ public class PartitionerService implements IPartitionerService
 
 				// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
 				backTrack(line.getParent(),
-						InterfaceWrapperHelper.getContextAware(record),  // 'record' is only needed for ctx
+						InterfaceWrapperHelper.getContextAware(record),                  // 'record' is only needed for ctx
 						records,
 						foreignTableName,
 						foreignKey);
@@ -331,7 +372,7 @@ public class PartitionerService implements IPartitionerService
 
 		// GO BACKWARDS, i.e. get records which reference 'record'
 		backTrack(line.getParent(),
-				InterfaceWrapperHelper.getContextAware(record),        // make it clear that record is only needed for ctx
+				InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
 				records,
 				line.getTableName(),
 				InterfaceWrapperHelper.getId(record));
@@ -387,6 +428,8 @@ public class PartitionerService implements IPartitionerService
 					.list();
 			for (final IDLMAware backwardRecord : backwardRecords)
 			{
+				InterfaceWrapperHelper.setTrxName(backwardRecord, contextProvider.getTrxName()); // we need this for MPinstance, because it expilicitly ignores the trx it is loaded with in its constructor.
+
 				final ITableRecordReference backwardTableRecordReference = ITableRecordReference.FromModelConverter.convert(backwardRecord);
 
 				final boolean backwardRecordWasNotYetAddedBefore = null == records.putIfAbsent(backwardTableRecordReference, backwardRecord);
@@ -528,6 +571,15 @@ public class PartitionerService implements IPartitionerService
 		});
 
 		return builder.build();
+	}
 
+	@Override
+	public ITemporaryConnectionCustomizer createConnectionCustomizer()
+	{
+		final int dlmLevel = IMigratorService.DLM_Level_TEST; // don't set it to 0, because otherwise, records will vanish from the partitionerService's radar after it successfully invoked testMigratePartition
+		final int dlmCoalesceLevel = IMigratorService.DLM_Level_LIVE; // records that were not yet given a DLM-Level shall be assumed to be "operational"
+		final DLMConnectionCustomizer connectionCustomizer = new DLMConnectionCustomizer(dlmLevel, dlmCoalesceLevel);
+
+		return connectionCustomizer;
 	}
 }

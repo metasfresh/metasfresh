@@ -5,7 +5,7 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 
-import de.metas.dlm.exception.DLMException;
+import de.metas.dlm.exception.DLMReferenceException;
 import de.metas.dlm.partitioner.impl.PartitionerService;
 
 /*
@@ -33,7 +33,7 @@ import de.metas.dlm.partitioner.impl.PartitionerService;
  * Describes a table reference.
  *
  * @see PartitionerService#augmentPartitionerConfig(PartitionerConfig, java.util.List)
- * @see DLMException#getTableReferenceDescriptor()
+ * @see DLMReferenceException#getTableReferenceDescriptor()
  *
  * @author metas-dev <dev@metasfresh.com>
  *

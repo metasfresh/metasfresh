@@ -1,16 +1,16 @@
 package de.metas.dlm.partitioner.process;
 
+import java.sql.Timestamp;
+
 import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
-import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.connection.IConnectionCustomizerService;
-import de.metas.dlm.Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
-import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
+import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
+import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.process.Param;
 
@@ -36,15 +36,8 @@ import de.metas.process.Param;
  * #L%
  */
 
-/**
- * Invokes {@link IPartitionerService#createPartition(CreatePartitionRequestDELME)} for a specified number of times.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class DLM_Partition_Create extends SvrProcess
+public class DLM_Partition_Create_Async extends SvrProcess
 {
-
 	private final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
 
 	@Param(mandatory = true, parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID)
@@ -53,43 +46,26 @@ public class DLM_Partition_Create extends SvrProcess
 	@Param(mandatory = true, parameterName = "Count")
 	private int count;
 
+	@Param(mandatory = true, parameterName = "DontReEnqueueAfter")
+	private Timestamp dontReEnqueueAfter;
+
 	@Param(mandatory = true, parameterName = "DLMOldestFirst")
 	private boolean oldestFirst;
-
-	@Param(mandatory = true, parameterName = "OnNotDLMTable")
-	private String onNotDLMTable;
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
 
-		final CreatePartitionRequest request = PartitionRequestFactory.builder()
+		final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()
 				.setConfig(config)
 				.setOldestFirst(oldestFirst)
-				.setOnNotDLMTable(OnNotDLMTable.valueOf(onNotDLMTable))
+				.setOnNotDLMTable(OnNotDLMTable.FAIL) // the processing will run unattended. See the javadoc of ADD_TO_DLM on why it's not an option.
+				.setCount(count)
+				.setDontReEnqueueAfter(dontReEnqueueAfter)
 				.build();
 
-		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
-
-		try (final AutoCloseable temporaryCustomizer = connectionCustomizerService.registerTemporaryCustomizer(partitionerService.createConnectionCustomizer()))
-		{
-			for (int i = 0; i < count; i++)
-			{
-				trxManager.run(new TrxRunnableAdapter()
-				{
-					@Override
-					public void run(final String localTrxName) throws Exception
-					{
-						final Partition partition = partitionerService.createPartition(request);
-
-						// partitionerService.storePartitionConfig(partition.getConfig()); this is already done by storePartition
-						partitionerService.storePartition(partition);
-						// addLog("@Created@ " + partitionDB); this kind of logging is done in the service methods
-					}
-				});
-			}
-		}
+		DLMPartitionerWorkpackageProcessor.schedule(request, getAD_PInstance_ID());
 
 		return MSG_OK;
 	}

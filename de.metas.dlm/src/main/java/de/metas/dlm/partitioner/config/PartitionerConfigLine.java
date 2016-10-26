@@ -160,7 +160,6 @@ public class PartitionerConfigLine
 			return refBuilder;
 		}
 
-
 		public LineBuilder endRef()
 		{
 			final List<RefBuilder> distinctRefBuilders = refBuilders.stream().distinct().collect(Collectors.toList());

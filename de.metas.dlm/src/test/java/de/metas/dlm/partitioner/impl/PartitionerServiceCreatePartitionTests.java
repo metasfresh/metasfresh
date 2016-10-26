@@ -22,10 +22,11 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.Partition;
-import de.metas.dlm.exception.DLMException;
+import de.metas.dlm.exception.DLMReferenceException;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
@@ -88,7 +89,7 @@ public class PartitionerServiceCreatePartitionTests
 	{
 		final PartitionerConfig config = PartitionerConfig.builder().build();
 
-		partitionerService.createPartition(config);
+		partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 	}
 
 	/**
@@ -105,7 +106,7 @@ public class PartitionerServiceCreatePartitionTests
 		final PartitionerConfig config = PartitionerConfig.builder()
 				.line(I_C_Payment.Table_Name).endLine()
 				.build();
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		assertNotNull(partition);
 		assertThat(partition.getConfig(), is(config));
@@ -127,7 +128,7 @@ public class PartitionerServiceCreatePartitionTests
 		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
 		InterfaceWrapperHelper.save(payment);
 
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		assertNotNull(partition);
 		assertThat(partition.getConfig(), is(config));
@@ -230,7 +231,7 @@ public class PartitionerServiceCreatePartitionTests
 		//
 		// invoke the testee
 		// the first test is whether the method detects the circle finishes within the timeout
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		//
 		// verify
@@ -264,7 +265,7 @@ public class PartitionerServiceCreatePartitionTests
 		final Partition partition = testCircularReferences_within_same_table0();
 		partitionerService.storePartition(partition);
 
-		final Partition secondPartition = partitionerService.createPartition(partition.getConfig());
+		final Partition secondPartition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(partition.getConfig()).build());
 
 		assertThat(secondPartition.getRecords().isEmpty(), is(true)); // we create add additional records, the partitioner shall *not* return the already partitioned ones.
 	}
@@ -316,7 +317,7 @@ public class PartitionerServiceCreatePartitionTests
 		POJOWrapper.setInstanceName(order2, "order2");
 		InterfaceWrapperHelper.save(order2);
 
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 		assertThat(partition.getRecords().size(), is(3));
 		assertThat(partition.getRecords().contains(order), is(true));
 		assertThat(partition.getRecords().contains(orderLine), is(true));
@@ -354,7 +355,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		//
 		// invoke the testee
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		//
 		// verify
@@ -387,7 +388,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		//
 		// invoke the testee
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		//
 		// verify
@@ -416,7 +417,7 @@ public class PartitionerServiceCreatePartitionTests
 				if (partitionHasOrder && !partitionHasInvoice)
 				{
 					// note that we use the lower-case table and column name, because that's what we would also get from the DB
-					throw new DLMException(null,
+					throw new DLMReferenceException(null,
 							TableReferenceDescriptor.of(I_C_Order.Table_Name.toLowerCase(),
 									I_C_Invoice.Table_Name.toLowerCase(),
 									I_C_Invoice.COLUMNNAME_C_Order_ID.toLowerCase()),
@@ -453,7 +454,7 @@ public class PartitionerServiceCreatePartitionTests
 		POJOWrapper.setInstanceName(order2, "order2");
 		InterfaceWrapperHelper.save(order2);
 
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		assertThat(partition.getRecords().size(), is(2));
 		assertThat(partition.getRecords().contains(request), is(true));
@@ -480,7 +481,7 @@ public class PartitionerServiceCreatePartitionTests
 		request2.setRecord_ID(order2.getC_Order_ID());
 		InterfaceWrapperHelper.save(request2);
 
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		assertThat(partition.getRecords().contains(order2), is(false));
 		assertThat(partition.getRecords().contains(request2), is(true));
@@ -548,7 +549,7 @@ public class PartitionerServiceCreatePartitionTests
 		invoice.setC_Order(order);
 		InterfaceWrapperHelper.save(invoice);
 
-		final Partition partition = partitionerService.createPartition(config);
+		final Partition partition = partitionerService.createPartition(PartitionRequestFactory.builder().setConfig(config).build());
 
 		assertThat(partition.getRecords().contains(request2), is(false));
 		assertThat(partition.getRecords().contains(order), is(true));

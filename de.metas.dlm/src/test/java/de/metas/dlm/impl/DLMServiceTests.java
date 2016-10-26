@@ -101,11 +101,11 @@ public class DLMServiceTests
 		assertThat(tableRecordReferences.stream().anyMatch(d -> I_AD_Element.Table_Name.equals(d.getReferencedTableName())), is(true));
 		assertThat(tableRecordReferences.stream().anyMatch(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())), is(true));
 
-		final TableReferenceDescriptor adElementReferenceDescriptor = tableRecordReferences.stream().filter(d-> I_AD_Element.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
+		final TableReferenceDescriptor adElementReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Element.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
 		assertThat(adElementReferenceDescriptor.getReferencingTableName(), is(I_AD_ChangeLog.Table_Name));
 		assertThat(adElementReferenceDescriptor.getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
 
-		final TableReferenceDescriptor adFieldReferenceDescriptor = tableRecordReferences.stream().filter(d-> I_AD_Field.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
+		final TableReferenceDescriptor adFieldReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
 		assertThat(adFieldReferenceDescriptor.getReferencingTableName(), is(I_AD_ChangeLog.Table_Name));
 		assertThat(adFieldReferenceDescriptor.getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
 

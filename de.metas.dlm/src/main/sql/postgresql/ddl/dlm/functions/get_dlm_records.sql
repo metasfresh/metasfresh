@@ -21,3 +21,6 @@ BEGIN
 END;	
 $BODY$
 	LANGUAGE plpgsql STABLE;
+COMMENT ON FUNCTION dlm.get_dlm_records(text, numeric(10,0)) IS 
+'Executes an SQL select that returns all records from the given p_Table_Name which have the given p_DLM_Partition_ID.
+See gh #489.';

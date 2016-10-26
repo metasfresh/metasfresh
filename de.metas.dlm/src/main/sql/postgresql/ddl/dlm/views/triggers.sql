@@ -84,10 +84,11 @@ FROM (
 	    JOIN information_schema.constraint_column_usage AS ccu
 	      ON ccu.constraint_name = tc.constraint_name
 	WHERE tc.constraint_type = 'FOREIGN KEY'
+		AND tc.constraint_schema = 'public'
 	) fk_info
 ;
 COMMENT ON VIEW dlm.triggers IS
-'gh #235, #489: selects foreign key constraints and creates the DDL for a trigger and trigger-function that is analog to the respective FK constraint. 
+'gh #235, #489: selects foreign key constraints from the "public" schema and creates the DDL for a trigger and trigger-function that is analog to the respective FK constraint. 
 The trigger checks if the referencing records are within the same DLM_Level (or are DLM''ed at all).
 If this is not the case, then the trigger-function raises an exception with error-code: 
 * 235D3 if the referencing table has a DLM_Level column, but with a highter value.
@@ -97,4 +98,6 @@ In both cases, the change of the DLM_Level column of the referenced table is not
 the referened record would vanish.
 
 Note that 23503 is an official error code, defined as "foreign_key_violation".
-Also, please note that the "DETAIL" part of the exception that the trigger functions raise are parsed by metasfresh, so please be carefull when changing them and update the DLMExceptionWrapperTests unit tests accordingly';
+Also, please note that the "DETAIL" part of the exception that the trigger functions raise are parsed by metasfresh, so please be carefull when changing them and update the DLMExceptionWrapperTests unit tests accordingly
+Finally, note that the FK-constraint from the table "report.accounting_facts_mv" to the table "public.fact_acct" is ignored, just like any other FK-constraint that is not defined in the public schema. the reason is that at least currently only tables from the public schema can be DLM''ed.
+';

@@ -2,13 +2,13 @@ package de.metas.dlm.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.dlm.exception.DLMExceptionWrapper;
-import de.metas.dlm.trx.DLMSettingsTrxCustomizer;
+import de.metas.connection.IConnectionCustomizerService;
+import de.metas.dlm.connection.DLMPermanentSysConfigCustomizer;
+import de.metas.dlm.exception.DLMReferenceExceptionWrapper;
 
 /*
  * #%L
@@ -44,8 +44,8 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		DBException.registerExceptionWrapper(DLMExceptionWrapper.INSTANCE);
+		DBException.registerExceptionWrapper(DLMReferenceExceptionWrapper.INSTANCE);
 
-		Services.get(ITrxManager.class).registerTrxCustomizer(DLMSettingsTrxCustomizer.INSTANCE);
+		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentSysConfigCustomizer.PERMANENT_INSTANCE);
 	}
 }

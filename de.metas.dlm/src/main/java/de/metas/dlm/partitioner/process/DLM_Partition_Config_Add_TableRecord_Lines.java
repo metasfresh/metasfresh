@@ -78,7 +78,7 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends SvrProcess
 	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ List<TableReferenceDescriptor> retainRelevantDescriptors(final PartitionerConfig config, List<TableReferenceDescriptor> descriptors)
+	/* package */ List<TableReferenceDescriptor> retainRelevantDescriptors(final PartitionerConfig config, final List<TableReferenceDescriptor> descriptors)
 	{
 		return descriptors.stream()
 				.filter(r -> config.getLine(r.getReferencedTableName()).isPresent())

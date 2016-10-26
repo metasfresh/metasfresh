@@ -70,10 +70,10 @@ public class PartitionerConfigReference
 		return referencingColumnName;
 	}
 
-//	public PartitionerConfigLine getReferencedConfigLine()
-//	{
-//		return referencedConfigLine;
-//	}
+	// public PartitionerConfigLine getReferencedConfigLine()
+	// {
+	// return referencedConfigLine;
+	// }
 
 	public PartitionerConfigLine getParent()
 	{
@@ -101,7 +101,7 @@ public class PartitionerConfigReference
 		private String referencedTableName = "";
 		private String referencingColumnName = "";
 
-		private String referencedConfigLineTableName = "";
+		private final String referencedConfigLineTableName = "";
 
 		private final PartitionerConfigLine.LineBuilder parentbuilder;
 		private int DLM_Partition_Config_Reference;
@@ -179,7 +179,7 @@ public class PartitionerConfigReference
 		};
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals(final Object obj)
 		{
 			if (this == obj)
 			{
