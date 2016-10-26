@@ -72,6 +72,9 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValueTo;
 
+	@JsonProperty("required")
+	private final boolean required;
+
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
 	{
 		super();
@@ -93,6 +96,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 		defaultValue = Values.valueToJsonObject(param.getDefaultValue());
 		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
+
+		required = param.isRequired();
 	}
 
 	@JsonCreator
@@ -103,7 +108,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 			, @JsonProperty("range") final boolean rangeParameter //
 			, @JsonProperty("defaultValue") final Object defaultValue //
 			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
-	)
+			, @JsonProperty("required") final boolean required)
 	{
 		this.caption = caption;
 		this.parameterName = parameterName;
@@ -111,6 +116,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		this.rangeParameter = rangeParameter;
 		this.defaultValue = defaultValue;
 		this.defaultValueTo = defaultValueTo;
+		this.required = required;
 	}
 
 	@Override
@@ -124,6 +130,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 				.add("rangeParameter", rangeParameter)
 				.add("defaultValue", defaultValue)
 				.add("defaultValueTo", defaultValueTo)
+				.add("required", required)
 				.toString();
 	}
 
@@ -155,5 +162,10 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	public Object getDefaultValueTo()
 	{
 		return defaultValueTo;
+	}
+	
+	public boolean isRequired()
+	{
+		return required;
 	}
 }
