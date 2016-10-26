@@ -8,9 +8,20 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
+
 Here come the actual release notes:
 
+# metasfresh 4.42.40 (2016-44)
+
+upcoming
+
+## Features
+* metasfresh
+  * #505 Possibility to define multiple Washing Testcycles for Carrots
+  
 # metasfresh 4.41.40 (2016-43)
+
+this week's RC
 
 ## Features
 * metasfresh
