@@ -11,20 +11,17 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.42.40 (2016-44)
+# metasfresh 4.x.x (2016-44)
 
 upcoming
-
-## Features
-* metasfresh
-  * #505 Possibility to define multiple Washing Testcycles for Carrots
-  
+ 
 # metasfresh 4.41.40 (2016-43)
 
 this week's RC
 
 ## Features
 * metasfresh
+  * #505 Possibility to define multiple Washing Testcycles for Carrots
   * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
   * #412 Get rid of AD_Tab.OrderByClause
   * #424 Migrate spring-boot from 1.3.3 to 1.4.x
