@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
@@ -34,7 +35,7 @@ final class JSONDocumentFilterParam implements Serializable
 {
 	/* package */static final JSONDocumentFilterParam of(final DocumentFilterParam filterParam)
 	{
-		if(filterParam.isSqlFilter())
+		if (filterParam.isSqlFilter())
 		{
 			throw new IllegalArgumentException("Sql filters are not allowed to be converted to JSON filters: " + filterParam);
 		}
@@ -61,6 +62,17 @@ final class JSONDocumentFilterParam implements Serializable
 		this.parameterName = parameterName;
 		this.value = value;
 		this.valueTo = valueTo;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("parameterName", parameterName)
+				.add("value", value)
+				.add("valueTo", valueTo)
+				.toString();
 	}
 
 	public String getParameterName()
