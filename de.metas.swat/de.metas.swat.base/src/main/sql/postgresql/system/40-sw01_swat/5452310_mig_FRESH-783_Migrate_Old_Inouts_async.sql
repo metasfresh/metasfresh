@@ -71,7 +71,9 @@ AS
 		'I':: character(1) as ConfidentialType, -- ConfidentialType Internal
 		'I':: character(1) as ConfidentialTypeEntry, -- ConfidentialTypeEntry Internal
 		'5':: character(1) as Priority, -- priority Medium
-		'7' :: character (1) as DueType -- DueType Geplant
+		'7' :: character (1) as DueType, -- DueType Geplant
+		
+		1000004 ::  numeric(10,0) as R_Status_ID -- Status closed
 		
 	FROM 
 		M_InOutLine iol
@@ -125,7 +127,8 @@ INSERT INTO R_Request
 		ConfidentialType,
 		ConfidentialTypeEntry,
 		Priority,
-		DueType
+		DueType,
+		R_Status_ID
 	)
  select 
 	iolr.AD_Client_ID,
@@ -156,7 +159,8 @@ INSERT INTO R_Request
 	iolr.ConfidentialType,
 	iolr.ConfidentialTypeEntry,
 	iolr.Priority,
-	iolr.DueType
+	iolr.DueType,
+	iolr.R_Status_ID
  from temp_M_InOutLine_To_R_Request iolr
  where not exists (select 1 from R_Request where R_Request_ID = iolr.R_Request_ID) ;');
   --;
