@@ -15,7 +15,7 @@ import ActionButton from './widget/ActionButton';
 class RawWidget extends Component {
     constructor(props) {
         super(props);
-       
+
        this.state = {
             textValue: props.selectedItem
        }
@@ -33,10 +33,13 @@ class RawWidget extends Component {
 
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
-        const {handlePatch, handleChange, handleFocus, updated, isModal, filterWidget, filterId, parameterName, setSelectedItem, selectedItem, id} = this.props;
+        const {
+            handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
+            filterId, parameterName, setSelectedItem, selectedItem, id
+        } = this.props;
+
         const {textValue} = this.state;
-        
-        
+
         let widgetField = "";
         let selectedField = "";
         let widgetData = "";
@@ -332,7 +335,7 @@ class RawWidget extends Component {
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
                         />
-                        <div className={"input-checkbox-tick" + (updated ? " pulse" : "")}/>
+                        <div className={"input-checkbox-tick"}/>
                     </label>
                 )
             case "Switch":
@@ -349,7 +352,7 @@ class RawWidget extends Component {
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
                         />
-                        <div className={"input-slider" + (updated ? " pulse-on" : " pulse-off")} />
+                        <div className={"input-slider"} />
                     </label>
                 )
             case "Label":

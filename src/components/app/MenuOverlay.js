@@ -160,7 +160,7 @@ class MenuOverlay extends Component {
             <span>
                 {path && path.map((item, index) =>
                     <span key={index}>
-                        {item.nodeId > 0 ? (item.captionBreadcrumb + ' / ') : item.captionBreadcrumb}
+                        {item.nodeId > 0 ? ((index > 0 ? ' / ' : '') + item.captionBreadcrumb) : item.captionBreadcrumb}
                     </span>
                 )}
             </span>
