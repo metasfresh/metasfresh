@@ -10,8 +10,8 @@ class TableCell extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {widgetData, updateRow} = this.props;
-        if(widgetData[0].value !== nextProps.widgetData[0].value) {
+        const {widgetData, updateRow, readonly} = this.props;
+        if(!readonly && widgetData[0].value !== nextProps.widgetData[0].value) {
             updateRow();
         }
     }
