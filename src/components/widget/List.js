@@ -15,12 +15,12 @@ class List extends Component {
             list: [],
             loading: false
         }
-
-        
     }
+
     handleBlur = (e) => {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
+
     handleFocus = (e) => {
         e.preventDefault();
         const {properties, dispatch, dataId, rowId, tabId, windowType, filterWidget, filterId, parameterName} = this.props;
@@ -49,19 +49,12 @@ class List extends Component {
         this.dropdown.classList.add("input-dropdown-focused");
     }
 
-    componentDidMount() {
-        const {selected} = this.props;
-        // console.log('lookup selected');
-        // console.log(selected);
-
-
-    }
-
     handleChange = (e) => {
         e.preventDefault();
 
         this.handleBlur();
     }
+
     handleSelect = (option) => {
         const {onChange, setSelectedItem, filterWidget} = this.props;
         onChange(option);
