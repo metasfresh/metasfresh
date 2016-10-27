@@ -11,10 +11,15 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2016-44)
+# metasfresh 4.42.40 (2016-44)
 
 upcoming
- 
+
+## Features
+* metasfresh
+  * #500 Migration: Create Requests for all inout lines with quality issues
+  * #514 Reclamations report: group the inouts with ff.
+
 # metasfresh 4.41.40 (2016-43)
 
 this week's RC
