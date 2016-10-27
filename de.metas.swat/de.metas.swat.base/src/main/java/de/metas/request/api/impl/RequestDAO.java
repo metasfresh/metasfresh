@@ -12,7 +12,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.model.I_M_QualityNote;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
@@ -43,6 +45,7 @@ public class RequestDAO implements IRequestDAO
 {
 	public static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
 
+	public static final String ATTR_NAME_QualityNotice = "QualityNotice";
 
 	@Override
 	public void createRequestFromInOutLine(final I_M_InOutLine line)
@@ -73,7 +76,21 @@ public class RequestDAO implements IRequestDAO
 		// data from line
 		request.setM_InOut_ID(inOutID);
 		request.setM_Product_ID(line.getM_Product_ID());
-		request.setQualityNote(line.getQualityNote());
+
+		final String qualityNoteName = line.getQualityNote();
+
+		// set QualityNote based on the string provided in the inout line
+		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
+
+		final I_M_QualityNote qualityNoteForName = Services.get(IQualityNoteDAO.class).retrieveQualityNoteForName(ctx, qualityNoteName);
+
+		request.setM_QualityNote(qualityNoteForName);
+		
+		if(qualityNoteForName != null)
+		{
+			// in case there is a qualitynote set, also set the Performance type based on it
+			request.setPerformanceType(qualityNoteForName.getPerformanceType());
+		}
 
 		// data from inout
 		final I_M_InOut inOut = line.getM_InOut();
@@ -84,8 +101,6 @@ public class RequestDAO implements IRequestDAO
 		request.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		request.setAD_User_ID(inOut.getAD_User_ID());
 		request.setDateDelivered(inOut.getMovementDate());
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 
 		if (inOut.isSOTrx())
 		{
@@ -113,10 +128,11 @@ public class RequestDAO implements IRequestDAO
 			request.setSalesRep(userInCharge);
 		}
 
-		// configential type internal
+		// confidential type internal
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
 
 		// save the request
 		InterfaceWrapperHelper.save(request);
 	}
+
 }
