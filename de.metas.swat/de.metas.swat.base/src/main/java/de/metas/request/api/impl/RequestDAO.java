@@ -85,7 +85,7 @@ public class RequestDAO implements IRequestDAO
 		final I_M_QualityNote qualityNoteForName = Services.get(IQualityNoteDAO.class).retrieveQualityNoteForName(ctx, qualityNoteName);
 
 		request.setM_QualityNote(qualityNoteForName);
-
+		
 		if(qualityNoteForName != null)
 		{
 			// in case there is a qualitynote set, also set the Performance type based on it
@@ -134,4 +134,5 @@ public class RequestDAO implements IRequestDAO
 		// save the request
 		InterfaceWrapperHelper.save(request);
 	}
+
 }
