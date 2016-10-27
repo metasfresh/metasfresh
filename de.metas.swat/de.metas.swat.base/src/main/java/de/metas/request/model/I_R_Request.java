@@ -57,28 +57,17 @@ public interface I_R_Request extends org.compiere.model.I_R_Request
 
 	// @formatter:off
 	
-    /** Column definition for QualityNote */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QualityNote = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QualityNote", null);
-    /** Column name QualityNote */
-    public static final String COLUMNNAME_QualityNote = "QualityNote";
+
+    /** Column definition for M_QualityNote_ID */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, de.metas.inout.model.I_M_QualityNote> COLUMN_M_QualityNote_ID = new org.adempiere.model.ModelColumn<I_R_Request, de.metas.inout.model.I_M_QualityNote>(I_R_Request.class, "M_QualityNote_ID", de.metas.inout.model.I_M_QualityNote.class);
+    /** Column name M_QualityNote_ID */
+    public static final String COLUMNNAME_M_QualityNote_ID = "M_QualityNote_ID";
     
-	/**
-	 * Set Qualität-Notiz.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQualityNote (java.lang.String QualityNote);
+	public void setM_QualityNote_ID (int M_QualityNote_ID);
+	public int getM_QualityNote_ID();
 
-	/**
-	 * Get Qualität-Notiz.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getQualityNote();
+	public de.metas.inout.model.I_M_QualityNote getM_QualityNote();
+	public void setM_QualityNote(de.metas.inout.model.I_M_QualityNote M_QualityNote);
+    
 	// @formatter:on
-
 }
