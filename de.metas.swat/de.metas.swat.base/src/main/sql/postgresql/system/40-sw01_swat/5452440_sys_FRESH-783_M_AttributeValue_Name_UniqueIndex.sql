@@ -57,5 +57,5 @@ UPDATE AD_Index_Table SET WhereClause='IsActive=''Y'' ',Updated=TO_TIMESTAMP('20
 
 -- 26.10.2016 16:17
 -- URL zum Konzept
-CREATE UNIQUE INDEX M_AttributeValue_Name_Unique ON M_AttributeValue (M_Attribute_ID,Name,AD_Org_ID,AD_Client_ID) WHERE IsActive='Y' 
-;
+--CREATE UNIQUE INDEX M_AttributeValue_Name_Unique ON M_AttributeValue (M_Attribute_ID,Name,AD_Org_ID,AD_Client_ID) WHERE IsActive='Y' 
+--;
