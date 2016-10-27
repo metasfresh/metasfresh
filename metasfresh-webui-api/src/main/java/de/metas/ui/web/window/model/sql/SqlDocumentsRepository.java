@@ -24,6 +24,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -34,6 +35,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -574,6 +576,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else if (java.util.Date.class.isAssignableFrom(valueClass))
 			{
 				return new Timestamp(((java.util.Date)value).getTime());
+			}
+			else if (value instanceof String)
+			{
+				final java.util.Date valueDate = JSONDate.fromJson(value.toString());
+				return TimeUtil.asTimestamp(valueDate);
 			}
 		}
 		else if (Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
