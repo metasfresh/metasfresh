@@ -12,7 +12,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.model.I_M_QualityNote;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
@@ -75,6 +77,16 @@ public class RequestDAO implements IRequestDAO
 		request.setM_Product_ID(line.getM_Product_ID());
 		request.setQualityNote(line.getQualityNote());
 
+		final I_M_QualityNote qualityNoteForName = Services.get(IQualityNoteDAO.class).retrieveQualityNoteForName(ctx, qualityNoteName);
+
+		request.setM_QualityNote(qualityNoteForName);
+		
+		if(qualityNoteForName != null)
+		{
+			// in case there is a qualitynote set, also set the Performance type based on it
+			request.setPerformanceType(qualityNoteForName.getPerformanceType());
+		}
+
 		// data from inout
 		final I_M_InOut inOut = line.getM_InOut();
 
@@ -84,8 +96,6 @@ public class RequestDAO implements IRequestDAO
 		request.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		request.setAD_User_ID(inOut.getAD_User_ID());
 		request.setDateDelivered(inOut.getMovementDate());
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 
 		if (inOut.isSOTrx())
 		{
