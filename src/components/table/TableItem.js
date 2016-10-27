@@ -17,28 +17,27 @@ class TableItem extends Component {
     }
     handleEditProperty = (e,property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-        // let elem = e.target.getElementsByClassName('js-input-field')[0];
-        // e.preventDefault();
+
         if(!document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
             this.setState({
                 edited: property
             }, ()=>{
-            if(callback){
-                let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+                if(callback){
+                    let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
 
-                if(elem){
-                    elem.focus();
-                }
+                    if(elem){
+                        elem.focus();
+                    }
 
-                let disabled = document.activeElement.querySelector('.input-disabled');
-                let readonly = document.activeElement.querySelector('.input-readonly');
-                if(disabled || readonly) {
-                    changeListenOnTrue();
-                    this.handleEditProperty(e);
-                } else {
-                    changeListenOnFalse();
+                    let disabled = document.activeElement.querySelector('.input-disabled');
+                    let readonly = document.activeElement.querySelector('.input-readonly');
+                    if(disabled || readonly) {
+                        changeListenOnTrue();
+                        this.handleEditProperty(e);
+                    } else {
+                        changeListenOnFalse();
+                    }
                 }
-            }
             })
         }
 
@@ -111,7 +110,11 @@ class TableItem extends Component {
     }
 
     render() {
-        const {isSelected, fields, selectedProducts, onContextMenu, rowId, cols, onMouseDown, onDoubleClick} = this.props;
+        const {
+            isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
+            onMouseDown, onDoubleClick
+        } = this.props;
+
         return (
             <tr
                 onContextMenu = {onContextMenu}
