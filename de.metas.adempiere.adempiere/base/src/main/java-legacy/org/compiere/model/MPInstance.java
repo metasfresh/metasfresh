@@ -27,10 +27,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
@@ -41,7 +39,7 @@ import org.compiere.util.Env;
  *
  *  @author Jorg Janke
  *  @version $Id: MPInstance.java,v 1.3 2006/07/30 00:58:36 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  * 		<li>FR [ 2818478 ] Introduce MPInstance.createParameter helper method
  * 			https://sourceforge.net/tracker/?func=detail&aid=2818478&group_id=176962&atid=879335
@@ -49,7 +47,7 @@ import org.compiere.util.Env;
 public class MPInstance extends X_AD_PInstance
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 209806970824523840L;
 
@@ -64,12 +62,14 @@ public class MPInstance extends X_AD_PInstance
 		super (ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
 
 		// metas: WARN developer if he/she is loading the AD_PInstance using transactions (because that is not allowed)
-		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			final AdempiereException ex = new AdempiereException("AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
-			log.warn(ex.getLocalizedMessage(), ex);
-		}
-		
+		// gh #489: I agree with warning the developer, but in DLM, we frequently use this constructor and I neither want this warning to fill the log,
+		// nor want an if in there to explicitly deal with this case.
+//		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
+//		{
+//			final AdempiereException ex = new AdempiereException("Warning: AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
+//			log.warn(ex.getLocalizedMessage(), ex);
+//		}
+
 		//	New Process
 		if (AD_PInstance_ID == 0)
 		{
@@ -101,7 +101,7 @@ public class MPInstance extends X_AD_PInstance
 	{
 		this(process.getCtx(), process, adTableId, Record_ID);
 	}
-	
+
 	public MPInstance(final Properties ctx, final MProcess process, final int adTableId, final int Record_ID)
 	{
 		this(ctx, 0, ITrx.TRXNAME_None);
@@ -178,7 +178,7 @@ public class MPInstance extends X_AD_PInstance
 		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		setIsProcessing (false);
 	}	//	MPInstance
-	
+
 
 	/**	Parameters						*/
 	private List<I_AD_PInstance_Para> m_parameters = null;
@@ -246,22 +246,6 @@ public class MPInstance extends X_AD_PInstance
 		return retValue;
 	}	//	getLog
 
-	/**
-	 *	@param P_Date date
-	 *	@param P_ID id
-	 *	@param P_Number number
-	 *	@param P_Msg msg
-	 */
-	public void addLog (Timestamp P_Date, int P_ID, BigDecimal P_Number, String P_Msg)
-	{
-		MPInstanceLog logEntry = new MPInstanceLog (getAD_PInstance_ID(), m_log.size()+1,
-			P_Date, P_ID, P_Number, P_Msg);
-		m_log.add(logEntry);
-		//	save it to DB ?
-	//	log.save();
-	}	//	addLog
-
-	
 	/**
 	 * 	Set AD_Process_ID.
 	 * 	Check Role if process can be performed.
@@ -341,16 +325,16 @@ public class MPInstance extends X_AD_PInstance
 	{
 		return getResult() == RESULT_OK;
 	}	//	isOK
-	
+
 //	/**
 //	 * 	Set Result
-//	 *	@param ok 
+//	 *	@param ok
 //	 */
 //	public void setResult (boolean ok)
 //	{
 //		super.setResult (ok ? RESULT_OK : RESULT_ERROR);
 //	}	//	setResult
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -361,7 +345,7 @@ public class MPInstance extends X_AD_PInstance
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		//	Update Statistics
-		if (!newRecord 
+		if (!newRecord
 			&& !isProcessing()
 			&& is_ValueChanged("IsProcessing"))
 		{
@@ -378,7 +362,7 @@ public class MPInstance extends X_AD_PInstance
 		}
 		return success;
 	}	//	afterSave
-	
+
 	/**
 	 * Create Process Instance Parameter and save to database
 	 * @param seqNo parameter sequence#

@@ -32,25 +32,6 @@ import org.compiere.util.DB;
  */
 public class MPInstanceLog
 {
-	/**
-	 * 	Full Constructor
-	 *	@param AD_PInstance_ID instance
-	 *	@param Log_ID log sequence
-	 *	@param P_Date date
-	 *	@param P_ID id
-	 *	@param P_Number number
-	 *	@param P_Msg msg
-	 */
-	public MPInstanceLog (int AD_PInstance_ID, int Log_ID, Timestamp P_Date,
-	  int P_ID, BigDecimal P_Number, String P_Msg)
-	{
-		setAD_PInstance_ID(AD_PInstance_ID);
-		setLog_ID(Log_ID);
-		setP_Date(P_Date);
-		setP_ID(P_ID);
-		setP_Number(P_Number);
-		setP_Msg(P_Msg);
-	}	//	MPInstance_Log
 
 	/**
 	 * 	Load Constructor
@@ -80,6 +61,7 @@ public class MPInstanceLog
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer("PPInstance_Log[");
@@ -104,7 +86,7 @@ public class MPInstanceLog
 	public boolean save ()
 	{
 		StringBuffer sql = new StringBuffer("INSERT INTO AD_PInstance_Log "
-			+ "(AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
+			+ "(AD_PInstance_ID, P_Date, P_ID, P_Number, P_Msg)"
 			+ " VALUES (");
 		sql.append(m_AD_PInstance_ID).append(",")
 		  .append(m_Log_ID).append(",");
