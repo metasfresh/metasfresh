@@ -268,7 +268,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		@SuppressWarnings("unchecked")
 		final T modelCopy = (T)Proxy.newProxyInstance(
-				wrapper.interfaceClass.getClassLoader(),     // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
+				wrapper.interfaceClass.getClassLoader(),      // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
 				new Class<?>[] { wrapper.interfaceClass },
 				wrapperCopy);
 
@@ -665,7 +665,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	void setReferencedObject(final String propertyName, final Object value)
 	{
-		final String idPropertyName = propertyName + "_ID";
+		final String idPropertyName = propertyName + "_ID".toLowerCase();
 		if (value == null)
 		{
 			final Map<String, Object> values = getInnerValuesToSet();
@@ -1023,7 +1023,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		if (getInnerValues().containsKey(columnName.toLowerCase()))
 		{
-			return true;
+			return true; // we have the column name and it is actually set to a value
 		}
 
 		// Do we have COLUMNNAME_* field?
@@ -1031,7 +1031,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				.getInstance()
 				.getModelClassInfo(interfaceClass)
 				.getDefinedColumnNames()
-				.contains(columnName);
+				.stream()
+				.filter(definedColName -> definedColName.equalsIgnoreCase(columnName))
+				.findFirst()
+				.isPresent();
+
 		return hasColumnName;
 	}
 
