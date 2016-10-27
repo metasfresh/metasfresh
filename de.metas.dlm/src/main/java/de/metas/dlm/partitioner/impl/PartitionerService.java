@@ -150,9 +150,28 @@ public class PartitionerService implements IPartitionerService
 					.builder(request)
 					.setConfig(newConfig)
 					.build();
+			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
+
 			return createPartition(newRequest);
 		}
+
+		final String msg = "Returning a newly identified partition with {} records.";
+		logger.info(msg, partition.getRecords().size());
+		ILoggable.THREADLOCAL.getLoggable().addLog(msg, partition.getRecords().size());
+
 		return partition;
+	}
+
+	private void storeOutOfTrx(final PartitionerConfig newConfig)
+	{
+		Services.get(ITrxManager.class).run(new TrxRunnable()
+		{
+			@Override
+			public void run(String localTrxName) throws Exception
+			{
+				storePartitionConfig(newConfig);
+			}
+		});
 	}
 
 	private void checkIfTableIsDLM(final String tableName, OnNotDLMTable onNotDLMTable)
@@ -240,7 +259,7 @@ public class PartitionerService implements IPartitionerService
 		dlmService.directUpdateDLMColumn(ctxAware, partition, IDLMAware.COLUMNNAME_DLM_Partition_ID, partitionDB.getDLM_Partition_ID());
 
 		final String msg = "Stored the partition {} with {} records";
-		final Object[] msgParameters = { partitionDB, partition.getRecords() };
+		final Object[] msgParameters = { partitionDB, partition.getRecords().size() };
 		logger.info(msg, msgParameters);
 		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
 
@@ -359,7 +378,7 @@ public class PartitionerService implements IPartitionerService
 
 				// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
 				backTrack(line.getParent(),
-						InterfaceWrapperHelper.getContextAware(record),                  // 'record' is only needed for ctx
+						InterfaceWrapperHelper.getContextAware(record),                    // 'record' is only needed for ctx
 						records,
 						foreignTableName,
 						foreignKey);
@@ -372,7 +391,7 @@ public class PartitionerService implements IPartitionerService
 
 		// GO BACKWARDS, i.e. get records which reference 'record'
 		backTrack(line.getParent(),
-				InterfaceWrapperHelper.getContextAware(record),                        // make it clear that record is only needed for ctx
+				InterfaceWrapperHelper.getContextAware(record),                          // make it clear that record is only needed for ctx
 				records,
 				line.getTableName(),
 				InterfaceWrapperHelper.getId(record));
@@ -505,6 +524,10 @@ public class PartitionerService implements IPartitionerService
 				ref.setDLM_Partition_Config_Reference_ID(configRefDB.getDLM_Partition_Config_Reference_ID());
 			}
 		}
+		final String msg = "Stored DLM_Partition_Config={}";
+		logger.info(msg, configDB);
+		ILoggable.THREADLOCAL.getLoggable().addLog(msg, configDB);
+
 		return configDB;
 	}
 

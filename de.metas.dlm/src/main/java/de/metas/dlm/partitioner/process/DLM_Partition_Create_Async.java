@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import org.adempiere.util.Services;
 import org.compiere.process.SvrProcess;
 
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -43,9 +44,17 @@ public class DLM_Partition_Create_Async extends SvrProcess
 	@Param(mandatory = true, parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID)
 	private I_DLM_Partition_Config configDB;
 
+	/**
+	 * How many async workpackages do we want?
+	 * Mandatory because we want to user to make a conscious decision about how long the async work shall run.
+	 */
 	@Param(mandatory = true, parameterName = "Count")
 	private int count;
 
+	/**
+	 * After which time shall the async-work stop?
+	 * Mandatory because we want to user to make a conscious decision about how long the async work shall run.
+	 */
 	@Param(mandatory = true, parameterName = "DontReEnqueueAfter")
 	private Timestamp dontReEnqueueAfter;
 
@@ -65,7 +74,8 @@ public class DLM_Partition_Create_Async extends SvrProcess
 				.setDontReEnqueueAfter(dontReEnqueueAfter)
 				.build();
 
-		DLMPartitionerWorkpackageProcessor.schedule(request, getAD_PInstance_ID());
+		final I_C_Queue_WorkPackage newWorkpackage = DLMPartitionerWorkpackageProcessor.schedule(request, getAD_PInstance_ID());
+		addLog("Scheduled " + newWorkpackage);
 
 		return MSG_OK;
 	}

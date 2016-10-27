@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.time.SystemTime;
@@ -63,8 +64,9 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	 *
 	 * @param request the request to enqueue.
 	 * @param adPInstanceId <code>AD_Pisntance_ID</code> from which the package was scheduled. Optional, can be less or equal 0
+	 * @return
 	 */
-	public static void schedule(CreatePartitionAsyncRequest request, int adPInstanceId)
+	public static I_C_Queue_WorkPackage schedule(CreatePartitionAsyncRequest request, int adPInstanceId)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -88,7 +90,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 			blockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		}
 
-		blockBuilder.newWorkpackage()
+		return blockBuilder.newWorkpackage()
 
 		// Workpackage Parameters
 				.parameters()
@@ -100,7 +102,6 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		// Build & enqueue
 				.build();
-
 	}
 
 	@Override
@@ -117,9 +118,16 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final int count = workpackageParams.getParameterAsInt(PARAM_COUNT);
 		final Timestamp dontReEnQueueAfter = workpackageParams.getParameterAsTimestamp(PARAM_DONT_REENQUEUE_AFTER);
 
-		final List<I_DLM_Partition_Config> configs = queueDAO.retrieveItems(workPackage, I_DLM_Partition_Config.class, localTrxName);
+		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
-		final I_DLM_Partition_Config singleConfigDB = configs.get(0);
+		final List<I_DLM_Partition_Config> configsDB = queueDAO.retrieveItems(workPackage, I_DLM_Partition_Config.class, localTrxName);
+		if (configsDB.isEmpty())
+		{
+			loggable.addLog("This workpackage has no items, or they are also referenced by a proceeding work package; nothing to do");
+			return Result.SUCCESS;
+		}
+
+		final I_DLM_Partition_Config singleConfigDB = configsDB.get(0);
 
 		final PartitionerConfig config = partitionerService.loadPartitionConfig(singleConfigDB);
 
@@ -129,6 +137,8 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 				.setOldestFirst(oldestFirst)
 				.setOnNotDLMTable(OnNotDLMTable.FAIL)
 				.build();
+
+		loggable.addLog("Going to invoke the partitioner with CreatePartitionRequest={}", request);
 
 		try (final AutoCloseable temporaryCustomizer = connectionCustomizerService.registerTemporaryCustomizer(partitionerService.createConnectionCustomizer()))
 		{
@@ -144,17 +154,29 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		if (count >= 1 && dontReEnQueueAfter != null && SystemTime.asDate().before(dontReEnQueueAfter))
+		final boolean timeIsOver = dontReEnQueueAfter != null && SystemTime.asDate().after(dontReEnQueueAfter);
+		if (timeIsOver)
+		{
+			loggable.addLog("The time {}={} given to us as parameter has passed; not enqueing another work package.", PARAM_DONT_REENQUEUE_AFTER, dontReEnQueueAfter);
+		}
+		final boolean countExceeded = count <= 1;
+		if (countExceeded)
+		{
+			loggable.addLog("The count {}={} given to us as parameter means that we won't enqueue another work package.", PARAM_COUNT, count);
+		}
+
+		if (!countExceeded && !timeIsOver)
 		{
 			// create a new async request and enqueue it
 			final CreatePartitionAsyncRequest newRequest = PartitionRequestFactory.asyncBuilder(request)
 					.setCount(count - 1)
 					.setDontReEnqueueAfter(dontReEnQueueAfter).build();
 
-			schedule(newRequest,
+			final I_C_Queue_WorkPackage nextWorkPackage = schedule(newRequest,
 					workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
-		}
 
+			loggable.addLog("Scheduled C_Queue_WorkPackage={} with CreatePartitionAsyncRequest={}", nextWorkPackage, newRequest);
+		}
 		return Result.SUCCESS;
 	}
 }

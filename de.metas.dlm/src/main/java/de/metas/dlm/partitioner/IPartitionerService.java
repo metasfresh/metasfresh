@@ -6,6 +6,7 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.connection.ITemporaryConnectionCustomizer;
 import de.metas.dlm.Partition;
+import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
@@ -45,7 +46,7 @@ public interface IPartitionerService extends ISingletonService
 	Partition createPartition(CreatePartitionRequest request);
 
 	/**
-	 * Create a new DLM_Partition_Record in the DB and Update the DLM_Partion_ID of the records we found.
+	 * Create a new DLM_Partition_Record for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
 	 *
 	 * @param partition
 	 * @return
@@ -53,19 +54,34 @@ public interface IPartitionerService extends ISingletonService
 	I_DLM_Partition storePartition(Partition partition);
 
 	/**
-	 * Persists the given config in the DB.
+	 * Persist the given config in the DB and update the ID properties on the given <code>config</code> that is stored.
+	 * <p>
+	 * Does <b>not</b> touch existing DB records which are missing in the given <code>config</code>.
 	 *
 	 * @param config
 	 * @return
 	 */
 	I_DLM_Partition_Config storePartitionConfig(PartitionerConfig config);
 
+	/**
+	 * Create a new config instance for the given database record.
+	 *
+	 * @param configDB
+	 * @return
+	 */
 	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
 
+	/**
+	 * Creates a new config that has both everything from the given <code>config</code> and the reference specified by the given <code>descriptor</code>.
+	 *
+	 * @param config
+	 * @param descriptor
+	 * @return
+	 */
 	PartitionerConfig augmentPartitionerConfig(PartitionerConfig config, List<TableReferenceDescriptor> descriptor);
 
 	/**
-	 * Creates a connection customizer that should be registered via {@link de.metas.connection.IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}
+	 * Create a connection customizer that can (and should) be registered via {@link de.metas.connection.IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}
 	 * for the time that {@link #createPartition(CreatePartitionRequest)} and {@link #storePartition(Partition)} are invoked.
 	 *
 	 * @return
