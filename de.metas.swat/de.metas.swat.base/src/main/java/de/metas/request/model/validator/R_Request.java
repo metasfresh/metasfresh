@@ -78,7 +78,10 @@ public class R_Request
 			// in case the inout was removed or is not set, the DateDelivered shall also be not set
 			request.setDateDelivered(null);
 		}
-		request.setDateDelivered(inout.getMovementDate());
+		else
+		{
+			request.setDateDelivered(inout.getMovementDate());
+		}
 
 	}
 
