@@ -593,22 +593,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return result.toString();
 	}	// TO_NUMBER
 
-	private final ThreadLocal<Connection> cachedCollectionOneTime = new ThreadLocal<>();
-
-	@Override
-	public AutoCloseable setCachedCollectionOneTime(final Connection connection)
-	{
-		cachedCollectionOneTime.set(connection);
-		return new AutoCloseable()
-		{
-			@Override
-			public void close()
-			{
-				cachedCollectionOneTime.set(null);
-			}
-		};
-	}
-
 	/**
 	 * Get Cached Connection
 	 *
@@ -631,16 +615,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				throw new DBNoConnectionException("Data source could not be retrieved for " + connection);
 			}
 
-			if (cachedCollectionOneTime.get() != null)
-			{
-				conn = cachedCollectionOneTime.get();
-				cachedCollectionOneTime.set(null);
-			}
-			else
-			{
-				conn = m_ds.getConnection();
-			}
-
+			conn = m_ds.getConnection();
 			conn.setAutoCommit(autoCommit);
 			conn.setTransactionIsolation(transactionIsolation);
 
@@ -1097,7 +1072,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			else
 				return "VARCHAR(" + fieldLength + ")";
 		}
-		if (displayType == DisplayType.Color)  // this condition is never reached - filtered above in isID
+		if (displayType == DisplayType.Color)   // this condition is never reached - filtered above in isID
 		{
 			if (columnName.endsWith("_ID"))
 				return "NUMERIC(10)";

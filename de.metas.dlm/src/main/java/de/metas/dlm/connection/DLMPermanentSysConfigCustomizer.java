@@ -2,12 +2,13 @@ package de.metas.dlm.connection;
 
 import java.sql.Connection;
 
-import org.adempiere.exceptions.AdempiereException;
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.util.DB;
 
 import de.metas.connection.IConnectionCustomizer;
+import de.metas.dlm.migrator.IMigratorService;
 
 /*
  * #%L
@@ -30,48 +31,44 @@ import de.metas.connection.IConnectionCustomizer;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * Customizes the connection using {@link ISysConfigBL}.
+ * For this it is important that the table {@link org.compiere.model.I_AD_SysConfig#Table_Name} itself is never DLM'ed.
+ * Otherwise we can't guarantee that the data is found.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Immutable
 public class DLMPermanentSysConfigCustomizer extends AbstractDLMCustomizer
 {
+	private static final String SYSCONFIG_DLM_COALESCE_LEVEL = "de.metas.dlm.DLM_Coalesce_Level";
+	private static final String SYSCONFIG_DLM_LEVEL = "de.metas.dlm.DLM_Level";
+
 	public static IConnectionCustomizer PERMANENT_INSTANCE = new DLMPermanentSysConfigCustomizer();
 
 	private DLMPermanentSysConfigCustomizer()
 	{
 	}
 
+	/**
+	 * Returns the DLM_Level set in the SysConfig. If none is set, it returns {@link IMigratorService#DLM_Level_TEST},
+	 * so by default, only records that are "live/operational" and records that are currently processed by {@link IMigratorService#testMigratePartition(de.metas.dlm.Partition)}
+	 * are visible to the system.
+	 */
 	@Override
 	public int getDlmLevel(final Connection c)
 	{
-		if (DB.isConnected())
-		{
-			try (final AutoCloseable autoClosable = DB.getDatabase().setCachedCollectionOneTime(c))
-			{
-				return Services.get(ISysConfigBL.class).getIntValue("de.metas.dlm.DLM_Level", 0);
-			}
-			catch (Exception e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
-		}
-
-		return 0;
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DLM_LEVEL, IMigratorService.DLM_Level_TEST);
 	}
 
+	/**
+	 * Returns the DLM_Coalesce_Level set in the SysConfig. If none is set, it returns {@link IMigratorService#DLM_Level_LIVE} to make sure that by default,
+	 * everything that was not yet explicitly moved to a DLM level is visible.
+	 */
 	@Override
 	public int getDlmCoalesceLevel(final Connection c)
 	{
-		if (DB.isConnected())
-		{
-			try (final AutoCloseable autoClosable = DB.getDatabase().setCachedCollectionOneTime(c))
-			{
-				return Services.get(ISysConfigBL.class).getIntValue("de.metas.dlm.DLM_Coalesce_Level", 2);
-			}
-			catch (Exception e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
-		}
-		return 0;
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DLM_COALESCE_LEVEL, IMigratorService.DLM_Level_LIVE);
 	}
-
 }

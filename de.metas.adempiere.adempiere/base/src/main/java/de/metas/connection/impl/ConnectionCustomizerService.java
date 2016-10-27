@@ -1,9 +1,12 @@
 package de.metas.connection.impl;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.collections.IdentityHashSet;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,19 +43,12 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 
 	private final ThreadLocal<List<ITemporaryConnectionCustomizer>> temporaryCustomizers = ThreadLocal.withInitial(() -> new ArrayList<>());
 
+	private final ThreadLocal<Set<IConnectionCustomizer>> currentlyInvokedCustomizers = ThreadLocal.withInitial(() -> new IdentityHashSet<>());
+
 	@Override
 	public void registerPermanentCustomizer(final IConnectionCustomizer connectionCustomizer)
 	{
 		permanentCustomizers.add(connectionCustomizer);
-	}
-
-	@Override
-	public List<IConnectionCustomizer> getRegisteredCustomizers()
-	{
-		return new ImmutableList.Builder<IConnectionCustomizer>()
-				.addAll(permanentCustomizers)
-				.addAll(temporaryCustomizers.get())
-				.build();
 	}
 
 	@Override
@@ -78,8 +74,48 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 	}
 
 	@Override
+	public void fireRegisteredCustomizers(Connection c)
+	{
+		getRegisteredCustomizers().forEach(
+				customizer -> {
+					invokeIfNotYetInvoked(customizer, c);
+				});
+	}
+
+	@Override
 	public String toString()
 	{
-		return "ConnectionCustomizerService [permanentCustomizers=" + permanentCustomizers + ", (thread-local-)temporaryCustomizers=" + temporaryCustomizers.get() + "]";
+		return "ConnectionCustomizerService [permanentCustomizers=" + permanentCustomizers + ", (thread-local-)temporaryCustomizers=" + temporaryCustomizers.get() + ", (thread-local-)currentlyInvokedCustomizers=" + currentlyInvokedCustomizers + "]";
+	}
+
+	private List<IConnectionCustomizer> getRegisteredCustomizers()
+	{
+		return new ImmutableList.Builder<IConnectionCustomizer>()
+				.addAll(permanentCustomizers)
+				.addAll(temporaryCustomizers.get())
+				.build();
+	}
+
+	/**
+	 * Invoke {@link IConnectionCustomizer#customizeConnection(Connection)} with the given parameters, unless the customizer was already invoked within this thread and that invocation did not yet finish.
+	 * So the goal is to avoid recursive invocations on the same customizer. Also see {@link IConnectionCustomizerService#fireRegisteredCustomizers(Connection)}.
+	 *
+	 * @param customizer
+	 * @param connection
+	 */
+	private void invokeIfNotYetInvoked(IConnectionCustomizer customizer, Connection connection)
+	{
+		try
+		{
+			if (currentlyInvokedCustomizers.get().add(customizer))
+			{
+				customizer.customizeConnection(connection);
+				currentlyInvokedCustomizers.get().remove(customizer);
+			}
+		}
+		finally
+		{
+			currentlyInvokedCustomizers.get().remove(customizer);
+		}
 	}
 }

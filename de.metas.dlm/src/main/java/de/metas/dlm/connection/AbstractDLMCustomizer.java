@@ -50,6 +50,9 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 	private int dlmLevelBkp = -1;
 	private int dlmCoalesceLevelBkp = -1;
 
+	// private AtomicBoolean inMethod = new AtomicBoolean(false);
+	private ThreadLocal<Boolean> inMethod = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
 	@Override
 	public void customizeConnection(final Connection c) throws DBException
 	{
@@ -59,15 +62,28 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 			return;
 		}
 
-		// https://www.postgresql.org/docs/9.5/static/functions-admin.html
 		try
 		{
+			//final boolean wasAlreadyInMethod = inMethod.getAndSet(true);
+			final boolean wasAlreadyInMethod = inMethod.get();
+			if (wasAlreadyInMethod)
+			{
+				return;
+			}
+			inMethod.set(true);
+
+			// https://www.postgresql.org/docs/9.5/static/functions-admin.html
 			storeParamBkpValues(c);
 			setDBParams(c, getDlmLevel(c), getDlmCoalesceLevel(c));
 		}
 		catch (final SQLException e)
 		{
 			throw DBException.wrapIfNeeded(e);
+		}
+		finally
+		{
+			//inMethod.getAndSet(false);
+			inMethod.set(false);
 		}
 	}
 

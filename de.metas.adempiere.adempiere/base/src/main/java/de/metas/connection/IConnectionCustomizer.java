@@ -26,6 +26,9 @@ import java.sql.Connection;
 
 /**
  * Registered to the system via {@link IConnectionCustomizerService#registerPermanentCustomizer(IConnectionCustomizer)}.
+ * <p>
+ * About thread-safety: I can't prove that implementors need to be thread-safe without further research,
+ * but unless you proved they don't need to be thread-safe, i strongly urge everyone to make them thread-safe.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

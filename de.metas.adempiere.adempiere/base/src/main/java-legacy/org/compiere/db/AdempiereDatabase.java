@@ -29,8 +29,6 @@ import javax.sql.DataSource;
 import org.adempiere.exceptions.DBException;
 import org.compiere.dbPort.Convert;
 
-import de.metas.connection.IConnectionCustomizer;
-
 /**
  * Interface for Adempiere Databases
  *
@@ -257,18 +255,6 @@ public interface AdempiereDatabase
 	 * @throws Exception
 	 */
 	public Connection getCachedConnection(CConnection connection, boolean autoCommit, int transactionIsolation) throws Exception;
-
-	/**
-	 * <b>Please only use if you know what you are doing.</b>
-	 * If this method is called, then until the time that the returned {@link AutoCloseable} is closed, {@link #getCachedConnection(CConnection, boolean, int)},
-	 * it will return the given <code>connection</code> instead of checking out a connection from the pool, if it is invoked <b>from the same thread</b>.
-	 * <p>
-	 * We use this method from {@link IConnectionCustomizer}s that themselves need to make an SQL query, e.g. to get config values. In that scenario, without calling this method, there would be a StackOverFlowError.
-	 * <p>
-	 *
-	 * @param connection
-	 */
-	public AutoCloseable setCachedCollectionOneTime(Connection connection);
 
 	/**
 	 * Get Driver Connection

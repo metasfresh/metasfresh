@@ -76,8 +76,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh/checked-out-from-pool"); // task 08353
 
 		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
-		connectionCustomizerService.getRegisteredCustomizers().forEach(
-				customizer -> customizer.customizeConnection(c));
+		connectionCustomizerService.fireRegisteredCustomizers(c);
 	}
 
 }

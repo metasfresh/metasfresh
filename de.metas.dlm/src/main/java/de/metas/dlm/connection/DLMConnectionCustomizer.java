@@ -2,7 +2,7 @@ package de.metas.dlm.connection;
 
 import java.sql.Connection;
 
-import org.adempiere.exceptions.DBException;
+import javax.annotation.concurrent.Immutable;
 
 import de.metas.connection.ITemporaryConnectionCustomizer;
 
@@ -35,12 +35,11 @@ import de.metas.connection.ITemporaryConnectionCustomizer;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Immutable
 public class DLMConnectionCustomizer
 		extends AbstractDLMCustomizer
 		implements ITemporaryConnectionCustomizer
 {
-//	private Connection connection;
-
 	private final int dlmLevel;
 	private final int dlmCoalesceLevel;
 
@@ -50,18 +49,15 @@ public class DLMConnectionCustomizer
 		this.dlmCoalesceLevel = dlmCoalesceLevel;
 	};
 
-	@Override
-	public void customizeConnection(final Connection c) throws DBException
-	{
-//		Check.errorIf(connection != null && connection != c, "connection reference is already set. New connection param ={}", c);
-//		connection = c;
-		super.customizeConnection(c);
-	}
-
+	/**
+	 * Does nothing.
+	 * As of now, the customizers make sure that their connection is the way it needs to be when the connection is checked out.
+	 * There is not need to spend extra effort cleaning up when the connection is returned.
+	 */
 	@Override
 	public void undoCustomization()
 	{
-//		restoreParamBkpValues(connection);
+		// nothing
 	}
 
 	@Override
