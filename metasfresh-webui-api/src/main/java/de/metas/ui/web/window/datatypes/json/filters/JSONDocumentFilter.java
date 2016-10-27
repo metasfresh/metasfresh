@@ -3,6 +3,7 @@ package de.metas.ui.web.window.datatypes.json.filters;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.util.GuavaCollectors;
 
@@ -100,7 +101,7 @@ public class JSONDocumentFilter implements Serializable
 		{
 			final String parameterName = paramDescriptor.getParameterName();
 			final JSONDocumentFilterParam jsonParam = jsonParams.get(parameterName);
-			
+
 			// If parameter is missing: skip it if no required, else throw exception
 			if (jsonParam == null)
 			{
@@ -141,12 +142,26 @@ public class JSONDocumentFilter implements Serializable
 
 	}
 
+	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters)
+	{
+		if (filters == null || filters.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return filters.stream()
+				.map(filter -> of(filter))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
 	public static final JSONDocumentFilter of(final DocumentFilter filter)
 	{
 		final String filterId = filter.getFilterId();
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return new JSONDocumentFilter(filterId, jsonParameters);

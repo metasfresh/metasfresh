@@ -2,6 +2,8 @@ package de.metas.ui.web.window.model;
 
 import java.util.List;
 
+import de.metas.ui.web.window.model.filters.DocumentFilter;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -34,6 +36,8 @@ public interface IDocumentViewSelection
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
-	List<DocumentQueryOrderBy> getDefaultOrderBys();
+	/** @return active filters */
+	List<DocumentFilter> getFilters();
 
+	List<DocumentQueryOrderBy> getDefaultOrderBys();
 }

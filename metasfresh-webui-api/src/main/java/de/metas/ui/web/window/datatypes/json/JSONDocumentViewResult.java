@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
 
@@ -68,11 +69,15 @@ public final class JSONDocumentViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
 
-	@JsonProperty(value = "orderBy", index = 60)
+	@JsonProperty(value = "filters", index = 60)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentFilter> filters;
+
+	@JsonProperty(value = "orderBy", index = 70)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentViewOrderBy> orderBy;
 
-	@JsonProperty(value = "result", index = 70)
+	@JsonProperty(value = "result", index = 80)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocument> result;
 
@@ -91,6 +96,7 @@ public final class JSONDocumentViewResult implements Serializable
 		firstRow = viewResult.getFirstRow();
 		pageLength = viewResult.getPageLength();
 
+		filters = JSONDocumentFilter.ofList(viewResult.getFilters());
 		orderBy = JSONDocumentViewOrderBy.ofList(viewResult.getOrderBys());
 
 		result = JSONDocument.ofDocumentViewList(viewResult.getPage());
@@ -113,6 +119,7 @@ public final class JSONDocumentViewResult implements Serializable
 			, @JsonProperty("result") final List<JSONDocument> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
+			, @JsonProperty(value = "filters") final List<JSONDocumentFilter> filters //
 			, @JsonProperty("orderBy") final List<JSONDocumentViewOrderBy> orderBy //
 	)
 	{
@@ -123,6 +130,8 @@ public final class JSONDocumentViewResult implements Serializable
 
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
+		
+		this.filters = filters == null ? ImmutableList.of() : filters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
 
 		this.result = result;

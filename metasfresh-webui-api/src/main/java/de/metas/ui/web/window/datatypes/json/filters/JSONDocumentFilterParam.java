@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes.json.filters;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,13 +34,23 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 @SuppressWarnings("serial")
 final class JSONDocumentFilterParam implements Serializable
 {
-	/* package */static final JSONDocumentFilterParam of(final DocumentFilterParam filterParam)
+	/**
+	 * Creates {@link JSONDocumentFilterParam} from {@link DocumentFilterParam} if the given filter is not internal.
+	 * 
+	 * @param filterParam
+	 * @return JSON document filter parameter
+	 */
+	/* package */static final Optional<JSONDocumentFilterParam> of(final DocumentFilterParam filterParam)
 	{
+		// Don't convert internal filters
 		if (filterParam.isSqlFilter())
 		{
-			throw new IllegalArgumentException("Sql filters are not allowed to be converted to JSON filters: " + filterParam);
+			// throw new IllegalArgumentException("Sql filters are not allowed to be converted to JSON filters: " + filterParam);
+			return Optional.empty();
 		}
-		return new JSONDocumentFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
+
+		final JSONDocumentFilterParam jsonFilterParam = new JSONDocumentFilterParam(filterParam.getFieldName(), filterParam.getValue(), filterParam.getValueTo());
+		return Optional.of(jsonFilterParam);
 	}
 
 	@JsonProperty("parameterName")

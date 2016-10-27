@@ -42,6 +42,7 @@ import de.metas.ui.web.window.model.DocumentView;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.IDocumentView;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
+import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
  * #%L
@@ -83,6 +84,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final String sqlSelectPage;
 	private final List<DocumentViewFieldValueLoader> fieldLoaders;
 
+	/** Active filters */
+	private final List<DocumentFilter> filters;
 	private final ConcurrentHashMap<List<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	private transient String _toString;
@@ -95,6 +98,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
+		filters = ImmutableList.copyOf(builder.getFilters());
 
 		sqlSelectPage = builder.buildSqlSelectPage();
 		fieldLoaders = builder.createDocumentViewFieldValueLoaders();
@@ -143,6 +147,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultSelection.getOrderBys();
+	}
+	
+	@Override
+	public List<DocumentFilter> getFilters()
+	{
+		return filters;
 	}
 
 	public void close()
@@ -443,6 +453,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final Map<String, String> fieldName2sqlDictionary = dataBinding.getAvailableFieldFullOrderBys(evalCtx);
 
 			return new OrderedSelectionFactory(sql, fieldName2sqlDictionary);
+		}
+		
+		private List<DocumentFilter> getFilters()
+		{
+			return queryBuilder.getDocumentFilters();
 		}
 	}
 
