@@ -125,19 +125,6 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValueOrNull_ForName(final I_M_Attribute attribute, final String name)
-	{
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeValue.class, attribute)
-				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getM_Attribute_ID())
-				.addEqualsFilter(I_M_AttributeValue.COLUMN_Name, name)
-				.create()
-				.firstOnly(I_M_AttributeValue.class);
-
-	}
-
-	@Override
 	public boolean isHighVolumeValuesList(final I_M_Attribute attribute)
 	{
 		Check.assumeNotNull(attribute, "attribute not null");

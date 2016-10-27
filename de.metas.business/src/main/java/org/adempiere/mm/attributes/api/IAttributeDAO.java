@@ -190,13 +190,4 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
-	/**
-	 * Retrieve an M_AttributeValue entry by it's attribute and Name.
-	 * Only use if you are sure there aren't several attribute values with the same name!
-	 * 
-	 * @param attribute
-	 * @param name
-	 * @return
-	 */
-	I_M_AttributeValue retrieveAttributeValueOrNull_ForName(I_M_Attribute attribute, String name);
 }
