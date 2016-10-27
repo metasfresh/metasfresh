@@ -39,6 +39,7 @@ public class QualityNoteDAO implements IQualityNoteDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_QualityNote.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_QualityNote.COLUMN_Name, name)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_QualityNote.class);
 	}
