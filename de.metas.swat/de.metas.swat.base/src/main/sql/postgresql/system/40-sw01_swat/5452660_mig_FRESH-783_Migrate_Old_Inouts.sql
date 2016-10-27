@@ -61,14 +61,6 @@ AD_Client_ID numeric(10,0),
 
 
 
-CREATE OR REPLACE FUNCTION "de.metas.fresh".MigrateOldInOuts ()
-RETURNS void
-AS
-
-$BODY$
-
-DELETE FROM temp_M_InOutLine_To_R_Request;
-
 INSERT INTO temp_M_InOutLine_To_R_Request (
 AD_Client_ID,
 		AD_Org_ID,
@@ -162,19 +154,11 @@ AD_Client_ID,
 
 		and (not exists 
 			(select 1 from R_Request r where r.Record_ID = io.M_InOut_ID and r.AD_Table_ID = get_table_ID('M_InOut')))
-	Limit 200
+
 
 )
-$BODY$
-LANGUAGE sql volatile;
-
 ;
 
-
- 
-SELECT "de.metas.async".executesqlasync('
-
-select "de.metas.fresh".MigrateOldInOuts ();
 
 INSERT INTO R_Request
 	(
@@ -242,7 +226,6 @@ INSERT INTO R_Request
 	iolr.DueType,
 	iolr.R_Status_ID
  from temp_M_InOutLine_To_R_Request iolr
- where not exists (select 1 from R_Request where R_Request_ID = iolr.R_Request_ID) limit 200 ;');
   --;
   
 -- Clean
