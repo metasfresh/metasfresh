@@ -36,6 +36,7 @@ this week's RC
 
 ## Fixes
 * metasfresh
+  * #508 Creating User without Business Partner throws Exception
   * #487 Attribute editor dialog stores empty field as ''
 
 # metasfresh 4.40.39 (2016-42)
