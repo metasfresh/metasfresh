@@ -104,7 +104,6 @@ class Filters extends Component {
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
 		dispatch(setFilter(filters));
-		setTimeout(() => { updateDocList('grid', windowType); }, 1)
 		this.closeFilterMenu();
 
 	}
@@ -138,12 +137,11 @@ class Filters extends Component {
 		
 		
 		dispatch(deleteFiltersParameters());
-		setTimeout(() => { dispatch(setFilter(null)); }, 1);
-		setTimeout(() => { updateDocList('grid', windowType); }, 1);
-
+        dispatch(setFilter(null));
 		this.setSelectedItem('', true);
 		
 	}
+
 
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
@@ -240,7 +238,7 @@ class Filters extends Component {
 
 		return (
 			<div className="filter-wrapper">
-				<button onClick={() => this.toggleFilterMenu()} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (open ? " btn-active": "") }>
+				<button onClick={() => this.toggleFilterMenu()} className={"btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" + (open ? " btn-select": "") + (filterDataItem ? " btn-active" : "")}>
 					<i className="meta-icon-preview" />
 					{ filterDataItem? 'Filter: '+filterDataItem.caption : 'No search filters'}
 				</button>
