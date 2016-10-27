@@ -154,3 +154,86 @@ UPDATE AD_Column SET IsUpdateable='N', IsMandatory='Y',Updated=TO_TIMESTAMP('201
 CREATE TABLE M_QualityNote (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_QualityNote_ID NUMERIC(10) NOT NULL, Name VARCHAR(255) DEFAULT NULL , PerformanceType VARCHAR(255) DEFAULT NULL , Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, Value VARCHAR(255) NOT NULL, CONSTRAINT M_QualityNote_Key PRIMARY KEY (M_QualityNote_ID))
 ;
 
+
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555277
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Table SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540794
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555278
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555279
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555280
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555281
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout', IsUpdateable='N',Updated=TO_TIMESTAMP('2016-10-27 11:47:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555284
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555286
+;
+
+-- 27.10.2016 11:47
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:47:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555287
+;
+
+-- 27.10.2016 11:48
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:48:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555282
+;
+
+-- 27.10.2016 11:48
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:48:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555283
+;
+
+-- 27.10.2016 11:48
+-- URL zum Konzept
+UPDATE AD_Column SET EntityType='de.metas.inout',Updated=TO_TIMESTAMP('2016-10-27 11:48:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555285
+;
+
+
+-- 27.10.2016 12:14
+-- URL zum Konzept
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540392,0,540794,TO_TIMESTAMP('2016-10-27 12:14:41','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y','Y','M_QualityNote_Name_Unique','N',TO_TIMESTAMP('2016-10-27 12:14:41','YYYY-MM-DD HH24:MI:SS'),100,'IsActive = ''Y''')
+;
+
+-- 27.10.2016 12:14
+-- URL zum Konzept
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Index_Table_ID=540392 AND NOT EXISTS (SELECT * FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 27.10.2016 12:14
+-- URL zum Konzept
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,555286,540785,540392,0,TO_TIMESTAMP('2016-10-27 12:14:50','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.inout','Y',10,TO_TIMESTAMP('2016-10-27 12:14:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 27.10.2016 12:14
+-- URL zum Konzept
+CREATE UNIQUE INDEX M_QualityNote_Name_Unique ON M_QualityNote (Name) WHERE IsActive = 'Y'
+;
+
