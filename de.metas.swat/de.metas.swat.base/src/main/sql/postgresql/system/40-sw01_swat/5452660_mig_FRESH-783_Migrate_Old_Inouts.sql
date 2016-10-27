@@ -1,7 +1,8 @@
 
 
+-- execute async
 
-CREATE OR REPLACE FUNCTION create_request_document_number ()
+CREATE OR REPLACE FUNCTION tmp_create_request_document_number ()
 RETURNS character varying
 AS
 $BODY$
@@ -21,10 +22,86 @@ LANGUAGE sql volatile;
 
 
 
-DROP TABLE IF EXISTS temp_M_InOutLine_To_R_Request; 
 
-CREATE TABLE temp_M_InOutLine_To_R_Request
+DROP TABLE IF EXISTS temp_M_InOutLine_To_R_Request; 
+CREATE TABLE temp_M_InOutLine_To_R_Request(
+AD_Client_ID numeric(10,0),
+		AD_Org_ID  numeric(10,0),
+		Created  timestamp with time zone,
+		CreatedBy integer  ,
+		IsActive character(1), 
+		Updated timestamp with time zone,
+		UpdatedBy integer,
+		
+		R_Request_ID bigint,
+		DocumentNo character varying ,
+		
+		
+		M_InOut_ID  numeric(10,0),
+		M_Product_ID  numeric(10,0),
+		M_QualityNote_ID  numeric(10,0),
+		
+		AD_Table_ID  numeric(10,0),
+		Record_ID  numeric(10,0),
+		C_BPartner_ID  numeric(10,0),
+		AD_User_ID  numeric(10,0),
+		DateDelivered timestamp with time zone,
+		
+		R_RequestType_ID  numeric(10,0),
+		Summary character varying(2000),
+		
+		SalesRep_ID  numeric(10,0),
+		ConfidentialType character(1),
+		ConfidentialTypeEntry character(1),
+		Priority character(1),
+		DueType character(1),
+		R_Status_ID numeric(10,0)
+)
+;
+
+
+
+CREATE OR REPLACE FUNCTION "de.metas.fresh".MigrateOldInOuts ()
+RETURNS void
 AS
+
+$BODY$
+
+DELETE FROM temp_M_InOutLine_To_R_Request;
+
+INSERT INTO temp_M_InOutLine_To_R_Request (
+AD_Client_ID,
+		AD_Org_ID,
+		Created,
+		CreatedBy,
+		IsActive, 
+		Updated,
+		UpdatedBy,
+		
+		R_Request_ID,
+		DocumentNo,
+		
+		
+		M_InOut_ID,
+		M_Product_ID,
+		M_QualityNote_ID,
+		
+		AD_Table_ID,
+		Record_ID,
+		C_BPartner_ID,
+		AD_User_ID,
+		DateDelivered,
+		
+		R_RequestType_ID,
+		Summary,
+		
+		SalesRep_ID,
+		ConfidentialType,
+		ConfidentialTypeEntry,
+		Priority,
+		DueType,
+		R_Status_ID
+	)
 (
 	SELECT
 		io.AD_Client_ID :: numeric(10,0) as AD_Client_ID,
@@ -40,8 +117,7 @@ AS
 		
 		io.M_InOut_ID :: numeric(10,0) as M_InOut_ID,
 		iol.M_Product_ID :: numeric(10,0) as M_Product_ID,
-		(select av.Value from M_AttributeValue av where av.M_Attribute_ID = (select M_Attribute_ID from M_Attribute where value = 'QualityNotice') and av.Name = iol.qualityNote)
-		 :: character varying(255) as QualityNote,
+		(select q.M_QualityNote_ID from M_QualityNote q where q.name = iol.qualityNote):: numeric(10) as M_QualityNote_ID,
 		
 		get_table_ID('M_InOut') :: numeric as AD_Table_ID,
 		io.M_InOut_ID  :: numeric(10,0) as Record_ID,
@@ -86,16 +162,20 @@ AS
 
 		and (not exists 
 			(select 1 from R_Request r where r.Record_ID = io.M_InOut_ID and r.AD_Table_ID = get_table_ID('M_InOut')))
+	Limit 200
 
 )
+$BODY$
+LANGUAGE sql volatile;
+
 ;
 
 
  
-
-
--- execute async
 SELECT "de.metas.async".executesqlasync('
+
+select "de.metas.fresh".MigrateOldInOuts ();
+
 INSERT INTO R_Request
 	(
 		AD_Client_ID,
@@ -112,7 +192,7 @@ INSERT INTO R_Request
 		
 		M_InOut_ID,
 		M_Product_ID,
-		QualityNote,
+		M_QualityNote_ID,
 		
 		AD_Table_ID,
 		Record_ID,
@@ -144,7 +224,7 @@ INSERT INTO R_Request
 	
 	iolr.M_InOut_ID,
 	iolr.M_Product_ID,
-	iolr.QualityNote,
+	iolr.M_QualityNote_ID,
 	
 	iolr.AD_Table_ID,
 	iolr.Record_ID,
@@ -162,7 +242,7 @@ INSERT INTO R_Request
 	iolr.DueType,
 	iolr.R_Status_ID
  from temp_M_InOutLine_To_R_Request iolr
- where not exists (select 1 from R_Request where R_Request_ID = iolr.R_Request_ID) ;');
+ where not exists (select 1 from R_Request where R_Request_ID = iolr.R_Request_ID) limit 200 ;');
   --;
   
 -- Clean
