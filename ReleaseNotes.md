@@ -40,8 +40,6 @@ this week's RC
 
 # metasfresh 4.40.39 (2016-42)
 
-this week's RC
-
 ## Features
 * #443 Add is to be sent as email to doc outbound log
 * #418 Improve sales and purchase tracking reports
