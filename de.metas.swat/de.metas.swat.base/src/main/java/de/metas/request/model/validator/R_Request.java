@@ -13,6 +13,7 @@ import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_QualityNote;
 
 /*
  * #%L
@@ -81,4 +82,20 @@ public class R_Request
 
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = de.metas.request.model.I_R_Request.COLUMNNAME_M_QualityNote_ID)
+	@CalloutMethod(columnNames = { de.metas.request.model.I_R_Request.COLUMNNAME_M_QualityNote_ID })
+	public void onQualityNoteChanged(final de.metas.request.model.I_R_Request request)
+	{
+		final I_M_QualityNote qualityNote = request.getM_QualityNote();
+		if (qualityNote == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		// set the request's performance type with the value form the quality note entry
+		final String performanceType = qualityNote.getPerformanceType();
+
+		request.setPerformanceType(performanceType);
+	}
 }
