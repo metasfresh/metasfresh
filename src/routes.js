@@ -10,7 +10,9 @@ import NavigationTree from './containers/NavigationTree.js';
 
 import {
     logoutRequest,
-    logoutSuccess
+    logoutSuccess,
+    loginSuccess,
+    localLoginRequest
 } from './actions/AppActions';
 
 import {
@@ -20,8 +22,14 @@ import {
 export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
             if( !localStorage.isLogged ){
-                store.dispatch(push('/login'));
-                callback();
+                store.dispatch(localLoginRequest()).then((resp) => {
+                    if(!!resp.data){
+                        store.dispatch(loginSuccess());
+                        callback();
+                    }else{
+                        store.dispatch(push('/login'));
+                    }
+                })
             }else{
                 callback();
             }

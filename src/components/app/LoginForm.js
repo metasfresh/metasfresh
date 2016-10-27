@@ -20,6 +20,20 @@ class LoginForm extends Component {
         }
     }
 
+    handleKeyPress = (e) => {
+        if(e.key === 'Enter'){
+            this.handleLogin();
+        }
+    }
+
+    handleOnChange = (e) => {
+        e.preventDefault();
+
+        this.setState(Object.assign({}, this.state, {
+            err: ""
+        }))
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
         const {roleSelect,roles} = this.state;
@@ -50,7 +64,7 @@ class LoginForm extends Component {
     render() {
         const {roleSelect, roles, err} = this.state;
         return (
-            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+            <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo m-t-2 m-b-2" />
                 </div>
@@ -72,6 +86,7 @@ class LoginForm extends Component {
                             <div className={"form-control-label"}><small>Login</small></div>
                             <input
                                 type="text"
+                                onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
                                     (err ? "input-error " : "")}
@@ -81,6 +96,7 @@ class LoginForm extends Component {
                             <div className={"form-control-label"}><small>Password</small></div>
                             <input
                                 type="password"
+                                onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
                                     (err ? "input-error " : "")}
