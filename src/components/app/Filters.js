@@ -1,16 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-import FilterWidget from '../FilterWidget';
 import update from 'react-addons-update';
-import Moment from 'moment';
-import DateRangePicker from 'react-bootstrap-daterangepicker';
 
 import DatetimeRange from './DatetimeRange';
 import FiltersItem from './FiltersItem';
 import {
-	setFilter,
-	setFilterRequest
+	setFilter
 } from '../../actions/ListActions';
 
 import {
@@ -18,10 +14,6 @@ import {
 	initFiltersParameters,
 	deleteFiltersParameters
 } from '../../actions/AppActions';
-
-import {
-	getRootBreadcrumb
-} from '../../actions/MenuActions';
 
 class Filters extends Component {
 	constructor(props) {
@@ -33,8 +25,6 @@ class Filters extends Component {
 			openFilter: false,
 			filterDataItem: '',
 			selectedItem: '',
-			startDate: null,
-			endDate: null,
 			frequentFilterOpen: false
 		};
 	}
@@ -68,30 +58,13 @@ class Filters extends Component {
 		}))
 	}
 
-	toggleFilterMenu = (standardFilter) => {
-		const {open, openDateMenu, openFilter, filterDataItem, frequentFilterOpen} = this.state;
+	toggleFilterMenu = () => {
+		const {open} = this.state;
 
-		console.log('frequentFilterOpen' + ' ' + frequentFilterOpen);
-
-		if(standardFilter){
-			this.setState(Object.assign({}, this.state, {
-				open: !open,
-				frequentFilterOpen: false
-			}), () => {
-				this.setState(Object.assign({}, this.state, {
-					openDateMenu: false
-				}))
-			})
-		} else {
-			this.setState(Object.assign({}, this.state, {
-				openDateMenu: !openDateMenu
-			}), () => {
-				this.setState(Object.assign({}, this.state, {
-					open: false
-				}))
-			})
-		}
-
+		this.setState(Object.assign({}, this.state, {
+			open: !open,
+			frequentFilterOpen: false
+		}))
 	}
 
 	toggleFrequentFilter = (index) => {
@@ -107,7 +80,6 @@ class Filters extends Component {
 
 		const {dispatch} = this.props;
 
-		const {openFilter} = this.state;
 		this.setState(Object.assign({}, this.state, {
 			openFilter: true,
 			filterDataItem: filterData,
@@ -128,24 +100,16 @@ class Filters extends Component {
 		})
 	}
 
-	deleteFilters = () => {
-
-	}
-
 	applyFilters = () => {
 
 		const {filters, dispatch, updateDocList, windowType} = this.props;
-
 		dispatch(setFilter(filters));
-
 		setTimeout(() => { updateDocList('grid', windowType); }, 1)
-
 		this.closeFilterMenu();
 
 	}
 
 	hideFilter = () => {
-		const {openFilter} = this.state;
 		this.setState(Object.assign({}, this.state, {
 			openFilter: false,
 			openList: true,
@@ -174,41 +138,17 @@ class Filters extends Component {
 		
 		
 		dispatch(deleteFiltersParameters());
-		setTimeout(() => { dispatch(setFilter(null)); }, 1)
-		setTimeout(() => { updateDocList('grid', windowType); }, 1)
+		setTimeout(() => { dispatch(setFilter(null)); }, 1);
+		setTimeout(() => { updateDocList('grid', windowType); }, 1);
 
 		this.setSelectedItem('', true);
 		
 	}
 
-
-	// renderFilterWidget = (item, index) => {
-	// 	const {dispatch, filterData, windowType, updateDocList} = this.props;
-	// 	const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-
-	// 	return(
-	// 		<FilterWidget
-	// 		key={index}
-	// 		id={index}
-	// 		windowType={windowType}
-	// 		widgetData={item}
-	// 		item={item}
-	// 		widgetType={item.widgetType}
-	// 		updateDocList={updateDocList}
-	// 		closeFilterMenu={this.closeFilterMenu}
-	// 		setSelectedItem={this.setSelectedItem}
-	// 		selectedItem={selectedItem}
-	// 		{...filterDataItem} />
-
-	// 	)
-
-
-	// }
-
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
-		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-		console.log(this.state);
+		const {filterDataItem, selectedItem} = this.state;
+
 
 		return(
 
@@ -218,12 +158,13 @@ class Filters extends Component {
 				windowType={windowType}
 				widgetData={item}
 				item={item}
-				widgetType={item.widgetType}
+				filterDataItem={filterDataItem}
 				updateDocList={updateDocList}
 				closeFilterMenu={this.closeFilterMenu}
 				setSelectedItem={this.setSelectedItem}
 				selectedItem={selectedItem}
 				clearFilterData={this.clearFilterData}
+				applyFilters={this.applyFilters}
 				{...filterDataItem} 
 			/>
 		)
@@ -233,7 +174,7 @@ class Filters extends Component {
 
 	renderWidgetStructure = () => {
 		const {filterData} = this.props;
-		console.log(filterData);
+	
 		let freqFilter = false;
 		let notFreqFilter = false;
 
@@ -294,12 +235,12 @@ class Filters extends Component {
 
 
 	renderStandardFilter = () => {
-		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-		const {filterData, windowType, updateDocList} = this.props;
-		console.log(filterData);
+		const {openList, openFilter, filterDataItem, open} = this.state;
+		const {filterData} = this.props;
+
 		return (
 			<div className="filter-wrapper">
-				<button onClick={() => this.toggleFilterMenu(true)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (open ? " btn-active": "") }>
+				<button onClick={() => this.toggleFilterMenu()} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (open ? " btn-active": "") }>
 					<i className="meta-icon-preview" />
 					{ filterDataItem? 'Filter: '+filterDataItem.caption : 'No search filters'}
 				</button>
@@ -329,112 +270,7 @@ class Filters extends Component {
 		)
 	}
 
-	handleEvent = (event, picker) => {
-
-		//tmp
-		// <button onClick={() => this.toggleFilterMenu(false)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (openDateMenu ? " btn-active": "")}>
-  //                   <i className="meta-icon-calendar" />
-  //                       { filterDataItem? 'Filter: '+filterDataItem.caption : 'No data filters'}
-  //               </button>
-
-		// 		{ openDateMenu &&
-		// 			<div className="filters-overlay">
-
-		// 				{ openList &&
-		// 					<div className="filter-menu">
-		// 						<ul>
-		// 							{filterData && filterData.map((item, index) => 
-		// 								<div key={index}> 
-		// 									{item.frequent &&	
-		// 										<li>
-		// 											<DateRangePicker
-		// 												startDate={Moment(new Date('1/1/2014'))}
-		// 								                endDate={Moment(new Date('3/1/2014'))}
-		// 								                ranges={ranges}
-		// 								                alwaysShowCalendars={true}
-		// 								                onApply={this.handleEvent}
-		// 											>
-		// 												<span className="">
-		// 							                        {!!startDate && !!endDate ?
-		// 							                            " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
-		// 							                            item.caption
-		// 							                        }
-		// 								                </span>
-		// 											</DateRangePicker>
-
-
-		// 										</li>
-		// 									}
-		// 								</div>
-		// 							)}
-		// 						</ul>
-		// 					</div>
-		// 				}
-		// 				{ openFilter &&
-		// 					<div className="filter-menu filter-widget">
-		// 						<div>Active filter: <span className="filter-active">{filterDataItem.caption}</span> <span className="filter-clear" onClick={() => { this.clearFilterData()}}>Clear filter <i className="meta-icon-trash"></i></span> </div>
-		// 						<div className="form-group row filter-content">
-		// 							<div className="col-sm-12">
-		// 								{filterDataItem.parameters && filterDataItem.parameters.map((item, index) =>
-		// 									this.renderFilterWidget(item, index)
-		// 								)}
-		// 							</div>
-		// 						</div>
-		// 						<div className="filter-btn-wrapper">
-		// 							<button className="applyBtn btn btn-sm btn-success" onClick={() => this.applyFilters() }>Apply</button>
-		// 						</div>
-		// 					</div>
-		// 				}
-		// 			</div>
-		// 		}
-	   
-	}
-
-	renderDateFilter = () => {
-		const {openList, openFilter, filterDataItem, openDateMenu, selectedItem, startDate, endDate} = this.state;
-		const {filterData, windowType, updateDocList} = this.props;
-		const ranges = {
-			'Today': [Moment(), Moment()],
-			'Yesterday': [Moment().subtract(1, 'days'), Moment().subtract(1, 'days')],
-			'Last 7 Days': [Moment().subtract(6, 'days'), Moment()],
-			'Last 30 Days': [Moment().subtract(29, 'days'), Moment()],
-			'This Month': [Moment().startOf('month'), Moment().endOf('month')],
-			'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
-		}
-		return (
-			<div>
-
-				<DateRangePicker
-					startDate={Moment(new Date('1/1/2014'))}
-					endDate={Moment(new Date('3/1/2014'))}
-					ranges={ranges}
-					alwaysShowCalendars={true}
-					onApply={this.handleEvent}
-				>
-					<button onClick={() => this.toggleFilterMenu(false)} className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (openDateMenu ? " btn-active": "")}>
-						<i className="meta-icon-calendar" />
-						{ 'No data filters'}
-					</button>
-				</DateRangePicker>
-
-
-
-
-				
-			</div>
-		)
-	}
-
-	componentDidMount() {
-		const {dispatch} = this.props;
-		const {filterDataItem} = this.state;
-
-
-	}
-
 	render() {
-		const {openList, openFilter, filterDataItem, open, selectedItem} = this.state;
-		const {filterData, windowType, updateDocList} = this.props;
 
 		return (
 			<div>

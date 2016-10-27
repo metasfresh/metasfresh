@@ -9,8 +9,7 @@ class FiltersItem extends Component {
 	}
 
     renderFilterWidget = (item, index) => {
-        const {filterData, filterDataItem, windowType, updateDocList, closeFilterMenu, setSelectedItem, selectedItem, filters} = this.props;
-        console.log(item);
+        const {filterDataItem, windowType, updateDocList, closeFilterMenu, setSelectedItem, selectedItem} = this.props;
 
         return(
             <FilterWidget
@@ -33,7 +32,7 @@ class FiltersItem extends Component {
 
 	render() {
 
-        const {filterData, clearFilterData} = this.props;
+        const {filterData, clearFilterData, applyFilters} = this.props;
 
         return (
             <div className="filter-menu filter-widget">
@@ -41,31 +40,19 @@ class FiltersItem extends Component {
                     <div className="form-group row filter-content">
                         <div className="col-sm-12">
                             {filterData.parameters && filterData.parameters.map((item, index) =>
-                                this.renderFilterWidget(filterData, index)
+                                this.renderFilterWidget(item, index)
                             )}
                     </div>
                 </div>
                 <div className="filter-btn-wrapper">
-                    <button className="applyBtn btn btn-sm btn-success" onClick={() => this.applyFilters() }>Apply</button>
+                    <button className="applyBtn btn btn-sm btn-success" onClick={() => applyFilters() }>Apply</button>
                 </div>
             </div>
         )
 	}
 }
 
-function mapStateToProps(state) {
-    const {appHandler} = state;
-    const {
-        filters
-    } = appHandler || {
-        filters: []
-    }
 
-    return {
-        filters
-    }
-}
-
-FiltersItem = connect(mapStateToProps)(FiltersItem)
+FiltersItem = connect()(FiltersItem)
 
 export default FiltersItem
