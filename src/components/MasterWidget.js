@@ -30,7 +30,6 @@ class Widget extends Component {
 
 
         if(widgetData[0].value !== nextProps.widgetData[0].value) {
-
             if(!edited) {
                 this.setState(
                     Object.assign({}, this.state, {
@@ -57,6 +56,7 @@ class Widget extends Component {
             rowId, tabId, onChange, relativeDocId, isAdvanced = false
         } = this.props;
 
+
         const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
@@ -80,6 +80,7 @@ class Widget extends Component {
             if(widgetType !== "Button"){
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
+
             ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
         }
 
