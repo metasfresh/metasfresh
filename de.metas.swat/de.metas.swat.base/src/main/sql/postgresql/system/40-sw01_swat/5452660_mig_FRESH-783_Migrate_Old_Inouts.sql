@@ -226,6 +226,7 @@ INSERT INTO R_Request
 	iolr.DueType,
 	iolr.R_Status_ID
  from temp_M_InOutLine_To_R_Request iolr
+ where not exists (select 1 from R_Request where R_Request_ID = iolr.R_Request_ID)  ;
   --;
   
 -- Clean
