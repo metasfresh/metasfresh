@@ -553,18 +553,18 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("set") && args.length == 1)
 		{
-			final String propertyName = methodName.substring(3);
+			final String propertyNameLowerCase = methodName.substring(3).toLowerCase();
 			final Class<?> paramType = method.getParameterTypes()[0];
 			final Object value = args[0];
 			if (isModelInterface(paramType))
 			{
-				setReferencedObject(propertyName, value);
+				setReferencedObject(propertyNameLowerCase, value);
 				// throw new AdempiereException("Object setter not supported: " + method);
 				// setValueFromPO(propertyName + "_ID", paramType, value);
 			}
 			else
 			{
-				setValue(propertyName, value);
+				setValue(propertyNameLowerCase, value);
 			}
 			return null;
 		}
@@ -574,15 +574,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("get") && (args == null || args.length == 0))
 		{
-			final String propertyName = methodName.substring(3);
+			final String propertyNameLowerCase = methodName.substring(3).toLowerCase();
 
-			if (propertyName.equals(idColumnName))
+			if (propertyNameLowerCase.equals(idColumnName.toLowerCase()))
 			{
 				return getId();
 			}
 			if (isModelInterface(method.getReturnType()))
 			{
-				final Object referencedObject = getReferencedObject(propertyName, method);
+				final Object referencedObject = getReferencedObject(propertyNameLowerCase, method);
 				if (referencedObject != null)
 				{
 					final String referencedObjectTrxName = getTrxName(referencedObject);
@@ -592,7 +592,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				return referencedObject;
 			}
 
-			Object value = getValue(propertyName, method.getReturnType());
+			Object value = getValue(propertyNameLowerCase, method.getReturnType());
 			if (value != null)
 			{
 				return value;
@@ -600,7 +600,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			//
 			if (method.getReturnType() == int.class)
 			{
-				if (propertyName.endsWith("_ID"))
+				if (propertyNameLowerCase.endsWith("_ID".toLowerCase()))
 				{
 					value = DEFAULT_VALUE_ID;
 				}
@@ -622,21 +622,21 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		else if (methodName.startsWith("is") && (args == null || args.length == 0))
 		{
 			final Map<String, Object> values = getInnerValues();
-			final String propertyName = methodName.substring(2);
+			final String propertyNameLowerCase = methodName.substring(2).toLowerCase();
 			final Object value;
-			if (values.containsKey(propertyName))
+			if (values.containsKey(propertyNameLowerCase))
 			{
-				value = getValue(propertyName, method.getReturnType());
+				value = getValue(propertyNameLowerCase, method.getReturnType());
 			}
-			else if (values.containsKey("Is" + propertyName))
+			else if (values.containsKey("Is".toLowerCase() + propertyNameLowerCase))
 			{
-				value = getValue("Is" + propertyName, method.getReturnType());
+				value = getValue("Is" + propertyNameLowerCase, method.getReturnType());
 			}
 			else
 			{
 				if (strictValues)
 				{
-					throw new IllegalStateException("No property " + propertyName + " was defined for bean " + this);
+					throw new IllegalStateException("No property " + propertyNameLowerCase + " was defined for bean " + this);
 				}
 
 				value = Boolean.FALSE;
@@ -779,7 +779,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	Object getReferencedObject(final String columnName, final Method method)
 	{
 		String propertyName = columnName;
-		if (propertyName.endsWith("_ID"))
+		if (propertyName.toLowerCase().endsWith("_ID".toLowerCase()))
 		{
 			propertyName = propertyName.substring(0, propertyName.length() - 3);
 		}
@@ -795,7 +795,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// Get the column name which contains the ID of model that we are going to retrieve
 		// NOTE: atm we are supporting both cases (e.g. M_Product and M_Product_ID) to be backward compatible, but in future we shall support only the "M_Product_ID" like columns.
 		final String idColumnName;
-		if (propertyName.endsWith("_ID"))
+		if (propertyName.toLowerCase().endsWith("_ID".toLowerCase()))
 		{
 			idColumnName = propertyName;
 		}
@@ -1021,7 +1021,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public boolean hasColumnName(final String columnName)
 	{
-		if (getInnerValues().containsKey(columnName))
+		if (getInnerValues().containsKey(columnName.toLowerCase()))
 		{
 			return true;
 		}
