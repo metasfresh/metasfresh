@@ -170,3 +170,19 @@ UPDATE AD_Val_Rule SET Code='@M_QualityNote_ID/-1@ = -1 OR (AD_Ref_List.Value = 
 UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2016-10-27 13:45:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555041
 ;
 
+
+
+
+ALTER TABLE R_Request DROP COLUMN if exists qualitynote;
+
+ALTER TABLE R_Request DROP COLUMN if exists M_qualitynote_ID;
+
+
+
+
+
+-- 27.10.2016 14:55
+-- URL zum Konzept
+ALTER TABLE R_Request ADD M_QualityNote_ID NUMERIC(10) DEFAULT NULL 
+;
+
