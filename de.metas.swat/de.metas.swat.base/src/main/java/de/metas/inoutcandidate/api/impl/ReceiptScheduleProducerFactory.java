@@ -1,47 +1,31 @@
 package de.metas.inoutcandidate.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Warehouse;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.spi.AsyncReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.inoutcandidate.spi.impl.OrderLineReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.impl.OrderReceiptScheduleProducer;
 
 public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerFactory
 {
-	private final Map<String, List<Class<? extends IReceiptScheduleProducer>>> producerClasses = new HashMap<String, List<Class<? extends IReceiptScheduleProducer>>>();
+	private final Map<String, CopyOnWriteArrayList<Class<? extends IReceiptScheduleProducer>>> producerClasses = new ConcurrentHashMap<>();
+	/** Source table name to {@link IReceiptScheduleWarehouseDestProvider} */
+	private final CompositeReceiptScheduleWarehouseDestProvider warehouseDestProviders = new CompositeReceiptScheduleWarehouseDestProvider(DefaultFromOrderLineWarehouseDestProvider.instance);
 
 	public ReceiptScheduleProducerFactory()
 	{
@@ -88,21 +72,68 @@ public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerF
 	}
 
 	@Override
-	public void registerProducer(final String tableName, final Class<? extends IReceiptScheduleProducer> producerClass)
+	public IReceiptScheduleProducerFactory registerProducer(final String tableName, final Class<? extends IReceiptScheduleProducer> producerClass)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		Check.assumeNotNull(producerClass, "producerClass not null");
 
-		List<Class<? extends IReceiptScheduleProducer>> producerClassesForTable = producerClasses.get(tableName);
-		if (producerClassesForTable == null)
+		producerClasses
+				.computeIfAbsent(tableName, tableNameKey -> new CopyOnWriteArrayList<>())
+				.addIfAbsent(producerClass);
+
+		return this;
+	}
+
+	@Override
+	public IReceiptScheduleWarehouseDestProvider getWarehouseDestProvider()
+	{
+		return warehouseDestProviders;
+	}
+
+	@Override
+	public IReceiptScheduleProducerFactory registerWarehouseDestProvider(final IReceiptScheduleWarehouseDestProvider provider)
+	{
+		warehouseDestProviders.addProvider(provider);
+		return this;
+	}
+
+	/** Mutable composite {@link IReceiptScheduleWarehouseDestProvider} */
+	private static final class CompositeReceiptScheduleWarehouseDestProvider implements IReceiptScheduleWarehouseDestProvider
+	{
+		private final IReceiptScheduleWarehouseDestProvider defaultProvider;
+		private final CopyOnWriteArrayList<IReceiptScheduleWarehouseDestProvider> providers = new CopyOnWriteArrayList<>();
+
+		private CompositeReceiptScheduleWarehouseDestProvider(final IReceiptScheduleWarehouseDestProvider defaultProvider)
 		{
-			producerClassesForTable = new ArrayList<Class<? extends IReceiptScheduleProducer>>();
-			producerClasses.put(tableName, producerClassesForTable);
+			super();
+
+			Check.assumeNotNull(defaultProvider, "Parameter defaultProvider is not null");
+			this.defaultProvider = defaultProvider;
 		}
 
-		if (!producerClassesForTable.contains(producerClass))
+		@Override
+		public String toString()
 		{
-			producerClassesForTable.add(producerClass);
+			return MoreObjects.toStringHelper(this)
+					.add("providers", providers)
+					.add("defaultProvider", defaultProvider)
+					.toString();
+		}
+
+		private void addProvider(final IReceiptScheduleWarehouseDestProvider provider)
+		{
+			Check.assumeNotNull(provider, "Parameter provider is not null");
+			providers.add(provider);
+		}
+
+		@Override
+		public I_M_Warehouse getWarehouseDest(final IContext context)
+		{
+			return Stream.concat(providers.stream(), Stream.of(defaultProvider))
+					.map(provider -> provider.getWarehouseDest(context))
+					.filter(warehouseDest -> warehouseDest != null)
+					.findFirst()
+					.orElse(null);
 		}
 	}
 }

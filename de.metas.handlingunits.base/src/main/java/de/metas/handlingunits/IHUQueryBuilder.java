@@ -336,6 +336,33 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
 
 	/**
+	 * Filter only those HUs which have <code>attributeName</code> with any of the given <code>values</code>.
+	 *
+	 * <p>
+	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
+	 * opposed to any) of the specified attributes and values will match the query.
+	 *
+	 * @param attributeName
+	 * @param values list of accepted values
+	 * @return this
+	 */
+	IHUQueryBuilder addOnlyWithAttributeInList(String attributeName, Object... values);
+
+	/**
+	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
+
+	/**
+	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
+	 * 
+	 * @param attributeName
+	 */
+	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
+
+	/**
 	 * Filter only those HUs which have given internal barcode. Actually, just filter by <code>M_HU_Value</code>.
 	 *
 	 * NOTE: i.e. search for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode.
