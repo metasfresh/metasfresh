@@ -20,6 +20,11 @@ upcoming
  * #500 Migration: Create Requests for all inout lines with quality issues
  * #514 Reclamations report: group the inouts with ff.
 
+## Fixes
+* metasfresh
+ * #540 Table and Columns - IsLazyLoading flag is not displayed
+
+
 # metasfresh 4.41.40 (2016-43)
 
 this week's RC
