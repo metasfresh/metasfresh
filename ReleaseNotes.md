@@ -27,6 +27,7 @@ this week's RC
 ## Features
 * metasfresh
  * #505 Possibility to define multiple Washing Testcycles for Carrots
+   * Quality Assurance Feature for Long Term Storage vegetables. Prossibility to define Washing cycles and route  the Logistic Units to manufacturing Order.
  * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
  * #412 Get rid of AD_Tab.OrderByClause
  * #424 Migrate spring-boot from 1.3.3 to 1.4.x
