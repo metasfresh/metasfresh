@@ -64,6 +64,7 @@ public class UserSessionRestController
 	}
 	
 	@RequestMapping(value = "/dashboardUrl", method = RequestMethod.GET)
+	@Deprecated
 	public String getDashboardUrl()
 	{
 		return userSession.getDashboardUrl();
