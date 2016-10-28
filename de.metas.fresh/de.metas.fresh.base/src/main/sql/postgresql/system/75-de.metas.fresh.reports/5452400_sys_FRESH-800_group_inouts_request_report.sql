@@ -51,7 +51,7 @@ SELECT
 				CASE WHEN Count(DISTINCT io.documentNo) > 1 THEN ' ff.' ELSE '' END AS IO_Docno,
 	p.Value AS P_Value,
 	p.Name AS P_Name,
-	qn.Name AS QualityNote,
+	req.QualityNote AS QualityNote,
 	req.performanceType AS Performance,
 	req.isMaterialReturned AS isMaterialReturned,
 	req.LastResult As lastresult,
@@ -61,7 +61,7 @@ SELECT
 	to_char($3, 'DD.MM.YYYY') AS p_startdate,
 	to_char($4, 'DD.MM.YYYY') AS p_enddate,
 	(SELECT Name FROM C_BPartner WHERE C_BPartner_ID = $5) AS p_bpartner,
-	(SELECT Name FROM M_QualityNote WHERE M_QualityNote_ID = $6) AS p_qualitynote,
+	(SELECT Name FROM M_AttributeValue WHERE M_AttributeValue_ID = $6) AS p_qualitynote,
 	$7 AS p_performancetype,
 	$8 AS p_ismaterialreturned,
 	(SELECT Name FROM R_Status WHERE R_Status_ID = $9) AS p_status,
@@ -76,7 +76,7 @@ INNER JOIN M_Product p ON req.M_Product_ID = p.M_Product_ID
 
 LEFT OUTER JOIN R_Status r ON req.R_Status_ID = r.R_Status_ID 
 
-LEFT OUTER JOIN M_QualityNote qn ON req.M_QualityNote_ID = qn.M_QualityNote_ID
+LEFT OUTER JOIN M_AttributeValue av ON av.M_AttributeValue_ID = $6
 
 WHERE 
 	req.AD_Table_ID = get_table_ID ('M_InOut')
@@ -84,7 +84,7 @@ WHERE
 	AND (CASE WHEN $1 IS NOT NULL THEN req.AD_Org_ID = $1 ELSE TRUE END)
 	AND (CASE WHEN $2 IS NOT NULL THEN req.R_RequestType_ID = $2 ELSE TRUE END)
 	AND (CASE WHEN $5 IS NOT NULL THEN req.C_BPartner_ID = $5 ELSE TRUE END)
-	AND (CASE WHEN $6 IS NOT NULL THEN req.M_QualityNote_ID = $6 ELSE TRUE END)
+	AND (CASE WHEN $6 IS NOT NULL THEN req.QualityNote = av.Name ELSE TRUE END)
 	AND (CASE WHEN $7 IS NOT NULL THEN req.performanceType = $7 ELSE TRUE END)
 	AND (CASE WHEN $8 IS NOT NULL THEN req.isMaterialReturned = $8 ELSE TRUE END)
 	AND (CASE WHEN $9 IS NOT NULL THEN req.R_Status_ID = $9 ELSE TRUE END)

@@ -1443,14 +1443,15 @@ public class GridField
 		final Properties ctx = getGridFieldContextRW();
 		final int displayType = m_vo.getDisplayType();
 		// Set Context
-		if (displayType == DisplayType.Text
-				|| displayType == DisplayType.Memo
-				|| displayType == DisplayType.TextLong
-				|| displayType == DisplayType.Binary
+		if (displayType == DisplayType.Binary
 				|| displayType == DisplayType.RowID
+				// || displayType == DisplayType.Text
+				// || displayType == DisplayType.Memo
+				// || displayType == DisplayType.TextLong
 				|| isEncrypted())
 		{
-			;	// ignore
+			// ignore
+			log.trace("Skip updating context for {} because displayType={}", this, displayType);
 		}
 		else if (m_value instanceof Boolean)
 		{
