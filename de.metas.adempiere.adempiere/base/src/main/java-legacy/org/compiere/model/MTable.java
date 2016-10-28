@@ -437,54 +437,75 @@ public class MTable extends X_AD_Table
 	 */
 	public String getSQLCreate()
 	{
-		StringBuffer sb = new StringBuffer("CREATE TABLE ")
-				.append(getTableName()).append(" (");
+		final StringBuffer sb = new StringBuffer("CREATE TABLE ")
+				.append(getTableName())
+				.append(" (");
 		//
 		boolean hasPK = false;
 		boolean hasParents = false;
-		StringBuffer constraints = new StringBuffer();
+		final StringBuffer constraints = new StringBuffer();
+
 		getColumns(true);
+
 		for (int i = 0; i < m_columns.length; i++)
 		{
-			MColumn column = m_columns[i];
-			String colSQL = column.getSQLDDL();
-			if (colSQL != null)
+			final MColumn column = m_columns[i];
+			final String colSQL = column.getSQLDDL();
+			if (!Check.isEmpty(colSQL, true))
 			{
 				if (i > 0)
+				{
 					sb.append(", ");
+				}
 				sb.append(column.getSQLDDL());
 			}
-			else // virtual column
-				continue;
-			//
+			else
+			{
+				continue; // virtual column
+			}
+
 			if (column.isKey())
+			{
 				hasPK = true;
+			}
 			if (column.isParent())
+			{
 				hasParents = true;
-			String constraint = column.getConstraint(getTableName());
-			if (constraint != null && constraint.length() > 0)
+			}
+
+			final String constraint = column.getConstraint(getTableName());
+			if (!Check.isEmpty(constraint, true))
+			{
 				constraints.append(", ").append(constraint);
+		}
 		}
 		// Multi Column PK
 		if (!hasPK && hasParents)
 		{
-			StringBuffer cols = new StringBuffer();
+			final StringBuffer cols = new StringBuffer();
 			for (int i = 0; i < m_columns.length; i++)
 			{
-				MColumn column = m_columns[i];
+				final MColumn column = m_columns[i];
 				if (!column.isParent())
+				{
 					continue;
+				}
 				if (cols.length() > 0)
+				{
 					cols.append(", ");
+				}
 				cols.append(column.getColumnName());
 			}
+
 			sb.append(", CONSTRAINT ")
 					.append(getTableName()).append("_Key PRIMARY KEY (")
 					.append(cols).append(")");
 		}
 
-		sb.append(constraints)
+		sb
+				.append(constraints)
 				.append(")");
+
 		return sb.toString();
 	}	// getSQLCreate
 
