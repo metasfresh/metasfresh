@@ -25,8 +25,12 @@ $brand-dark-color: #dfe5ec;
 $brand-mandatory-color: #a8daf8;
 $brand-pulse-effect: #FDFBD4;
 
+$brand-color-disabled: #d7dfe5;
+
 $brand-icon-color: #7180b6;
 
 $checkbox-unchecked: rgba(107, 123, 134, 0.2);
 
 $breakpoint: 543px;
+
+

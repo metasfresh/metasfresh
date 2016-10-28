@@ -47,6 +47,17 @@ class DocumentList extends Component {
         return !!nextState.layout && !!nextState.data;
     }
 
+    componentDidUpdate(prevProps) {
+        const {windowType, filters} = this.props;
+
+        let oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
+        let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
+
+        if(newFilter !== oldFilter){
+            this.updateData('grid', windowType);
+        }
+    }
+
     updateData = (type, windowType) => {
         const {dispatch,filters} = this.props;
 

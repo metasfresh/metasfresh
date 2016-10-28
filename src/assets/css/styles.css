@@ -1460,8 +1460,23 @@ td.pulse-off input {
     color: white;
 }
 
-.btn-active {
+.btn-select {
     background: $brand-color-primary;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-active {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn-active:hover {
+    background: $brand-primary-color;
     color: white;
 }
 
