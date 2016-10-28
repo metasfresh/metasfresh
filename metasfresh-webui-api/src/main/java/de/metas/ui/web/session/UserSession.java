@@ -242,6 +242,7 @@ public class UserSession implements InitializingBean, Serializable
 		return Env.getUserRolePermissions(getCtx());
 	}
 
+	@Deprecated
 	public String getDashboardUrl()
 	{
 		return dashboardUrl;
