@@ -184,14 +184,17 @@ class Filters extends Component {
 	}
 
     renderFrequentFilterWrapper = (filterData) => {
-		const {frequentFilterOpen} = this.state;
+		const {frequentFilterOpen, selectedItem} = this.state;
 		return (
 			<div className="filter-wrapper">
 				{filterData.map((item, index) =>
 					<div className="filter-wrapper" key={index}>
 						<button
                             onClick={() => this.toggleFrequentFilter(index)}
-                            className={"btn btn-meta-outline-secondary btn-distance btn-sm" + (open ? " btn-active": "") }
+                            className={
+                                "btn btn-meta-outline-secondary btn-distance btn-sm" +
+                                (selectedItem.filterId === item.filterId ? " btn-active": "")
+                            }
                         >
 							<i className="meta-icon-preview" />
 							{ item ? 'Filter: ' + item.caption : 'No search filters'}
@@ -242,9 +245,23 @@ class Filters extends Component {
 }
 
 Filters.propTypes = {
-	dispatch: PropTypes.func.isRequired
+	dispatch: PropTypes.func.isRequired,
+    filters: PropTypes.array.isRequired
 };
 
-Filters = connect()(onClickOutside(Filters))
+function mapStateToProps(state) {
+    const {listHandler} = state;
+    const {
+        filters
+    } = listHandler || {
+        filters: []
+    }
+
+    return {
+        filters
+    }
+}
+
+Filters = connect(mapStateToProps)(onClickOutside(Filters))
 
 export default Filters
