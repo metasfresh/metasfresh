@@ -45,7 +45,9 @@ public class Partition
 	 */
 	private final PartitionerConfig config;
 
-	public Partition(final PartitionerConfig config, final Collection<IDLMAware> records)
+	public Partition(
+			final PartitionerConfig config,
+			final Collection<IDLMAware> records)
 	{
 		this.config = config;
 		this.records = ImmutableList.copyOf(records);

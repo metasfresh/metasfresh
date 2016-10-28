@@ -130,7 +130,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Task 09548
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
-		engine.addModelValidator(de.metas.order.model.validator.OrderModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE, client);
+
+		engine.addModelValidator(de.metas.invoice.model.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);

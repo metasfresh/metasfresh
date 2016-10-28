@@ -424,6 +424,12 @@ public class PartitionerServiceCreatePartitionTests
 							true);
 				}
 			}
+
+			@Override
+			public void migratePartition(Partition partition, int targetLevel)
+			{
+				throw new UnsupportedOperationException();
+			}
 		});
 	}
 

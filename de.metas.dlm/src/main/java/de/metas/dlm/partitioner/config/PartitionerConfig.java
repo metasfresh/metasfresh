@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
@@ -31,7 +35,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Immutable
 public class PartitionerConfig
 {
 	/**
@@ -41,9 +45,12 @@ public class PartitionerConfig
 
 	private final List<PartitionerConfigLine> lines;
 
-	private PartitionerConfig()
+	private final String name;
+
+	private PartitionerConfig(final String name)
 	{
-		lines = new ArrayList<>();
+		this.lines = new ArrayList<>();
+		this.name = name;
 	}
 
 	public int getDLM_Partition_Config_ID()
@@ -62,23 +69,26 @@ public class PartitionerConfig
 	 */
 	public List<PartitionerConfigLine> getLines()
 	{
-		return lines;
+		return ImmutableList.copyOf(lines);
 	}
 
-	public static Builder builder()
+	public String getName()
 	{
-		return new Builder();
+		return name;
 	}
 
 	/**
-	 * Creates a new builder and "prepopulates" it using the lines and references from the given <code>config</code>.
 	 *
-	 * @param config
-	 * @return
+	 * @param tableName
+	 * @return a list of {@link PartitionerConfigReference}s which reference the given table name (ignoring upper/lower case).
 	 */
-	public static Builder builder(final PartitionerConfig config)
+	public List<PartitionerConfigReference> getReferences(final String tableName)
 	{
-		return new Builder(config);
+		final List<PartitionerConfigReference> references = getLines().stream()
+				.flatMap(line -> line.getReferences().stream()) // get a stream of all references
+				.filter(ref -> tableName.equalsIgnoreCase(ref.getReferencedTableName())) // filter those who refer to 'tablename'
+				.collect(Collectors.toList());
+		return references;
 	}
 
 	/**
@@ -100,6 +110,22 @@ public class PartitionerConfig
 				.findFirst();
 	}
 
+	public static Builder builder()
+	{
+		return new Builder();
+	}
+
+	/**
+	 * Creates a new builder and "prepopulates" it using the lines and references from the given <code>config</code>.
+	 *
+	 * @param config
+	 * @return
+	 */
+	public static Builder builder(final PartitionerConfig config)
+	{
+		return new Builder(config);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -109,6 +135,8 @@ public class PartitionerConfig
 	public static class Builder
 	{
 		private final List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
+
+		private String name;
 
 		private int DLM_Partition_Config_ID;
 
@@ -147,6 +175,12 @@ public class PartitionerConfig
 				}
 				lineBuilder.endLine();
 			}
+		}
+
+		public Builder setName(final String name)
+		{
+			this.name = name;
+			return this;
 		}
 
 		public Builder setDLM_Partition_Config_ID(final int dlm_Partition_Config_ID)
@@ -199,7 +233,7 @@ public class PartitionerConfig
 		{
 			assertLineTableNamesUnique();
 
-			final PartitionerConfig partitionerConfig = new PartitionerConfig();
+			final PartitionerConfig partitionerConfig = new PartitionerConfig(name);
 			partitionerConfig.setDLM_Partition_Config_ID(DLM_Partition_Config_ID);
 
 			// first build the lines
@@ -215,19 +249,5 @@ public class PartitionerConfig
 			}
 			return partitionerConfig;
 		}
-	}
-
-	/**
-	 *
-	 * @param tableName
-	 * @return a list of {@link PartitionerConfigReference}s which reference the given table name (ignoring upper/lower case).
-	 */
-	public List<PartitionerConfigReference> getReferences(final String tableName)
-	{
-		final List<PartitionerConfigReference> references = getLines().stream()
-				.flatMap(line -> line.getReferences().stream()) // get a stream of all references
-				.filter(ref -> tableName.equalsIgnoreCase(ref.getReferencedTableName())) // filter those who refer to 'tablename'
-				.collect(Collectors.toList());
-		return references;
 	}
 }

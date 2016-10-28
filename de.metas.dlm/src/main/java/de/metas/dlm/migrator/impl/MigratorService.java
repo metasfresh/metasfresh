@@ -80,9 +80,10 @@ public class MigratorService implements IMigratorService
 		// if we got here without a DLMException, then the partition can be migrated
 	}
 
-	public void updateDLMLevel(final Partition partition, final int targetDlmLevel)
+	@Override
+	public void migratePartition(final Partition partition, final int targetDlmLevel)
 	{
-		updateDLMLevel0(partition, DLM_Level_TEST, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		updateDLMLevel0(partition, targetDlmLevel, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 	}
 
 	private void updateDLMLevel0(final Partition partition, final int targetDlmLevel, final IContextAware ctxAware)
@@ -92,5 +93,4 @@ public class MigratorService implements IMigratorService
 		final IDLMService dlmService = Services.get(IDLMService.class);
 		dlmService.directUpdateDLMColumn(ctxAware, partition, columnName, targetDlmLevel);
 	}
-
 }

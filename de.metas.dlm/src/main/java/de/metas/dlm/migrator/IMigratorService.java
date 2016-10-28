@@ -3,6 +3,7 @@ package de.metas.dlm.migrator;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.dlm.Partition;
+import de.metas.dlm.model.IDLMAware;
 
 /*
  * #%L
@@ -44,4 +45,12 @@ public interface IMigratorService extends ISingletonService
 	 * @throws {@link DLMReferenceException} if the given migration is not complete and therefore cannot be migrated.
 	 */
 	void testMigratePartition(Partition partition);
+
+	/**
+	 * Changes the {@link IDLMAware#COLUMNNAME_DLM_Level} to the given <code>targetLevel</code> for all records for the given <code>partition</code>.
+	 *
+	 * @param partition
+	 * @param targetLevel
+	 */
+	void migratePartition(Partition partition, int targetLevel);
 }

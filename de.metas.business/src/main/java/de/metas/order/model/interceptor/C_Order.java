@@ -1,4 +1,4 @@
-package de.metas.order.model.validator;
+package de.metas.order.model.interceptor;
 
 import java.math.BigDecimal;
 import java.util.List;
