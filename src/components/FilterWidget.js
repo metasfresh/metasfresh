@@ -2,12 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import {
-    updateFiltersParameters,
-    initFiltersParameters,
-    deleteFiltersParameters
-} from '../actions/AppActions';
-
-import {
     patch,
     updateProperty,
     findRowByPropName
@@ -15,8 +9,10 @@ import {
 
 import {
     setFilter,
+    updateFiltersParameters,
+    initFiltersParameters,
+    deleteFiltersParameters
 } from '../actions/ListActions';
-
 
 import Datetime from 'react-datetime';
 import Lookup from './widget/Lookup';
@@ -37,7 +33,7 @@ class FilterWidget extends Component {
 
 
     handlePatch = (property, value, paramId) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filters} = this.props;
+        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
 
         dispatch(updateFiltersParameters(filterId, property, value));
 
@@ -98,7 +94,12 @@ class FilterWidget extends Component {
     }
 
     render() {
-        const {caption, widgetType, parameters, windowType, type, noLabel, widgetData, icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id, item, filters} = this.props;
+        const {
+            caption, widgetType, parameters, windowType, type, noLabel, widgetData,
+            icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
+            item, filter
+        } = this.props;
+        
         const {updated} = this.state;
 
         if(widgetData){
@@ -119,7 +120,7 @@ class FilterWidget extends Component {
                                     filterId={filterId}
                                     parameterName={widgetData.parameterName}
                                     setSelectedItem={setSelectedItem}
-                                    selectedItem={filters.parameters.length? ( filters.parameters[id].value  ? filters.parameters[id].value : '' ) : ''}
+                                    selectedItem={filter.parameters.length? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
                                     handleFocus={this.handleFocus}
                                     id={id}
                                     handleChange={this.handleChange}
@@ -137,19 +138,19 @@ class FilterWidget extends Component {
 
 FilterWidget.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    filters: PropTypes.object.isRequired
+    filter: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {appHandler} = state;
+    const {listHandler} = state;
     const {
-        filters
-    } = appHandler || {
-        filters: []
+        filter
+    } = listHandler || {
+        filter: {}
     }
 
     return {
-        filters
+        filter
     }
 }
 

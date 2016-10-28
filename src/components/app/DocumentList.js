@@ -21,13 +21,12 @@ import {
 class DocumentList extends Component {
     constructor(props){
         super(props);
-        const {filters, type, windowType} = props;
+        const {type, windowType} = props;
 
         this.state = {
             data: null,
             layout: null
         }
-
 
         this.updateData(type, windowType);
     }
@@ -239,7 +238,7 @@ function mapStateToProps(state) {
         page,
         sorting
     } = listHandler || {
-        filters: [],
+        filters: {},
         page: 1,
         sorting: {}
     }
