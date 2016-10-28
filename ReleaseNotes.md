@@ -29,8 +29,11 @@ this week's RC
  * #505 Possibility to define multiple Washing Testcycles for Carrots
    * Quality Assurance Feature for Long Term Storage vegetables. Prossibility to define Washing cycles and route  the Logistic Units to manufacturing Order.
  * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
+   * Adding better descriptions for Parameters in Payment selection Process.
  * #412 Get rid of AD_Tab.OrderByClause
+   * Adapting the sorting machanism in Tabs to allow Layout engines to receive precise Informations which columns are sorted. Initially needed for new WebUI.
  * #424 Migrate spring-boot from 1.3.3 to 1.4.x
+   * Updated spring boot-from to to allow the usage of a recent elasticsearch version.
   
 * metasfresh-webui
  * #27 Support for custom order bys in browseView
