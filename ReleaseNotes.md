@@ -42,11 +42,17 @@ this week's RC
   
 * metasfresh-webui
  * #27 Support for custom order bys in browseView
+   * Added new Support for a custom order by criteria in grid-/ browse view.
  * #29 Adapt Invoice candidates window to webui
+   * Adapted the Invoice Candidates window to WebUI.
  * #31 Implement document actions
+   * Implemented the Document Action for the Web User Interface.
  * #32 Implement document references
+   * Provided the Document References to embed these in navigation contex of each document.
  * #33 Implement document filters from AD_UserQuery
+   * New and much easier Filtering criteria for data selections in metasfresh nextgen.
  * #20 Cache lookups
+   * Optimize lookups content loading with cache functionality.
 
 ## Fixes
 * metasfresh
