@@ -27,8 +27,6 @@ upcoming
 
 # metasfresh 4.41.40 (2016-43)
 
-this week's RC
-
 ## Features
 * metasfresh
  * #505 Possibility to define multiple Washing Testcycles for Carrots
