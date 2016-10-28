@@ -17,8 +17,8 @@ upcoming
 
 ## Features
 * metasfresh
-  * #500 Migration: Create Requests for all inout lines with quality issues
-  * #514 Reclamations report: group the inouts with ff.
+ * #500 Migration: Create Requests for all inout lines with quality issues
+ * #514 Reclamations report: group the inouts with ff.
 
 # metasfresh 4.41.40 (2016-43)
 
@@ -26,56 +26,54 @@ this week's RC
 
 ## Features
 * metasfresh
-  * #505 Possibility to define multiple Washing Testcycles for Carrots
-  * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
-  * #412 Get rid of AD_Tab.OrderByClause
-  * #424 Migrate spring-boot from 1.3.3 to 1.4.x
+ * #505 Possibility to define multiple Washing Testcycles for Carrots
+ * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
+ * #412 Get rid of AD_Tab.OrderByClause
+ * #424 Migrate spring-boot from 1.3.3 to 1.4.x
   
 * metasfresh-webui
-  * #27 Support for custom order bys in browseView
-  * #29 Adapt Invoice candidates window to webui
-  * #31 Implement document actions
-  * #32 Implement document references
-  * #33 Implement document filters from AD_UserQuery
-  * #20 Cache lookups
+ * #27 Support for custom order bys in browseView
+ * #29 Adapt Invoice candidates window to webui
+ * #31 Implement document actions
+ * #32 Implement document references
+ * #33 Implement document filters from AD_UserQuery
+ * #20 Cache lookups
 
 ## Fixes
 * metasfresh
-  * #508 Creating User without Business Partner throws Exception
-  * #487 Attribute editor dialog stores empty field as ''
+ * #508 Creating User without Business Partner throws Exception
+ * #487 Attribute editor dialog stores empty field as ''
 
 # metasfresh 4.40.39 (2016-42)
 
 ## Features
-* #443 Add is to be sent as email to doc outbound log
-* #418 Improve sales and purchase tracking reports
+ * #443 Add is to be sent as email to doc outbound log
+ * #418 Improve sales and purchase tracking reports
 
 ## Fixes
-* #407 CCache always creates HashMap cache even if LRU was requested
-* #428 NPE when reversing an invoice including a product with inactive UOM conversion
-* #492 build issue with jaxb2-maven-plugin 1.6 and java-8
-* #483 Gebindeübersicht Report Typo fix
-* #482 Unable to issue certain HUs to a PP_Order
-* #494 R_Request new Request context missing
+ * #407 CCache always creates HashMap cache even if LRU was requested
+ * #428 NPE when reversing an invoice including a product with inactive UOM conversion
+ * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
+ * #483 Gebindeübersicht Report Typo fix
+ * #482 Unable to issue certain HUs to a PP_Order
+ * #494 R_Request new Request context missing
 
 # metasfresh 4.39.38 (2016-41)
 
 ## Features
-* #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
+ * #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
    - Changing the Field in Material Receipt Schedule fpr Packing Materiel. Swapped from pirtual to physical column.
 
 
 ## Fixes
-* #448 Rounding issue with partical credit memos
+ * #448 Rounding issue with partical credit memos
    - Fixing a rounding issue which popped up after createing a partial credit memo for referenced invoice document.
-* #270 Purchase Order from Sales Order Process wrong Aggregation
+ * #270 Purchase Order from Sales Order Process wrong Aggregation
    - Optimized the Purchase Order creation process from Procurement candidates. Purchase Orders are now aggregated properly when identical Vendor and products (and further details).
-* #433 C_Order copy with details: Packing Instructions are not copied
+ * #433 C_Order copy with details: Packing Instructions are not copied
    - Fixed a Bug when using Copy with details in c_order. Packing Instructions are now copied too.
 
 # metasfresh 4.38.37 (2016-40)
-
-this week's RC
 
 ## Features
  * #395 Add Description in Jasper Invoice Vendor
