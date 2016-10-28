@@ -873,3 +873,52 @@ UPDATE AD_TreeNodeMM SET Parent_ID=153, SeqNo=32, Updated=now(), UpdatedBy=100 W
 UPDATE AD_TreeNodeMM SET Parent_ID=153, SeqNo=33, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540575 AND AD_Tree_ID=10
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Oct 28, 2016 11:41 AM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=60,Updated=TO_TIMESTAMP('2016-10-28 11:41:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557374
+;
+
+-- Oct 28, 2016 11:41 AM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Included_Tab_ID=540769,Updated=TO_TIMESTAMP('2016-10-28 11:41:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557374
+;
+
+-- Oct 28, 2016 11:42 AM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsGridModeOnly='Y', IsSearchActive='N',Updated=TO_TIMESTAMP('2016-10-28 11:42:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540768
+;
+
+-- Oct 28, 2016 11:43 AM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsGridModeOnly='N', IsSearchActive='Y',Updated=TO_TIMESTAMP('2016-10-28 11:43:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540768
+;
+
+-- Oct 28, 2016 11:43 AM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsGridModeOnly='Y', IsSearchActive='N',Updated=TO_TIMESTAMP('2016-10-28 11:43:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540769
+;
+
