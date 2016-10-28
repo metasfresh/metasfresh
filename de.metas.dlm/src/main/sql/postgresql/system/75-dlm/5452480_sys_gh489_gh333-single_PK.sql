@@ -50,6 +50,62 @@ ALTER TABLE M_MovementLineMA DROP CONSTRAINT IF EXISTS m_movementlinema_pkey
 ALTER TABLE M_MovementLineMA ADD CONSTRAINT m_movementlinema_pkey PRIMARY KEY (M_MovementLineMA_ID)
 ;
 
+--
+-- DDL for creating a single PK for M_HU_Snapshot
+--
+-- 28.10.2016 06:34
+-- URL zum Konzept
+ALTER TABLE M_HU_Snapshot ADD COLUMN M_HU_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_snapshot_seq')
+;
+
+-- 28.10.2016 06:34
+-- URL zum Konzept
+ALTER TABLE M_HU_Snapshot DROP CONSTRAINT IF EXISTS m_hu_snapshot_pkey
+;
+
+-- 28.10.2016 06:34
+-- URL zum Konzept
+ALTER TABLE M_HU_Snapshot ADD CONSTRAINT m_hu_snapshot_pkey PRIMARY KEY (M_HU_Snapshot_ID)
+;
+
+--
+-- DDL for creating a single PK for M_HU_Storage_Snapshot
+--
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Storage_Snapshot ADD COLUMN M_HU_Storage_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_storage_snapshot_seq')
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Storage_Snapshot DROP CONSTRAINT IF EXISTS m_hu_storage_snapshot_pkey
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Storage_Snapshot ADD CONSTRAINT m_hu_storage_snapshot_pkey PRIMARY KEY (M_HU_Storage_Snapshot_ID)
+;
+
+--
+-- DDL for creating a single PK for M_HU_Attribute_Snapshot
+--
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Attribute_Snapshot ADD COLUMN M_HU_Attribute_Snapshot_ID numeric(10,0) NOT NULL DEFAULT nextval('m_hu_attribute_snapshot_seq')
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Attribute_Snapshot DROP CONSTRAINT IF EXISTS m_hu_attribute_snapshot_pkey
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+ALTER TABLE M_HU_Attribute_Snapshot ADD CONSTRAINT m_hu_attribute_snapshot_pkey PRIMARY KEY (M_HU_Attribute_Snapshot_ID)
+;
+
+
+
 COMMIT;
 
 
@@ -208,4 +264,46 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 -- 26.10.2016 14:51
 -- URL zum Konzept
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=557357 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+
+
+--
+-- DML to give M_HU_Snapshot a single PK column (FRESH-618 gh #333)
+--
+-- 28.10.2016 06:34
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,555346,542807,0,13,540669,'N','M_HU_Snapshot_ID',TO_TIMESTAMP('2016-10-28 06:34:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','Handling Units (snapshot)',TO_TIMESTAMP('2016-10-28 06:34:40','YYYY-MM-DD HH24:MI:SS'),100,1)
+;
+
+-- 28.10.2016 06:34
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555346 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+
+--
+-- DML to give M_HU_Storage_Snapshot_ID a single PK column (FRESH-618 gh #333)
+--
+-- 28.10.2016 06:35
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,555347,542811,0,13,540672,'N','M_HU_Storage_Snapshot_ID',TO_TIMESTAMP('2016-10-28 06:35:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','Handling Units Storage Snapshot',TO_TIMESTAMP('2016-10-28 06:35:17','YYYY-MM-DD HH24:MI:SS'),100,1)
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555347 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+--
+-- DML to give M_HU_Attribute_Snapshot_ID a single PK column (FRESH-618 gh #333)
+--
+-- 28.10.2016 06:35
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,555348,542810,0,13,540671,'N','M_HU_Attribute_Snapshot_ID',TO_TIMESTAMP('2016-10-28 06:35:34','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','Handling Units Attribute',TO_TIMESTAMP('2016-10-28 06:35:34','YYYY-MM-DD HH24:MI:SS'),100,1)
+;
+
+-- 28.10.2016 06:35
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555348 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
