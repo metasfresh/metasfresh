@@ -22,7 +22,7 @@ public class X_AD_JavaClass_Type extends org.compiere.model.PO implements I_AD_J
       super (ctx, AD_JavaClass_Type_ID, trxName);
       /** if (AD_JavaClass_Type_ID == 0)
         {
-			setAD_EntityType_ID (0);
+			setEntityType (0);
 			setAD_JavaClass_Type_ID (0);
 			setName (null);
         } */
@@ -43,41 +43,30 @@ public class X_AD_JavaClass_Type extends org.compiere.model.PO implements I_AD_J
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_EntityType getAD_EntityType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_EntityType_ID, org.compiere.model.I_AD_EntityType.class);
-	}
 
-	@Override
-	public void setAD_EntityType(org.compiere.model.I_AD_EntityType AD_EntityType)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_EntityType_ID, org.compiere.model.I_AD_EntityType.class, AD_EntityType);
-	}
-
-	/** Set EntitĂ¤ts-Art.
-		@param AD_EntityType_ID
-		SystementitĂ¤ts-Art
+	/**
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
+	public static final int ENTITYTYPE_AD_Reference_ID=389;
+	/** Set Entitäts-Art.
+		@param EntityType
+		Dictionary Entity Type; Determines ownership and synchronization
 	  */
 	@Override
-	public void setAD_EntityType_ID (int AD_EntityType_ID)
+	public void setEntityType (java.lang.String EntityType)
 	{
-		if (AD_EntityType_ID < 1)
-			set_Value (COLUMNNAME_AD_EntityType_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_EntityType_ID, Integer.valueOf(AD_EntityType_ID));
+
+		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get EntitĂ¤ts-Art.
-		@return SystementitĂ¤ts-Art
+	/** Get Entitäts-Art.
+		@return Dictionary Entity Type; Determines ownership and synchronization
 	  */
 	@Override
-	public int getAD_EntityType_ID ()
+	public java.lang.String getEntityType ()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_EntityType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
 	/** Set Java Class Type.
