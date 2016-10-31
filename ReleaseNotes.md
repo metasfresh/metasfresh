@@ -22,6 +22,7 @@ upcoming
 
 ## Fixes
 * metasfresh
+ * FRESH-823:#536 Context bug in MLookup
  * #540 Table and Columns - IsLazyLoading flag is not displayed
 
 
