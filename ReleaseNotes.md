@@ -11,7 +11,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.42.40 (2016-44)
+# metasfresh 4.42.41 (2016-44)
 
 upcoming
 
