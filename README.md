@@ -19,4 +19,4 @@ Do you want to help improving documentation, contribute some code or participate
 If you would like to get in touch with other contributors then just join our chat on Gitter: [metasfresh Gitter](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ##What's new in metasfresh ERP?##
-If you are interested in latest improvements or bug fixes of metasfresh ERp, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
+If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).

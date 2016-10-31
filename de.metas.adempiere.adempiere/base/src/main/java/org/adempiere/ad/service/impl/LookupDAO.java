@@ -13,11 +13,11 @@ package org.adempiere.ad.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,9 +36,9 @@ import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
@@ -122,7 +122,7 @@ public class LookupDAO implements ILookupDAO
 	/* package */static class TableRefInfo implements ITableRefInfo
 	{
 		// NOTE to developer: make sure all the fields are primitives or immutable.
-		
+
 		@SuppressWarnings("unused")
 		private final String name; // used only for debugging
 		private final String TableName;
@@ -331,6 +331,15 @@ public class LookupDAO implements ILookupDAO
 		{
 			return autoComplete;
 		}
+
+		@Override
+		public boolean isNumericKey()
+		{
+
+			final boolean isNumeric = KeyColumn.endsWith("_ID");
+			return isNumeric;
+
+		}
 	}
 
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
@@ -434,7 +443,7 @@ public class LookupDAO implements ILookupDAO
 		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
 		if (tableRefInfo == null)
 		{
-			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
+			logger.error("no table ref={}", AD_Reference_ID);
 			return null;
 		}
 
@@ -444,7 +453,7 @@ public class LookupDAO implements ILookupDAO
 	@Override
 	public boolean isTableReference(final int AD_Reference_Value_ID)
 	{
-		if(AD_Reference_Value_ID <= 0)
+		if (AD_Reference_Value_ID <= 0)
 		{
 			return false;
 		}
@@ -452,9 +461,10 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Cached(cacheName = I_AD_Ref_Table.Table_Name + "#by#" + I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID)
+	@Override
 	public ITableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
 	{
-		if(AD_Reference_ID <= 0)
+		if (AD_Reference_ID <= 0)
 		{
 			logger.warn("retrieveTableRefInfoOrNull: Invalid AD_Reference_ID={}. Returning null", AD_Reference_ID);
 			return null;
@@ -588,15 +598,15 @@ public class LookupDAO implements ILookupDAO
 				"Direct_" + tableName,
 				tableName,
 				keyColumn,
-				null,  // DisplayColumn,
-				false,  // isValueDisplayed,
-				null,  // displayColumnSQL,
-				false,  // IsTranslated,
-				null,  // WhereClause,
-				null,  // OrderByClause,
-				-1,  // ZoomWindow,
-				-1,  // ZoomWindowPO,
-				-1,  // overrideZoomWindow
+				null,     // DisplayColumn,
+				false,     // isValueDisplayed,
+				null,     // displayColumnSQL,
+				false,     // IsTranslated,
+				null,     // WhereClause,
+				null,     // OrderByClause,
+				-1,     // ZoomWindow,
+				-1,     // ZoomWindowPO,
+				-1,     // overrideZoomWindow
 				autoComplete // autoComplete
 		);
 		return tableRefInfo;
@@ -928,14 +938,14 @@ public class LookupDAO implements ILookupDAO
 
 		final IStringExpression sqlWhereClauseExpr = validationRule.getPrefilterWhereClause();
 		final String sqlWhereClause;
-		if(sqlWhereClauseExpr.isNullExpression())
+		if (sqlWhereClauseExpr.isNullExpression())
 		{
 			sqlWhereClause = "";
 		}
 		else
 		{
 			sqlWhereClause = sqlWhereClauseExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
-			if(sqlWhereClauseExpr.isNoResult(sqlWhereClause))
+			if (sqlWhereClauseExpr.isNoResult(sqlWhereClause))
 			{
 				return null;
 			}
@@ -1024,7 +1034,7 @@ public class LookupDAO implements ILookupDAO
 		{
 			final IStringExpression validationExpr = lookupInfo.getValidationRule().getPrefilterWhereClause();
 			validation = validationExpr.evaluate(validationCtx, OnVariableNotFound.ReturnNoResult);
-			if(validationExpr.isNoResult(validation))
+			if (validationExpr.isNoResult(validation))
 			{
 				validation = null;
 			}
