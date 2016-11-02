@@ -12,7 +12,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.process.C_FlatrateTerm_Create;
+import de.metas.flatrate.process.C_Flatrate_Term_Create;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
@@ -39,18 +39,18 @@ import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
  * #L%
  */
 
-public class C_Flatrate_Term_Create_For_MaterialTracking extends C_FlatrateTerm_Create
+public class C_Flatrate_Term_Create_For_MaterialTracking extends C_Flatrate_Term_Create
 		implements ISvrProcessPrecondition
 {
 
 	private int p_flatrateconditionsID;
 
 	@Override
-	public boolean isPreconditionApplicable(GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (InterfaceWrapperHelper.isInstanceOf(gridTab, I_M_Material_Tracking.class))
+		if(I_M_Material_Tracking.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(gridTab, I_M_Material_Tracking.class);
+			final I_M_Material_Tracking materialTracking = context.getModel(I_M_Material_Tracking.class);
 
 			// no need to create a new flatrate term if it is already set
 			if (materialTracking.getC_Flatrate_Term_ID() > 0)

@@ -74,7 +74,7 @@ import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_Contract_Change;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
-import de.metas.flatrate.process.C_FlatrateTerm_Extend;
+import de.metas.flatrate.process.C_Flatrate_Term_Extend;
 import de.metas.flatrate.process.C_Flatrate_Term_Change;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -447,7 +447,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		// now run the process
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Extend.class)
+				.setProcessClass(C_Flatrate_Term_Extend.class)
 				.setParameter(I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, true)
 				.run();
 

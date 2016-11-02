@@ -39,7 +39,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.process.Param;
 
-public class C_FlatrateTerm_Extend
+public class C_Flatrate_Term_Extend
 		extends SvrProcess
 {
 	@Param(parameterName = I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, mandatory = true)
