@@ -169,7 +169,7 @@ public class C_Flatrate_Term
 	})
 	public void validatePeriods(final I_C_Flatrate_Term term)
 	{
-		if (term.getStartDate() != null)
+		if (term.getStartDate() != null && !term.isProcessed())
 		{
 			Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 		}
@@ -419,7 +419,7 @@ public class C_Flatrate_Term
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
 	 *
 	 * @param term
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -440,6 +440,8 @@ public class C_Flatrate_Term
 					{
 						predecessorTerm.setNoticeDate(newEndDate);
 					}
+
+					InterfaceWrapperHelper.save(predecessorTerm);
 				});
 	}
 
