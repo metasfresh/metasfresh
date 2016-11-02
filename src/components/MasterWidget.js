@@ -28,7 +28,6 @@ class Widget extends Component {
         const {widgetData} = this.props;
         const {edited} = this.state;
 
-
         if(widgetData[0].value !== nextProps.widgetData[0].value) {
             if(!edited) {
                 this.setState(

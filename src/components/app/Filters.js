@@ -58,10 +58,11 @@ class Filters extends Component {
 		}))
 	}
 
-	toggleFrequentFilter = (index) => {
+	toggleFrequentFilter = (index, filterData) => {
 		this.setState(Object.assign({}, this.state, {
 			frequentFilterOpen: index,
-			notFrequentFilterOpen: false
+			notFrequentFilterOpen: false,
+            filterDataItem: filterData
 		}))
 	}
 
@@ -114,7 +115,7 @@ class Filters extends Component {
 
 		data.parameters.map((item, id) => {
 			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
-		})
+		});
 
 		dispatch(deleteFiltersParameters());
         dispatch(setFilter(null));
@@ -125,8 +126,8 @@ class Filters extends Component {
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
 		const {filterDataItem, selectedItem} = this.state;
-
-		return(
+        console.log(filterDataItem);
+		return (
 			<FiltersItem
 				key={key}
 				filterData={item}
@@ -140,7 +141,6 @@ class Filters extends Component {
 				selectedItem={selectedItem}
 				clearFilterData={this.clearFilterData}
 				applyFilters={this.applyFilters}
-				{...filterDataItem}
 			/>
 		)
 	}
@@ -185,12 +185,13 @@ class Filters extends Component {
 
     renderFrequentFilterWrapper = (filterData) => {
 		const {frequentFilterOpen, selectedItem} = this.state;
+
 		return (
 			<div className="filter-wrapper">
 				{filterData.map((item, index) =>
 					<div className="filter-wrapper" key={index}>
 						<button
-                            onClick={() => this.toggleFrequentFilter(index)}
+                            onClick={() => this.toggleFrequentFilter(index, item)}
                             className={
                                 "btn btn-meta-outline-secondary btn-distance btn-sm" +
                                 (selectedItem.filterId === item.filterId ? " btn-active": "")
