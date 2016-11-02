@@ -19,7 +19,6 @@ class RawWidget extends Component {
        this.state = {
             textValue: props.selectedItem
        }
-
     }
 
     handleSelectedValue = (item) => {

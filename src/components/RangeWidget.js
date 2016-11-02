@@ -1,21 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    updateFiltersParameters
-} from '../actions/ListActions';
-
 import RawWidget from './RawWidget';
 
-class FilterWidget extends Component {
+class RangeWidget extends Component {
     constructor(props) {
         super(props);
-    }
-
-    handlePatch = (property, value, paramId) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
-
-        dispatch(updateFiltersParameters(filterId, property, value));
     }
 
     render() {
@@ -24,6 +14,7 @@ class FilterWidget extends Component {
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
             item, filter
         } = this.props;
+
 
         if(widgetData){
             return (
@@ -60,24 +51,10 @@ class FilterWidget extends Component {
     }
 }
 
-FilterWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    filter: PropTypes.object.isRequired
+RangeWidget.propTypes = {
+    dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const {listHandler} = state;
-    const {
-        filter
-    } = listHandler || {
-        filter: {}
-    }
+RangeWidget = connect()(RangeWidget)
 
-    return {
-        filter
-    }
-}
-
-FilterWidget = connect(mapStateToProps)(FilterWidget)
-
-export default FilterWidget
+export default RangeWidget
