@@ -87,8 +87,8 @@ class Filters extends Component {
 	}
 
 	applyFilters = () => {
-		const {filters, dispatch, updateDocList, windowType} = this.props;
-		dispatch(setFilter(filters));
+		const {filter, dispatch, updateDocList, windowType} = this.props;
+		dispatch(setFilter(filter));
 		this.closeFilterMenu();
 	}
 
@@ -246,19 +246,23 @@ class Filters extends Component {
 
 Filters.propTypes = {
 	dispatch: PropTypes.func.isRequired,
-    filters: PropTypes.array.isRequired
+    filters: PropTypes.array.isRequired,
+    filter: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
     const {listHandler} = state;
     const {
-        filters
+        filters,
+        filter
     } = listHandler || {
-        filters: []
+        filters: [],
+        filter: {}
     }
 
     return {
-        filters
+        filters,
+        filter
     }
 }
 

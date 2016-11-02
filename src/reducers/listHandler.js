@@ -21,11 +21,13 @@ export default function listHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 filters: action.filter != null ? [action.filter] : []
             })
+
         case types.SET_LIST_PAGINATION:
             return Object.assign({}, state, {
                 page: action.page,
                 windowType: action.windowType
             })
+
         case types.SET_LIST_SORTING:
             return Object.assign({}, state, {
                 sorting: Object.assign({}, state.sorting, {
@@ -34,6 +36,7 @@ export default function listHandler(state = initialState, action) {
                     windowType: action.windowType
                 })
             })
+
         case types.CLEAR_LIST_PROPS:
             return Object.assign({}, state, {
                 filters: [],
@@ -62,7 +65,7 @@ export default function listHandler(state = initialState, action) {
 
         case types.UPDATE_FILTERS_PARAMETERS:
             return Object.assign({}, state, {
-                filter: Object.assign({}, state.filters, {
+                filter: Object.assign({}, state.filter, {
                     filterId: action.filterId,
                     parameters: state.filter.parameters.map(item =>
                         (item.parameterName === action.property) ?

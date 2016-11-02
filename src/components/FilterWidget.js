@@ -28,23 +28,13 @@ class FilterWidget extends Component {
             cachedValue: null,
             updated: false
         }
-
     }
-
 
     handlePatch = (property, value, paramId) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
 
         dispatch(updateFiltersParameters(filterId, property, value));
-
     }
-
-    //
-    // This method may looks like a redundant for this one above,
-    // but is need to handle controlled components if
-    // they patch on other event than onchange
-    //
-
 
     handleFocus = (e, value) => {
         e.preventDefault();
@@ -90,7 +80,6 @@ class FilterWidget extends Component {
                 }
             );
         }
-
     }
 
     render() {
@@ -99,7 +88,7 @@ class FilterWidget extends Component {
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
             item, filter
         } = this.props;
-        
+
         const {updated} = this.state;
 
         if(widgetData){
