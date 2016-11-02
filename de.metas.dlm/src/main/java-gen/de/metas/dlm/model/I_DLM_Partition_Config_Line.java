@@ -2,7 +2,7 @@ package de.metas.dlm.model;
 
 /**
  * Generated Interface for DLM_Partition_Config_Line
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -269,6 +269,40 @@ public interface I_DLM_Partition_Config_Line
 	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Line, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Line, Object>(I_DLM_Partition_Config_Line.class, "IsActive", null);
 	/** Column name IsActive */
 	public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set DLM aktiviert.
+	 * Die Datensätze einer Tabelle mit aktiviertem DLM können vom System unterschiedlichen DLM-Levels zugeordnet werden
+	 *
+	 * <br>
+	 * Type: YesNo
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: true
+	 * 
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsDLM(boolean IsDLM);
+
+	/**
+	 * Get DLM aktiviert.
+	 * Die Datensätze einer Tabelle mit aktiviertem DLM können vom System unterschiedlichen DLM-Levels zugeordnet werden
+	 *
+	 * <br>
+	 * Type: YesNo
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: true
+	 */
+	public boolean isDLM();
+
+	/** Column definition for IsDLM */
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Line, Object> COLUMN_IsDLM = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Line, Object>(I_DLM_Partition_Config_Line.class, "IsDLM", null);
+	/** Column name IsDLM */
+	public static final String COLUMNNAME_IsDLM = "IsDLM";
 
 	/**
 	 * Get Aktualisiert.

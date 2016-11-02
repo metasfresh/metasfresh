@@ -51,7 +51,7 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 	private int dlmCoalesceLevelBkp = -1;
 
 	// private AtomicBoolean inMethod = new AtomicBoolean(false);
-	private ThreadLocal<Boolean> inMethod = ThreadLocal.withInitial(() -> Boolean.FALSE);
+	private final ThreadLocal<Boolean> inMethod = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
 	@Override
 	public void customizeConnection(final Connection c) throws DBException
@@ -64,7 +64,7 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 
 		try
 		{
-			//final boolean wasAlreadyInMethod = inMethod.getAndSet(true);
+			// final boolean wasAlreadyInMethod = inMethod.getAndSet(true);
 			final boolean wasAlreadyInMethod = inMethod.get();
 			if (wasAlreadyInMethod)
 			{
@@ -82,7 +82,7 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 		}
 		finally
 		{
-			//inMethod.getAndSet(false);
+			// inMethod.getAndSet(false);
 			inMethod.set(false);
 		}
 	}

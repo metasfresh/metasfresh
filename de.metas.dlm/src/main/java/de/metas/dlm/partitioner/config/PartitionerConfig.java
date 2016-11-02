@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.annotation.concurrent.Immutable;
-
 import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
@@ -35,7 +33,13 @@ import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Immutable
+/**
+ * One instance specifies all tables whose records shall be part of DLM.
+ * Almost immutable; only the {@link #getDLM_Partition_Config_ID()} property is mutable.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PartitionerConfig
 {
 	/**
@@ -49,7 +53,7 @@ public class PartitionerConfig
 
 	private PartitionerConfig(final String name)
 	{
-		this.lines = new ArrayList<>();
+		lines = new ArrayList<>();
 		this.name = name;
 	}
 
@@ -129,7 +133,7 @@ public class PartitionerConfig
 	@Override
 	public String toString()
 	{
-		return "PartitionerConfig [DLM_Partition_Config_ID=" + DLM_Partition_Config_ID + ", lines=" + lines + "]";
+		return "PartitionerConfig [name=" + name + ", DLM_Partition_Config_ID=" + DLM_Partition_Config_ID + ", lines=" + lines + "]";
 	}
 
 	public static class Builder
@@ -157,6 +161,7 @@ public class PartitionerConfig
 				return;
 			}
 			setDLM_Partition_Config_ID(config.getDLM_Partition_Config_ID());
+			setName(config.getName());
 
 			for (final PartitionerConfigLine line : config.getLines())
 			{

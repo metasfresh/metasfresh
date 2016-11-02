@@ -37,6 +37,8 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
  * Meaning that this instance, together with its parents tells the engine that <code>C_Invoice</code> records can reference <code>C_Order</code> records via the foreign key column <code>C_Invoice.C_Order_ID</code>.
  *
  * Further, if {@link #getReferencedConfigLine()} is not <code>null</code>, it means that <code>C_Order</code> is also a DLM'ed table and might have its own list of config references.
+ * <p>
+ * Almost immutable; only the {@link #getDLM_Partition_Config_Reference_ID()} property is mutable.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

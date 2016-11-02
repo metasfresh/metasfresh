@@ -38,20 +38,23 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 public interface IPartitionerService extends ISingletonService
 {
 	/**
-	 * Use the given config and create a partition. Note that the records which are part of the partition are not modified by this method.
+	 * Use the given config and create and store a list of partition. Note that the {@link IDLMAware} records which are identified as parts of part of the partitions are have their {@link IDLMAware#COLUMNNAME_DLM_Partition_ID}
+	 * updated by this method.
 	 *
 	 * @param request
 	 * @return
 	 */
-	Partition createPartition(CreatePartitionRequest request);
+	List<Partition> createPartition(CreatePartitionRequest request);
+
+	Partition loadPartition(I_DLM_Partition partitionDB);
 
 	/**
 	 * Create a new DLM_Partition_Record for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
 	 *
 	 * @param partition
-	 * @return
+	 * @return a news instance that represents the just-stored partition
 	 */
-	I_DLM_Partition storePartition(Partition partition);
+	Partition storePartition(Partition partition);
 
 	/**
 	 * Persist the given config in the DB and update the ID properties on the given <code>config</code> that is stored.
@@ -66,7 +69,7 @@ public interface IPartitionerService extends ISingletonService
 	/**
 	 * Create a new config instance for the given database record.
 	 *
-	 * @param configDB
+	 * @param configDB. The DB data to load. If <code>null</code>, then return an empty config. Never return <code>null</code>.
 	 * @return
 	 */
 	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);

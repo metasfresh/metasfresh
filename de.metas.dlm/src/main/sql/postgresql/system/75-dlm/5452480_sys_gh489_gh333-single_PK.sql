@@ -104,6 +104,25 @@ ALTER TABLE M_HU_Attribute_Snapshot DROP CONSTRAINT IF EXISTS m_hu_attribute_sna
 ALTER TABLE M_HU_Attribute_Snapshot ADD CONSTRAINT m_hu_attribute_snapshot_pkey PRIMARY KEY (M_HU_Attribute_Snapshot_ID)
 ;
 
+--
+-- DDL for creating a single PK for M_AttributeInstance
+--
+
+-- 31.10.2016 14:21
+-- URL zum Konzept
+ALTER TABLE M_AttributeInstance ADD COLUMN M_AttributeInstance_ID numeric(10,0) NOT NULL DEFAULT nextval('m_attributeinstance_seq')
+;
+
+-- 31.10.2016 14:22
+-- URL zum Konzept
+ALTER TABLE M_AttributeInstance DROP CONSTRAINT IF EXISTS m_attributeinstance_pkey
+;
+
+-- 31.10.2016 14:22
+-- URL zum Konzept
+ALTER TABLE M_AttributeInstance ADD CONSTRAINT m_attributeinstance_pkey PRIMARY KEY (M_AttributeInstance_ID)
+;
+
 
 
 COMMIT;
@@ -306,4 +325,28 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 -- 28.10.2016 06:35
 -- URL zum Konzept
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555348 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+
+--
+-- DML for creating a single PK for M_AttributeInstance
+--
+-- 31.10.2016 14:21
+-- URL zum Konzept
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543223,0,'M_AttributeInstance_ID',TO_TIMESTAMP('2016-10-31 14:21:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','M_AttributeInstance','M_AttributeInstance',TO_TIMESTAMP('2016-10-31 14:21:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 31.10.2016 14:21
+-- URL zum Konzept
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=543223 AND NOT EXISTS (SELECT * FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 31.10.2016 14:21
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,555375,543223,0,13,561,'N','M_AttributeInstance_ID',TO_TIMESTAMP('2016-10-31 14:21:01','YYYY-MM-DD HH24:MI:SS'),100,'D',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','M_AttributeInstance',TO_TIMESTAMP('2016-10-31 14:21:01','YYYY-MM-DD HH24:MI:SS'),100,1)
+;
+
+-- 31.10.2016 14:21
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555375 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;

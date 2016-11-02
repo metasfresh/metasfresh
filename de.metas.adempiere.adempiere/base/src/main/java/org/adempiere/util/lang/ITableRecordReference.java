@@ -38,13 +38,31 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  */
 public interface ITableRecordReference
 {
-	/** Converts a given model to {@link ITableRecordReference} */
+	final String COLUMNNAME_Record_ID="Record_ID";
+
+	final String COLUMNNAME_AD_Table_ID="AD_Table_ID";
+
+	/**
+	 * Converts a given model to {@link ITableRecordReference}. {@link ITableRecordReference#getModel(IContextAware)} with return the model that was converted.
+	 */
 	Converter<ITableRecordReference, Object> FromModelConverter = new Converter<ITableRecordReference, Object>()
 	{
 		@Override
 		public ITableRecordReference convert(final Object model)
 		{
 			return TableRecordReference.ofOrNull(model);
+		}
+	};
+
+	/**
+	 * Converts a given model to {@link ITableRecordReference}. {@link ITableRecordReference#getModel(IContextAware)} with return the model that the converted actually references.
+	 */
+	Converter<ITableRecordReference, Object> FromReferencedModelConverter = new Converter<ITableRecordReference, Object>()
+	{
+		@Override
+		public ITableRecordReference convert(final Object model)
+		{
+			return TableRecordReference.ofReferencedOrNull(model);
 		}
 	};
 

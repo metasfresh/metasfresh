@@ -9,6 +9,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -51,22 +52,25 @@ public class MigratorService implements IMigratorService
 		{
 			return;
 		}
-		final int dlmLevelBkp = partition.getRecords().get(0).getDLM_Level();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String localTrxName = trxManager.createTrxName("testMigratePartition", false);
+
+		final ITableRecordReference firstTableRecordReference = partition.getRecords().get(0);
+		final PlainContextAware ctxAware = new PlainContextAware(Env.getCtx(), localTrxName);
+
+		final int dlmLevelBkp = firstTableRecordReference.getModel(ctxAware, IDLMAware.class).getDLM_Level();
 
 		ITrx localTrx = null;
 		try
 		{
 			localTrx = trxManager.get(localTrxName, OnTrxMissingPolicy.CreateNew);
 
-			updateDLMLevel0(partition, DLM_Level_TEST, new PlainContextAware(Env.getCtx(), localTrxName));
+			updateDLMLevel0(partition, DLM_Level_TEST, ctxAware);
 			localTrx.commit(true);
 			logger.info("Update of {} records to DLM_Level={} succeeeded!", partition.getRecords().size(), DLM_Level_TEST);
 
-			updateDLMLevel0(partition, dlmLevelBkp, new PlainContextAware(Env.getCtx(), localTrxName));
+			updateDLMLevel0(partition, dlmLevelBkp, ctxAware);
 			localTrx.commit(true);
 		}
 		catch (final SQLException e)
@@ -81,16 +85,19 @@ public class MigratorService implements IMigratorService
 	}
 
 	@Override
-	public void migratePartition(final Partition partition, final int targetDlmLevel)
+	public Partition migratePartition(final Partition partition)
 	{
-		updateDLMLevel0(partition, targetDlmLevel, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+		final int targetDlmLevel = partition.getTargetDLMLevel();
+		return updateDLMLevel0(partition, targetDlmLevel, new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 	}
 
-	private void updateDLMLevel0(final Partition partition, final int targetDlmLevel, final IContextAware ctxAware)
+	private Partition updateDLMLevel0(final Partition partition, final int targetDlmLevel, final IContextAware ctxAware)
 	{
 		final String columnName = IDLMAware.COLUMNNAME_DLM_Level;
 
 		final IDLMService dlmService = Services.get(IDLMService.class);
 		dlmService.directUpdateDLMColumn(ctxAware, partition, columnName, targetDlmLevel);
+
+		return partition.withCurrentDLMLevel(targetDlmLevel);
 	}
 }

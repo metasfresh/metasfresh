@@ -42,7 +42,7 @@ public class TableNotAddedToDLMException extends AdempiereException
 	 *
 	 * @param table the table in question. May not be <code>null</code>.
 	 */
-	public TableNotAddedToDLMException(I_AD_Table table)
+	public TableNotAddedToDLMException(final I_AD_Table table)
 	{
 		super(StringUtils.formatMessage("Table {} (AD_Table_ID={}) has not yet been added to DLM.", table.getTableName(), table.getAD_Table_ID()));
 	}

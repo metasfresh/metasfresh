@@ -65,7 +65,7 @@ public class DLM_Partition_Config_Add_TableRecord_LinesTests
 		final ImmutableList<TableReferenceDescriptor> descriptors = ImmutableList.of(
 				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
 				TableReferenceDescriptor.of(I_AD_Tab.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
-				TableReferenceDescriptor.of(I_AD_Table.Table_Name, I_AD_Column.Table_Name, I_AD_Column.COLUMNNAME_AD_Table_ID),   // some irrelevant descriptor in between
+				TableReferenceDescriptor.of(I_AD_Table.Table_Name, I_AD_Column.Table_Name, I_AD_Column.COLUMNNAME_AD_Table_ID),    // some irrelevant descriptor in between
 				TableReferenceDescriptor.of(I_AD_Tab.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
 				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
 				TableReferenceDescriptor.of(I_AD_Window.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID)); // some irrelevant descriptor in between

@@ -29,11 +29,16 @@ import de.metas.dlm.model.IDLMAware;
 
 public interface IMigratorService extends ISingletonService
 {
-	public static final int DLM_Level_LIVE = 0;
+	/**
+	 * This value is equivalent to <code>DLM_Level IS NULL</code> in the database's DLM'ed records.
+	 */
+	public static final int DLM_Level_NOT_SET = 0;
 
-	public static final int DLM_Level_TEST = 1;
+	public static final int DLM_Level_LIVE = 1;
 
-	public static final int DLM_Level_ARCHIVE = 2;
+	public static final int DLM_Level_TEST = 2;
+
+	public static final int DLM_Level_ARCHIVE = 3;
 
 	/**
 	 * Checks if the given partition could be migrated.
@@ -47,10 +52,11 @@ public interface IMigratorService extends ISingletonService
 	void testMigratePartition(Partition partition);
 
 	/**
-	 * Changes the {@link IDLMAware#COLUMNNAME_DLM_Level} to the given <code>targetLevel</code> for all records for the given <code>partition</code>.
+	 * Changes the {@link IDLMAware#COLUMNNAME_DLM_Level} to {@link Partition#getTargetDLMLevel()} for all records for the given <code>partition</code>.
 	 *
 	 * @param partition
 	 * @param targetLevel
+	 * @return a partition instance whose {@link Partition#getCurrentDLMLevel()} reflects the migration that was performed.
 	 */
-	void migratePartition(Partition partition, int targetLevel);
+	Partition migratePartition(Partition partition);
 }

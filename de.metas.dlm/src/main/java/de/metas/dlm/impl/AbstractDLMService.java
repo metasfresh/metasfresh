@@ -18,6 +18,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -126,23 +127,23 @@ public abstract class AbstractDLMService implements IDLMService
 			final String columnName,
 			final int targetValue)
 	{
-		final Map<String, List<IDLMAware>> table2Record = partition
+		final Map<String, List<ITableRecordReference>> table2Record = partition
 				.getRecords()
 				.stream()
-				.collect(Collectors.groupingBy(dlmAware -> InterfaceWrapperHelper.getModelTableName(dlmAware)));
+				.collect(Collectors.groupingBy(tableRecordRef -> tableRecordRef.getTableName().toLowerCase()));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
-		for (final Entry<String, List<IDLMAware>> tableWithRecords : table2Record.entrySet())
+		for (final Entry<String, List<ITableRecordReference>> tableWithRecords : table2Record.entrySet())
 		{
 			final String tableName = tableWithRecords.getKey();
 			final String keyColumn = columnBL.getSingleKeyColumn(tableName);
 
-			final List<IDLMAware> records = tableWithRecords.getValue();
+			final List<ITableRecordReference> records = tableWithRecords.getValue();
 			final Integer[] recordIds = records
 					.stream()
-					.map(r -> InterfaceWrapperHelper.getId(r))
+					.map(r -> r.getRecord_ID())
 					.toArray(size -> new Integer[size]);
 
 			final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, ctxAware)

@@ -1,5 +1,7 @@
 package org.adempiere.util.lang.impl;
 
+import java.lang.ref.SoftReference;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,11 +15,11 @@ package org.adempiere.util.lang.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +36,8 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+
+import com.google.common.base.Optional;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -52,7 +56,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * Creates an {@link ITableRecordReference} from the given model.
 	 * <p>
-	 * <b>IMPORTANT:</b> if this method does not inspect the given model's <code>AD_Table_ID</code> and <code>Record_ID</code> but instead returns just <code>model</code>, wrapped up as
+	 * <b>IMPORTANT:</b> this method does not inspect the given model's <code>AD_Table_ID</code> and <code>Record_ID</code> but instead returns just <code>model</code>, wrapped up as
 	 * {@link ITableRecordReference}.
 	 *
 	 * @param model model interface or {@link ITableRecordReference}; <code>null</code> is NOT allowed
@@ -82,25 +86,50 @@ public final class TableRecordReference implements ITableRecordReference
 		return of(model);
 	}
 
+	public static ITableRecordReference ofReferenced(final Object model)
+	{
+		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
+		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
+
+		return new TableRecordReference(adTableId.or(-1), recordId.or(-1));
+	}
+
+	/**
+	 * See {@link ITableRecordReference#FromReferencedModelConverter}.
+	 *
+	 * @param model
+	 * @return
+	 */
+	public static ITableRecordReference ofReferencedOrNull(final Object model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+		return ofReferenced(model);
+	}
+
 	private final int adTableId;
 	private final String tableName;
 	private final int recordId;
 	@ToStringBuilder(skip = true)
 	private Integer _hashcode;
 
-	/** Cached model */
-	private transient Object model = null;
+	/**
+	 * Cached model. Using a soft reference to avoid memory problems when *a lot* of TableRecordReference are handled.
+	 */
+	private transient SoftReference<Object> model = new SoftReference<Object>(null);
 
 	/**
 	 * Creates an instance that will be loaded on demand and is specified by the given <code>adTableId</code> and <code>recordId</code>.
+	 * <p>
+	 * Hint: Please consider using {@link ITableRecordReference#FromReferencedModelConverter} instead if this constructor.
 	 *
 	 * @param adTableId
 	 * @param recordId
 	 */
 	public TableRecordReference(final int adTableId, final int recordId)
 	{
-		super();
-
 		Check.assume(adTableId > 0, "adTableId > 0");
 		this.adTableId = adTableId;
 		this.tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
@@ -111,14 +140,14 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Creates an instance that will be loaded on demand and is specified by the given <code>tableName</code> and <code>recordId</code>.
+	 * <p>
+	 * Hint: Please consider using {@link ITableRecordReference#FromReferencedModelConverter} instead if this constructor.
 	 *
 	 * @param tableName
 	 * @param recordId
 	 */
 	public TableRecordReference(final String tableName, final int recordId)
 	{
-		super();
-
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		this.tableName = tableName;
 		this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
@@ -129,13 +158,12 @@ public final class TableRecordReference implements ITableRecordReference
 
 	private TableRecordReference(final Object model)
 	{
-		super();
-
 		Check.assumeNotNull(model, "model not null");
 		this.adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.recordId = InterfaceWrapperHelper.getId(model);
-		this.model = model;
+
+		this.model = new SoftReference<Object>(model);
 	}
 
 	@Override
@@ -145,7 +173,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -159,9 +187,9 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 
 		return new EqualsBuilder()
-				.append(this.adTableId, other.adTableId)
-				.append(this.tableName, other.tableName)
-				.append(this.recordId, other.recordId)
+				.append(adTableId, other.adTableId)
+				// .append(tableName, other.tableName) adTableId alone is sufficient, also tableName can have case differences
+				.append(recordId, other.recordId)
 				.isEqual();
 	}
 
@@ -171,9 +199,9 @@ public final class TableRecordReference implements ITableRecordReference
 		if (_hashcode == null)
 		{
 			_hashcode = new HashcodeBuilder()
-					.append(this.adTableId)
-					.append(this.tableName)
-					.append(this.recordId)
+					.append(adTableId)
+					// .append(tableName) adTableId alone is sufficient, also tableName can have case differences
+					.append(recordId)
 					.toHashcode();
 		}
 		return _hashcode;
@@ -198,14 +226,19 @@ public final class TableRecordReference implements ITableRecordReference
 
 		//
 		// Load the model now
-		if (model == null)
+		final Object cachedModel = model.get();
+		if (cachedModel != null)
 		{
-			final Properties ctx = context.getCtx();
-			final String trxName = context.getTrxName();
-			model = InterfaceWrapperHelper.create(ctx, tableName, getRecord_ID(), Object.class, trxName);
+			return cachedModel;
 		}
 
-		return model;
+		final Properties ctx = context.getCtx();
+		final String trxName = context.getTrxName();
+		final Object loadedModel = InterfaceWrapperHelper.create(ctx, tableName, getRecord_ID(), Object.class, trxName);
+
+		model = new SoftReference<Object>(loadedModel);
+
+		return loadedModel;
 	}
 
 	@Override
@@ -229,7 +262,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final String modelTrxName = InterfaceWrapperHelper.getTrxName(model);
 		if (!Services.get(ITrxManager.class).isSameTrxName(modelTrxName, context.getTrxName()))
 		{
-			model = null;
+			model = new SoftReference<Object>(null);
 			return;
 		}
 
@@ -242,9 +275,8 @@ public final class TableRecordReference implements ITableRecordReference
 		final StringBuilder builder = new StringBuilder();
 		builder.append("TableRecordReference [tableName=").append(tableName);
 		builder.append(", recordId=").append(recordId);
-		builder.append(", model=").append(model);
+		builder.append(", model=").append(model == null ? model : model.get());
 		builder.append("]");
 		return builder.toString();
 	}
-
 }

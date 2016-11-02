@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -48,19 +49,19 @@ public class ColumnBL implements IColumnBL
 		}
 
 		// name must end with "Record_ID"
-		if (!columnName.endsWith("Record_ID"))
+		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
 		{
 			return false;
 		}
 
 		// classical case
-		if (columnName.equals("Record_ID"))
+		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
 		{
 			return true;
 		}
 
 		// Column name must end with "_Record_ID"
-		if (!columnName.endsWith("_Record_ID"))
+		if (!columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID))
 		{
 			return false;
 		}
@@ -88,7 +89,7 @@ public class ColumnBL implements IColumnBL
 		int contextADTableID;
 
 		// Try with Prefix_AD_Table_ID
-		tableColumnName = prefix + "AD_Table_ID";
+		tableColumnName = prefix +  ITableRecordReference.COLUMNNAME_AD_Table_ID;
 
 		contextADTableID = Env.getContextAsInt(m_ctx, m_curWindowNo, tableColumnName);
 
@@ -116,13 +117,13 @@ public class ColumnBL implements IColumnBL
 
 		if (Adempiere.isUnitTestMode())
 		{
-			return Optional.of(prefix + "AD_Table_ID");
+			return Optional.of(prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		}
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 
 		// Try with Prefix_AD_Table_ID
-		String tableColumnName = prefix + "AD_Table_ID";
+		String tableColumnName = prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID;
 		if (poInfo.hasColumnName(tableColumnName))
 		{
 			return Optional.of(tableColumnName);
@@ -139,7 +140,7 @@ public class ColumnBL implements IColumnBL
 
 	private String extractPrefixFromRecordColumn(final String columnName)
 	{
-		final int recordStringIndex = columnName.indexOf("Record_ID");
+		final int recordStringIndex = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
 
 		final String prefix = columnName.substring(0, recordStringIndex);
 

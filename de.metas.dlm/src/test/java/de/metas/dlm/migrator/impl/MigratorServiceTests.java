@@ -2,6 +2,7 @@ package de.metas.dlm.migrator.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,8 +52,9 @@ public class MigratorServiceTests
 		InterfaceWrapperHelper.save(payment);
 
 		final IDLMAware paymentDlmAware = InterfaceWrapperHelper.create(payment, IDLMAware.class);
-		final ImmutableList<IDLMAware> records = ImmutableList.of(paymentDlmAware);
-		final Partition partition = new Partition(null, records);
+		final ImmutableList<ITableRecordReference> records = ImmutableList.of(ITableRecordReference.FromModelConverter.convert(paymentDlmAware));
+
+		final Partition partition = new Partition().withRecords(records);
 
 		new MigratorService().testMigratePartition(partition);
 	}

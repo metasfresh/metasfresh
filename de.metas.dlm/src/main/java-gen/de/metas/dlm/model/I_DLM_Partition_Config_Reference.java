@@ -2,7 +2,7 @@ package de.metas.dlm.model;
 
 /**
  * Generated Interface for DLM_Partition_Config_Reference
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -210,40 +210,6 @@ public interface I_DLM_Partition_Config_Reference
 	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Table> COLUMN_DLM_Referenced_Table_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Table>(I_DLM_Partition_Config_Reference.class, "DLM_Referenced_Table_ID", org.compiere.model.I_AD_Table.class);
 	/** Column name DLM_Referenced_Table_ID */
 	public static final String COLUMNNAME_DLM_Referenced_Table_ID = "DLM_Referenced_Table_ID";
-
-	/**
-	 * Set Konfig-Zeile zur referenzierten Tabelle.
-	 *
-	 * <br>
-	 * Type: Table
-	 * <br>
-	 * Mandatory: false
-	 * <br>
-	 * Virtual Column: false
-	 */
-	public void setDLM_Referenced_Table_Partition_Config_Line_ID(int DLM_Referenced_Table_Partition_Config_Line_ID);
-
-	/**
-	 * Get Konfig-Zeile zur referenzierten Tabelle.
-	 *
-	 * <br>
-	 * Type: Table
-	 * <br>
-	 * Mandatory: false
-	 * <br>
-	 * Virtual Column: false
-	 */
-	public int getDLM_Referenced_Table_Partition_Config_Line_ID();
-
-	public de.metas.dlm.model.I_DLM_Partition_Config_Line getDLM_Referenced_Table_Partition_Config_Line();
-
-	public void setDLM_Referenced_Table_Partition_Config_Line(de.metas.dlm.model.I_DLM_Partition_Config_Line DLM_Referenced_Table_Partition_Config_Line);
-
-	/** Column definition for DLM_Referenced_Table_Partition_Config_Line_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, de.metas.dlm.model.I_DLM_Partition_Config_Line> COLUMN_DLM_Referenced_Table_Partition_Config_Line_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, de.metas.dlm.model.I_DLM_Partition_Config_Line>(I_DLM_Partition_Config_Reference.class, "DLM_Referenced_Table_Partition_Config_Line_ID",
-			de.metas.dlm.model.I_DLM_Partition_Config_Line.class);
-	/** Column name DLM_Referenced_Table_Partition_Config_Line_ID */
-	public static final String COLUMNNAME_DLM_Referenced_Table_Partition_Config_Line_ID = "DLM_Referenced_Table_Partition_Config_Line_ID";
 
 	/**
 	 * Set Referenzierende Spalte.

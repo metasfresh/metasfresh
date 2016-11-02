@@ -2,7 +2,7 @@ package de.metas.dlm.model;
 
 /**
  * Generated Interface for DLM_Partition
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -116,6 +116,64 @@ public interface I_DLM_Partition
 	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set aktueller DLM-Level.
+	 *
+	 * <br>
+	 * Type: Integer
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public void setCurrent_DLM_Level(int Current_DLM_Level);
+
+	/**
+	 * Get aktueller DLM-Level.
+	 *
+	 * <br>
+	 * Type: Integer
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public int getCurrent_DLM_Level();
+
+	/** Column definition for Current_DLM_Level */
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition, Object> COLUMN_Current_DLM_Level = new org.adempiere.model.ModelColumn<I_DLM_Partition, Object>(I_DLM_Partition.class, "Current_DLM_Level", null);
+	/** Column name Current_DLM_Level */
+	public static final String COLUMNNAME_Current_DLM_Level = "Current_DLM_Level";
+
+	/**
+	 * Set Nächte Prüfung des DLM-Levels.
+	 *
+	 * <br>
+	 * Type: DateTime
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public void setDateNextInspection(java.sql.Timestamp DateNextInspection);
+
+	/**
+	 * Get Nächte Prüfung des DLM-Levels.
+	 *
+	 * <br>
+	 * Type: DateTime
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateNextInspection();
+
+	/** Column definition for DateNextInspection */
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition, Object> COLUMN_DateNextInspection = new org.adempiere.model.ModelColumn<I_DLM_Partition, Object>(I_DLM_Partition.class, "DateNextInspection", null);
+	/** Column name DateNextInspection */
+	public static final String COLUMNNAME_DateNextInspection = "DateNextInspection";
+
+	/**
 	 * Set DLM Partitionierungskonfiguration.
 	 *
 	 * <br>
@@ -207,6 +265,35 @@ public interface I_DLM_Partition
 	public static final org.adempiere.model.ModelColumn<I_DLM_Partition, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DLM_Partition, Object>(I_DLM_Partition.class, "IsActive", null);
 	/** Column name IsActive */
 	public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Ziel-DLM-Level.
+	 *
+	 * <br>
+	 * Type: Integer
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public void setTarget_DLM_Level(int Target_DLM_Level);
+
+	/**
+	 * Get Ziel-DLM-Level.
+	 *
+	 * <br>
+	 * Type: Integer
+	 * <br>
+	 * Mandatory: false
+	 * <br>
+	 * Virtual Column: false
+	 */
+	public int getTarget_DLM_Level();
+
+	/** Column definition for Target_DLM_Level */
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition, Object> COLUMN_Target_DLM_Level = new org.adempiere.model.ModelColumn<I_DLM_Partition, Object>(I_DLM_Partition.class, "Target_DLM_Level", null);
+	/** Column name Target_DLM_Level */
+	public static final String COLUMNNAME_Target_DLM_Level = "Target_DLM_Level";
 
 	/**
 	 * Get Aktualisiert.

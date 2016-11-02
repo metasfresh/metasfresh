@@ -38,6 +38,7 @@ public interface ICoordinatorService extends ISingletonService
 	 * The target DLM level is computed as the minimum
 	 *
 	 * @param partition
+	 * @return
 	 */
-	void validatePartition(Partition partition);
+	Partition inspectPartition(Partition partition);
 }

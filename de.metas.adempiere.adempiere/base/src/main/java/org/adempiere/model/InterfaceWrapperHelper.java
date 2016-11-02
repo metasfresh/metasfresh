@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -135,16 +136,16 @@ public class InterfaceWrapperHelper
 		//
 		// Get transaction name from contextProvider.
 		// If contextProvider's transaction name is NULL and we have a thread inherited transaction, then let's use that one
-//		final ITrxManager trxManager = getTrxManager();
+		// final ITrxManager trxManager = getTrxManager();
 		String trxName = getTrxName(contextProvider);
-//		if (trxManager.isNull(trxName))
-//		{
-//			final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
-//			if (trxThreadInherited != null)
-//			{
-//				trxName = ITrx.TRXNAME_ThreadInherited;
-//			}
-//		}
+		// if (trxManager.isNull(trxName))
+		// {
+		// final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
+		// if (trxThreadInherited != null)
+		// {
+		// trxName = ITrx.TRXNAME_ThreadInherited;
+		// }
+		// }
 
 		return create(ctx, cl, trxName);
 	}
@@ -279,7 +280,9 @@ public class InterfaceWrapperHelper
 	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
 	 * <p>
-	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
+	 * Notes:
+	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
+	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
 	 *
 	 * @param ctx

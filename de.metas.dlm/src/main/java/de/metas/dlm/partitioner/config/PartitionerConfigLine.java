@@ -35,6 +35,8 @@ import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
 /**
  * Each instance of this class if about one table which was added to DLM (see {@link IDLMService#addTableToDLM(org.compiere.model.I_AD_Table)})
  * and whose records shall be assigned to partitions so they can be moved to other DLM-Levels.
+ * <p>
+ * Almost immutable; only the {@link #getDLM_Partition_Config_Line_ID()} property is mutable.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

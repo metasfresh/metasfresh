@@ -38,7 +38,7 @@ import de.metas.dlm.migrator.IMigratorService;
 /**
  * Checks when records with an <code>Updated</code> column where last updated. Recently updated records shall not be archived.
  * <p>
- * Note: in this class we use the constant {@link I_AD_Column#COLUMNNAME_Updated} for the <code>Updated</code> column name, which is a kind of arbitrary choise.
+ * Note: in this class we use the constant {@link I_AD_Column#COLUMNNAME_Updated} for the <code>Updated</code> column name, which is a kind of arbitrary choice.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -52,12 +52,22 @@ public class LastUpdatedInspector implements IRecordInspector
 	}
 
 	@Override
-	public int inspectRecord(Object model)
+	public int inspectRecord(final Object model)
 	{
+		final Timestamp value;
 		final Optional<Timestamp> updated = InterfaceWrapperHelper.getValue(model, I_AD_Column.COLUMNNAME_Updated);
-		Check.errorUnless(updated.isPresent(), "model={} does not have an {}-value ", model, I_AD_Column.COLUMNNAME_Updated);
+		if (updated.isPresent())
+		{
+			value = updated.get();
+		}
+		else
+		{
+			final Optional<Timestamp> created = InterfaceWrapperHelper.getValue(model, I_AD_Column.COLUMNNAME_Created);
+			Check.errorUnless(created.isPresent(), "model={} does not have an {}-value ", model, I_AD_Column.COLUMNNAME_Created);
+			value = created.get();
+		}
 
-		final boolean modelIsOld = TimeUtil.addMonths(updated.get(), 1).after(SystemTime.asDate());
+		final boolean modelIsOld = TimeUtil.addMonths(value, 1).after(SystemTime.asDate());
 
 		return modelIsOld ? IMigratorService.DLM_Level_ARCHIVE : IMigratorService.DLM_Level_LIVE;
 	}
@@ -66,9 +76,10 @@ public class LastUpdatedInspector implements IRecordInspector
 	 * Returns <code>true</code> if the given model has an <code>Updated</code> column.
 	 */
 	@Override
-	public boolean isApplicableFor(Object model)
+	public boolean isApplicableFor(final Object model)
 	{
-		return InterfaceWrapperHelper.hasModelColumnName(model, I_AD_Column.COLUMNNAME_Updated);
+		return InterfaceWrapperHelper.hasModelColumnName(model, I_AD_Column.COLUMNNAME_Updated)
+				|| InterfaceWrapperHelper.hasModelColumnName(model, I_AD_Column.COLUMNNAME_Created);
 	}
 
 }

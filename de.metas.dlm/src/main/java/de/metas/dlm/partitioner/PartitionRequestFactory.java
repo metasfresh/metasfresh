@@ -53,7 +53,7 @@ public class PartitionRequestFactory
 	 * @param template may be {@link CreatePartitionAsyncRequest}, but the "async" properties are discarded.
 	 * @return
 	 */
-	public static PartitionerRequestBuilder builder(CreatePartitionRequest template)
+	public static PartitionerRequestBuilder builder(final CreatePartitionRequest template)
 	{
 		return new PartitionerRequestBuilder(template);
 	}
@@ -69,7 +69,7 @@ public class PartitionRequestFactory
 	 * @param template can be either {@link CreatePartitionRequest} or {@link CreatePartitionAsyncRequest}.
 	 * @return
 	 */
-	public static AsyncPartitionerRequestBuilder asyncBuilder(CreatePartitionRequest template)
+	public static AsyncPartitionerRequestBuilder asyncBuilder(final CreatePartitionRequest template)
 	{
 		return new AsyncPartitionerRequestBuilder(template);
 	}
@@ -141,7 +141,7 @@ public class PartitionRequestFactory
 
 		private Date dontReEnqueueAfter;
 
-		private AsyncPartitionerRequestBuilder(CreatePartitionRequest template)
+		private AsyncPartitionerRequestBuilder(final CreatePartitionRequest template)
 		{
 			super(template);
 
@@ -153,13 +153,13 @@ public class PartitionRequestFactory
 			}
 		}
 
-		public AsyncPartitionerRequestBuilder setCount(int count)
+		public AsyncPartitionerRequestBuilder setCount(final int count)
 		{
 			this.count = count;
 			return this;
 		}
 
-		public AsyncPartitionerRequestBuilder setDontReEnqueueAfter(Date dontReEnqueueAfter)
+		public AsyncPartitionerRequestBuilder setDontReEnqueueAfter(final Date dontReEnqueueAfter)
 		{
 			this.dontReEnqueueAfter = dontReEnqueueAfter;
 			return this;

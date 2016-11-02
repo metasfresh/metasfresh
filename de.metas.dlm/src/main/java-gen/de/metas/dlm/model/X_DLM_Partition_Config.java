@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition_Config
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -47,7 +47,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Set Beschreibung.
-	 *
+	 * 
 	 * @param Description Beschreibung
 	 */
 	@Override
@@ -58,7 +58,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Get Beschreibung.
-	 *
+	 * 
 	 * @return Beschreibung
 	 */
 	@Override
@@ -69,7 +69,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Set DLM Partitionierungskonfiguration.
-	 *
+	 * 
 	 * @param DLM_Partition_Config_ID DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -87,7 +87,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Get DLM Partitionierungskonfiguration.
-	 *
+	 * 
 	 * @return DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -103,7 +103,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Set Name.
-	 *
+	 * 
 	 * @param Name
 	 *            Alphanumeric identifier of the entity
 	 */
@@ -115,7 +115,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 
 	/**
 	 * Get Name.
-	 *
+	 * 
 	 * @return Alphanumeric identifier of the entity
 	 */
 	@Override

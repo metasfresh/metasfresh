@@ -6,7 +6,7 @@ import java.util.Properties;
 
 /**
  * Generated Model for DLM_Partition_Config_Line
- *
+ * 
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
@@ -16,7 +16,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1101858019L;
+	private static final long serialVersionUID = -1565160967L;
 
 	/** Standard Constructor */
 	public X_DLM_Partition_Config_Line(final Properties ctx, final int DLM_Partition_Config_Line_ID, final String trxName)
@@ -48,7 +48,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set Beschreibung.
-	 *
+	 * 
 	 * @param Description Beschreibung
 	 */
 	@Override
@@ -59,7 +59,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get Beschreibung.
-	 *
+	 * 
 	 * @return Beschreibung
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set DLM Partitionierungskonfiguration.
-	 *
+	 * 
 	 * @param DLM_Partition_Config_ID DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -100,7 +100,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get DLM Partitionierungskonfiguration.
-	 *
+	 * 
 	 * @return DLM Partitionierungskonfiguration
 	 */
 	@Override
@@ -116,7 +116,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set DLM Partitionierungskonfigzeile.
-	 *
+	 * 
 	 * @param DLM_Partition_Config_Line_ID DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -134,7 +134,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get DLM Partitionierungskonfigzeile.
-	 *
+	 * 
 	 * @return DLM Partitionierungskonfigzeile
 	 */
 	@Override
@@ -162,7 +162,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Set Referenzierende Tabelle.
-	 *
+	 * 
 	 * @param DLM_Referencing_Table_ID Referenzierende Tabelle
 	 */
 	@Override
@@ -180,7 +180,7 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 
 	/**
 	 * Get Referenzierende Tabelle.
-	 *
+	 * 
 	 * @return Referenzierende Tabelle
 	 */
 	@Override
@@ -192,5 +192,37 @@ public class X_DLM_Partition_Config_Line extends org.compiere.model.PO implement
 			return 0;
 		}
 		return ii.intValue();
+	}
+
+	/**
+	 * Set DLM aktiviert.
+	 * 
+	 * @param IsDLM
+	 *            Die Datensätze einer Tabelle mit aktiviertem DLM können vom System unterschiedlichen DLM-Levels zugeordnet werden
+	 */
+	@Override
+	public void setIsDLM(final boolean IsDLM)
+	{
+		throw new IllegalArgumentException("IsDLM is virtual column");
+	}
+
+	/**
+	 * Get DLM aktiviert.
+	 * 
+	 * @return Die Datensätze einer Tabelle mit aktiviertem DLM können vom System unterschiedlichen DLM-Levels zugeordnet werden
+	 */
+	@Override
+	public boolean isDLM()
+	{
+		final Object oo = get_Value(COLUMNNAME_IsDLM);
+		if (oo != null)
+		{
+			if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			}
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

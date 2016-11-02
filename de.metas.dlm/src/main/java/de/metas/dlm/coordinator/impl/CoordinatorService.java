@@ -1,11 +1,19 @@
 package de.metas.dlm.coordinator.impl;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.dlm.Partition;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.IRecordInspector;
+import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 
 /*
@@ -34,20 +42,22 @@ public class CoordinatorService implements ICoordinatorService
 {
 
 	@Override
-	public void validatePartition(Partition partition)
+	public Partition inspectPartition(final Partition partition)
 	{
 		int minLevel = Integer.MAX_VALUE;
 
-		final List<IDLMAware> records = partition.getRecords();
+		final List<ITableRecordReference> records = partition.getRecords();
 
-		outerForLoop: for (final IDLMAware record : records)
+		outerForLoop: for (final ITableRecordReference recordReference : records)
 		{
 			for (final IRecordInspector inspector : inspectors)
 			{
+				final IDLMAware record = recordReference.getModel(new PlainContextAware(Env.getCtx()), IDLMAware.class);
+
 				if (inspector.isApplicableFor(record))
 				{
 					minLevel = Math.min(minLevel, inspector.inspectRecord(record));
-					if (minLevel <= 0)
+					if (minLevel <= IMigratorService.DLM_Level_LIVE)
 					{
 						break outerForLoop; // we are done, because we know that 0 is the absolute minimum
 					}
@@ -55,13 +65,37 @@ public class CoordinatorService implements ICoordinatorService
 			}
 		}
 
-		//partition.setTargetDLMLevel(minLevel);
+		final Partition partitioneWithTargetDLMLevel;
+		if (minLevel != partition.getTargetDLMLevel())
+		{
+			// a new partition with the different target level
+			partitioneWithTargetDLMLevel = partition.withTargetDLMLevel(minLevel);
+		}
+		else
+		{
+			// the same partition
+			partitioneWithTargetDLMLevel = partition;
+		}
+
+		final Timestamp nextInspectionDate = findNextInspectionDate(partitioneWithTargetDLMLevel);
+		return partitioneWithTargetDLMLevel.withNextInspectionDate(nextInspectionDate);
+	}
+
+	private Timestamp findNextInspectionDate(final Partition partition)
+	{
+		if (partition.getTargetDLMLevel() == IMigratorService.DLM_Level_LIVE)
+		{
+			final Timestamp nextWeek = TimeUtil.addWeeks(SystemTime.asTimestamp(), 1);
+			return nextWeek;
+		}
+
+		return null;
 	}
 
 	private final List<IRecordInspector> inspectors = new ArrayList<>();
 
 	@Override
-	public void registerInspector(IRecordInspector recordInspector)
+	public void registerInspector(final IRecordInspector recordInspector)
 	{
 		inspectors.add(recordInspector);
 	}

@@ -27,7 +27,7 @@ public interface IRecordInspector
 	/**
 	 *
 	 * @param model
-	 * @return the target DLM value for the given record
+	 * @return the target DLM value for the given record. Do not return {@link de.metas.dlm.migrator.IMigratorService#DLM_Level_NOT_SET}!
 	 */
 	int inspectRecord(Object model);
 

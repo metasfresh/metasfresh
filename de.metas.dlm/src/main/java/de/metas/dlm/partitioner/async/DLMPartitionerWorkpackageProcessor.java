@@ -22,7 +22,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.connection.IConnectionCustomizerService;
-import de.metas.dlm.Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -66,7 +65,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	 * @param adPInstanceId <code>AD_Pisntance_ID</code> from which the package was scheduled. Optional, can be less or equal 0
 	 * @return
 	 */
-	public static I_C_Queue_WorkPackage schedule(CreatePartitionAsyncRequest request, int adPInstanceId)
+	public static I_C_Queue_WorkPackage schedule(final CreatePartitionAsyncRequest request, final int adPInstanceId)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -105,7 +104,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	}
 
 	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
@@ -142,14 +141,9 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		try (final AutoCloseable temporaryCustomizer = connectionCustomizerService.registerTemporaryCustomizer(partitionerService.createConnectionCustomizer()))
 		{
-			final Partition partition = partitionerService.createPartition(request);
-			if (partition.getRecords().isEmpty())
-			{
-				return Result.SUCCESS;
-			}
-			partitionerService.storePartition(partition);
+			partitionerService.createPartition(request);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
