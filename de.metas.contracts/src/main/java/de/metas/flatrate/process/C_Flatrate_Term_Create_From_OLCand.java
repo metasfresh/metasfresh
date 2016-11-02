@@ -24,9 +24,11 @@ package de.metas.flatrate.process;
 
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.GridTab;
 import org.compiere.model.MTable;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
@@ -37,7 +39,7 @@ import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 
-public class C_FlatrateTerm_Create_From_OLCand extends SvrProcess implements ISvrProcessPrecondition
+public class C_Flatrate_Term_Create_From_OLCand extends SvrProcess implements ISvrProcessPrecondition
 {
 
 	@Override
