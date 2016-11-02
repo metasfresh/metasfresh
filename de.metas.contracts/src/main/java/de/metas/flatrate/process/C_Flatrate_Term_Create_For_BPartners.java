@@ -43,7 +43,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 
-public class C_FlatrateTerm_Create_For_BPartners extends C_FlatrateTerm_Create
+public class C_Flatrate_Term_Create_For_BPartners extends C_FlatrateTerm_Create
 {
 
 	private int p_flatrateconditionsID;

@@ -73,7 +73,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_Contract_Change;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_FlatrateTerm_Create_From_OLCand;
+import de.metas.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
 import de.metas.flatrate.process.C_FlatrateTerm_Extend;
 import de.metas.flatrate.process.C_Flatrate_Term_Change;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -321,7 +321,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		// do the actual invocations and testing
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Create_From_OLCand.class)
+				.setProcessClass(C_Flatrate_Term_Create_From_OLCand.class)
 				.run();
 
 		gridWindowHelper.refresh();
