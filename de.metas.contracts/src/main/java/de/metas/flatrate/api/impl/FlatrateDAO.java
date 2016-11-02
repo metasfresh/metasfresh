@@ -374,34 +374,27 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final I_C_UOM uom)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<Object> params = new ArrayList<Object>();
-
-		final StringBuilder wc = new StringBuilder();
-
-		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? ");
-		params.add(term.getC_Flatrate_Term_ID());
+		final IQueryBuilder<I_C_Flatrate_DataEntry> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addOnlyContextClient();
 
 		if (uom != null)
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=?");
-			params.add(uom.getC_UOM_ID());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uom.getC_UOM_ID());
 		}
 
-		if (dataEntryType != null)
+		if (!Check.isEmpty(dataEntryType, true))
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=?");
-			params.add(dataEntryType);
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_Type, dataEntryType);
 		}
 
-		return new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID)
-				.list(I_C_Flatrate_DataEntry.class);
+		return queryBuilder
+				.orderBy().addColumn(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID).endOrderBy()
+				.create()
+				.list();
 	}
 
 	@Override
@@ -516,7 +509,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
 			if (entryPeriod.getEndDate().before(dateFrom) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateTo))   // entryPeriod begins after dateTo
+					|| entryPeriod.getStartDate().after(dateTo))      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
