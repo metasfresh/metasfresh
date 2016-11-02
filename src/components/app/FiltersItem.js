@@ -23,7 +23,7 @@ class FiltersItem extends Component {
                 closeFilterMenu={closeFilterMenu}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
-                {...filterDataItem} 
+                {...filterDataItem}
             />
         )
 
