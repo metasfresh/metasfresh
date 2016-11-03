@@ -477,7 +477,7 @@ public class MTable extends X_AD_Table
 			if (!Check.isEmpty(constraint, true))
 			{
 				constraints.append(", ").append(constraint);
-		}
+			}
 		}
 		// Multi Column PK
 		if (!hasPK && hasParents)

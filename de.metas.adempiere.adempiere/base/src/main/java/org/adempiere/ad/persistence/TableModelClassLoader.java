@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -182,10 +183,17 @@ public class TableModelClassLoader
 			return NO_CLASS;
 		}
 
-		// given tableName may be in lower-case..we get the table and use its tableName
-		final I_AD_Table table = MTable.get(Env.getCtx(), tableName);
-		final String tableNameToUse = table.getTableName();
-
+		final String tableNameToUse;
+		if (Adempiere.isUnitTestMode())
+		{
+			tableNameToUse = tableName; // "MTable.get(Env.getCtx(), tableName)" does not work in unit test mode!
+		}
+		else
+		{
+			// given tableName may be in lower-case..we get the table and use its tableName
+			final I_AD_Table table = MTable.get(Env.getCtx(), tableName); // this method does not work in unit test mode!
+			tableNameToUse = table.getTableName();
+		}
 		// Import Tables (Name conflict)
 		if (tableNameToUse.startsWith("I_"))
 		{
