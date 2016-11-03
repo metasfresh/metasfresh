@@ -28,15 +28,21 @@
 	</developers>
 
 	<properties>
-		<!-- Please use this property when declaring metasfresh dependencies. Example: 
-			<dependency> <groupId>de.metas.commons.cxf</groupId> <artifactId>metasfresh-commons-cxf</artifactId> 
-			<version>${metasfresh-dependency.version}</version> </dependency> Using of 
-			${metasfresh-dependency.version} is deprecated. See https://github.com/metasfresh/metasfresh-documentation/blob/master/infrastructure/CI_infrastructure.md 
-			for explanations. -->
+			<!-- 
+			Please use this property when declaring metasfresh dependencies.
+			Example:
+			<dependency>
+				<groupId>de.metas.commons.cxf</groupId>
+				<artifactId>metasfresh-commons-cxf</artifactId>
+				<version>${metasfresh-dependency.version}</version>
+			</dependency>
+			
+			Using of ${metasfresh-dependency.version} is deprecated.
+			See https://github.com/metasfresh/metasfresh-documentation/blob/master/infrastructure/CI_infrastructure.md for explanations.
+			-->
 		<metasfresh-dependency.version>[1-master-SNAPSHOT],[${project.version}]</metasfresh-dependency.version>
 
-		<!-- java 1.7. is currently our minimum, but some projects might already 
-			be implemented with java-8 -->
+		<!-- java 1.7. is currently our minimum, but some projects might already be implemented with java-8-->
 		<minimum.java.version>1.7</minimum.java.version>
 	</properties>
 
@@ -52,9 +58,10 @@
 	</repositories>
 
 	<distributionManagement>
-		<!-- Where to deploy build artifacts; if you can't reach this repo, you 
-			can still make your own builds TODO: think about moving with the repo to 
-			a public place with much more storage :-) -->
+		<!-- 
+		Where to deploy build artifacts; if you can't reach this repo, you can still make your own builds
+		TODO: think about moving with the repo to a public place with much more storage :-) 
+		-->
 		<snapshotRepository>
 			<id>metas-nexus-repo</id>
 			<name>Maven metasfresh Snapshots Repository</name>
@@ -64,10 +71,35 @@
 	</distributionManagement>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<!-- Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
+									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
+									property." Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
+								<property>
+									<name>javax.xml.accessExternalSchema</name>
+									<value>all</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
 		<pluginManagement>
 			<plugins>
-				<!-- we set the metasfresh-wide encoding for code and resource files 
-					to be UTF-8 by default -->
+				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -90,9 +122,11 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
-					<!-- later versions of the plugin don't work with eclipse's m2e plugin. 
+					<!-- 
+						later versions of the plugin don't work with eclipse's m2e plugin. 
 						see https://github.com/mojohaus/jaxb2-maven-plugin/issues/24 for details 
-						and updates on the issue -->
+						and updates on the issue 
+					-->
 					<!-- version>2.2</version -->
 					<version>1.6</version>
 				</plugin>
