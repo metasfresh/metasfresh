@@ -29,9 +29,9 @@ import java.util.Properties;
  */
 public class MPInstancePara extends X_AD_PInstance_Para
 {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8407658637240252680L;
 
@@ -41,13 +41,11 @@ public class MPInstancePara extends X_AD_PInstance_Para
 	 *	@param ignored ignored
 	 *	@param trxName transaction
 	 */
-	public MPInstancePara (Properties ctx, int ignored, String trxName)
+	public MPInstancePara (Properties ctx, int id, String trxName)
 	{
 		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
 	}	//	MPInstance_Para
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param ctx
@@ -73,8 +71,8 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setSeqNo (SeqNo);
 	}	//	MPInstance_Para
 
-	
-	
+
+
 	/**
 	 * 	Load Constructor
 	 *	@param ctx context
@@ -137,9 +135,9 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		if (P_Number == null)
 			setP_Number(0);
 		else
-			setP_Number (((Integer)P_Number).intValue());
+			setP_Number (P_Number.intValue());
 	}	//	setP_Number
-	
+
 	/**
 	 * 	Set P_Number To
 	 *	@param P_Number_To no to
@@ -158,10 +156,10 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		if (P_Number_To == null)
 			setP_Number_To(0);
 		else
-			setP_Number_To (((Integer)P_Number_To).intValue());
+			setP_Number_To (P_Number_To.intValue());
 	}	//	setP_Number_To
 
-	
+
 	/**
 	 * 	Set String Parameter
 	 *	@param parameterName name
@@ -172,7 +170,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_String(stringParameter);
 	}	//	setParameter
-	
+
 	/**
 	 * 	Set Number Parameter
 	 *	@param parameterName name
@@ -183,7 +181,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_Number(bdParameter);
 	}	//	setParameter
-	
+
 	/**
 	 * 	Set Number Parameter
 	 *	@param parameterName name
@@ -194,7 +192,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_Number(new BigDecimal(iParameter));
 	}	//	setParameter
-	
+
 	/**
 	 * 	Set Date Parameter
 	 *	@param parameterName name
@@ -205,7 +203,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_Date(tsParameter);
 	}	//	setParameter
-	
+
 	/**
 	 * 	Set Boolean Parameter
 	 *	@param parameterName name
@@ -220,7 +218,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 	/**
 	 * @return Display type
 	 */
-	public int getDisplayType() 
+	public int getDisplayType()
 	{
 		MProcess process = (MProcess) getAD_PInstance().getAD_Process();
 		MProcessPara[] params = process.getParameters();
