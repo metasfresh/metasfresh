@@ -33,12 +33,13 @@ export function clearListProps(){
 }
 
 
-export function updateFiltersParameters(filterId, property, value){
+export function updateFiltersParameters(filterId, property, value, valueTo){
 	return {
 		type: types.UPDATE_FILTERS_PARAMETERS,
 		filterId: filterId,
 		property: property,
-		value: value
+		value: value,
+        valueTo: valueTo
 	}
 }
 

@@ -10,12 +10,18 @@ class DatetimeRange extends Component {
             endDate: null
         };
     }
+
     handleEvent = (event, picker) => {
+        const {onChange} = this.props;
+
         this.setState(Object.assign({}, this.state, {
             startDate: picker.startDate,
             endDate: picker.endDate
-        }))
+        }), () => {
+            onChange(picker.startDate, picker.endDate);
+        });
     }
+
     render() {
         const ranges = {
 			'Today': [Moment(), Moment()],
@@ -33,14 +39,18 @@ class DatetimeRange extends Component {
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
+                autoApply={true}
+                applyClass="hidden-xl-down"
+                cancelClass="hidden-xl-down"
             >
-                <button className="btn btn-meta-outline-secondary btn-distance btn-sm">
-                    <i className="meta-icon-calendar" />
-                        {!!startDate && !!endDate ?
-                            " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
-                            " All dates available"
-                        }
+                <button className="btn btn-block text-xs-left btn-meta-outline-secondary btn-distance btn-sm input-icon-container ">
+                    {!!startDate && !!endDate ?
+                        " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
+                        " All dates available"
+                    }
+                    <i className="meta-icon-calendar input-icon-right"/>
                 </button>
+
             </DateRangePicker>
         )
     }

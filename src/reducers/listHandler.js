@@ -69,7 +69,7 @@ export default function listHandler(state = initialState, action) {
                     filterId: action.filterId,
                     parameters: state.filter.parameters.map(item =>
                         (item.parameterName === action.property) ?
-                        Object.assign({}, item, { value: action.value }) :
+                        Object.assign({}, item, { value: action.value, valueTo: action.valueTo }) :
                         item
                     )
 

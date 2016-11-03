@@ -12,10 +12,9 @@ class FilterWidget extends Component {
         super(props);
     }
 
-    handlePatch = (property, value, paramId) => {
+    handlePatch = (property, value, valueTo) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
-
-        dispatch(updateFiltersParameters(filterId, property, value));
+        dispatch(updateFiltersParameters(filterId, property, value, valueTo));
     }
 
     render() {
@@ -24,6 +23,7 @@ class FilterWidget extends Component {
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
             item, filter
         } = this.props;
+
 
         if(widgetData){
             return (
