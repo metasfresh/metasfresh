@@ -197,17 +197,6 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>jaxb2-maven-plugin</artifactId>
-					<!-- 
-						later versions of the plugin don't work with eclipse's m2e plugin.
-						see https://github.com/mojohaus/jaxb2-maven-plugin/issues/24 for details and updates on the issue
-					-->
-					<!-- version>2.2</version -->
-					<version>1.6</version>
-				</plugin>
-
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>2.2</version>

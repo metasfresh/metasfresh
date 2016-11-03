@@ -51,7 +51,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jaxb2-maven-plugin</artifactId>
-				<version>1.5</version>
 				<executions>
 					<execution>
 						<id>generate-de.metas.payment.sepa.sdd.jaxb.v1</id>
