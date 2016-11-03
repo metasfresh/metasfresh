@@ -38,8 +38,11 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 public interface IPartitionerService extends ISingletonService
 {
 	/**
-	 * Use the given config and create and store a list of partition. Note that the {@link IDLMAware} records which are identified as parts of part of the partitions are have their {@link IDLMAware#COLUMNNAME_DLM_Partition_ID}
-	 * updated by this method.
+	 * Use the given config and create and store a list of partitions.
+	 * The method iterates the lines for the {@link PartitionerConfig} included in the given <code>request</code>. For each line, it loads one record then follows that record's references.
+	 * It might turn out that there is one new partition per line, or one new partition for all lines.
+	 *
+	 * Note that the {@link IDLMAware} records which are identified as parts of the partitions are have their {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} updated by this method.
 	 *
 	 * @param request
 	 * @return

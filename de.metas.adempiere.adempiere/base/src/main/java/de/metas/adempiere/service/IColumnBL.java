@@ -53,8 +53,10 @@ public interface IColumnBL extends ISingletonService
 
 	/**
 	 * Get the primary key column for the given <code>tableName</code>.
-	 * The difference to {@link InterfaceWrapperHelper#getKeyColumnName(String)} is that this method shall return the "real" column name from {@link org.compiere.model.POInfo}
-	 * and that it shall throw an exception if there are more or less than one key column.
+	 * The difference to {@link InterfaceWrapperHelper#getKeyColumnName(String)} is that
+	 * <li>this method shall return the "real" column name from {@link org.compiere.model.POInfo} and
+	 * <li>that it shall throw an exception if there are more or less than one key column and finally
+	 * <li>that the key column name might not be made up of <code>tablename + "_ID"</code>, but whatever is declared to be the key or single parent column in the application dictionary.
 	 *
 	 * @param tableName
 	 * @return

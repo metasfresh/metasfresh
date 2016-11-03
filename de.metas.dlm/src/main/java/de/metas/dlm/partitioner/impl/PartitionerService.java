@@ -34,6 +34,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.connection.ITemporaryConnectionCustomizer;
 import de.metas.dlm.IDLMService;
@@ -110,61 +112,78 @@ public class PartitionerService implements IPartitionerService
 
 		final List<Partition> partitions = new ArrayList<>();
 
-		// iterate the lines and look for the first record out o
-		for (final PartitionerConfigLine line : lines)
+		if (request.getRecordToAttach() == null)
 		{
-			final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName(), request.isOldestFirst());
-			if (record == null)
+			// iterate the lines and look for the first record out o
+			for (final PartitionerConfigLine line : lines)
 			{
-				continue;  // looks like we partitioned *every* record of the given table
+				final IDLMAware record = retrieveUnpartitionedRecod(line.getTableName(), request.isOldestFirst());
+				if (record == null)
+				{
+					continue;  // looks like we partitioned *every* record of the given table
+				}
+				final Partition partition = attachToPartitionAndCheck(request, record);
+				partitions.add(partition);
 			}
-
-			final Partition partition = attachToPartition(record, config);
-
-			try
-			{
-				// now figure out if records are missing:
-				// update each records' DLM_Level to 1 (1="test").
-				final IMigratorService migratorService = Services.get(IMigratorService.class);
-				migratorService.testMigratePartition(partition);
-			}
-			catch (final DLMReferenceException e)
-			{
-				final TableReferenceDescriptor descriptor = e.getTableReferenceDescriptor();
-
-				// if there is a DLMException, then depending on our config (LATER),
-				// throw an exception (LATER),
-				// skip the record (LATER)
-				// or add another PartitionerConfigLine, get the additional line's records and retry.
-				final String msg = "Caught {}; going to retry with an augmented config that also includes referencingTable={}";
-				final Object[] msgParameters = { e.toString(), descriptor.getReferencingTableName() };
-				logger.info(msg, msgParameters);
-				ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
-
-				final PartitionerConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
-				storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
-
-				// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then DLM it on the fly.
-				checkIfTableIsDLM(descriptor.getReferencingTableName(), request.getOnNotDLMTable());
-
-				// call this method again, i.e. start over with our augmented config
-				final CreatePartitionRequest newRequest = PartitionRequestFactory
-						.builder(request)
-						.setConfig(newConfig)
-						.build();
-
-				return createPartition(newRequest);
-			}
-
-			final String msg = "Returning a newly identified partition with {} records.";
-			logger.info(msg, partition.getRecords().size());
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, partition.getRecords().size());
-
-			// storePartition(partition); this was already done within attachToPartition()
-
+		}
+		else
+		{
+			ITableRecordReference tableRef = request.getRecordToAttach();
+			final IDLMAware record = tableRef.getModel(new PlainContextAware(Env.getCtx()), IDLMAware.class);
+			final Partition partition = attachToPartitionAndCheck(request, record);
 			partitions.add(partition);
 		}
 		return partitions;
+	}
+
+	private Partition attachToPartitionAndCheck(
+			final CreatePartitionRequest request,  // needed in the exception handling part
+			final IDLMAware record)
+	{
+		final PartitionerConfig config = request.getConfig();
+
+		final Partition partition = attachToPartition(record, config);
+
+		try
+		{
+			// now figure out if records are missing:
+			// update each records' DLM_Level to 1 (1="test").
+			final IMigratorService migratorService = Services.get(IMigratorService.class);
+			migratorService.testMigratePartition(partition);
+		}
+		catch (final DLMReferenceException e)
+		{
+			final TableReferenceDescriptor descriptor = e.getTableReferenceDescriptor();
+
+			// if there is a DLMException, then depending on our config (LATER),
+			// throw an exception (LATER),
+			// skip the record (LATER)
+			// or add another PartitionerConfigLine, get the additional line's records and retry.
+			final String msg = "Caught {}; going to retry with an augmented config that also includes referencingTable={}";
+			final Object[] msgParameters = { e.toString(), descriptor.getReferencingTableName() };
+			logger.info(msg, msgParameters);
+			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+
+			final PartitionerConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
+			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
+
+			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then DLM it on the fly.
+			checkIfTableIsDLM(descriptor.getReferencingTableName(), request.getOnNotDLMTable());
+
+			// call this method again, i.e. start over with our augmented config
+			final CreatePartitionRequest newRequest = PartitionRequestFactory
+					.builder(request)
+					.setConfig(newConfig)
+					.build();
+
+			return attachToPartitionAndCheck(newRequest, record);
+		}
+
+		final String msg = "Returning a newly identified partition with {} records.";
+		logger.info(msg, partition.getRecords().size());
+		ILoggable.THREADLOCAL.getLoggable().addLog(msg, partition.getRecords().size());
+
+		return partition;
 	}
 
 	private void checkIfAllTablesAreDLM(final List<PartitionerConfigLine> lines, final OnNotDLMTable onNotDLMTable)
@@ -257,7 +276,7 @@ public class PartitionerService implements IPartitionerService
 				final String tableName = adTableDAO.retrieveTableName(tableId);
 				if (!tableName.equalsIgnoreCase(foreignTableName))
 				{
-					logger.debug("The column={} of IDLMAware={} does not reference a {}-record, but a {}-record; skipping", ref.getReferencingColumnName(), record, foreignTableName, tableName);
+					logger.trace("The column={} of IDLMAware={} does not reference a {}-record, but a {}-record; skipping", ref.getReferencingColumnName(), record, foreignTableName, tableName);
 					continue;
 				}
 			}
@@ -278,7 +297,7 @@ public class PartitionerService implements IPartitionerService
 			final boolean recordWasAlreadyAddedBefore = records.contains(foreignReference);
 			if (recordWasAlreadyAddedBefore)
 			{
-				logger.debug("A record with ITableRecordReference={} was already added in a previous iteration. Returning", foreignReference); // avoid circles and also avoid loading the whole PO again
+				logger.trace("A record with ITableRecordReference={} was already added in a previous iteration. Returning", foreignReference); // avoid circles and also avoid loading the whole PO again
 			}
 			else
 			{
@@ -309,7 +328,7 @@ public class PartitionerService implements IPartitionerService
 
 					// GO BACKWARDS, i.e. get records which reference the foreign record we just loaded
 					backTrack(line.getParent(),
-							InterfaceWrapperHelper.getContextAware(record),                               // 'record' is only needed for ctx
+							InterfaceWrapperHelper.getContextAware(record),                                   // 'record' is only needed for ctx
 							records,
 							foreignTableName,
 							foreignKey);
@@ -324,7 +343,7 @@ public class PartitionerService implements IPartitionerService
 
 		// GO BACKWARDS, i.e. get records which reference 'record'
 		backTrack(line.getParent(),
-				InterfaceWrapperHelper.getContextAware(record),                                                                                         // make it clear that record is only needed for ctx
+				InterfaceWrapperHelper.getContextAware(record),                                                                                             // make it clear that record is only needed for ctx
 				records,
 				line.getTableName(),
 				InterfaceWrapperHelper.getId(record));
@@ -374,7 +393,7 @@ public class PartitionerService implements IPartitionerService
 
 				queryBuilder.addEqualsFilter(referencedTableColumnName, referencedTableID);
 			}
-
+			//de.metas.dlm.partitioner.PartitionerTools.dumpHistogram(records)
 			final List<IDLMAware> backwardRecords = queryBuilder
 					.create()
 					.list();
@@ -707,7 +726,8 @@ public class PartitionerService implements IPartitionerService
 		return connectionCustomizer;
 	}
 
-	public Partition attachToPartition(final IDLMAware record, final PartitionerConfig config)
+	@VisibleForTesting
+	/* package */ Partition attachToPartition(final IDLMAware record, final PartitionerConfig config)
 	{
 		if (record.getDLM_Partition_ID() > 0)
 		{
@@ -729,6 +749,7 @@ public class PartitionerService implements IPartitionerService
 		records.add(ITableRecordReference.FromModelConverter.convert(record));
 
 		recurse(line.get(), record, records);
+		logger.info("Found {} records attached via config.name={} to record={}", records.size(), config.getName(), record);
 
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(record);
 

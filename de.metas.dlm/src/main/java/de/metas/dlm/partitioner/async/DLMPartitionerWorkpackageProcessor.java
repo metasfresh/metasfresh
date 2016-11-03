@@ -10,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
+import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -58,6 +60,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	private static final String PARAM_OLDEST_FIRST = "OldestFirst";
 	private static final String PARAM_DONT_REENQUEUE_AFTER = "DontReEnqueueAfter";
 	private static final String PARAM_COUNT = "Count";
+	private static final String PARAM_DLM_PARTITION_CONFIG_ID = "DLM_Partition_Config_ID";
 
 	/**
 	 *
@@ -69,15 +72,11 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_DLM_Partition_Config model = InterfaceWrapperHelper.create(ctx,
-				request.getConfig().getDLM_Partition_Config_ID(),
-				I_DLM_Partition_Config.class,
-				ITrx.TRXNAME_ThreadInherited);
-
 		final ImmutableMap<String, ? extends Object> parameters = ImmutableMap.of(
 				PARAM_OLDEST_FIRST, request.isOldestFirst(),
 				PARAM_COUNT, request.getCount(),
-				PARAM_DONT_REENQUEUE_AFTER, request.getDontReEnqueueAfter());
+				PARAM_DONT_REENQUEUE_AFTER, request.getDontReEnqueueAfter(),
+				PARAM_DLM_PARTITION_CONFIG_ID, request.getConfig().getDLM_Partition_Config_ID());
 
 		final IWorkPackageBlockBuilder blockBuilder = Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, DLMPartitionerWorkpackageProcessor.class)
@@ -89,18 +88,21 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 			blockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		}
 
-		return blockBuilder.newWorkpackage()
+		final IWorkPackageBuilder wpBuilder = blockBuilder.newWorkpackage()
 
 		// Workpackage Parameters
 				.parameters()
 				.setParameters(parameters)
-				.end()
+				.end();
 
-		// Workpackage elements
-				.addElement(model)
+		// Workpackage element
+		if (request.getRecordToAttach() != null)
+		{
+			wpBuilder.addElement(request.getRecordToAttach());
+		}
 
 		// Build & enqueue
-				.build();
+		return wpBuilder.build();
 	}
 
 	@Override
@@ -114,26 +116,33 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final IParams workpackageParams = workpackageParamDAO.retrieveWorkpackageParams(workPackage);
 
 		final boolean oldestFirst = workpackageParams.getParameterAsBool(PARAM_OLDEST_FIRST);
+
 		final int count = workpackageParams.getParameterAsInt(PARAM_COUNT);
+
 		final Timestamp dontReEnQueueAfter = workpackageParams.getParameterAsTimestamp(PARAM_DONT_REENQUEUE_AFTER);
+
+		final int dlmConfigId = workpackageParams.getParameterAsInt(PARAM_DLM_PARTITION_CONFIG_ID);
+		final I_DLM_Partition_Config configDB = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(workPackage), dlmConfigId, I_DLM_Partition_Config.class, ITrx.TRXNAME_None);
+		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
 
 		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
-		final List<I_DLM_Partition_Config> configsDB = queueDAO.retrieveItems(workPackage, I_DLM_Partition_Config.class, localTrxName);
-		if (configsDB.isEmpty())
+		final ITableRecordReference tableRefToAttach;
+		final List<Object> recordsToAttach = queueDAO.retrieveItems(workPackage, Object.class, localTrxName); // note that according to the 'schedule' method, there can be max one item
+		if (recordsToAttach.isEmpty())
 		{
-			loggable.addLog("This workpackage has no items, or they are also referenced by a proceeding work package; nothing to do");
-			return Result.SUCCESS;
+			tableRefToAttach = null;
 		}
-
-		final I_DLM_Partition_Config singleConfigDB = configsDB.get(0);
-
-		final PartitionerConfig config = partitionerService.loadPartitionConfig(singleConfigDB);
+		else
+		{
+			tableRefToAttach = ITableRecordReference.FromModelConverter.convert(recordsToAttach.get(0));
+		}
 
 		// note that the partitioner itself only cares about "sync" requests.
 		final CreatePartitionRequest request = PartitionRequestFactory.builder()
 				.setConfig(config)
 				.setOldestFirst(oldestFirst)
+				.setRecordToAttach(tableRefToAttach)
 				.setOnNotDLMTable(OnNotDLMTable.FAIL)
 				.build();
 

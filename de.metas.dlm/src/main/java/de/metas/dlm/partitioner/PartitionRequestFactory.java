@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
@@ -87,6 +88,7 @@ public class PartitionRequestFactory
 		private PartitionerConfig config;
 		private boolean oldestFirst = true;
 		private OnNotDLMTable onNotDLMTable = OnNotDLMTable.FAIL;
+		private ITableRecordReference recordToAttach;
 
 		private PartitionerRequestBuilder(final CreatePartitionRequest template)
 		{
@@ -95,12 +97,13 @@ public class PartitionRequestFactory
 				onNotDLMTable = template.onNotDLMTable;
 				config = template.getConfig();
 				oldestFirst = template.isOldestFirst();
+				recordToAttach = template.getRecordToAttach();
 			}
 		}
 
 		public CreatePartitionRequest build()
 		{
-			return new CreatePartitionRequest(config, oldestFirst, onNotDLMTable);
+			return new CreatePartitionRequest(config, oldestFirst, recordToAttach, onNotDLMTable);
 		}
 
 		public T setConfig(final PartitionerConfig config)
@@ -110,12 +113,27 @@ public class PartitionRequestFactory
 		}
 
 		/**
-		 * The default if omitted is <code>true</code>.
+		 * May be <code>null</code>. If set, then {@link IPartitionerService#createPartition(CreatePartitionRequest)} does not iterate all lines of the given config,
+		 * but explicitly explores the references of the given {@link ITableRecordReference}'s record.
+		 *
+		 * @return
+		 */
+		public T setRecordToAttach(final ITableRecordReference recordToAttach)
+		{
+			this.recordToAttach = recordToAttach;
+			return (T)this;
+		}
+
+		/**
+		 * When {@link IPartitionerService#createPartition(CreatePartitionRequest)} iterates all lines and loads one record per line,
+		 * then this flag decides whether that record shall have a low or a high ID.
+		 * If omitted, then the default is <code>true</code>.
+		 * <p>
+		 * Note that this setting is ignored in the request instance, if {@link #setRecordToAttach(ITableRecordReference)} was called with a not <code>null</code> value.
 		 *
 		 * @param oldest
 		 * @return
 		 */
-
 		public T setOldestFirst(final boolean oldest)
 		{
 			oldestFirst = oldest;
@@ -211,15 +229,19 @@ public class PartitionRequestFactory
 
 		private final OnNotDLMTable onNotDLMTable;
 
+		private final ITableRecordReference recordToAttach;
+
 		private CreatePartitionRequest(
 				final PartitionerConfig config,
 				final boolean oldestFirst,
+				final ITableRecordReference recordToAttach,
 				final OnNotDLMTable onNotDLMTable)
 		{
 			Check.assumeNotNull(config, "Param 'config' is not null");
 
 			this.config = config;
 			this.oldestFirst = oldestFirst;
+			this.recordToAttach = recordToAttach;
 			this.onNotDLMTable = onNotDLMTable;
 		}
 
@@ -236,6 +258,16 @@ public class PartitionRequestFactory
 		public OnNotDLMTable getOnNotDLMTable()
 		{
 			return onNotDLMTable;
+		}
+
+		/**
+		 * See {@link PartitionerRequestBuilder#setRecordToAttach(ITableRecordReference)}
+		 *
+		 * @return
+		 */
+		public ITableRecordReference getRecordToAttach()
+		{
+			return recordToAttach;
 		}
 
 		@Override
@@ -268,6 +300,7 @@ public class PartitionRequestFactory
 		{
 			super(partitionRequest.getConfig(),
 					partitionRequest.isOldestFirst(),
+					partitionRequest.getRecordToAttach(),
 					partitionRequest.getOnNotDLMTable());
 
 			this.partitionRequest = partitionRequest; // we use it for the toString() method

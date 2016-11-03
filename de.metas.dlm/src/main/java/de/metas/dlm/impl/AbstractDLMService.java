@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.process.AD_Table_CreatePK;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,11 +67,18 @@ public abstract class AbstractDLMService implements IDLMService
 	@Override
 	public void addTableToDLM(final I_AD_Table table)
 	{
+		final IColumnBL columnBL = Services.get(IColumnBL.class);
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(table);
+		final String tableName = table.getTableName();
 
-		Services.get(IColumnBL.class).getSingleKeyColumn(table.getTableName());
+		// check if their is a single key column which is in the form of tablenName + "_ID"
+		final String singleKeyColumn = columnBL.getSingleKeyColumn(tableName);
+		Check.errorIf(!InterfaceWrapperHelper.getKeyColumnName(tableName).equals(singleKeyColumn),
+				"Table={} (AD_Table_ID={}) has singleKeyColumn={}; instead it needs to have singleKeyColumn={}; Consider running the process {} to fix it.",
+				table.getTableName(), table.getAD_Table_ID(), singleKeyColumn, InterfaceWrapperHelper.getKeyColumnName(tableName), AD_Table_CreatePK.class.getName());
 
-		executeDBFunction_add_table_to_dlm(table.getTableName(), trxName); // make sure that the DB call and the changes to table take place in the same trx.
+		executeDBFunction_add_table_to_dlm(tableName, trxName); // make sure that the DB call and the changes to table take place in the same trx.
 
 		createOrUpdateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Level);
 		createOrUpdateDlmColumn(table, IDLMAware.COLUMNNAME_DLM_Partition_ID);
