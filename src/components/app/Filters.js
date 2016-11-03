@@ -13,6 +13,10 @@ import {
 	setFilter
 } from '../../actions/ListActions';
 
+import {
+    getItemsByProperty
+} from '../../actions/WindowActions';
+
 class Filters extends Component {
 	constructor(props) {
 		super(props);
@@ -59,6 +63,7 @@ class Filters extends Component {
 	}
 
 	toggleFrequentFilter = (index, filterData) => {
+        const {dispatch} = this.props;
 		this.setState(Object.assign({}, this.state, {
 			frequentFilterOpen: index,
 			notFrequentFilterOpen: false,
@@ -122,11 +127,9 @@ class Filters extends Component {
 		this.setSelectedItem('', true);
 	}
 
-
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
 		const {filterDataItem, selectedItem} = this.state;
-        console.log(filterDataItem);
 		return (
 			<FiltersItem
 				key={key}
@@ -148,6 +151,10 @@ class Filters extends Component {
 	renderStandardFilter = (filterData) => {
 		const {notFrequentListOpen, filterDataItem, notFrequentFilterOpen} = this.state;
 
+        //have to check wheter any of standard filters is active
+        //once it is rendered
+        const isActive = filterDataItem.filterId && !!getItemsByProperty(filterData, "filterId", filterDataItem.filterId).length;
+
 		return (
 			<div className="filter-wrapper">
 				<button
@@ -155,11 +162,11 @@ class Filters extends Component {
                     className={
                         "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
                         (notFrequentFilterOpen ? " btn-select": "") +
-                        (filterDataItem ? " btn-active" : "")
+                        (isActive ? " btn-active" : "")
                     }
                 >
 					<i className="meta-icon-preview" />
-					{ filterDataItem ? 'Filter: ' + filterDataItem.caption : 'No search filters'}
+					{ isActive ? 'Filter: ' + filterDataItem.caption : 'No search filters'}
 				</button>
 
 				{ notFrequentFilterOpen &&
@@ -184,7 +191,7 @@ class Filters extends Component {
 	}
 
     renderFrequentFilterWrapper = (filterData) => {
-		const {frequentFilterOpen, selectedItem} = this.state;
+		const {frequentFilterOpen, filterDataItem, selectedItem} = this.state;
 
 		return (
 			<div className="filter-wrapper">
@@ -194,7 +201,7 @@ class Filters extends Component {
                             onClick={() => this.toggleFrequentFilter(index, item)}
                             className={
                                 "btn btn-meta-outline-secondary btn-distance btn-sm" +
-                                (selectedItem.filterId === item.filterId ? " btn-active": "")
+                                (filterDataItem.filterId === item.filterId ? " btn-active": "")
                             }
                         >
 							<i className="meta-icon-preview" />

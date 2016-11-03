@@ -14,7 +14,6 @@ class FilterWidget extends Component {
 
     handlePatch = (property, value, paramId) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
-
         dispatch(updateFiltersParameters(filterId, property, value));
     }
 
