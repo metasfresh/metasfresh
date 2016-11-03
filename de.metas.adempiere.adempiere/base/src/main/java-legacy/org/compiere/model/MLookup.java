@@ -829,7 +829,7 @@ public final class MLookup extends Lookup implements Serializable
 		final Object contextCacheKey;
 		if (useContextCache)
 		{
-			contextCacheKey = createValidationKey(evalCtx, getLookupInfo(), key);
+			contextCacheKey = createValidationKey(evalCtxToUse, getLookupInfo(), key);
 			if (m_lookupDirectContextCache != null)
 			{
 				if (m_lookupDirectContextCache.containsKey(contextCacheKey))

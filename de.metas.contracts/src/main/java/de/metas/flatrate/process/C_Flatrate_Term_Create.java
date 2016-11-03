@@ -40,7 +40,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
  * #L%
  */
 
-public abstract class C_FlatrateTerm_Create extends SvrProcess
+public abstract class C_Flatrate_Term_Create extends SvrProcess
 {
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
