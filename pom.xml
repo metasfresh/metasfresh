@@ -73,6 +73,32 @@
 	</distributionManagement>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<!-- Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
+									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
+									property." Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
+								<property>
+									<name>javax.xml.accessExternalSchema</name>
+									<value>all</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
 		<pluginManagement>
 			<plugins>
 				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
@@ -94,7 +120,19 @@
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
-			
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jaxb2-maven-plugin</artifactId>
+					<!-- 
+						later versions of the plugin don't work with eclipse's m2e plugin. 
+						see https://github.com/mojohaus/jaxb2-maven-plugin/issues/24 for details 
+						and updates on the issue 
+					-->
+					<!-- version>2.2</version -->
+					<version>1.6</version>
+				</plugin>
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
@@ -116,6 +154,19 @@
 										<goals>
 											<goal>compile-theme</goal>
 											<goal>resources</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>properties-maven-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>set-system-properties</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
