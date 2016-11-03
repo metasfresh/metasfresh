@@ -62,34 +62,35 @@ class Filters extends Component {
 		}))
 	}
 
+    getFiltersStructure = (filterData) => {
+        return filterData.parameters.map((item) => {
+            item.value = null;
+            return item;
+        });
+    }
+
 	toggleFrequentFilter = (index, filterData) => {
-        const {dispatch} = this.props;
+        const {dispatch, filter} = this.props;
+        if(filter.parameters.length === 0 || filter.filterId !== filterData.filterId){
+            dispatch(initFiltersParameters(filterData.filterId, this.getFiltersStructure(filterData)));
+        }
 		this.setState(Object.assign({}, this.state, {
 			frequentFilterOpen: index,
 			notFrequentFilterOpen: false,
+            notFrequentListOpen: true,
             filterDataItem: filterData
-		}))
+		}));
 	}
 
 	showFilter = (filterData) => {
 		const {dispatch} = this.props;
+        dispatch(initFiltersParameters(filterData.filterId, this.getFiltersStructure(filterData)));
 
 		this.setState(Object.assign({}, this.state, {
 			filterDataItem: filterData,
 			notFrequentListOpen: false,
 			frequentFilterOpen: false
-		}), () => {
-			let parameters = [];
-
-			filterData.parameters.map((item, id) => {
-				parameters = update(parameters, {$push: [{
-					parameterName: item.parameterName,
-					value: null
-				}]});
-			})
-
-			dispatch(initFiltersParameters(filterData.filterId, parameters));
-		})
+		}));
 	}
 
 	applyFilters = () => {
@@ -109,7 +110,6 @@ class Filters extends Component {
 		const {windowType, updateDocList, dispatch} = this.props;
 		const {filterDataItem} = this.state;
 
-		let parameters = [];
 		let data = '';
 
 		if(filterDataItem) {

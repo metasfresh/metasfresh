@@ -24,6 +24,7 @@ class FilterWidget extends Component {
             item, filter
         } = this.props;
 
+
         if(widgetData){
             return (
                 <div className="form-group row">
