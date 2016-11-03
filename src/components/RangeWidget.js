@@ -18,7 +18,7 @@ class RangeWidget extends Component {
 
         if(widgetData){
             return (
-                <div className="form-group row">
+                <div className="form-group row" style={"background": "red"}>
                     <div className="col-xs-12">
                         <div className={"form-group row"}>
                             <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
