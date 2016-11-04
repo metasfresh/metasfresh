@@ -197,7 +197,7 @@
 	      <activeByDefault>true</activeByDefault>
 	    </activation>
 	    <properties>
-	      <repo-id>metas-snapshots-repo</repo-id>
+	      <repo-id>metasfresh-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh Snapshots Repository</repo-name>
 	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</repo-url>
 	    </properties>
