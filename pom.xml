@@ -47,13 +47,14 @@
 	</properties>
 
 	<repositories>
-		<!-- The repositories that we relate on are defined in this parent POM, 
-			because whether an artifact is found should not depend on a specific user's 
-			settings.xml -->
+		<!-- 
+		    The repositories that we relate on are defined in this parent POM, 
+			because whether an artifact is found should not depend on a specific user's settings.xml 
+		-->
 		<repository>
-			<id>metasfresh-nexus-repo</id>
+			<id>metasfresh-repo</id>
 			<name>metasfresh repository on github</name>
-			<url>https://repo.metasfresh.com/repository/mvn-public/</url>
+			<url>http://dedep901:8081/nexus/content/repositories/public</url>
 		</repository>
 	</repositories>
 
@@ -63,13 +64,10 @@
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
 		<snapshotRepository>
-			<id>metasfresh-nexus-repo</id>
-			<name>Maven metasfresh Snapshots Repository</name>
-			
-			<!-- see ME-40 -->
-			<url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</url>
+     		<id>${repo-id}</id>
+		    <name>${repo-name}</name>
+      		<url>${repo-url}</url>
 		</snapshotRepository>
-
 	</distributionManagement>
 
 	<build>
@@ -180,5 +178,28 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+	  <!-- thx to http://stackoverflow.com/questions/635154/multiple-deployments-in-maven -->
+	  <profile>
+	    <id>metas-perm-snapshots-repo</id>
+	    <properties>
+		  <repo-id>metasfresh-perm-snapshots-repo</repo-id>
+	      <repo-name>Maven metasfresh *permantent* Snapshots Repository</repo-name>
+	      <repo-url>http://dedep901:8081/nexus/content/repositories/mvn-metasfresh-perm-snapshots/</repo-url>
+	    </properties>
+	  </profile>
+	  <profile>
+	    <id>metasfresh-snapshots-repo</id>
+	    <activation>
+	      <activeByDefault>true</activeByDefault>
+	    </activation>
+	    <properties>
+	      <repo-id>metas-snapshots-repo</repo-id>
+	      <repo-name>Maven metasfresh Snapshots Repository</repo-name>
+	      <repo-url>http://dedep901:8081/nexus/content/repositories/metasfresh-snapshots/</repo-url>
+	    </properties>
+	  </profile>
+	</profiles>
 
 </project>
