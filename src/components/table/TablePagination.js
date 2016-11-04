@@ -81,7 +81,6 @@ class TablePagination extends Component {
                 </div>
                 }
                 <a className="page-link" onClick={() => this.handleFirstDotsState()}>{'...'}</a>
-                {}
             </li>
         );
     }
@@ -99,13 +98,11 @@ class TablePagination extends Component {
                 </div>
                 }
                 <a className="page-link" onClick={() => this.handleSecondDotsState()}>{'...'}</a>
-                {}
             </li>
         );
         pagination.push(
             <li className="page-item" key={9999} onClick={() => {handleChangePage(pages); deselect()} }>
                 <a className="page-link">{pages}</a>
-                {}
             </li>
         );
     }

@@ -154,6 +154,8 @@ class RawWidget extends Component {
                         parameterName={parameterName}
                         setSelectedItem={setSelectedItem}
                         selected={selectedField}
+                        tabId={tabId}
+                        rowId={rowId}
                     />
                 )
             case "List":

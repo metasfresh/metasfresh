@@ -115,6 +115,8 @@ class DocumentList extends Component {
         const {data} = this.state;
         const {dispatch} = this.props;
 
+
+
         dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
@@ -133,7 +135,7 @@ class DocumentList extends Component {
         return sortingQuery;
     }
 
-    sortData = (asc, field, startPage) => {
+    sortData = (asc, field, startPage, currPage) => {
         const {sorting, page, dispatch, windowType, updateUri} = this.props;
         const {data} = this.state;
 
@@ -145,7 +147,7 @@ class DocumentList extends Component {
             dispatch(setPagination(1, windowType));
         }
 
-        this.getData(data.viewId, page, 20, this.getSortingQuery(asc, field));
+        this.getData(data.viewId, currPage, 20, this.getSortingQuery(asc, field));
     }
 
     handleChangePage = (index) => {
@@ -169,7 +171,7 @@ class DocumentList extends Component {
             dispatch(setPagination(currentPage));
             !!updateUri && updateUri("page", currentPage);
 
-            this.sortData(sorting.dir, sorting.prop);
+            this.sortData(sorting.dir, sorting.prop, false, currentPage);
         }
     }
 
