@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import {push} from 'react-router-redux';
+import {push, goBack} from 'react-router-redux';
 
 import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -34,6 +34,16 @@ class LoginForm extends Component {
         }))
     }
 
+    handleSuccess = () => {
+        const {redirect} = this.props;
+
+        if(redirect){
+            dispatch(goBack());
+        }else{
+            dispatch(push('/'));
+        }
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
         const {roleSelect,roles} = this.state;
@@ -41,12 +51,12 @@ class LoginForm extends Component {
         if(roleSelect){
             dispatch(loginCompletionRequest(roles[this.role.value])).then(() => {
                 dispatch(loginSuccess());
-                dispatch(push('/'));
+                this.handleSuccess();
             })
         }else{
             dispatch(loginRequest(this.login.value, this.passwd.value)).then(response =>{
                 if(response.data.loginComplete){
-                    dispatch(push("/"));
+                    this.handleSuccess();
                 }else{
                     this.setState(Object.assign({}, this.state, {
                         roleSelect: true,

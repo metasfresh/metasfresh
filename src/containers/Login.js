@@ -11,10 +11,13 @@ class Login extends Component {
     }
 
     render() {
+        const {redirect} = this.props;
         return (
             <div>
                 <div className="login-container">
-                    <LoginForm />
+                    <LoginForm
+                        redirect={redirect}
+                     />
                 </div>
             </div>
         );
@@ -25,18 +28,6 @@ Login.propTypes = {
     dispatch: PropTypes.func.isRequired
 }
 
-function mapStateToProps(state) {
-    const { appHandler } = state;
-
-    const {
-    } = appHandler || {
-    }
-
-    return {
-
-    }
-}
-
-Login = connect(mapStateToProps)(Login);
+Login = connect()(Login);
 
 export default Login;
