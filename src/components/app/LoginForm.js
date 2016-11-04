@@ -4,6 +4,8 @@ import {push, goBack} from 'react-router-redux';
 import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
+import RawList from '../widget/RawList';
+
 import {
     loginRequest,
     loginSuccess,
@@ -15,6 +17,7 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
+            role: "",
             roleSelect: false,
             err: ""
         }
@@ -46,10 +49,10 @@ class LoginForm extends Component {
 
     handleLogin = () => {
         const {dispatch} = this.props;
-        const {roleSelect,roles} = this.state;
+        const {roleSelect, roles, role} = this.state;
 
         if(roleSelect){
-            dispatch(loginCompletionRequest(roles[this.role.value])).then(() => {
+            dispatch(loginCompletionRequest(role)).then(() => {
                 dispatch(loginSuccess());
                 this.handleSuccess();
             })
@@ -71,8 +74,14 @@ class LoginForm extends Component {
         }
     }
 
+    handleRoleSelect = (option) => {
+        this.setState(Object.assign({}, this.state, {
+            role: option
+        }));
+    }
+
     render() {
-        const {roleSelect, roles, err} = this.state;
+        const {roleSelect, roles, err, role} = this.state;
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
@@ -80,11 +89,12 @@ class LoginForm extends Component {
                 </div>
                 {roleSelect ? <div>
                     <div className={"form-control-label"}><small>Select role</small></div>
-                        <div>
-                            <select ref={c => this.role = c} className={"input-dropdown input-block input-primary"}>
-                                {roles.map((item, index) => <option key={index} value={index}>{item.caption}</option>)}
-                            </select>
-                        </div>
+                        <RawList
+                            rank="primary"
+                            list={roles}
+                            onSelect={option => this.handleRoleSelect(option)}
+                            selected={role}
+                        />
                     </div>:
                     <div>
                         {

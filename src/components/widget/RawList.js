@@ -16,7 +16,7 @@ class RawList extends Component {
         e.preventDefault();
         const {onFocus} = this.props;
 
-        onFocus();
+        onFocus && onFocus();
 
         this.dropdown.classList.add("input-dropdown-focused");
     }
