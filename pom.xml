@@ -182,7 +182,7 @@
 	<profiles>
 	  <!-- thx to http://stackoverflow.com/questions/635154/multiple-deployments-in-maven -->
 	  <profile>
-	    <id>metas-perm-snapshots-repo</id>
+	    <id>metasfresh-perm-snapshots-repo</id>
 	    <properties>
 		  <repo-id>metasfresh-perm-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh *permantent* Snapshots Repository</repo-name>
