@@ -1,9 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-var DragDropContext = require('react-dnd').DragDropContext;
-var HTML5Backend = require('react-dnd-html5-backend');
 import Container from '../components/Container';
-import Cont from './Cont';
+import WidgetWrapper from '../components/widget/DraggableWrapper';
+
+
 import Draggable from './Draggable';
 
 
@@ -76,11 +76,9 @@ export class Dashboard extends Component {
                 siteName = {"Dashboard"}
                 noMargin = {true}
             >
-            <div className="container-fluid">
-                <Cont/>
-
+            <div className="container-fluid dashboard-wrapper">
+                <WidgetWrapper/>
             </div>
-
 
             </Container>
         );
@@ -103,13 +101,8 @@ function mapStateToProps(state) {
 Dashboard.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired
-
-    // text: PropTypes.string.isRequired,
-    // // Injected by React DnD:
-    // isDragging: PropTypes.bool.isRequired,
-    // connectDragSource: PropTypes.func.isRequired
 };
 
-Dashboard = connect(mapStateToProps)(DragDropContext(HTML5Backend)(Dashboard));
+Dashboard = connect(mapStateToProps)(Dashboard);
 
 export default Dashboard

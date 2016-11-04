@@ -2,14 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { findDOMNode } from 'react-dom';
 import ItemTypes from './ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
-
-const style = {
-  border: '1px dashed gray',
-  padding: '0.5rem 1rem',
-  marginBottom: '.5rem',
-  backgroundColor: 'white',
-  cursor: 'move'
-};
+import onClickOutside from 'react-onclickoutside';
 
 const cardSource = {
   beginDrag(props) {
@@ -82,30 +75,75 @@ function connect(connect, monitor) {
 }
 
 
-export class Card extends Component {
+export class DraggableWidget extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      toggleWidgetMenu: false,
+      isMaximize: false
+    };
+  }
+
+  handleClickOutside = () => {
+    this.setState(Object.assign({}, this.state, {
+      toggleWidgetMenu: false
+    }))
+  }
+
+  toggleMenu = () => {
+    const { toggleWidgetMenu } = this.state;
+    this.setState(Object.assign({}, this.state, {
+      toggleWidgetMenu: !toggleWidgetMenu
+    }))
+  }
+
+  maximizeWidget = () => {
+    this.setState(Object.assign({}, this.state, {
+      isMaximize: true,
+      toggleWidgetMenu: false
+    }))
+  }
+
+  minimizeWidget = () => {
+    this.setState(Object.assign({}, this.state, {
+      isMaximize: false,
+      toggleWidgetMenu: false
+    }))
+  }
 
   render() {
-    const { text, isDragging, connectDragSource } = this.props;
+    const { text, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
+    const { toggleWidgetMenu, isMaximize } = this.state;
     const opacity = isDragging ? 0.5 : 1;
 
-    // return connectDragSource(connectDropTarget(
-    //     <div> ddddddddd <div style={{ ...style, opacity }}>
-    //       {text}
-    //     </div></div>
-    //
-    // ));
+    return connectDragSource(connectDropTarget(
+       <div className={"draggable-widget" + (isMaximize ? " draggable-widget-maximize":"")} style={{ opacity }}>
+         <div className="draggable-widget-header">
+           {text}
+           <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}></i>
+           {toggleWidgetMenu &&
+             <div className="draggable-widget-menu">
 
-    return connectDragSource(
-        <div style={{ ...style, opacity }}>
-          {text}
-        </div>
-    );
+               { isMaximize ?
+                   <span onClick={() => {this.minimizeWidget(); showWidgets()} }>Minimize</span> :
+                   <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
+               }
+
+               <span>Refresh</span>
+             </div>
+           }
+
+         </div>
+         <div></div>
+       </div>
+
+    ));
   }
 }
 
-Card.propTypes = {
+DraggableWidget.propTypes = {
   connectDragSource: PropTypes.func.isRequired,
-  // connectDropTarget: PropTypes.func.isRequired,
+  connectDropTarget: PropTypes.func.isRequired,
   index: PropTypes.number.isRequired,
   isDragging: PropTypes.bool.isRequired,
   id: PropTypes.any.isRequired,
@@ -114,4 +152,4 @@ Card.propTypes = {
 };
 
 
-export default DragSource(ItemTypes.CARD, cardSource, collect)(Card);
+export default DragSource(ItemTypes.CARD, cardSource, collect)(DropTarget(ItemTypes.CARD, cardTarget, connect)(onClickOutside(DraggableWidget)));
