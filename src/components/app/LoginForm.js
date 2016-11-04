@@ -35,7 +35,7 @@ class LoginForm extends Component {
     }
 
     handleSuccess = () => {
-        const {redirect} = this.props;
+        const {redirect, dispatch} = this.props;
 
         if(redirect){
             dispatch(goBack());

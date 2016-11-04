@@ -27,6 +27,8 @@ export const getRoutes = (store) => {
                         store.dispatch(loginSuccess());
                         callback(null, nextState.location.pathname);
                     }else{
+                        //redirect tells that there should be
+                        //step back in history after login
                         store.dispatch(push('/login?redirect=true'));
                     }
                 })
@@ -38,7 +40,7 @@ export const getRoutes = (store) => {
         store.dispatch(logoutRequest()).then(()=>
             store.dispatch(logoutSuccess())
         ).then(()=>
-            store.dispatch(push('/login?redirect=true'))
+            store.dispatch(push('/login'))
         );
     }
     return (
