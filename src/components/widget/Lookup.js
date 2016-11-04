@@ -189,7 +189,11 @@ class Lookup extends Component {
     }
 
     handleChange = () => {
-        const {dispatch, recent, windowType, properties, dataId, filterWidget, filterId, parameterName} = this.props;
+        const {
+            dispatch, recent, windowType, properties, dataId, filterWidget,
+            filterId, parameterName, tabId, rowId
+        } = this.props;
+
         const {mainProperty} = this.state;
 
         this.dropdown.classList.add("input-dropdown-focused");
@@ -212,7 +216,7 @@ class Lookup extends Component {
                     }));
                 })
             }else {
-                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId))
+                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data.values,

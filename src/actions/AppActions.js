@@ -16,10 +16,17 @@ export function logoutSuccess() {
 	}
 }
 
-export function autocompleteRequest(windowType, propertyName, query, id = "NEW") {
+export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId) {
 	return () => {
 		query = encodeURIComponent(query);
-		return axios.get(config.API_URL + '/window/typeahead?type=' + windowType + '&id='+id+'&field='+ propertyName +'&query=' + query);
+		return axios.get(
+            config.API_URL +
+            '/window/typeahead?type=' + windowType +
+            '&id='+id+'&field='+ propertyName +
+            '&query=' + query +
+    		(tabId ? "&tabid=" + tabId : "") +
+    		(rowId ? "&rowId=" + rowId : "")
+        );
 	}
 }
 
