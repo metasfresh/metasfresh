@@ -533,7 +533,7 @@ input:checked + .input-slider:before {
 }
 .input-dropdown-list {
     position: absolute;
-    width:calc(100% - 30px);
+    width: 100%;
     background-color: #fff;
     z-index:300;
     border: 1px solid $brand-light-color;

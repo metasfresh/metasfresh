@@ -1,8 +1,10 @@
 import React, { Component, PropTypes } from 'react';
-import {push} from 'react-router-redux';
+import {push, goBack} from 'react-router-redux';
 
 import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+
+import RawList from '../widget/RawList';
 
 import {
     loginRequest,
@@ -15,6 +17,7 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
+            role: "",
             roleSelect: false,
             err: ""
         }
@@ -34,19 +37,29 @@ class LoginForm extends Component {
         }))
     }
 
+    handleSuccess = () => {
+        const {redirect, dispatch} = this.props;
+
+        if(redirect){
+            dispatch(goBack());
+        }else{
+            dispatch(push('/'));
+        }
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
-        const {roleSelect,roles} = this.state;
+        const {roleSelect, roles, role} = this.state;
 
         if(roleSelect){
-            dispatch(loginCompletionRequest(roles[this.role.value])).then(() => {
+            dispatch(loginCompletionRequest(role)).then(() => {
                 dispatch(loginSuccess());
-                dispatch(push('/'));
+                this.handleSuccess();
             })
         }else{
             dispatch(loginRequest(this.login.value, this.passwd.value)).then(response =>{
                 if(response.data.loginComplete){
-                    dispatch(push("/"));
+                    this.handleSuccess();
                 }else{
                     this.setState(Object.assign({}, this.state, {
                         roleSelect: true,
@@ -61,20 +74,27 @@ class LoginForm extends Component {
         }
     }
 
+    handleRoleSelect = (option) => {
+        this.setState(Object.assign({}, this.state, {
+            role: option
+        }));
+    }
+
     render() {
-        const {roleSelect, roles, err} = this.state;
+        const {roleSelect, roles, err, role} = this.state;
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
                     <img src={logo} className="header-logo m-t-2 m-b-2" />
                 </div>
                 {roleSelect ? <div>
-                        Select role
-                        <div>
-                            <select ref={c => this.role = c}>
-                                {roles.map((item, index) => <option key={index} value={index}>{item.caption}</option>)}
-                            </select>
-                        </div>
+                    <div className={"form-control-label"}><small>Select role</small></div>
+                        <RawList
+                            rank="primary"
+                            list={roles}
+                            onSelect={option => this.handleRoleSelect(option)}
+                            selected={role}
+                        />
                     </div>:
                     <div>
                         {
