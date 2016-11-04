@@ -54,7 +54,7 @@
 		<repository>
 			<id>metasfresh-repo</id>
 			<name>metasfresh repository on github</name>
-			<url>http://dedep901:8081/nexus/content/repositories/public</url>
+			<url>https://repo.metasfresh.com/repository/mvn-public/</url>
 		</repository>
 	</repositories>
 
@@ -186,7 +186,7 @@
 	    <properties>
 		  <repo-id>metasfresh-perm-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh *permantent* Snapshots Repository</repo-name>
-	      <repo-url>http://dedep901:8081/nexus/content/repositories/mvn-metasfresh-perm-snapshots/</repo-url>
+	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-perm-snapshots/</repo-url>
 	    </properties>
 	  </profile>
 	  <profile>
@@ -197,7 +197,7 @@
 	    <properties>
 	      <repo-id>metas-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh Snapshots Repository</repo-name>
-	      <repo-url>http://dedep901:8081/nexus/content/repositories/metasfresh-snapshots/</repo-url>
+	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</repo-url>
 	    </properties>
 	  </profile>
 	</profiles>
