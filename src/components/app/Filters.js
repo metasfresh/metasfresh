@@ -230,12 +230,12 @@ class Filters extends Component {
 
 		return(
     		<div>
-    			{filterData &&
+    			{!!filterData.length &&
     				<div className="filter-wrapper">
-    					<span>Filters </span>
+    					<span>Filters: </span>
     					<div className="filter-wrapper">
-    						{freqFilter && this.renderFrequentFilterWrapper(freqFilter)}
-    						{notFreqFilter && this.renderStandardFilter(notFreqFilter)}
+    						{!!freqFilter.length && this.renderFrequentFilterWrapper(freqFilter)}
+    						{!!notFreqFilter.length && this.renderStandardFilter(notFreqFilter)}
     					</div>
     				</div>
     			}
