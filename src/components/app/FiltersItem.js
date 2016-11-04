@@ -9,7 +9,11 @@ class FiltersItem extends Component {
 	}
 
     renderFilterWidget = (item, index) => {
-        const {filterDataItem, windowType, updateDocList, closeFilterMenu, setSelectedItem, selectedItem} = this.props;
+        const {
+            filterDataItem, windowType, updateDocList, closeFilterMenu,
+            setSelectedItem, selectedItem
+        } = this.props;
+
         return(
             <FilterWidget
                 key={index}
@@ -28,8 +32,7 @@ class FiltersItem extends Component {
     }
 
 	render() {
-        const {filterData, clearFilterData, applyFilters} = this.props;
-
+        const {filterData, clearFilterData, applyFilters, notValidFields} = this.props;
         return (
             <div className="filter-menu filter-widget">
                 <div>Active filter:
@@ -41,6 +44,9 @@ class FiltersItem extends Component {
                         {filterData.parameters && filterData.parameters.map((item, index) =>
                             this.renderFilterWidget(item, index)
                         )}
+                    </div>
+                    <div className="col-sm-12 text-xs-right">
+                        {notValidFields && <div className="input-error">Mandatory filters are not filled!</div>}
                     </div>
                 </div>
                 <div className="filter-btn-wrapper">

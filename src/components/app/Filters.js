@@ -26,7 +26,8 @@ class Filters extends Component {
 			filterDataItem: '',
 			selectedItem: '',
             frequentFilterOpen: false,
-			notFrequentFilterOpen: false
+			notFrequentFilterOpen: false,
+            notValidFields: null
 		};
 	}
 
@@ -58,7 +59,8 @@ class Filters extends Component {
 		const {notFrequentFilterOpen} = this.state;
 		this.setState(Object.assign({}, this.state, {
             notFrequentFilterOpen: !notFrequentFilterOpen,
-			frequentFilterOpen: false
+			frequentFilterOpen: false,
+            notValidFields: null
 		}))
 	}
 
@@ -78,7 +80,8 @@ class Filters extends Component {
 			frequentFilterOpen: index,
 			notFrequentFilterOpen: false,
             notFrequentListOpen: true,
-            filterDataItem: filterData
+            filterDataItem: filterData,
+            notValidFields: null
 		}));
 	}
 
@@ -89,14 +92,28 @@ class Filters extends Component {
 		this.setState(Object.assign({}, this.state, {
 			filterDataItem: filterData,
 			notFrequentListOpen: false,
-			frequentFilterOpen: false
+			frequentFilterOpen: false,
+            notValidFields: null
 		}));
 	}
 
+    isFilterValid = (filters) => {
+        return filters.parameters.filter(item => {
+            return item.required && !item.value;
+        })
+    }
+
 	applyFilters = () => {
 		const {filter, dispatch, updateDocList, windowType} = this.props;
-		dispatch(setFilter(filter));
-		this.closeFilterMenu();
+        const notValid = this.isFilterValid(filter);
+        if(notValid.length){
+            this.setState(Object.assign({}, this.state, {
+                notValidFields: notValid
+            }));
+        }else{
+    		dispatch(setFilter(filter));
+    		this.closeFilterMenu();
+        }
 	}
 
 	hideFilter = () => {
@@ -129,7 +146,7 @@ class Filters extends Component {
 
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
-		const {filterDataItem, selectedItem} = this.state;
+		const {filterDataItem, selectedItem,notValidFields} = this.state;
 		return (
 			<FiltersItem
 				key={key}
@@ -144,6 +161,7 @@ class Filters extends Component {
 				selectedItem={selectedItem}
 				clearFilterData={this.clearFilterData}
 				applyFilters={this.applyFilters}
+                notValidFields={notValidFields}
 			/>
 		)
 	}
