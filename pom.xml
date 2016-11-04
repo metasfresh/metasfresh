@@ -83,9 +83,11 @@
 						</goals>
 						<configuration>
 							<properties>
-								<!-- Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
+								<!-- 
+									Avoid the build error "Failed to read schema document 'xjc.xsd', when using jaxb2-maven-plugin version 1.6.
 									because 'file' access is not allowed due to restriction set by the accessExternalSchema 
-									property." Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
+									property." 
+									Thanks to http://stackoverflow.com/questions/34340115/is-there-a-generic-way-to-set-d-arguments-from-within-a-pom-xml -->
 								<property>
 									<name>javax.xml.accessExternalSchema</name>
 									<value>all</value>
