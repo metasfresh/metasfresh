@@ -79,9 +79,9 @@ class LoginForm extends Component {
                     <img src={logo} className="header-logo m-t-2 m-b-2" />
                 </div>
                 {roleSelect ? <div>
-                        Select role
+                    <div className={"form-control-label"}><small>Select role</small></div>
                         <div>
-                            <select ref={c => this.role = c}>
+                            <select ref={c => this.role = c} className={"input-dropdown input-block input-primary"}>
                                 {roles.map((item, index) => <option key={index} value={index}>{item.caption}</option>)}
                             </select>
                         </div>
