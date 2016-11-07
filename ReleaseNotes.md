@@ -8,8 +8,16 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-
 Here come the actual release notes:
+
+# metasfresh 4.43.42 (2016-45)
+## Fixes
+* metasfresh
+  * #552 division by 0 in costprice report
+
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
 
 # metasfresh 4.42.41 (2016-44)
 
