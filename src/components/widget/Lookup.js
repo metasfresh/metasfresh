@@ -56,19 +56,12 @@ class Lookup extends Component {
 
     handleSelect = (select) => {
         const {
-            dispatch,
-            properties,
-            onChange,
-            dataId,
-            fields,
-            filterWidget,
-            parameterName,
-            setSelectedItem
+            dispatch, properties, onChange, dataId, fields, filterWidget,
+            parameterName, setSelectedItem, windowType
         } = this.props;
 
         const {
-            mainProperty,
-            propertiesCopy
+            mainProperty, propertiesCopy
         } = this.state;
 
         // removing selection
@@ -91,35 +84,25 @@ class Lookup extends Component {
                 const promise = onChange(mainProperty[0].field, select);
 
                 promise && promise.then(() => {
-
+                    console.log(select)
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     // call for more properties
                     if(propertiesCopy.length > 0){
 
-                        let batchArray = [];
+                        const batchArray = propertiesCopy.map((item) =>
+                            dispatch(dropdownRequest(windowType, item.field, dataId))
+                        );
 
-                        let batch = new Promise((resolve, reject) => {
-                            propertiesCopy.map((item) => {
-                                dispatch(dropdownRequest(143, item.field, dataId)).then((response)=>{
-
-                                    this.setState(update(this.state, {
-                                        properties: {
-                                            [item.field]: {$set: response.data.values}
-                                        }
-                                    }), () => {
-                                        batchArray.push('0');
-
-                                        if(batchArray.length === propertiesCopy.length){
-                                            resolve();
-                                        }
-                                    });
-
-                                });
+                        Promise.all(batchArray).then(props => {
+                            const newProps = [];
+                            props.map((prop, index) => {
+                                newProps[propertiesCopy[index].field] = prop.data.values;
                             });
-                        });
 
-                        batch.then(()=>{
+                            console.log(newProps)
+
                             this.setState(Object.assign({}, this.state, {
+                                properties: newProps,
                                 model: select
                             }), () => {
                                 this.generatingPropsSelection();
