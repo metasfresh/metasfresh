@@ -1536,6 +1536,7 @@ td.pulse-off input {
     display: inline-block;
     width: 29%;
     border-radius: 3px;
+    pointer-events: none;
 }
 
 .draggable-widget-header {
@@ -1548,6 +1549,7 @@ td.pulse-off input {
     pointer-events: visible;
     cursor: move;
 }
+
 .draggable-widget-body {
     pointer-events: none;
     min-height: 250px;
