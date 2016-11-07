@@ -693,31 +693,44 @@ body {
     text-align: center;
 }
 
-.indicator {
-    width: 30px;
-    display: flex;
-    align-items: center;
-    text-align: center;
-    right: 10px;
-    position: absolute;
+.indicator-bar {
+    height: 1px;
+    margin-top: 1px;
 }
 
-.indicator img {
-    width: 30px;
+.indicator-saved {
+    animation-name: indicator-saving;
+    animation-duration: 1s;
 }
 
-.indicator .success {
-    color: $brand-success-color;
-    opacity: 1;
-    transition: all 1.5s ease;
+.indicator-pending {
+    background-color: #D0D2CE;
+    animation-name: indicator-pending;
+    animation-duration: 1s;
 }
 
-.indicator .saved-animation {
-    opacity: 0;
+.indicator-error {
+    animation-name: indicator-error;
+    animation-duration: 1s;
 }
 
-.indicator .error {
-    color: $brand-font-color-danger;
+@keyframes indicator-pending {
+    0% {width:0%;}
+    100% {width: 30%;}
+}
+
+@keyframes indicator-saving {
+    0% {width: 30%; background-color: #D0D2CE;}
+    60% {width: 100%; background-color: #D0D2CE;}
+    85% {width: 100%; background-color: $brand-success-color;}
+    100% {width: 0%; background-color: transparent;}
+}
+
+@keyframes indicator-error {
+    0% {width: 30%; background-color: #D0D2CE;}
+    60% {width: 100%; background-color: #D0D2CE;}
+    85% {width: 100%; background-color: $brand-font-color-danger;}
+    100% {width: 0%; background-color: transparent;}
 }
 
 table .input-field {
