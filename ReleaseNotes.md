@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.42.42 (2016-45)
+# metasfresh 4.43.42 (2016-45)
 ## Fixes
 * metasfresh
   * #552 division by 0 in costprice report
