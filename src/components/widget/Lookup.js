@@ -26,7 +26,7 @@ class Lookup extends Component {
             selected: null,
             model: null,
             property: "",
-            properties: {},
+            properts: {},
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
@@ -61,7 +61,7 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            mainProperty, propertiesCopy
+            mainProperty, propertiesCopy, property
         } = this.state;
 
         // removing selection
@@ -79,12 +79,11 @@ class Lookup extends Component {
         } else {
             // handling selection when main is not set or set.
 
-            if(this.state.property === "") {
+            if(property === "") {
 
                 const promise = onChange(mainProperty[0].field, select);
 
                 promise && promise.then(() => {
-                    console.log(select)
                     this.inputSearch.value = select[Object.keys(select)[0]];
                     // call for more properties
                     if(propertiesCopy.length > 0){
@@ -94,15 +93,14 @@ class Lookup extends Component {
                         );
 
                         Promise.all(batchArray).then(props => {
-                            const newProps = [];
+                            const newProps = {};
                             props.map((prop, index) => {
                                 newProps[propertiesCopy[index].field] = prop.data.values;
                             });
 
-                            console.log(newProps)
 
                             this.setState(Object.assign({}, this.state, {
-                                properties: newProps,
+                                properts: newProps,
                                 model: select
                             }), () => {
                                 this.generatingPropsSelection();
@@ -113,18 +111,16 @@ class Lookup extends Component {
                     }
                 })
             } else {
-                onChange(this.state.property, select);
-                this.setState(
-                    update(this.state, {
-                        properties:  {$apply: item => {
-                            delete item[this.state.property];
-                            return item;
-                        }}
-                    }),
-                    () => {
-                        this.generatingPropsSelection();
-                    }
-                );
+                onChange(property, select);
+
+                this.setState(update(this.state, {
+                    properts: {$apply: item => {
+                        delete item[this.state.property];
+                        return item;
+                    }}
+                }), () => {
+                    this.generatingPropsSelection();
+                });
             }
 
         }
@@ -134,8 +130,9 @@ class Lookup extends Component {
 
     generatingPropsSelection = () => {
         const {dispatch, onChange} = this.props;
-        const {properties} = this.state;
-        const propertiesKeys = Object.keys(properties);
+        const {properts} = this.state;
+        const propertiesKeys = Object.keys(properts);
+
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
@@ -150,10 +147,11 @@ class Lookup extends Component {
         }
 
         for(let i=0; i < propertiesKeys.length; i++){
-            if(properties[propertiesKeys[i]].length > 1){
+
+            if(properts[propertiesKeys[i]].length > 1){
                 // Generating list of props choice
                 this.setState(Object.assign({}, this.state, {
-                    list: properties[propertiesKeys[i]],
+                    list: properts[propertiesKeys[i]],
                     property: propertiesKeys[i]
                 }));
                 break;
@@ -222,7 +220,7 @@ class Lookup extends Component {
         this.inputSearch.value = "";
 
         properties.map(item => {
-            onChange(item.field, "");
+            onChange(item.field, null);
         })
 
         this.setState(Object.assign({}, this.state, {
