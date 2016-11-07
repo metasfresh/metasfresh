@@ -3,11 +3,15 @@ package de.metas.request.api.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
@@ -77,19 +81,47 @@ public class RequestDAO implements IRequestDAO
 		request.setM_InOut_ID(inOutID);
 		request.setM_Product_ID(line.getM_Product_ID());
 
-		final String qualityNoteName = line.getQualityNote();
+		final I_M_AttributeSetInstance asiLine = line.getM_AttributeSetInstance();
 
-		// set QualityNote based on the string provided in the inout line
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
+		final String trxName = InterfaceWrapperHelper.getTrxName(line);
 
-		final I_M_QualityNote qualityNoteForName = Services.get(IQualityNoteDAO.class).retrieveQualityNoteForName(ctx, qualityNoteName);
+		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
 
-		request.setM_QualityNote(qualityNoteForName);
-		
-		if(qualityNoteForName != null)
+		if (qualityNoteAttribute == null)
 		{
-			// in case there is a qualitynote set, also set the Performance type based on it
-			request.setPerformanceType(qualityNoteForName.getPerformanceType());
+			// nothing to do. Quality Note attribute not defined
+		}
+		else
+		{
+			final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID(), trxName);
+
+			final int qualityNoteID;
+
+			if (qualityNoteAI == null)
+			{
+				qualityNoteID = -1;
+			}
+
+			else
+			{
+				qualityNoteID = qualityNoteAI.getValueNumber().intValue();
+			}
+
+			
+			
+			if (qualityNoteID > 0)
+			{
+				final I_M_QualityNote qualityNote = InterfaceWrapperHelper.create(ctx, qualityNoteID, I_M_QualityNote.class, trxName);
+
+				Check.assumeNotNull(qualityNote, "QualityNote(id = {}) not null", qualityNoteID);
+				
+				request.setM_QualityNote(qualityNote);
+				// in case there is a qualitynote set, also set the Performance type based on it
+				request.setPerformanceType(qualityNote.getPerformanceType());
+
+			}
+
 		}
 
 		// data from inout
