@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.model.I_M_QualityNote;
 
@@ -32,7 +33,39 @@ import de.metas.inout.model.I_M_QualityNote;
 public interface IQualityNoteDAO extends ISingletonService
 {
 
-	I_M_QualityNote retrieveQualityNoteForValue(Properties ctx, String name);
+	/**
+	 * 
+	 * @param ctx
+	 * @param name
+	 * @return the qualityNote for the given value if found, null otherwise
+	 */
+	I_M_QualityNote retrieveQualityNoteForValue(Properties ctx, String value);
 
+	/**
+	 * The I_M_Attribute QualityNote
+	 * 
+	 * @param ctx
+	 * @return
+	 */
 	I_M_Attribute getQualityNoteAttribute(Properties ctx);
+
+	/**
+	 * @param qualityNote
+	 * @return the qualityNote attribute value that fits the qualityNote entry if found, null otherwise
+	 */
+	I_M_AttributeValue retrieveAttribueValueForQualityNote(I_M_QualityNote qualityNote);
+
+	/**
+	 * Delete the M_Attribute value that fits the given QualityNote
+	 * 
+	 * @param qualityNote
+	 */
+	void deleteAttribueValueForQualityNote(I_M_QualityNote qualityNote);
+
+	/**
+	 * Set the name form thequalityNote to the corresponding attribute value if necessary
+	 * 
+	 * @param qualityNote
+	 */
+	void modifyAttributeValueName(I_M_QualityNote qualityNote);
 }

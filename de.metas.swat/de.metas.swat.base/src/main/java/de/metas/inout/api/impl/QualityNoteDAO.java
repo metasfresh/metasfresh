@@ -5,8 +5,11 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
@@ -54,5 +57,45 @@ public class QualityNoteDAO implements IQualityNoteDAO
 
 		return attributeDAO.retrieveAttributeByValue(ctx, QualityNoteAttribute, I_M_Attribute.class);
 	}
+
+	@Override
+	public I_M_AttributeValue retrieveAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
+	{
+
+		return createQueryForQualityNote(qualityNote).firstOnly(I_M_AttributeValue.class);
+	}
+
+	private IQuery<I_M_AttributeValue> createQueryForQualityNote(final I_M_QualityNote qualityNote)
+	{
+		final I_M_Attribute attribute = getQualityNoteAttribute(InterfaceWrapperHelper.getCtx(qualityNote));
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class, qualityNote)
+				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, qualityNote.getValue())
+				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+	
+	@Override
+	public void deleteAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
+	{
+
+		createQueryForQualityNote(qualityNote).delete();
+	}
+	
+	@Override
+	public void modifyAttributeValueName(final I_M_QualityNote qualityNote)
+	{
+		final I_M_AttributeValue attribueValueForQualityNote = retrieveAttribueValueForQualityNote(qualityNote);
+
+		final String noteName = qualityNote.getName();
+		
+		if(attribueValueForQualityNote.getName().compareTo(noteName) != 0)
+		{
+			attribueValueForQualityNote.setName(noteName);
+		}
+		
+		InterfaceWrapperHelper.save(attribueValueForQualityNote);
+	}
+
 
 }
