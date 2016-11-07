@@ -9,6 +9,7 @@ import {
 
 import Datetime from 'react-datetime';
 import Lookup from './widget/Lookup';
+import DatetimeRange from './app/DatetimeRange';
 import List from './widget/List';
 import ActionButton from './widget/ActionButton';
 
@@ -16,10 +17,9 @@ class RawWidget extends Component {
     constructor(props) {
         super(props);
 
-       this.state = {
+        this.state = {
             textValue: props.selectedItem
-       }
-
+        }
     }
 
     handleSelectedValue = (item) => {
@@ -31,11 +31,10 @@ class RawWidget extends Component {
         setSelectedItem(item);
     }
 
-
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id
+            filterId, parameterName, setSelectedItem, selectedItem, id, range
         } = this.props;
 
         const {textValue} = this.state;
@@ -65,25 +64,35 @@ class RawWidget extends Component {
 
         switch(widgetType){
             case "Date":
-                return (
-                    <div className={"input-icon-container input-block " +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? " pulse-on" : " pulse-off")
-                    }>
-                        <Datetime
-                            timeFormat={false}
-                            dateFormat={true}
-                            locale="de"
-                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
-                            value={selectedField ? new Date(selectedField) : null}
-                            onChange={(date) => handlePatch(widgetField, date)}
-                        />
-                        <i className="meta-icon-calendar input-icon-right"></i>
-                    </div>
-                )
+                if(range){
+                    //Watch out! The datetimerange widget as exception, is non-controlled
+                    //input! For further usage, needs upgrade.
+                    return (
+                        <DatetimeRange
+                            onChange={(value, valueTo) => handlePatch(widgetField, value, valueTo)}
+                         />
+                    )
+                }else{
+                    return (
+                        <div className={"input-icon-container input-block " +
+                            (widgetData.readonly ? "input-disabled " : "") +
+                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                            (align ? "text-xs-" + align + " " : "") +
+                            (type === "primary" ? "input-primary " : "input-secondary ") +
+                            (updated ? " pulse-on" : " pulse-off")
+                        }>
+                            <Datetime
+                                timeFormat={false}
+                                dateFormat={true}
+                                locale="de"
+                                inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
+                                value={selectedField ? new Date(selectedField) : null}
+                                onChange={(date) => handlePatch(widgetField, date)}
+                            />
+                            <i className="meta-icon-calendar input-icon-right"></i>
+                        </div>
+                    )
+                }
             case "DateTime":
                 return (
                     <div className={"input-icon-container input-block " +
@@ -145,6 +154,8 @@ class RawWidget extends Component {
                         parameterName={parameterName}
                         setSelectedItem={setSelectedItem}
                         selected={selectedField}
+                        tabId={tabId}
+                        rowId={rowId}
                     />
                 )
             case "List":
@@ -394,7 +405,11 @@ class RawWidget extends Component {
         }
     }
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, updated} = this.props;
+        const {
+            caption, widgetType, description, fields, windowType, type, noLabel,
+            widgetData, dataId, rowId, tabId, icon, gridAlign, updated
+        } = this.props;
+
         return (
             <div>
                 {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}

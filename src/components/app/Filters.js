@@ -13,6 +13,10 @@ import {
 	setFilter
 } from '../../actions/ListActions';
 
+import {
+    getItemsByProperty
+} from '../../actions/WindowActions';
+
 class Filters extends Component {
 	constructor(props) {
 		super(props);
@@ -22,7 +26,8 @@ class Filters extends Component {
 			filterDataItem: '',
 			selectedItem: '',
             frequentFilterOpen: false,
-			notFrequentFilterOpen: false
+			notFrequentFilterOpen: false,
+            notValidFields: null
 		};
 	}
 
@@ -54,42 +59,61 @@ class Filters extends Component {
 		const {notFrequentFilterOpen} = this.state;
 		this.setState(Object.assign({}, this.state, {
             notFrequentFilterOpen: !notFrequentFilterOpen,
-			frequentFilterOpen: false
+			frequentFilterOpen: false,
+            notValidFields: null
 		}))
 	}
 
-	toggleFrequentFilter = (index) => {
+    getFiltersStructure = (filterData) => {
+        return filterData.parameters.map((item) => {
+            item.value = null;
+            return item;
+        });
+    }
+
+	toggleFrequentFilter = (index, filterData) => {
+        const {dispatch, filter} = this.props;
+        if(filter.parameters.length === 0 || filter.filterId !== filterData.filterId){
+            dispatch(initFiltersParameters(filterData.filterId, this.getFiltersStructure(filterData)));
+        }
 		this.setState(Object.assign({}, this.state, {
 			frequentFilterOpen: index,
-			notFrequentFilterOpen: false
-		}))
+			notFrequentFilterOpen: false,
+            notFrequentListOpen: true,
+            filterDataItem: filterData,
+            notValidFields: null
+		}));
 	}
 
 	showFilter = (filterData) => {
 		const {dispatch} = this.props;
+        dispatch(initFiltersParameters(filterData.filterId, this.getFiltersStructure(filterData)));
 
 		this.setState(Object.assign({}, this.state, {
 			filterDataItem: filterData,
 			notFrequentListOpen: false,
-			frequentFilterOpen: false
-		}), () => {
-			let parameters = [];
-
-			filterData.parameters.map((item, id) => {
-				parameters = update(parameters, {$push: [{
-					parameterName: item.parameterName,
-					value: null
-				}]});
-			})
-
-			dispatch(initFiltersParameters(filterData.filterId, parameters));
-		})
+			frequentFilterOpen: false,
+            notValidFields: null
+		}));
 	}
 
+    isFilterValid = (filters) => {
+        return filters.parameters.filter(item => {
+            return item.required && !item.value;
+        })
+    }
+
 	applyFilters = () => {
-		const {filters, dispatch, updateDocList, windowType} = this.props;
-		dispatch(setFilter(filters));
-		this.closeFilterMenu();
+		const {filter, dispatch, updateDocList, windowType} = this.props;
+        const notValid = this.isFilterValid(filter);
+        if(notValid.length){
+            this.setState(Object.assign({}, this.state, {
+                notValidFields: notValid
+            }));
+        }else{
+    		dispatch(setFilter(filter));
+    		this.closeFilterMenu();
+        }
 	}
 
 	hideFilter = () => {
@@ -103,7 +127,6 @@ class Filters extends Component {
 		const {windowType, updateDocList, dispatch} = this.props;
 		const {filterDataItem} = this.state;
 
-		let parameters = [];
 		let data = '';
 
 		if(filterDataItem) {
@@ -114,19 +137,17 @@ class Filters extends Component {
 
 		data.parameters.map((item, id) => {
 			dispatch(updateFiltersParameters(filterDataItem.filterId, '', null));
-		})
+		});
 
 		dispatch(deleteFiltersParameters());
         dispatch(setFilter(null));
 		this.setSelectedItem('', true);
 	}
 
-
 	renderFiltersItem = (item, key) => {
 		const {windowType, updateDocList} = this.props;
-		const {filterDataItem, selectedItem} = this.state;
-
-		return(
+		const {filterDataItem, selectedItem,notValidFields} = this.state;
+		return (
 			<FiltersItem
 				key={key}
 				filterData={item}
@@ -140,13 +161,17 @@ class Filters extends Component {
 				selectedItem={selectedItem}
 				clearFilterData={this.clearFilterData}
 				applyFilters={this.applyFilters}
-				{...filterDataItem}
+                notValidFields={notValidFields}
 			/>
 		)
 	}
 
 	renderStandardFilter = (filterData) => {
 		const {notFrequentListOpen, filterDataItem, notFrequentFilterOpen} = this.state;
+
+        //have to check wheter any of standard filters is active
+        //once it is rendered
+        const isActive = filterDataItem.filterId && !!getItemsByProperty(filterData, "filterId", filterDataItem.filterId).length;
 
 		return (
 			<div className="filter-wrapper">
@@ -155,11 +180,11 @@ class Filters extends Component {
                     className={
                         "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
                         (notFrequentFilterOpen ? " btn-select": "") +
-                        (filterDataItem ? " btn-active" : "")
+                        (isActive ? " btn-active" : "")
                     }
                 >
 					<i className="meta-icon-preview" />
-					{ filterDataItem ? 'Filter: ' + filterDataItem.caption : 'No search filters'}
+					{ isActive ? 'Filter: ' + filterDataItem.caption : 'No search filters'}
 				</button>
 
 				{ notFrequentFilterOpen &&
@@ -184,16 +209,17 @@ class Filters extends Component {
 	}
 
     renderFrequentFilterWrapper = (filterData) => {
-		const {frequentFilterOpen, selectedItem} = this.state;
+		const {frequentFilterOpen, filterDataItem, selectedItem} = this.state;
+
 		return (
 			<div className="filter-wrapper">
 				{filterData.map((item, index) =>
 					<div className="filter-wrapper" key={index}>
 						<button
-                            onClick={() => this.toggleFrequentFilter(index)}
+                            onClick={() => this.toggleFrequentFilter(index, item)}
                             className={
                                 "btn btn-meta-outline-secondary btn-distance btn-sm" +
-                                (selectedItem.filterId === item.filterId ? " btn-active": "")
+                                (filterDataItem.filterId === item.filterId ? " btn-active": "")
                             }
                         >
 							<i className="meta-icon-preview" />
@@ -222,12 +248,12 @@ class Filters extends Component {
 
 		return(
     		<div>
-    			{filterData &&
+    			{!!filterData.length &&
     				<div className="filter-wrapper">
-    					<span>Filters </span>
+    					<span>Filters: </span>
     					<div className="filter-wrapper">
-    						{freqFilter && this.renderFrequentFilterWrapper(freqFilter)}
-    						{notFreqFilter && this.renderStandardFilter(notFreqFilter)}
+    						{!!freqFilter.length && this.renderFrequentFilterWrapper(freqFilter)}
+    						{!!notFreqFilter.length && this.renderStandardFilter(notFreqFilter)}
     					</div>
     				</div>
     			}
@@ -246,19 +272,23 @@ class Filters extends Component {
 
 Filters.propTypes = {
 	dispatch: PropTypes.func.isRequired,
-    filters: PropTypes.array.isRequired
+    filters: PropTypes.array.isRequired,
+    filter: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
     const {listHandler} = state;
     const {
-        filters
+        filters,
+        filter
     } = listHandler || {
-        filters: []
+        filters: [],
+        filter: {}
     }
 
     return {
-        filters
+        filters,
+        filter
     }
 }
 

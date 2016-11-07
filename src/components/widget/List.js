@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import RawList from './RawList';
 
 import {
     dropdownRequest,
@@ -17,12 +17,7 @@ class List extends Component {
         }
     }
 
-    handleBlur = (e) => {
-        this.dropdown.classList.remove("input-dropdown-focused");
-    }
-
-    handleFocus = (e) => {
-        e.preventDefault();
+    handleFocus = () => {
         const {properties, dispatch, dataId, rowId, tabId, windowType, filterWidget, filterId, parameterName} = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -44,15 +39,6 @@ class List extends Component {
                 }));
             });
         }
-
-
-        this.dropdown.classList.add("input-dropdown-focused");
-    }
-
-    handleChange = (e) => {
-        e.preventDefault();
-
-        this.handleBlur();
     }
 
     handleSelect = (option) => {
@@ -61,68 +47,25 @@ class List extends Component {
         if(filterWidget){
             setSelectedItem(option);
         }
-        this.handleBlur();
-
     }
 
-    renderOptions = () => {
-        return this.state.list.map((option, index) => (
-                <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-                    <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
-                </div>
-            )
-        )
-    }
     render() {
-        const {list, rank,readonly, defaultValue, selected, align, updated} = this.props;
+        const {rank, readonly, defaultValue, selected, align, updated} = this.props;
+        const {list, loading} = this.state;
 
         return (
-            <div
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
-                ref={(c) => this.dropdown = c}
-                onBlur={this.handleBlur}
-                className={"input-dropdown-container"}
-            >
-                <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary") + (updated ? " pulse" : "")}>
-                    <div className={
-                        "input-editable input-dropdown-focused " +
-                        (align ? "text-xs-" + align + " " : "")
-                    }>
-                        <input
-                            type="text"
-                            className="input-field js-input-field font-weight-semibold"
-                            readOnly
-                            placeholder={defaultValue}
-                            value={selected ? selected[Object.keys(selected)[0]] : ""}
-                            onFocus={this.handleFocus}
-                            onChange={this.handleChange}
-                            ref={(c) => this.inputSearch = c}
-                            disabled={readonly}
-                        />
-                    </div>
-                    <div className="input-icon">
-                        <i className="meta-icon-down-1 input-icon-sm"/>
-                    </div>
-                </div>
-                <div className="input-dropdown-list">
-                    {(this.state.list.length === 0 && this.state.loading === false) && (
-                        <div className="input-dropdown-list-header">
-                            There is no choice available
-                        </div>
-                    )}
-                    {(this.state.loading && this.state.list.length === 0) && (
-                        <div className="input-dropdown-list-header">
-                            <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
-                                <div className="rotate icon-rotate">
-                                    <i className="meta-icon-settings"/>
-                                </div>
-                            </ReactCSSTransitionGroup>
-                        </div>
-                    )}
-                    {this.renderOptions()}
-                </div>
-            </div>
+            <RawList
+                list={list}
+                loading={loading}
+                onFocus={this.handleFocus}
+                onSelect={option => this.handleSelect(option)}
+                rank={rank}
+                readonly={readonly}
+                defaultValue={defaultValue}
+                selected={selected}
+                align={align}
+                updated={updated}
+            />
         )
     }
 }

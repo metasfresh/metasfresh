@@ -2,95 +2,19 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
 import {
-    patch,
-    updateProperty,
-    findRowByPropName
-} from '../actions/WindowActions';
-
-import {
-    setFilter,
-    updateFiltersParameters,
-    initFiltersParameters,
-    deleteFiltersParameters
+    updateFiltersParameters
 } from '../actions/ListActions';
 
-import Datetime from 'react-datetime';
-import Lookup from './widget/Lookup';
-import List from './widget/List';
-import ActionButton from './widget/ActionButton';
 import RawWidget from './RawWidget';
 
 class FilterWidget extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            cachedValue: null,
-            updated: false
-        }
-
     }
 
-
-    handlePatch = (property, value, paramId) => {
+    handlePatch = (property, value, valueTo) => {
         const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
-
-        dispatch(updateFiltersParameters(filterId, property, value));
-
-    }
-
-    //
-    // This method may looks like a redundant for this one above,
-    // but is need to handle controlled components if
-    // they patch on other event than onchange
-    //
-
-
-    handleFocus = (e, value) => {
-        e.preventDefault();
-
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: value
-        }));
-    }
-
-    validatePrecision = (value) => {
-        const {widgetType} = this.props;
-        let {precision} = this.props;
-
-        if(widgetType === "Integer" || widgetType === "Quantity"){
-            precision = 0;
-        }
-
-        if(precision < (value.split('.')[1] || []).length){
-            return false;
-        }else{
-            return true;
-        }
-    }
-
-
-    componentWillReceiveProps(nextProps) {
-        const {updateCell, selectedItem} = this.props;
-        if(updateCell){
-            updateCell();
-        }
-
-        if(this.props.widgetData.value!==nextProps.widgetData.value) {
-            let th = this;
-            this.setState(
-                Object.assign({}, this.state, {
-                    updated: true
-                }), () => {
-                    setTimeout(function(){
-                      th.setState(Object.assign({}, this.state, {
-                        updated: false
-                      }))
-                    }, 1000);
-                }
-            );
-        }
-
+        dispatch(updateFiltersParameters(filterId, property, value, valueTo));
     }
 
     render() {
@@ -99,8 +23,7 @@ class FilterWidget extends Component {
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
             item, filter
         } = this.props;
-        
-        const {updated} = this.state;
+
 
         if(widgetData){
             return (
@@ -124,6 +47,7 @@ class FilterWidget extends Component {
                                     handleFocus={this.handleFocus}
                                     id={id}
                                     handleChange={this.handleChange}
+                                    range={item.range}
                                 />
                             </div>
                         </div>

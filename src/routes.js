@@ -25,9 +25,11 @@ export const getRoutes = (store) => {
                 store.dispatch(localLoginRequest()).then((resp) => {
                     if(!!resp.data){
                         store.dispatch(loginSuccess());
-                        callback();
+                        callback(null, nextState.location.pathname);
                     }else{
-                        store.dispatch(push('/login'));
+                        //redirect tells that there should be
+                        //step back in history after login
+                        store.dispatch(push('/login?redirect=true'));
                     }
                 })
             }else{
@@ -59,7 +61,9 @@ export const getRoutes = (store) => {
                 <Route path="/sitemap" component={NavigationTree} />
                 <Route path="/logout" onEnter={logout} />
             </Route>
-            <Route path="/login" component={Login} />
+            <Route path="/login" component={nextState =>
+                <Login redirect={nextState.location.query.redirect} />
+            } />
             <Route path="*" component={NoMatch} />
         </Route>
     )
