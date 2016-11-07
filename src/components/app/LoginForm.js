@@ -85,7 +85,7 @@ class LoginForm extends Component {
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
-                    <img src={logo} className="header-logo m-t-2 m-b-2" />
+                    <img src={logo} className="header-logo mt-2 mb-2" />
                 </div>
                 {roleSelect ? <div>
                     <div className={"form-control-label"}><small>Select role</small></div>
@@ -125,7 +125,7 @@ class LoginForm extends Component {
                         </div>
                     </div>
                 }
-                <div className="m-t-2">
+                <div className="mt-2">
                     <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
                 </div>
             </div>
