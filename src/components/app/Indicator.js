@@ -2,51 +2,32 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import '../../assets/css/styles.css';
-import loader from '../../assets/images/state2.gif';
-import saved from '../../assets/images/state3.png';
-import unsaved from '../../assets/images/state1.png';
 
 class Indicator extends Component {
     constructor(props){
         super(props);
     }
-    renderPending = () => {
-        return (
-            <div>
-                <img src={loader} />
-                <small>Saving</small>
-            </div>
-        )
-    }
-    renderError = () => {
-        return (
-            <div>
-                <img src={unsaved} />
-                <small className="error">Error</small>
-            </div>
-        )
-    }
-    renderSaved = () => {
-        return (
-            <div>
-                <img src={saved} />
-                <small className="success saved-animation">Saved</small>
-            </div>
-        )
+    renderIndicator = (state) => {
+        switch(state){
+            case "saved":
+                return "indicator-success";
+                break;
+            case "pending":
+                return "indicator-pending";
+                break;
+            case "error":
+                return "indicator-error";
+                break;
+        }
     }
     render() {
+        const {indicator} = this.props;
         return (
-            <div className="indicator hidden-sm-down">
-                {this.props.indicator === 'saved' ? this.renderSaved() : (this.props.indicator === 'pending' ? this.renderPending() : this.renderError() ) }
+            <div>
+                <div className={"indicator-bar indicator-" + indicator} />
             </div>
         )
     }
 }
-
-Indicator.propTypes = {
-    dispatch: PropTypes.func.isRequired
-}
-
-Indicator = connect()(Indicator);
 
 export default Indicator
