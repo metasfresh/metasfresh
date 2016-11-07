@@ -503,6 +503,7 @@ input:checked + .input-slider:before {
 }
 
 .input-dropdown-container {
+    position: relative;
     cursor: pointer;
     min-width: 200px;
 }
