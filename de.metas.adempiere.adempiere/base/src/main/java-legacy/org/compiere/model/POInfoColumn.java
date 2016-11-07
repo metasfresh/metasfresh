@@ -1,24 +1,26 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
@@ -88,23 +90,42 @@ public final class POInfoColumn implements Serializable
 		}
 
 		int displayTypeToSet = displayType;
-		if (columnName.equals("AD_Language") || columnName.equals("EntityType"))
+
+		ITableRefInfo tableRefInfo = null;
+
+		// task #500: For DisplayType=Table or Search and AD_Reference_Value_ID > 0, retrieve the ITableRefInfo
+		if (ad_Reference_Value_ID > 0 && (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
+		{
+			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
+			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
+			tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(ad_Reference_Value_ID);
+		}
+
+		// FIXME: HARDCODED
+		if (columnName.equals("AD_Language") ||
+				columnName.equals("EntityType") ||
+				// task #500: Also allow type String for non-numeric types with a reference value (Table and search)
+				// Note that the column shall not be a numeric key
+				(tableRefInfo != null && !tableRefInfo.isNumericKey()))
+
 		{
 			displayTypeToSet = org.compiere.util.DisplayType.String;
 			ColumnClass = String.class;
 		}
-		else if (columnName.equals("Posted")
-				|| columnName.equals("Processed")
-				|| columnName.equals("Processing"))
+
+		else if (columnName.equals("Posted") || columnName.equals("Processed") || columnName.equals("Processing"))
+
 		{
 			ColumnClass = Boolean.class;
 		}
 		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+
 		{
 			displayTypeToSet = org.compiere.util.DisplayType.ID;
 			ColumnClass = Integer.class;
 		}
 		else
+
 		{
 			ColumnClass = org.compiere.util.DisplayType.getClass(displayType, true);
 		}
@@ -124,13 +145,45 @@ public final class POInfoColumn implements Serializable
 		//
 		FieldLength = fieldLength;
 		ValueMin = valueMin;
-		ValueMin_BD = toBigDecimalOrNull(ValueMin, "ValueMin");
+		ValueMin_BD =
+
+		toBigDecimalOrNull(ValueMin, "ValueMin");
 		ValueMax = valueMax;
 		ValueMax_BD = toBigDecimalOrNull(ValueMax, "ValueMax");
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 	}   // Column
+
+	/**
+	 * Return true only for Search display type
+	 * 
+	 * @param displayType
+	 * @return
+	 */
+	private boolean isSearchDisplayType(int displayType)
+	{
+		if (org.compiere.util.DisplayType.Search == displayType)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Return true only for Table display type
+	 * 
+	 * @param displayType
+	 * @return
+	 */
+	private boolean isTableDisplayType(int displayType)
+	{
+		if (org.compiere.util.DisplayType.Table == displayType)
+		{
+			return true;
+		}
+		return false;
+	}
 
 	/** Column ID */
 	final int AD_Column_ID;
@@ -184,9 +237,12 @@ public final class POInfoColumn implements Serializable
 	/** Max Value */
 	final BigDecimal ValueMax_BD;
 
-	/* package */boolean IsCalculated = false; // metas: us215
-	/* package */boolean IsUseDocumentSequence = false; // metas: 05133
-	/* package */boolean IsStaleable = true;  // metas: 01537
+	/* package */boolean IsCalculated = false;
+	// metas: us215
+	/* package */boolean IsUseDocumentSequence = false;
+	// metas: 05133
+	/* package */boolean IsStaleable = true;
+	// metas: 01537
 	/* package */boolean IsSelectionColumn;
 
 	private final String sqlColumnForSelect;
@@ -241,7 +297,7 @@ public final class POInfoColumn implements Serializable
 	{
 		return this.ColumnLabel;
 	}
-	
+
 	public String getColumnDescription()
 	{
 		return this.ColumnDescription;
@@ -266,17 +322,17 @@ public final class POInfoColumn implements Serializable
 	{
 		return sqlColumnForSelect;
 	}
-	
+
 	public int getDisplayType()
 	{
 		return DisplayType;
 	}
-	
+
 	public boolean isSelectionColumn()
 	{
 		return IsSelectionColumn;
 	}
-	
+
 	public boolean isMandatory()
 	{
 		return IsMandatory;

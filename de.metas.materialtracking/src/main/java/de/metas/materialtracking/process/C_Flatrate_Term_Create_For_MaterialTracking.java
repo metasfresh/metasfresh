@@ -8,10 +8,11 @@ import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
+import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.process.C_FlatrateTerm_Create;
+import de.metas.flatrate.process.C_Flatrate_Term_Create;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
@@ -38,7 +39,7 @@ import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
  * #L%
  */
 
-public class C_FlatrateTerm_Create_For_MaterialTracking extends C_FlatrateTerm_Create
+public class C_Flatrate_Term_Create_For_MaterialTracking extends C_Flatrate_Term_Create
 		implements ISvrProcessPrecondition
 {
 

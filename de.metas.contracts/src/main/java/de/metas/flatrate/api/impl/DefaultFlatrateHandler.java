@@ -28,11 +28,11 @@ import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,7 +50,7 @@ public class DefaultFlatrateHandler implements IFlatrateHandler
 
 	/**
 	 * Deletes {@link I_C_Flatrate_DataEntry} records for given term.
-	 * 
+	 *
 	 * @throws AdempiereException if any data entry record is completed
 	 */
 	protected void deleteFlatrateTermDataEntriesOnReactivate(final I_C_Flatrate_Term term)
@@ -76,7 +76,7 @@ public class DefaultFlatrateHandler implements IFlatrateHandler
 
 	/**
 	 * Deletes {@link I_C_Invoice_Clearing_Alloc}s for given term.
-	 * 
+	 *
 	 * @param term
 	 */
 	protected void deleteC_Invoice_Clearing_AllocsOnReactivate(final I_C_Flatrate_Term term)
@@ -88,5 +88,14 @@ public class DefaultFlatrateHandler implements IFlatrateHandler
 		{
 			InterfaceWrapperHelper.delete(ica);
 		}
+	}
+
+	/**
+	 * Does nothing; Feel free to override.
+	 */
+	@Override
+	public void afterExtendFlatrateTermCreated(I_C_Flatrate_Term oldTerm, I_C_Flatrate_Term newTerm)
+	{
+		// nothing
 	}
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -398,13 +400,12 @@ public class UserQueryRepository
 		if (userQueryName != null)
 		{
 			final I_AD_UserQuery userQuery = getAD_UserQueryByName(userQueryName);
-			if (userQuery == null)
-			{
-				throw new AdempiereException("@NotFound@ @AD_UserQuery_ID@: @Name@=" + userQueryName);
-			}
 			if (userQueryCode.length() <= 0)
 			{
-				deleteUserQuery(userQuery);
+				if(userQuery != null)
+				{
+					deleteUserQuery(userQuery);
+				}
 			}
 			else
 			{
@@ -413,7 +414,7 @@ public class UserQueryRepository
 		}
 	}
 
-	private void saveUserQuery(I_AD_UserQuery userQuery, final String name, final String code)
+	private void saveUserQuery(@Nullable I_AD_UserQuery userQuery, final String name, final String code)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
 		Check.assumeNotEmpty(code, "code not empty");
