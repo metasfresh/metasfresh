@@ -15,6 +15,10 @@ Here come the actual release notes:
 * metasfresh
   * #552 division by 0 in costprice report
 
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+
 # metasfresh 4.42.41 (2016-44)
 
 ## Features
