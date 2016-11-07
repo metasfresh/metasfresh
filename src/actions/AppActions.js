@@ -41,6 +41,10 @@ export function dropdownRequest(windowType, propertyName, id, tabId, rowId) {
 	);
 }
 
+export function getUserDashboard() {
+    return () => axios.get(config.API_URL + '/dashboard/');
+}
+
 export function viewLayoutRequest(windowType, type){
 	return () => axios.get(config.API_URL + '/documentView/layout?type=' + windowType + '&viewType=' + type);
 }

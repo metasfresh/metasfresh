@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { findDOMNode } from 'react-dom';
-import ItemTypes from './ItemTypes';
+import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
 
@@ -114,10 +114,10 @@ export class DraggableWidget extends Component {
   render() {
     const { text, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
     const { toggleWidgetMenu, isMaximize } = this.state;
-    const opacity = isDragging ? 0.5 : 1;
+
 
     return connectDragSource(connectDropTarget(
-       <div className={"draggable-widget" + (isMaximize ? " draggable-widget-maximize":"")} style={{ opacity }}>
+       <div className={"draggable-widget" + (isMaximize ? " draggable-widget-maximize":"") + (isDragging ? " dragging" : "")} >
          <div className="draggable-widget-header">
            {text}
            <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}></i>
@@ -134,7 +134,9 @@ export class DraggableWidget extends Component {
            }
 
          </div>
-         <div></div>
+         <div className="draggable-widget-body">
+        
+         </div>
        </div>
 
     ));
@@ -151,5 +153,6 @@ DraggableWidget.propTypes = {
   moveCard: PropTypes.func.isRequired
 };
 
+DraggableWidget = DragSource(ItemTypes.DRAGGABLE_CARD, cardSource, collect)(DropTarget(ItemTypes.DRAGGABLE_CARD, cardTarget, connect)(onClickOutside(DraggableWidget)));
 
-export default DragSource(ItemTypes.CARD, cardSource, collect)(DropTarget(ItemTypes.CARD, cardTarget, connect)(onClickOutside(DraggableWidget)));
+export default DraggableWidget;

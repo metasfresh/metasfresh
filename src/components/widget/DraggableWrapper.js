@@ -1,8 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component,PropTypes } from 'react';
+import {connect} from 'react-redux';
 import update from 'react/lib/update';
 import DraggableWidget from './DraggableWidget';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+
+ import {
+    getUserDashboard
+ } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
   constructor(props) {
@@ -35,11 +40,25 @@ export class DraggableWrapper extends Component {
         text: 'Widget eight'
       }],
       isVisible: true,
-      idMaximized: false
+      idMaximized: false, 
+      widgets: ''
     };
   }
 
-  moveCard(dragIndex, hoverIndex) {
+  componentDidMount = () => {
+    this.getDashboard();
+  }
+
+  getDashboard = () => {
+    const {dispatch} = this.props;
+    dispatch(getUserDashboard()).then(response => {
+        this.setState(Object.assign({}, this.state, {
+            widgets: response.data
+        }))
+    });
+  }
+
+  moveCard = (dragIndex, hoverIndex) => {
     const { cards } = this.state;
     const dragCard = cards[dragIndex];
 
@@ -72,10 +91,8 @@ export class DraggableWrapper extends Component {
 
     return (
         <div>
-          <div>
             {cards.map((card, i) => {
               return (
-
                   (isVisible || (idMaximized===i)) &&
                     <DraggableWidget key={card.id}
                       index={i}
@@ -85,17 +102,16 @@ export class DraggableWrapper extends Component {
                       hideWidgets={this.hideWidgets}
                       showWidgets={this.showWidgets}
                     />
-
-
               );
             })}
-          </div>
         </div>
-
-
     );
   }
 }
 
+DraggableWrapper.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
 
-export default DragDropContext(HTML5Backend)(DraggableWrapper)
+DraggableWrapper = connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+export default DraggableWrapper;

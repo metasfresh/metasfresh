@@ -1586,3 +1586,18 @@ td.pulse-off input {
     min-height: 480px;
 }
 
+.dragging {
+    border: 1px dashed $brand-light-color;
+    opacity: 0.5;
+}
+
+.dragging .draggable-widget-header {
+    background: transparent;
+    border-bottom: none;
+    color: transparent;
+}
+
+.draggable-widget-body iframe {
+    width: 100%;
+    min-height: 280px;
+}
