@@ -25,10 +25,6 @@ export function setActions(actions){
 }
 
 // THUNK ACTIONS
-export function getDashboardLink() {
-    return () => axios.get(config.API_URL + '/userSession/dashboardUrl');
-}
-
 export function pathRequest(nodeId) {
     return () => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
 }

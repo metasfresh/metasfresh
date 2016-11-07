@@ -1,45 +1,35 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Container from '../components/Container';
+import DraggableWrapper from '../components/widget/DraggableWrapper';
+
 
 import {
-    getRootBreadcrumb,
-    getDashboardLink
- } from '../actions/MenuActions';
+  getRootBreadcrumb
+} from '../actions/MenuActions';
 
 export class Dashboard extends Component {
     constructor(props){
         super(props);
-        this.state = {
-            link: ''
-        };
     }
 
     componentDidMount = () => {
         const {dispatch} = this.props;
         dispatch(getRootBreadcrumb());
-        this.getDashboardLink();
-    }
-
-    getDashboardLink = () => {
-        const {dispatch} = this.props;
-        dispatch(getDashboardLink()).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                link: response.data
-            }))
-        });
     }
 
     render() {
         const {breadcrumb} = this.props;
-        const {link} = this.state;
         return (
             <Container
                 breadcrumb={breadcrumb}
                 siteName = {"Dashboard"}
                 noMargin = {true}
             >
-                <iframe className="dashboard" src={link}></iframe>
+            <div className="container-fluid dashboard-wrapper">
+                <DraggableWrapper/>
+            </div>
+
             </Container>
         );
     }
