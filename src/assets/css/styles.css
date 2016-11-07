@@ -1533,10 +1533,8 @@ td.pulse-off input {
     border: 1px solid $brand-light-color;
     margin: 2%;
     background-color: white;
-    cursor: move;
     display: inline-block;
     width: 29%;
-    height: 280px;
     border-radius: 3px;
 }
 
@@ -1547,8 +1545,12 @@ td.pulse-off input {
     font-size: 12px;
     color: $brand-font-color;
     position: relative;
+    pointer-events: visible;
+    cursor: move;
 }
 .draggable-widget-body {
+    pointer-events: none;
+    min-height: 250px;
 }
 
 .draggable-widget-icon {
