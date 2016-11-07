@@ -4,7 +4,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
 
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
@@ -33,15 +35,24 @@ import de.metas.inout.model.I_M_QualityNote;
 
 public class QualityNoteDAO implements IQualityNoteDAO
 {
+	public static String QualityNoteAttribute = "QualityNotice";
 
 	@Override
-	public I_M_QualityNote retrieveQualityNoteForName(final Properties ctx, final String name)
+	public I_M_QualityNote retrieveQualityNoteForValue(final Properties ctx, final String value)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_QualityNote.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_QualityNote.COLUMN_Name, name)
+				.addEqualsFilter(I_M_QualityNote.COLUMN_Value, value)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_QualityNote.class);
+	}
+
+	@Override
+	public I_M_Attribute getQualityNoteAttribute(final Properties ctx)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		return attributeDAO.retrieveAttributeByValue(ctx, QualityNoteAttribute, I_M_Attribute.class);
 	}
 
 }

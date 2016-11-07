@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.inout.model.I_M_QualityNote;
+
 public interface IHUReceiptLinePartAttributes
 {
 	String getId();
@@ -33,8 +35,11 @@ public interface IHUReceiptLinePartAttributes
 	BigDecimal getQualityDiscountPercent();
 
 	String getQualityNoticeDisplayName();
+	
+	I_M_QualityNote getQualityNote();
 
 	int getSubProducer_BPartner_ID();
 
 	Object getAttributeStorageAggregationKey();
+
 }

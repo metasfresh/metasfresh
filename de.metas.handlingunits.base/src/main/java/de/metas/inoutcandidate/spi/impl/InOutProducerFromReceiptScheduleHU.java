@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,10 +35,16 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 
@@ -71,6 +77,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.api.IQualityNoteDAO;
+import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
@@ -116,7 +124,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	public InOutProducerFromReceiptScheduleHU(final Properties ctx, final InOutGenerateResult result, final Set<Integer> selectedHUIds, final boolean createReceiptWithDatePromised)
 	{
 		super(result,
-				true, // complete=true
+				true,                // complete=true
 				createReceiptWithDatePromised);
 
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
@@ -215,8 +223,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					qtyWithoutIssues,
 					qualityDiscountPercent,
 					qualityNoticesString,
-					isInDispute
-					);
+					isInDispute);
 
 			//
 			// Assign handling units to receipt line
@@ -242,18 +249,66 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					qtyWithIssues,
 					qualityDiscountPercent,
 					qualityNoticesString,
-					isInDispute
-					);
+					isInDispute);
 
-			if (asi != null)
-			{
-				receiptLineWithIssues.setM_AttributeSetInstance(asi);
-			}
+			addQualityToASI(receiptLineWithIssues, receiptLineCandidate);
+
+			receiptLineWithIssues.setM_AttributeSetInstance(asi);
+
 			InterfaceWrapperHelper.save(receiptLineWithIssues);
 			receiptLines.add(receiptLineWithIssues);
 		}
 
 		return receiptLines;
+
+	}
+
+	private void addQualityToASI(
+			final I_M_InOutLine receiptLineWithIssues,
+			final HUReceiptLineCandidate receiptLineCandidate)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(receiptLineWithIssues);
+
+		final I_M_AttributeSetInstance asi = Services.get(IAttributeSetInstanceBL.class).getCreateASI(asiAware);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptLineWithIssues);
+		final String trxName = InterfaceWrapperHelper.getTrxName(receiptLineWithIssues);
+
+		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
+
+		if (qualityNoteAttribute == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final int qualityAttrID = qualityNoteAttribute.getM_Attribute_ID();
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityAttrID, trxName);
+
+		if (ai == null)
+		{
+			// throw new AdempiereException("No attribute instance was found."
+			// + "\n ASI=" + asi
+			// + "\n Attribute=" + huTrxAttribute.getM_Attribute());
+
+			ai = attributeDAO.createNewAttributeInstance(ctx, asi, qualityAttrID, trxName);
+		}
+
+		final I_M_QualityNote qualityNote = receiptLineCandidate.get_qualityNote();
+
+		// provide the quality note in the ASI if it was set
+		if (qualityNote != null)
+		{
+			ai.setValueNumber(new BigDecimal(qualityNote.getM_QualityNote_ID()) );
+			
+			InterfaceWrapperHelper.save(ai);
+		}
+		
+		receiptLineWithIssues.setM_AttributeSetInstance(asi);
+		
 	}
 
 	/**
@@ -566,7 +621,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU vhu = null; // don't set the VHU because we want to have unique husToAssign per LU/TU
 				husToAssign.add(new HUTopLevel(topLevelHU, rsa.getM_LU_HU(), rsa.getM_TU_HU(), vhu));
 			}
-			
+
 			// Collect VHUs
 			if (rsa.getVHU_ID() > 0)
 			{

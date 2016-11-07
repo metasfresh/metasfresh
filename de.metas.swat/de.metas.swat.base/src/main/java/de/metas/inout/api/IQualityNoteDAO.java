@@ -3,6 +3,7 @@ package de.metas.inout.api;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
 
 import de.metas.inout.model.I_M_QualityNote;
 
@@ -31,5 +32,7 @@ import de.metas.inout.model.I_M_QualityNote;
 public interface IQualityNoteDAO extends ISingletonService
 {
 
-	I_M_QualityNote retrieveQualityNoteForName(Properties ctx, String name);
+	I_M_QualityNote retrieveQualityNoteForValue(Properties ctx, String name);
+
+	I_M_Attribute getQualityNoteAttribute(Properties ctx);
 }
