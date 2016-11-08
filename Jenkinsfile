@@ -52,12 +52,14 @@ timestamps
         			// deploy the de.metas.parent pom.xml to our "permanent" snapshot repo, but don't do anything with the modules that are declared in there
         			sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
         
-        			sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode clean deploy"
+					// fail-never: continue if tests fail, because we want a full report. thx to http://stackoverflow.com/questions/4174696/making-maven-run-all-tests-even-when-some-fail
+        			sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode --fail-never clean deploy"
                 }
             //},esb: { 
                 stage('Build esb') 
                 {
-    			    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode clean deploy"
+					// fail-never: see metasfresh stage
+    			    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --fail-never clean deploy"
                 }
             //}, failFast: true
 		}
