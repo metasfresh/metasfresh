@@ -16,28 +16,39 @@ export class DraggableWrapper extends Component {
     this.state = {
       cards: [{
         id: 1,
-        text: 'Widget one'
+        text: 'Widget one',
+        url: 'http://metasfresh.com/'
     }, {
         id: 2,
-        text: 'Widget two'
+        text: 'Widget two',
+        url: 'http://example.com/'
+
     }, {
         id: 3,
-        text: 'Widget three'
+        text: 'Widget three',
+        url: 'https://www.mail.com'
     }, {
         id: 4,
-        text: 'Widget four'
+        text: 'Widget four',
+        url: 'http://example.com/'
     }, {
         id: 5,
-        text: 'Widget five'
+        text: 'Widget five',
+        url: 'http://example.com/'
+
     }, {
         id: 6,
-        text: 'Widget six'
+        text: 'Widget six',
+        url: 'http://metasfresh.com/'
     }, {
         id: 7,
-        text: 'Widget seven'
+        text: 'Widget seven',
+        url: 'http://metasfresh.com/'
+
     },{
         id: 8,
-        text: 'Widget eight'
+        text: 'Widget eight',
+        url: 'https://www.mail.com'
     }],
     isVisible: true,
     idMaximized: false, 
@@ -98,6 +109,7 @@ render() {
               index={i}
               id={card.id}
               text={card.text}
+              url={card.url}
               moveCard={this.moveCard}
               hideWidgets={this.hideWidgets}
               showWidgets={this.showWidgets}

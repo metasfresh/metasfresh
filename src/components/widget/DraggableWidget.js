@@ -97,7 +97,7 @@ export class DraggableWidget extends Component {
     }
 
     render() {
-        const { text, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
+        const { text, url, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
         const { toggleWidgetMenu, isMaximize } = this.state;
 
 
@@ -119,7 +119,9 @@ export class DraggableWidget extends Component {
                     }
                 </div>
                 <div className="draggable-widget-body">
+                    <iframe src={url}>
 
+                    </iframe>
                 </div> 
             </div>
 
