@@ -39,11 +39,10 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
-
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheIgnore;
 
 /**
  * Note: maybe what you are looking for is here: {@link DisplayType}.
@@ -66,26 +65,21 @@ public class MReference extends X_AD_Reference {
 		super(ctx, rs, trxName);
 	}
 
-	public MRefTable retrieveRefTable() {
-
-		return retrieveRefTable(getCtx(), getAD_Reference_ID(), get_TrxName());
-	}
-
-	@Cached
-	public static MRefTable retrieveRefTable(
-			@CacheCtx final Properties ctx,
-			final int referenceId,
-			@CacheIgnore final String trxName)
+	/**
+	 * @param ctx
+	 * @param referenceId
+	 * @param trxName
+	 * @return MRefTable
+	 * @deprecated Please consider using {@link ILookupDAO#retrieveTableRefInfo(int)}
+	 */
+	@Deprecated
+	public static I_AD_Ref_Table retrieveRefTable(final Properties ctx, final int referenceId, final String trxName)
 	{
-
-		final Object[] params = { referenceId };
-
-		final MRefTable refTable = new Query(ctx, I_AD_Ref_Table.Table_Name,
-				COLUMNNAME_AD_Reference_ID + "=?", trxName).setParameters(
-				params).firstOnly();
-
-		return refTable;
-
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Ref_Table.class, ctx, trxName)
+				.addEqualsFilter(I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID, referenceId)
+				.create()
+				.firstOnly(I_AD_Ref_Table.class);
 	}
 
 }

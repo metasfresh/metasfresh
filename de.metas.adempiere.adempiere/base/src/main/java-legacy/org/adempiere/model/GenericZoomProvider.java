@@ -73,17 +73,21 @@ public class GenericZoomProvider implements IZoomProvider
 			final int PO_Window_ID = zoomInfoDescriptor.getPO_Window_ID();
 			if (PO_Window_ID <= 0)
 			{
-				final MQuery query = evaluateQuery(targetTableName, AD_Window_ID, null, source);
-				result.add(ZoomInfoFactory.ZoomInfo.of(AD_Window_ID, query, name));
+				final Boolean isSOTrx = null;
+				final MQuery query = evaluateQuery(targetTableName, AD_Window_ID, isSOTrx, source);
+				final String zoomInfoId = "generic-" + AD_Window_ID;
+				result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, query, name));
 			}
 			else
 			{
 				final MQuery soQuery = evaluateQuery(targetTableName, AD_Window_ID, Boolean.TRUE, source);
-				result.add(ZoomInfoFactory.ZoomInfo.of(AD_Window_ID, soQuery, name));
+				final String zoomInfoId = "generic-" + AD_Window_ID;
+				result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, soQuery, name));
 
 				final String poName = zoomInfoDescriptor.getPOName();
 				final MQuery poQuery = evaluateQuery(targetTableName, PO_Window_ID, Boolean.FALSE, source);
-				result.add(ZoomInfoFactory.ZoomInfo.of(PO_Window_ID, poQuery, poName));
+				final String poZoomInfoId = "generic-" + PO_Window_ID;
+				result.add(ZoomInfoFactory.ZoomInfo.of(poZoomInfoId, PO_Window_ID, poQuery, poName));
 			}
 		}
 
@@ -117,7 +121,7 @@ public class GenericZoomProvider implements IZoomProvider
 			sql += "\n INNER JOIN AD_Window_Trl ws ON (t.AD_Window_ID=ws.AD_Window_ID AND ws.AD_Language=?)"
 					+ "\n LEFT OUTER JOIN AD_Window_Trl wp ON (t.PO_Window_ID=wp.AD_Window_ID AND wp.AD_Language=?) ";
 
-			final String adLanguage = Env.getAD_Language(Env.getCtx());
+			final String adLanguage = Env.getAD_Language(Env.getCtx()); // FIXME: this will not work on server side/webui -> get rid of Language checking
 			sqlParams.add(adLanguage);
 			sqlParams.add(adLanguage);
 		}

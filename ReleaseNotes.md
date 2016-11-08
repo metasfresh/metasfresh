@@ -8,22 +8,38 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-
 Here come the actual release notes:
 
-# metasfresh 4.42.41 (2016-44)
+# metasfresh 4.43.42 (2016-45)
+## Fixes
+* metasfresh
+  * #552 division by 0 in costprice report
 
-upcoming
+* metasfresh-webui
+  * #40 Account fields are not working
+  
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
+
+# metasfresh 4.42.41 (2016-44)
 
 ## Features
 * metasfresh
  * #500 Migration: Create Requests for all inout lines with quality issues
+   * SQL Migration Path for all Material Receipts with Quality Issues. Reclamation requests are created.
  * #514 Reclamations report: group the inouts with ff.
+   * Create a new Report to analyze the Performance Issues in Vendor receipts/ customer deliveries. The report shows all details to performance issues (Quanitity-, Quality-, Delivery-, Receipt-Performance).
 
 ## Fixes
 * metasfresh
  * FRESH-823:#536 Context bug in MLookup
+   * Fixed a minor context Bug in MLookup Fields.
  * #540 Table and Columns - IsLazyLoading flag is not displayed
+   * Fixed a Bug that occured in Table and Columns Definition, preventing isLazyLoading to be shown.
 
 
 # metasfresh 4.41.40 (2016-43)
