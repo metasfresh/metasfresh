@@ -63,7 +63,7 @@ public interface IQualityNoteDAO extends ISingletonService
 	void deleteAttribueValueForQualityNote(I_M_QualityNote qualityNote);
 
 	/**
-	 * Set the name form thequalityNote to the corresponding attribute value if necessary
+	 * Set the name form thequalityNote to the corresponding attribute value. Also set the right value for IsActive flag
 	 * 
 	 * @param qualityNote
 	 */

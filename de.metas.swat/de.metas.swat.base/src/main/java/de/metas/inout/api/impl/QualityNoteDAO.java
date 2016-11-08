@@ -71,31 +71,34 @@ public class QualityNoteDAO implements IQualityNoteDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class, qualityNote)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, qualityNote.getValue())
-				.addOnlyActiveRecordsFilter()
+				// we want so sync QualityNote with AttributeValue completely, even for inactive records so the OnlyActive clause is not used
 				.create();
 	}
-	
+
 	@Override
 	public void deleteAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
 	{
 
 		createQueryForQualityNote(qualityNote).delete();
 	}
-	
+
 	@Override
 	public void modifyAttributeValueName(final I_M_QualityNote qualityNote)
 	{
 		final I_M_AttributeValue attribueValueForQualityNote = retrieveAttribueValueForQualityNote(qualityNote);
 
-		final String noteName = qualityNote.getName();
-		
-		if(attribueValueForQualityNote.getName().compareTo(noteName) != 0)
+		if (attribueValueForQualityNote == null)
 		{
-			attribueValueForQualityNote.setName(noteName);
+			// shall not happen. All M_QualityNote entries shall have a similar M_AttributeValue
+			return;
 		}
-		
+
+		final String noteName = qualityNote.getName();
+
+		attribueValueForQualityNote.setName(noteName);
+		attribueValueForQualityNote.setIsActive(qualityNote.isActive());
+
 		InterfaceWrapperHelper.save(attribueValueForQualityNote);
 	}
-
 
 }
