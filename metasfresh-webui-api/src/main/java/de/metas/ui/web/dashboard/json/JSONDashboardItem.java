@@ -2,6 +2,7 @@ package de.metas.ui.web.dashboard.json;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.UserDashboardItem;
@@ -37,22 +38,28 @@ public class JSONDashboardItem implements Serializable
 		return new JSONDashboardItem(dashboardItem, jsonOpts);
 	}
 
+	@JsonProperty("id")
+	private final int id;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("url")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String url;
-	@JsonProperty("gridX")
-	private final int gridX;
-	@JsonProperty("gridY")
-	private final int gridY;
+	@JsonProperty("seqNo")
+	private final int seqNo;
 
 	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONFilteringOptions jsonOpts)
 	{
 		super();
+		id = dashboardItem.getId();
 		caption = dashboardItem.getCaption().translate(jsonOpts.getAD_Language());
 		url = dashboardItem.getUrl();
-		gridX = dashboardItem.getGridX();
-		gridY = dashboardItem.getGridY();
+		seqNo = dashboardItem.getSeqNo();
+	}
+
+	public int getId()
+	{
+		return id;
 	}
 
 	public String getCaption()
@@ -65,13 +72,8 @@ public class JSONDashboardItem implements Serializable
 		return url;
 	}
 
-	public int getGridX()
+	public int getSeqNo()
 	{
-		return gridX;
-	}
-
-	public int getGridY()
-	{
-		return gridY;
+		return seqNo;
 	}
 }

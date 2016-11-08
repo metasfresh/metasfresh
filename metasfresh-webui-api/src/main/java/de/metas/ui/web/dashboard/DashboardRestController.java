@@ -1,12 +1,14 @@
 package de.metas.ui.web.dashboard;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
+import de.metas.ui.web.dashboard.json.JSONDashboardChanges;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
@@ -53,8 +55,16 @@ public class DashboardRestController
 	public JSONDashboard getUserDashboard()
 	{
 		userSession.assertLoggedIn();
-		
+
 		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
 		return JSONDashboard.of(userDashboard, newJSONOpts().build());
+	}
+
+	@RequestMapping(value = "/", method = RequestMethod.PATCH)
+	public void changeUserDashboard(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
+	{
+		userSession.assertLoggedIn();
+
+		userDashboardRepo.changeUserDashboard(jsonDashboardChanges);
 	}
 }
