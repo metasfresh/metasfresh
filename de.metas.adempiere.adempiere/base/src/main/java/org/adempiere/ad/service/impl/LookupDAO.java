@@ -345,7 +345,7 @@ public class LookupDAO implements ILookupDAO
 		public boolean isNumericKey()
 		{
 
-			final boolean isNumeric = KeyColumn.endsWith("_ID");
+			final boolean isNumeric = keyColumn.endsWith("_ID");
 			return isNumeric;
 
 		}
