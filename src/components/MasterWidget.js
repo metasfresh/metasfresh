@@ -55,7 +55,6 @@ class Widget extends Component {
             rowId, tabId, onChange, relativeDocId, isAdvanced = false
         } = this.props;
 
-
         const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
