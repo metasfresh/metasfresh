@@ -124,7 +124,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	public InOutProducerFromReceiptScheduleHU(final Properties ctx, final InOutGenerateResult result, final Set<Integer> selectedHUIds, final boolean createReceiptWithDatePromised)
 	{
 		super(result,
-				true,                // complete=true
+				true,                  // complete=true
 				createReceiptWithDatePromised);
 
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
@@ -212,7 +212,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Create receipt line for QtyWithoutIssues
-		final I_M_AttributeSetInstance asi;
 		final BigDecimal qtyWithoutIssues = qtyAndQuality.getQtyWithoutIssues(qtyPrecision);
 		if (qtyWithoutIssues.signum() > 0)
 		{
@@ -229,13 +228,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// Assign handling units to receipt line
 			transferHandlingUnits(huContext, rs, receiptLineCandidate.getReceiptScheduleAllocs(), receiptLineWithoutIssues);
 
-			asi = receiptLineWithoutIssues.getM_AttributeSetInstance();
 			receiptLines.add(receiptLineWithoutIssues);
 		}
-		else
-		{
-			asi = null; // no ASI
-		}
+		
 
 		//
 		// If there is Qty with issues, an extra receipt line is needed (with qtyWithIssues)
@@ -251,6 +246,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					qualityNoticesString,
 					isInDispute);
 
+			// make sure the M_AttributeSetInstance of the new line also contains the QualityNotice attribute
 			addQualityToASI(receiptLineWithIssues, receiptLineCandidate);
 
 			InterfaceWrapperHelper.save(receiptLineWithIssues);
@@ -261,6 +257,12 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	}
 
+	/**
+	 * Add the value of M_QualityNote from the receiptLineCandidate to the M_AttributeSetInstance of the receipt line
+	 * 
+	 * @param receiptLineWithIssues
+	 * @param receiptLineCandidate
+	 */
 	private void addQualityToASI(
 			final I_M_InOutLine receiptLineWithIssues,
 			final HUReceiptLineCandidate receiptLineCandidate)
@@ -300,13 +302,15 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// provide the quality note in the ASI if it was set
 		if (qualityNote != null)
 		{
-			ai.setValueNumber(new BigDecimal(qualityNote.getM_QualityNote_ID()) );
-			
+			ai.setValue(qualityNote.getValue());
+
+			// save the attribute instance
 			InterfaceWrapperHelper.save(ai);
 		}
-		
+
+		// set the asi to the receipt line
 		receiptLineWithIssues.setM_AttributeSetInstance(asi);
-		
+
 	}
 
 	/**

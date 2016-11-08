@@ -55,6 +55,8 @@ public class RequestDAO implements IRequestDAO
 	public void createRequestFromInOutLine(final I_M_InOutLine line)
 	{
 		final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
+
 		if (line == null)
 		{
 			// Shall not happen. Do nothing
@@ -81,11 +83,13 @@ public class RequestDAO implements IRequestDAO
 		request.setM_InOut_ID(inOutID);
 		request.setM_Product_ID(line.getM_Product_ID());
 
+		// M_AttributeSetInstance of the inout line
 		final I_M_AttributeSetInstance asiLine = line.getM_AttributeSetInstance();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 		final String trxName = InterfaceWrapperHelper.getTrxName(line);
 
+		// find the quality note M_Attribute
 		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
 
 		if (qualityNoteAttribute == null)
@@ -94,29 +98,32 @@ public class RequestDAO implements IRequestDAO
 		}
 		else
 		{
+			// find the M_AttributeInstance for QualityNote in the M_AttributeSetInstance of the line
 			final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID(), trxName);
 
-			final int qualityNoteID;
+			// the QualityNote value of the attributeInstance
+			final String qualityNoteValue;
 
 			if (qualityNoteAI == null)
 			{
-				qualityNoteID = -1;
+				qualityNoteValue = null;
 			}
 
 			else
 			{
-				qualityNoteID = qualityNoteAI.getValueNumber().intValue();
+				qualityNoteValue = qualityNoteAI.getValue();
 			}
 
-			
-			
-			if (qualityNoteID > 0)
+			if (qualityNoteValue != null)
 			{
-				final I_M_QualityNote qualityNote = InterfaceWrapperHelper.create(ctx, qualityNoteID, I_M_QualityNote.class, trxName);
+				final I_M_QualityNote qualityNote = qualityNoteDAO.retrieveQualityNoteForValue(ctx, qualityNoteValue);
 
-				Check.assumeNotNull(qualityNote, "QualityNote(id = {}) not null", qualityNoteID);
-				
+				Check.assumeNotNull(qualityNote, "QualityNote not nul");
+
+				// set the qualityNote to the request.
+				// Note: If the inout line on which the request is based has more than one qualityNotes, only the first one is set into the request
 				request.setM_QualityNote(qualityNote);
+				
 				// in case there is a qualitynote set, also set the Performance type based on it
 				request.setPerformanceType(qualityNote.getPerformanceType());
 
