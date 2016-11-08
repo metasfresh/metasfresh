@@ -112,7 +112,7 @@ public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttri
 	@Override
 	public I_M_QualityNote getQualityNote()
 	{
-		// TODO Auto-generated method stub
+		// TODO Add tests for the qualityNote logicS
 		return null;
 	}
 
