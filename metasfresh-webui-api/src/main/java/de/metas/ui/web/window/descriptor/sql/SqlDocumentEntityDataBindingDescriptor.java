@@ -201,11 +201,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
-		if (orderBy.isExplicit())
-		{
-			return orderBy.getExplicitCode();
-		}
-
 		final String fieldName = orderBy.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
 		return fieldBinding.buildSqlOrderBy(orderBy.isAscending());
@@ -229,11 +224,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public final IStringExpression buildSqlFullOrderBy(final DocumentQueryOrderBy orderBy)
 	{
-		if (orderBy.isExplicit())
-		{
-			return orderBy.getExplicitCode();
-		}
-
 		final String fieldName = orderBy.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
 		return fieldBinding.buildSqlFullOrderBy(orderBy.isAscending());
