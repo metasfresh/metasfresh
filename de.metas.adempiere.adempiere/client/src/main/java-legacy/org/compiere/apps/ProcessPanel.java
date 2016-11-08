@@ -18,7 +18,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -71,7 +70,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final int m_TabNo;
 	private final int _adUserId;
 	private final int _adClientId;
-	private final IGridTabSummaryInfo gridTabSummaryInfo;
 	private final String whereClause;
 	private final int adTableId;
 	private final int recordId;
@@ -118,7 +116,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		Env.setContext(ctx, m_WindowNo, "IsSOTrx", builder.isSOTrx());
 		_adClientId = Env.getAD_Client_ID(ctx);
 		_adUserId = Env.getAD_User_ID(ctx);
-		gridTabSummaryInfo = builder.getGridTabSummaryInfo();
 		whereClause = builder.getWhereClause();
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -445,7 +442,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		
 		pi.setAD_User_ID(_adUserId);
 		pi.setAD_Client_ID(_adClientId);
-		pi.setGridTabSummaryInfo(gridTabSummaryInfo);
 		return pi;
 	}
 

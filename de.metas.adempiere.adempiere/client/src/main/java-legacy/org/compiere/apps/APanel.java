@@ -3076,7 +3076,6 @@ public class APanel extends CPanel
 					.build();
 			pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
 			pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-			pi.setGridTabSummaryInfo(m_curTab.getSummaryInfo());
 			ff.setProcessInfo(pi);
 			ff.addWindowListener(new WindowAdapter()
 			{

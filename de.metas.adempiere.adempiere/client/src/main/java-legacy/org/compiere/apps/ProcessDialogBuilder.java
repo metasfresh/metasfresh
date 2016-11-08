@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 
-import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
 import org.compiere.model.GridTab;
 import org.compiere.model.X_AD_Process;
@@ -40,7 +39,6 @@ public final class ProcessDialogBuilder
 	private boolean isSOTrx;
 	private int windowNo = Env.WINDOW_MAIN;
 	private int tabNo = Env.TAB_None;
-	private IGridTabSummaryInfo gridTabSummaryInfo;
 	private String whereClause;
 	private int AD_Table_ID;
 	private int Record_ID;
@@ -146,17 +144,6 @@ public final class ProcessDialogBuilder
 		return isSOTrx;
 	}
 
-	public ProcessDialogBuilder setGridTabSummaryInfo(final IGridTabSummaryInfo gridTabSummaryInfo)
-	{
-		this.gridTabSummaryInfo = gridTabSummaryInfo;
-		return this;
-	}
-
-	public IGridTabSummaryInfo getGridTabSummaryInfo()
-	{
-		return gridTabSummaryInfo;
-	}
-
 	public ProcessDialogBuilder setWhereClause(final String whereClause)
 	{
 		this.whereClause = whereClause;
@@ -229,7 +216,6 @@ public final class ProcessDialogBuilder
 
 		setWindowAndTabNo(windowNo, tabNo);
 		setIsSOTrx(Env.isSOTrx(gridTab.getCtx(), windowNo));
-		setGridTabSummaryInfo(gridTab.getLastSummaryInfo());
 		setTableAndRecord(gridTab.getAD_Table_ID(), gridTab.getRecord_ID());
 		setWhereClause(gridTab.getTableModel().getSelectWhereClauseFinal());
 		skipResultsPanel();

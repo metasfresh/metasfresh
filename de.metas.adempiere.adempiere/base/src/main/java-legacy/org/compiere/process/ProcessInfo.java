@@ -33,7 +33,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -1018,41 +1017,6 @@ public final class ProcessInfo implements Serializable
 	public Language getReportLanguage()
 	{
 		return this.reportLanguage;
-	}
-
-	private IGridTabSummaryInfo _gridTabSummaryInfo;
-
-	public void setGridTabSummaryInfo(IGridTabSummaryInfo gridTabSummaryInfo)
-	{
-		this._gridTabSummaryInfo = gridTabSummaryInfo;
-	}
-
-	public IGridTabSummaryInfo getGridTabSymmaryInfo()
-	{
-		if (_gridTabSummaryInfo == null)
-		{
-			return IGridTabSummaryInfo.NULL;
-		}
-		return _gridTabSummaryInfo;
-	}
-
-	/**
-	 * Same as {@link #getGridTabSymmaryInfo()} but the value will be cased to given class.
-	 *
-	 * If that is not possible or the underlying object is null then null will be returned.
-	 *
-	 * @param gridTabSummaryInfoClass
-	 */
-	public final <T extends IGridTabSummaryInfo> T getGridTabSummaryInfoOrNull(Class<T> gridTabSummaryInfoClass)
-	{
-		Check.assumeNotNull(gridTabSummaryInfoClass, "gridTabSummaryInfoClass not null");
-		final IGridTabSummaryInfo gridTabSummaryInfo = getGridTabSymmaryInfo();
-		if (gridTabSummaryInfoClass.isInstance(gridTabSummaryInfo))
-		{
-			return gridTabSummaryInfoClass.cast(gridTabSummaryInfo);
-		}
-
-		return null;
 	}
 
 	/**
