@@ -149,6 +149,33 @@ public interface I_WEBUI_DashboardItem
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
@@ -252,54 +279,4 @@ public interface I_WEBUI_DashboardItem
     public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_WEBUI_DashboardItem_ID = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "WEBUI_DashboardItem_ID", null);
     /** Column name WEBUI_DashboardItem_ID */
     public static final String COLUMNNAME_WEBUI_DashboardItem_ID = "WEBUI_DashboardItem_ID";
-
-	/**
-	 * Set Gang (X).
-	 * X-Dimension, z.B. Gang
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setX (int X);
-
-	/**
-	 * Get Gang (X).
-	 * X-Dimension, z.B. Gang
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getX();
-
-    /** Column definition for X */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_X = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "X", null);
-    /** Column name X */
-    public static final String COLUMNNAME_X = "X";
-
-	/**
-	 * Set Fach (Y).
-	 * Y-Dimension, z.B. Fach
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setY (int Y);
-
-	/**
-	 * Get Fach (Y).
-	 * Y-Dimension, z.B. Fach
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getY();
-
-    /** Column definition for Y */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_Y = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "Y", null);
-    /** Column name Y */
-    public static final String COLUMNNAME_Y = "Y";
 }

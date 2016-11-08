@@ -14,7 +14,7 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 827887718L;
+	private static final long serialVersionUID = -1820191148L;
 
     /** Standard Constructor */
     public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
@@ -23,10 +23,10 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
       /** if (WEBUI_DashboardItem_ID == 0)
         {
 			setName (null);
+			setSeqNo (0);
+// @SQL=SELECT COALEACE(MAX(SeqNo), 0) + 10 FROM WEBUI_DashboardItem WHERE WEBUI_Dashboard_ID=@WEBUI_Dashboard_ID@
 			setWEBUI_Dashboard_ID (0);
 			setWEBUI_DashboardItem_ID (0);
-			setX (0);
-			setY (0);
         } */
     }
 
@@ -62,6 +62,28 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set URL.
@@ -134,50 +156,6 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	public int getWEBUI_DashboardItem_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_DashboardItem_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Gang (X).
-		@param X 
-		X-Dimension, z.B. Gang
-	  */
-	@Override
-	public void setX (int X)
-	{
-		set_Value (COLUMNNAME_X, Integer.valueOf(X));
-	}
-
-	/** Get Gang (X).
-		@return X-Dimension, z.B. Gang
-	  */
-	@Override
-	public int getX () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_X);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Fach (Y).
-		@param Y 
-		Y-Dimension, z.B. Fach
-	  */
-	@Override
-	public void setY (int Y)
-	{
-		set_Value (COLUMNNAME_Y, Integer.valueOf(Y));
-	}
-
-	/** Get Fach (Y).
-		@return Y-Dimension, z.B. Fach
-	  */
-	@Override
-	public int getY () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Y);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
