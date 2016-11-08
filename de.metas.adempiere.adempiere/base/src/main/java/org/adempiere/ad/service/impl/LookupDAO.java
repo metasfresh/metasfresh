@@ -10,14 +10,14 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -340,6 +340,15 @@ public class LookupDAO implements ILookupDAO
 		{
 			return autoComplete;
 		}
+
+		@Override
+		public boolean isNumericKey()
+		{
+
+			final boolean isNumeric = keyColumn.endsWith("_ID");
+			return isNumeric;
+
+		}
 	}
 
 	static final class TableRefInfoBuilder
@@ -548,7 +557,7 @@ public class LookupDAO implements ILookupDAO
 		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
 		if (tableRefInfo == null)
 		{
-			logger.error("No Table Reference Table ID=" + AD_Reference_ID);
+			logger.error("no table ref={}", AD_Reference_ID);
 			return null;
 		}
 
@@ -566,6 +575,7 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Cached(cacheName = I_AD_Ref_Table.Table_Name + "#by#" + I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID)
+	@Override
 	public ITableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
 	{
 		if (AD_Reference_ID <= 0)
