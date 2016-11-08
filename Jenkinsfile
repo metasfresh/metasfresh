@@ -8,7 +8,7 @@ timestamps
 	stage('Preparation') // for display purposes
 	{
 		echo "BRANCH_NAME=${env.BRANCH_NAME}"
-		scm checkout
+		checkout scm
 	}
    
     configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
