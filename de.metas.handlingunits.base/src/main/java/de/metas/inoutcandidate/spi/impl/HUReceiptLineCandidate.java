@@ -55,6 +55,9 @@ import de.metas.inout.model.I_M_QualityNote;
 
 	private final List<HUReceiptLinePartCandidate> receiptLinePartCandidates = new ArrayList<HUReceiptLinePartCandidate>();
 
+	/**
+	 * This variable will keep the QualityNote of the current Receipt Line Candidate
+	 */
 	private I_M_QualityNote _qualityNote = null;
 
 	//
@@ -188,6 +191,7 @@ import de.metas.inout.model.I_M_QualityNote;
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
+			// In case there are several qualityNotes, only the first one shall be remembered
 			if(_qualityNote == null)
 			{
 				_qualityNote = receiptLinePart.getQualityNote();

@@ -48,6 +48,10 @@ import de.metas.inout.model.I_M_QualityNote;
 	//
 	// Aggregated values
 	private boolean _stale = true;
+
+	/**
+	 * Keep the M_QualityNote linked to the candidate
+	 */
 	private I_M_QualityNote _qualityNote = null;
 	private IQtyAndQuality _qtyAndQuality = null;
 	private BigDecimal _qty = BigDecimal.ZERO;
@@ -158,8 +162,9 @@ import de.metas.inout.model.I_M_QualityNote;
 
 		//
 		// Update values
-		if(_qualityNote == null)
+		if (_qualityNote == null)
 		{
+			// set the quality note only if it was not set before. Only the first one is needed
 			_qualityNote = qualityNote;
 		}
 		_qtyAndQuality = qtyAndQuality;
@@ -198,6 +203,11 @@ import de.metas.inout.model.I_M_QualityNote;
 		return _attributeStorageAggregationKey;
 	}
 
+	/**
+	 * Get the quality note linked with the part candidate
+	 * 
+	 * @return
+	 */
 	public I_M_QualityNote getQualityNote()
 	{
 		return _qualityNote;
