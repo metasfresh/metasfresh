@@ -478,4 +478,9 @@ class SqlDocumentQueryBuilder
 	{
 		return query.getViewFields();
 	}
+	
+	public List<DocumentFilter> getDocumentFilters()
+	{
+		return query.getFilters();
+	}
 }

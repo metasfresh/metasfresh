@@ -131,6 +131,26 @@
 
 	<build>
 		<plugins>
+			<!-- Add the generic info plus ci build info to the manifests of all jars that we create -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Version>${project.version}.${BUILD_NUMBER}</Implementation-Version>
+							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

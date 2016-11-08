@@ -3,11 +3,13 @@ package de.metas.ui.web.window.datatypes.json.filters;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
@@ -99,13 +101,30 @@ public class JSONDocumentFilter implements Serializable
 		{
 			final String parameterName = paramDescriptor.getParameterName();
 			final JSONDocumentFilterParam jsonParam = jsonParams.get(parameterName);
+
+			// If parameter is missing: skip it if no required, else throw exception
 			if (jsonParam == null)
 			{
-				throw new IllegalArgumentException("Parameter '" + parameterName + "' was not provided");
+				if (paramDescriptor.isRequired())
+				{
+					throw new IllegalArgumentException("Parameter '" + parameterName + "' was not provided");
+				}
+				continue;
 			}
 
 			final Object value = jsonParam.getValue();
 			final Object valueTo = jsonParam.getValueTo();
+
+			// If there was no value/valueTo provided: skip it if no required, else throw exception
+			if (value == null && valueTo == null)
+			{
+				if (paramDescriptor.isRequired())
+				{
+					throw new IllegalArgumentException("Parameter '" + parameterName + "' has no value");
+				}
+				continue;
+			}
+
 			filter.addParameter(DocumentFilterParam.builder()
 					.setFieldName(paramDescriptor.getFieldName())
 					.setOperator(paramDescriptor.getOperator())
@@ -123,12 +142,26 @@ public class JSONDocumentFilter implements Serializable
 
 	}
 
+	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters)
+	{
+		if (filters == null || filters.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return filters.stream()
+				.map(filter -> of(filter))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
 	public static final JSONDocumentFilter of(final DocumentFilter filter)
 	{
 		final String filterId = filter.getFilterId();
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return new JSONDocumentFilter(filterId, jsonParameters);
@@ -149,6 +182,15 @@ public class JSONDocumentFilter implements Serializable
 		super();
 		this.filterId = filterId;
 		this.parameters = parameters;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("filterId", filterId)
+				.add("parameters", parameters)
+				.toString();
 	}
 
 	public String getFilterId()

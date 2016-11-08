@@ -296,8 +296,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		Check.assumeNotNull(fieldValueLoader, "Parameter fieldValueLoader is not null");
 
-		final Logger logger = SqlDocumentFieldDataBindingDescriptor.logger;
-
 		if (keyColumn)
 		{
 			return (documentViewBuilder, rs) -> {

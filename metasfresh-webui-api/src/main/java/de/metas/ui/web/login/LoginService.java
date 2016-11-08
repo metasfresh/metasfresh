@@ -1,11 +1,5 @@
 package de.metas.ui.web.login;
 
-import java.util.Properties;
-
-import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,38 +35,6 @@ public class LoginService
 
 	public void assertLoggedIn()
 	{
-		// FIXME: only for testing
-		if (!userSession.isLoggedIn())
-		{
-			autologin();
-		}
-
-		// userSession.assertLoggedIn();
-	}
-
-	private void autologin()
-	{
-		// WindowConstants.setProtocolDebugging(true);
-
-		final Properties ctx = userSession.getCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1000000);
-		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 100);
-		Env.setContext(ctx, Env.CTXNAME_ShowAcct, false);
-		Env.setContext(ctx, "#C_UOM_ID", 100); // Ea
-
-		if (Check.isEmpty(userSession.getAD_Language()))
-		{
-			userSession.setAD_Language("en_US");
-		}
-
-		Services.get(IValuePreferenceBL.class)
-				.getAllWindowPreferences(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx), Env.getAD_User_ID(ctx))
-				.stream()
-				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
-				.forEach(userValuePreference -> Env.setPreference(ctx, userValuePreference));
-
-		userSession.setLoggedIn(true);
+		userSession.assertLoggedIn();
 	}
 }

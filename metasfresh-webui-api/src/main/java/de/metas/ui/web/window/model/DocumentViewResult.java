@@ -7,6 +7,8 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.model.filters.DocumentFilter;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -55,6 +57,7 @@ public final class DocumentViewResult
 	private final IDocumentViewSelection view;
 	private final int firstRow;
 	private final int pageLength;
+	private final List<DocumentFilter> filters;
 	private final List<DocumentQueryOrderBy> orderBys;
 	private final List<IDocumentView> page;
 
@@ -70,6 +73,7 @@ public final class DocumentViewResult
 		this.view = view;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
+		this.filters = ImmutableList.copyOf(view.getFilters());
 		this.orderBys = ImmutableList.copyOf(orderBys);
 		this.page = ImmutableList.copyOf(page);
 	}
@@ -81,6 +85,7 @@ public final class DocumentViewResult
 				.add("view", view)
 				.add("firstRow", firstRow)
 				.add("pageLength", pageLength)
+				.add("filters", filters)
 				.add("orderBys", orderBys)
 				.add("page", page)
 				.toString();
@@ -99,6 +104,11 @@ public final class DocumentViewResult
 	public int getPageLength()
 	{
 		return pageLength;
+	}
+	
+	public List<DocumentFilter> getFilters()
+	{
+		return filters;
 	}
 
 	public List<DocumentQueryOrderBy> getOrderBys()

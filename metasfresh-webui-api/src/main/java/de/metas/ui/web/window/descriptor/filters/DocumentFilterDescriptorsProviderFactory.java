@@ -123,7 +123,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setFieldName(fieldName)
 				.setWidgetType(widgetType)
 				.setOperator(operator)
-				.setLookupDescriptor(lookupDescriptor);
+				.setLookupDescriptor(lookupDescriptor)
+				.setRequired(false);
 	}
 
 }
