@@ -3,7 +3,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
 timestamps 
 {
-	def GIT_BRANCH=${env.BRANCH_NAME}
+	def GIT_BRANCH=env.BRANCH_NAME
 
 	stage('Preparation') // for display purposes
 	{
