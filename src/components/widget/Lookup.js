@@ -80,36 +80,19 @@ class Lookup extends Component {
             // handling selection when main is not set or set.
 
             if(property === "") {
-
                 const promise = onChange(mainProperty[0].field, select);
 
-                promise && promise.then(() => {
-                    this.inputSearch.value = select[Object.keys(select)[0]];
-                    // call for more properties
-                    if(propertiesCopy.length > 0){
+                this.inputSearch.value = select[Object.keys(select)[0]];
 
-                        const batchArray = propertiesCopy.map((item) =>
-                            dispatch(dropdownRequest(windowType, item.field, dataId))
-                        );
-
-                        Promise.all(batchArray).then(props => {
-                            const newProps = {};
-                            props.map((prop, index) => {
-                                newProps[propertiesCopy[index].field] = prop.data.values;
-                            });
-
-
-                            this.setState(Object.assign({}, this.state, {
-                                properts: newProps,
-                                model: select
-                            }), () => {
-                                this.generatingPropsSelection();
-                            });
-                        });
-                    }else{
-                        this.handleBlur();
+                // handle case when there is no call to Api
+                // by the cached value
+                if(!promise){
+                    this.getAllDropdowns();
+                }else{
+                    promise.then(() => {
+                        this.getAllDropdowns();
                     }
-                })
+                )}
             } else {
                 onChange(property, select);
 
@@ -117,15 +100,48 @@ class Lookup extends Component {
                     properts: {$apply: item => {
                         delete item[this.state.property];
                         return item;
-                    }}
+                    }},
+                    list: {$set: []},
+                    property: {$set: ""}
                 }), () => {
                     this.generatingPropsSelection();
                 });
             }
-
         }
+    }
 
+    getAllDropdowns = () => {
+        const {
+            dispatch, windowType, item, dataId, newProps, select
+        } = this.props;
 
+        const {
+            propertiesCopy
+        } = this.state;
+
+        // call for more properties
+        if(propertiesCopy.length > 0){
+
+            const batchArray = propertiesCopy.map((item) =>
+                dispatch(dropdownRequest(windowType, item.field, dataId))
+            );
+
+            Promise.all(batchArray).then(props => {
+                const newProps = {};
+                props.map((prop, index) => {
+                    newProps[propertiesCopy[index].field] = prop.data.values;
+                });
+
+                this.setState(Object.assign({}, this.state, {
+                    properts: newProps,
+                    model: select
+                }), () => {
+                    this.generatingPropsSelection();
+                });
+            });
+        }else{
+            this.handleBlur();
+        }
     }
 
     generatingPropsSelection = () => {
