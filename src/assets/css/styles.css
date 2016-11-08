@@ -1544,12 +1544,11 @@ td.pulse-off input {
 
 .draggable-widget {
     border: 1px solid $brand-light-color;
-    margin: 2%;
+    margin: 0.5%;
     background-color: white;
     display: inline-block;
-    width: 29%;
+    width: 32%;
     border-radius: 3px;
-    pointer-events: none;
 }
 
 .draggable-widget-header {
@@ -1564,8 +1563,9 @@ td.pulse-off input {
 }
 
 .draggable-widget-body {
-    pointer-events: none;
     min-height: 250px;
+    position: relative;
+    z-index: 1;
 }
 
 .draggable-widget-icon {
@@ -1617,4 +1617,5 @@ td.pulse-off input {
 .draggable-widget-body iframe {
     width: 100%;
     min-height: 280px;
+    float: left;
 }
