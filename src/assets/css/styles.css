@@ -720,15 +720,15 @@ body {
 }
 
 @keyframes indicator-saving {
-    0% {width: 30%; background-color: #D0D2CE;}
-    60% {width: 100%; background-color: #D0D2CE;}
+    0% {width: 30%; background-color: #ADADAD;}
+    60% {width: 100%; background-color: #ADADAD;}
     85% {width: 100%; background-color: $brand-success-color;}
     100% {width: 0%; background-color: transparent;}
 }
 
 @keyframes indicator-error {
-    0% {width: 30%; background-color: #D0D2CE;}
-    60% {width: 100%; background-color: #D0D2CE;}
+    0% {width: 30%; background-color: #ADADAD;}
+    60% {width: 100%; background-color: #ADADAD;}
     85% {width: 100%; background-color: $brand-font-color-danger;}
     100% {width: 0%; background-color: transparent;}
 }
