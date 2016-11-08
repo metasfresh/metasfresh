@@ -29,7 +29,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
+import org.adempiere.model.I_AD_RelationType;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
+import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
 import org.compiere.model.MTable;
@@ -108,15 +111,15 @@ public class CtrlRelationTarget
 
 	private void createOrUpdateRelationType(final Properties ctx, final String entityType, final String trxName)
 	{
-		final MRelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), null);
+		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), null);
 
-		final MRelationType relType;
+		final I_AD_RelationType relType;
 
 		final MReference refSource;
-		final MRefTable refTableSource;
+		final I_AD_Ref_Table refTableSource;
 
 		final MReference refTarget;
-		final MRefTable refTableTarget;
+		final I_AD_Ref_Table refTableTarget;
 
 		final int orgId = 0;
 
@@ -164,7 +167,7 @@ public class CtrlRelationTarget
 		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
-		relType.saveEx();
+		InterfaceWrapperHelper.save(relType);
 
 		// source reference
 		refTableSource.setAD_Table_ID(model.getAdTableSourceId());
@@ -179,7 +182,7 @@ public class CtrlRelationTarget
 		refTableSource.setAD_Display(keyColumnSourceId);
 
 		refTableSource.setWhereClause(keyColumnsSource[0] + "=" + model.getRecordSourceId());
-		refTableSource.saveEx();
+		InterfaceWrapperHelper.save(refTableSource);
 
 		// target reference
 		refTableTarget.setAD_Table_ID(model.getAdTableTargetId());
@@ -203,7 +206,7 @@ public class CtrlRelationTarget
 			targetWhereClauseToUse = model.getTargetWhereClause();
 		}
 		refTableTarget.setWhereClause(targetWhereClauseToUse);
-		refTableTarget.saveEx();
+		InterfaceWrapperHelper.save(refTableTarget);
 	}
 
 	private String mkNameOfSourceRef(final Properties ctx)
