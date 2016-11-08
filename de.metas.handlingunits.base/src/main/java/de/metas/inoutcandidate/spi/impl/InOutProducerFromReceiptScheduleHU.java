@@ -253,8 +253,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			addQualityToASI(receiptLineWithIssues, receiptLineCandidate);
 
-			receiptLineWithIssues.setM_AttributeSetInstance(asi);
-
 			InterfaceWrapperHelper.save(receiptLineWithIssues);
 			receiptLines.add(receiptLineWithIssues);
 		}
