@@ -45,23 +45,21 @@ timestamps
                 sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
             }
             
-            // we can build the "main" and "esb" stuff in parallel
-            parallel main: { 
+            // we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
+            // parallel main: { 
                 stage('Build metasfresh') 
                 {
-        		    //	input 'Ready to go?'
-        
         			// deploy the de.metas.parent pom.xml to our "permanent" snapshot repo, but don't do anything with the modules that are declared in there
         			sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
         
         			sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode clean deploy"
                 }
-            },esb: { 
+            //},esb: { 
                 stage('Build esb') 
                 {
     			    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode clean deploy"
                 }
-            }, failFast: true
+            //}, failFast: true
 		}
 	}
 
