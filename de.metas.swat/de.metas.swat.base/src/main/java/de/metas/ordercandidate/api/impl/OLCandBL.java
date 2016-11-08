@@ -46,7 +46,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -197,8 +196,6 @@ public class OLCandBL implements IOLCandBL
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<Integer>();
 
-		final I_AD_RelationType relTypeOlC2Ol = MRelationType.retrieveForInternalName(ctx, mkRelTypeIntNameOlC2Ol(), trxName);
-
 		MOrder order = null;
 		MOrderLine orderLine = null;
 		final List<MOrderLine> createdOrderLines = new ArrayList<MOrderLine>();
@@ -234,7 +231,7 @@ public class OLCandBL implements IOLCandBL
 				// 02384
 				try
 				{
-					orderLine = processOLCand(ctx, grouping, relTypeOlC2Ol, order, orderLine, candOfGroup, trxName);
+					orderLine = processOLCand(ctx, grouping, order, orderLine, candOfGroup, trxName);
 
 					// 03472: establishing a "real" link with FK-constraints between order candidate and order line
 					createOla(
@@ -354,7 +351,6 @@ public class OLCandBL implements IOLCandBL
 	private MOrderLine processOLCand(
 			final Properties ctx,
 			final Map<ArrayKey, List<I_C_OLCand>> grouping,
-			final I_AD_RelationType relTypeOlC2Ol,
 			final MOrder order,
 			final MOrderLine currentOrderLine,
 			final I_C_OLCand candToProcess,
@@ -447,8 +443,6 @@ public class OLCandBL implements IOLCandBL
 
 		candToProcess.setProcessed(true);
 		InterfaceWrapperHelper.save(candToProcess);
-
-		MRelation.add(ctx, relTypeOlC2Ol, candToProcess.getC_OLCand_ID(), resultOrderLinePO.get_ID(), trxName);
 
 		return resultOrderLinePO;
 	}
@@ -899,11 +893,6 @@ public class OLCandBL implements IOLCandBL
 		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
 	}
 
-	@Override
-	public String mkRelTypeIntNameOlC2Ol()
-	{
-		return "C_OLCand_C_OrderLine";
-	}
 
 	/**
 	 * Returns a list containing only those input candidates which have Processed='N' and Error='N'.

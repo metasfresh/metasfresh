@@ -48,7 +48,7 @@ import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 
-public class C_FlatrateTerm_Prepare_Closing extends SvrProcess
+public class C_Flatrate_Term_Prepare_Closing extends SvrProcess
 {
 
 	private static final String MSG_PREPARE_CLOSING_MISSING_DATA_ENTRIES_0P = "PrepareClosing_MissingDataEntries";

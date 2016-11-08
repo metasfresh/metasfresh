@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -309,6 +311,10 @@ public class UserQueryRepository
 		for (int rowIndex = 0, rowsCount = rows.size(); rowIndex < rowsCount; rowIndex++)
 		{
 			final IUserQueryRestriction row = rows.get(rowIndex);
+			if(row.isEmpty())
+			{
+				continue;
+			}
 
 			//
 			// Join Operator
@@ -324,8 +330,9 @@ public class UserQueryRepository
 			final IUserQueryField field = row.getSearchField();
 			if (field == null)
 			{
-				continue;
+				throw new FillMandatoryException("AD_Field_ID");
 			}
+			
 			final String columnName = field.getColumnName();
 			final String columnDisplayName = field.getDisplayName().translate(Env.getAD_Language(getCtx()));
 			final String columnSql = field.getColumnSQL();
@@ -335,7 +342,7 @@ public class UserQueryRepository
 			final Operator operator = row.getOperator();
 			if (operator == null)
 			{
-				continue;
+				throw new FillMandatoryException("Operator");
 			}
 
 			//
@@ -343,12 +350,14 @@ public class UserQueryRepository
 			final Object value = row.getValue();
 			if (value == null)
 			{
-				continue;
+				// allow saving restrictions without a value specified
+				//continue;
 			}
 			final Object valueConverted = field.convertValueToFieldType(value);
 			if (valueConverted == null)
 			{
-				continue;
+				// allow saving restrictions without a value specified
+				//continue;
 			}
 			final String valueDisplay = field.getValueDisplay(value);
 
@@ -360,13 +369,15 @@ public class UserQueryRepository
 				valueTo = row.getValueTo();
 				if (valueTo == null)
 				{
-					continue;
+					// allow saving restrictions without a value specified
+					// continue;
 				}
 
 				final Object valueToConverted = field.convertValueToFieldType(valueTo);
 				if (valueToConverted == null)
 				{
-					continue;
+					// allow saving restrictions without a value specified
+					// continue;
 				}
 
 				final String valueToDisplay = field.getValueDisplay(valueTo);
@@ -389,7 +400,7 @@ public class UserQueryRepository
 			userQueryCode.append(joinOperator.getCode())
 					.append(FIELD_SEPARATOR).append(columnName)
 					.append(FIELD_SEPARATOR).append(operator.getCode())
-					.append(FIELD_SEPARATOR).append(value.toString())
+					.append(FIELD_SEPARATOR).append(value != null ? value.toString() : "")
 					.append(FIELD_SEPARATOR).append(valueTo != null ? valueTo.toString() : "");
 		}
 
@@ -398,13 +409,12 @@ public class UserQueryRepository
 		if (userQueryName != null)
 		{
 			final I_AD_UserQuery userQuery = getAD_UserQueryByName(userQueryName);
-			if (userQuery == null)
-			{
-				throw new AdempiereException("@NotFound@ @AD_UserQuery_ID@: @Name@=" + userQueryName);
-			}
 			if (userQueryCode.length() <= 0)
 			{
-				deleteUserQuery(userQuery);
+				if(userQuery != null)
+				{
+					deleteUserQuery(userQuery);
+				}
 			}
 			else
 			{
@@ -413,7 +423,7 @@ public class UserQueryRepository
 		}
 	}
 
-	private void saveUserQuery(I_AD_UserQuery userQuery, final String name, final String code)
+	private void saveUserQuery(@Nullable I_AD_UserQuery userQuery, final String name, final String code)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
 		Check.assumeNotEmpty(code, "code not empty");

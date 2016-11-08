@@ -13,11 +13,11 @@ package org.adempiere.ad.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -89,6 +89,13 @@ public interface ILookupDAO extends ISingletonService
 		int getZoomWindowPO();
 
 		boolean isAutoComplete();
+
+		/**
+		 * Check if the keyColumn ends with "_ID"
+		 * 
+		 * @return
+		 */
+		boolean isNumericKey();
 	}
 
 	interface ILookupDisplayInfo
@@ -159,6 +166,8 @@ public interface ILookupDAO extends ISingletonService
 	boolean isTableReference(int AD_Reference_Value_ID);
 
 	ITableRefInfo retrieveTableDirectRefInfo(String columnName);
+	
+	ITableRefInfo retrieveAccountTableRefInfo();
 
 	ILookupDisplayInfo retrieveLookupDisplayInfo(ITableRefInfo tableRefInfo);
 
@@ -199,4 +208,12 @@ public interface ILookupDAO extends ISingletonService
 	 * @return
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
+
+	/**
+	 * Retrieve TableRefInfo or null
+	 * 
+	 * @param AD_Reference_ID
+	 * @return
+	 */
+	ITableRefInfo retrieveTableRefInfoOrNull(int AD_Reference_ID);
 }
