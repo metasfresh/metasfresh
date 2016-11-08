@@ -46,6 +46,11 @@ import de.metas.inout.model.I_M_QualityNote;
 public class M_QualityNote
 {
 
+	/**
+	 * When a new M_QualityNote entry is created, also create an M_AttributeValue entry with the same Value, Name and IsActive values
+	 * 
+	 * @param qualityNote
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createOnNew(final I_M_QualityNote qualityNote)
 	{
@@ -66,19 +71,34 @@ public class M_QualityNote
 		// set name
 		attributeValue.setName(qualityNote.getName());
 
+		// set IsActive
+		attributeValue.setIsActive(qualityNote.isActive());
+
+		// save attribute value
 		InterfaceWrapperHelper.save(attributeValue);
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	/**
+	 * When an M_QualityNote entry is deleted, also delete the linked M_AttributeValue entry
+	 * 
+	 * @param qualityNote
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void onDelete(final I_M_QualityNote qualityNote)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 
+		// Note: the check for null is not needed. The deletion will only happen if the M_AttributeValue entry exists, any way.
 		qualityNoteDAO.deleteAttribueValueForQualityNote(qualityNote);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_QualityNote.COLUMNNAME_Name)
+	/**
+	 * Modify the linked M_AttributeValue entry each time an M_QualityNote entry has its IsActive or Name values modified.
+	 * 
+	 * @param qualityNote
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_QualityNote.COLUMNNAME_Name, I_M_QualityNote.COLUMNNAME_IsActive })
 	public void onChange(final I_M_QualityNote qualityNote)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
