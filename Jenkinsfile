@@ -6,8 +6,21 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
 timestamps 
 {
+	//
+	// setup: we'll need these variables in different stages, that's we we create them here
+	//
+	
 	def BRANCH_NAME=env.BRANCH_NAME
-
+	
+    // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
+    def BUILD_MAVEN_VERSION_PREFIX = BRANCH_NAME.equals('master') ? "1" : "2"
+    
+	// examples: "1-master-SNAPSHOT", "2-FRESH-123-SNAPSHOT"
+    def BUILD_MAVEN_VERSION=BUILD_MAVEN_VERSION_PREFIX+"-"+BRANCH_NAME+"-SNAPSHOT"
+    
+	// example: "[1-master-SNAPSHOT],[2-FRESH-123-SNAPSHOT]
+    def BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
+	
 	stage('Preparation') // for display purposes
 	{
 		echo "BRANCH_NAME=${env.BRANCH_NAME}"
@@ -20,17 +33,6 @@ timestamps
         {
             stage('Set artifact versions') 
             {
-                // get our version strings
-				
-                // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-                def BUILD_MAVEN_VERSION_PREFIX = BRANCH_NAME.equals('master') ? "1" : "2"
-                
-				// examples: "1-master-SNAPSHOT", "2-FRESH-123-SNAPSHOT"
-                def BUILD_MAVEN_VERSION=BUILD_MAVEN_VERSION_PREFIX+"-"+BRANCH_NAME+"-SNAPSHOT"
-                
-				// example: "[1-master-SNAPSHOT],[2-FRESH-123-SNAPSHOT]
-                def BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
-                
                 // output them to make things more clear
                 echo "BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION}"
                 echo "BUILD_MAVEN_VERSION=${BUILD_MAVEN_VERSION}"
