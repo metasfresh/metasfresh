@@ -53,8 +53,6 @@ timestamps
 	{
 		// TODO: trigger endcustomer.mf15 build
 		build job: '../metasfresh-multibranch/${BRANCH_NAME}', wait: false
-	}
-}
-   
+	}   
 } // timestamps   
 } // node
