@@ -49,19 +49,35 @@ timestamps
       junit '**/target/surefire-reports/*.xml'
    }
    
-	stage('Invoke downstream jobs') 
+	stage('Invoke downstream job') 
 	{
-	
-	// https://jenkins.io/doc/pipeline/examples/
-	
-	Jenkins.instance.getAllItems()
-     //    .grep { it.name ==~ ~"${jobRegexp}"  }
-         .collect { [ name : it.name.toString(), fullName : it.fullName.toString() ] }
-		 .each {job -> println("Job: " + job.name+"/"+job.fullName)	}
-
-		// TODO: trigger endcustomer.mf15 build
-		//def JOB_NAME="metasfresh-multibranch/"+BRANCH_NAME
-		//build job: JOB_NAME, wait: false
+		// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
+		//
+		// Here i'm not checking if the build job exists but if the respective branch und github exists. If the branch is there, then i assume that the multibranch plugin also create the job
+		exitCode = sh returnStatus: true, script: 'git ls-remote --exit-code https://github.com/metasfresh/metasfresh ${BRANCH_NAME}'
+		if(exitCode == 0)
+		{
+			echo "${BRANCH_NAME} also exists in metasfresh"
+			jobName = "metasfresh/"+BRANCH_NAME
+		}
+		else 
+		{
+			echo "${BRANCH_NAME} does not exist in metasfresh; fallking back to master"
+			jobName = "metasfresh/master"
+		}
+		
+		// I also tried
+		// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name] 
+		// worked from chrome, also for metas-dev
+		// worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token
+		// did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
+		// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
+		
+		// and I also tried inspecting the list returned by 
+		// Jenkins.instance.getAllItems()
+		// but there is got a scurity exception and am not sure if an how i can have an SCM maintained script that is approved by an admin
+		
+		build job: jobName, wait: false
 	}   
 } // timestamps   
 } // node
