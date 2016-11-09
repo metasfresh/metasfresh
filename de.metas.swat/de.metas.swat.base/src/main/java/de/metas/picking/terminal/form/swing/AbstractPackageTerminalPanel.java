@@ -40,7 +40,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -61,6 +60,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCtl;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -427,7 +427,11 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	public ProcessCtl processPackingDetails()
 	{
-		final SwingPickingOKPanel pickingOKPanel = (SwingPickingOKPanel)getParent().getPickingOKPanel();
-		return pickingOKPanel.invokeProcess(this.model);
+		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+		// NOTE assume this is not called
+		throw new UnsupportedOperationException();
+//
+//		final SwingPickingOKPanel pickingOKPanel = (SwingPickingOKPanel)getParent().getPickingOKPanel();
+//		return pickingOKPanel.invokeProcess(this.model);
 	}
 }

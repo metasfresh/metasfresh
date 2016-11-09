@@ -142,7 +142,12 @@ public class AWindow extends CFrame
 	public void setBusyMessage (String AD_Message)
 	{
 		m_glassPane.setMessage(AD_Message);
-	}   //  setBusyMessage
+	}
+	
+	public void setBusyMessagePlain(final String messagePlain)
+	{
+		m_glassPane.setMessagePlain(messagePlain);
+	}
 
 	/**
 	 *  Set and start Busy Counter

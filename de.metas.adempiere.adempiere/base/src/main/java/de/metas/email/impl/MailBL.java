@@ -13,7 +13,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
@@ -31,6 +30,7 @@ import de.metas.email.IMailDAO;
 import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCtl;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -141,8 +141,8 @@ public class MailBL implements IMailBL
 		final I_C_DocType docType = null; // C_DocType - Task FRESH-203 : This shall work as before
 		final Mailbox mailbox = findMailBox(
 				client //
-				, ProcessUtil.getCurrentOrgId() //
-				, ProcessUtil.getCurrentProcessId() //
+				, ProcessCtl.getCurrentOrgId() //
+				, ProcessCtl.getCurrentProcessId() //
 				, docType //
 				, mailCustomType //
 				, from //

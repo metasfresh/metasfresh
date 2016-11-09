@@ -19,52 +19,59 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
- * 	Process Info with Utilities
+ * Process Info with Utilities
  *
- *  @author Jorg Janke
- *  @version $Id: ProcessInfoUtil.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: ProcessInfoUtil.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  */
 public class ProcessInfoUtil
 {
-	/**	Logger							*/
-	private static Logger		s_log = LogManager.getLogger(ProcessInfoUtil.class);
-
+	/** Logger */
+	private static Logger s_log = LogManager.getLogger(ProcessInfoUtil.class);
 
 	/**************************************************************************
-	 *	Query PInstance for result.
-	 *  Fill Summary and success in ProcessInfo
-	 * 	@param pi process info
+	 * Query PInstance for result.
+	 * Fill Summary and success in ProcessInfo
+	 * 
+	 * @param pi process info
 	 */
-	public static void setSummaryFromDB (ProcessInfo pi)
+	public static void setSummaryFromDB(ProcessInfo pi)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		//
-		int sleepTime = 2000;	//	2 secomds
-		int noRetry = 5;        //  10 seconds total
+		int sleepTime = 2000;	// 2 secomds
+		int noRetry = 5;        // 10 seconds total
 		//
 		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
-			+ "WHERE AD_PInstance_ID=?"
-			+ " AND Result IS NOT NULL";
+				+ "WHERE AD_PInstance_ID=?"
+				+ " AND Result IS NOT NULL";
 		final Object[] sqlParams = new Object[] { pi.getAD_PInstance_ID() };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ITrx.TRXNAME_None);
 			for (int noTry = 0; noTry < noRetry; noTry++)
 			{
 				DB.setParameters(pstmt, sqlParams);
@@ -72,7 +79,7 @@ public class ProcessInfoUtil
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					//	we have a result
+					// we have a result
 					int i = rs.getInt(1);
 					if (i == 1)
 					{
@@ -87,13 +94,13 @@ public class ProcessInfoUtil
 					pstmt.close();
 					//
 					if (Message != null)
-						pi.addSummary ("  (" +  msgBL.parseTranslation(Env.getCtx(), Message)  + ")");
-				//	s_log.debug("setSummaryFromDB - " + Message);
+						pi.addSummary("  (" + msgBL.parseTranslation(Env.getCtx(), Message) + ")");
+					// s_log.debug("setSummaryFromDB - " + Message);
 					return;
 				}
 
 				rs.close();
-				//	sleep
+				// sleep
 				try
 				{
 					if (noTry >= 3)
@@ -117,7 +124,7 @@ public class ProcessInfoUtil
 		{
 			s_log.error(sql, e);
 			pi.setThrowable(e);  // 03152
-			pi.setSummary (e.getLocalizedMessage(), true);
+			pi.setSummary(e.getLocalizedMessage(), true);
 			return;
 		}
 		finally
@@ -125,36 +132,44 @@ public class ProcessInfoUtil
 			DB.close(rs, pstmt);
 		}
 
-		pi.setSummary (msgBL.getMsg(Env.getCtx(), "Timeout"), true);
-	}	//	setSummaryFromDB
+		pi.setSummary(msgBL.getMsg(Env.getCtx(), "Timeout"), true);
+	}	// setSummaryFromDB
 
-	/**
-	 *	Set Log of Process.
-	 * 	@param pi process info
-	 */
-	public static void setLogFromDB(final ProcessInfo pi)
+	static List<ProcessInfoLog> retrieveLogsFromDB(final int adPInstanceId)
 	{
+		if(adPInstanceId <= 0)
+		{
+			return ImmutableList.of();
+		}
+		
 		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				+ "ORDER BY Log_ID";
+		final Object[] sqlParams = new Object[] { adPInstanceId };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, pi.getAD_PInstance_ID());
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
+			
+			final List<ProcessInfoLog> logs = new ArrayList<>();
 			while (rs.next())
 			{
 				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				pi.addLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				log.markAsSavedInDB();
+				logs.add(log);
 			}
+			
+			return logs; 
 		}
-		catch (SQLException e)
+		catch (final SQLException ex)
 		{
-			s_log.error("setLogFromDB", e);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -162,30 +177,33 @@ public class ProcessInfoUtil
 			rs = null;
 			pstmt = null;
 		}
-	}	// getLogFromDB
+	}
 
 	/**
-	 *  Create Process Log
-	 * 	@param pi process info
+	 * Create Process Log
+	 * 
+	 * @param pi process info
 	 */
-	public static void saveLogToDB (final ProcessInfo pi)
+	static void saveLogToDB(final ProcessInfo pi)
 	{
-		final ProcessInfoLog[] logs = pi.getLogs();
-		if (logs == null || logs.length == 0)
-		{
-	//		s_log.debug("saveLogToDB - No Log");
-			return;
-		}
 		if (pi.getAD_PInstance_ID() <= 0)
 		{
-	//		s_log.warn("saveLogToDB - not saved - AD_PInstance_ID==0");
+			return;
+		}
+
+		final List<ProcessInfoLog> logsToSave = pi.getCurrentLogs()
+				.stream()
+				.filter(log->!log.isSavedInDB())
+				.collect(Collectors.toList());
+		if (logsToSave.isEmpty())
+		{
 			return;
 		}
 
 		if (Adempiere.isUnitTestMode())
 		{
 			// don't try this is we aren't actually connected
-			pi.setLogList(null);
+			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
 			return;
 		}
 
@@ -196,7 +214,7 @@ public class ProcessInfoUtil
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			for (final ProcessInfoLog log : logs)
+			for (final ProcessInfoLog log : logsToSave)
 			{
 				final Object[] sqlParams = new Object[] {
 						pi.getAD_PInstance_ID(),
@@ -213,6 +231,7 @@ public class ProcessInfoUtil
 
 			pstmt.executeBatch();
 
+			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
 		}
 		catch (SQLException e)
 		{
@@ -224,8 +243,5 @@ public class ProcessInfoUtil
 			DB.close(pstmt);
 			pstmt = null;
 		}
-
-		// Reset the logs list in ProcessInfo, otherwise log entries could be saved twice
-		pi.setLogList(null);
-	}   //  saveLogToDB
-}	//	ProcessInfoUtil
+	}
+}	// ProcessInfoUtil

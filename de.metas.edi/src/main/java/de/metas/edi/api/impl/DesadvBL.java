@@ -34,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
@@ -63,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.process.ProcessCtl;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class DesadvBL implements IDesadvBL
@@ -442,17 +442,16 @@ public class DesadvBL implements IDesadvBL
 
 		//
 		// Create the process info based on AD_Process and AD_PInstance
-		final ProcessInfo processInfo = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-		processInfo.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
+				.setFromAD_Process(process)
+				.build();
 
 		//
 		// Execute the actual printing process
-		ProcessCtl.process(
-				null, // ASyncProcess parent = null => run synchronous
-				0, // WindowNo
-				null, // IProcessParameter
-				processInfo, // ProcessInfo
-				ITrx.TRX_None);
+		ProcessCtl.builder()
+				.setProcessInfo(processInfo)
+				.executeSync();
 
 		//
 		// Throw process exception in case it failed.

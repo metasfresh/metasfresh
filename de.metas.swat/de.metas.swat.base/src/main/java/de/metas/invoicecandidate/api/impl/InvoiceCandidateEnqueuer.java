@@ -48,7 +48,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -205,7 +204,7 @@ import de.metas.lock.api.LockOwner;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(ctx, InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException(msgBL.getMsg(ctx, MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
 		}
 
 		//

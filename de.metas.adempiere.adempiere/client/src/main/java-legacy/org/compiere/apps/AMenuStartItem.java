@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.SwingWorker;
 
@@ -36,13 +34,15 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MTask;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Start application action ( process, workflow, window, form, task etc).
@@ -128,7 +128,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		this.adFormId = wfNode.getAD_Form_ID();
 		this.adTaskId = wfNode.getAD_Task_ID();
 		this.adWorkflowId = wfNode.getWorkflow_ID();
-		this.IsSOTrx = DisplayType.toBooleanString(true);
+		this.IsSOTrx = true;
 		this.loaded = true;
 	}
 
@@ -143,7 +143,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	//
 	private boolean loaded = false;
 	private String action;
-	private String IsSOTrx = "Y";
+	private boolean IsSOTrx = true;
 	private int adWindowId = -1;
 	private int adWorkbenchId = -1;
 	private int adProcessId = -1;
@@ -245,11 +245,11 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 				action = rs.getString("Action");
 				if (m_isMenu)
 				{
-					IsSOTrx = rs.getString(I_AD_Menu.COLUMNNAME_IsSOTrx);
+					IsSOTrx = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsSOTrx));
 				}
 				else
 				{
-					IsSOTrx = "Y";
+					IsSOTrx = true;
 				}
 
 				adWindowId = rs.getInt("AD_Window_ID");
@@ -322,29 +322,13 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	 * @param AD_Process_ID process
 	 * @param IsSOTrx is SO trx
 	 */
-	private void startProcess(final int AD_Process_ID, final String IsSOTrx)
+	private void startProcess(final int AD_Process_ID, final boolean IsSOTrx)
 	{
-		boolean isSO = false;
-		if (IsSOTrx != null && IsSOTrx.equals("Y"))
-		{
-			isSO = true;
-		}
-		
-		final ProcessDialog pd = new ProcessDialog(AD_Process_ID, isSO);
-		if (!pd.init())
-		{
-			return;
-		}
-		
-		m_menu.getWindowManager().add(pd);
-
-		// pd.getContentPane().invalidate(); // metas: tsa: is this still necesarry?
-		pd.getContentPane().validate();
-		pd.pack();
-		
-		// Center the window
-		AEnv.showCenterScreen(pd);
-	}	// startProcess
+		ProcessDialog.builder()
+				.setAD_Process_ID(AD_Process_ID)
+				.setIsSOTrx(IsSOTrx)
+				.show();
+	}
 
 	private final void startWorkflow(final int AD_Workflow_ID)
 	{

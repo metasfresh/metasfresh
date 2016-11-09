@@ -63,7 +63,6 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -587,11 +586,9 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		getModel().uiLocked = false;
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
 		//
 		if (waitIndicator != null)
 		{

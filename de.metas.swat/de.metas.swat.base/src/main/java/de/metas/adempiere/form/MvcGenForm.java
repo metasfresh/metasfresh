@@ -37,13 +37,13 @@ package de.metas.adempiere.form;
 
 
 import java.beans.PropertyChangeEvent;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.ASyncProcess;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -82,17 +82,6 @@ public abstract class MvcGenForm implements ASyncProcess {
 
 	}
 
-	/**
-	 * Sets the view and adds all sorts of listeners to the view in this setter.
-	 * 
-	 * @param view
-	 */
-	public void setView(final Properties ctx, final IFormView view) {
-
-		addViewListerners(ctx, view);
-		this.view = view;
-	}
-
 	@SuppressWarnings("unchecked")
 	public <T extends IFormView> T getView() {
 		return (T) view;
@@ -121,6 +110,7 @@ public abstract class MvcGenForm implements ASyncProcess {
 		return getModel().uiLocked;
 	}
 
+	@Override
 	public void lockUI(ProcessInfo pi) {
 
 		//c.ghita@metas.ro : need this for new picking/package
@@ -129,6 +119,7 @@ public abstract class MvcGenForm implements ASyncProcess {
 		getModel().uiLocked = true;
 	}
 
+	@Override
 	public void unlockUI(ProcessInfo pi) {
 
 		//c.ghita@metas.ro : need this for new picking/package
@@ -141,12 +132,5 @@ public abstract class MvcGenForm implements ASyncProcess {
 		logger.info("Doing nothing");
 	}
 
-	/**
-	 * Add listeners to the view that will be notified on user input
-	 * 
-	 * @param view
-	 */
-	public abstract void addViewListerners(Properties ctx, IFormView view);
-	
 	public abstract void initModel(MvcMdGenForm model);
 }

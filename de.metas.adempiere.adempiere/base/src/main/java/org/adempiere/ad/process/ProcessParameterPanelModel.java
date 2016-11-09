@@ -1,60 +1,34 @@
 package org.adempiere.ad.process;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
-import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.Lookup;
 import org.compiere.model.Null;
 import org.compiere.process.ProcessClassInfo;
 import org.compiere.process.ProcessInfo;
+import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class ProcessParameterPanelModel
 {
@@ -62,6 +36,7 @@ public class ProcessParameterPanelModel
 
 	public static final String FIELDSEPARATOR_TEXT = " - ";
 
+	@FunctionalInterface
 	public static interface IDisplayValueProvider
 	{
 		String getDisplayValue(GridField gridField);
@@ -71,14 +46,17 @@ public class ProcessParameterPanelModel
 	private final int windowNo;
 	private final int tabNo;
 	private final int processId;
-	private final ProcessInfo processInfo;
 	private final ProcessClassInfo processClassInfo;
 	private final List<GridField> gridFields = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
 
-	private IDisplayValueProvider displayValueProvider = null;
+	private static final ISvrProcessDefaultParametersProvider NULL_DefaultPrametersProvider = (parameterName) -> null;
+	/** Default values provider (never null) */
 	private final ISvrProcessDefaultParametersProvider defaultsProvider;
+	
+	/** Display values provider (never null) */
+	private IDisplayValueProvider displayValueProvider = (gridField) -> null;
 
 
 	/**
@@ -90,6 +68,7 @@ public class ProcessParameterPanelModel
 	public ProcessParameterPanelModel(final Properties parentCtx, final ProcessInfo pi)
 	{
 		super();
+		Check.assumeNotNull(pi, "pi not null");
 
 		// NOTE: we are using same WindowNo/TabNo as the calling window/tab but we will create a shadow context just to not alter the current context
 		this.ctx = Env.deriveCtx(parentCtx);
@@ -97,20 +76,17 @@ public class ProcessParameterPanelModel
 		this.tabNo = pi.getTabNo();
 		this.processId = pi.getAD_Process_ID();
 
-		this.defaultsProvider = createSvrProcessDefaultParametersProviderOrNull(pi.getClassName());
-
-		Check.assumeNotNull(pi, "pi not null");
-		this.processInfo = pi;
+		this.defaultsProvider = createSvrProcessDefaultParametersProvider(pi.getClassName());
 		this.processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
 	}
 
-	private static final ISvrProcessDefaultParametersProvider createSvrProcessDefaultParametersProviderOrNull(final String classname)
+	private static final ISvrProcessDefaultParametersProvider createSvrProcessDefaultParametersProvider(final String classname)
 	{
 		if (Check.isEmpty(classname, true))
 		{
-			return null;
+			return NULL_DefaultPrametersProvider;
 		}
 
 		try
@@ -124,7 +100,7 @@ public class ProcessParameterPanelModel
 			final Class<?> processClass = classLoader.loadClass(classname);
 			if (!ISvrProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
 			{
-				return null;
+				return NULL_DefaultPrametersProvider;
 			}
 
 			final ISvrProcessDefaultParametersProvider defaultsProvider = (ISvrProcessDefaultParametersProvider)processClass.newInstance();
@@ -133,8 +109,8 @@ public class ProcessParameterPanelModel
 		}
 		catch (Throwable e)
 		{
-			log.error("Failed instantiating class: " + classname, e);
-			return null;
+			log.error("Failed instantiating class: {}", classname, e);
+			return NULL_DefaultPrametersProvider;
 		}
 	}
 
@@ -288,12 +264,13 @@ public class ProcessParameterPanelModel
 			{
 				defaultValue = defaultsProvider.getParameterDefaultValue(parameterName);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				// ignore the error, but log it
-				log.error("Failed retrieving the parameters default value from defaults provider: ParameterName=" + parameterName + ", Provider=" + defaultsProvider, e);
+				log.error("Failed retrieving the parameters default value from defaults provider: ParameterName={}, Provider={}", parameterName, defaultsProvider, e);
 			}
 		}
+		
 		if (defaultValue == null)
 		{
 			defaultValue = gridField.getDefault();
@@ -304,17 +281,8 @@ public class ProcessParameterPanelModel
 
 	public void setDisplayValueProvider(final IDisplayValueProvider displayValueProvider)
 	{
+		Check.assumeNotNull(displayValueProvider, "Parameter displayValueProvider is not null");
 		this.displayValueProvider = displayValueProvider;
-	}
-
-	private String getDisplayValue(final GridField gridField)
-	{
-		if (displayValueProvider == null)
-		{
-			return null;
-		}
-
-		return displayValueProvider.getDisplayValue(gridField);
 	}
 
 	/**
@@ -454,7 +422,7 @@ public class ProcessParameterPanelModel
 		}
 	}
 
-	public void validate()
+	private void validate()
 	{
 		final Set<String> missingMandatoryFields = new HashSet<String>();
 
@@ -481,43 +449,39 @@ public class ProcessParameterPanelModel
 		}
 	}
 
-	public void saveParameters(final int adPInstanceId)
+	public List<ProcessInfoParameter> createProcessInfoParameters()
 	{
 		validate();
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				saveParameters(adPInstanceId, localTrxName);
-			}
-		});
-	}
-
-	private void saveParameters(final int adPInstanceId, final String trxName)
-	{
+		
+		final List<ProcessInfoParameter> params = new ArrayList<>();
 		final int fieldCount = getFieldCount();
 		for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)
 		{
-			saveParameter(adPInstanceId, fieldIndex, trxName);
+			final ProcessInfoParameter param = createProcessInfoParameter(fieldIndex);
+			if(param == null)
+			{
+				continue;
+			}
+			params.add(param);
 		}	// for every parameter
+		
+		return params;
 	}
 
-	private void saveParameter(final int adPInstanceId, final int fieldIndex, final String trxName)
+	private ProcessInfoParameter createProcessInfoParameter(final int fieldIndex)
 	{
 		final GridField gridField = getField(fieldIndex);
 		final String columnName = gridField.getColumnName();
-		final Object value = gridField.getValue();
-		final String displayValue = getDisplayValue(gridField);
+		Object value = gridField.getValue();
+		final String displayValue = displayValueProvider.getDisplayValue(gridField);
 
 		final GridField gridFieldTo = getFieldTo(fieldIndex);
-		final Object valueTo;
+		Object valueTo;
 		final String displayValueTo;
 		if (gridFieldTo != null)
 		{
 			valueTo = gridFieldTo.getValue();
-			displayValueTo = getDisplayValue(gridFieldTo);
+			displayValueTo = displayValueProvider.getDisplayValue(gridFieldTo);
 		}
 		else
 		{
@@ -527,76 +491,21 @@ public class ProcessParameterPanelModel
 
 		if (value == null && valueTo == null)
 		{
-			return;
+			return null;
 		}
-
-		final I_AD_PInstance_Para para = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
-		para.setAD_PInstance_ID(adPInstanceId);
-		para.setSeqNo(fieldIndex);
-		para.setParameterName(columnName);
-
-		final boolean hasValueTo = valueTo != null;
-
-		// Date
-		if (value instanceof Timestamp || valueTo instanceof Timestamp)
-		{
-			para.setP_Date((Timestamp)value);
-			if (hasValueTo)
-			{
-				para.setP_Date_To((Timestamp)valueTo);
-			}
-		}
-		// Integer
-		else if (value instanceof Integer || valueTo instanceof Integer)
-		{
-			if (value != null)
-			{
-				final Integer ii = (Integer)value;
-				final BigDecimal valueBD = BigDecimal.valueOf(ii);
-				para.setP_Number(valueBD);
-			}
-			if (hasValueTo)
-			{
-				final Integer ii = (Integer)valueTo;
-				final BigDecimal valueBD = BigDecimal.valueOf(ii);
-				para.setP_Number_To(valueBD);
-			}
-		}
-		// BigDecimal
-		else if (value instanceof BigDecimal || valueTo instanceof BigDecimal)
-		{
-			para.setP_Number((BigDecimal)value);
-			if (hasValueTo)
-			{
-				para.setP_Number_To((BigDecimal)valueTo);
-			}
-		}
-		// Boolean
-		else if (value instanceof Boolean)
-		{
-			final Boolean valueBool = (Boolean)value;
-			final String valueStr = valueBool.booleanValue() ? "Y" : "N";
-			para.setP_String(valueStr);
-			// Setting fieldTo does not make sense
-		}
-		// String
-		else
-		{
-			if (value != null)
-			{
-				para.setP_String(value.toString());
-			}
-			if (hasValueTo)
-			{
-				para.setP_String_To(valueTo.toString());
-			}
-		}
-
-		// Info
-		para.setInfo(displayValue);
-		para.setInfo_To(displayValueTo);
+		
 		//
-		InterfaceWrapperHelper.save(para);
-		log.debug(para.toString());
+		// FIXME: legacy: convert Boolean to String because some of the SvrProcess implementations are checking boolean parametes as:
+		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
+		if(value instanceof Boolean)
+		{
+			value = DisplayType.toBooleanString((Boolean)value);
+		}
+		if(valueTo instanceof Boolean)
+		{
+			valueTo = DisplayType.toBooleanString((Boolean)valueTo);
+		}
+		
+		return new ProcessInfoParameter(columnName, value, valueTo, displayValue, displayValueTo);
 	}
 }

@@ -27,9 +27,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADPInstanceDAO;
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
@@ -97,12 +99,12 @@ public class MPInstance extends X_AD_PInstance
 	 * @param adTableId
 	 * @param Record_ID Record
 	 */
-	public MPInstance (final MProcess process, final int adTableId, final int Record_ID)
+	public MPInstance (final I_AD_Process process, final int adTableId, final int Record_ID)
 	{
-		this(process.getCtx(), process, adTableId, Record_ID);
+		this(InterfaceWrapperHelper.getCtx(process), process, adTableId, Record_ID);
 	}
 	
-	public MPInstance(final Properties ctx, final MProcess process, final int adTableId, final int Record_ID)
+	public MPInstance(final Properties ctx, final I_AD_Process process, final int adTableId, final int Record_ID)
 	{
 		this(ctx, 0, ITrx.TRXNAME_None);
 		setAD_Process_ID(process.getAD_Process_ID());
@@ -122,14 +124,13 @@ public class MPInstance extends X_AD_PInstance
 			saveEx();		// need to save for parameters // metas: use saveEx
 
 			// Set Parameter Base Info
-			MProcessPara[] para = process.getParameters();
 			int seqNo = 10; // metas
-			for (int i = 0; i < para.length; i++)
+			for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retrieveProcessParameters(process))
 			{
-				MPInstancePara pip = new MPInstancePara(this, seqNo); // metas: use seqNo instead of para[i].getSeqNo()
-				pip.setParameterName(para[i].getColumnName());
-				pip.setInfo(para[i].getName());
-				pip.saveEx(); // metas
+				I_AD_PInstance_Para pip = new MPInstancePara(this, seqNo); // metas: use seqNo instead of para[i].getSeqNo()
+				pip.setParameterName(para.getColumnName());
+				pip.setInfo(para.getName());
+				InterfaceWrapperHelper.save(pip);
 				seqNo += 10; // metas
 			}
 
@@ -140,15 +141,9 @@ public class MPInstance extends X_AD_PInstance
 		}
 	}	// MPInstance
 
-	public MPInstance (final MProcess process)
+	public MPInstance (final I_AD_Process process)
 	{
 		this(process, 0, 0); // adTableId=0, recordId=0
-	}
-
-	public MPInstance (final MProcess process, final ProcessInfo pi)
-	{
-		this(process, pi.getTable_ID(), pi.getRecord_ID());
-		setWhereClause(pi.getWhereClause());
 	}
 
 	public MPInstance (final Properties ctx, ProcessInfo pi)

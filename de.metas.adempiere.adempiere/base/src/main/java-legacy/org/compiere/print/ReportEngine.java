@@ -370,7 +370,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	public void print ()
 	{
-		log.info(m_info.toString());
+		log.info("print: {}", m_info);
+		
 		if (m_layout == null)
 			layout();
 
@@ -1672,19 +1673,24 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	 * 	@param type document type
 	 * 	@param Record_ID record id
 	 */
-	public static void printConfirm (int type, int Record_ID)
+	public static void printConfirm (final int type, final int Record_ID)
 	{
-		StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		if (type == ORDER || type == SHIPMENT || type == INVOICE)
+		{
 			sql.append("UPDATE ").append(DOC_BASETABLES[type])
 				.append(" SET DatePrinted=now(), IsPrinted='Y' WHERE ")
 				.append(DOC_IDS[type]).append("=").append(Record_ID);
+		}
+		
 		//
 		if (sql.length() > 0)
 		{
-			int no = DB.executeUpdate(sql.toString(), null);
+			final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_None);
 			if (no != 1)
-				log.error("Updated records=" + no + " - should be just one");
+			{
+				log.error("Updated records={} - should be just one for SQL={}", no, sql);
+			}
 		}
 	}	//	printConfirm
 

@@ -25,10 +25,8 @@ package de.metas.adempiere.form;
 
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.print.MPrintFormat;
-import org.compiere.process.ProcessInfo;
 
 public class MvcMdGenForm {
 	
@@ -37,9 +35,6 @@ public class MvcMdGenForm {
 	private int reportEngineType;
 	private MPrintFormat printFormat = null;
 	private String askPrintMsg;
-
-	private ITrx trx;
-	private ProcessInfo pi;
 
 	private IMiniTable miniTable;
 	
@@ -59,23 +54,6 @@ public class MvcMdGenForm {
 	}
 	/** User selection */
 	private Set<Integer> selection = null;
-
-	public ITrx getTrx() {
-		
-		return trx;
-	}
-
-	public void setTrx(ITrx trx) {
-		this.trx = trx;
-	}
-
-	public ProcessInfo getProcessInfo() {
-		return pi;
-	}
-
-	public void setProcessInfo(ProcessInfo pi) {
-		this.pi = pi;
-	}
 
 	public boolean isSelectionActive() {
 		return m_selectionActive;

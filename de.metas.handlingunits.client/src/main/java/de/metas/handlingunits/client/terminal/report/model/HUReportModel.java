@@ -38,7 +38,6 @@ import java.util.Set;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IADProcessDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,7 +46,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
@@ -70,6 +68,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
+import de.metas.process.ProcessCtl;
 
 /**
  * Model responsible for generating HU labels and reports
@@ -382,11 +381,38 @@ public class HUReportModel implements IDisposable
 		final ITrxManager trxManagerService = Services.get(ITrxManager.class);
 
 		//
+		// Collect HU's C_BPartner_IDs and M_HU_IDs
+		final Set<Integer> huBPartnerIds = new HashSet<>();
+		final List<Integer> huIds = new ArrayList<>();
+		for (final I_M_HU hu : getHUsToProcess())
+		{
+			final int huId = hu.getM_HU_ID();
+			huIds.add(huId);
+
+			// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
+			final int bpartnerId = hu.getC_BPartner_ID();
+			if (bpartnerId > 0)
+			{
+				huBPartnerIds.add(bpartnerId);
+			}
+		}
+
+		//
+		// Use BPartner's Language as reporting language if our HUs have an unique BPartner
+		final Language reportLanguage;
+		if (huBPartnerIds.size() == 1)
+		{
+			final int bpartnerId = huBPartnerIds.iterator().next();
+			reportLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
+		}
+		else
+		{
+			reportLanguage = null; // N/A
+		}
+
+		//
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-
-		final Set<Integer> huBPartnerIds = new HashSet<>();
 
 		// 05978: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
 		// transaction.
@@ -423,58 +449,23 @@ public class HUReportModel implements IDisposable
 					InterfaceWrapperHelper.save(para_PrintCopies);
 				}
 
-				//
-				// ProcessInfo
-				pi.setTableName(I_M_HU.Table_Name);
-				// pi.setRecord_ID(selectedHUId);
-				pi.setTitle(process.getName());
-				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-
-				final List<Integer> huIds = new ArrayList<>();
-
-				for (final I_M_HU hu : getHUsToProcess())
-				{
-					final int huId = hu.getM_HU_ID();
-					huIds.add(huId);
-
-					// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
-					final int bpartnerId = hu.getC_BPartner_ID();
-					if (bpartnerId > 0)
-					{
-						huBPartnerIds.add(bpartnerId);
-					}
-				}
-
-				//
-				// Use BPartner's Language as reporting language if our HUs have an unique BPartner
-				if (huBPartnerIds.size() == 1)
-				{
-					final int bpartnerId = huBPartnerIds.iterator().next();
-					final Language bpartnerLanguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), bpartnerId);
-					pi.setReportLanguage(bpartnerLanguage);
-				}
-
 				DB.createT_Selection(pinstance.getAD_PInstance_ID(), huIds, localTrxName);
 			}
 		});
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
+				.setFromAD_Process(process)
+				.setWindowNo(getTerminalContext().getWindowNo())
+				.setTableName(I_M_HU.Table_Name)
+				.setReportLanguage(reportLanguage)
+				.build();
 
-		final ITerminalContext terminalContext = getTerminalContext();
 
 		//
 		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null, // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null, // IProcessParameter
-						pi,
-						localTrx);
-			}
-		});
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.executeSync();
 	}
 }

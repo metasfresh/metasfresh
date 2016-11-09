@@ -25,28 +25,23 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
 
-import org.adempiere.ad.process.IProcessParameter;
 import org.adempiere.ad.process.ProcessParameterPanelModel;
-import org.adempiere.ad.process.ProcessParameterPanelModel.IDisplayValueProvider;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VImage;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.process.ProcessInfo;
+import org.compiere.process.ProcessInfoParameter;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
 
 /**
  * Process Parameter Panel, based on existing ProcessParameter dialog. - Embedded in ProcessDialog - checks, if parameters exist and inquires and saves them
@@ -56,19 +51,15 @@ import de.metas.adempiere.form.IClientUI;
  * @author Teo Sarca, www.arhipac.ro <li>BF [ 2548216 ] Process Param Panel is not showing any parameter if error
  * @version 2006-12-01
  */
-public class ProcessParameterPanel extends CPanel
-		implements IProcessParameter
+public class ProcessParametersPanel extends CPanel //implements IProcessParameter
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -4802635610434891695L;
-
-	private static final Logger log = LogManager.getLogger(ProcessParameterPanel.class);
+	
+	private static final Logger log = LogManager.getLogger(ProcessParametersPanel.class);
 
 	// Services
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
-	private final transient IClientUI clientUI = Services.get(IClientUI.class);
+	// private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
 	private final ProcessParameterPanelModel model;
 	private final List<JLabel> fieldLabels = new ArrayList<JLabel>();
@@ -109,30 +100,22 @@ public class ProcessParameterPanel extends CPanel
 			dynamicDisplay();
 		}
 	};
-
-	private final IDisplayValueProvider displayValueProvider = new IDisplayValueProvider()
+	
+	/**
+	 * @param pi process info, used ONLY to get AD_Process_ID, WindowNo and TabNo; no reference is stored to it
+	 */
+	public ProcessParametersPanel(final ProcessInfo pi)
 	{
-
-		@Override
-		public String getDisplayValue(final GridField gridField)
-		{
+		super();
+		model = new ProcessParameterPanelModel(Env.getCtx(), pi);
+		model.setDisplayValueProvider((gridField) -> {
 			final VEditor editor = getEditor(gridField);
 			if (editor == null)
 			{
 				return null;
 			}
 			return editor.getDisplay();
-		}
-	};
-
-	/**
-	 * @param pi process info, used ONLY to get AD_Process_ID, WindowNo and TabNo; no reference is stored to it
-	 */
-	public ProcessParameterPanel(final ProcessInfo pi)
-	{
-		super();
-		model = new ProcessParameterPanelModel(Env.getCtx(), pi);
-		model.setDisplayValueProvider(displayValueProvider);
+		});
 
 		try
 		{
@@ -149,9 +132,9 @@ public class ProcessParameterPanel extends CPanel
 
 			dynamicDisplay();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			log.error(ex.getLocalizedMessage(), ex);
+			log.error("Failed initializing process parameters panel", ex);
 			dispose();
 		}
 	}
@@ -422,28 +405,7 @@ public class ProcessParameterPanel extends CPanel
 		}
 	}
 
-	/**
-	 * Validate parameters. In case there is an error, a popup will be shown.
-	 *
-	 * @return true if valid
-	 */
-	public boolean validateParameters()
-	{
-		try
-		{
-			model.validate();
-			return true;
-		}
-		catch (Exception e)
-		{
-			showError(e);
-		}
-
-		return false;
-	}
-
-	@Override
-	public boolean saveParameters(final int adPInstanceId)
+	public List<ProcessInfoParameter> createParameters()
 	{
 		//
 		// Make sure all editor values are pushed back to model (GridFields)
@@ -461,30 +423,7 @@ public class ProcessParameterPanel extends CPanel
 		}
 
 		//
-		// Ask the model to save the parameters
-		try
-		{
-			model.saveParameters(adPInstanceId);
-			return true;
-		}
-		catch (Exception e)
-		{
-			showError(e);
-		}
-
-		return false;
-	}
-
-	private void showError(final Exception e)
-	{
-		if (e instanceof FillMandatoryException)
-		{
-			clientUI.error(model.getWindowNo(), "FillMandatory", e.getLocalizedMessage());
-		}
-		else
-		{
-			clientUI.error(model.getWindowNo(), "Error", e.getLocalizedMessage());
-		}
-
+		// Ask the model to create the parameters
+		return model.createProcessInfoParameters();
 	}
 }	// ProcessParameterPanel

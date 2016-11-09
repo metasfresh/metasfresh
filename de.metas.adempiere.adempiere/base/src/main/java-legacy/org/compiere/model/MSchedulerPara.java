@@ -62,31 +62,20 @@ public class MSchedulerPara extends X_AD_Scheduler_Para
 	 * 	Get Parameter Column Name 
 	 *	@return column name
 	 */
-	public String getColumnName()
+	private String getColumnName()
 	{
-		if (m_parameter == null)
-			m_parameter = MProcessPara.get(getCtx(), getAD_Process_Para_ID());
-		return m_parameter.getColumnName();
-	}	//	getColumnName
-	
-	/**
-	 * 	Get Display Type
-	 *	@return display type
-	 */
-	public int getDisplayType()
-	{
-		if (m_parameter == null)
-			m_parameter = MProcessPara.get(getCtx(), getAD_Process_Para_ID());
-		return m_parameter.getAD_Reference_ID();
-	}	//	getDisplayType
+		final I_AD_Process_Para adProcessPara = getAD_Process_Para();
+		return adProcessPara == null ? null : adProcessPara.getColumnName();
+	}
 
 	/**
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString() 
 	{
-		StringBuffer sb = new StringBuffer("MSchedulerPara[");
+		StringBuilder sb = new StringBuilder("MSchedulerPara[");
 		sb.append(get_ID()).append("-")
 			.append(getColumnName()).append("=").append(getParameterDefault())
 			.append("]");

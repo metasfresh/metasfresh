@@ -22,7 +22,6 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,12 +36,17 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Table_Process;
+
+import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
@@ -141,17 +145,27 @@ public class ADProcessDAO implements IADProcessDAO
 			return Collections.emptyList();
 		}
 
-		return new ArrayList<Integer>(processIds);
+		return new ArrayList<>(processIds);
 	}
 
 	// @Cached
 	@Override
 	public final List<I_AD_Process> retrieveProcessesForTable(final Properties ctx, final int adTableId)
 	{
-		final IQueryBuilder<I_AD_Process> queryBuilder = retrieveProcessesForTableQueryBuilder(ctx, adTableId);
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
+		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.list(I_AD_Process.class);
+	}
+
+	@Override
+	// @Cached(cacheName = I_AD_Process.Table_Name + "#by#AD_Table_ID") // NOTE: before considering caching it, pls make sure the cache is reset when a new process is programatically registered
+	public final List<Integer> retrieveProcessesIdsForTable(@CacheCtx final Properties ctx, final int adTableId)
+	{
+		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds();
 	}
 
 	@Override
@@ -226,5 +240,27 @@ public class ADProcessDAO implements IADProcessDAO
 				.create()
 				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	@Override
+	public List<I_AD_Process_Para> retrieveProcessParameters(final I_AD_Process process)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(process);
+		final String trxName = InterfaceWrapperHelper.getTrxName(process);
+		final int adProcessId = process.getAD_Process_ID();
+		return retrieveProcessParameters(ctx, adProcessId, trxName);
+	}
+
+	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
+	public List<I_AD_Process_Para> retrieveProcessParameters(@CacheCtx final Properties ctx, final int adProcessId, @CacheTrx final String trxName)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, adProcessId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_AD_Process_Para.COLUMNNAME_SeqNo)
+				.endOrderBy()
+				.create()
+				.listImmutable(I_AD_Process_Para.class);
 	}
 }

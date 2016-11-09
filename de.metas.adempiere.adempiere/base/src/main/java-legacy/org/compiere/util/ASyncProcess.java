@@ -18,6 +18,8 @@ package org.compiere.util;
 
 import org.compiere.process.ProcessInfo;
 
+import de.metas.logging.LogManager;
+
 /**
  *  Async Process Interface.
  *  <p>
@@ -38,6 +40,18 @@ import org.compiere.process.ProcessInfo;
  */
 public interface ASyncProcess
 {
+	default void onProcessInitError(final ProcessInfo pi)
+	{
+		final Throwable cause = pi.getThrowable();
+		if (cause != null)
+		{
+			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi);
+		}
+		else
+		{
+			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi, cause);
+		}
+	}
 	/**
 	 *  Lock User Interface.
 	 *  Called from the Worker before processing
@@ -51,18 +65,4 @@ public interface ASyncProcess
 	 *  @param pi result of execute ASync call
 	 */
 	public void unlockUI (ProcessInfo pi);
-
-	/**
-	 *  Is the UI locked (Internal method)
-	 *  @return true, if UI is locked
-	 */
-	boolean isUILocked();
-
-	/**
-	 *  Method to be executed async.
-	 *  Called from the Worker
-	 *  @param pi ProcessInfo
-	 */
-	public void executeASync (ProcessInfo pi);
-
 }   //  ASyncProcess

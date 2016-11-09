@@ -44,9 +44,9 @@ import org.compiere.process.SvrProcess;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.RunOutOfTrx;
 
@@ -86,7 +86,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
 		if (selectionCount <= 0)
 		{
 			final Properties ctx = getCtx();
-			throw new AdempiereException(msgBL.getMsg(ctx, InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException(msgBL.getMsg(ctx, IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
 		}
 
 		//

@@ -1,10 +1,14 @@
-package org.adempiere.misc.service.impl;
+package org.compiere.print;
+
+import org.compiere.process.ProcessInfo;
+
+import de.metas.adempiere.report.jasper.OutputType;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +26,9 @@ package org.adempiere.misc.service.impl;
  * #L%
  */
 
+public interface JRReportViewerProvider
+{
+	public void openViewer(byte[] data, OutputType type, ProcessInfo pi) throws Exception;
 
-import org.adempiere.misc.service.IPrintPA;
-import org.compiere.print.ReportCtl;
-
-public class PrintPA implements IPrintPA {
-
-	public boolean printDocument(final int reportEngineType, final int recordId){
-		
-		return ReportCtl.startDocumentPrint(reportEngineType, recordId, null, 0,
-				true);
-	}
-	
+	public OutputType getDesiredOutputType();
 }
