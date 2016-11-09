@@ -13,7 +13,6 @@ import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.Integ
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.GridFieldVO;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -21,6 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 
 /*
@@ -45,7 +45,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
  * #L%
  */
 
-/*package*/ class DefaultValueExpressionsFactory
+public class DefaultValueExpressionsFactory
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultValueExpressionsFactory.class);
@@ -86,13 +86,15 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 		return _isDetailTab;
 	}
 
-	public Optional<IExpression<?>> extractDefaultValueExpression(final GridFieldVO gridFieldVO, final Class<?> fieldValueClass)
+	public Optional<IExpression<?>> extractDefaultValueExpression(
+			final String defaultValueStr //
+			, final String columnName //
+			, final DocumentFieldWidgetType widgetType //
+			, final Class<?> fieldValueClass //
+			, final boolean isMandatory //
+			)
 	{
 		final boolean isDetailTab = isDetailTab();
-		final String columnName = gridFieldVO.getColumnName();
-		final int displayType = gridFieldVO.getDisplayType();
-		final boolean isMandatory = gridFieldVO.isMandatory();
-		final String defaultValueStr = gridFieldVO.getDefaultValue();
 		
 		//
 		// Case: "Line" field in included tabs
@@ -130,7 +132,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 				// e.g. C_OrderLine.QtyReserved
 				return DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal;
 			}
-			else if (DisplayType.PAttribute == displayType)
+			else if (widgetType == DocumentFieldWidgetType.ProductAttributes)
 			{
 				return DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID;
 			}

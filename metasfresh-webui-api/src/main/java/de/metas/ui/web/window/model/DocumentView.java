@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 
 /*
  * #%L
@@ -144,7 +145,7 @@ public class DocumentView implements IDocumentView
 
 		public DocumentPath getDocumentPath()
 		{
-			return DocumentPath.rootDocumentPath(adWindowId, documentId);
+			return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 		}
 
 		public Builder setIdFieldName(final String idFieldName)

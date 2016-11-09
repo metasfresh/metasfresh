@@ -20,10 +20,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
+import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.controller.IWindowRestController;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;

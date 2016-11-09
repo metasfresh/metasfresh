@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
@@ -68,15 +69,20 @@ public class DebugRestController
 	
 	@Autowired
 	@Lazy
+	private ProcessInstancesRepository pinstancesRepo;
+	
+	@Autowired
+	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
 
 
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
 	{
-		CacheMgt.get().reset(); // FIXME: debugging - while debugging is useful to reset all caches
+		CacheMgt.get().reset();
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
+		pinstancesRepo.cacheReset();
 	}
 
 	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)

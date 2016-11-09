@@ -70,6 +70,15 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return (SqlLookupDescriptor)lookupDescriptor;
 	}
 
+	public static final SqlLookupDescriptor castOrNull(final LookupDescriptor lookupDescriptor)
+	{
+		if (lookupDescriptor instanceof SqlLookupDescriptor)
+		{
+			return (SqlLookupDescriptor)lookupDescriptor;
+		}
+		return null;
+	}
+
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
 	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
 	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");

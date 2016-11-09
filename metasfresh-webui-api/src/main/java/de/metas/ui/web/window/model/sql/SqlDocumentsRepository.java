@@ -120,7 +120,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public List<Document> retriveDocuments(final DocumentQuery query)
+	public List<Document> retrieveDocuments(final DocumentQuery query)
 	{
 		final int limit = query.getPageLength();
 		return retriveDocuments(query, limit);
@@ -172,7 +172,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document retriveDocument(final DocumentQuery query)
+	public Document retrieveDocument(final DocumentQuery query)
 	{
 		final int limit = 2;
 		final List<Document> documents = retriveDocuments(query, limit);
