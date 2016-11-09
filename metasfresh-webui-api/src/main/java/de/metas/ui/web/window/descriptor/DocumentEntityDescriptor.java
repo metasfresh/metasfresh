@@ -95,6 +95,8 @@ public class DocumentEntityDescriptor
 	private final CalloutExecutor calloutExecutorFactory;
 
 	private final DocumentFilterDescriptorsProvider filtersProvider;
+	
+	private final int printProcessId;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -131,6 +133,8 @@ public class DocumentEntityDescriptor
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 
 		filtersProvider = builder.createFiltersProvider();
+		
+		printProcessId = builder.getPrintAD_Process_ID();
 	}
 
 	@Override
@@ -314,6 +318,11 @@ public class DocumentEntityDescriptor
 	{
 		return filtersProvider;
 	}
+	
+	public int getPrintProcessId()
+	{
+		return printProcessId;
+	}
 
 	public static final class Builder
 	{
@@ -345,6 +354,8 @@ public class DocumentEntityDescriptor
 		private Integer AD_Tab_ID;
 		private String _tableName;
 		private Boolean isSOTrx;
+
+		private int printProcessId = -1;
 
 		private Builder()
 		{
@@ -648,6 +659,17 @@ public class DocumentEntityDescriptor
 			final String tableName = getTableName();
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
+		}
+		
+		public Builder setPrintAD_Process_ID(final int printProcessId)
+		{
+			this.printProcessId = printProcessId > 0 ? printProcessId : -1;
+			return this;
+		}
+		
+		private int getPrintAD_Process_ID()
+		{
+			return printProcessId;
 		}
 	}
 }

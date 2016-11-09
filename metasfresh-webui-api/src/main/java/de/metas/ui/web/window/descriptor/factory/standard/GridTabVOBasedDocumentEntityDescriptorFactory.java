@@ -201,6 +201,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				//
+				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID())
 				;
 
 		//
