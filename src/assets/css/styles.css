@@ -1519,7 +1519,7 @@ td.pulse-off input {
 }
 
 .dashboard-wrapper {
-    padding-top: 40px;
+    padding-top: 10px;
 }
 
 .draggable-widget {
@@ -1529,16 +1529,16 @@ td.pulse-off input {
     display: inline-block;
     width: 32%;
     border-radius: 3px;
+    pointer-events: visible;
 }
 
 .draggable-widget-header {
     padding: 6px 10px;
     background: $brand-super-light-color;
     border-bottom: 1px solid $brand-light-color;
-    font-size: 12px;
+    font-size: 0.875rem;
     color: $brand-font-color;
     position: relative;
-    pointer-events: visible;
     cursor: move;
 }
 
@@ -1580,12 +1580,12 @@ td.pulse-off input {
 
 .draggable-widget-maximize {
     width: 100%;
+    height: calc(100vh - 100px);
     margin: 0;
-    min-height: 480px;
 }
 
 .dragging {
-    border: 1px dashed $brand-light-color;
+    border: 2px dashed $brand-light-color;
     opacity: 0.5;
 }
 

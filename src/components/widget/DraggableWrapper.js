@@ -17,7 +17,6 @@ export class DraggableWrapper extends Component {
             cards: [],
             isVisible: true,
             idMaximized: false,
-            widgets: ''
         };
     }
 
