@@ -7,9 +7,30 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 timestamps 
 {
 	//
-	// setup: we'll need these variables in different stages, that's we we create them here
+	// setup: we'll need the following variables in different stages, that's we we create them here
 	//
-	def BRANCH_NAME=env.BRANCH_NAME
+	
+	// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
+	// disabling concurrent builds as long as we work with "SNAPSHOTS"
+	properties([[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], parameters([string(defaultValue: '', description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+	This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
+	<p>
+	So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
+	<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', name: 'MF_UPSTREAM_BRANCH')]), pipelineTriggers([]), disableConcurrentBuilds()])
+
+	if(params.MF_UPSTREAM_BRANCH == '')
+	{
+		echo "Setting BRANCH_NAME from env.BRANCH_NAME=${env.BRANCH_NAME}"
+		BRANCH_NAME=env.BRANCH_NAME
+	}
+	else
+	{
+		echo "Setting BRANCH_NAME from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
+		BRANCH_NAME=params.MF_UPSTREAM_BRANCH
+	}
+	
+	currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
+	currentBuild.displayName="#"+currentBuild.number+"-"+BRANCH_NAME
 	
     // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
     def BUILD_MAVEN_VERSION_PREFIX = BRANCH_NAME.equals('master') ? "1" : "2"
@@ -22,7 +43,6 @@ timestamps
 
 	stage('Preparation') // for display purposes
 	{
-		echo "BRANCH_NAME=${env.BRANCH_NAME}"
 		checkout scm
 	}
 
@@ -77,7 +97,7 @@ timestamps
 		// Jenkins.instance.getAllItems()
 		// but there is got a scurity exception and am not sure if an how i can have an SCM maintained script that is approved by an admin
 		
-		build job: jobName, wait: false
+		build job: jobName, parameters: [string(name: 'MF_UPSTREAM_BRANCH', value: BRANCH_NAME)], wait: false
 	}   
 } // timestamps   
 } // node
