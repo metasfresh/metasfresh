@@ -1050,26 +1050,6 @@ table .rdtPicker table td, .rdtPicker table th {
     border: 1px solid $brand-light-color;
 }
 
-.daterangepicker td,
-.daterangepicker th {
-    font-size: .8rem;
-}
-
-.daterangepicker .calendar th,
-.daterangepicker .calendar td {
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-.daterangepicker .next.available {
-    /* TO DO add icon to meta font */
-    background: url('../images/icon-right.png') no-repeat center;
-}
-
-
-.daterangepicker .prev.available {
-    background: url('../images/icon-left.png') no-repeat center;
-}
 
 /* Pagination */
 

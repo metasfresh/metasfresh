@@ -1,6 +1,6 @@
 .daterangepicker {
     position: absolute;
-    color: inherit;
+    color: $brand-font-color-secondary;
     background: #fff;
     border-radius: 4px;
     width: 278px;
@@ -90,7 +90,7 @@
 .daterangepicker .calendar th, .daterangepicker .calendar td {
     white-space: nowrap;
     text-align: center;
-    min-width: 32px;
+    min-width: 36px;
 }
 .daterangepicker .calendar-table {
     border: 1px solid #fff;
@@ -106,10 +106,10 @@
     text-align: center;
     width: 20px;
     height: 20px;
-    border-radius: 4px;
     border: 1px solid transparent;
     white-space: nowrap;
     cursor: pointer;
+    font-weight:500;
 }
 .daterangepicker td.available:hover, .daterangepicker th.available:hover {
     background-color: #eee;
@@ -118,27 +118,25 @@
 }
 .daterangepicker td.week, .daterangepicker th.week {
     font-size: 80%;
-    color: #ccc;
+}
+.daterangepicker td.in-range {
+    color: inherit;
 }
 .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
     background-color: #fff;
     border-color: transparent;
-    color: #999;
+    font-weight: 400;
 }
 .daterangepicker td.in-range {
     background-color: #ebf4f8;
     border-color: transparent;
-    color: #000;
     border-radius: 0;
 }
 .daterangepicker td.start-date {
-    border-radius: 4px 0 0 4px;
 }
 .daterangepicker td.end-date {
-    border-radius: 0 4px 4px 0;
 }
 .daterangepicker td.start-date.end-date {
-    border-radius: 4px;
 }
 .daterangepicker td.active, .daterangepicker td.active:hover {
     background-color: #357ebd;
@@ -147,6 +145,8 @@
 }
 .daterangepicker th.month {
     width: auto;
+    text-transform: uppercase;
+    letter-spacing: .7px;
 }
 .daterangepicker td.disabled, .daterangepicker option.disabled {
     color: #999;
@@ -343,4 +343,30 @@
     .daterangepicker .calendar.left {
         clear: none !important;
     }
+}
+
+
+.daterangepicker td,
+.daterangepicker th {
+    font-size: .8rem;
+}
+
+.daterangepicker th:not(.month):not(.next):not(.prev) {
+    color: $brand-font-color-weak;
+    font-weight: 400;
+}
+
+.daterangepicker .calendar th,
+.daterangepicker .calendar td {
+    padding: 4px 6px;
+}
+
+.daterangepicker .next.available:after {
+    font-size: 1rem;
+    content: "›"
+}
+
+.daterangepicker .prev.available:after {
+    font-size: 1rem;
+    content: "‹"
 }
