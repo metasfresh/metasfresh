@@ -1,11 +1,13 @@
-package de.metas.ui.web.dashboard.json;
+package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.dashboard.UserDashboardItem;
+import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 /*
@@ -31,49 +33,28 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
  */
 
 @SuppressWarnings("serial")
-public class JSONDashboardItem implements Serializable
+public class JSONProcessLayout implements Serializable
 {
-	/* package */static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONFilteringOptions jsonOpts)
+	public static JSONProcessLayout of(final ProcessLayout layout, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDashboardItem(dashboardItem, jsonOpts);
+		return new JSONProcessLayout(layout, jsonOpts);
 	}
 
-	@JsonProperty("id")
-	private final int id;
 	@JsonProperty("caption")
 	private final String caption;
-	@JsonProperty("url")
+	@JsonProperty("description")
+	private final String description;
+	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String url;
-	@JsonProperty("seqNo")
-	private final int seqNo;
+	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONFilteringOptions jsonOpts)
+	public JSONProcessLayout(final ProcessLayout layout, final JSONFilteringOptions jsonOpts)
 	{
-		super();
-		id = dashboardItem.getId();
-		caption = dashboardItem.getCaption().translate(jsonOpts.getAD_Language());
-		url = dashboardItem.getUrl();
-		seqNo = dashboardItem.getSeqNo();
+		final String adLanguage = jsonOpts.getAD_Language();
+		caption = layout.getCaption(adLanguage);
+		description = layout.getDescription(adLanguage);
+
+		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
 	}
 
-	public int getId()
-	{
-		return id;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public String getUrl()
-	{
-		return url;
-	}
-
-	public int getSeqNo()
-	{
-		return seqNo;
-	}
 }

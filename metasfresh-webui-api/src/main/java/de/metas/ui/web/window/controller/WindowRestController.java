@@ -4,11 +4,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.compiere.process.ProcessInfo;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,16 +20,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.MoreObjects;
-
+import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCtl;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
+import de.metas.ui.web.process.DocumentPreconditionsContext;
+import de.metas.ui.web.process.WebuiJRReportViewerProvider;
+import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentActionsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -36,11 +44,10 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentActionsList;
-import de.metas.ui.web.window.model.DocumentActionsService;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
@@ -112,7 +119,7 @@ public class WindowRestController implements IWindowRestController
 	private DocumentViewRestController documentViewController;
 
 	@Autowired
-	private DocumentActionsService documentActionsService;
+	private ProcessDescriptorsFactory processDescriptorFactory;
 
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
@@ -386,30 +393,15 @@ public class WindowRestController implements IWindowRestController
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final String tableName = document.getEntityDescriptor().getTableName();
-		final DocumentActionsList documentActions = documentActionsService
-				.getDocumentActions(tableName)
-				.getApplicableActions(new PreconditionsContext()
-				{
-					@Override
-					public String toString()
-					{
-						return MoreObjects.toStringHelper(this).addValue(document).toString();
-					}
 
-					@Override
-					public String getTableName()
-					{
-						return tableName;
-					}
+		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
+		final DocumentPreconditionsContext preconditionsContext = DocumentPreconditionsContext.of(document);
 
-					@Override
-					public <T> T getModel(final Class<T> modelClass)
-					{
-						return InterfaceWrapperHelper.create(document, modelClass);
-					}
-				});
-
-		return JSONDocumentActionsList.of(documentActions, newJSONFilteringOptions().build());
+		return processDescriptorFactory.getDocumentRelatedProcesses(tableName)
+				.stream()
+				.filter(processDescriptor -> processDescriptor.isExecutionGranted(permissions))
+				.filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
+				.collect(JSONDocumentActionsList.collect(newJSONFilteringOptions().build()));
 	}
 
 	@Override
@@ -430,4 +422,38 @@ public class WindowRestController implements IWindowRestController
 		return JSONDocumentReferencesList.of(documentReferences, newJSONFilteringOptions().build());
 	}
 
+	@RequestMapping(value = "/documentPrint", method = RequestMethod.GET)
+	public ResponseEntity<byte[]> getDocumentPrint(
+			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
+			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
+	)
+	{
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, idStr);
+
+		final Document document = documentCollection.getDocument(documentPath);
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+
+		final WebuiJRReportViewerProvider jrReportViewerProvider = new WebuiJRReportViewerProvider();
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(userSession.getCtx())
+				.setAD_Process_ID(entityDescriptor.getPrintProcessId())
+				.setRecord(entityDescriptor.getTableName(), document.getDocumentIdAsInt())
+				.setPrintPreview(true)
+				.build();
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.setJRReportViewerProvider(jrReportViewerProvider)
+				.executeSync();
+
+		final byte[] reportData = jrReportViewerProvider.getReportData();
+		final OutputType reportType = jrReportViewerProvider.getReportType();
+
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType(reportType.getContentType()));
+		final String filename = "report." + reportType.getFileExtension(); // TODO: build a better report filename
+		headers.setContentDispositionFormData(filename, filename);
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
+		return response;
+	}
 }

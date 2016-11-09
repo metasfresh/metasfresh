@@ -1,12 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -29,16 +22,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentFieldDataBindingDescriptor
 {
 	String getColumnName();
-
-	Collection<String> getLookupValuesDependsOnFieldNames();
-
-	LookupDescriptor getLookupDescriptor(LookupScope scope);
-
-	LookupDataSource createLookupDataSource(LookupScope scope);
 
 	/** @return true if mandatory in underlying database/repository */
 	boolean isMandatory();

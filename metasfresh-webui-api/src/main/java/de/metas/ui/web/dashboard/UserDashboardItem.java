@@ -43,8 +43,7 @@ public final class UserDashboardItem
 	private final int id;
 	private final ITranslatableString caption;
 	private final String url;
-	private final int gridX;
-	private final int gridY;
+	private final int seqNo;
 
 	private UserDashboardItem(final Builder builder)
 	{
@@ -52,8 +51,7 @@ public final class UserDashboardItem
 		id = builder.id;
 		caption = builder.caption;
 		url = builder.url;
-		gridX = builder.gridX;
-		gridY = builder.gridY;
+		seqNo = builder.seqNo;
 	}
 
 	@Override
@@ -63,8 +61,7 @@ public final class UserDashboardItem
 				.add("id", id)
 				.add("caption", caption)
 				.add("url", url)
-				.add("gridX", gridX)
-				.add("gridY", gridY)
+				.add("seqNo", seqNo)
 				.toString();
 	}
 	
@@ -83,14 +80,9 @@ public final class UserDashboardItem
 		return url;
 	}
 
-	public int getGridX()
+	public int getSeqNo()
 	{
-		return gridX;
-	}
-
-	public int getGridY()
-	{
-		return gridY;
+		return seqNo;
 	}
 
 	public static final class Builder
@@ -98,8 +90,7 @@ public final class UserDashboardItem
 		private Integer id;
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private String url;
-		private int gridX;
-		private int gridY;
+		private int seqNo;
 
 		private Builder()
 		{
@@ -137,15 +128,9 @@ public final class UserDashboardItem
 			return this;
 		}
 
-		public Builder setGridX(final int gridX)
+		public Builder setSeqNo(final int seqNo)
 		{
-			this.gridX = gridX;
-			return this;
-		}
-
-		public Builder setGridY(final int gridY)
-		{
-			this.gridY = gridY;
+			this.seqNo = seqNo;
 			return this;
 		}
 	}

@@ -28,10 +28,14 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface DocumentsRepository
 {
+	List<Document> retrieveDocuments(DocumentQuery query);
 
-	List<Document> retriveDocuments(DocumentQuery query);
+	Document retrieveDocument(DocumentQuery query);
 
-	Document retriveDocument(DocumentQuery query);
+	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final int recordId)
+	{
+		return retrieveDocument(DocumentQuery.ofRecordId(entityDescriptor, recordId));
+	}
 
 	/**
 	 *
@@ -40,6 +44,12 @@ public interface DocumentsRepository
 	 * @return newly created document (not saved); never returns null
 	 */
 	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
+
+	default Document createNewDocument(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final Document parentDocument = null;
+		return createNewDocument(entityDescriptor, parentDocument);
+	}
 
 	void refresh(Document document);
 

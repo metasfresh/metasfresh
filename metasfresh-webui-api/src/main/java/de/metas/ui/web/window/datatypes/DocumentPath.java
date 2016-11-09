@@ -6,6 +6,9 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.util.Check;
+
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
@@ -41,9 +44,9 @@ public final class DocumentPath
 		return new Builder();
 	}
 
-	public static final DocumentPath rootDocumentPath(final int adWindowId, final int id)
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final int id)
 	{
-		if (adWindowId <= 0)
+		if (documentTypeId <= 0)
 		{
 			throw new IllegalArgumentException("adWindowId < 0");
 		}
@@ -54,8 +57,25 @@ public final class DocumentPath
 			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
 		}
 
-		return new DocumentPath(adWindowId, documentId);
+		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
+	
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr)
+	{
+		if (documentTypeId <= 0)
+		{
+			throw new IllegalArgumentException("adWindowId < 0");
+		}
+
+		final DocumentId documentId = DocumentId.of(idStr);
+		if (documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(documentType, documentTypeId, documentId);
+	}
+
 
 	/**
 	 * Creates the path of a single document (root document or included document).
@@ -69,14 +89,15 @@ public final class DocumentPath
 	public static final DocumentPath singleDocumentPath(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		return builder()
-				.setAD_Window_ID(adWindowId)
+				.setDocumentType(DocumentType.Window, adWindowId)
 				.setDocumentId(idStr)
 				.setDetailId(detailId)
 				.setRowId(rowIdStr)
 				.build();
 	}
 
-	private final int adWindowId;
+	private final DocumentType documentType;
+	private final int documentTypeId;
 	private final DocumentId documentId;
 	private final DetailId detailId;
 	private final Set<DocumentId> rowIds;
@@ -85,21 +106,31 @@ public final class DocumentPath
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId)
+	/** Root document constructor */
+	private DocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
 	{
 		super();
-		this.adWindowId = adWindowId;
+		
+		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		this.documentType = documentType;
+		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
+		
 		detailId = null;
 		rowIds = ImmutableSet.of();
 		singleRowId = null;
 	}
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
+	/** Multiple rowIds constructor */
+	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
 	{
 		super();
-		this.adWindowId = adWindowId;
+		
+		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		this.documentType = documentType;
+		this.documentTypeId = adWindowId;
 		this.documentId = documentId;
+		
 		this.detailId = detailId;
 
 		if (rowIds == null || rowIds.isEmpty())
@@ -120,11 +151,16 @@ public final class DocumentPath
 		}
 	}
 
-	private DocumentPath(final int adWindowId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
+	/** Single rowId constructor */
+	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
 	{
 		super();
-		this.adWindowId = adWindowId;
+		
+		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		this.documentType = documentType;
+		this.documentTypeId = adWindowId;
 		this.documentId = documentId;
+		
 		this.detailId = detailId;
 		this.singleRowId = singleRowId;
 		rowIds = singleRowId == null ? ImmutableSet.of() : ImmutableSet.of(singleRowId);
@@ -136,7 +172,7 @@ public final class DocumentPath
 		if (_toString == null)
 		{
 			final StringBuilder sb = new StringBuilder();
-			sb.append("/W").append(adWindowId).append("/").append(documentId);
+			sb.append("/").append(documentType.getSymbol()).append(documentTypeId).append("/").append(documentId);
 			if (detailId != null)
 			{
 				sb.append("/T").append(detailId);
@@ -161,7 +197,7 @@ public final class DocumentPath
 	{
 		if (_hashcode == null)
 		{
-			_hashcode = Objects.hash(adWindowId, documentId, detailId, rowIds);
+			_hashcode = Objects.hash(documentType, documentTypeId, documentId, detailId, rowIds);
 		}
 		return _hashcode;
 	}
@@ -183,15 +219,27 @@ public final class DocumentPath
 		}
 
 		final DocumentPath other = (DocumentPath)obj;
-		return DataTypes.equals(adWindowId, other.adWindowId)
+		return documentType == other.documentType
+				&& DataTypes.equals(documentTypeId, other.documentTypeId)
 				&& DataTypes.equals(documentId, other.documentId)
 				&& DataTypes.equals(detailId, other.detailId)
 				&& DataTypes.equals(rowIds, other.rowIds);
 	}
+	
+	public DocumentType getDocumentType()
+	{
+		return documentType;
+	}
+	
+	public int getDocumentTypeId()
+	{
+		return documentTypeId;
+	}
 
 	public int getAD_Window_ID()
 	{
-		return adWindowId;
+		Check.assume(documentType == DocumentType.Window, "Expect documentType={} for {}", DocumentType.Window, this);
+		return documentTypeId;
 	}
 
 	public DocumentId getDocumentId()
@@ -280,12 +328,13 @@ public final class DocumentPath
 			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
 		}
 
-		return new DocumentPath(adWindowId, documentId, detailId, rowId);
+		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
 	}
 
 	public static final class Builder
 	{
-		private int adWindowId;
+		private DocumentType documentType;
+		private int documentTypeId;
 		private DocumentId documentId;
 		private boolean documentId_allowNew = false;
 		private DetailId detailId;
@@ -302,12 +351,16 @@ public final class DocumentPath
 
 		public DocumentPath build()
 		{
-			//
-			// Validate AD_Window_ID
-			if (adWindowId <= 0)
+			if(documentType == null)
 			{
-				// NOTE: in protocol description, the AD_Window_ID is called "type"
-				throw new InvalidDocumentPathException("Invalid type: " + adWindowId);
+				throw new InvalidDocumentPathException("Invalid document type: " + documentType);
+			}
+			
+			//
+			// Validate documentTypeId
+			if (documentTypeId <= 0)
+			{
+				throw new InvalidDocumentPathException("Invalid document type ID: " + documentTypeId);
 			}
 
 			//
@@ -347,18 +400,25 @@ public final class DocumentPath
 
 			//
 			// Create & return the document path
-			return new DocumentPath(adWindowId, documentId, detailId, rowIds);
+			return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowIds);
 		}
 
 		public Builder setAD_Window_ID(final int AD_Window_ID)
 		{
-			if (AD_Window_ID <= 0)
+			setDocumentType(DocumentType.Window, AD_Window_ID);
+			return this;
+		}
+		
+		public Builder setDocumentType(final DocumentType documentType, final int documentTypeId)
+		{
+			Preconditions.checkNotNull(documentType, "documentType not null");
+			if (documentTypeId <= 0)
 			{
-				// NOTE: in protocol description, the AD_Window_ID is called "type"
-				throw new IllegalArgumentException("Invalid type: " + adWindowId);
+				throw new IllegalArgumentException("Invalid document type ID: " + documentTypeId);
 			}
 
-			adWindowId = AD_Window_ID;
+			this.documentType = DocumentType.Window;
+			this.documentTypeId = documentTypeId;
 			return this;
 		}
 

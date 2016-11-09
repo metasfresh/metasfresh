@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -100,9 +102,8 @@ public class DocumentCollection
 	 */
 	private Document getRootDocument(final DocumentPath documentPath)
 	{
-		final int adWindowId = documentPath.getAD_Window_ID();
 		final DocumentId documentId = documentPath.getDocumentId();
-		final DocumentKey documentKey = DocumentKey.of(adWindowId, documentId);
+		final DocumentKey documentKey = DocumentKey.of(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentId);
 		try
 		{
 			return documents.get(documentKey);
@@ -295,25 +296,26 @@ public class DocumentCollection
 	{
 		public static final DocumentKey of(final Document document)
 		{
-			final int adWindowId = document.getEntityDescriptor().getAD_Window_ID();
-			final DocumentId documentId = document.getDocumentId();
-			return new DocumentKey(adWindowId, documentId);
+			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+			return new DocumentKey(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), document.getDocumentId());
 		}
 
-		public static final DocumentKey of(final int adWindowId, final DocumentId documentId)
+		public static final DocumentKey of(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
 		{
-			return new DocumentKey(adWindowId, documentId);
+			return new DocumentKey(documentType, documentTypeId, documentId);
 		}
 
-		private final int AD_Window_ID;
+		private DocumentType documentType;
+		private int documentTypeId;
 		private final DocumentId documentId;
 
 		private Integer _hashcode = null;
 
-		private DocumentKey(final int adWindowId, final DocumentId documentId)
+		private DocumentKey(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
 		{
 			super();
-			AD_Window_ID = adWindowId;
+			this.documentType = documentType;
+			this.documentTypeId = documentTypeId;
 			this.documentId = Preconditions.checkNotNull(documentId, "documentId");
 		}
 
@@ -321,7 +323,8 @@ public class DocumentCollection
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Window_ID", AD_Window_ID)
+					.add("type", documentType)
+					.add("typeId", documentTypeId)
 					.add("documentId", documentId)
 					.toString();
 		}
@@ -331,7 +334,7 @@ public class DocumentCollection
 		{
 			if (_hashcode == null)
 			{
-				_hashcode = Objects.hash(AD_Window_ID, documentId);
+				_hashcode = Objects.hash(documentType, documentTypeId, documentId);
 			}
 			return _hashcode;
 		}
@@ -349,15 +352,17 @@ public class DocumentCollection
 			}
 
 			final DocumentKey other = (DocumentKey)obj;
-			return AD_Window_ID == other.AD_Window_ID
+			return documentType == other.documentType
+					&& documentTypeId == other.documentTypeId
 					&& DataTypes.equals(documentId, other.documentId);
 		}
-
+		
 		public int getAD_Window_ID()
 		{
-			return AD_Window_ID;
+			Check.assume(documentType == DocumentType.Window, "documentType shall be {} but it was {}", DocumentType.Window, documentType);
+			return documentTypeId;
 		}
-
+		
 		public DocumentId getDocumentId()
 		{
 			return documentId;

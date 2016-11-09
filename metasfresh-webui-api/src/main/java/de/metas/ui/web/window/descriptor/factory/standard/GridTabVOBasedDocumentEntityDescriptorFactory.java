@@ -20,13 +20,13 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -185,6 +185,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		//
 		// Entity descriptor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.Window, gridTabVO.getAD_Window_ID())
 				.setDetailId(detailId)
 				//
 				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
@@ -197,10 +198,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.setDataBinding(dataBinding)
 				//
-				.setAD_Window_ID(gridTabVO.getAD_Window_ID()) // legacy
 				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				//
+				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID())
 				;
 
 		//
@@ -244,7 +246,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
 		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
-		final LookupSource lookupSourceType;
+		final LookupDescriptor lookupDescriptor;
 		final ILogicExpression readonlyLogic;
 
 		if (isParentLinkColumn)
@@ -254,7 +256,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			alwaysUpdateable = false;
 			
 			lookupDescriptorProvider = (scope) -> null;
-			lookupSourceType = null;
+			lookupDescriptor = null;
 			
 			defaultValueExpression = Optional.empty();
 			readonlyLogic = ConstantLogicExpression.TRUE;
@@ -272,11 +274,16 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 					.buildProvider();
 
-			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+			lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
 			valueClass = DescriptorsFactoryHelper.getValueClass(displayType, lookupDescriptor);
-			lookupSourceType = lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 
-			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(gridFieldVO, valueClass);
+			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
+					gridFieldVO.getDefaultValue() //
+					, fieldName  //
+					, widgetType //
+					, valueClass //
+					, gridFieldVO.isMandatory() //
+			);
 			if(gridFieldVO.isReadOnly())
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
@@ -305,12 +312,12 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setColumnSql(sqlColumnSql)
 				.setVirtualColumn(gridFieldVO.isVirtualColumn())
 				.setMandatory(gridFieldVO.isMandatoryDB())
-				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
+				.setValueClass(valueClass)
+				.setLookupDescriptor(lookupDescriptor)
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
 				.setOrderBy(orderBySortNo)
-				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				.build();
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
@@ -321,7 +328,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setParentLink(isParentLinkColumn)
 				//
 				.setWidgetType(widgetType)
-				.setLookupSource(lookupSourceType)
+				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				.setValueClass(dataBinding.getValueClass())
 				.setVirtualField(dataBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())

@@ -1,14 +1,17 @@
 package de.metas.ui.web.dashboard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /*
  * #%L
@@ -43,20 +46,20 @@ public final class UserDashboard
 	public static final UserDashboard EMPTY = new UserDashboard();
 
 	private final int id;
-	private final List<UserDashboardItem> items;
+	private final Map<Integer, UserDashboardItem> itemsById;
 
 	private UserDashboard(final Builder builder)
 	{
 		super();
 		id = builder.id;
-		items = ImmutableList.copyOf(builder.items);
+		itemsById = Maps.uniqueIndex(builder.items, UserDashboardItem::getId);
 	}
 
 	private UserDashboard()
 	{
 		super();
 		id = -1;
-		items = ImmutableList.of();
+		itemsById = ImmutableMap.of();
 	}
 
 	@Override
@@ -64,7 +67,7 @@ public final class UserDashboard
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("id", id)
-				.add("items", items)
+				.add("itemsById", itemsById)
 				.toString();
 	}
 
@@ -73,9 +76,16 @@ public final class UserDashboard
 		return id;
 	}
 
-	public List<UserDashboardItem> getItems()
+	public Collection<UserDashboardItem> getItems()
 	{
-		return items;
+		return itemsById.values();
+	}
+
+	public UserDashboardItem getItemById(final int itemId)
+	{
+		final UserDashboardItem item = itemsById.get(itemId);
+		Check.assumeNotNull(item, "Parameter item is not null");
+		return item;
 	}
 
 	public static final class Builder

@@ -5,11 +5,9 @@ import java.util.Objects;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -42,11 +40,6 @@ public final class DocumentQueryOrderBy
 	public static final DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
 	{
 		return new DocumentQueryOrderBy(fieldName, ascending);
-	}
-
-	public static final DocumentQueryOrderBy byExplicitCode(final IStringExpression explicitCode)
-	{
-		return new DocumentQueryOrderBy(explicitCode);
 	}
 
 	/**
@@ -92,8 +85,6 @@ public final class DocumentQueryOrderBy
 
 	private final String fieldName;
 	private final boolean ascending;
-	//
-	private final IStringExpression explicitCode;
 
 	private DocumentQueryOrderBy(final String fieldName, final boolean ascending)
 	{
@@ -101,16 +92,6 @@ public final class DocumentQueryOrderBy
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 		this.fieldName = fieldName;
 		this.ascending = ascending;
-		explicitCode = null;
-	}
-
-	private DocumentQueryOrderBy(final IStringExpression explicitCode)
-	{
-		super();
-		Check.assume(explicitCode != null && !explicitCode.isNullExpression(), "explicitCode is not empty");
-		fieldName = null; // N/A
-		ascending = true; // N/A
-		this.explicitCode = explicitCode;
 	}
 
 	@Override
@@ -118,27 +99,29 @@ public final class DocumentQueryOrderBy
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("explicitCode", explicitCode)
 				.add("fieldName", fieldName)
-				.add("ascending", explicitCode == null ? ascending : null)
+				.add("ascending", ascending)
 				.toString();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(fieldName, ascending, explicitCode);
+		return Objects.hash(fieldName, ascending);
 	}
 
 	@Override
 	public boolean equals(final Object obj)
 	{
+		if(this == obj)
+		{
+			return true;
+		}
 		if (obj instanceof DocumentQueryOrderBy)
 		{
 			final DocumentQueryOrderBy other = (DocumentQueryOrderBy)obj;
 			return Objects.equals(fieldName, other.fieldName)
-					&& ascending == other.ascending
-					&& Objects.equals(explicitCode, other.explicitCode);
+					&& ascending == other.ascending;
 		}
 		return false;
 	}
@@ -151,16 +134,5 @@ public final class DocumentQueryOrderBy
 	public boolean isAscending()
 	{
 		return ascending;
-	}
-
-	@JsonIgnore
-	public boolean isExplicit()
-	{
-		return explicitCode != null;
-	}
-
-	public IStringExpression getExplicitCode()
-	{
-		return explicitCode;
 	}
 }
