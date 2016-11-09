@@ -24,7 +24,6 @@ import org.compiere.model.DocWorkflowMgr;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
@@ -126,12 +125,12 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			//	Start Workflow
 			log.debug(logic);
 			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(document.getCtx())
 					.setAD_Process_ID(305) // FIXME HARDCODED
+					.setAD_Client_ID(document.getAD_Client_ID())
 					.setTitle(wf.getName())
 					.setRecord(AD_Table_ID, document.get_ID())
 					.build();
-			pi.setAD_User_ID (Env.getAD_User_ID(document.getCtx()));
-			pi.setAD_Client_ID(document.getAD_Client_ID());
 			//
 			if (wf.start(pi) != null)
 			{

@@ -85,7 +85,7 @@ import net.sf.jasperreports.view.JRViewer;
  * @author tsa
  *
  */
-public class JasperReportViewerPanel extends JRViewer
+class JasperReportViewerPanel extends JRViewer
 {
 
 	private static final long serialVersionUID = -7988455595896562947L;

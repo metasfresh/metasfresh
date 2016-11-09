@@ -310,7 +310,7 @@ public final class AMenu extends CFrame
 		// Register Swing ClientUI service
 		Services.registerService(IClientUI.class, new SwingClientUI());
 		
-		ReportCtl.setReportViewerProvider(SwingViewerProvider.instance);
+		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
 
 		/**
 		 * Show Login Screen - if not successful - exit

@@ -413,12 +413,6 @@ public class HUReportModel implements IDisposable
 		//
 		// Create AD_PInstance
 		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = ProcessInfo.builder()
-				.setFromAD_Process(process)
-				.setWindowNo(getTerminalContext().getWindowNo())
-				.setTableName(I_M_HU.Table_Name)
-				.setReportLanguage(reportLanguage)
-				.build();
 
 		// 05978: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
 		// transaction.
@@ -455,14 +449,18 @@ public class HUReportModel implements IDisposable
 					InterfaceWrapperHelper.save(para_PrintCopies);
 				}
 
-				//
-				// ProcessInfo
-				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-
-
 				DB.createT_Selection(pinstance.getAD_PInstance_ID(), huIds, localTrxName);
 			}
 		});
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
+				.setFromAD_Process(process)
+				.setWindowNo(getTerminalContext().getWindowNo())
+				.setTableName(I_M_HU.Table_Name)
+				.setReportLanguage(reportLanguage)
+				.build();
+
 
 		//
 		// Execute report in a new transaction

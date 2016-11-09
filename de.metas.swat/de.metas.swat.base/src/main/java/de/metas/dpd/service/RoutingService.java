@@ -575,11 +575,11 @@ public class RoutingService implements IDPDRoutingservice
 		} finally { DB.restoreConstraints(); }
 		
 		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_PInstance_ID(instance.getAD_PInstance_ID())
 				.setAD_Process_ID(processId)
 				.setTitle(processName)
 				.setRecord(adTableId, recordId)
 				.build();
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
 
 		try
 		{

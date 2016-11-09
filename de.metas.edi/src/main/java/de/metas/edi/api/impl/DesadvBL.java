@@ -443,9 +443,9 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
 				.setFromAD_Process(process)
 				.build();
-		processInfo.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
 
 		//
 		// Execute the actual printing process

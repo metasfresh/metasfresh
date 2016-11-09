@@ -999,22 +999,24 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Report:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			final MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			process.set_TrxName(trx != null ? trx.getTrxName() : null);
 			if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
+			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
+			pInstance.set_TrxName(trx != null ? trx.getTrxName() : null);
+			fillParameter(pInstance, trx);
+			//
 			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
 					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
-			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			pInstance.set_TrxName(trx != null ? trx.getTrxName() : null);
-			fillParameter(pInstance, trx);
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
 			// Report
 			ReportEngine re = ReportEngine.get(getCtx(), pi);
 			if (re == null)
@@ -1045,13 +1047,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			fillParameter(pInstance, trx);
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
 					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
 			
 			ProcessCtl.builder()
 					.setProcessInfo(pi)

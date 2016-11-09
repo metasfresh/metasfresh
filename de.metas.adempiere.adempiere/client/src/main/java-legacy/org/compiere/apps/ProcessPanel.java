@@ -65,11 +65,10 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final ProcessPanelWindow window;
+	private final Properties ctx;
 	private final I_AD_Process _adProcessTrl;
 	private final int m_WindowNo;
 	private final int m_TabNo;
-	private final int _adUserId;
-	private final int _adClientId;
 	private final String whereClause;
 	private final int adTableId;
 	private final int recordId;
@@ -95,27 +94,25 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	ProcessPanel(final ProcessDialogBuilder builder)
 	{
 		super();
+		this.ctx = Env.getCtx();
 		this.window = builder.getWindow();
 		window.enableWindowEvents(AWTEvent.WINDOW_EVENT_MASK);
 
 		//
 		// Load process definition from database
-		final Properties ctx = Env.getCtx();
 		//m_AD_Process_ID = builder.getAD_Process_ID();
-		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), builder.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, builder.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
 		if (process == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + builder.getAD_Process_ID());
 		}
-		this._adProcessTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(Env.getCtx()));
+		this._adProcessTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(ctx));
 
 
 		this.m_WindowNo = builder.getWindowNo();
 		this.m_TabNo = builder.getTabNo();
 
 		Env.setContext(ctx, m_WindowNo, "IsSOTrx", builder.isSOTrx());
-		_adClientId = Env.getAD_Client_ID(ctx);
-		_adUserId = Env.getAD_User_ID(ctx);
 		whereClause = builder.getWhereClause();
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -143,6 +140,11 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 			return;
 		}
 	}	// ProcessDialog
+	
+	private Properties getCtx()
+	{
+		return ctx;
+	}
 
 	/** The main panel */
 	@SuppressWarnings("serial")
@@ -237,10 +239,10 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		//
 		// South panel: confirm panel buttons
 		{
-			bOK.setText(msgBL.getMsg(Env.getCtx(), "Start")); // make sure the text is set
+			bOK.setText(msgBL.getMsg(getCtx(), "Start")); // make sure the text is set
 			bOK.addActionListener(this);
 
-			bBack.setText(msgBL.getMsg(Env.getCtx(), "Back")); // make sure the text is set
+			bBack.setText(msgBL.getMsg(getCtx(), "Back")); // make sure the text is set
 			bBack.addActionListener(this);
 
 			final FlowLayout southLayout = new FlowLayout();
@@ -293,7 +295,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 
 		//
 		// Update UI
-		bOK.setText(msgBL.getMsg(Env.getCtx(), okButtonMessage));
+		bOK.setText(msgBL.getMsg(getCtx(), okButtonMessage));
 		bBack.setVisible(_allowProcessReRun);
 		bBack.setEnabled(_allowProcessReRun && enableBackButton);
 	}
@@ -410,7 +412,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		messageText.append("<b>");
 		if (Check.isEmpty(processDescription))
 		{
-			messageText.append(msgBL.getMsg(Env.getCtx(), "StartProcess?"));
+			messageText.append(msgBL.getMsg(getCtx(), "StartProcess?"));
 		}
 		else
 		{
@@ -432,6 +434,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final ProcessInfo createProcessInfo()
 	{
 		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(getCtx())
 				.setFromAD_Process(_adProcessTrl)
 				.setWhereClause(whereClause)
 				.setRecord(adTableId, recordId)
@@ -439,9 +442,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 				.addParameters(parameterPanel == null ? ImmutableList.of() : parameterPanel.createParameters())
 				.setPrintPreview(printPreview)
 				.build();
-		
-		pi.setAD_User_ID(_adUserId);
-		pi.setAD_Client_ID(_adClientId);
 		return pi;
 	}
 

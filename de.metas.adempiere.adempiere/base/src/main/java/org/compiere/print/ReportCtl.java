@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.MProcess;
@@ -48,31 +49,35 @@ import de.metas.process.ProcessCtl;
  */
 public final class ReportCtl
 {
-	/**
-	 * Constructor - prevent instance
-	 */
-	private ReportCtl()
+	public static final Builder builder()
 	{
-		super();
-	}	// ReportCtrl
-
+		return new Builder();
+	}
+	
 	/** Static Logger */
 	private static final Logger logger = LogManager.getLogger(ReportCtl.class);
+	
+	private static ReportViewerProvider defaultReportEngineViewerProvider = re -> logger.warn("No {} registered to display {}", ReportViewerProvider.class, re);
 
-	private static ReportViewerProvider viewerProvider = re -> logger.warn("No " + ReportViewerProvider.class + " registered to display " + re);
+	private final ProcessInfo processInfo;
+	private final ASyncProcess asyncParent;
+	private final JRReportViewerProvider jrReportViewerProvider;
+
+	private ReportCtl(final Builder builder)
+	{
+		super();
+		this.processInfo = builder.getProcessInfo();
+		this.asyncParent = builder.getASyncParent();
+		this.jrReportViewerProvider = builder.getJRReportViewerProvider();
+	}
+
 
 	/**
 	 * Create Report.
-	 * Called from ProcessCtl.
-	 * - Check special reports first, if not, create standard Report
-	 *
-	 * @param parent The window which invoked the printing
-	 * @param WindowNo The windows number which invoked the printing
-	 * @param pi process info
 	 */
-	public static void start(final ASyncProcess parent, final ProcessInfo pi)
+	private void start()
 	{
-		logger.info("start - {}", pi);
+		logger.info("start - {}", processInfo);
 
 		//
 		// Get printer name
@@ -80,45 +85,45 @@ public final class ReportCtl
 		final IPrinterRoutingBL printerRouting = Services.get(IPrinterRoutingBL.class);
 		if (printerRouting != null)
 		{
-			printerName = printerRouting.findPrinterName(pi);
+			printerName = printerRouting.findPrinterName(processInfo);
 		}
 
 		//
 		// Custom print format
 		final MPrintFormat customPrintFormat = null; // nothing
 
-		final int adProcessId = pi.getAD_Process_ID();
+		final int adProcessId = processInfo.getAD_Process_ID();
 		final int reportEngineDocumentType = extractReportEngineDocumentType(adProcessId);
 
 		//
 		// Payment Check Print
 		if (adProcessId == 313)     		// C_Payment
 		{
-			final int WindowNo = pi.getWindowNo();
-			final int C_Payment_ID = pi.getRecord_ID();
+			final int WindowNo = processInfo.getWindowNo();
+			final int C_Payment_ID = processInfo.getRecord_ID();
 			final int adTableId = I_C_PaySelectionCheck.Table_ID;
 			final int C_PaySelectionCheck_ID = prepareCheckPrint(C_Payment_ID);
-			startDocumentPrint(ReportEngine.CHECK, customPrintFormat, C_PaySelectionCheck_ID, adTableId, pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			startDocumentPrint(ReportEngine.CHECK, customPrintFormat, C_PaySelectionCheck_ID, adTableId, processInfo.getAD_PInstance_ID(), asyncParent, WindowNo, !processInfo.isPrintPreview(), printerName);
 		}
 		//
 		// Standard document print
 		else if (reportEngineDocumentType >= 0)
 		{
-			final int WindowNo = pi.getWindowNo();
-			startDocumentPrint(reportEngineDocumentType, customPrintFormat, pi.getRecord_ID(), pi.getTable_ID(), pi.getAD_PInstance_ID(), parent, WindowNo, !pi.isPrintPreview(), printerName);
+			final int WindowNo = processInfo.getWindowNo();
+			startDocumentPrint(reportEngineDocumentType, customPrintFormat, processInfo.getRecord_ID(), processInfo.getTable_ID(), processInfo.getAD_PInstance_ID(), asyncParent, WindowNo, !processInfo.isPrintPreview(), printerName);
 		}
 		//
 		// Financial reporting
 		else if (adProcessId == 202			// Financial Report
 				|| adProcessId == 204)     			// Financial Statement
 		{
-			startFinReport(pi, printerName);
+			startFinReport(processInfo, printerName);
 		}
 		//
 		// Standard report
 		else
 		{
-			startStandardReport(pi, printerName);
+			startStandardReport(processInfo, printerName);
 		}
 	}
 
@@ -146,11 +151,11 @@ public final class ReportCtl
 		}
 		// else if(adProcessId == 313) // Payment // => will be handled on upper level
 		// return;
-		if (adProcessId == MProcess.getProcess_ID("Rpt PP_Order", null))
+		if (adProcessId == MProcess.getProcess_ID("Rpt PP_Order", ITrx.TRXNAME_None))
 		{
 			return ReportEngine.MANUFACTURING_ORDER;
 		}
-		if (adProcessId == MProcess.getProcess_ID("Rpt DD_Order", null))
+		if (adProcessId == MProcess.getProcess_ID("Rpt DD_Order", ITrx.TRXNAME_None))
 		{
 			return ReportEngine.DISTRIBUTION_ORDER;
 		}
@@ -261,7 +266,7 @@ public final class ReportCtl
 	 * @param printerName Specified printer name
 	 * @return true if success
 	 */
-	private static void startDocumentPrint(
+	private void startDocumentPrint(
 			final int type //
 			, final MPrintFormat customPrintFormat //
 			, final int Record_ID //
@@ -306,6 +311,7 @@ public final class ReportCtl
 			ProcessCtl.builder()
 					.setAsyncParent(parent)
 					.setProcessInfo(jasperProcessInfo)
+					.setJRReportViewerProvider(jrReportViewerProvider)
 					.execute();
 		}
 		else
@@ -363,21 +369,75 @@ public final class ReportCtl
 	 */
 	public static void preview(final ReportEngine re)
 	{
-		final ReportViewerProvider provider = getReportViewerProvider();
+		final ReportViewerProvider provider = getDefaultReportEngineViewerProvider();
 		provider.openViewer(re);
 	}
 
-	public static void setReportViewerProvider(final ReportViewerProvider provider)
+	public static void setDefaultReportEngineReportViewerProvider(final ReportViewerProvider reportEngineViewerProvider)
 	{
-		if (provider == null)
+		if (reportEngineViewerProvider == null)
 		{
 			throw new IllegalArgumentException("Cannot set report viewer provider to null");
 		}
-		viewerProvider = provider;
+		defaultReportEngineViewerProvider = reportEngineViewerProvider;
 	}
 
-	public static ReportViewerProvider getReportViewerProvider()
+	public static ReportViewerProvider getDefaultReportEngineViewerProvider()
 	{
-		return viewerProvider;
+		return defaultReportEngineViewerProvider;
 	}
+	
+	public static final class Builder
+	{
+		private ProcessInfo processInfo;
+		private ASyncProcess asyncParent;
+		private JRReportViewerProvider jrReportViewerProvider;
+		
+		private Builder()
+		{
+			super();
+		}
+
+		public ReportCtl start()
+		{
+			final ReportCtl reportCtl = new ReportCtl(this);
+			reportCtl.start();
+			return reportCtl;
+		}
+		
+		public Builder setProcessInfo(final ProcessInfo processInfo)
+		{
+			this.processInfo = processInfo;
+			return this;
+		}
+		
+		private ProcessInfo getProcessInfo()
+		{
+			Check.assumeNotNull(processInfo, "Parameter processInfo is not null");
+			return processInfo;
+		}
+
+		public Builder setAsyncParent(final ASyncProcess asyncParent)
+		{
+			this.asyncParent = asyncParent;
+			return this;
+		}
+
+		private ASyncProcess getASyncParent()
+		{
+			return asyncParent;
+		}
+		
+		public Builder setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider)
+		{
+			this.jrReportViewerProvider = jrReportViewerProvider;
+			return this;
+		}
+		
+		private JRReportViewerProvider getJRReportViewerProvider()
+		{
+			return jrReportViewerProvider;
+		}
+	}
+
 }	// ReportCtl

@@ -449,9 +449,6 @@ public class Scheduler extends AdempiereServer
 				//.setRecord(-1, -1)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
 				.build();
-		pi.setAD_User_ID(Env.getAD_User_ID(schedulerCtx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(schedulerCtx));
-		pi.setAD_Org_ID(Env.getAD_Org_ID(schedulerCtx));
 
 		return pi;
 	}

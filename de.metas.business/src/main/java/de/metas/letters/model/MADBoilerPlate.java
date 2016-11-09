@@ -156,12 +156,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.firstOnly();
 		
 		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(ctx)
 				.setFromAD_Process(process)
 				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
 				.build();
-		
-		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		
 		ProcessCtl.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);

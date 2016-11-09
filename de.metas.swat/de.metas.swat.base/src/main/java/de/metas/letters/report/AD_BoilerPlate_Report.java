@@ -115,12 +115,13 @@ public class AD_BoilerPlate_Report extends SvrProcess
 	private void startJasper()
 	{
 		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Client_ID(getAD_Client_ID())
+				.setAD_User_ID(getAD_User_ID())
+				.setAD_PInstance_ID(getAD_PInstance_ID())
 				.setAD_Process_ID(0)
 				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
 				.build();
-		pi.setAD_Client_ID(getAD_Client_ID());
-		pi.setAD_User_ID(getAD_User_ID());
-		pi.setAD_PInstance_ID(getAD_PInstance_ID());
 		//
 		ReportStarter proc = new ReportStarter();
 		proc.startProcess(getCtx(), pi, Trx.get(get_TrxName(), false));

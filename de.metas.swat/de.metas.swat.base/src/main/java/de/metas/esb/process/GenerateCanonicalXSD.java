@@ -305,12 +305,12 @@ public class GenerateCanonicalXSD extends SvrProcess
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
 		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
 				.setTitle("GenerateCanonicalXSD")
 				.setAD_Process_ID(-1) // N/A
 				.addParameter(ProcessInfoParameter.of("Target_Directory", outputFolder))
 				.addParameter(ProcessInfoParameter.of("EntityType", entityType))
 				.build();
-		pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
 
 		final GenerateCanonicalXSD process = new GenerateCanonicalXSD();
 		process.p_FilterBy_AD_Client_ID = false;
