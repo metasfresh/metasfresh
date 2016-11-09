@@ -53,7 +53,7 @@ public class DocumentFilterParamDescriptor
 
 	private final LookupDescriptor lookupDescriptor;
 	
-	private final boolean required;
+	private final boolean mandatory;
 
 	private DocumentFilterParamDescriptor(final Builder builder)
 	{
@@ -80,7 +80,7 @@ public class DocumentFilterParamDescriptor
 		
 		lookupDescriptor = builder.lookupDescriptor;
 		
-		required = builder.required;
+		mandatory = builder.mandatory;
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public class DocumentFilterParamDescriptor
 				.add("defaultValue", defaultValue)
 				.add("defaultValueTo", defaultValueTo)
 				.add("lookupDescriptor", lookupDescriptor)
-				.add("required", required)
+				.add("required", mandatory)
 				.toString();
 	}
 	
@@ -150,9 +150,9 @@ public class DocumentFilterParamDescriptor
 		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);		
 	}
 	
-	public boolean isRequired()
+	public boolean isMandatory()
 	{
-		return required;
+		return mandatory;
 	}
 
 	public static final class Builder
@@ -166,7 +166,7 @@ public class DocumentFilterParamDescriptor
 		private Object defaultValue;
 		private Object defaultValueTo;
 		private LookupDescriptor lookupDescriptor;
-		private boolean required = false;
+		private boolean mandatory = false;
 
 		private Builder()
 		{
@@ -254,9 +254,9 @@ public class DocumentFilterParamDescriptor
 			return this;
 		}
 		
-		public Builder setRequired(boolean required)
+		public Builder setMandatory(boolean mandatory)
 		{
-			this.required = required;
+			this.mandatory = mandatory;
 			return this;
 		}
 	}

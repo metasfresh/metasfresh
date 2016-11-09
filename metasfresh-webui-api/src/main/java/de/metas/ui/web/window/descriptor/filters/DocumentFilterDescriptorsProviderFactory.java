@@ -124,7 +124,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setWidgetType(widgetType)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
-				.setRequired(false);
+				.setMandatory(false);
 	}
 
 }

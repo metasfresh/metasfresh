@@ -136,7 +136,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 						.setOperator(operator)
 						.setDefaultValue(value)
 						.setDefaultValueTo(valueTo)
-						.setRequired(value == null) // required if there is no default value
+						.setMandatory(value == null) // mandatory if there is no default value
 						.setLookupDescriptor(lookupDescriptor));
 			}
 			else
