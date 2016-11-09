@@ -59,6 +59,23 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
+	
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr)
+	{
+		if (documentTypeId <= 0)
+		{
+			throw new IllegalArgumentException("adWindowId < 0");
+		}
+
+		final DocumentId documentId = DocumentId.of(idStr);
+		if (documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(documentType, documentTypeId, documentId);
+	}
+
 
 	/**
 	 * Creates the path of a single document (root document or included document).
