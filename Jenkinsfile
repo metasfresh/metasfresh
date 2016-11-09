@@ -9,11 +9,14 @@ timestamps
 	//
 	// setup: we'll need the following variables in different stages, that's we we create them here
 	//
+	
+	// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
+	// disabling concurrent builds as long as we work with "SNAPSHOTS"
 	properties([[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], parameters([string(defaultValue: '', description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 	This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 	<p>
 	So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-	<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', name: 'MF_UPSTREAM_BRANCH')]), pipelineTriggers([])])
+	<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', name: 'MF_UPSTREAM_BRANCH')]), pipelineTriggers([]), disableConcurrentBuilds()])
 
 	if(params.MF_UPSTREAM_BRANCH == '')
 	{
@@ -40,7 +43,6 @@ timestamps
 
 	stage('Preparation') // for display purposes
 	{
-		echo "BRANCH_NAME=${env.BRANCH_NAME}"
 		checkout scm
 	}
    
