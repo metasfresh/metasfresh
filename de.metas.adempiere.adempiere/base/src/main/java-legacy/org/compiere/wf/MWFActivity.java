@@ -40,6 +40,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MAttachment;
@@ -70,6 +71,7 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.ProcessCtl;
 
 /**
  * Workflow Activity Model.
@@ -997,19 +999,24 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Report:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			final MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			process.set_TrxName(trx != null ? trx.getTrxName() : null);
-			if (!process.isReport() || process.getAD_ReportView_ID() == 0)
+			if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
-			ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(),
-					getAD_Table_ID(), getRecord_ID());
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
 			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
 			pInstance.set_TrxName(trx != null ? trx.getTrxName() : null);
 			fillParameter(pInstance, trx);
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
+			//
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.build();
 			// Report
 			ReportEngine re = ReportEngine.get(getCtx(), pi);
 			if (re == null)
@@ -1035,16 +1042,24 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
 			fillParameter(pInstance, trx);
 			//
-			ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(),
-					getAD_Table_ID(), getRecord_ID());
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-			return process.processItWithoutTrxClose(pi, trx);
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.build();
+			
+			ProcessCtl.builder()
+					.setProcessInfo(pi)
+					.executeSync();
+			return true;
 		}
 
 		/******
@@ -1480,12 +1495,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (iPara.getParameterName().equals(nPara.getAttributeName()))
 				{
 					String variableName = nPara.getAttributeValue();
-					log.debug(nPara.getAttributeName()
-							+ " = " + variableName);
+					log.debug(nPara.getAttributeName() + " = " + variableName);
 					// Value - Constant/Variable
 					Object value = variableName;
-					if (variableName == null
-							|| (variableName != null && variableName.length() == 0))
+					if (variableName == null || (variableName != null && variableName.length() == 0))
 						value = null;
 					else if (variableName.indexOf('@') != -1 && m_po != null)	// we have a variable
 					{

@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /**
  *  Process Instance Parameter Model
  *
@@ -66,10 +68,10 @@ public class MPInstancePara extends X_AD_PInstance_Para
 	 *	@param instance instance
 	 *	@param SeqNo sequence
 	 */
-	public MPInstancePara (MPInstance instance, int SeqNo)
+	public MPInstancePara (final I_AD_PInstance instance, int SeqNo)
 	{
-		super (instance.getCtx(), 0, instance.get_TrxName());
-		setAD_PInstance_ID (instance.getAD_PInstance_ID());
+		super (InterfaceWrapperHelper.getCtx(instance), 0, InterfaceWrapperHelper.getTrxName(instance));
+		setAD_PInstance_ID(instance.getAD_PInstance_ID());
 		setSeqNo (SeqNo);
 	}	//	MPInstance_Para
 
@@ -137,7 +139,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		if (P_Number == null)
 			setP_Number(0);
 		else
-			setP_Number (((Integer)P_Number).intValue());
+			setP_Number (P_Number.intValue());
 	}	//	setP_Number
 	
 	/**
@@ -158,7 +160,7 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		if (P_Number_To == null)
 			setP_Number_To(0);
 		else
-			setP_Number_To (((Integer)P_Number_To).intValue());
+			setP_Number_To (P_Number_To.intValue());
 	}	//	setP_Number_To
 
 	
@@ -216,21 +218,4 @@ public class MPInstancePara extends X_AD_PInstance_Para
 		setParameterName(parameterName);
 		setP_String(boolParameter ? "Y" : "N");
 	}	//	setParameter
-
-	/**
-	 * @return Display type
-	 */
-	public int getDisplayType() 
-	{
-		MProcess process = (MProcess) getAD_PInstance().getAD_Process();
-		MProcessPara[] params = process.getParameters();
-		for(MProcessPara param : params)
-		{
-			if (param.getColumnName().equals(getParameterName()))
-			{
-				return param.getAD_Reference_ID();
-			}
-		}
-		return -1;
-	}
 }	//	MPInstance_Para

@@ -1,10 +1,10 @@
-package org.compiere.report;
+package org.compiere.print;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,7 @@ package org.compiere.report;
  * #L%
  */
 
-
-import net.sf.jasperreports.engine.JRException;
-
-import org.compiere.process.ProcessInfo;
-
-import de.metas.adempiere.report.jasper.OutputType;
-
-public interface JRViewerProvider
+public interface JRReportViewerProviderAware
 {
-	public void openViewer(byte[] data, OutputType type, String title, ProcessInfo pi) throws JRException;
-
-	public OutputType getDesiredOutputType();
+	void setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider);
 }

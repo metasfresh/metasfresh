@@ -302,7 +302,6 @@ public class VMRPDetailed
 
 	/** Worker */
 	private Worker m_worker = null;
-	private boolean _uiLocked = false;
 
 	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
@@ -1092,12 +1091,6 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public void executeASync(final org.compiere.process.ProcessInfo processInfo)
-	{
-		// nothing
-	}
-
-	@Override
 	public void stateChanged(final ChangeEvent e)
 	{
 		// nothing
@@ -1110,17 +1103,10 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return _uiLocked;
-	}
-
-	@Override
 	public void lockUI(final org.compiere.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		confirmPanel.getRefreshButton().setEnabled(false);
-		_uiLocked = true;
 	}
 
 	@Override
@@ -1128,7 +1114,6 @@ public class VMRPDetailed
 	{
 		setCursor(Cursor.getDefaultCursor());
 		confirmPanel.getRefreshButton().setEnabled(true);
-		_uiLocked = false;
 	}
 
 	@Override

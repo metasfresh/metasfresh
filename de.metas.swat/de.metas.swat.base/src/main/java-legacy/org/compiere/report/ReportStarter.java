@@ -13,16 +13,16 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.print.JRReportViewerProvider;
+import org.compiere.print.JRReportViewerProviderAware;
 import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessInfo;
@@ -34,7 +34,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.io.Files;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
@@ -49,14 +48,16 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author Ashley Ramdass
  * @author tsa
  */
-public class ReportStarter implements ProcessCall, ClientProcess
+public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewerProviderAware
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ReportStarter.class);
-	private static JRViewerProvider viewerProvider = new SwingJRViewerProvider();
+	private static JRReportViewerProvider defaultJRReportViewerProvider = new SwingJRViewerProvider();
+	
+	private JRReportViewerProvider jrReportViewerProvider;
 
 	/**
-	 * Start jasper reporting process. Based on {@link ProcessInfo#isPrintPreview()}, it will:
+	 * Start Jasper reporting process. Based on {@link ProcessInfo#isPrintPreview()}, it will:
 	 * <ul>
 	 * <li>directly print the report
 	 * <li>will open the report viewer and it will display the report
@@ -66,7 +67,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 	public final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
 	{
 		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(ctx, pi);
-		
+
 		String errorMsg = null;
 		try
 		{
@@ -92,10 +93,10 @@ public class ReportStarter implements ProcessCall, ClientProcess
 						}
 					}
 				},
-				ReportStarter.class.getSimpleName());
+						ReportStarter.class.getSimpleName());
 			}
 			//
-			// Create report and preview 
+			// Create report and preview
 			else
 			{
 				startProcessPrintPreview(reportPrintingInfo);
@@ -104,11 +105,11 @@ public class ReportStarter implements ProcessCall, ClientProcess
 		catch (final Exception e)
 		{
 			errorMsg = e.getLocalizedMessage();
-			if(errorMsg == null || errorMsg.length() < 4)
+			if (errorMsg == null || errorMsg.length() < 4)
 			{
 				errorMsg = e.toString();
 			}
-				
+
 			log.error("Error while running the report: {}", errorMsg);
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -135,41 +136,43 @@ public class ReportStarter implements ProcessCall, ClientProcess
 		final boolean displayPrintDialog = false;
 		jasperService.print(jasperPrint, pi, displayPrintDialog);
 	}
-	
+
 	private void startProcessPrintPreview(final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
 		final Properties ctx = reportPrintingInfo.getCtx();
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
+		final JRReportViewerProvider jrReportViewerProvider = reportPrintingInfo.getReportViewerProvider();
+
+		//
+		// Based on reporting system type, determine: output type
+		final ReportingSystemType reportingSystemType = reportPrintingInfo.getReportingSystemType();
+		final OutputType outputType;
+		switch (reportingSystemType)
+		{
+			//
+			// Jasper reporting
+			case Jasper:
+				outputType = jrReportViewerProvider.getDesiredOutputType();
+				break;
+
+			//
+			// Excel reporting
+			case Excel:
+				outputType = OutputType.XLS;
+
+			default:
+				throw new AdempiereException("Unknown " + ReportingSystemType.class + ": " + reportingSystemType);
+		}
+
+		//
+		// Generate report data
+		log.info("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, pi.getTitle(), outputType);
+		final JRClient jrClient = JRClient.get();
+		final byte[] data = jrClient.report(ctx, pi, outputType);
 		
 		//
-		// Jasper reporting
-		if (ReportingSystemType.Jasper == reportPrintingInfo.getReportingSystemType())
-		{
-			final String title = pi.getTitle();
-			final JRViewerProvider viewerLauncher = getReportViewerProvider();
-			final OutputType outputType = viewerLauncher.getDesiredOutputType();
-			log.info("ReportStarter.startProcess run report - {}, outputType={}", new Object[] { title, outputType });
-
-			final JRClient jrClient = JRClient.get();
-			final byte[] data = jrClient.report(ctx, pi, outputType);
-			viewerLauncher.openViewer(data, outputType, title, pi);
-		}
-		//
-		// Excel reporting
-		else if (ReportingSystemType.Excel == reportPrintingInfo.getReportingSystemType())
-		{
-			final OutputType outputType = OutputType.XLS;
-			final JRClient jrClient = JRClient.get();
-			final byte[] data = jrClient.report(ctx, pi, outputType);
-
-			final File file = File.createTempFile("report_", "."+outputType.getFileExtension());
-			Files.write(data, file);
-			Services.get(IClientUI.class).showURL(file.toURI().toString());
-		}
-		else
-		{
-			throw new AdempiereException("Unknown " + ReportingSystemType.class + ": " + reportPrintingInfo.getReportingSystemType());
-		}
+		// Send data to viewer
+		jrReportViewerProvider.openViewer(data, outputType, pi);
 	}
 
 	/**
@@ -195,35 +198,47 @@ public class ReportStarter implements ProcessCall, ClientProcess
 	 *
 	 * @param provider
 	 */
-	public static void setReportViewerProvider(final JRViewerProvider provider)
+	public static void setDefaultJRReportViewerProvider(final JRReportViewerProvider provider)
 	{
 		Check.assumeNotNull(provider, "provider not null");
-		viewerProvider = provider;
+		defaultJRReportViewerProvider = provider;
+	}
+	
+	@Override
+	public void setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider)
+	{
+		this.jrReportViewerProvider = jrReportViewerProvider;
 	}
 
 	/**
 	 * Get the current jasper report viewer provider
 	 *
-	 * @return {@link JRViewerProvider}; never returns null
+	 * @return {@link JRReportViewerProvider}; never returns null
 	 */
-	public static JRViewerProvider getReportViewerProvider()
+	private JRReportViewerProvider getJRReportViewerProvider()
 	{
-		return viewerProvider;
+		if(jrReportViewerProvider != null)
+		{
+			return jrReportViewerProvider;
+		}
+		return defaultJRReportViewerProvider;
 	}
 	
-	private ReportPrintingInfo extractReportPrintingInfo(Properties ctx, ProcessInfo pi)
+	
+
+	private ReportPrintingInfo extractReportPrintingInfo(final Properties ctx, final ProcessInfo pi)
 	{
 		final ReportPrintingInfo info = new ReportPrintingInfo();
 		info.setCtx(ctx);
 		info.setProcessInfo(pi);
 		info.setPrintPreview(pi.isPrintPreview());
+		info.setReportViewerProvider(getJRReportViewerProvider());
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
 		// TODO: make it more general and centralized with the other reporting code
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, pi.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
-		final String reportTemplate = process.getJasperReport();
-		final String reportFileExtension = Files.getFileExtension(reportTemplate);
+		final String reportTemplate = pi.getReportTemplate().orElseThrow(() -> new AdempiereException("No report template defined for " + pi));
+		final String reportFileExtension = Files.getFileExtension(reportTemplate).toLowerCase();
 		if ("jasper".equalsIgnoreCase(reportFileExtension)
 				|| "jrxml".equalsIgnoreCase(reportFileExtension))
 		{
@@ -237,68 +252,80 @@ public class ReportStarter implements ProcessCall, ClientProcess
 
 		return info;
 	}
-	
+
 	private static enum ReportingSystemType
 	{
-		Jasper,
-		Excel,
+		Jasper, Excel,
 	};
-	
-	private static class ReportPrintingInfo
+
+	private static final class ReportPrintingInfo
 	{
 		private Properties ctx;
 		private ProcessInfo processInfo;
 		private ReportingSystemType reportingSystemType;
 		private boolean printPreview;
-		
+		private JRReportViewerProvider reportViewerProvider;
+
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
 					.add("reportingSystemType", reportingSystemType)
 					.add("printPreview", printPreview)
 					.add("processInfo", processInfo)
+					.add("reportViewerProvider", reportViewerProvider)
 					.toString();
 		}
-		
-		public void setCtx(Properties ctx)
+
+		public void setCtx(final Properties ctx)
 		{
 			this.ctx = ctx;
 		}
-		
+
 		public Properties getCtx()
 		{
 			return ctx;
 		}
-		
-		public void setProcessInfo(ProcessInfo processInfo)
+
+		public void setProcessInfo(final ProcessInfo processInfo)
 		{
 			this.processInfo = processInfo;
 		}
-		
+
 		public ProcessInfo getProcessInfo()
 		{
 			return processInfo;
 		}
-		
-		public void setReportingSystemType(ReportingSystemType reportingSystemType)
+
+		public void setReportingSystemType(final ReportingSystemType reportingSystemType)
 		{
 			this.reportingSystemType = reportingSystemType;
 		}
-		
+
 		public ReportingSystemType getReportingSystemType()
 		{
 			return reportingSystemType;
 		}
-		
-		public void setPrintPreview(boolean printPreview)
+
+		public void setPrintPreview(final boolean printPreview)
 		{
 			this.printPreview = printPreview;
 		}
-		
+
 		public boolean isPrintPreview()
 		{
 			return printPreview;
+		}
+
+		public void setReportViewerProvider(final JRReportViewerProvider reportViewerProvider)
+		{
+			this.reportViewerProvider = reportViewerProvider;
+		}
+
+		public JRReportViewerProvider getReportViewerProvider()
+		{
+			return reportViewerProvider;
 		}
 	}
 }

@@ -87,6 +87,7 @@ import org.compiere.util.Msg;
 import org.eevolution.model.MPPOrder;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -380,17 +381,6 @@ public class VOrderPlanning extends CPanel
 		if (m_frame != null)
 			m_frame.dispose();
 		m_frame = null;
-	}
-
-	@Override
-	public void executeASync(org.compiere.process.ProcessInfo processInfo)
-	{
-	}
-
-	@Override
-	public boolean isUILocked()
-	{
-		return false;
 	}
 
 	@Override

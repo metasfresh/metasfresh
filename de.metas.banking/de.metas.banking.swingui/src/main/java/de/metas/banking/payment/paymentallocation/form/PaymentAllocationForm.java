@@ -181,7 +181,7 @@ public class PaymentAllocationForm
 			final ProcessInfo processInfo = frame.getProcessInfo();
 			if (processInfo != null)
 			{
-				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orNull();
+				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orElse(null);
 				if (paySelectionLine != null)
 				{
 					final int bpartnerId = paySelectionLine.getC_BPartner_ID();

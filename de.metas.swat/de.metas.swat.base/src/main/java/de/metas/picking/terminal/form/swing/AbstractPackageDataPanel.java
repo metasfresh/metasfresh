@@ -33,10 +33,10 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.KeyStroke;
 
-import net.miginfocom.swing.MigLayout;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.picking.terminal.Utils;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Package Panel which contains informations about the product, partner, the left, middle panel

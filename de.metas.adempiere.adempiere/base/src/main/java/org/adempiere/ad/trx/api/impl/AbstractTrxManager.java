@@ -1098,6 +1098,11 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public String setThreadInheritedTrxName(final String trxName)
 	{
+		if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
+		{
+			throw new TrxException("Setting the thread inherited transaction to " + trxName + " is not allowed");
+		}
+		
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
 

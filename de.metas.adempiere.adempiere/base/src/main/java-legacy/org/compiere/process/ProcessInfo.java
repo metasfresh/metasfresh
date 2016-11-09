@@ -16,12 +16,13 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -31,15 +32,14 @@ import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -47,7 +47,7 @@ import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
 import de.metas.logging.LogManager;
@@ -60,43 +60,58 @@ import de.metas.logging.LogManager;
  * @author victor.perez@e-evolution.com
  * @see FR 1906632 http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1906632&group_id=176962
  */
-public class ProcessInfo implements Serializable, IContextAware
+public final class ProcessInfo implements Serializable
 {
-	/**
-	 * Constructor
-	 *
-	 * @param Title Title
-	 * @param AD_Process_ID AD_Process_ID
-	 * @param Table_ID AD_Table_ID
-	 * @param Record_ID Record_ID
-	 */
-	public ProcessInfo(String Title, int AD_Process_ID, int Table_ID, int Record_ID)
+	public static final ProcessInfoBuilder builder()
+	{
+		return new ProcessInfoBuilder();
+	}
+
+	private ProcessInfo(final ProcessInfoBuilder builder)
 	{
 		super();
-		setTitle(Title);
-		setAD_Process_ID(AD_Process_ID);
-		setTable_ID(Table_ID);
-		setRecord_ID(Record_ID);
-		if (Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
+		ctx = builder.getCtx();
+
+		m_AD_Process_ID = builder.getAD_Process_ID();
+		m_AD_PInstance_ID = builder.getAD_PInstance_ID();
+		
+		m_AD_Client_ID = builder.getAD_Client_ID();
+		m_AD_Org_ID = builder.getAD_Org_ID();
+		m_AD_User_ID = builder.getAD_User_ID();
+		
+		m_Title = builder.getTitle();
+		
+		_className = builder.getClassname();
+		_dbProcedureName = builder.getDBProcedureName();
+		adWorkflowId = builder.getAD_Workflow_ID();
+		serverProcess = builder.isServerProcess();
+		
+		_refreshAllAfterExecution = builder.isRefreshAllAfterExecution();
+
+		m_Table_ID = builder.getAD_Table_ID();
+		m_Record_ID = builder.getRecord_ID();
+		m_whereClause = builder.getWhereClause();
+
+		m_windowNo = builder.getWindowNo();
+		m_tabNo = builder.getTabNo();
+
+		printPreview = builder.isPrintPreview();
+		reportingProcess = builder.isReportingProcess();
+		reportLanguage = builder.getReportLanguage();
+		reportTemplate = builder.getReportTemplate();
+
+		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
+		if (parameters == null)
 		{
-			m_printPreview = true;
+			this.m_parameter = null;
+			this.m_parameterLoaded = false;
 		}
 		else
 		{
-			m_printPreview = false;
+			this.m_parameter = parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+			this.m_parameterLoaded = true;
 		}
-	}   // ProcessInfo
-
-	/**
-	 * Constructor
-	 *
-	 * @param Title Title
-	 * @param AD_Process_ID AD_Process_ID
-	 */
-	public ProcessInfo(String Title, int AD_Process_ID)
-	{
-		this(Title, AD_Process_ID, 0, 0);
-	}   // ProcessInfo
+	}
 
 	/** Serialization Info **/
 	static final long serialVersionUID = -1993220053515488725L;
@@ -105,21 +120,25 @@ public class ProcessInfo implements Serializable, IContextAware
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
 
 	/** Title of the Process/Report */
-	private String m_Title;
+	private final String m_Title;
 	/** Process ID */
 	private int m_AD_Process_ID;
-	private transient I_AD_Process _processModel;
 	/** Table ID if the Process */
-	private int m_Table_ID;
+	private final int m_Table_ID;
 	/** Record ID if the Process */
-	private int m_Record_ID;
-	/** User_ID */
-	private Integer m_AD_User_ID;
+	private final int m_Record_ID;
 	/** Client_ID */
 	private Integer m_AD_Client_ID;
+	/** User_ID */
+	private Integer m_AD_User_ID;
+	private final int m_AD_Org_ID;
+	private final int m_windowNo;
+	private final int m_tabNo;
 	/** Class Name */
-	private String _className = null;
-	private boolean _classNameSet = false;
+	private Optional<String> _className = Optional.empty();
+	private final Optional<String> _dbProcedureName;
+	private final int adWorkflowId;
+	private final boolean serverProcess;
 
 	// -- Optional --
 
@@ -130,35 +149,31 @@ public class ProcessInfo implements Serializable, IContextAware
 	private String m_Summary = "";
 	/** Execution had an error */
 	private boolean m_Error = false;
+	private transient boolean m_ErrorWasReportedToUser = false;
 
 	/* General Data Object */
 	private Serializable m_SerializableObject = null;
 	/* General Data Object */
 	private transient Object m_TransientObject = null;
-	/** Estimated Runtime */
-	private int m_EstSeconds = 5;
 	/** Batch */
 	private boolean m_batch = false;
 	/** Process timed out */
 	private boolean m_timeout = false;
 
 	/** Log Info */
-	private ArrayList<ProcessInfoLog> m_logs = null;
+	private List<ProcessInfoLog> _logs = new ArrayList<>();
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
 	/** Log Info */
 	private ProcessInfoParameter[] m_parameter = null;
 	private boolean m_parameterLoaded = false;
 
-	private Properties ctx;
-	/** Transaction Name */
-	private String m_transactionName = null;
+	private final Properties ctx;
 
-	private boolean m_printPreview = false;
-
-	private boolean m_reportingProcess = false;
-	// FR 1906632
-	private File m_pdf_report = null;
+	private final boolean printPreview;
+	private final boolean reportingProcess;
+	private final Optional<String> reportTemplate;
+	private final Language reportLanguage;
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
@@ -166,7 +181,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	private Throwable m_throwable = null;
 
-	private Boolean _refreshAllAfterExecution;
+	private boolean _refreshAllAfterExecution;
 
 	private ITableRecordReference _recordToSelectAfterExecution = null;
 
@@ -192,22 +207,19 @@ public class ProcessInfo implements Serializable, IContextAware
 			sb.append(",Transient=").append(m_TransientObject);
 		if (m_SerializableObject != null)
 			sb.append(",Serializable=").append(m_SerializableObject);
-		sb.append(",Summary=").append(getSummary())
-				.append(",Log=").append(m_logs == null ? 0 : m_logs.size());
-		// .append(getLogInfo(false));
+
+		sb.append(",Summary=").append(getSummary());
+
+		final List<ProcessInfoLog> logs = _logs;
+		sb.append(",Log=").append(logs == null ? 0 : logs.size());
+
 		sb.append("]");
 		return sb.toString();
 	}   // toString
 
-	@Override
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
-	}
-
-	public void setCtx(final Properties ctx)
-	{
-		this.ctx = ctx;
 	}
 
 	/**************************************************************************
@@ -253,24 +265,30 @@ public class ProcessInfo implements Serializable, IContextAware
 	}	// addSummary
 
 	/**
-	 * Method setError
-	 *
-	 * @param error boolean
+	 * @param error true if the process execution failed
 	 */
-	public void setError(boolean error)
+	public void setError(final boolean error)
 	{
 		m_Error = error;
 	}	// setError
 
 	/**
-	 * Method isError
-	 *
-	 * @return boolean
+	 * @return true if the process execution failed
 	 */
 	public boolean isError()
 	{
 		return m_Error;
 	}	// isError
+
+	public void setErrorWasReportedToUser()
+	{
+		m_ErrorWasReportedToUser = true;
+	}
+
+	public boolean isErrorWasReportedToUser()
+	{
+		return m_ErrorWasReportedToUser;
+	}
 
 	/**
 	 * Batch
@@ -356,7 +374,8 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public String getLogInfo(final boolean html)
 	{
-		if (m_logs == null)
+		final List<ProcessInfoLog> logs = getLogsInnerList();
+		if (logs.isEmpty())
 		{
 			return "";
 		}
@@ -367,35 +386,43 @@ public class ProcessInfo implements Serializable, IContextAware
 		if (html)
 			sb.append("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"2\">");
 		//
-		for (int i = 0; i < m_logs.size(); i++)
+		for (final ProcessInfoLog log : logs)
 		{
 			if (html)
+			{
 				sb.append("<tr>");
-			else if (i > 0)
+			}
+			else
+			{
 				sb.append("\n");
-			//
-			ProcessInfoLog log = m_logs.get(i);
-			/**
-			 * if (log.getP_ID() != 0) sb.append(html ? "<td>" : "") .append(log.getP_ID()) .append(html ? "</td>" : " \t");
-			 **/
+			}
+
 			//
 			if (log.getP_Date() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(dateFormat.format(log.getP_Date()))
 						.append(html ? "</td>" : " \t");
+			}
 			//
 			if (log.getP_Number() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(log.getP_Number())
 						.append(html ? "</td>" : " \t");
+			}
 			//
 			if (log.getP_Msg() != null)
+			{
 				sb.append(html ? "<td>" : "")
 						.append(Services.get(IMsgBL.class).parseTranslation(getCtx(), log.getP_Msg()))
 						.append(html ? "</td>" : "");
+			}
 			//
 			if (html)
+			{
 				sb.append("</tr>");
+			}
 		}
 		if (html)
 			sb.append("</table>");
@@ -442,30 +469,12 @@ public class ProcessInfo implements Serializable, IContextAware
 		return m_AD_Process_ID;
 	}
 
-	/** Gets/Loads the underlying {@link I_AD_Process} definition */
-	private I_AD_Process getAD_ProcessOrNull()
-	{
-		final int processId = getAD_Process_ID();
-		if (processId <= 0)
-		{
-			return null;
-		}
-		if (_processModel != null && _processModel.getAD_Process_ID() != processId)
-		{
-			_processModel = null;
-		}
-		if (_processModel == null)
-		{
-			_processModel = InterfaceWrapperHelper.create(getCtx(), processId, I_AD_Process.class, ITrx.TRXNAME_None);
-		}
-		return _processModel;
-	}
-
 	/**
 	 * Method setAD_Process_ID
 	 *
 	 * @param AD_Process_ID int
 	 */
+	@Deprecated
 	public void setAD_Process_ID(int AD_Process_ID)
 	{
 		m_AD_Process_ID = AD_Process_ID;
@@ -478,16 +487,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public String getClassName()
 	{
-		if (!_classNameSet)
-		{
-			// Try to load it from underlying process definition (if available)
-			final I_AD_Process process = getAD_ProcessOrNull();
-			if (process != null)
-			{
-				setClassName(process.getClassname());
-			}
-		}
-		return _className;
+		return _className.orElse(null);
 	}
 
 	/**
@@ -499,15 +499,29 @@ public class ProcessInfo implements Serializable, IContextAware
 	{
 		if (Check.isEmpty(classname, true))
 		{
-			_className = null;
+			_className = Optional.empty();
 		}
 		else
 		{
-			_className = classname.trim();
+			_className = Optional.of(classname.trim());
 		}
-		_classNameSet = true;
+	}
+	
+	public Optional<String> getDBProcedureName()
+	{
+		return _dbProcedureName;
+	}
+	
+	public int getAD_Workflow_ID()
+	{
+		return adWorkflowId;
 	}
 
+	public boolean isServerProcess()
+	{
+		return serverProcess;
+	}
+	
 	/**
 	 * Method getTransientObject
 	 *
@@ -548,26 +562,6 @@ public class ProcessInfo implements Serializable, IContextAware
 		m_SerializableObject = SerializableObject;
 	}
 
-	/**
-	 * Method getEstSeconds
-	 *
-	 * @return int
-	 */
-	public int getEstSeconds()
-	{
-		return m_EstSeconds;
-	}
-
-	/**
-	 * Method setEstSeconds
-	 *
-	 * @param EstSeconds int
-	 */
-	public void setEstSeconds(int EstSeconds)
-	{
-		m_EstSeconds = EstSeconds;
-	}
-
 	public String getTableNameOrNull()
 	{
 		if (m_Table_ID <= 0)
@@ -587,46 +581,9 @@ public class ProcessInfo implements Serializable, IContextAware
 		return m_Table_ID;
 	}
 
-	/**
-	 * Method setTable_ID
-	 *
-	 * @param AD_Table_ID int
-	 */
-	public void setTable_ID(int AD_Table_ID)
-	{
-		m_Table_ID = AD_Table_ID;
-	}
-
-	public void setTableName(final String tableName)
-	{
-		if (tableName == null)
-		{
-			m_Table_ID = -1;
-		}
-		else
-		{
-			m_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		}
-	}
-
-	/**
-	 * Method getRecord_ID
-	 *
-	 * @return int
-	 */
 	public int getRecord_ID()
 	{
 		return m_Record_ID;
-	}
-
-	/**
-	 * Method setRecord_ID
-	 *
-	 * @param Record_ID int
-	 */
-	public void setRecord_ID(int Record_ID)
-	{
-		m_Record_ID = Record_ID;
 	}
 
 	/**
@@ -638,7 +595,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
-		return getRecord(modelClass, getTrxName());
+		return getRecord(modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -687,48 +644,36 @@ public class ProcessInfo implements Serializable, IContextAware
 		final String tableName = getTableNameOrNull();
 		if (Check.isEmpty(tableName, true))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		if (!Check.equals(tableName, modelTableName))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		final int recordId = getRecord_ID();
 		if (recordId < 0)
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		final ModelType record = InterfaceWrapperHelper.create(getCtx(), tableName, recordId, modelClass, trxName);
 		if (record == null || InterfaceWrapperHelper.isNew(record))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		return Optional.of(record);
 	}
 
 	/**
-	 * Method getTitle
-	 *
-	 * @return String
+	 * @return process title/name
 	 */
 	public String getTitle()
 	{
 		return m_Title;
 	}
-
-	/**
-	 * Method setTitle
-	 *
-	 * @param Title String
-	 */
-	public void setTitle(String Title)
-	{
-		m_Title = Title;
-	}	// setTitle
 
 	/**
 	 * Method setAD_Client_ID
@@ -781,12 +726,17 @@ public class ProcessInfo implements Serializable, IContextAware
 	{
 		if (!m_parameterLoaded)
 		{
-			Services.get(IADPInstanceDAO.class).loadParameterFromDB(this);
+			Services.get(IADPInstanceDAO.class).loadFromDB(this);
 			Check.assume(m_parameterLoaded, "parameters shall be loaded at this time");
 			Check.assumeNotNull(m_parameter, "m_parameter not null");
 		}
 		return m_parameter;
 	}	// getParameter
+
+	public final ProcessInfoParameter[] getParametersNoLoad()
+	{
+		return m_parameter;
+	}
 
 	/**
 	 * Get Process Parameters as IParams instance.
@@ -803,6 +753,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 *
 	 * @param parameter Parameter Array
 	 */
+	@Deprecated
 	public void setParameter(final ProcessInfoParameter[] parameter)
 	{
 		m_parameter = parameter;
@@ -843,104 +794,60 @@ public class ProcessInfo implements Serializable, IContextAware
 	 *
 	 * @param logEntry log entry
 	 */
-	public void addLog(ProcessInfoLog logEntry)
+	public void addLog(final ProcessInfoLog logEntry)
 	{
 		if (logEntry == null)
+		{
 			return;
-		if (m_logs == null)
-			m_logs = new ArrayList<ProcessInfoLog>();
-		m_logs.add(logEntry);
-	}	// addLog
+		}
 
-	/**
-	 * Method getLogs
-	 *
-	 * @return ProcessInfoLog[]
-	 */
-	public ProcessInfoLog[] getLogs()
-	{
-		if (m_logs == null)
-			return null;
-		ProcessInfoLog[] logs = new ProcessInfoLog[m_logs.size()];
-		m_logs.toArray(logs);
-		return logs;
-	}	// getLogs
+		final List<ProcessInfoLog> logs;
+		if (_logs == null)
+		{
+			logs = _logs = new ArrayList<>();
+		}
+		else
+		{
+			logs = _logs;
+		}
 
-	/**
-	 * Method getIDs
-	 *
-	 * @return int[]
-	 */
-	public int[] getIDs()
-	{
-		if (m_logs == null)
-			return null;
-		int[] ids = new int[m_logs.size()];
-		for (int i = 0; i < m_logs.size(); i++)
-			ids[i] = m_logs.get(i).getP_ID();
-		return ids;
-	}	// getIDs
-
-	/**
-	 * Method getLogList
-	 *
-	 * @return ArrayList
-	 */
-	public ArrayList<ProcessInfoLog> getLogList()
-	{
-		return m_logs;
+		logs.add(logEntry);
 	}
 
 	/**
-	 * Method setLogList
+	 * Gets current logs.
+	 * 
+	 * If needed, it will load the logs.
 	 *
-	 * @param logs ArrayList
+	 * @return logs inner list
 	 */
-	public void setLogList(ArrayList<ProcessInfoLog> logs)
+	private final List<ProcessInfoLog> getLogsInnerList()
 	{
-		m_logs = logs;
+		if (_logs == null)
+		{
+			_logs = new ArrayList<>(ProcessInfoUtil.retrieveLogsFromDB(getAD_PInstance_ID()));
+		}
+		return _logs;
+	}
+
+	public void markLogsAsStale()
+	{
+		// TODO: shall we save existing ones ?!
+		_logs = null;
 	}
 
 	/**
-	 * Get transaction name for this process
-	 *
-	 * @return String
+	 * Get current logs (i.e. logs which were recorded to this instance).
+	 * 
+	 * This method will not load the logs.
+	 * 
+	 * @return current logs
 	 */
-	public String getTransactionName()
+	/* package */List<ProcessInfoLog> getCurrentLogs()
 	{
-		return getTrxName();
-	}
-
-	/**
-	 * Get database transaction name for this process
-	 *
-	 * @return String
-	 */
-	@Override
-	public String getTrxName()
-	{
-		return m_transactionName;
-	}
-
-	/**
-	 * Set transaction name from this process
-	 *
-	 * @param trxName
-	 */
-	public void setTransactionName(String trxName)
-	{
-		m_transactionName = trxName;
-	}
-
-	/**
-	 * Set print preview flag, only relevant if this is a reporting process.
-	 * A <code>false</code> parameter can be overridden by the {@link Ini#P_PRINTPREVIEW} property
-	 *
-	 * @param b
-	 */
-	public void setPrintPreview(boolean b)
-	{
-		m_printPreview = b;
+		// NOTE: don't load them!
+		final List<ProcessInfoLog> logs = _logs;
+		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
 	}
 
 	/**
@@ -950,7 +857,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public boolean isPrintPreview()
 	{
-		return m_printPreview;
+		return printPreview;
 	}
 
 	/**
@@ -960,43 +867,8 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public boolean isReportingProcess()
 	{
-		return m_reportingProcess;
+		return reportingProcess;
 	}
-
-	/**
-	 * Set is this a reporting process
-	 *
-	 * @param f
-	 */
-	public void setReportingProcess(boolean f)
-	{
-		m_reportingProcess = f;
-	}
-
-	// FR 1906632
-	/**
-	 * Set PDF file generate to Jasper Report
-	 *
-	 * @param PDF File
-	 */
-	public void setPDFReport(File f)
-	{
-		m_pdf_report = f;
-	}
-
-	/**
-	 * Get PDF file generate to Jasper Report
-	 *
-	 * @param f
-	 */
-	public File getPDFReport()
-	{
-		return m_pdf_report;
-	}
-
-	// metas: begin
-	/** Org_ID */
-	private int m_AD_Org_ID = -1; // metas: c.ghita@metas.ro
 
 	/**
 	 * Method getAD_Org_ID
@@ -1006,24 +878,12 @@ public class ProcessInfo implements Serializable, IContextAware
 	// metas: c.ghita@metas.ro
 	public int getAD_Org_ID()
 	{
-		if (m_AD_Org_ID == -1)
+		if (m_AD_Org_ID < 0)
 		{
 			return Env.getAD_Org_ID(getCtx());
 		}
 		return m_AD_Org_ID;
 	}
-
-	/**
-	 * Method setAD_Org_ID
-	 *
-	 * @param AD_Org_ID int
-	 */
-	// metas: c.ghita@metas.ro
-	public void setAD_Org_ID(int AD_Org_ID)
-	{
-		m_AD_Org_ID = AD_Org_ID;
-	}
-
 	// metas: end
 
 	// metas: t.schoeneberg@metas.de
@@ -1055,35 +915,10 @@ public class ProcessInfo implements Serializable, IContextAware
 		return m_windowNo;
 	}
 
-	/**
-	 * Set Parent's WindowNo
-	 *
-	 * @param windowNo
-	 */
-	public void setWindowNo(final int windowNo)
-	{
-		this.m_windowNo = windowNo;
-	}
-
-	private int m_windowNo = Env.WINDOW_None;
-
-	/**
-	 * Set Parent's TabNo
-	 *
-	 * @param tabNo
-	 * @return
-	 */
-	public void setTabNo(final int tabNo)
-	{
-		this.m_tabNo = tabNo;
-	}
-
 	public int getTabNo()
 	{
 		return this.m_tabNo;
 	}
-
-	private int m_tabNo = Env.TAB_None;
 
 	// metas end
 
@@ -1112,17 +947,7 @@ public class ProcessInfo implements Serializable, IContextAware
 		return new TypedSqlQueryFilter<T>(m_whereClause);
 	}
 
-	/**
-	 * @param m_whereClause the m_whereClause to set
-	 */
-	public void setWhereClause(String m_whereClause)
-	{
-		this.m_whereClause = m_whereClause;
-	}
-
-	private String m_whereClause = "";
-
-	private Language reportLanguage = null;
+	private final String m_whereClause;
 
 	/**
 	 *
@@ -1132,52 +957,10 @@ public class ProcessInfo implements Serializable, IContextAware
 	{
 		return this.reportLanguage;
 	}
-
-	/**
-	 * Sets language to be used in reports.
-	 *
-	 * @param reportLanguage
-	 */
-	public void setReportLanguage(final Language reportLanguage)
+	
+	public Optional<String> getReportTemplate()
 	{
-		this.reportLanguage = reportLanguage;
-	}
-
-	// metas end
-
-	private IGridTabSummaryInfo _gridTabSummaryInfo;
-
-	public void setGridTabSummaryInfo(IGridTabSummaryInfo gridTabSummaryInfo)
-	{
-		this._gridTabSummaryInfo = gridTabSummaryInfo;
-	}
-
-	public IGridTabSummaryInfo getGridTabSymmaryInfo()
-	{
-		if (_gridTabSummaryInfo == null)
-		{
-			return IGridTabSummaryInfo.NULL;
-		}
-		return _gridTabSummaryInfo;
-	}
-
-	/**
-	 * Same as {@link #getGridTabSymmaryInfo()} but the value will be cased to given class.
-	 *
-	 * If that is not possible or the underlying object is null then null will be returned.
-	 *
-	 * @param gridTabSummaryInfoClass
-	 */
-	public final <T extends IGridTabSummaryInfo> T getGridTabSummaryInfoOrNull(Class<T> gridTabSummaryInfoClass)
-	{
-		Check.assumeNotNull(gridTabSummaryInfoClass, "gridTabSummaryInfoClass not null");
-		final IGridTabSummaryInfo gridTabSummaryInfo = getGridTabSymmaryInfo();
-		if (gridTabSummaryInfoClass.isInstance(gridTabSummaryInfo))
-		{
-			return gridTabSummaryInfoClass.cast(gridTabSummaryInfo);
-		}
-
-		return null;
+		return reportTemplate;
 	}
 
 	/**
@@ -1213,18 +996,7 @@ public class ProcessInfo implements Serializable, IContextAware
 	 */
 	public boolean isRefreshAllAfterExecution()
 	{
-		if (_refreshAllAfterExecution != null)
-		{
-			return _refreshAllAfterExecution;
-		}
-
-		final I_AD_Process process = getAD_ProcessOrNull();
-		if (process == null)
-		{
-			return false;
-		}
-
-		return process.isRefreshAllAfterExecution();
+		return _refreshAllAfterExecution;
 	}
 
 	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
@@ -1261,4 +1033,437 @@ public class ProcessInfo implements Serializable, IContextAware
 		OnError, /** Never display them */
 		Never,
 	};
+
+	public static final class ProcessInfoBuilder
+	{
+		private Properties ctx;
+
+		private int adPInstanceId;
+		private I_AD_Process _adProcess;
+		private int adProcessId;
+		private Integer _adClientId;
+		private Integer _adUserId;
+		private String title = null;
+		private Optional<String> classname;
+		private Boolean refreshAllAfterExecution;
+
+		private int adTableId;
+		private int recordId;
+
+		private String whereClause = "";
+
+		private int windowNo = Env.WINDOW_None;
+		private int tabNo = Env.TAB_None;
+
+		private Language reportLanguage;
+		private Boolean printPreview;
+
+		private List<ProcessInfoParameter> parameters = null;
+
+		private ProcessInfoBuilder()
+		{
+			super();
+		}
+
+		public ProcessInfo build()
+		{
+			return new ProcessInfo(this);
+		}
+
+		public ProcessInfoBuilder setCtx(final Properties ctx)
+		{
+			this.ctx = ctx;
+			return this;
+		}
+
+		private Properties getCtx()
+		{
+			return Env.coalesce(ctx);
+		}
+		
+		private int getAD_Client_ID()
+		{
+			if(_adClientId != null)
+			{
+				return _adClientId;
+			}
+			return Env.getAD_Client_ID(getCtx());
+		}
+		
+		public ProcessInfoBuilder setAD_Client_ID(final int adClientId)
+		{
+			this._adClientId = adClientId;
+			return this;
+		}
+		
+		private int getAD_Org_ID()
+		{
+			return Env.getAD_Org_ID(getCtx());
+		}
+
+		
+		private int getAD_User_ID()
+		{
+			if(_adUserId != null)
+			{
+				return _adUserId;
+			}
+			return Env.getAD_User_ID(getCtx());
+		}
+		
+		public ProcessInfoBuilder setAD_User_ID(final int adUserId)
+		{
+			this._adUserId = adUserId;
+			return this;
+		}
+
+
+		private String getTitle()
+		{
+			if (title != null)
+			{
+				return title;
+			}
+
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if (adProcess == null)
+			{
+				return "";
+			}
+
+			final I_AD_Process adProcessTrl = InterfaceWrapperHelper.translate(adProcess, I_AD_Process.class);
+			return adProcessTrl.getName();
+		}
+
+		public ProcessInfoBuilder setTitle(final String title)
+		{
+			this.title = title;
+			return this;
+		}
+		
+		public ProcessInfoBuilder setAD_PInstance_ID(final int adPInstanceId)
+		{
+			this.adPInstanceId = adPInstanceId;
+			return this;
+		}
+		
+		private int getAD_PInstance_ID()
+		{
+			return adPInstanceId;
+		}
+
+		private int getAD_Process_ID()
+		{
+			if(adProcessId <= 0 && adPInstanceId > 0)
+			{
+				final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(getCtx(), adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+				adProcessId = adPInstance.getAD_Process_ID();
+			}
+			return adProcessId;
+		}
+
+		public ProcessInfoBuilder setFromAD_Process(final org.compiere.model.I_AD_Process adProcess)
+		{
+			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
+			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			return this;
+		}
+
+		private I_AD_Process getAD_ProcessOrNull()
+		{
+			final int processId = getAD_Process_ID();
+			if (processId <= 0)
+			{
+				return null;
+			}
+			if (_adProcess != null && _adProcess.getAD_Process_ID() != processId)
+			{
+				_adProcess = null;
+			}
+			if (_adProcess == null)
+			{
+				final Properties ctx = Env.coalesce(getCtx());
+				_adProcess = InterfaceWrapperHelper.create(ctx, processId, I_AD_Process.class, ITrx.TRXNAME_None);
+			}
+			return _adProcess;
+		}
+
+		public ProcessInfoBuilder setAD_Process_ID(final int adProcessId)
+		{
+			this.adProcessId = adProcessId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setClassname(final String classname)
+		{
+			if (Check.isEmpty(classname, true))
+			{
+				this.classname = Optional.empty();
+			}
+			else
+			{
+				this.classname = Optional.of(classname.trim());
+			}
+			return this;
+		}
+
+		private Optional<String> getClassname()
+		{
+			if (this.classname == null)
+			{
+				// Try to load it from underlying process definition (if available)
+				final I_AD_Process process = getAD_ProcessOrNull();
+				final String classname = process == null ? null : process.getClassname();
+				if (Check.isEmpty(classname, true))
+				{
+					this.classname = Optional.empty();
+				}
+				else
+				{
+					this.classname = Optional.of(classname.trim());
+				}
+			}
+
+			return classname;
+		}
+		
+		private Optional<String> getDBProcedureName()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			final String dbProcedureName = process == null ? null : process.getProcedureName();
+			if (Check.isEmpty(dbProcedureName, true))
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(dbProcedureName.trim());
+			}
+		}
+		
+		private Optional<String> getReportTemplate()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if(adProcess == null)
+			{
+				return Optional.empty();
+			}
+			
+			final String reportTemplate = adProcess.getJasperReport();
+			if(Check.isEmpty(reportTemplate, true))
+			{
+				return Optional.empty();
+			}
+			
+			return Optional.of(reportTemplate.trim());
+		}
+		
+		private int getAD_Workflow_ID()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			final int adWorkflowId = adProcess != null ? adProcess.getAD_Workflow_ID() : -1;
+			return adWorkflowId > 0 ? adWorkflowId : -1;
+		}
+
+		/**
+		 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+		 * 
+		 * @return
+		 */
+		public ProcessInfoBuilder setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
+		{
+			this.refreshAllAfterExecution = refreshAllAfterExecution;
+			return this;
+		}
+
+		private boolean isRefreshAllAfterExecution()
+		{
+			if (refreshAllAfterExecution != null)
+			{
+				return refreshAllAfterExecution;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return false;
+			}
+
+			return process.isRefreshAllAfterExecution();
+		}
+
+		public ProcessInfoBuilder setTableName(final String tableName)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(final int adTableId, final int recordId)
+		{
+			this.adTableId = adTableId;
+			this.recordId = recordId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(final String tableName, final int recordId)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = recordId;
+			return this;
+		}
+
+		private int getAD_Table_ID()
+		{
+			return adTableId;
+		}
+
+		private int getRecord_ID()
+		{
+			return recordId;
+		}
+
+		/**
+		 * Sets language to be used in reports.
+		 * 
+		 * @param reportLanguage optional report language
+		 * @return
+		 */
+		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
+		{
+			this.reportLanguage = reportLanguage;
+			return this;
+		}
+
+		private Language getReportLanguage()
+		{
+			return reportLanguage;
+		}
+
+		public ProcessInfoBuilder setPrintPreview(final boolean printPreview)
+		{
+			this.printPreview = printPreview;
+			return this;
+		}
+
+		public boolean isPrintPreview()
+		{
+			final Boolean printPreview = this.printPreview;
+			if (printPreview != null)
+			{
+				return printPreview;
+			}
+
+			if (Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
+			{
+				return true;
+			}
+			
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if(adProcess != null && !adProcess.isDirectPrint())
+			{
+				return true;
+			}
+			
+			return false;
+		}
+
+		public ProcessInfoBuilder setWindowNo(int windowNo)
+		{
+			this.windowNo = windowNo;
+			return this;
+		}
+
+		private int getWindowNo()
+		{
+			return windowNo;
+		}
+
+		public ProcessInfoBuilder setTabNo(int tabNo)
+		{
+			this.tabNo = tabNo;
+			return this;
+		}
+
+		private int getTabNo()
+		{
+			return tabNo;
+		}
+
+		public ProcessInfoBuilder setWhereClause(String whereClause)
+		{
+			this.whereClause = whereClause;
+			return this;
+		}
+
+		private String getWhereClause()
+		{
+			return whereClause;
+		}
+		
+		private boolean isServerProcess()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			return adProcess != null ? adProcess.isServerProcess() : false;
+		}
+		
+		private boolean isReportingProcess()
+		{
+			if (getReportTemplate().isPresent())
+			{
+				return true;
+			}
+			
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			return adProcess != null ? adProcess.isReport() : false;
+		}
+
+		private List<ProcessInfoParameter> getParametersOrNull()
+		{
+			return parameters;
+		}
+
+		public ProcessInfoBuilder addParameter(ProcessInfoParameter param)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+			parameters.add(param);
+
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameters(final ProcessInfoParameter[] params)
+		{
+			if (params == null || params.length == 0)
+			{
+				return this;
+			}
+
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+
+			for (ProcessInfoParameter param : params)
+			{
+				parameters.add(param);
+			}
+
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameters(final List<ProcessInfoParameter> params)
+		{
+			if (parameters == null)
+			{
+				parameters = new ArrayList<>();
+			}
+
+			parameters.addAll(params);
+
+			return this;
+		}
+
+	}
 }   // ProcessInfo

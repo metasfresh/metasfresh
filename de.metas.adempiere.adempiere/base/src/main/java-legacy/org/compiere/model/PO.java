@@ -2993,7 +2993,7 @@ public abstract class PO
 		}
 		if (s_docWFMgr != null)
 		{
-			s_docWFMgr.process(this, p_info.getAD_Table_ID());
+			s_docWFMgr.process(this);
 		}
 	}
 

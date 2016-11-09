@@ -62,6 +62,8 @@ import org.compiere.grid.tree.VTreePanel;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
+import org.compiere.print.ReportCtl;
+import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
@@ -307,6 +309,8 @@ public final class AMenu extends CFrame
 
 		// Register Swing ClientUI service
 		Services.registerService(IClientUI.class, new SwingClientUI());
+		
+		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
 
 		/**
 		 * Show Login Screen - if not successful - exit

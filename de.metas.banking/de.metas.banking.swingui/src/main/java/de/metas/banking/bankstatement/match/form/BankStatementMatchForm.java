@@ -63,7 +63,7 @@ public class BankStatementMatchForm
 		final ProcessInfo processInfo = frame.getProcessInfo();
 		if (processInfo != null)
 		{
-			final I_C_BankStatement bankStatementPO = processInfo.getRecordIfApplies(I_C_BankStatement.class, ITrx.TRXNAME_None).orNull();
+			final I_C_BankStatement bankStatementPO = processInfo.getRecordIfApplies(I_C_BankStatement.class, ITrx.TRXNAME_None).orElse(null);
 			if (bankStatementPO != null)
 			{
 				final BankStatement bankStatement = BankStatement.of(bankStatementPO);

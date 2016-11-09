@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 
 /**
  * Immutable Process Parameter
@@ -37,11 +38,42 @@ public final class ProcessInfoParameter implements Serializable
 	 */
 	private static final long serialVersionUID = 4536416337960754407L;
 	
+	public static final ProcessInfoParameter of(final String parameterName, final int parameterValue)
+	{
+		final Integer parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+	
+	public static final ProcessInfoParameter of(final String parameterName, final String parameterValue)
+	{
+		final String parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	public static final ProcessInfoParameter of(final String parameterName, final BigDecimal parameterValue)
+	{
+		final BigDecimal parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue)
+	{
+		final java.util.Date parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
+	
 	//
 	// Constants used to pass process parameters to Jasper Process
-	public static final String PARAM_PRINTER_NAME = "PRINTER_NAME";
 	public static final String PARAM_PRINT_FORMAT = "PRINT_FORMAT";
-	public static final String PARAM_PRINT_INFO = "PRINT_INFO";
 
 
 	/**
@@ -248,7 +280,22 @@ public final class ProcessInfoParameter implements Serializable
 
 	private final Timestamp toTimestamp(final Object value)
 	{
-		return (Timestamp)value;
+		if(value == null)
+		{
+			return null;
+		}
+		if(value instanceof Timestamp)
+		{
+			return (Timestamp)value;
+		}
+		else if (value instanceof java.util.Date)
+		{
+			return TimeUtil.asTimestamp((java.util.Date)value);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert "+value+" to Timestamp");
+		}
 	}
 
 	public BigDecimal getParameterAsBigDecimal()

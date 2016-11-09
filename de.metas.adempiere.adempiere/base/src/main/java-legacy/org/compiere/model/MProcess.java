@@ -17,16 +17,17 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.ProcessUtil;
-import org.compiere.process.ProcessInfo;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Trx;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Process Model
@@ -38,12 +39,15 @@ import org.compiere.util.Trx;
  * 			<li>BF [ 1757523 ] Server Processes are using Server's context
  * 			<li>FR [ 2214883 ] Remove SQL code and Replace for Query
  */
+@Deprecated
 public class MProcess extends X_AD_Process
 {
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 2404724380401712390L;
+
+	private static final Logger log = LogManager.getLogger(MProcess.class);
 
 
 	/**
@@ -90,49 +94,7 @@ public class MProcess extends X_AD_Process
 	public MProcess (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MProcess
-
-
-	/**	Parameters					*/
-	private MProcessPara[] m_parameters = null;
-
-	/**
-	 * 	Get Parameters
-	 *	@return parameters
-	 */
-	public MProcessPara[] getParameters()
-	{
-		if (m_parameters != null)
-			return m_parameters;
-		//
-		String whereClause = MProcessPara.COLUMNNAME_AD_Process_ID+"=?";
-		List<MProcessPara> list = new Query(getCtx(), MProcessPara.Table_Name, whereClause, get_TrxName())
-			.setParameters(new Object[]{get_ID()})
-			.setOrderBy(MProcessPara.COLUMNNAME_SeqNo)
-			.list();
-		//
-		m_parameters = new MProcessPara[list.size()];
-		list.toArray(m_parameters);
-		return m_parameters;
-	}	//	getParameters
-
-	/**
-	 * 	Get Parameter with ColumnName
-	 *	@param name column name
-	 *	@return parameter or null
-	 */
-	public MProcessPara getParameter(String name)
-	{
-		getParameters();
-		for (int i = 0; i < m_parameters.length; i++)
-		{
-			if (m_parameters[i].getColumnName().equals(name))
-				return m_parameters[i];
-		}
-		return null;
-	}	//	getParameter
-
-
+	}
 
 	/**
 	 * 	String Representation
@@ -141,120 +103,21 @@ public class MProcess extends X_AD_Process
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MProcess[")
+		StringBuilder sb = new StringBuilder("MProcess[")
 			.append (get_ID())
 			.append("-").append(getName())
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
 
-	/**
-	 * 	Process It (sync)
-	 *	@param pi Process Info
-	 *	@param trx transaction
-	 *	@return true if OK
-	 */
-	public boolean processIt (ProcessInfo pi, ITrx trx)
-	{
-		if (pi.getAD_PInstance_ID() == 0)
-		{
-			final MPInstance pInstance = new MPInstance (this, pi);
-
-			//	Lock
-			pInstance.setIsProcessing(true);
-			pInstance.saveEx();
-		}
-
-		boolean ok = false;
-
-		//	Java Class
-		String Classname = getClassname();
-		if (Classname != null && Classname.length() > 0)
-		{
-			pi.setClassName(Classname);
-			ok = startClass(pi, trx);
-		}
-		else
-		{
-			//	PL/SQL Procedure
-			String ProcedureName = getProcedureName();
-			if (ProcedureName != null && ProcedureName.length() > 0)
-			{
-				ok = startProcess (ProcedureName, pi, trx);
-			}
-			else
-			{
-				String msg = "No Classname or ProcedureName for " + getName();
-				pi.setSummary(msg, ok);
-				log.warn(msg);
-			}
-		}
-
-		return ok;
-	}	//	process
-
-	/**
-	 * 	Is this a Java Process
-	 *	@return true if java process
-	 */
-	public boolean isJavaProcess()
-	{
-		String Classname = getClassname();
-		return (Classname != null && Classname.length() > 0);
-	}	//	is JavaProcess
-
-	/**
-	 *  Start Database Process
-	 *  @param ProcedureName PL/SQL procedure name
-	 *  @param pInstance process instance
-	 *	see ProcessCtl.startProcess
-	 *  @return true if success
-	 */
-	private boolean startProcess (String ProcedureName, ProcessInfo processInfo, ITrx trx)
-	{
-		int AD_PInstance_ID = processInfo.getAD_PInstance_ID();
-		//  execute on this thread/connection
-		log.debug("Starting process: {} ({})", ProcedureName, AD_PInstance_ID);
-
-		return ProcessUtil.startDatabaseProcedure(processInfo, ProcedureName, trx);
-	}   //  startProcess
-
-
-	/**
-	 *  Start Java Class (sync).
-	 *      instanciate the class implementing the interface ProcessCall.
-	 *  The class can be a Server/Client class (when in Package
-	 *  org adempiere.process or org.compiere.model) or a client only class
-	 *  (e.g. in org.compiere.report)
-	 *
-	 *  @param Classname    name of the class to call
-	 *  @param pi	process info
-	 *  @param trx transaction
-	 *  @return     true if success
-	 *	see ProcessCtl.startClass
-	 */
-	private boolean startClass (ProcessInfo pi, ITrx trx)
-	{
-		log.debug("Starting class: {}", pi.getClassName());
-
-		return ProcessUtil.startJavaProcess(getCtx(), pi, trx);
-	}   //  startClass
-
-
-	/**
-	 * 	Is it a Workflow
-	 *	@return true if Workflow
-	 */
-	public boolean isWorkflow()
-	{
-		return getAD_Workflow_ID() > 0;
-	}	//	isWorkflow
-
 
 	/**
 	 * 	Update Statistics
 	 *	@param seconds sec
+	 *
+	 * @deprecated this method shall be moved to a different API and the statistics shall not be stored in AD_Process!
 	 */
+	@Deprecated
 	public void addStatistics (int seconds)
 	{
 		setStatistic_Count(getStatistic_Count() + 1);
@@ -353,77 +216,10 @@ public class MProcess extends X_AD_Process
 
 		// copy parameters
 		// TODO? Perhaps should delete existing first?
-		MProcessPara[] parameters = source.getParameters();
-		for ( MProcessPara sourcePara : parameters )
+		for (final I_AD_Process_Para sourcePara : Services.get(IADProcessDAO.class).retrieveProcessParameters(source))
 		{
 			MProcessPara targetPara = new MProcessPara(this);
 			targetPara.copyFrom (sourcePara);  // saves automatically
 		}
 	}
-
-	/**
-	 * 	Process It without closing the given transaction - used from workflow engine.
-	 *	@param pi Process Info
-	 *	@param trx transaction
-	 *	@return true if OK
-	 */
-	public boolean processItWithoutTrxClose (ProcessInfo pi, Trx trx)
-	{
-		if (pi.getAD_PInstance_ID() == 0)
-		{
-			final MPInstance pInstance = new MPInstance (this, pi);
-
-			//	Lock
-			pInstance.setIsProcessing(true);
-			pInstance.save();
-		}
-
-		boolean ok = false;
-
-		//	Java Class
-		String Classname = getClassname();
-		if (Classname != null && Classname.length() > 0)
-		{
-			pi.setClassName(Classname);
-			ok = startClassWithoutTrxClose(pi, trx);
-		}
-		else
-		{
-			//	PL/SQL Procedure
-			String ProcedureName = getProcedureName();
-			if (ProcedureName != null && ProcedureName.length() > 0)
-			{
-				ok = startProcess (ProcedureName, pi, trx);
-			}
-			else
-			{
-				String msg = "No Classname or ProcedureName for " + getName();
-				pi.setSummary(msg, ok);
-				log.warn(msg);
-			}
-		}
-
-		return ok;
-	}	//	processItWithoutTrxClose
-
-	/**
-	 *  Start Java Class (sync) without closing the given transaction.
-	 *      instanciate the class implementing the interface ProcessCall.
-	 *  The class can be a Server/Client class (when in Package
-	 *  org adempiere.process or org.compiere.model) or a client only class
-	 *  (e.g. in org.compiere.report)
-	 *
-	 *  @param Classname    name of the class to call
-	 *  @param pi	process info
-	 *  @param trx transaction
-	 *  @return     true if success
-	 *	see ProcessCtl.startClass
-	 */
-	private boolean startClassWithoutTrxClose (ProcessInfo pi, Trx trx)
-	{
-		log.debug("Starting class without transaction close: {}", pi.getClassName());
-		return ProcessUtil.startJavaProcessWithoutTrxClose(getCtx(), pi, trx);
-	}   //  startClassWithoutTrxClose
-
-
 }	//	MProcess

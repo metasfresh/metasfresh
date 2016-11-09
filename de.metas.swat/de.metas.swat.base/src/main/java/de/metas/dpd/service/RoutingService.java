@@ -42,12 +42,6 @@ import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
@@ -66,12 +60,11 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -85,8 +78,14 @@ import de.metas.dpd.model.MDPDRoute;
 import de.metas.dpd.model.MDPDService;
 import de.metas.dpd.model.MDPDServiceInfo;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.logging.LogManager;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.X_M_ShippingPackage;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 
 /**
  * 
@@ -575,8 +574,12 @@ public class RoutingService implements IDPDRoutingservice
 			instance.saveEx();
 		} finally { DB.restoreConstraints(); }
 		
-		final ProcessInfo pi = new ProcessInfo(processName, processId, I_M_InOut.Table_ID, recordId);
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setAD_PInstance_ID(instance.getAD_PInstance_ID())
+				.setAD_Process_ID(processId)
+				.setTitle(processName)
+				.setRecord(adTableId, recordId)
+				.build();
 
 		try
 		{

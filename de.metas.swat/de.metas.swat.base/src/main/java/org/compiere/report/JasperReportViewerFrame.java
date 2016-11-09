@@ -27,16 +27,16 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperPrint;
-
 import org.compiere.apps.AEnv;
 import org.compiere.process.ProcessInfo;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperPrint;
 
 /**
  * Jasper Viewer Frame
  */
-public class JasperReportViewerFrame extends javax.swing.JFrame
+class JasperReportViewerFrame extends javax.swing.JFrame
 {
 
 	private static final long serialVersionUID = 1192807883081180999L;
@@ -69,7 +69,7 @@ public class JasperReportViewerFrame extends javax.swing.JFrame
 		JasperReportViewerPanel viewer = new JasperReportViewerPanel(this, jasperPrint);
 		this.pnlMain.add(viewer, BorderLayout.CENTER);
 
-		// Add this frame to ADempiere window manager.
+		// Add this frame to metasfresh window manager.
 		// In this way we also make sure the frame is closed when user logs out.
 		AEnv.addToWindowManager(this);
 	}
@@ -123,5 +123,4 @@ public class JasperReportViewerFrame extends javax.swing.JFrame
 	{
 		return processInfo;
 	}
-
 }
