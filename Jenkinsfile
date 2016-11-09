@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
-# this is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
-# thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
+// the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
+// thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
