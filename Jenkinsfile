@@ -2,14 +2,16 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
+
+// to build the client-exe on linux, we need 32bit libs!
+node('agent && linux && libc6-i386')
+{
 timestamps 
 {
 configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 {
 	withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
 	{
-		node('agent && linux') // shall only run on a jenkins agent with linux
-		{
 			//
 			// setup: we'll need the following variables in different stages, that's we we create them here
 			//
@@ -79,21 +81,15 @@ configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', r
             }
 			
 			// TODO: notify zapier that the "main" stuff was build
-		}	
-		
-		// to build the client-exe on linux, we need 32bit libs!
-		node('agent && linux && libc6-i386')
-		{
+				
 			stage('Build dist') 
 			{
 				// maven.test.failure.ignore=true: see metasfresh stage
 				// we currently deploy *and* also archive, but that might change in future
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
 			}
-		}
 		
-		node
-		{
+
 			stage('Collect results') 
 			{
 				// collect test results
@@ -102,7 +98,8 @@ configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', r
 				// we currently deploy *and* also archive, but that might change in future
 				archiveArtifacts 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/target/*.tar.gz,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.zip,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.exe'
 			}
-		}
+
 	} // withMaven
 } // configFileProvider
-} // timestamps   
+} // timestamps
+} // node
