@@ -7,27 +7,26 @@ class DatePicker extends Component {
         super(props);
 
         this.state = {
-            open: null
+            open: undefined
         }
     }
 
-    handleDoubleClick = (e) => {
-        e.preventDefault();
+    handleDoubleClick = () => {
+        this.setState(Object.assign({}, this.state, {
+            open: false
+        }));
+    }
 
-        // this.setState(Object.assign({}, this.state, {
-        //     open: false
-        // }), () => {
-        //     this.setState(Object.assign({}, this.state, {
-        //         open: null
-        //     }));
-        // })
+    handleBlur = () => {
+        this.setState(Object.assign({}, this.state, {
+            open: true
+        }));
     }
 
     renderDay = (props, currentDate, selectedDate) => {
         return (
             <td
                 {...props}
-                onDoubleClick={this.handleDoubleClick}
             >
                 {currentDate.date()}
             </td>
@@ -35,8 +34,6 @@ class DatePicker extends Component {
     }
 
     render() {
-        const {open} = this.state;
-
         return (<Datetime
             renderDay={this.renderDay}
             {...this.props}
