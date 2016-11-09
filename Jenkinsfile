@@ -52,7 +52,8 @@ timestamps
 	stage('Invoke downstream jobs') 
 	{
 		// TODO: trigger endcustomer.mf15 build
-		build job: '../metasfresh-multibranch/${BRANCH_NAME}', wait: false
+		def JOB_NAME="metasfresh-multibranch/"+BRANCH_NAME
+		build job: JOB_NAME, wait: false
 	}   
 } // timestamps   
 } // node
