@@ -14,7 +14,7 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1820191148L;
+	private static final long serialVersionUID = -332041592L;
 
     /** Standard Constructor */
     public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
@@ -27,6 +27,8 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 // @SQL=SELECT COALEACE(MAX(SeqNo), 0) + 10 FROM WEBUI_DashboardItem WHERE WEBUI_Dashboard_ID=@WEBUI_Dashboard_ID@
 			setWEBUI_Dashboard_ID (0);
 			setWEBUI_DashboardItem_ID (0);
+			setWEBUI_DashboardWidgetType (null);
+// K
         } */
     }
 
@@ -159,5 +161,31 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * WEBUI_DashboardWidgetType AD_Reference_ID=540697
+	 * Reference name: WEBUI_DashboardWidgetType
+	 */
+	public static final int WEBUI_DASHBOARDWIDGETTYPE_AD_Reference_ID=540697;
+	/** Target = T */
+	public static final String WEBUI_DASHBOARDWIDGETTYPE_Target = "T";
+	/** KPI = K */
+	public static final String WEBUI_DASHBOARDWIDGETTYPE_KPI = "K";
+	/** Set Widget type.
+		@param WEBUI_DashboardWidgetType Widget type	  */
+	@Override
+	public void setWEBUI_DashboardWidgetType (java.lang.String WEBUI_DashboardWidgetType)
+	{
+
+		set_Value (COLUMNNAME_WEBUI_DashboardWidgetType, WEBUI_DashboardWidgetType);
+	}
+
+	/** Get Widget type.
+		@return Widget type	  */
+	@Override
+	public java.lang.String getWEBUI_DashboardWidgetType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_DashboardWidgetType);
 	}
 }

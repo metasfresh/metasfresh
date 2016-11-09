@@ -279,4 +279,27 @@ public interface I_WEBUI_DashboardItem
     public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_WEBUI_DashboardItem_ID = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "WEBUI_DashboardItem_ID", null);
     /** Column name WEBUI_DashboardItem_ID */
     public static final String COLUMNNAME_WEBUI_DashboardItem_ID = "WEBUI_DashboardItem_ID";
+
+	/**
+	 * Set Widget type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_DashboardWidgetType (java.lang.String WEBUI_DashboardWidgetType);
+
+	/**
+	 * Get Widget type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_DashboardWidgetType();
+
+    /** Column definition for WEBUI_DashboardWidgetType */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object> COLUMN_WEBUI_DashboardWidgetType = new org.adempiere.model.ModelColumn<I_WEBUI_DashboardItem, Object>(I_WEBUI_DashboardItem.class, "WEBUI_DashboardWidgetType", null);
+    /** Column name WEBUI_DashboardWidgetType */
+    public static final String COLUMNNAME_WEBUI_DashboardWidgetType = "WEBUI_DashboardWidgetType";
 }
