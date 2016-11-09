@@ -49,7 +49,12 @@ timestamps
       junit '**/target/surefire-reports/*.xml'
    }
    
-   // TODO: trigger endcustomer.mf15 build
+	stage('Invoke downstream jobs') 
+	{
+		// TODO: trigger endcustomer.mf15 build
+		build job: '../metasfresh-multibranch/${BRANCH_NAME}', wait: false
+	}
+}
    
 } // timestamps   
 } // node
