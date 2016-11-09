@@ -51,9 +51,17 @@ timestamps
    
 	stage('Invoke downstream jobs') 
 	{
+	
+	// https://jenkins.io/doc/pipeline/examples/
+	
+	Jenkins.instance.getAllItems()
+     //    .grep { it.name ==~ ~"${jobRegexp}"  }
+         .collect { [ name : it.name.toString(), fullName : it.fullName.toString() ] }
+		 .each {job -> println("Job: " + job.name+"/"+job.fullName)	}
+
 		// TODO: trigger endcustomer.mf15 build
-		def JOB_NAME="metasfresh-multibranch/"+BRANCH_NAME
-		build job: JOB_NAME, wait: false
+		//def JOB_NAME="metasfresh-multibranch/"+BRANCH_NAME
+		//build job: JOB_NAME, wait: false
 	}   
 } // timestamps   
 } // node
