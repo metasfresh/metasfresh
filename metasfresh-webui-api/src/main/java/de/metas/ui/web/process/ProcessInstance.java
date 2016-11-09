@@ -127,15 +127,12 @@ public class ProcessInstance
 		final String classname = processDescriptor.getProcessClassname();
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
+				.setAD_PInstance_ID(adPInstanceId)
 				.setAD_Process_ID(adProcessId)
 				.setTitle(name)
 				.setClassname(classname)
 				.setRecord(AD_Table_ID, Record_ID)
 				.build();
-		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setAD_Org_ID(Env.getAD_Org_ID(ctx));
-		pi.setAD_PInstance_ID(adPInstanceId);
 		// pi.setParameter(parameter); // NOTE: don't set it; let it to be loaded
 
 		return pi;
