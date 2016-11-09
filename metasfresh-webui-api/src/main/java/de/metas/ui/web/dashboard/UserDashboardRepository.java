@@ -151,10 +151,11 @@ public class UserDashboardRepository
 				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, webuiDashboardItem.getName()))
 				.setUrl(webuiDashboardItem.getURL())
 				.setSeqNo(webuiDashboardItem.getSeqNo())
+				.setWidgetType(DashboardWidgetType.ofCode(webuiDashboardItem.getWEBUI_DashboardWidgetType()))
 				.build();
 	}
 
-	public void changeUserDashboard(final JSONDashboardChanges jsonDashboardChanges)
+	public void changeUserDashboardKPIs(final JSONDashboardChanges jsonDashboardChanges)
 	{
 		final UserDashboardKey userDashboardKey = createUserDashboardKey();
 		final UserDashboard userDashboard = getUserDashboard(userDashboardKey);
@@ -165,7 +166,7 @@ public class UserDashboardRepository
 					int nextSeqNo = 10;
 					for (final int itemId : jsonDashboardChanges.getDashboardItemIdsOrder())
 					{
-						final UserDashboardItem item = userDashboard.getItemById(itemId);
+						final UserDashboardItem item = userDashboard.getKPIItemById(itemId);
 						if (item == null)
 						{
 							continue;

@@ -44,6 +44,7 @@ public final class UserDashboardItem
 	private final ITranslatableString caption;
 	private final String url;
 	private final int seqNo;
+	private final DashboardWidgetType widgetType;
 
 	private UserDashboardItem(final Builder builder)
 	{
@@ -52,6 +53,7 @@ public final class UserDashboardItem
 		caption = builder.caption;
 		url = builder.url;
 		seqNo = builder.seqNo;
+		widgetType = builder.widgetType;
 	}
 
 	@Override
@@ -62,9 +64,10 @@ public final class UserDashboardItem
 				.add("caption", caption)
 				.add("url", url)
 				.add("seqNo", seqNo)
+				.add("widgetType", widgetType)
 				.toString();
 	}
-	
+
 	public int getId()
 	{
 		return id;
@@ -85,12 +88,18 @@ public final class UserDashboardItem
 		return seqNo;
 	}
 
+	public DashboardWidgetType getWidgetType()
+	{
+		return widgetType;
+	}
+
 	public static final class Builder
 	{
 		private Integer id;
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private String url;
 		private int seqNo;
+		private DashboardWidgetType widgetType;
 
 		private Builder()
 		{
@@ -102,7 +111,7 @@ public final class UserDashboardItem
 			Check.assumeNotNull(id, "Parameter id is not null");
 			return new UserDashboardItem(this);
 		}
-		
+
 		public Builder setId(final int id)
 		{
 			this.id = id;
@@ -131,6 +140,12 @@ public final class UserDashboardItem
 		public Builder setSeqNo(final int seqNo)
 		{
 			this.seqNo = seqNo;
+			return this;
+		}
+
+		public Builder setWidgetType(final DashboardWidgetType widgetType)
+		{
+			this.widgetType = widgetType;
 			return this;
 		}
 	}

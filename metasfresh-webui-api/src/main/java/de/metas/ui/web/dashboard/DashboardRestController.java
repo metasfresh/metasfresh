@@ -52,19 +52,43 @@ public class DashboardRestController
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@Deprecated
 	public JSONDashboard getUserDashboard()
+	{
+		return getKPIs();
+	}
+
+	@RequestMapping(value = "/kpis", method = RequestMethod.GET)
+	public JSONDashboard getKPIs()
 	{
 		userSession.assertLoggedIn();
 
 		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
-		return JSONDashboard.of(userDashboard, newJSONOpts().build());
+		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts().build());
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.PATCH)
+	@Deprecated
 	public void changeUserDashboard(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
+	{
+		changeKPIs(jsonDashboardChanges);
+	}
+
+	@RequestMapping(value = "/kpis", method = RequestMethod.PATCH)
+	public void changeKPIs(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
 	{
 		userSession.assertLoggedIn();
 
-		userDashboardRepo.changeUserDashboard(jsonDashboardChanges);
+		userDashboardRepo.changeUserDashboardKPIs(jsonDashboardChanges);
 	}
+
+	@RequestMapping(value = "/targetIndicators", method = RequestMethod.GET)
+	public JSONDashboard getTargetIndicators()
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
+		return JSONDashboard.of(userDashboard.getTargetIndicatorItems(), newJSONOpts().build());
+	}
+
 }

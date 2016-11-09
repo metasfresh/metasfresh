@@ -1,13 +1,14 @@
 package de.metas.ui.web.dashboard.json;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.dashboard.UserDashboard;
+import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 /*
@@ -35,20 +36,19 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 @SuppressWarnings("serial")
 public class JSONDashboard implements Serializable
 {
-	public static final JSONDashboard of(final UserDashboard dashboard, final JSONFilteringOptions jsonOpts)
+	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final JSONFilteringOptions jsonOpts)
 	{
-		return new JSONDashboard(dashboard, jsonOpts);
+		return new JSONDashboard(items, jsonOpts);
 	}
 
 	@JsonProperty("items")
 	private final List<JSONDashboardItem> items;
 
-	private JSONDashboard(final UserDashboard dashboard, final JSONFilteringOptions jsonOpts)
+	private JSONDashboard(final Collection<UserDashboardItem> items, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 
-		items = dashboard.getItems()
-				.stream()
+		this.items = items.stream()
 				.map(item -> JSONDashboardItem.of(item, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}

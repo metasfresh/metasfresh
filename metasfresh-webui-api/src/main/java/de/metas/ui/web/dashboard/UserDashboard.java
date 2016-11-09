@@ -10,6 +10,7 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -46,28 +47,33 @@ public final class UserDashboard
 	public static final UserDashboard EMPTY = new UserDashboard();
 
 	private final int id;
-	private final Map<Integer, UserDashboardItem> itemsById;
+	private final List<UserDashboardItem> targetIndicatorItems;
+	private final Map<Integer, UserDashboardItem> kpiItemsById;
 
 	private UserDashboard(final Builder builder)
 	{
 		super();
 		id = builder.id;
-		itemsById = Maps.uniqueIndex(builder.items, UserDashboardItem::getId);
+		targetIndicatorItems = ImmutableList.copyOf(builder.targetIndicatorItems);
+		kpiItemsById = Maps.uniqueIndex(builder.kpiItems, UserDashboardItem::getId);
 	}
 
 	private UserDashboard()
 	{
 		super();
 		id = -1;
-		itemsById = ImmutableMap.of();
+		targetIndicatorItems = ImmutableList.of();
+		kpiItemsById = ImmutableMap.of();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", id)
-				.add("itemsById", itemsById)
+				.add("targetIndicatorItems", targetIndicatorItems.isEmpty() ? null : targetIndicatorItems)
+				.add("kpiItemsById", kpiItemsById.isEmpty() ? null : kpiItemsById)
 				.toString();
 	}
 
@@ -75,23 +81,32 @@ public final class UserDashboard
 	{
 		return id;
 	}
-
-	public Collection<UserDashboardItem> getItems()
+	
+	public List<UserDashboardItem> getTargetIndicatorItems()
 	{
-		return itemsById.values();
+		return targetIndicatorItems;
 	}
 
-	public UserDashboardItem getItemById(final int itemId)
+	public Collection<UserDashboardItem> getKPIItems()
 	{
-		final UserDashboardItem item = itemsById.get(itemId);
-		Check.assumeNotNull(item, "Parameter item is not null");
+		return kpiItemsById.values();
+	}
+
+	public UserDashboardItem getKPIItemById(final int itemId)
+	{
+		final UserDashboardItem item = kpiItemsById.get(itemId);
+		if(item == null)
+		{
+			throw new IllegalArgumentException("No KPI item found for "+itemId);
+		}
 		return item;
 	}
 
 	public static final class Builder
 	{
 		private Integer id;
-		private final List<UserDashboardItem> items = new ArrayList<>();
+		private final List<UserDashboardItem> targetIndicatorItems = new ArrayList<>();
+		private final List<UserDashboardItem> kpiItems = new ArrayList<>();
 
 		private Builder()
 		{
@@ -113,7 +128,17 @@ public final class UserDashboard
 		public Builder addItem(final UserDashboardItem item)
 		{
 			Check.assumeNotNull(item, "Parameter item is not null");
-			items.add(item);
+
+			switch (item.getWidgetType())
+			{
+				case TargetIndicator:
+					targetIndicatorItems.add(item);
+					break;
+				case KPI:
+					kpiItems.add(item);
+					break;
+			}
+
 			return this;
 		}
 	}
