@@ -7,7 +7,7 @@ import {
     findRowByPropName
 } from '../actions/WindowActions';
 
-import Datetime from 'react-datetime';
+import DatePicker from './widget/DatePicker';
 import Lookup from './widget/Lookup';
 import DatetimeRange from './app/DatetimeRange';
 import List from './widget/List';
@@ -81,7 +81,7 @@ class RawWidget extends Component {
                             (type === "primary" ? "input-primary " : "input-secondary ") +
                             (updated ? " pulse-on" : " pulse-off")
                         }>
-                            <Datetime
+                            <DatePicker
                                 timeFormat={false}
                                 dateFormat={true}
                                 locale="de"
@@ -102,7 +102,7 @@ class RawWidget extends Component {
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
-                        <Datetime
+                        <DatePicker
                             timeFormat={true}
                             dateFormat={true}
                             locale="de"
@@ -122,7 +122,7 @@ class RawWidget extends Component {
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off")
                     }>
-                        <Datetime
+                        <DatePicker
                             timeFormat={true}
                             dateFormat={false}
                             locale="de"

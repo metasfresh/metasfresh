@@ -1584,6 +1584,7 @@ td.pulse-off input {
     position: absolute;
     top: 25px;
     right: -4px;
+    z-index:100;
 }
 
 .draggable-widget-menu span {
@@ -1615,7 +1616,7 @@ td.pulse-off input {
 }
 
 .draggable-widget-body iframe {
-    width: 100%;
+    width: calc(100% - 1px);
     min-height: 280px;
     float: left;
 }
