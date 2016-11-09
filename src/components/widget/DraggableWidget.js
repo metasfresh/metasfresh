@@ -109,20 +109,22 @@ export class DraggableWidget extends Component {
                     {toggleWidgetMenu &&
                         <div className="draggable-widget-menu">
 
-                        { isMaximize ?
-                            <span onClick={() => {this.minimizeWidget(); showWidgets()} }>Minimize</span> :
-                            <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
-                        }
+                            { isMaximize ?
+                                <span onClick={() => {this.minimizeWidget(); showWidgets()} }>Minimize</span> :
+                                <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
+                            }
 
-                        <span>Refresh</span>
+                            <span>Refresh</span>
                         </div>
                     }
                 </div>
                 <div className="draggable-widget-body">
-                    <iframe src={url}>
-
-                    </iframe>
-                </div> 
+                    <iframe
+                        src={url}
+                        scrolling="no"
+                        frameBorder="no"
+                    ></iframe>
+                </div>
             </div>
 
 
