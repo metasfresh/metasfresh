@@ -57,12 +57,12 @@ timestamps
 		exitCode = sh returnStatus: true, script: 'git ls-remote --exit-code https://github.com/metasfresh/metasfresh ${BRANCH_NAME}'
 		if(exitCode == 0)
 		{
-			echo "${BRANCH_NAME} also exists in metasfresh"
+			echo "Branch ${BRANCH_NAME} also exists in metasfresh"
 			jobName = "metasfresh/"+BRANCH_NAME
 		}
 		else 
 		{
-			echo "${BRANCH_NAME} does not exist in metasfresh; fallking back to master"
+			echo "Branch ${BRANCH_NAME} does not exist in metasfresh; falling back to master"
 			jobName = "metasfresh/master"
 		}
 		
