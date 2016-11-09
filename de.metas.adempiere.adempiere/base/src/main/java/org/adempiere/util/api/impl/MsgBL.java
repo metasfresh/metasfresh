@@ -1,5 +1,7 @@
 package org.adempiere.util.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,9 +26,14 @@ package org.adempiere.util.api.impl;
 
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Msg;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.ITranslatableString;
 
 /**
  * 
@@ -59,7 +66,7 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(ctx, adMessage, text);
 	}
-
+	
 	@Override
 	public String translate(final Properties ctx, final String text)
 	{
@@ -76,5 +83,56 @@ public class MsgBL implements IMsgBL
 	public String parseTranslation(final Properties ctx, final String message)
 	{
 		return Msg.parseTranslation(ctx, message);
+	}
+
+	@Override
+	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object ... msgParameters)
+	{
+		return new ADMessageTranslatableString(adMessage, msgParameters);
+	}
+
+	private static final class ADMessageTranslatableString implements ITranslatableString
+	{
+		private final String adMessage;
+		private final List<Object> msgParameters;
+
+		private ADMessageTranslatableString(final String adMessage, final Object... msgParameters)
+		{
+			super();
+			this.adMessage = adMessage;
+			if (msgParameters == null || msgParameters.length == 0)
+			{
+				this.msgParameters = ImmutableList.of();
+			}
+			else
+			{
+				this.msgParameters = ImmutableList.copyOf(msgParameters);
+			}
+		}
+		
+		@Override
+		public String toString()
+		{
+			return adMessage;
+		}
+		
+		@Override
+		public String translate(final String adLanguage)
+		{
+			return Msg.getMsg(adLanguage, adMessage, msgParameters.toArray());
+		}
+
+		@Override
+		public String getDefaultValue()
+		{
+			return adMessage;
+		}
+
+		@Override
+		public Set<String> getAD_Languages()
+		{
+			// TODO Auto-generated method stub
+			throw new UnsupportedOperationException();
+		}
 	}
 }

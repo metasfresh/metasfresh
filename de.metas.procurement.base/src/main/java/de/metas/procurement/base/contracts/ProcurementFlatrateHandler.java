@@ -60,9 +60,14 @@ public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
+		final I_C_Flatrate_Term oldTermtoUse = InterfaceWrapperHelper.create(oldTerm, I_C_Flatrate_Term.class);
 		final I_C_Flatrate_Term newTermtoUse = InterfaceWrapperHelper.create(newTerm, I_C_Flatrate_Term.class);
+		
+		newTermtoUse.setPMM_Product(oldTermtoUse.getPMM_Product());
+		InterfaceWrapperHelper.save(newTermtoUse);
+		
 		final List<I_C_Flatrate_DataEntry> oldDataEntries = flatrateDAO.retrieveDataEntries(oldTerm, null, null);
-
+		
 		final PMMContractBuilder builder = PMMContractBuilder.newBuilder(newTermtoUse)
 				.setComplete(false);
 

@@ -22,8 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,9 +29,13 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
+import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Persistent Column Model
@@ -249,6 +251,13 @@ public class MColumn extends X_AD_Column
 		// Virtual Column
 		if (isVirtualColumn())
 		{
+			// Make sure there are no context variables in ColumnSQL
+			final String columnSql = getColumnSQL();
+			if (columnSql != null && columnSql.indexOf(CtxName.NAME_Marker) >= 0)
+			{
+				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
+			}
+			
 			if (isMandatory())
 				setIsMandatory(false);
 			if (isUpdateable())

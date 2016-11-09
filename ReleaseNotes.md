@@ -15,9 +15,15 @@ Here come the actual release notes:
 * metasfresh
   * #552 division by 0 in costprice report
 
+* metasfresh-webui
+  * #40 Account fields are not working
+  
 ## Features
 * metasfresh
   * #504 new filter in saldobilanz report
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
 
 # metasfresh 4.42.41 (2016-44)
 

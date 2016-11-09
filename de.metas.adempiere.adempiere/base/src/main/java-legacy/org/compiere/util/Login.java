@@ -763,7 +763,10 @@ public class Login
 
 		//
 		// Save Ini properties
-		Ini.saveProperties();
+		if(Ini.isClient())
+		{
+			Ini.saveProperties();
+		}
 
 		//
 		// Country

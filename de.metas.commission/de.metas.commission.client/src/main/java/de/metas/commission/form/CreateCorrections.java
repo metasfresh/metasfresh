@@ -43,6 +43,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
@@ -318,7 +319,7 @@ public class CreateCorrections extends CreateFrom
 
 		final int countryID = payrollLocPO.getC_Location().getC_Country_ID();
 
-		final MRelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
+		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
 
 		for (int i = 0; i < miniTable.getRowCount(); i++)
 		{
