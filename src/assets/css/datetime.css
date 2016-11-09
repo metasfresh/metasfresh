@@ -79,7 +79,6 @@
 
 .rdtPicker td.rdtActive,
 .rdtPicker td.rdtActive:hover {
-    border-radius: 3px;
     background-color: $brand-color-primary;
     color:#fff;
 }
