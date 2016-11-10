@@ -3192,16 +3192,6 @@ public class APanel extends CPanel
 			m_curGC.dynamicDisplay(0);
 
 			updateStatusLine(pi);
-
-			// Show process logs if any
-			if (pi.isShowProcessLogs())
-			{
-				final String logInfo = pi.getLogInfo();
-				if (logInfo.length() > 0)
-				{
-					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
-				}
-			}
 		}
 		else
 		{
@@ -3213,11 +3203,29 @@ public class APanel extends CPanel
 	{
 		// Update Status Line
 		setStatusLine(pi.getSummary(), pi.isError());
-		if (pi.isError() && !pi.isErrorWasReportedToUser())
+
+		//
+		// If the error or the process logs was not already reported to user, we shall display a popup now
+		if(!pi.isErrorWasReportedToUser())
 		{
-			ADialog.error(m_curWindowNo, this, null, pi.getSummary());
-			pi.setErrorWasReportedToUser();
+			// Show error if any
+			if (pi.isError())
+			{
+				ADialog.error(m_curWindowNo, this, null, pi.getSummary());
+				pi.setErrorWasReportedToUser();
+			}
+			// Show process logs if any
+			else if (pi.isShowProcessLogs())
+			{
+				final String logInfo = pi.getLogInfo();
+				if(!Check.isEmpty(logInfo, true))
+				{
+					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
+					pi.setErrorWasReportedToUser();
+				}
+			}
 		}
+
 	}
 
 	/**
