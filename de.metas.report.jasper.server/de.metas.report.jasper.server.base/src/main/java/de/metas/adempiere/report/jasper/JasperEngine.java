@@ -61,6 +61,7 @@ import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -503,6 +504,22 @@ public class JasperEngine extends AbstractReportEngine
 		// and assume that cells which shall not be locked are particularly specified.
 		jasperPrint.setProperty(XlsReportConfiguration.PROPERTY_CELL_LOCKED, "true");
 
+		// there are cases when we don't want the cells to be blocked by password
+		// in those cases we put in jrxml the password property with empty value,  which will indicate we don't want password
+		// if there is no such property we take default password. If empty we set no password and if set, we use that password from the report
+		if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
+		{
+			//do nothing;
+		}
+		else if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
+		{
+			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, null);
+		}
+		else
+		{
+			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD));
+		}
+		
 		exporter.exportReport();
 	}
 }
