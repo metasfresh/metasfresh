@@ -14,6 +14,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.json.JSONProcessInstance;
+import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
@@ -137,12 +138,16 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/instance/{pinstanceId}/start", method = RequestMethod.GET)
-	public void startProcess(@PathVariable("pinstanceId") final int pinstanceId)
+	public JSONProcessInstanceResult startProcess(@PathVariable("pinstanceId") final int pinstanceId)
 	{
 		loginService.assertLoggedIn();
 		
 		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
-		processInstance.startProcess();
+		final ProcessInstanceResult result = processInstance.startProcess();
+		
+		// TODO: remove it from instancesRepository
+		
+		return JSONProcessInstanceResult.of(result);
 	}
 	
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters/{parameterName}/typeahead", method = RequestMethod.GET)

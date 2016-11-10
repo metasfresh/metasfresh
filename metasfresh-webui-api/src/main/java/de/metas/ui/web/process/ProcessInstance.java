@@ -94,20 +94,29 @@ public class ProcessInstance
 		parameters.processValueChange(parameterName, value, reason);
 	}
 
-	public void startProcess()
+	public ProcessInstanceResult startProcess()
 	{
 		// TODO: make sure it's saved in database
 		
 		final ProcessInfo pi = createProcessInfo();
+		final WebuiJRReportViewerProvider jrReportViewerProvider = new WebuiJRReportViewerProvider();
 
 		ProcessCtl.builder()
 				.setProcessInfo(pi)
-				// .setWindowNo(windowNo)
-				// .setAsyncParent(asyncParent)
+				.setJRReportViewerProvider(jrReportViewerProvider)
 				.executeSync();
 
-		// TODO
-		throw new UnsupportedOperationException();
+		final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
+				.setSummary(pi.getSummary())
+				.setError(pi.isError());
+		
+		final byte[] reportData = jrReportViewerProvider.getReportData();
+		if(reportData != null && reportData.length > 0)
+		{
+			resultBuilder.setReportData(reportData, jrReportViewerProvider.getReportType().getContentType());
+		}
+
+		return resultBuilder.build();
 	}
 
 	private final ProcessInfo createProcessInfo()
@@ -132,6 +141,7 @@ public class ProcessInstance
 				.setTitle(name)
 				.setClassname(classname)
 				.setRecord(AD_Table_ID, Record_ID)
+				.setPrintPreview(true)
 				.build();
 		// pi.setParameter(parameter); // NOTE: don't set it; let it to be loaded
 

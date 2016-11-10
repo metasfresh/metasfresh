@@ -1,13 +1,8 @@
 package de.metas.ui.web.process;
 
-import java.util.concurrent.TimeUnit;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.process.ProcessInfo;
-
-import com.google.common.util.concurrent.SettableFuture;
 
 import de.metas.adempiere.report.jasper.OutputType;
 
@@ -41,45 +36,38 @@ import de.metas.adempiere.report.jasper.OutputType;
  */
 public class WebuiJRReportViewerProvider implements JRReportViewerProvider
 {
-	private final OutputType desiredType;
-	private OutputType type;
-
-	private final SettableFuture<byte[]> reportData = SettableFuture.create();
+	private final OutputType desiredReportType;
+	
+	private OutputType reportType;
+	private byte[] reportData = null;
 
 	public WebuiJRReportViewerProvider()
 	{
-		desiredType = OutputType.PDF;
-		type = null;
+		desiredReportType = OutputType.PDF;
+		reportType = null;
 	}
 
 	@Override
 	public void openViewer(final byte[] data, final OutputType type, final ProcessInfo pi) throws Exception
 	{
-		this.type = type;
-		reportData.set(data);
+		this.reportType = type;
+		this.reportData = data;
 	}
 
 	@Override
 	public OutputType getDesiredOutputType()
 	{
-		return desiredType;
+		return desiredReportType;
 	}
 
 	public byte[] getReportData()
 	{
-		try
-		{
-			return reportData.get(30, TimeUnit.SECONDS);
-		}
-		catch (final Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
+		return reportData;
 	}
 
 	public OutputType getReportType()
 	{
-		Check.assumeNotNull(type, "Parameter type is not null");
-		return type;
+		Check.assumeNotNull(reportType, "Parameter type is not null");
+		return reportType;
 	}
 }
