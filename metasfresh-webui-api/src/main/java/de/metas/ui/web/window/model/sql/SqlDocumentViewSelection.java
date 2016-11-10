@@ -279,7 +279,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders()
 		{
 			final List<DocumentFieldDescriptor> fieldDescriptors = queryBuilder.getViewFields();
-
+			return createDocumentViewFieldValueLoaders(fieldDescriptors);
+		}
+		
+		private static ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders(final List<DocumentFieldDescriptor> fieldDescriptors)
+		{
 			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
 			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
 			{
