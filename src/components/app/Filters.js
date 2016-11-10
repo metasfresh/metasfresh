@@ -27,7 +27,8 @@ class Filters extends Component {
 			selectedItem: '',
             frequentFilterOpen: false,
 			notFrequentFilterOpen: false,
-            notValidFields: null
+            notValidFields: null,
+            active: null
 		};
 	}
 
@@ -112,7 +113,13 @@ class Filters extends Component {
                 notValidFields: notValid
             }));
         }else{
-    		dispatch(setFilter(filter));
+            this.setState(Object.assign({}, this.state, {
+                active: filter.filterId
+            }), () => {
+
+                dispatch(setFilter(filter));
+            })
+            dispatch(setFilter(filter));
     		this.closeFilterMenu();
         }
 	}
@@ -185,7 +192,7 @@ class Filters extends Component {
                     }
                 >
 					<i className="meta-icon-preview" />
-					{ isActive ? 'Filter: ' + filterDataItem.caption : 'No search filters'}
+					{ isActive ? 'Filter: ' + filterDataItem.caption : 'Select other filter'}
 				</button>
 
 				{ notFrequentFilterOpen &&
@@ -210,8 +217,7 @@ class Filters extends Component {
 	}
 
     renderFrequentFilterWrapper = (filterData) => {
-		const {frequentFilterOpen, filterDataItem, selectedItem} = this.state;
-
+		const {frequentFilterOpen, filterDataItem, selectedItem, active} = this.state;
 		return (
 			<div className="filter-wrapper">
 				{filterData.map((item, index) =>
@@ -224,7 +230,7 @@ class Filters extends Component {
                             }
                         >
 							<i className="meta-icon-preview" />
-							{ item ? 'Filter: ' + item.caption : 'No search filters'}
+							{ filterDataItem.filterId === item.filterId ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
 						</button>
 						{frequentFilterOpen === index && this.renderFiltersItem(item) }
 					</div>
@@ -233,11 +239,11 @@ class Filters extends Component {
 		)
 	}
 
-	renderWidgetStructure = () => {
-		const {filterData} = this.props;
+	render() {
+        const {filterData} = this.props;
 
-		let freqFilter = [];
-		let notFreqFilter = [];
+        let freqFilter = [];
+        let notFreqFilter = [];
 
         filterData.map((item) => {
             if(item.frequent){
@@ -247,8 +253,8 @@ class Filters extends Component {
             }
         })
 
-		return(
-    		<div>
+		return (
+            <div>
     			{!!filterData.length &&
     				<div className="filter-wrapper">
     					<span>Filters: </span>
@@ -259,14 +265,6 @@ class Filters extends Component {
     				</div>
     			}
     		</div>
-		)
-	}
-
-	render() {
-		return (
-			<div>
-				{this.renderWidgetStructure()}
-			</div>
 		)
 	}
 }
