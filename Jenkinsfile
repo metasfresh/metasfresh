@@ -4,14 +4,13 @@
 
 timestamps 
 {
-configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+// to build the client-exe on linux, we need 32bit libs!
+node('agent && linux')
 {
-	withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
+	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		// to build the client-exe on linux, we need 32bit libs!
-		node('agent && linux')
-		{
-	
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
+		{	
 			//
 			// setup: we'll need the following variables in different stages, that's we we create them here
 			//
@@ -84,10 +83,16 @@ configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', r
 			junit '**/target/surefire-reports/*.xml'
 			
 			// TODO: notify zapier that the "main" stuff was build
-		} // node			
+		} // withMaven
+	} // configFileProvider
+} // node			
 		
 		// to build the client-exe on linux, we need 32bit libs!
-		node('agent && linux && libc6-i386')
+node('agent && linux && libc6-i386')
+{
+	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+	{
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
 		{
 			stage('Build dist') 
 			{
@@ -101,9 +106,8 @@ configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', r
 			  	// we currently deploy *and* also archive, but that might change in future
 				archiveArtifacts 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/target/*.tar.gz,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.zip,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.exe'
 			}
-
-		} // node
-	} // withMaven
-} // configFileProvider
+		} // withMaven
+	} // configFileProvider
+} // node
 } // timestamps
 
