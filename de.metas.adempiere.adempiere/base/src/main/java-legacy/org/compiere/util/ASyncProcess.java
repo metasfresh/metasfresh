@@ -45,11 +45,11 @@ public interface ASyncProcess
 		final Throwable cause = pi.getThrowable();
 		if (cause != null)
 		{
-			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi);
+			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi, cause);
 		}
 		else
 		{
-			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi, cause);
+			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi);
 		}
 	}
 	/**
