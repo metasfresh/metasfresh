@@ -25,8 +25,12 @@ CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 		p_name character varying(255),
 		sameperiodsum numeric,
 		compperiodsum numeric,
+		sameperiodqtysum numeric,
+		compperiodqtysum numeric,
 		perioddifference numeric,
+		periodqtydifference numeric,
 		perioddiffpercentage numeric,
+		periodqtydiffpercentage numeric,
 		Base_Week_Start character varying(10),
 		Base_Week_End character varying(10),
 		Comp_Week_Start character varying(10),
@@ -46,10 +50,17 @@ SELECT
 	p.Name AS P_name,
 	SamePeriodSum,
 	CompPeriodSum,
+	SamePeriodQtySum,
+	CompPeriodQtySum,
 	SamePeriodSum - CompPeriodSum AS PeriodDifference,
+	SamePeriodQtySum - CompPeriodQtySum AS PeriodQtyDifference,
 	CASE WHEN SamePeriodSum - CompPeriodSum != 0 AND CompPeriodSum != 0
 		THEN (SamePeriodSum - CompPeriodSum) / CompPeriodSum * 100 ELSE NULL
 	END AS PeriodDiffPercentage,
+	
+	CASE WHEN SamePeriodQtySum - CompPeriodQtySum != 0 AND CompPeriodQtySum != 0
+		THEN (SamePeriodQtySum - CompPeriodQtySum) / CompPeriodQtySum * 100 ELSE NULL
+	END AS PeriodQtyDiffPercentage,
 	
 	$3 || ' ' || (select fiscalyear from c_year where c_year_id =$1) AS Base_Week_Start,
 	$4 || ' ' || (select fiscalyear from c_year where c_year_id =$2) AS Base_Week_End,
@@ -75,8 +86,21 @@ FROM
 						AND io.MovementDate::date <= (select (to_timestamp($8 || ' ' ||(select fiscalyear from c_year where c_year_id =$6),'IW IYYY')+ interval '6' day))::date ) -- comp_week_end 
 			  THEN ROUND((COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE (uconv.multiplyrate, 1)),2)
 			  ELSE 0 
-			END) AS CompPeriodSum	
+			END) AS CompPeriodSum,
+
+			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($3 || ' ' ||(select fiscalyear from c_year where c_year_id =$1),'IW IYYY')))::date   -- base_week_start
+						AND io.MovementDate::date <= (select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$2),'IW IYYY')+ interval '6' day))::date ) -- base_week_end
+			  THEN iol.MovementQty
+			  ELSE 0 
+			END) AS SamePeriodQtySum,
+
+			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($7 || ' ' ||(select fiscalyear from c_year where c_year_id =$5),'IW IYYY')))::date  -- comp_week_start 
+						AND io.MovementDate::date <= (select (to_timestamp($8 || ' ' ||(select fiscalyear from c_year where c_year_id =$6),'IW IYYY')+ interval '6' day))::date ) -- comp_week_end 
+			  THEN iol.MovementQty
+			  ELSE 0 
+			END) AS CompPeriodQtySum
 			
+						
 			FROM  C_InvoiceCandidate_InOutLine iciol	 
 			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID
 			INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID

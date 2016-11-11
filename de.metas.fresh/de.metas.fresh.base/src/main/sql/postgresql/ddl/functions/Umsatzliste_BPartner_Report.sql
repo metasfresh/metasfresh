@@ -40,8 +40,12 @@ CREATE TABLE report.umsatzliste_bpartner_report_sub
 	p_name character varying(255),
 	sameperiodsum numeric,
 	compperiodsum numeric,
+	sameperiodqtysum numeric,
+	compperiodqtysum numeric,
 	perioddifference numeric,
+	periodqtydifference numeric,
 	perioddiffpercentage numeric,
+	periodqtydiffpercentage numeric,
 	Base_Period_Start character varying(10),
 	Base_Period_End character varying(10),
 	Comp_Period_Start character varying(10),
@@ -78,10 +82,18 @@ SELECT
 	p.Name AS P_name,
 	SamePeriodSum,
 	CompPeriodSum,
+	SamePeriodQtySum,
+	CompPeriodQtySum,
 	SamePeriodSum - CompPeriodSum AS PeriodDifference,
+	SamePeriodQtySum - CompPeriodQtySum AS PeriodQtyDifference,
 	CASE WHEN SamePeriodSum - CompPeriodSum != 0 AND CompPeriodSum != 0
 		THEN (SamePeriodSum - CompPeriodSum) / CompPeriodSum * 100 ELSE NULL
 	END AS PeriodDiffPercentage,
+	
+	CASE WHEN SamePeriodQtySum - CompPeriodQtySum != 0 AND CompPeriodQtySum != 0
+		THEN (SamePeriodQtySum - CompPeriodQtySum) / CompPeriodQtySum * 100 ELSE NULL
+	END AS PeriodQtyDiffPercentage,
+	
 	to_char($1, 'DD.MM.YYYY') AS Base_Period_Start,
 	to_char($2, 'DD.MM.YYYY') AS Base_Period_End,
 	COALESCE( to_char($3, 'DD.MM.YYYY'), '') AS Comp_Period_Start,
@@ -99,13 +111,17 @@ FROM
 			fa.M_Product_ID,
 			SUM( CASE WHEN IsInPeriod THEN AmtAcct ELSE 0 END ) AS SamePeriodSum,
 			SUM( CASE WHEN IsInCompPeriod THEN AmtAcct ELSE 0 END  ) AS CompPeriodSum,
+			
+			SUM( CASE WHEN IsInPeriod THEN 	il.qtyinvoiced ELSE 0 END ) AS SamePeriodQtySum,
+			SUM( CASE WHEN IsInCompPeriod THEN il.qtyinvoiced ELSE 0 END  ) AS CompPeriodQtySum,
 			1 AS Line_Order
 		FROM
 			(
 				SELECT 	fa.*, 
 					( fa.DateAcct >= $1 AND fa.DateAcct <= $2 ) AS IsInPeriod,
 					( fa.DateAcct >= $3 AND fa.DateAcct <= $4 ) AS IsInCompPeriod,
-					CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct 
+					CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct
+				
 				FROM 	Fact_Acct fa JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID
 				WHERE	AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
 			) fa
@@ -168,8 +184,12 @@ CREATE TABLE report.umsatzliste_bpartner_report
 	p_name character varying(255),
 	sameperiodsum numeric,
 	compperiodsum numeric,
+	sameperiodqtysum numeric,
+	compperiodqtysum numeric,
 	perioddifference numeric,
+	periodqtydifference numeric,
 	perioddiffpercentage numeric,
+	periodqtydiffpercentage numeric,
 	Base_Period_Start character varying(10),
 	Base_Period_End character varying(10),
 	Comp_Period_Start character varying(10),
@@ -210,10 +230,21 @@ UNION ALL
 		bp_name, pc_name, null AS P_name,
 		SUM( SamePeriodSum ) AS SamePeriodSum,
 		SUM( CompPeriodSum ) AS CompPeriodSum,
+		
+		SUM( SamePeriodQtySum ) AS SamePeriodQtySum,
+		SUM( CompPeriodQtySum ) AS CompPeriodQtySum,
+		
 		SUM( SamePeriodSum ) - SUM( CompPeriodSum ) AS PeriodDifference,
+		SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum ) AS PeriodQtyDifference,
+		
 		CASE WHEN SUM( SamePeriodSum ) - SUM( CompPeriodSum ) != 0 AND SUM( CompPeriodSum ) != 0
 			THEN (SUM( SamePeriodSum ) - SUM( CompPeriodSum )) / SUM( CompPeriodSum ) * 100 ELSE NULL
 		END AS PeriodDiffPercentage,
+		
+		CASE WHEN SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum ) != 0 AND SUM( CompPeriodQtySum ) != 0
+			THEN (SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum )) / SUM( CompPeriodQtySum ) * 100 ELSE NULL
+		END AS PeriodQtyDiffPercentage,		
+		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,
 		2 AS UnionOrder
@@ -228,10 +259,21 @@ UNION ALL
 		bp_name, null, null,
 		SUM( SamePeriodSum ) AS SamePeriodSum,
 		SUM( CompPeriodSum ) AS CompPeriodSum,
+		
+		SUM( SamePeriodQtySum ) AS SamePeriodQtySum,
+		SUM( CompPeriodQtySum ) AS CompPeriodQtySum,
+		
 		SUM( SamePeriodSum ) - SUM( CompPeriodSum ) AS PeriodDifference,
+		SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum ) AS PeriodQtyDifference,
+		
 		CASE WHEN SUM( SamePeriodSum ) - SUM( CompPeriodSum ) != 0 AND SUM( CompPeriodSum ) != 0
 			THEN (SUM( SamePeriodSum ) - SUM( CompPeriodSum )) / SUM( CompPeriodSum ) * 100 ELSE NULL
 		END AS PeriodDiffPercentage,
+		
+		CASE WHEN SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum ) != 0 AND SUM( CompPeriodQtySum ) != 0
+			THEN (SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum )) / SUM( CompPeriodQtySum ) * 100 ELSE NULL
+		END AS PeriodQtyDiffPercentage,
+		
 		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,
 		3 AS UnionOrder
