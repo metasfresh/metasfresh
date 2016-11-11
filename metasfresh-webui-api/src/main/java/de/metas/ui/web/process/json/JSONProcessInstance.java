@@ -1,11 +1,14 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.ProcessInstance;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -38,16 +41,19 @@ public class JSONProcessInstance implements Serializable
 		return new JSONProcessInstance(pinstance, jsonOpts);
 	}
 
-	@JsonProperty("type")
-	private final String type;
+	@JsonProperty("pinstanceId")
+	private final int pinstanceId;
 	@JsonProperty("parameters")
-	private final JSONDocument parameters;
+	private final List<JSONDocumentField> parameters;
 
 	private JSONProcessInstance(final ProcessInstance pinstance, final JSONOptions jsonOpts)
 	{
 		super();
-		type = String.valueOf(pinstance.getAD_PInstance_ID());
+		pinstanceId = pinstance.getAD_PInstance_ID();
 
-		parameters = JSONDocument.ofDocument(pinstance.getParameters(), jsonOpts);
+		parameters = pinstance.getParameters().getFieldViews()
+				.stream()
+				.map(JSONDocumentField::ofDocumentField)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 }
