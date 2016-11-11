@@ -24,7 +24,6 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentsRepository;
 
 /*
  * #%L
@@ -87,13 +86,7 @@ public class ProcessInstancesRepository
 
 	public void checkin(final ProcessInstance processInstance)
 	{
-		final DocumentsRepository parametersRepo = processInstance.getDescriptor()
-				.getParametersDescriptor()
-				.getDataBinding()
-				.getDocumentsRepository();
-
-		parametersRepo.save(processInstance.getParameters());
-
+		processInstance.saveIfValidAndHasChanges();
 		processInstances.put(processInstance.getAD_PInstance_ID(), processInstance.copy(CopyMode.CheckInReadonly));
 	}
 

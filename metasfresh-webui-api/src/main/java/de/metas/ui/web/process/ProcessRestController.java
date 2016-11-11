@@ -72,7 +72,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	public JSONProcessLayout layout(
-			@RequestParam(name = "type", required = true) final int adProcessId //
+			@RequestParam(name = "processId", required = true) final int adProcessId //
 	)
 	{
 		loginService.assertLoggedIn();
@@ -83,14 +83,15 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/instance", method = RequestMethod.PUT)
 	public JSONProcessInstance createInstance(
-			@RequestParam(name = "type", required = true) final int adProcessId//
+			@RequestParam(name = "processId", required = true) final int adProcessId//
+	// TODO: add windowId, documentId, tabId, rowId
 	)
 	{
 		loginService.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final ProcessInstance pinstance = instancesRepository.createNewProcessInstance(adProcessId);
-			return JSONProcessInstance.of(pinstance, newJsonOpts());
+			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(adProcessId);
+			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
 
@@ -99,8 +100,8 @@ public class ProcessRestController
 	{
 		loginService.assertLoggedIn();
 
-		final ProcessInstance pinstance = instancesRepository.getProcessInstanceForReading(pinstanceId);
-		return JSONProcessInstance.of(pinstance, newJsonOpts());
+		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForReading(pinstanceId);
+		return JSONProcessInstance.of(processInstance, newJsonOpts());
 	}
 
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters", method = RequestMethod.PATCH)
@@ -112,7 +113,7 @@ public class ProcessRestController
 		loginService.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.commit", () -> {
-			final ProcessInstance pinstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
+			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
 
 			//
 			// Apply changes
@@ -120,7 +121,7 @@ public class ProcessRestController
 			{
 				if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 				{
-					pinstance.processParameterValueChange(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
+					processInstance.processParameterValueChange(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
 				}
 				else
 				{
@@ -129,7 +130,7 @@ public class ProcessRestController
 			}
 
 			// Push back the changed document
-			instancesRepository.checkin(pinstance);
+			instancesRepository.checkin(processInstance);
 
 			//
 			// Return the changes
@@ -141,15 +142,19 @@ public class ProcessRestController
 	public JSONProcessInstanceResult startProcess(@PathVariable("pinstanceId") final int pinstanceId)
 	{
 		loginService.assertLoggedIn();
-		
-		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
-		final ProcessInstanceResult result = processInstance.startProcess();
-		
-		// TODO: remove it from instancesRepository
-		
-		return JSONProcessInstanceResult.of(result);
+
+		return Execution.callInNewExecution("pinstance.startProcess", () -> {
+			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
+			final ProcessInstanceResult result = processInstance.startProcess();
+
+			// Push back the changed document
+			instancesRepository.checkin(processInstance);
+			// TODO: remove it from instancesRepository
+
+			return JSONProcessInstanceResult.of(result);
+		});
 	}
-	
+
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters/{parameterName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList typeahead(
 			@PathVariable("pinstanceId") final int pinstanceId //

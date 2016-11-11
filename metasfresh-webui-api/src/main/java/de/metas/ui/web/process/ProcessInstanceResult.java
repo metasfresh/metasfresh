@@ -37,6 +37,7 @@ public class ProcessInstanceResult implements Serializable
 		return new Builder();
 	}
 
+	private final int adPInstanceId;
 	private final String summary;
 	private final boolean error;
 	private final byte[] reportData;
@@ -45,6 +46,7 @@ public class ProcessInstanceResult implements Serializable
 	private ProcessInstanceResult(final Builder builder)
 	{
 		super();
+		adPInstanceId = builder.adPInstanceId;
 		summary = builder.summary;
 		error = builder.error;
 		reportData = builder.reportData;
@@ -56,11 +58,17 @@ public class ProcessInstanceResult implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("adPInstanceId", adPInstanceId)
 				.add("summary", summary)
 				.add("error", error)
 				.add("reportContentType", reportContentType)
 				.add("reportData.length", reportData == null ? null : reportData.length)
 				.toString();
+	}
+	
+	public int getAD_PInstance_ID()
+	{
+		return adPInstanceId;
 	}
 
 	public String getSummary()
@@ -85,6 +93,7 @@ public class ProcessInstanceResult implements Serializable
 
 	public static final class Builder
 	{
+		private int adPInstanceId;
 		private String summary;
 		private boolean error;
 
@@ -99,6 +108,12 @@ public class ProcessInstanceResult implements Serializable
 		public ProcessInstanceResult build()
 		{
 			return new ProcessInstanceResult(this);
+		}
+		
+		public Builder setAD_PInstance_ID(final int adPInstanceId)
+		{
+			this.adPInstanceId = adPInstanceId;
+			return this;
 		}
 
 		public Builder setSummary(final String summary)

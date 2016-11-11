@@ -2,6 +2,7 @@ package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.ProcessInstanceResult;
@@ -36,26 +37,43 @@ public class JSONProcessInstanceResult implements Serializable
 		return new JSONProcessInstanceResult(result);
 	}
 
+	@JsonProperty("pinstanceId")
+	private final int pinstanceId;
+	
 	@JsonProperty("summary")
 	private final String summary;
 	@JsonProperty("error")
 	private final boolean error;
+	
+	//
+	// Report
 	@JsonProperty("reportContentType")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String reportContentType;
 	@JsonProperty("reportData")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final byte[] reportData;
 
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
 		super();
+		pinstanceId = result.getAD_PInstance_ID();
+		
 		summary = result.getSummary();
 		error = result.isError();
-		reportContentType = result.getReportContentType();
 
+		//
+		// Report
+		reportContentType = result.getReportContentType();
 		final byte[] reportData = result.getReportData();
 		this.reportData = reportData == null || reportData.length == 0 ? null : reportData;
 	}
-
+	
+	public int getPinstanceId()
+	{
+		return pinstanceId;
+	}
+	
 	public String getSummary()
 	{
 		return summary;

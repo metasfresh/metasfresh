@@ -11,9 +11,11 @@ import org.compiere.util.Env;
 
 import de.metas.process.ProcessCtl;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
@@ -45,7 +47,7 @@ public class ProcessInstance
 	private final int adPInstanceId;
 	private final Document parameters;
 
-	public ProcessInstance(final ProcessDescriptor processDescriptor, final int adPInstanceId, final Document parameters)
+	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final int adPInstanceId, final Document parameters)
 	{
 		super();
 		this.processDescriptor = processDescriptor;
@@ -89,34 +91,49 @@ public class ProcessInstance
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}
 
-	public void processParameterValueChange(String parameterName, Object value, ReasonSupplier reason)
+	public void processParameterValueChange(final String parameterName, final Object value, final ReasonSupplier reason)
 	{
 		parameters.processValueChange(parameterName, value, reason);
 	}
 
 	public ProcessInstanceResult startProcess()
 	{
-		// TODO: make sure it's saved in database
-		
+		//
+		// Make sure it's saved in database
+		if (!saveIfValidAndHasChanges())
+		{
+			throw new ProcessExecutionException("Instance could not be saved because it's not valid");
+		}
+
+		//
+		// Process info
 		final ProcessInfo pi = createProcessInfo();
 		final WebuiJRReportViewerProvider jrReportViewerProvider = new WebuiJRReportViewerProvider();
 
+		//
+		// Execute the process/report
 		ProcessCtl.builder()
 				.setProcessInfo(pi)
 				.setJRReportViewerProvider(jrReportViewerProvider)
 				.executeSync();
 
-		final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
-				.setSummary(pi.getSummary())
-				.setError(pi.isError());
-		
-		final byte[] reportData = jrReportViewerProvider.getReportData();
-		if(reportData != null && reportData.length > 0)
+		//
+		// Build and return the execution result
 		{
-			resultBuilder.setReportData(reportData, jrReportViewerProvider.getReportType().getContentType());
-		}
+			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
+					.setAD_PInstance_ID(pi.getAD_PInstance_ID())
+					.setSummary(pi.getSummary())
+					.setError(pi.isError());
+			//
+			// Result: report
+			final byte[] reportData = jrReportViewerProvider.getReportData();
+			if (reportData != null && reportData.length > 0)
+			{
+				resultBuilder.setReportData(reportData, jrReportViewerProvider.getReportType().getContentType());
+			}
 
-		return resultBuilder.build();
+			return resultBuilder.build();
+		}
 	}
 
 	private final ProcessInfo createProcessInfo()
@@ -143,9 +160,19 @@ public class ProcessInstance
 				.setRecord(AD_Table_ID, Record_ID)
 				.setPrintPreview(true)
 				.build();
-		// pi.setParameter(parameter); // NOTE: don't set it; let it to be loaded
 
 		return pi;
 	}
 
+	/**
+	 * Save
+	 *
+	 * @return true if valid and saved
+	 */
+	public boolean saveIfValidAndHasChanges()
+	{
+		final DocumentSaveStatus parametersSaveStatus = getParameters().saveIfValidAndHasChanges();
+		final boolean saved = !parametersSaveStatus.isError();
+		return saved;
+	}
 }
