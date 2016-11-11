@@ -1,10 +1,8 @@
 package de.metas.ui.web.process.json;
 
-import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,15 +35,8 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 public class JSONDocumentAction
 {
-	static final List<JSONDocumentAction> ofList(final List<ProcessDescriptor> processDescriptors, final JSONFilteringOptions jsonOpts)
-	{
-		return processDescriptors.stream()
-				.map(processDescriptor -> new JSONDocumentAction(processDescriptor, jsonOpts))
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	@JsonProperty("actionId")
-	private final int actionId;
+	@JsonProperty("processId")
+	private final int processId;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("description")
@@ -53,13 +44,13 @@ public class JSONDocumentAction
 
 	private final Map<String, Object> debugProperties;
 
-	private JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONFilteringOptions jsonOpts)
+	JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONFilteringOptions jsonOpts)
 	{
 		super();
 		
 		final String adLanguage = jsonOpts.getAD_Language();
 		
-		actionId = processDescriptor.getActionId();
+		processId = processDescriptor.getAD_Process_ID();
 		caption = processDescriptor.getCaption(adLanguage);
 		description = processDescriptor.getDescription(adLanguage);
 
@@ -80,10 +71,10 @@ public class JSONDocumentAction
 			debugProperties = ImmutableMap.of();
 		}
 	}
-
-	public int getActionId()
+	
+	public int getProcessId()
 	{
-		return actionId;
+		return processId;
 	}
 
 	public String getCaption()

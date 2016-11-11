@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -55,7 +57,9 @@ public class JSONDocumentActionsList
 	private JSONDocumentActionsList(final List<ProcessDescriptor> processDescriptors, final JSONFilteringOptions jsonOpts)
 	{
 		super();
-		actions = JSONDocumentAction.ofList(processDescriptors, jsonOpts);
+		actions = processDescriptors.stream()
+				.map(processDescriptor -> new JSONDocumentAction(processDescriptor, jsonOpts))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public List<JSONDocumentAction> getActions()

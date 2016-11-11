@@ -47,7 +47,6 @@ public final class ProcessDescriptor
 		Form, Workflow, Process, Report
 	};
 
-	private final int actionId;
 	private final int adProcessId;
 	private final ProcessDescriptorType type;
 	private final Class<? extends ISvrProcessPrecondition> preconditionsClass;
@@ -61,7 +60,6 @@ public final class ProcessDescriptor
 		super();
 
 		adProcessId = builder.getAD_Process_ID();
-		actionId = builder.getActionId();
 
 		type = builder.getType();
 
@@ -73,12 +71,7 @@ public final class ProcessDescriptor
 		layout = builder.getLayout();
 	}
 
-	public int getActionId()
-	{
-		return actionId;
-	}
-
-	private int getAD_Process_ID()
+	public int getAD_Process_ID()
 	{
 		return adProcessId;
 	}
@@ -180,11 +173,6 @@ public final class ProcessDescriptor
 		public ProcessDescriptor build()
 		{
 			return new ProcessDescriptor(this);
-		}
-
-		private int getActionId()
-		{
-			return getAD_Process_ID();
 		}
 
 		public Builder setAD_Process_ID(final int adProcessId)
