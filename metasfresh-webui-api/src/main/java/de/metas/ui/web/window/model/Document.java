@@ -799,7 +799,7 @@ public final class Document
 		}
 
 		_valid = valid;
-		Execution.getCurrentDocumentChangesCollector().collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
 		return valid;
 	}
 
@@ -1094,6 +1094,8 @@ public final class Document
 		{
 			field.updateValid();
 		}
+		
+		checkAndGetValidStatus();
 	}
 
 	public LookupValuesList getFieldLookupValues(final String fieldName)
@@ -1442,6 +1444,10 @@ public final class Document
 			{
 				document.initializeFields(fieldInitializerMode, fieldInitializer);
 			}
+
+			//
+			// Update document's valid status
+			document.checkAndGetValidStatus();
 
 			return document;
 		}
