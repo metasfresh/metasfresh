@@ -155,7 +155,7 @@ public class ProcessDescriptorsFactory
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(adProcessParam.getColumnName(), adProcessParam.getAD_Reference_ID());
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
-		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
+		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
 		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(adProcessParam.isMandatory());
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
