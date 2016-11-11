@@ -38,10 +38,10 @@ import de.metas.logging.LogManager;
 public final class JSONDate implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
-	
+
 	private static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 	private static final SimpleDateFormatThreadLocal DATE_FORMAT = new SimpleDateFormatThreadLocal(DATE_PATTEN);
-	
+
 	private static final DateFormat getDateFormat()
 	{
 		return DATE_FORMAT.getDateFormat();
@@ -79,7 +79,10 @@ public final class JSONDate implements Serializable
 			}
 			catch (final Exception ex2)
 			{
-				final IllegalArgumentException exFinal = new IllegalArgumentException("Failed converting '" + valueStr + "' to date", ex1);
+				final String errmsg = "Failed converting '" + valueStr + "' to date."
+						+ "\n Please use following format: " + DATE_PATTEN + "."
+						+ "\n e.g. " + getDateFormat().format(new java.util.Date());
+				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
 				throw exFinal;
 			}
