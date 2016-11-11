@@ -28,8 +28,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -48,12 +46,14 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextArea;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.Constants;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Attachment Viewer
@@ -106,7 +106,8 @@ public final class Attachment extends CDialog
 		//
 		try
 		{
-			AEnv.showCenterWindow(frame, this);
+			AEnv.showMaximized(this);
+			
 		}
 		catch (Exception e)
 		{
@@ -322,6 +323,9 @@ public final class Attachment extends CDialog
 				if (image != null)
 				{
 					gifPanel.setImage(image);
+					int w = getWidth() - 250;
+					int h = getHeight() - 150;
+					gifScroll.setPreferredSize(new Dimension(w,h));
 					size = gifPanel.getPreferredSize();
 					if (size.width == -1 && size.height == -1)
 					{
