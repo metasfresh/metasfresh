@@ -106,9 +106,16 @@ public class Application
 						final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 						httpProtocol.setCompression("on");
 						httpProtocol.setCompressionMinSize(256);
-						final String mimeTypes = httpProtocol.getCompressableMimeTypes();
-						final String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
-						httpProtocol.setCompressableMimeTypes(mimeTypesWithJson);
+						final StringBuffer mimeTypes = new StringBuffer(httpProtocol.getCompressableMimeType());
+						if(!mimeTypes.toString().contains("MediaType.APPLICATION_JSON_VALUE"))
+						{
+							mimeTypes.append(","+MediaType.APPLICATION_JSON_VALUE);
+						}
+						if(!mimeTypes.toString().contains("application/javascript"))
+						{
+							mimeTypes.append(",application/javascript");
+						}
+						httpProtocol.setCompressableMimeType(mimeTypes.toString());
 					}
 				});
 			}
