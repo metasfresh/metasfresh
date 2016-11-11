@@ -99,9 +99,9 @@ public class ProcessParametersRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentDocument)
+	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentProcessParameters)
 	{
-		if (parentDocument != null)
+		if (parentProcessParameters != null)
 		{
 			throw new IllegalArgumentException("parentDocument is not supported");
 		}
@@ -124,10 +124,10 @@ public class ProcessParametersRepository implements DocumentsRepository
 	}
 
 	@Override
-	public void refresh(final Document document)
+	public void refresh(final Document processParameters)
 	{
-		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(document.getDocumentIdAsInt());
-		document.refresh(parameterDescriptor -> extractParameterValue(processInfoParameters, parameterDescriptor));
+		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(processParameters.getDocumentIdAsInt());
+		processParameters.refresh(parameterDescriptor -> extractParameterValue(processInfoParameters, parameterDescriptor));
 	}
 
 	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final int adPInstanceId)
@@ -140,10 +140,10 @@ public class ProcessParametersRepository implements DocumentsRepository
 	}
 
 	@Override
-	public void save(final Document document)
+	public void save(final Document processParameters)
 	{
-		final int adPInstanceId = document.getDocumentIdAsInt();
-		final ProcessInfoParameter[] piParams = document.getFieldViews()
+		final int adPInstanceId = processParameters.getDocumentIdAsInt();
+		final ProcessInfoParameter[] piParams = processParameters.getFieldViews()
 				.stream()
 				.map(field -> createProcessInfoParameter(field))
 				.toArray(size -> new ProcessInfoParameter[size]);
@@ -175,7 +175,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 	}
 
 	@Override
-	public void delete(final Document document)
+	public void delete(final Document processParameters)
 	{
 		throw new UnsupportedOperationException();
 	}
