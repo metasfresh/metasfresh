@@ -42,7 +42,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElement implements Serializable
 {
-	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONFilteringOptions jsonOpts)
+	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
@@ -50,7 +50,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonOpts)
+	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
 		if (element == null)
 		{
@@ -87,7 +87,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
-	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
 		super();
 		final String adLanguage = jsonOpts.getAD_Language();

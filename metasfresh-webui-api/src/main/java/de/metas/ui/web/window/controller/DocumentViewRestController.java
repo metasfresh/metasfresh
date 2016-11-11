@@ -20,7 +20,7 @@ import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
@@ -96,9 +96,9 @@ public class DocumentViewRestController
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
 
-	private JSONFilteringOptions.Builder newJSONFilteringOptions()
+	private JSONOptions.Builder newJSONFilteringOptions()
 	{
-		return JSONFilteringOptions.builder()
+		return JSONOptions.builder()
 				.setUserSession(userSession);
 	}
 
@@ -122,7 +122,7 @@ public class DocumentViewRestController
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
 
-		final JSONFilteringOptions jsonOpts = newJSONFilteringOptions().build();
+		final JSONOptions jsonOpts = newJSONFilteringOptions().build();
 
 		switch (viewDataType)
 		{

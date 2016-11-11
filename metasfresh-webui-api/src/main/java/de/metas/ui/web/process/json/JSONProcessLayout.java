@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 @SuppressWarnings("serial")
 public class JSONProcessLayout implements Serializable
 {
-	public static JSONProcessLayout of(final ProcessLayout layout, final JSONFilteringOptions jsonOpts)
+	public static JSONProcessLayout of(final ProcessLayout layout, final JSONOptions jsonOpts)
 	{
 		return new JSONProcessLayout(layout, jsonOpts);
 	}
@@ -48,7 +48,7 @@ public class JSONProcessLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	public JSONProcessLayout(final ProcessLayout layout, final JSONFilteringOptions jsonOpts)
+	public JSONProcessLayout(final ProcessLayout layout, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);

@@ -34,7 +34,7 @@ import de.metas.ui.web.window.model.DocumentReference;
 
 public class JSONDocumentReferencesList
 {
-	public static JSONDocumentReferencesList of(final Collection<DocumentReference> documentReferences, final JSONFilteringOptions jsonOpts)
+	public static JSONDocumentReferencesList of(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentReferencesList(documentReferences, jsonOpts);
 	}
@@ -42,7 +42,7 @@ public class JSONDocumentReferencesList
 	@JsonProperty("references")
 	private final List<JSONDocumentReference> references;
 
-	private JSONDocumentReferencesList(final Collection<DocumentReference> documentReferences, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentReferencesList(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
 	{
 		super();
 		references = documentReferences.stream()

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 @SuppressWarnings("serial")
 public class JSONDashboardItem implements Serializable
 {
-	/* package */static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONFilteringOptions jsonOpts)
+	/* package */static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
 	{
 		return new JSONDashboardItem(dashboardItem, jsonOpts);
 	}
@@ -48,7 +48,7 @@ public class JSONDashboardItem implements Serializable
 	@JsonProperty("seqNo")
 	private final int seqNo;
 
-	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONFilteringOptions jsonOpts)
+	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
 	{
 		super();
 		id = dashboardItem.getId();

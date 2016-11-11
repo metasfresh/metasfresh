@@ -43,31 +43,31 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutColumn implements Serializable
 {
-	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONOptions jsonOpts)
 	{
 		return columns.stream()
-				.map(column -> of(column, jsonFilteringOpts))
+				.map(column -> of(column, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column, final JSONFilteringOptions jsonFilteringOpts)
+	private static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutColumn(column, jsonFilteringOpts);
+		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
 	
-	static JSONDocumentLayoutColumn oneColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static JSONDocumentLayoutColumn oneColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutColumn(detailLayout, jsonFilteringOpts);
+		return new JSONDocumentLayoutColumn(detailLayout, jsonOpts);
 	}
 
-	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		return ImmutableList.of(oneColumn(detailLayout, jsonFilteringOpts));
+		return ImmutableList.of(oneColumn(detailLayout, jsonOpts));
 	}
 
-	static List<JSONDocumentLayoutColumn> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutColumn> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutColumn column = new JSONDocumentLayoutColumn(sideListLayout, jsonFilteringOpts);
+		final JSONDocumentLayoutColumn column = new JSONDocumentLayoutColumn(sideListLayout, jsonOpts);
 		return ImmutableList.of(column);
 	}
 
@@ -83,10 +83,10 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		this.elementGroups = ImmutableList.of();
 	}
 
-	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
 	{
 		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonFilteringOpts);
+		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
 	}
 
 	@JsonCreator
@@ -100,24 +100,24 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	 * From detail tab constructor
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	private JSONDocumentLayoutColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
 		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofDetailTab(detailLayout, jsonFilteringOpts);
+		elementGroups = JSONDocumentLayoutElementGroup.ofDetailTab(detailLayout, jsonOpts);
 	}
 
 	/**
 	 * From side-list layout constructor
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	public JSONDocumentLayoutColumn(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	public JSONDocumentLayoutColumn(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
 		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofSideListLayout(sideListLayout, jsonFilteringOpts);
+		elementGroups = JSONDocumentLayoutElementGroup.ofSideListLayout(sideListLayout, jsonOpts);
 	}
 
 	@Override

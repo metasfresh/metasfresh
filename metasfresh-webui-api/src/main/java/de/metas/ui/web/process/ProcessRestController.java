@@ -20,7 +20,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import io.swagger.annotations.Api;
@@ -63,9 +63,9 @@ public class ProcessRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
-	private JSONFilteringOptions newJsonOpts()
+	private JSONOptions newJsonOpts()
 	{
-		return JSONFilteringOptions.builder()
+		return JSONOptions.builder()
 				.setUserSession(userSession)
 				.build();
 	}

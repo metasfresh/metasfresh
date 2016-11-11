@@ -43,14 +43,14 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementField implements Serializable
 {
-	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONFilteringOptions jsonOpts)
+	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONOptions jsonOpts)
 	{
 		return fieldDescriptors.stream()
 				.map(fieldDescriptor -> of(fieldDescriptor, jsonOpts))
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONFilteringOptions jsonOpts)
+	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementField(fieldDescriptor, jsonOpts);
 	}
@@ -121,7 +121,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
 
-	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
 	{
 		super();
 		field = fieldDescriptor.getField();

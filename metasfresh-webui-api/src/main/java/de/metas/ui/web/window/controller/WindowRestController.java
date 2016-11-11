@@ -39,8 +39,8 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -124,9 +124,9 @@ public class WindowRestController implements IWindowRestController
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
 
-	private JSONFilteringOptions.Builder newJSONFilteringOptions()
+	private JSONOptions.Builder newJSONOptions()
 	{
-		return JSONFilteringOptions.builder()
+		return JSONOptions.builder()
 				.setUserSession(userSession);
 	}
 
@@ -144,7 +144,7 @@ public class WindowRestController implements IWindowRestController
 				.getDocumentDescriptor(adWindowId)
 				.getLayout();
 
-		final JSONFilteringOptions jsonOpts = newJSONFilteringOptions()
+		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
 				.build();
 
@@ -184,7 +184,7 @@ public class WindowRestController implements IWindowRestController
 		//
 		// Retrieve and return the documents
 		final List<Document> documents = documentCollection.getDocuments(documentPath);
-		return JSONDocument.ofDocumentsList(documents, newJSONFilteringOptions()
+		return JSONDocument.ofDocumentsList(documents, newJSONOptions()
 				.setShowAdvancedFields(advanced)
 				.setDataFieldsList(fieldsListStr)
 				.build());
@@ -211,14 +211,14 @@ public class WindowRestController implements IWindowRestController
 				.allowNewRowId()
 				.build();
 
-		final JSONFilteringOptions jsonFilteringOpts = newJSONFilteringOptions()
+		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
 				.build();
 
-		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events, jsonFilteringOpts));
+		return Execution.callInNewExecution("window.commit", () -> commit0(documentPath, events, jsonOpts));
 	}
 
-	private List<JSONDocument> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONFilteringOptions jsonFilteringOpts)
+	private List<JSONDocument> commit0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
 		//
 		// Fetch the document in writing mode
@@ -258,7 +258,7 @@ public class WindowRestController implements IWindowRestController
 
 		//
 		// Return the changes
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonFilteringOpts);
+		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 	}
 
 	@Override
@@ -279,13 +279,13 @@ public class WindowRestController implements IWindowRestController
 				.setRowIdsList(rowIdsListStr)
 				.build();
 
-		final JSONFilteringOptions jsonFilteringOptions = newJSONFilteringOptions()
+		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(false)
 				.build();
 
 		return Execution.callInNewExecution("window.delete", () -> {
 			documentCollection.delete(documentPath);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonFilteringOptions);
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 		});
 	}
 
@@ -401,7 +401,7 @@ public class WindowRestController implements IWindowRestController
 				.stream()
 				.filter(processDescriptor -> processDescriptor.isExecutionGranted(permissions))
 				.filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
-				.collect(JSONDocumentActionsList.collect(newJSONFilteringOptions().build()));
+				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 	}
 
 	@Override
@@ -419,7 +419,7 @@ public class WindowRestController implements IWindowRestController
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final Collection<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(document).values();
-		return JSONDocumentReferencesList.of(documentReferences, newJSONFilteringOptions().build());
+		return JSONDocumentReferencesList.of(documentReferences, newJSONOptions().build());
 	}
 
 	@RequestMapping(value = "/documentPrint", method = RequestMethod.GET)

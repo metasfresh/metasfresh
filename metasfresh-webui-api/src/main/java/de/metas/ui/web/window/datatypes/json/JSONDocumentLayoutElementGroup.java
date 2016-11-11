@@ -42,27 +42,27 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElementGroup implements Serializable
 {
-	static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutElementGroup> ofList(final List<DocumentLayoutElementGroupDescriptor> elementGroups, final JSONOptions jsonOpts)
 	{
 		return elementGroups.stream()
-				.map(elementGroup -> of(elementGroup, jsonFilteringOpts))
+				.map(elementGroup -> of(elementGroup, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONFilteringOptions jsonFilteringOpts)
+	public static JSONDocumentLayoutElementGroup of(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutElementGroup(elementGroup, jsonFilteringOpts);
+		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
 
-	static List<JSONDocumentLayoutElementGroup> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutElementGroup> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(detailLayout, jsonFilteringOpts);
+		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(detailLayout, jsonOpts);
 		return ImmutableList.of(elementGroup);
 	}
 
-	static List<JSONDocumentLayoutElementGroup> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutElementGroup> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(sideListLayout, jsonFilteringOpts);
+		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(sideListLayout, jsonOpts);
 		return ImmutableList.of(elementGroup);
 	}
 
@@ -75,11 +75,11 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementLine> elementLines;
 
-	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONOptions jsonOpts)
 	{
 		super();
 		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
-		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines(), jsonFilteringOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines(), jsonOpts);
 	}
 
 	@JsonCreator
@@ -94,26 +94,26 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	 * From detail tab constructor
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	private JSONDocumentLayoutElementGroup(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutElementGroup(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
 		super();
 		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(detailLayout.getElements(), jsonFilteringOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(detailLayout.getElements(), jsonOpts);
 	}
 
 	/**
 	 * From side-list layout constructor
 	 *
 	 * @param sideListLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	public JSONDocumentLayoutElementGroup(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	public JSONDocumentLayoutElementGroup(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
 		super();
 		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(sideListLayout.getElements(), jsonFilteringOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(sideListLayout.getElements(), jsonOpts);
 	}
 
 	@Override

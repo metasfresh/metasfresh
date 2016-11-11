@@ -38,12 +38,12 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * JSON context: provide different options and filters to be used when the API responses are converted to JSON.
+ * JSON context: provide different options and filters to be used when the API responses are converted to/from JSON.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class JSONFilteringOptions
+public final class JSONOptions
 {
 	public static final Builder builder()
 	{
@@ -52,7 +52,7 @@ public final class JSONFilteringOptions
 
 	public static final String DEBUG_ATTRNAME = "json-options";
 
-	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
+	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONOptions.class.getName() + ".ShowColumnNamesForCaption";
 
 	private final String adLanguage;
 	private final boolean showAdvancedFields;
@@ -217,7 +217,7 @@ public final class JSONFilteringOptions
 		}
 	};
 
-	private JSONFilteringOptions(final Builder builder)
+	private JSONOptions(final Builder builder)
 	{
 		super();
 		adLanguage = builder.userSession.getAD_Language();
@@ -322,9 +322,9 @@ public final class JSONFilteringOptions
 			super();
 		}
 
-		public JSONFilteringOptions build()
+		public JSONOptions build()
 		{
-			return new JSONFilteringOptions(this);
+			return new JSONOptions(this);
 		}
 
 		public Builder setUserSession(final UserSession userSession)

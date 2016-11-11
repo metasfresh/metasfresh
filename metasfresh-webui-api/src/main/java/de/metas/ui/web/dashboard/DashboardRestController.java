@@ -10,7 +10,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
 import de.metas.ui.web.dashboard.json.JSONDashboardChanges;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -45,9 +45,9 @@ public class DashboardRestController
 	@Autowired
 	private UserDashboardRepository userDashboardRepo;
 
-	private JSONFilteringOptions.Builder newJSONOpts()
+	private JSONOptions.Builder newJSONOpts()
 	{
-		return JSONFilteringOptions.builder()
+		return JSONOptions.builder()
 				.setUserSession(userSession);
 	}
 

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ public class JSONDocumentAction
 
 	private final Map<String, Object> debugProperties;
 
-	JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONFilteringOptions jsonOpts)
+	JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONOptions jsonOpts)
 	{
 		super();
 		

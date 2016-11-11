@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
@@ -46,7 +46,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 @SuppressWarnings("serial")
 public final class JSONDocumentFilterDescriptor implements Serializable
 {
-	public static List<JSONDocumentFilterDescriptor> ofCollection(@Nullable final Collection<DocumentFilterDescriptor> filters, final JSONFilteringOptions jsonOpts)
+	public static List<JSONDocumentFilterDescriptor> ofCollection(@Nullable final Collection<DocumentFilterDescriptor> filters, final JSONOptions jsonOpts)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -73,7 +73,7 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 	private final Map<String, Object> debugProperties;
 
-	private JSONDocumentFilterDescriptor(final DocumentFilterDescriptor filter, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentFilterDescriptor(final DocumentFilterDescriptor filter, final JSONOptions jsonOpts)
 	{
 		super();
 		filterId = filter.getFilterId();

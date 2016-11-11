@@ -33,7 +33,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 public class JSONDocumentReference
 {
-	public static final JSONDocumentReference of(final DocumentReference documentReference, final JSONFilteringOptions jsonOpts)
+	public static final JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		try
 		{
@@ -59,7 +59,7 @@ public class JSONDocumentReference
 	@JsonProperty("filter")
 	private final JSONDocumentFilter filter;
 
-	private JSONDocumentReference(final DocumentReference documentReference, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentReference(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		super();
 		id = documentReference.getId();

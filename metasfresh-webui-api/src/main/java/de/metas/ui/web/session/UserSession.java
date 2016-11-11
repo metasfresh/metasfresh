@@ -28,7 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -115,7 +115,7 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		//
 		// Set initial properties
-		properties.put(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption, default_showColumnNamesForCaption);
+		properties.put(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, default_showColumnNamesForCaption);
 	}
 
 	private void writeObject(final java.io.ObjectOutputStream out) throws IOException

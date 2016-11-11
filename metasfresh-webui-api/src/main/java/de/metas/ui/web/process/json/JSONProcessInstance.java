@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 @SuppressWarnings("serial")
 public class JSONProcessInstance implements Serializable
 {
-	public static JSONProcessInstance of(final ProcessInstance pinstance, final JSONFilteringOptions jsonOpts)
+	public static JSONProcessInstance of(final ProcessInstance pinstance, final JSONOptions jsonOpts)
 	{
 		return new JSONProcessInstance(pinstance, jsonOpts);
 	}
@@ -43,7 +43,7 @@ public class JSONProcessInstance implements Serializable
 	@JsonProperty("parameters")
 	private final JSONDocument parameters;
 
-	private JSONProcessInstance(final ProcessInstance pinstance, final JSONFilteringOptions jsonOpts)
+	private JSONProcessInstance(final ProcessInstance pinstance, final JSONOptions jsonOpts)
 	{
 		super();
 		type = String.valueOf(pinstance.getAD_PInstance_ID());

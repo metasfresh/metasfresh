@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutTab implements Serializable
 {
-	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONFilteringOptions jsonOpts)
+	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONOptions jsonOpts)
 	{
 		final Collection<DocumentFilterDescriptor> filters = null;
 		return details.stream()
@@ -57,7 +57,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	public static JSONDocumentLayoutTab of(
 			final DocumentLayoutDetailDescriptor detail //
 			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONFilteringOptions jsonOpts //
+			, final JSONOptions jsonOpts //
 	)
 	{
 		return new JSONDocumentLayoutTab(detail, filters, jsonOpts);
@@ -66,7 +66,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	public static final JSONDocumentLayoutTab ofSideListLayout(
 			final DocumentLayoutSideListDescriptor sideListLayout //
 			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONFilteringOptions jsonOpts //
+			, final JSONOptions jsonOpts //
 	)
 	{
 		return new JSONDocumentLayoutTab(sideListLayout, filters, jsonOpts);
@@ -108,7 +108,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutDetailDescriptor detail //
 			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONFilteringOptions jsonOpts //
+			, final JSONOptions jsonOpts //
 	)
 	{
 		super();
@@ -132,7 +132,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutSideListDescriptor sideListLayout //
 			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONFilteringOptions jsonOpts //
+			, final JSONOptions jsonOpts //
 	)
 	{
 		super();

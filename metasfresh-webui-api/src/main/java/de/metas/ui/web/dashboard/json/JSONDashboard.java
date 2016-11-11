@@ -9,7 +9,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 @SuppressWarnings("serial")
 public class JSONDashboard implements Serializable
 {
-	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final JSONFilteringOptions jsonOpts)
+	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final JSONOptions jsonOpts)
 	{
 		return new JSONDashboard(items, jsonOpts);
 	}
@@ -44,7 +44,7 @@ public class JSONDashboard implements Serializable
 	@JsonProperty("items")
 	private final List<JSONDashboardItem> items;
 
-	private JSONDashboard(final Collection<UserDashboardItem> items, final JSONFilteringOptions jsonOpts)
+	private JSONDashboard(final Collection<UserDashboardItem> items, final JSONOptions jsonOpts)
 	{
 		super();
 

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
@@ -41,14 +41,14 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 @SuppressWarnings("serial")
 /* package */final class JSONDocumentFilterParamDescriptor implements Serializable
 {
-	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONFilteringOptions jsonOpts)
+	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONOptions jsonOpts)
 	{
 		return params.stream()
 				.map(filter -> of(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentFilterParamDescriptor(param, jsonOpts);
 	}
@@ -78,7 +78,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	@JsonProperty("mandatory")
 	private final boolean mandatory;
 
-	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		super();
 

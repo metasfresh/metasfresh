@@ -13,7 +13,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 
 public class JSONDocumentActionsList
 {
-	public static final Collector<ProcessDescriptor, ?, JSONDocumentActionsList> collect(final JSONFilteringOptions jsonOpts)
+	public static final Collector<ProcessDescriptor, ?, JSONDocumentActionsList> collect(final JSONOptions jsonOpts)
 	{
 		final Supplier<List<ProcessDescriptor>> supplier = ArrayList::new;
 		final BiConsumer<List<ProcessDescriptor>, ProcessDescriptor> accumulator = List::add;
@@ -54,7 +54,7 @@ public class JSONDocumentActionsList
 	@JsonProperty("actions")
 	private final List<JSONDocumentAction> actions;
 
-	private JSONDocumentActionsList(final List<ProcessDescriptor> processDescriptors, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentActionsList(final List<ProcessDescriptor> processDescriptors, final JSONOptions jsonOpts)
 	{
 		super();
 		actions = processDescriptors.stream()
