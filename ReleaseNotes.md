@@ -24,9 +24,11 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * #552 division by 0 in costprice report
+    * Fixed a division by 0 Bug in costprice report.
 
 * metasfresh-webui
   * #40 Account fields are not working
+    * Fix in new WebUI Implementation. An exception occured because of Field Type account.
   
 # metasfresh 4.42.41 (2016-44)
 
