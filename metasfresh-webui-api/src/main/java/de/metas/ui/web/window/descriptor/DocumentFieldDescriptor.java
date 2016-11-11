@@ -476,7 +476,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
+			throw new AdempiereException("Failed converting " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 					+ "\n LookupDataSource: " + lookupDataSource //
 					, e);
 		}
