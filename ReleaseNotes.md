@@ -11,6 +11,16 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 4.43.42 (2016-45)
+
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+    * Added a new filter in saldobilanz report to exclude the year end accountings (profit & loss) from report.
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
+    * Added a new REST-API endpoint for WebUI KPI widgets.
+
 ## Fixes
 * metasfresh
   * #552 division by 0 in costprice report
@@ -18,13 +28,6 @@ Here come the actual release notes:
 * metasfresh-webui
   * #40 Account fields are not working
   
-## Features
-* metasfresh
-  * #504 new filter in saldobilanz report
-
-* metasfresh-webui
-  * #41 Implement Dashboard REST endpoint
-
 # metasfresh 4.42.41 (2016-44)
 
 ## Features
