@@ -40,6 +40,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.wrapper.CompositeInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.GridTabInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
@@ -123,7 +124,10 @@ public class InterfaceWrapperHelper
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
 	 * @param cl
-	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)
+	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
+	 *            <p>
+	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
+	 *            <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
 	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
@@ -132,21 +136,23 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
-
 		//
 		// Get transaction name from contextProvider.
 		// If contextProvider's transaction name is NULL and we have a thread inherited transaction, then let's use that one
-		// final ITrxManager trxManager = getTrxManager();
+		final ITrxManager trxManager = getTrxManager();
 		String trxName = getTrxName(contextProvider);
-		// if (trxManager.isNull(trxName))
-		// {
-		// final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
-		// if (trxThreadInherited != null)
-		// {
-		// trxName = ITrx.TRXNAME_ThreadInherited;
-		// }
-		// }
-
+		if (trxManager.isNull(trxName))
+		{
+			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(contextProvider);
+			if (ctxAware.isAllowThreadInherited())  // it's ok to check and if there is a thread inherited trx, use that.
+			{
+				final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
+				if (trxThreadInherited != null)
+				{
+					trxName = ITrx.TRXNAME_ThreadInherited;
+				}
+			}
+		}
 		return create(ctx, cl, trxName);
 	}
 
@@ -316,7 +322,7 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = new ArrayList<T>(list.size());
+		final List<T> result = new ArrayList<>(list.size());
 		for (final S model : list)
 		{
 			final T modelConv = create(model, clazz);
@@ -1355,7 +1361,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * @param model
 	 * @param columnNames
-	 * @return true if any of given column names where changed
+	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{

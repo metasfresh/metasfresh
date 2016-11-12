@@ -298,7 +298,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 
 			//
 			// Create AD_Issue
-			final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class, new PlainContextAware(Env.getCtx())); // create the new issue out-of-trx!
+			final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class, PlainContextAware.newOutOfTrx(Env.getCtx())); // create the new issue out-of-trx!
 			{
 				String summary = event.getMessage();
 				issue.setSourceClassName(extractSourceClassName(event));

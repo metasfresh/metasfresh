@@ -150,7 +150,7 @@ public class HUs2DDOrderProducer
 		prepareProcessing();
 
 		final Properties ctx = getCtx();
-		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.createUsingThreadInheritedTransaction(ctx))
+		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx(ctx))
 				.run(new IHUContextProcessor()
 				{
 
