@@ -213,7 +213,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			this.parameters = null;
 			return this;
 		}
-		this.parameters = new ArrayList<Object>(parameters);
+		this.parameters = new ArrayList<>(parameters);
 		return this;
 	}
 
@@ -290,11 +290,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<ET> list;
 		if (limit > 0)
 		{
-			list = new ArrayList<ET>(limit);
+			list = new ArrayList<>(limit);
 		}
 		else
 		{
-			list = new ArrayList<ET>();
+			list = new ArrayList<>();
 		}
 
 		final String sql = buildSQL(null, true);
@@ -650,7 +650,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		final List<AT> result = new ArrayList<AT>();
+		final List<AT> result = new ArrayList<>();
 
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ").append(sqlFunction).append("(")
 				.append(sqlExpression).append(")")
@@ -871,7 +871,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		if (guaranteed)
 		{
-			final GuaranteedPOBufferedIterator<T, ET> it = new GuaranteedPOBufferedIterator<T, ET>(this, clazz);
+			final GuaranteedPOBufferedIterator<T, ET> it = new GuaranteedPOBufferedIterator<>(this, clazz);
 			if (iteratorBufferSize != null)
 			{
 				it.setBufferSize(iteratorBufferSize);
@@ -882,7 +882,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// metas: 03658: use POBufferedIterator instead of old POIterator, if database paging is supported
 		else if (DB.getDatabase().isPagingSupported())
 		{
-			final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<T, ET>(this, clazz);
+			final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<>(this, clazz, null);
 			if (iteratorBufferSize != null)
 			{
 				poBufferedIterator.setBufferSize(iteratorBufferSize);
@@ -897,7 +897,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final String tableName = getTableName();
 			final List<Object[]> idList = retrieveComposedIDs();
-			return new POIterator<ET>(ctx, tableName, clazz, idList, trxName);
+			return new POIterator<>(ctx, tableName, clazz, idList, trxName);
 		}
 	}
 
@@ -926,7 +926,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		final List<Object[]> idList = new ArrayList<Object[]>();
+		final List<Object[]> idList = new ArrayList<>();
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
@@ -978,7 +978,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			rs = createResultSet(pstmt);
-			rsPO = new POResultSet<ET>(ctx, tableName, clazz, pstmt, rs, trxName);
+			rsPO = new POResultSet<>(ctx, tableName, clazz, pstmt, rs, trxName);
 			rsPO.setCloseOnError(true);
 			return rsPO;
 		}
@@ -1268,7 +1268,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		selectClause.append(" FROM ").append(getSqlFrom());
 		final String sql = buildSQL(selectClause, true);
 
-		final List<Integer> list = new ArrayList<Integer>();
+		final List<Integer> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1502,7 +1502,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	protected TypedSqlQuery<T> newInstance()
 	{
-		return new TypedSqlQuery<T>(ctx, modelClass, tableName, whereClause, trxName);
+		return new TypedSqlQuery<>(ctx, modelClass, tableName, whereClause, trxName);
 	}
 
 	/**
@@ -1535,10 +1535,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			queryTo.parameters = new ArrayList<Object>(parameters);
+			queryTo.parameters = new ArrayList<>(parameters);
 		}
 
-		queryTo.options = options == null ? null : new HashMap<String, Object>(options);
+		queryTo.options = options == null ? null : new HashMap<>(options);
 
 		return queryTo;
 	}
@@ -1684,7 +1684,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return updateSql_UsingSelectFromSubQuery(sqlQueryUpdater);
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 
 		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ").append(getTableName())
@@ -1722,7 +1722,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			keyColumnName = DB.getDatabase().getRowIdSql(tableName);
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder(100);
 
 		//
@@ -1756,7 +1756,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public void addUnion(final IQuery<T> query, final boolean distinct)
 	{
-		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<T>(query, distinct);
+		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
 		{
 			unions = new ArrayList<>();
