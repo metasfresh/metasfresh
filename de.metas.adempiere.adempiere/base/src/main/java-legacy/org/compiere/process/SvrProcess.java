@@ -471,7 +471,8 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 *
 	 * This method is called after {@link #prepare()}.
 	 *
-	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
+	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}.
+	 * By default, this method is executed in transaction.
 	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt

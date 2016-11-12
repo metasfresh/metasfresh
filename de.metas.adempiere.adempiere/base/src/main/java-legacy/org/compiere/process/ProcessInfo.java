@@ -1260,5 +1260,6 @@ public class ProcessInfo implements Serializable, IContextAware
 		Always, /** Display them only if the process failed */
 		OnError, /** Never display them */
 		Never,
-	};
+	}
+
 }   // ProcessInfo
