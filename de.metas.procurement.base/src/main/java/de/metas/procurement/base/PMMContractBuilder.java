@@ -261,7 +261,8 @@ public class PMMContractBuilder
 	{
 		final IContextAware context = getContext();
 		final I_C_Flatrate_DataEntry newDataEntry = InterfaceWrapperHelper.newInstance(I_C_Flatrate_DataEntry.class, context);
-
+		
+		newDataEntry.setAD_Org_ID(term.getAD_Org_ID());
 		newDataEntry.setC_Flatrate_Term(term);
 		newDataEntry.setC_Period(period);
 		newDataEntry.setM_Product_DataEntry(term.getM_Product());
