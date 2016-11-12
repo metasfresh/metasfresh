@@ -45,11 +45,11 @@ public class PlainTrxManager extends AbstractTrxManager
 	private boolean failRollbackIfTrxNotStarted = true;
 
 	@Override
-	protected ITrx createTrx(String trxName)
+	protected ITrx createTrx(String trxName, final boolean autoCommit)
 	{
 		try
 		{
-			return new PlainTrx(this, trxName);
+			return new PlainTrx(this, trxName, autoCommit);
 		}
 		catch (Exception e)
 		{

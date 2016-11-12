@@ -10,12 +10,12 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -131,7 +131,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName=null, manageTrx=N/A
-	 * 
+	 *
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix <code>"TrxRun"</code>
 	 */
 	@Test
@@ -157,7 +157,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=true
-	 * 
+	 *
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix being the given <code>trxName</code>
 	 */
 	@Test
@@ -185,7 +185,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=false
-	 * 
+	 *
 	 * Expectation: use the trx with the the given trxName; create a savepoint and to roll back to in case of problems. don't commit in case of success.
 	 */
 	@Test
@@ -348,7 +348,7 @@ public class TrxManagerTest
 	 * <li>running an {@link TrxRunnable} on following configuration: NESTED transaction, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK
 	 * <li>the runnable throws a custom exception
 	 * </ul>
-	 * 
+	 *
 	 * Expectations:
 	 * <ul>
 	 * <li>our custom exception is propagated
@@ -403,7 +403,7 @@ public class TrxManagerTest
 
 	/**
 	 * Case: we are running with {@link TrxPropagation#NESTED} but we are not providing any transaction.
-	 * 
+	 *
 	 * Expection: shall fail
 	 */
 	@Test(expected = IllegalTrxRunStateException.class)
@@ -464,9 +464,9 @@ public class TrxManagerTest
 	 * <li>Propagation=NESTED, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK, trxName= {@link ITrx#TRXNAME_ThreadInherited}
 	 * <li>the thread inerited transaction is set but it does not actually exists
 	 * </ul>
-	 * 
+	 *
 	 * Expectations: an exception will be thrown
-	 * 
+	 *
 	 * Production code expectations (NOT tested here):
 	 * <ul>
 	 * <li>system will create the transaction using that provided trxName and will execute the runnable
@@ -494,7 +494,7 @@ public class TrxManagerTest
 
 	/**
 	 * Corner (possible invalid) case: propagation=NESTED, onSuccess=COMMIT.
-	 * 
+	 *
 	 * Expectation: at least, in JUnit/Developer Mode we expect to fail.
 	 */
 	@Test(expected = IllegalTrxRunStateException.class)
@@ -629,7 +629,7 @@ public class TrxManagerTest
 	{
 		// Create and register the transaction
 		final String trxName = "TestTrx";
-		final ITrx expectedTrx = trxManager.createTrxAndRegister(trxName);
+		final ITrx expectedTrx = trxManager.createTrxAndRegister(trxName, false);
 
 		Assert.assertEquals(expectedTrx, trxManager.getTrx(trxName));
 
@@ -650,7 +650,7 @@ public class TrxManagerTest
 	{
 		final String trxName = "MissingTrx";
 		trxManager.setThreadInheritedTrxName(trxName);
-		
+
 		trxManager.getTrx(ITrx.TRXNAME_ThreadInherited); // expect exception
 	}
 

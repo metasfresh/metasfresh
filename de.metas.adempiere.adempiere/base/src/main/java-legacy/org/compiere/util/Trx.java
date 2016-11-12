@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -28,21 +28,25 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
-//import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
+// import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 
 /**
  * Transaction Management. - Create new Transaction by Trx.get(name); - ..transactions.. - commit(); ---- start(); ---- commit(); - close();
  *
  * @author Jorg Janke
  * @author Low Heng Sin - added rollback(boolean) and commit(boolean) [20070105] - remove unnecessary use of savepoint - use UUID for safer transaction name generation
- * @author Teo Sarca, http://www.arhipac.ro <li>FR [ 2080217 ] Implement TrxRunnable <li>BF [ 2876927 ] Oracle JDBC driver problem
+ * @author Teo Sarca, http://www.arhipac.ro
+ *         <li>FR [ 2080217 ] Implement TrxRunnable
+ *         <li>BF [ 2876927 ] Oracle JDBC driver problem
  *         https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2876927&group_id=176962
- * @author Teo Sarca, teo.sarca@gmail.com <li>BF [ 2849122 ] PO.AfterSave is not rollback on error - add releaseSavepoint method
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2849122 ] PO.AfterSave is not rollback on error - add releaseSavepoint method
  *         https://sourceforge.net/tracker/index.php?func=detail&aid=2849122&group_id=176962&atid=879332#
  */
 public class Trx extends AbstractTrx implements VetoableChangeListener
@@ -108,9 +112,9 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	 *
 	 * @param trxName unique name
 	 */
-	public Trx(final ITrxManager trxManager, final String trxName)
+	public Trx(final ITrxManager trxManager, final String trxName, final boolean autocommit)
 	{
-		this(trxManager, trxName, null);
+		this(trxManager, trxName, null, autocommit);
 
 		// String threadName = Thread.currentThread().getName(); // for debugging
 	}	// Trx
@@ -120,10 +124,10 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	 *
 	 * @param trxName unique name
 	 * @param con optional connection ( ignore for remote transaction )
-	 * */
-	private Trx(final ITrxManager trxManager, final String trxName, final Connection con)
+	 */
+	private Trx(final ITrxManager trxManager, final String trxName, final Connection con, final boolean autocommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autocommit);
 
 		setConnection(con);
 	}	// Trx
@@ -166,14 +170,24 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			}
 		}
 		// metas: tsa: end:
-		if (m_connection == null)	// get new Connection
+		if (m_connection == null) 	// get new Connection
 		{
-			setConnection(DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED));
+			setConnection(DB.createConnection(isAutoCommit(), Connection.TRANSACTION_READ_COMMITTED));
 		}
 		if (!isActive())
 		{
 			start();
 		}
+
+		try
+		{
+			m_connection.setAutoCommit(isAutoCommit());
+		}
+		catch (SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e);
+		}
+
 		return m_connection;
 	}	// getConnection
 
@@ -231,6 +245,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean rollbackNative(boolean throwException) throws SQLException
 	// metas: end: 02367
 	{
+		if(m_connection == null || m_connection.getAutoCommit())
+		{
+			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
+			return false;
+		}
+
 		final String m_trxName = getTrxName();
 		// local
 		try
@@ -239,7 +259,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			{
 				m_connection.rollback();
 				log.debug("**** {}", m_trxName);
-				// m_active = false;
 				return true;
 			}
 		}
@@ -248,11 +267,9 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			log.error(m_trxName, e);
 			if (throwException)
 			{
-				// m_active = false;
 				throw e;
 			}
 		}
-		// m_active = false;
 		return false;
 	}	// rollback
 
@@ -260,6 +277,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException
 	// metas: end: 02367
 	{
+		if(m_connection == null || m_connection.getAutoCommit())
+		{
+			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
+			return false;
+		}
+
 		final String trxName = getTrxName();
 		final Savepoint jdbcSavepoint = (Savepoint)savepoint.getNativeSavepoint();
 
@@ -287,6 +310,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean commitNative(boolean throwException) throws SQLException
 	// metas: end: 02367
 	{
+		if(m_connection == null || m_connection.getAutoCommit())
+		{
+			log.debug("commitNative: doing nothing because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			return true;
+		}
+
 		final String m_trxName = getTrxName();
 
 		// local
@@ -302,8 +331,8 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 		catch (SQLException e)
 		{
-// TODO make configurable!
-//			log.error(m_trxName, e);
+			// TODO make configurable!
+			// log.error(m_trxName, e);
 			if (throwException)
 			{
 				// m_active = false;
@@ -362,6 +391,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		if (m_connection == null)
 		{
 			getConnection();
+		}
+
+		if(m_connection.getAutoCommit())
+		{
+			log.debug("createTrxSavepointNative: returning null because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			return null;
 		}
 
 		if (m_connection != null)

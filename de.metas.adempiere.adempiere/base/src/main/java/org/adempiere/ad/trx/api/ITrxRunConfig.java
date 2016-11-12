@@ -13,22 +13,21 @@ package org.adempiere.ad.trx.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 
 /**
  * This config is used by {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} to decide the particular behavior.<br>
- * Use {@link ITrxManager#createTrxRunConfig(TrxPropagation, OnRunnableSuccess, OnRunnableFail)} to obtain an instance.
+ * Use {@link ITrxManager#newTrxRunConfigBuilder()} to obtain an instance.
  *
  * @author ts
  *
@@ -86,7 +85,14 @@ public interface ITrxRunConfig
 		DONT_ROLLBACK
 	}
 
-	TrxPropagation getTrxMode();
+	/**
+	 * Decide if the connection should perform an auto-commit after each statement.
+	 * Makes e.g. sense with long-running transactions that only do selects (yes, also a select acquires a lock).
+	 * The default is <code>false</code>.
+	 */
+	public boolean isAutoCommit();
+
+	TrxPropagation getTrxPropagation();
 
 	OnRunnableSuccess getOnRunnableSuccess();
 
