@@ -120,7 +120,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 * <p>
 	 * Note: when changing this class, please make sure that this member is never <code>null</code>.
 	 */
-	private transient SoftReference<Object> modelRef = new SoftReference<Object>(null);
+	private transient SoftReference<Object> modelRef = new SoftReference<>(null);
 
 	/**
 	 * Creates an instance that will be loaded on demand and is specified by the given <code>adTableId</code> and <code>recordId</code>.
@@ -165,7 +165,7 @@ public final class TableRecordReference implements ITableRecordReference
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.recordId = InterfaceWrapperHelper.getId(model);
 
-		this.modelRef = new SoftReference<Object>(model);
+		this.modelRef = new SoftReference<>(model);
 	}
 
 	@Override
@@ -238,7 +238,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final String trxName = context.getTrxName();
 		final Object loadedModel = InterfaceWrapperHelper.create(ctx, tableName, getRecord_ID(), Object.class, trxName);
 
-		modelRef = new SoftReference<Object>(loadedModel);
+		modelRef = new SoftReference<>(loadedModel);
 
 		return loadedModel;
 	}
@@ -247,6 +247,12 @@ public final class TableRecordReference implements ITableRecordReference
 	public <T> T getModel(final IContextAware context, final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getModel(context), modelClass);
+	}
+
+	@Override
+	public void notifyModelStaled()
+	{
+		modelRef = new SoftReference<>(null);
 	}
 
 	/**
@@ -265,7 +271,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final String modelTrxName = InterfaceWrapperHelper.getTrxName(model);
 		if (!Services.get(ITrxManager.class).isSameTrxName(modelTrxName, context.getTrxName()))
 		{
-			modelRef = new SoftReference<Object>(null);
+			modelRef = new SoftReference<>(null);
 			return;
 		}
 

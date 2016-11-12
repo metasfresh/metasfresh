@@ -9,6 +9,7 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.model.I_DLM_Partition_Record;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
@@ -49,15 +50,22 @@ public interface IPartitionerService extends ISingletonService
 	 */
 	List<Partition> createPartition(CreatePartitionRequest request);
 
+	/**
+	 * Create a {@link Partition} instance for the given database record and also load both the {@link PartitionerConfig} the that DB record references (see {@link #loadPartitionConfig(I_DLM_Partition_Config)})
+	 * and all records which reference the partition.
+	 *
+	 * @param partitionDB
+	 * @return
+	 */
 	Partition loadPartition(I_DLM_Partition partitionDB);
 
 	/**
-	 * Create a new DLM_Partition_Record for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
+	 * Create or update a {@link I_DLM_Partition_Record} for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
 	 *
 	 * @param partition
 	 * @return a news instance that represents the just-stored partition
 	 */
-	Partition storePartition(Partition partition);
+	Partition storePartition(Partition partition, boolean outOfTrx);
 
 	/**
 	 * Persist the given config in the DB and update the ID properties on the given <code>config</code> that is stored.
@@ -67,7 +75,7 @@ public interface IPartitionerService extends ISingletonService
 	 * @param config
 	 * @return
 	 */
-	I_DLM_Partition_Config storePartitionConfig(PartitionerConfig config);
+	PartitionerConfig storePartitionConfig(PartitionerConfig config);
 
 	/**
 	 * Create a new config instance for the given database record.
@@ -76,6 +84,8 @@ public interface IPartitionerService extends ISingletonService
 	 * @return
 	 */
 	PartitionerConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
+
+	PartitionerConfig loadDefaultPartitionerConfig();
 
 	/**
 	 * Creates a new config that has both everything from the given <code>config</code> and the reference specified by the given <code>descriptor</code>.

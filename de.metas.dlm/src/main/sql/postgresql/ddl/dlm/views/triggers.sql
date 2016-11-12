@@ -43,7 +43,7 @@ BEGIN
 				NEW.'|| fk_info.foreign_column_name ||', NEW.DLM_Level
 			USING ERRCODE = ''235D3'', /* ''23503'' is defined as foreign_key_violation.. we use 235D3, with "D" for DLM */
 				HINT=''The '|| fk_info.table_name ||' record with '|| fk_info.foreign_column_name ||'=''|| v_referencing_id ||'' and DLM_Level=''|| v_referencing_level ||'' still references that record via its '||fk_info.column_name||' column'',
-				DETAIL=''DLM_Referenced_Table_Name='|| fk_info.foreign_table_name ||'; DLM_Referencing_Table_Name='|| fk_info.table_name ||'; DLM_Referencig_Column_Name='||fk_info.column_name||';'' /* shall be parsable by metasfresh*/
+				DETAIL=''DLM_Referenced_Table_Name='|| fk_info.foreign_table_name ||'; DLM_Referenced_Record_ID=''|| v_referencing_id ||''; DLM_Referencing_Table_Name='|| fk_info.table_name ||'; DLM_Referencig_Column_Name='||fk_info.column_name||';'' /* shall be parsable by metasfresh*/
 			;
 		END IF;
 	ELSE
@@ -60,7 +60,7 @@ BEGIN
 				NEW.'|| fk_info.foreign_column_name ||', NEW.DLM_Level
 			USING ERRCODE = ''235D3'', /* ''23503'' is defined as foreign_key_violation.. we use 235D3, with "D" for DLM */
 				HINT=''The '|| fk_info.table_name ||' record with '|| fk_info.foreign_column_name ||'=''|| v_referencing_id ||'' and *no* DLM_Level column still references that record via its '||fk_info.column_name||' column'',
-				DETAIL=''DLM_Referenced_Table_Name='|| fk_info.foreign_table_name ||';DLM_Referencing_Table_Name='|| fk_info.table_name ||'; DLM_Referencig_Column_Name='||fk_info.column_name||';'' /* shall be parsable by metasfresh*/
+				DETAIL=''DLM_Referenced_Table_Name='|| fk_info.foreign_table_name ||'; DLM_Referenced_Record_ID=''|| v_referencing_id ||''; DLM_Referencing_Table_Name='|| fk_info.table_name ||'; DLM_Referencig_Column_Name='||fk_info.column_name||';'' /* shall be parsable by metasfresh*/
 			;
 		END IF;
 	END IF;
@@ -99,5 +99,9 @@ the referened record would vanish.
 
 Note that 23503 is an official error code, defined as "foreign_key_violation".
 Also, please note that the "DETAIL" part of the exception that the trigger functions raise are parsed by metasfresh, so please be carefull when changing them and update the DLMExceptionWrapperTests unit tests accordingly
-Finally, note that the FK-constraint from the table "report.accounting_facts_mv" to the table "public.fact_acct" is ignored, just like any other FK-constraint that is not defined in the public schema. the reason is that at least currently only tables from the public schema can be DLM''ed.
+Finally, note that the FK-constraint from the table "report.accounting_facts_mv" to the table "public.fact_acct" is ignored, just like any other FK-constraint that is not defined in the public schema. 
+The reason is that at least currently only tables from the public schema can be DLM''ed.
+
+Final hint: if you change this view, you can then run the following to recreate existing triggers and trigger functions: 
+ select tablename, dlm.recreate_dlm_triggers(tablename) from ad_table where isdlm=''Y'' order by tablename; 
 ';

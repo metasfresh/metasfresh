@@ -2,6 +2,7 @@ package de.metas.dlm.migrator;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 
@@ -45,18 +46,23 @@ public interface IMigratorService extends ISingletonService
 	 * This is the case if the partition is "complete", meaning that there would be no records left behind with dangling references, if we migrated the partition.
 	 * <p>
 	 * Make the test by temporarily setting <code>DLM_Level</code> to {@link #DLM_Level_TEST}. If it works, then undo the change.
+	 * Both operations are performed in a local transaction.
 	 *
-	 * @param partition
+	 * @param partition the partition to test. Please note that the content of {@link Partition#getRecords()} does not play a role.
 	 * @throws {@link DLMReferenceException} if the given migration is not complete and therefore cannot be migrated.
+	 *
+	 * @see IDLMService#directUpdateDLMColumn(org.adempiere.model.IContextAware, int, String, int)
 	 */
 	void testMigratePartition(Partition partition);
 
 	/**
 	 * Changes the {@link IDLMAware#COLUMNNAME_DLM_Level} to {@link Partition#getTargetDLMLevel()} for all records for the given <code>partition</code>.
 	 *
-	 * @param partition
+	 * @param partition partition the partition to change the leve for. Please note that the content of {@link Partition#getRecords()} does not play a role.
 	 * @param targetLevel
 	 * @return a partition instance whose {@link Partition#getCurrentDLMLevel()} reflects the migration that was performed.
+	 *
+	 * @see IDLMService#directUpdateDLMColumn(org.adempiere.model.IContextAware, int, String, int)
 	 */
 	Partition migratePartition(Partition partition);
 }

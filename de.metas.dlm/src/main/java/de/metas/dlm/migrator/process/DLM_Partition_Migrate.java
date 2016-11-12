@@ -73,7 +73,7 @@ public class DLM_Partition_Migrate extends SvrProcess
 						final Partition migratedPartition = migratorService.migratePartition(partition);
 
 						addLog("Migrated partition={} with result={}", partition, migratedPartition);
-						partitionerService.storePartition(migratedPartition);
+						partitionerService.storePartition(migratedPartition, false);
 					}
 				})
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)

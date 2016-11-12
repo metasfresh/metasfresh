@@ -3,8 +3,12 @@ package de.metas.dlm.partitioner.impl;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +17,10 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.dlm.Partition;
+import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Record;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 
 /*
@@ -49,6 +55,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfig;
 public class PartitionerServiceAttachToPartitionTests
 {
 	private I_DLM_Partition partitionDB;
+	private I_DLM_Partition partitionDB2;
 	private I_AD_PInstance pinstance;
 	private I_C_Queue_Block block;
 	private I_C_Queue_WorkPackage workpackage;
@@ -62,6 +69,9 @@ public class PartitionerServiceAttachToPartitionTests
 
 		partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
 		InterfaceWrapperHelper.save(partitionDB);
+
+		partitionDB2 = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
+		InterfaceWrapperHelper.save(partitionDB2);
 
 		pinstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class);
 		InterfaceWrapperHelper.save(pinstance);
@@ -95,10 +105,12 @@ public class PartitionerServiceAttachToPartitionTests
 	{
 		final IDLMAware workpackageDLMAware = InterfaceWrapperHelper.create(workpackage, IDLMAware.class);
 
-		final Partition result = new PartitionerService().attachToPartition(workpackageDLMAware, config);
+		final Partition result = new PartitionerService()
+				.attachToPartition(mkMethodParam(workpackageDLMAware), config)
+				.getPartition();
 
 		// no records are partitioned. return them all.
-		assertThat(result.getRecords().size(), is(4));
+		assertThat(result.getRecordsFlat().size(), is(4));
 	}
 
 	/**
@@ -107,51 +119,97 @@ public class PartitionerServiceAttachToPartitionTests
 	@Test
 	public void testNoAdjacentPartitionedRecords()
 	{
-		final IDLMAware pinstanceDLMAware = InterfaceWrapperHelper.create(pinstance, IDLMAware.class);
-		pinstanceDLMAware.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
-		InterfaceWrapperHelper.save(pinstanceDLMAware);
+		addToPartition(pinstance, partitionDB);
 
 		final IDLMAware workpackageDLMAware = InterfaceWrapperHelper.create(workpackage, IDLMAware.class);
 
-		final Partition result = new PartitionerService().attachToPartition(workpackageDLMAware, config);
+		final Partition result = new PartitionerService()
+				.attachToPartition(mkMethodParam(workpackageDLMAware), config)
+				.getPartition();
 
 		// no adjacent records are partitioned. return them all.
-		assertThat(result.getRecords().size(), is(4));
+		assertThat(result.getRecordsFlat().size(), is(4));
 		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
 	}
 
 	@Test
 	public void testAdjacentBlockPartitioned()
 	{
-		final IDLMAware blockDLMAware = InterfaceWrapperHelper.create(block, IDLMAware.class);
-		blockDLMAware.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
-		InterfaceWrapperHelper.save(blockDLMAware);
+		addToPartition(block, partitionDB);
 
 		final IDLMAware workpackageDLMAware = InterfaceWrapperHelper.create(workpackage, IDLMAware.class);
 
-		final Partition result = new PartitionerService().attachToPartition(workpackageDLMAware, config);
+		final Partition result = new PartitionerService()
+				.attachToPartition(mkMethodParam(workpackageDLMAware), config)
+				.getPartition();
 
 		// the result contains the workpackage itself and also the block and the element, because on finding the partitioned block, the system shall search in each direction.
 		// however the pinstance is not included, because after having found the block, the system shall not search further
-		assertThat(result.getRecords().size(), is(3));
-		assertThat(result.getRecords().stream().anyMatch(r->InterfaceWrapperHelper.getModelTableName(r).equals(I_AD_PInstance.Table_Name)), is(false));
+		assertThat(result.getRecordsFlat().size(), is(3));
+		assertThat(result.getRecordsFlat().stream().anyMatch(r -> InterfaceWrapperHelper.getModelTableName(r).equals(I_AD_PInstance.Table_Name)), is(false));
 		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
 	}
 
 	@Test
 	public void testAdjacentElementPartitioned()
 	{
-		final IDLMAware elementDLMAware = InterfaceWrapperHelper.create(element, IDLMAware.class);
-		elementDLMAware.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
-		InterfaceWrapperHelper.save(elementDLMAware);
+		addToPartition(element, partitionDB);
 
 		final IDLMAware workpackageDLMAware = InterfaceWrapperHelper.create(workpackage, IDLMAware.class);
 
-		final Partition result = new PartitionerService().attachToPartition(workpackageDLMAware, config);
+		final Partition result = new PartitionerService()
+				.attachToPartition(mkMethodParam(workpackageDLMAware), config)
+				.getPartition();
 
 		// the result contains the workpackage itself the element, the block and the pinstance, because on finding the partitioned element, the system shall search in each direction.
-		assertThat(result.getRecords().size(), is(4));
+		assertThat(result.getRecordsFlat().size(), is(4));
 		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+	}
+
+	@Test
+	public void testTwoAdjacentrecordsPartitioned()
+	{
+		addToPartition(element, partitionDB);
+		addToPartition(pinstance, partitionDB2);
+
+		final IDLMAware workpackageDLMAware = InterfaceWrapperHelper.create(workpackage, IDLMAware.class);
+
+		final Partition result = new PartitionerService()
+				.attachToPartition(mkMethodParam(workpackageDLMAware), config)
+				.getPartition();
+
+		// the result contains the workpackage itself the element, the block and the pinstance, because on finding the partitioned element, the system shall search in each direction.
+		assertThat(result.getRecordsFlat().size(), is(4));
+		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+	}
+
+	private void addToPartition(final Object record, final I_DLM_Partition partitionDB)
+	{
+		final IDLMAware recordDLMAware = InterfaceWrapperHelper.create(record, IDLMAware.class);
+		recordDLMAware.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
+		InterfaceWrapperHelper.save(recordDLMAware);
+
+		final ITableRecordReference tableRecordReverence = ITableRecordReference.FromModelConverter.convert(record);
+
+		final I_DLM_Partition_Record partitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record.class);
+		partitionRecord.setAD_Table_ID(tableRecordReverence.getAD_Table_ID());
+		partitionRecord.setRecord_ID(tableRecordReverence.getRecord_ID());
+		partitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
+		InterfaceWrapperHelper.save(partitionRecord);
+	}
+
+	/**
+	 * truns the given <code>model</code> into a table reference singleton list.
+	 *
+	 * @param model
+	 * @return
+	 */
+	private IterateResult mkMethodParam(final IDLMAware model)
+	{
+		return new IterateResult(
+				Collections.singletonList(
+						WorkQueue.of(ITableRecordReference.FromModelConverter.convert(model))).iterator(),
+				PlainContextAware.newWithThreadInheritedTrx());
 	}
 
 }

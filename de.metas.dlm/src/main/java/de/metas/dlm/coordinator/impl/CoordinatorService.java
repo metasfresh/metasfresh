@@ -2,14 +2,16 @@ package de.metas.dlm.coordinator.impl;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.IRecordInspector;
@@ -46,20 +48,28 @@ public class CoordinatorService implements ICoordinatorService
 	{
 		int minLevel = Integer.MAX_VALUE;
 
-		final List<ITableRecordReference> records = partition.getRecords();
+		final PlainContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
 
-		outerForLoop: for (final ITableRecordReference recordReference : records)
+		final List<Iterator<IDLMAware>> dlmAwareIterators = Services.get(IDLMService.class)
+				.retrieveDLMTableNames(ctxAware, partition.getDLM_Partition_ID())
+				.map(builder -> builder.create().iterate(IDLMAware.class))
+				.collect(Collectors.toList());
+
+		outerForLoop: for (final Iterator<IDLMAware> iterator : dlmAwareIterators)
 		{
-			for (final IRecordInspector inspector : inspectors)
+			while (iterator.hasNext())
 			{
-				final IDLMAware record = recordReference.getModel(new PlainContextAware(Env.getCtx()), IDLMAware.class);
-
-				if (inspector.isApplicableFor(record))
+				final IDLMAware record = iterator.next();
+				for (final IRecordInspector inspector : inspectors)
 				{
+					if (!inspector.isApplicableFor(record))
+					{
+						continue;
+					}
 					minLevel = Math.min(minLevel, inspector.inspectRecord(record));
 					if (minLevel <= IMigratorService.DLM_Level_LIVE)
 					{
-						break outerForLoop; // we are done, because we know that 0 is the absolute minimum
+						break outerForLoop; // we are done searching the minimum because we know that "live" is the absolute minimum
 					}
 				}
 			}

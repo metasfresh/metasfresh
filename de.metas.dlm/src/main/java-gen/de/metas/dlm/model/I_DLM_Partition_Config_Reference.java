@@ -40,7 +40,7 @@ public interface I_DLM_Partition_Config_Reference
 	public org.compiere.model.I_AD_Client getAD_Client();
 
 	/** Column definition for AD_Client_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Client>(I_DLM_Partition_Config_Reference.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
 	/** Column name AD_Client_ID */
 	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -75,7 +75,7 @@ public interface I_DLM_Partition_Config_Reference
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
 	/** Column definition for AD_Org_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Org>(I_DLM_Partition_Config_Reference.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
 	/** Column name AD_Org_ID */
 	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,7 +93,7 @@ public interface I_DLM_Partition_Config_Reference
 	public java.sql.Timestamp getCreated();
 
 	/** Column definition for Created */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "Created", null);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "Created", null);
 	/** Column name Created */
 	public static final String COLUMNNAME_Created = "Created";
 
@@ -111,7 +111,7 @@ public interface I_DLM_Partition_Config_Reference
 	public int getCreatedBy();
 
 	/** Column definition for CreatedBy */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User>(I_DLM_Partition_Config_Reference.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "CreatedBy", org.compiere.model.I_AD_User.class);
 	/** Column name CreatedBy */
 	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -144,7 +144,7 @@ public interface I_DLM_Partition_Config_Reference
 	public void setDLM_Partition_Config_Line(de.metas.dlm.model.I_DLM_Partition_Config_Line DLM_Partition_Config_Line);
 
 	/** Column definition for DLM_Partition_Config_Line_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, de.metas.dlm.model.I_DLM_Partition_Config_Line> COLUMN_DLM_Partition_Config_Line_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, de.metas.dlm.model.I_DLM_Partition_Config_Line>(I_DLM_Partition_Config_Reference.class, "DLM_Partition_Config_Line_ID",
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, de.metas.dlm.model.I_DLM_Partition_Config_Line> COLUMN_DLM_Partition_Config_Line_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "DLM_Partition_Config_Line_ID",
 			de.metas.dlm.model.I_DLM_Partition_Config_Line.class);
 	/** Column name DLM_Partition_Config_Line_ID */
 	public static final String COLUMNNAME_DLM_Partition_Config_Line_ID = "DLM_Partition_Config_Line_ID";
@@ -174,7 +174,7 @@ public interface I_DLM_Partition_Config_Reference
 	public int getDLM_Partition_Config_Reference_ID();
 
 	/** Column definition for DLM_Partition_Config_Reference_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_DLM_Partition_Config_Reference_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "DLM_Partition_Config_Reference_ID", null);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_DLM_Partition_Config_Reference_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "DLM_Partition_Config_Reference_ID", null);
 	/** Column name DLM_Partition_Config_Reference_ID */
 	public static final String COLUMNNAME_DLM_Partition_Config_Reference_ID = "DLM_Partition_Config_Reference_ID";
 
@@ -207,7 +207,7 @@ public interface I_DLM_Partition_Config_Reference
 	public void setDLM_Referenced_Table(org.compiere.model.I_AD_Table DLM_Referenced_Table);
 
 	/** Column definition for DLM_Referenced_Table_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Table> COLUMN_DLM_Referenced_Table_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Table>(I_DLM_Partition_Config_Reference.class, "DLM_Referenced_Table_ID", org.compiere.model.I_AD_Table.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Table> COLUMN_DLM_Referenced_Table_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "DLM_Referenced_Table_ID", org.compiere.model.I_AD_Table.class);
 	/** Column name DLM_Referenced_Table_ID */
 	public static final String COLUMNNAME_DLM_Referenced_Table_ID = "DLM_Referenced_Table_ID";
 
@@ -240,7 +240,7 @@ public interface I_DLM_Partition_Config_Reference
 	public void setDLM_Referencing_Column(org.compiere.model.I_AD_Column DLM_Referencing_Column);
 
 	/** Column definition for DLM_Referencing_Column_ID */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Column> COLUMN_DLM_Referencing_Column_ID = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Column>(I_DLM_Partition_Config_Reference.class, "DLM_Referencing_Column_ID", org.compiere.model.I_AD_Column.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_Column> COLUMN_DLM_Referencing_Column_ID = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "DLM_Referencing_Column_ID", org.compiere.model.I_AD_Column.class);
 	/** Column name DLM_Referencing_Column_ID */
 	public static final String COLUMNNAME_DLM_Referencing_Column_ID = "DLM_Referencing_Column_ID";
 
@@ -271,7 +271,7 @@ public interface I_DLM_Partition_Config_Reference
 	public boolean isActive();
 
 	/** Column definition for IsActive */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "IsActive", null);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "IsActive", null);
 	/** Column name IsActive */
 	public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -289,7 +289,7 @@ public interface I_DLM_Partition_Config_Reference
 	public java.sql.Timestamp getUpdated();
 
 	/** Column definition for Updated */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "Updated", null);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "Updated", null);
 	/** Column name Updated */
 	public static final String COLUMNNAME_Updated = "Updated";
 
@@ -307,7 +307,7 @@ public interface I_DLM_Partition_Config_Reference
 	public int getUpdatedBy();
 
 	/** Column definition for UpdatedBy */
-	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User>(I_DLM_Partition_Config_Reference.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+	public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_DLM_Partition_Config_Reference.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
 	/** Column name UpdatedBy */
 	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

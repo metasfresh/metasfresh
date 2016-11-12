@@ -16,7 +16,7 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1835037886L;
+	private static final long serialVersionUID = 1564041532L;
 
 	/** Standard Constructor */
 	public X_DLM_Partition(final Properties ctx, final int DLM_Partition_ID, final String trxName)
@@ -27,6 +27,8 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 		 * {
 		 * setDLM_Partition_Config_ID (0);
 		 * setDLM_Partition_ID (0);
+		 * setIsPartitionComplete (false);
+		 * // N
 		 * }
 		 */
 	}
@@ -116,11 +118,11 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 	{
 		if (DLM_Partition_Config_ID < 1)
 		{
-			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Config_ID, null);
+			set_Value(COLUMNNAME_DLM_Partition_Config_ID, null);
 		}
 		else
 		{
-			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Config_ID, Integer.valueOf(DLM_Partition_Config_ID));
+			set_Value(COLUMNNAME_DLM_Partition_Config_ID, Integer.valueOf(DLM_Partition_Config_ID));
 		}
 	}
 
@@ -167,6 +169,65 @@ public class X_DLM_Partition extends org.compiere.model.PO implements I_DLM_Part
 	public int getDLM_Partition_ID()
 	{
 		final Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_ID);
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii.intValue();
+	}
+
+	/**
+	 * Set Partition is vollständig.
+	 * 
+	 * @param IsPartitionComplete
+	 *            Sagt aus, ob das System dieser Partition noch weitere Datensätze hinzufügen muss bevor sie als Ganzes verschoben werden kann.
+	 */
+	@Override
+	public void setIsPartitionComplete(final boolean IsPartitionComplete)
+	{
+		set_Value(COLUMNNAME_IsPartitionComplete, Boolean.valueOf(IsPartitionComplete));
+	}
+
+	/**
+	 * Get Partition is vollständig.
+	 * 
+	 * @return Sagt aus, ob das System dieser Partition noch weitere Datensätze hinzufügen muss bevor sie als Ganzes verschoben werden kann.
+	 */
+	@Override
+	public boolean isPartitionComplete()
+	{
+		final Object oo = get_Value(COLUMNNAME_IsPartitionComplete);
+		if (oo != null)
+		{
+			if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			}
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/**
+	 * Set Anz. zugeordneter Datensätze.
+	 * 
+	 * @param PartitionSize Anz. zugeordneter Datensätze
+	 */
+	@Override
+	public void setPartitionSize(final int PartitionSize)
+	{
+		set_Value(COLUMNNAME_PartitionSize, Integer.valueOf(PartitionSize));
+	}
+
+	/**
+	 * Get Anz. zugeordneter Datensätze.
+	 * 
+	 * @return Anz. zugeordneter Datensätze
+	 */
+	@Override
+	public int getPartitionSize()
+	{
+		final Integer ii = (Integer)get_Value(COLUMNNAME_PartitionSize);
 		if (ii == null)
 		{
 			return 0;

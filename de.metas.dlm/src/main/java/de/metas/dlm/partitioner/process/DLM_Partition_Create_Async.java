@@ -3,7 +3,6 @@ package de.metas.dlm.partitioner.process;
 import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.dlm.model.I_DLM_Partition_Config;
@@ -37,7 +36,7 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class DLM_Partition_Create_Async extends SvrProcess
+public class DLM_Partition_Create_Async extends AbstractDLM_Partition_Create
 {
 	private final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
 
@@ -69,6 +68,7 @@ public class DLM_Partition_Create_Async extends SvrProcess
 		final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()
 				.setConfig(config)
 				.setOldestFirst(oldestFirst)
+				.setPartitionToComplete(getPartitionToCompleteOrNull())
 				.setOnNotDLMTable(OnNotDLMTable.FAIL) // the processing will run unattended. See the javadoc of ADD_TO_DLM on why it's not an option.
 				.setCount(count)
 				.setDontReEnqueueAfter(dontReEnqueueAfter)

@@ -65,7 +65,10 @@ public class PartitionerServiceTests
 		final PartitionerConfig config = PartitionerConfig.builder().line(I_AD_Field.Table_Name).endLine().build();
 
 		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID));
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name,
+						I_AD_ChangeLog.COLUMNNAME_Record_ID,
+						I_AD_Field.Table_Name,
+						123));
 
 		testAugmentPartitionSimple(config, descriptors);
 	}
@@ -93,7 +96,7 @@ public class PartitionerServiceTests
 	}
 
 	/**
-	 * Calls {@link PartitionerService#augmentPartitionerConfig(PartitionerConfig, List)} twice in a row, with an equal descriptor.
+	 * Calls {@link PartitionerServiceOld#augmentPartitionerConfig(PartitionerConfig, List)} twice in a row, with an equal descriptor.
 	 * Veiries that there are no duplicated references because of this.
 	 *
 	 */
@@ -103,12 +106,12 @@ public class PartitionerServiceTests
 		final PartitionerConfig config = PartitionerConfig.builder().line(I_AD_Field.Table_Name).endLine().build();
 
 		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID));
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
 
 		final PartitionerConfig augmentedConfig = testAugmentPartitionSimple(config, descriptors);
 
 		final List<TableReferenceDescriptor> descriptors2 = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID));
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
 
 		// make the same call again. there shall be no double lines or references.
 		testAugmentPartitionSimple(augmentedConfig, descriptors2);
@@ -126,7 +129,7 @@ public class PartitionerServiceTests
 	}
 
 	/**
-	 * Verifies that {@link PartitionerService#loadPartition(I_DLM_Partition)} can load {@link IDLMAware}s that references a given partition via their {@link I_DLM_Partition_Record}s.
+	 * Verifies that {@link PartitionerServiceOld#loadPartition(I_DLM_Partition)} can load {@link IDLMAware}s that references a given partition via their {@link I_DLM_Partition_Record}s.
 	 */
 	@Test
 	public void testLoadPartition()
@@ -161,10 +164,13 @@ public class PartitionerServiceTests
 
 		assertNotNull(partition);
 		assertThat(partition.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
-		assertThat(partition.getRecords().size(), is(2));
+
+		// we do not attempt to load partitioned records anymore, because there might be too many
+		assertThat(partition.getRecords().isEmpty(), is(true));
+		// assertThat(partition.getRecordsFlat().size(), is(2));
 
 		// verify that it's not the I_DLM_Partition_Records we got back, but the AD_table record and the AD_column record.
-		assertThat(partition.getRecords().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(org.compiere.model.I_AD_Table.Table_Name)), is(true));
-		assertThat(partition.getRecords().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(I_AD_Column.Table_Name)), is(true));
+		// assertThat(partition.getRecordsFlat().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(org.compiere.model.I_AD_Table.Table_Name)), is(true));
+		// assertThat(partition.getRecordsFlat().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(I_AD_Column.Table_Name)), is(true));
 	}
 }

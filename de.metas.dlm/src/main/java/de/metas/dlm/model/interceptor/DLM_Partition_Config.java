@@ -34,6 +34,12 @@ import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 @Interceptor(I_DLM_Partition_Config.class)
 public class DLM_Partition_Config
 {
+	static final DLM_Partition_Config INSTANCE = new DLM_Partition_Config();
+
+	private DLM_Partition_Config()
+	{
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteLines(final I_DLM_Partition_Config config)
 	{

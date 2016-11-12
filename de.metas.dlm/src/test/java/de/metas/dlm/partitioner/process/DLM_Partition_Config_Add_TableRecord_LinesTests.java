@@ -63,12 +63,12 @@ public class DLM_Partition_Config_Add_TableRecord_LinesTests
 				.endLine().build();
 
 		final ImmutableList<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
-				TableReferenceDescriptor.of(I_AD_Tab.Table_Name, I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
-				TableReferenceDescriptor.of(I_AD_Table.Table_Name, I_AD_Column.Table_Name, I_AD_Column.COLUMNNAME_AD_Table_ID),    // some irrelevant descriptor in between
-				TableReferenceDescriptor.of(I_AD_Tab.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
-				TableReferenceDescriptor.of(I_AD_Field.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID),
-				TableReferenceDescriptor.of(I_AD_Window.Table_Name, I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID)); // some irrelevant descriptor in between
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123),
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Tab.Table_Name, 123),
+				TableReferenceDescriptor.of(I_AD_Column.Table_Name, I_AD_Column.COLUMNNAME_AD_Table_ID, I_AD_Table.Table_Name, 123),    // some irrelevant descriptor in between
+				TableReferenceDescriptor.of(I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Tab.Table_Name, 123),
+				TableReferenceDescriptor.of(I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123),
+				TableReferenceDescriptor.of(I_AD_PInstance.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Window.Table_Name, 123)); // some irrelevant descriptor in between
 
 		final List<TableReferenceDescriptor> relevantDescriptors = new DLM_Partition_Config_Add_TableRecord_Lines().retainRelevantDescriptors(config, descriptors);
 

@@ -1,5 +1,6 @@
 package de.metas.dlm.model.interceptor;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.exceptions.DBException;
@@ -39,8 +40,16 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addModelValidator(new DLM_Partition_Config(), client);
-		engine.addModelValidator(new DLM_Partition_Config_Line(), client);
+		engine.addModelValidator(DLM_Partition_Config.INSTANCE, client);
+		engine.addModelValidator(DLM_Partition_Config_Line.INSTANCE, client);
+
+		engine.addModelValidator(PartitionerInterceptor.INSTANCE, client);
+	}
+
+	@Override
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(DLM_Partition_Config_Reference.INSTANCE);
 	}
 
 	@Override

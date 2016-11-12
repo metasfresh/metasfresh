@@ -72,7 +72,7 @@ public class DLM_Partition_Inspect extends SvrProcess
 				.filter(dateNextInspectionFilter)
 				.filter(getProcessInfo().getQueryFilter())
 
-		.orderBy().addColumn(I_DLM_Partition.COLUMN_DLM_Partition_ID).endOrderBy()
+				.orderBy().addColumn(I_DLM_Partition.COLUMN_DLM_Partition_ID).endOrderBy()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
@@ -89,7 +89,7 @@ public class DLM_Partition_Inspect extends SvrProcess
 						final Partition validatedPartition = coordinatorService.inspectPartition(partition);
 
 						addLog("Inspected partition={} with result={}", partition, validatedPartition);
-						partitionerService.storePartition(validatedPartition);
+						partitionerService.storePartition(validatedPartition, false);
 					}
 				})
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)

@@ -1,7 +1,9 @@
 package de.metas.dlm;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
@@ -43,7 +45,7 @@ public interface IDLMService extends ISingletonService
 	 *
 	 * @param table
 	 */
-	void addTableToDLM(final I_AD_Table table);
+	void addTableToDLM(I_AD_Table table);
 
 	/**
 	 * Call the DB function <code>dlm.remove_table_from_dlm()</code> with the given <code>table</code>'s name
@@ -53,14 +55,24 @@ public interface IDLMService extends ISingletonService
 	 *
 	 * @param table
 	 */
-	void removeTableFromDLM(final I_AD_Table table);
+	void removeTableFromDLM(I_AD_Table table);
 
-	void directUpdateDLMColumn(IContextAware ctxAware, Partition partition, String columnName, int targetValue);
+	/**
+	 * Updates the given <code>columnName</code> for all records (which can be in different tables) that reference the given partition-ID.
+	 *
+	 * @param ctxAware
+	 * @param dlmPartitionId the <code>DLM_Partition_ID</code> whose records shall be updated
+	 * @param columnName name of the to update. Alle referenced records need to have this column, so it generally needs to be one of the columns declared in {@link IDLMAware}.
+	 * @param targetValue
+	 */
+	void directUpdateDLMColumn(IContextAware ctxAware, int dlmPartitionId, String columnName, int targetValue);
 
 	/**
 	 *
-	 * @return a map of <AD_Table_ID, List<AD_Table_ID>> where the key-<code>AD_Table_ID</code>'s DB-records are
+	 * @return a map of AD_Table_ID => List-of-AD_Table_ID where the key-<code>AD_Table_ID</code>'s DB-records are
 	 *         referenced by records from the <code>*Table_ID</code> and <code>*Record_ID</code> columns of the tables from value-<code>List<AD_Table_ID></code>.
 	 */
 	List<TableReferenceDescriptor> retrieveTableRecordReferences();
+
+	Stream<IQueryBuilder<IDLMAware>> retrieveDLMTableNames(IContextAware ctxAware, int dlmPartitionId);
 }

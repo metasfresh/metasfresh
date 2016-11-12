@@ -4,9 +4,10 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.dlm.exception.DLMReferenceException;
-import de.metas.dlm.partitioner.impl.PartitionerService;
 
 /*
  * #%L
@@ -32,7 +33,7 @@ import de.metas.dlm.partitioner.impl.PartitionerService;
 /**
  * Describes a table reference.
  *
- * @see PartitionerService#augmentPartitionerConfig(PartitionerConfig, java.util.List)
+ * @see PartitionerServiceOld#augmentPartitionerConfig(PartitionerConfig, java.util.List)
  * @see DLMReferenceException#getTableReferenceDescriptor()
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -43,11 +44,14 @@ public class TableReferenceDescriptor
 {
 	private final String referencingTableName;
 
+	private final int referencedRecordId;
+
 	private final String referencingColumnName;
 
 	private final String referencedTableName;
 
 	private TableReferenceDescriptor(final String referencedTableName,
+			final int referencedRecordId,
 			final String referencingTableName,
 			final String referencingColumnName)
 	{
@@ -56,18 +60,50 @@ public class TableReferenceDescriptor
 		Check.assumeNotEmpty(referencingColumnName, "Param 'referencingColumnName' is not null; all params={}", buildParameterString(referencedTableName, referencingTableName, referencingColumnName));
 
 		this.referencedTableName = referencedTableName;
+		this.referencedRecordId = referencedRecordId;
 		this.referencingTableName = referencingTableName;
 		this.referencingColumnName = referencingColumnName;
 
 	}
 
+	/**
+	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName</code>.
+	 *
+	 * @param referencingTableName
+	 * @param referencingColumnName
+	 * @param referencedTableName
+	 * @return
+	 */
 	public static TableReferenceDescriptor of(
-			final String referencedTableName,
 			final String referencingTableName,
-			final String referencingColumnName)
+			final String referencingColumnName,
+			final String referencedTableName)
 	{
 		return new TableReferenceDescriptor(
 				referencedTableName,
+				-1,
+				referencingTableName,
+				referencingColumnName);
+	}
+
+	/**
+	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName[referencedRecordId]</code>.
+	 *
+	 * @param referencingTableName
+	 * @param referencingColumnName
+	 * @param referencedTableName
+	 * @param referencedRecordId currently this is not really used, but only for info/debugging
+	 * @return
+	 */
+	public static TableReferenceDescriptor of(
+			final String referencingTableName,
+			final String referencingColumnName,
+			final String referencedTableName,
+			final int referencedRecordId)
+	{
+		return new TableReferenceDescriptor(
+				referencedTableName,
+				referencedRecordId,
 				referencingTableName,
 				referencingColumnName);
 	}
@@ -87,10 +123,20 @@ public class TableReferenceDescriptor
 		return referencedTableName;
 	}
 
+	public int getReferencedRecordId()
+	{
+		return referencedRecordId;
+	}
+
+	public ITableRecordReference getReferencedRecord()
+	{
+		return new TableRecordReference(referencedTableName, referencedRecordId);
+	}
+
 	@Override
 	public String toString()
 	{
-		return StringUtils.formatMessage("TableReferenceDescriptor[{}.{} -> {}]", referencingTableName, referencingColumnName, referencedTableName);
+		return StringUtils.formatMessage("TableReferenceDescriptor[{}.{} -> {} (concrete record ID={})]", referencingTableName, referencingColumnName, referencedTableName, referencedRecordId);
 	}
 
 	private static String buildParameterString(

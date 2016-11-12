@@ -2,11 +2,9 @@ package de.metas.dlm.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -31,7 +29,6 @@ import de.metas.adempiere.service.IColumnBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.dlm.IDLMService;
-import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
@@ -131,40 +128,45 @@ public abstract class AbstractDLMService implements IDLMService
 
 	@Override
 	public void directUpdateDLMColumn(final IContextAware ctxAware,
-			final Partition partition,
+			final int dlmPartitionId,
 			final String columnName,
 			final int targetValue)
 	{
-		final Map<String, List<ITableRecordReference>> table2Record = partition
-				.getRecords()
-				.stream()
-				.collect(Collectors.groupingBy(tableRecordRef -> tableRecordRef.getTableName().toLowerCase()));
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IColumnBL columnBL = Services.get(IColumnBL.class);
+		// get all DLMed table names. they all might contain a record that belongs to the given partition
+		final Stream<IQueryBuilder<IDLMAware>> queryBuilders = retrieveDLMTableNames(ctxAware, dlmPartitionId);
 
-		for (final Entry<String, List<ITableRecordReference>> tableWithRecords : table2Record.entrySet())
-		{
-			final String tableName = tableWithRecords.getKey();
-			final String keyColumn = columnBL.getSingleKeyColumn(tableName);
+		queryBuilders.forEach(queryBuilder -> {
 
-			final List<ITableRecordReference> records = tableWithRecords.getValue();
-			final Integer[] recordIds = records
-					.stream()
-					.map(r -> r.getRecord_ID())
-					.toArray(size -> new Integer[size]);
-
-			final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, ctxAware)
-					.addInArrayFilter(keyColumn, recordIds)
+			final int updated = queryBuilder
+					.addNotEqualsFilter(columnName, targetValue) // exclude records that already have the target value
 					.create()
 					.updateDirectly()
 					.addSetColumnValue(columnName, targetValue)
 					.execute();
-			Check.errorIf(updated != recordIds.length, "We attempted to update {} record(s) of table {} to {}={}, but instead we updated {} records",
-					recordIds.length, tableName, columnName, targetValue, updated);
 
-			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", tableName, updated, columnName, targetValue);
-		}
+			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", queryBuilder.getTableName(), updated, columnName, targetValue);
+		});
+	}
+
+	@Override
+	public Stream<IQueryBuilder<IDLMAware>> retrieveDLMTableNames(final IContextAware ctxAware, final int dlmPartitionId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final Stream<IQueryBuilder<IDLMAware>> result = queryBL.createQueryBuilder(I_AD_Table.class, ctxAware)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Table.COLUMNNAME_IsDLM, true)
+				.orderBy().addColumn(org.compiere.model.I_AD_Table.COLUMNNAME_AD_Table_ID).endOrderBy()
+				.create()
+				.list()
+				.stream()
+				.map(t -> queryBL
+						.createQueryBuilder(IDLMAware.class, t.getTableName(), ctxAware)
+						// .addOnlyActiveRecordsFilter() we usually want all records
+						.addEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, dlmPartitionId));
+
+		return result;
 	}
 
 	private void deactivateDlmColumn(final I_AD_Table table, final String columnName)
@@ -200,13 +202,13 @@ public abstract class AbstractDLMService implements IDLMService
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		final PlainContextAware ctxAware = new PlainContextAware(ctx, trxName);
+		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(ctx, trxName);
 
 		// get the list of all columns whose names that end with "Record_ID". They probably belong to a column-record table (but we will make sure).
 		// we could have queried for columns ending with "Table_ID", but there might be more "*Table_ID" columns that don't have a "*Record_ID" column than the other way around.
 		final List<I_AD_Column> recordIdColumns = queryBL.createQueryBuilder(I_AD_Column.class, ctxAware)
 				.addOnlyActiveRecordsFilter()
-				.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, "Record_ID")
+				.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, ITableRecordReference.COLUMNNAME_Record_ID)
 				.orderBy().addColumn(I_AD_Column.COLUMN_AD_Column_ID).endOrderBy()
 				.create()
 				.list(I_AD_Column.class);
@@ -235,7 +237,7 @@ public abstract class AbstractDLMService implements IDLMService
 					.filter(referencedTableID -> referencedTableID > 0)
 					.map(referencedTableID -> adTableDAO.retrieveTableName(referencedTableID))
 					.forEach(referencedTableName -> result.add(
-							TableReferenceDescriptor.of(referencedTableName, table.getTableName(), recordIdColumn.getColumnName())));
+							TableReferenceDescriptor.of(table.getTableName(), recordIdColumn.getColumnName(), referencedTableName)));
 		}
 
 		return result;

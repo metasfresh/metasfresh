@@ -16,7 +16,7 @@ public class X_DLM_Partition_Record extends org.compiere.model.PO implements I_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -884188081L;
+	private static final long serialVersionUID = -387356545L;
 
 	/** Standard Constructor */
 	public X_DLM_Partition_Record(final Properties ctx, final int DLM_Partition_Record_ID, final String trxName)
@@ -25,7 +25,7 @@ public class X_DLM_Partition_Record extends org.compiere.model.PO implements I_D
 		/**
 		 * if (DLM_Partition_Record_ID == 0)
 		 * {
-		 * setDLM_Partition_Records_ID (0);
+		 * setDLM_Partition_Record_ID (0);
 		 * setIsDLM (false);
 		 * }
 		 */
@@ -212,32 +212,32 @@ public class X_DLM_Partition_Record extends org.compiere.model.PO implements I_D
 	}
 
 	/**
-	 * Set DLM_Partition_Records.
+	 * Set DLM_Partition_Record.
 	 * 
-	 * @param DLM_Partition_Records_ID DLM_Partition_Records
+	 * @param DLM_Partition_Record_ID DLM_Partition_Record
 	 */
 	@Override
-	public void setDLM_Partition_Records_ID(final int DLM_Partition_Records_ID)
+	public void setDLM_Partition_Record_ID(final int DLM_Partition_Record_ID)
 	{
-		if (DLM_Partition_Records_ID < 1)
+		if (DLM_Partition_Record_ID < 1)
 		{
-			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Records_ID, null);
+			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Record_ID, null);
 		}
 		else
 		{
-			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Records_ID, Integer.valueOf(DLM_Partition_Records_ID));
+			set_ValueNoCheck(COLUMNNAME_DLM_Partition_Record_ID, Integer.valueOf(DLM_Partition_Record_ID));
 		}
 	}
 
 	/**
-	 * Get DLM_Partition_Records.
+	 * Get DLM_Partition_Record.
 	 * 
-	 * @return DLM_Partition_Records
+	 * @return DLM_Partition_Record
 	 */
 	@Override
-	public int getDLM_Partition_Records_ID()
+	public int getDLM_Partition_Record_ID()
 	{
-		final Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_Records_ID);
+		final Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_Record_ID);
 		if (ii == null)
 		{
 			return 0;

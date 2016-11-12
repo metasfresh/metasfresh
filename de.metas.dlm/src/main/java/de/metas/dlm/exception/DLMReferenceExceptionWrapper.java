@@ -68,7 +68,7 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 	 * This is what we want, because we are not interested in the <code>_tbl</code> prefix.<br>
 	 * It works because the first group is "reluctant" and the second one is "greedy".
 	 */
-	private static final Pattern DETAIL_REGEXP = Pattern.compile("[;, ]*DLM_Referenced_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencing_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencig_Column_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]*",
+	private static final Pattern DETAIL_REGEXP = Pattern.compile("[;, ]*DLM_Referenced_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referenced_Record_ID *= *([0-9]+?)[;, ]+DLM_Referencing_Table_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]+DLM_Referencig_Column_Name *= *([a-zA-Z0-9_]+?)(_tbl)?[;, ]*",
 			Pattern.CASE_INSENSITIVE);
 
 	public static DLMReferenceExceptionWrapper INSTANCE = new DLMReferenceExceptionWrapper();
@@ -107,7 +107,7 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 
 		final String[] infos = extractInfos(detail);
 
-		return new DLMReferenceException(t, TableReferenceDescriptor.of(infos[0], infos[1], infos[2]), referencingTableHasDLMLevel);
+		return new DLMReferenceException(t, TableReferenceDescriptor.of(infos[2], infos[3], infos[0], Integer.parseInt(infos[1])), referencingTableHasDLMLevel);
 	}
 
 	@VisibleForTesting
@@ -119,9 +119,10 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 		Check.errorUnless(matches, "given string={} does not match our regexp={}", detail, DETAIL_REGEXP);
 
 		final String referencedTableName = matcher.group(1);
-		final String referencingTableName = matcher.group(3);
-		final String referencingColumnName = matcher.group(5);
+		final String referencedRecordId = matcher.group(3);
+		final String referencingTableName = matcher.group(4);
+		final String referencingColumnName = matcher.group(6);
 
-		return new String[] { referencedTableName, referencingTableName, referencingColumnName };
+		return new String[] { referencedTableName, referencedRecordId, referencingTableName, referencingColumnName };
 	}
 }

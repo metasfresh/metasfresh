@@ -41,12 +41,12 @@ public class DLMExceptionWrapperTests
 	@Test
 	public void test()
 	{
-		assertOK("DLM_Referenced_Table_Name = c_payment;  DLM_Referencing_Table_Name = c_bankstatementline_ref; DLM_Referencig_Column_Name = c_payment_id;");
-		assertOK("DLM_Referenced_Table_Name = c_payment_tbl DLM_Referencing_Table_Name=c_bankstatementline_ref; DLM_Referencig_Column_Name=c_payment_id;");
-		assertOK("dlm_Referenced_Table_Name= c_payment   dlm_Referencing_Table_Name=c_bankstatementline_ref;dLm_Referencig_Column_Name=c_payment_id;");
-		assertOK("DLM_Referenced_Table_Name = c_payment;DLM_Referencing_Table_Name=c_bankstatementline_ref  DLM_Referencig_Column_Name=c_payment_id;");
-		assertOK("   DLM_Referenced_Table_Name = c_payment;DLM_Referencing_Table_Name=c_bankstatementline_ref_tbl,DLM_Referencig_Column_Name=c_payment_id");
-		assertOK("; DLM_Referenced_Table_Name = c_payment;  DLM_Referencing_Table_Name=c_bankstatementline_ref,DLM_Referencig_Column_Name=c_payment_id   ");
+		assertOK("DLM_Referenced_Table_Name = c_payment;  DLM_Referenced_Record_ID=1243 ; DLM_Referencing_Table_Name = c_bankstatementline_ref; DLM_Referencig_Column_Name = c_payment_id;");
+		assertOK("DLM_Referenced_Table_Name = c_payment_tbl DLM_Referenced_Record_ID = 1243 DLM_Referencing_Table_Name=c_bankstatementline_ref; DLM_Referencig_Column_Name=c_payment_id;");
+		assertOK("dlm_Referenced_Table_Name= c_payment   DLM_Referenced_Record_ID=1243;dlm_Referencing_Table_Name=c_bankstatementline_ref;dLm_Referencig_Column_Name=c_payment_id;");
+		assertOK("DLM_Referenced_Table_Name = c_payment;DLM_Referenced_Record_ID=1243 DLM_Referencing_Table_Name=c_bankstatementline_ref  DLM_Referencig_Column_Name=c_payment_id;");
+		assertOK("   DLM_Referenced_Table_Name = c_payment;DLM_rEFERENCED_Record_ID=1243, DLM_Referencing_Table_Name=c_bankstatementline_ref_tbl,DLM_Referencig_Column_Name=c_payment_id");
+		assertOK("; DLM_Referenced_Table_Name = c_payment;  DLM_Referenced_Record_ID=1243 DLM_Referencing_Table_Name=c_bankstatementline_ref,DLM_Referencig_Column_Name=c_payment_id   ");
 	}
 
 	private void assertOK(final String string)
@@ -54,7 +54,8 @@ public class DLMExceptionWrapperTests
 		final String[] infos = DLMReferenceExceptionWrapper.extractInfos(string);
 
 		assertThat(infos[0], is("c_payment"));
-		assertThat(infos[1], is("c_bankstatementline_ref"));
-		assertThat(infos[2], is("c_payment_id"));
+		assertThat(infos[1], is("1243"));
+		assertThat(infos[2], is("c_bankstatementline_ref"));
+		assertThat(infos[3], is("c_payment_id"));
 	}
 }

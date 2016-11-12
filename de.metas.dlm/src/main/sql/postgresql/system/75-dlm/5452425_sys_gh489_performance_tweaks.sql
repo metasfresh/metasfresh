@@ -33,6 +33,13 @@ CREATE INDEX IF NOT EXISTS ad_issue_r_request_id
 CREATE INDEX IF NOT EXISTS c_orderline_C_PackingMaterial_OrderLine_ID
   ON public.c_orderline (C_PackingMaterial_OrderLine_ID);
 
+CREATE INDEX IF NOT EXISTS c_orderline_link_orderLine_id
+   ON public.c_orderline (link_orderline_id);
+
+CREATE INDEX c_orderline_ref_orderline_id
+   ON public.c_orderline (ref_orderline_id);
+
+
 CREATE INDEX IF NOT EXISTS pp_mrp_c_orderlineso_id
   ON public.pp_mrp (c_orderlineso_id);
   

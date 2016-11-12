@@ -6,9 +6,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.EqualsBuilder;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
 
@@ -51,17 +54,31 @@ public class PartitionerConfig
 
 	private final String name;
 
-	private PartitionerConfig(final String name)
+	private final boolean changed;
+
+	private PartitionerConfig(final String name, final boolean changed)
 	{
 		lines = new ArrayList<>();
 		this.name = name;
+		this.changed = changed;
 	}
 
+	/**
+	 * See {@link PartitionerConfig.Builder#setDLM_Partition_Config_ID(int)} and {@link #getDLM_Partition_Config_ID()}.
+	 *
+	 * @return
+	 */
 	public int getDLM_Partition_Config_ID()
 	{
 		return DLM_Partition_Config_ID;
 	}
 
+	/**
+	 * To be invoked by {@link IPartitionerService#storePartitionConfig(PartitionerConfig)} after a {@link I_DLM_Partition_Config}
+	 * record was created or updated for this instance.
+	 *
+	 * @param dlm_Partition_Config_ID
+	 */
 	public void setDLM_Partition_Config_ID(final int dlm_Partition_Config_ID)
 	{
 		DLM_Partition_Config_ID = dlm_Partition_Config_ID;
@@ -79,6 +96,11 @@ public class PartitionerConfig
 	public String getName()
 	{
 		return name;
+	}
+
+	public boolean isChanged()
+	{
+		return changed;
 	}
 
 	/**
@@ -104,7 +126,7 @@ public class PartitionerConfig
 	public PartitionerConfigLine getLineNotNull(final String tableName)
 	{
 		final Optional<PartitionerConfigLine> line = getLine(tableName);
-		return line.orElseThrow(Check.supplyEx("Partitionconfig={} does not contain any line for tableName={}", this, tableName));
+		return line.orElseThrow(Check.supplyEx("Missing line for tableName={} in Partitionconfig={}", tableName, this));
 	}
 
 	public Optional<PartitionerConfigLine> getLine(final String tableName)
@@ -136,11 +158,42 @@ public class PartitionerConfig
 		return "PartitionerConfig [name=" + name + ", DLM_Partition_Config_ID=" + DLM_Partition_Config_ID + ", lines=" + lines + "]";
 	}
 
+	@Override
+	public boolean equals(final Object other)
+	{
+		if (!(other instanceof PartitionerConfig))
+		{
+			return false;
+		}
+
+		final PartitionerConfig otherConfig = (PartitionerConfig)other;
+
+		return new EqualsBuilder().append(name, otherConfig.name)
+				.append(lines, otherConfig.lines)
+				.isEqual();
+	}
+
+	public boolean isMissing(final TableReferenceDescriptor descriptor)
+	{
+		final Optional<PartitionerConfigLine> existingLine = getLine(descriptor.getReferencingTableName());
+		if (!existingLine.isPresent())
+		{
+			return true; // not even the line exists, so it's missing
+		}
+
+		final boolean referenceExists = existingLine.get().getReferences()
+				.stream()
+				.anyMatch(ref -> ref.getReferencedTableName().equalsIgnoreCase(descriptor.getReferencedTableName()) && ref.getReferencingColumnName().equalsIgnoreCase(descriptor.getReferencingColumnName()));
+		return !referenceExists;
+	}
+
 	public static class Builder
 	{
 		private final List<PartitionerConfigLine.LineBuilder> lineBuilders = new ArrayList<>();
 
 		private String name;
+
+		private boolean changed = true;
 
 		private int DLM_Partition_Config_ID;
 
@@ -174,7 +227,7 @@ public class PartitionerConfig
 					final RefBuilder refBuilder = lineBuilder.ref()
 							.setReferencedTableName(ref.getReferencedTableName())
 							.setReferencingColumnName(ref.getReferencingColumnName())
-							.setDLM_Partition_Config_Reference(ref.getDLM_Partition_Config_Reference_ID());
+							.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID());
 
 					refBuilder.endRef();
 				}
@@ -188,9 +241,22 @@ public class PartitionerConfig
 			return this;
 		}
 
+		/**
+		 * Sets the primary key of the {@link I_DLM_Partition_Config} records that already exists for the {@link PartitionerConfig} instances that we want to build.
+		 * This information is important when a config is persisted because it determines if a {@link I_DLM_Partition_Config} record shall be loaded and updated rather than inserted.
+		 *
+		 * @param dlm_Partition_Config_ID
+		 * @return
+		 */
 		public Builder setDLM_Partition_Config_ID(final int dlm_Partition_Config_ID)
 		{
 			DLM_Partition_Config_ID = dlm_Partition_Config_ID;
+			return this;
+		}
+
+		public Builder setChanged(final boolean changed)
+		{
+			this.changed = changed;
 			return this;
 		}
 
@@ -218,6 +284,8 @@ public class PartitionerConfig
 			{
 				return existingLineBuilder.get();
 			}
+
+			setChanged(true);
 			return newLine().setTableName(tableName);
 		}
 
@@ -238,7 +306,7 @@ public class PartitionerConfig
 		{
 			assertLineTableNamesUnique();
 
-			final PartitionerConfig partitionerConfig = new PartitionerConfig(name);
+			final PartitionerConfig partitionerConfig = new PartitionerConfig(name, changed);
 			partitionerConfig.setDLM_Partition_Config_ID(DLM_Partition_Config_ID);
 
 			// first build the lines

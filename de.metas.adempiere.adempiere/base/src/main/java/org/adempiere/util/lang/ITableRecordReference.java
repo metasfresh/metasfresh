@@ -103,4 +103,9 @@ public interface ITableRecordReference
 	 * @see #getModel(IContextAware)
 	 */
 	<T> T getModel(IContextAware context, Class<T> modelClass);
+
+	/**
+	 * Use case: you updated records via directUpdate.
+	 */
+	void notifyModelStaled();
 }

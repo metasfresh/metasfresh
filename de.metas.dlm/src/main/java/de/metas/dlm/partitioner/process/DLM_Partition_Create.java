@@ -1,10 +1,7 @@
 package de.metas.dlm.partitioner.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
-import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.connection.IConnectionCustomizerService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -12,6 +9,8 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.process.Param;
+import de.metas.process.Process;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -41,7 +40,8 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLM_Partition_Create extends SvrProcess
+@Process(requiresCurrentRecordWhenCalledFromGear = false)
+public class DLM_Partition_Create extends AbstractDLM_Partition_Create
 {
 
 	private final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
@@ -58,6 +58,7 @@ public class DLM_Partition_Create extends SvrProcess
 	@Param(mandatory = true, parameterName = "OnNotDLMTable")
 	private String onNotDLMTable;
 
+	@RunOutOfTrx
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -67,27 +68,14 @@ public class DLM_Partition_Create extends SvrProcess
 				.setConfig(config)
 				.setOldestFirst(oldestFirst)
 				.setOnNotDLMTable(OnNotDLMTable.valueOf(onNotDLMTable))
+				.setPartitionToComplete(getPartitionToCompleteOrNull())
 				.build();
 
-		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
-
-		try (final AutoCloseable temporaryCustomizer = connectionCustomizerService.registerTemporaryCustomizer(partitionerService.createConnectionCustomizer()))
+		for (int i = 0; i < count; i++)
 		{
-			for (int i = 0; i < count; i++)
-			{
-				trxManager.run(new TrxRunnableAdapter()
-				{
-					@Override
-					public void run(final String localTrxName) throws Exception
-					{
-						partitionerService.createPartition(request);
-						// addLog("@Created@ " + ...); this kind of logging is done in the service methods
-					}
-				});
-			}
+			partitionerService.createPartition(request);
+			// addLog("@Created@ " + ...); this kind of logging is done in the service methods
 		}
-
 		return MSG_OK;
 	}
-
 }

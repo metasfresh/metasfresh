@@ -16,7 +16,7 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 307287764L;
+	private static final long serialVersionUID = -1114687650L;
 
 	/** Standard Constructor */
 	public X_DLM_Partition_Config(final Properties ctx, final int DLM_Partition_Config_ID, final String trxName)
@@ -26,6 +26,8 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 		 * if (DLM_Partition_Config_ID == 0)
 		 * {
 		 * setDLM_Partition_Config_ID (0);
+		 * setIsDefault (false);
+		 * // N
 		 * setName (null);
 		 * }
 		 */
@@ -99,6 +101,38 @@ public class X_DLM_Partition_Config extends org.compiere.model.PO implements I_D
 			return 0;
 		}
 		return ii.intValue();
+	}
+
+	/**
+	 * Set Standard.
+	 * 
+	 * @param IsDefault
+	 *            Default value
+	 */
+	@Override
+	public void setIsDefault(final boolean IsDefault)
+	{
+		set_Value(COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+	}
+
+	/**
+	 * Get Standard.
+	 * 
+	 * @return Default value
+	 */
+	@Override
+	public boolean isDefault()
+	{
+		final Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null)
+		{
+			if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			}
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/**

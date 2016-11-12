@@ -8,6 +8,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.dlm.IDLMService;
+import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
@@ -89,6 +90,7 @@ public class PartitionRequestFactory
 		private boolean oldestFirst = true;
 		private OnNotDLMTable onNotDLMTable = OnNotDLMTable.FAIL;
 		private ITableRecordReference recordToAttach;
+		private I_DLM_Partition partitionToComplete;
 
 		private PartitionerRequestBuilder(final CreatePartitionRequest template)
 		{
@@ -103,7 +105,7 @@ public class PartitionRequestFactory
 
 		public CreatePartitionRequest build()
 		{
-			return new CreatePartitionRequest(config, oldestFirst, recordToAttach, onNotDLMTable);
+			return new CreatePartitionRequest(config, oldestFirst, recordToAttach, partitionToComplete, onNotDLMTable);
 		}
 
 		public T setConfig(final PartitionerConfig config)
@@ -121,6 +123,12 @@ public class PartitionRequestFactory
 		public T setRecordToAttach(final ITableRecordReference recordToAttach)
 		{
 			this.recordToAttach = recordToAttach;
+			return (T)this;
+		}
+
+		public T setPartitionToComplete(final I_DLM_Partition partitionToComplete)
+		{
+			this.partitionToComplete = partitionToComplete;
 			return (T)this;
 		}
 
@@ -171,12 +179,24 @@ public class PartitionRequestFactory
 			}
 		}
 
+		/**
+		 * See {@link CreatePartitionAsyncRequest#getCount()}.
+		 *
+		 * @param count
+		 * @return
+		 */
 		public AsyncPartitionerRequestBuilder setCount(final int count)
 		{
 			this.count = count;
 			return this;
 		}
 
+		/**
+		 * See {@link CreatePartitionAsyncRequest#getDontReEnqueueAfter()}.
+		 *
+		 * @param dontReEnqueueAfter
+		 * @return
+		 */
 		public AsyncPartitionerRequestBuilder setDontReEnqueueAfter(final Date dontReEnqueueAfter)
 		{
 			this.dontReEnqueueAfter = dontReEnqueueAfter;
@@ -231,10 +251,13 @@ public class PartitionRequestFactory
 
 		private final ITableRecordReference recordToAttach;
 
+		private final I_DLM_Partition partitionToComplete;
+
 		private CreatePartitionRequest(
 				final PartitionerConfig config,
 				final boolean oldestFirst,
 				final ITableRecordReference recordToAttach,
+				final I_DLM_Partition partitionToComplete,
 				final OnNotDLMTable onNotDLMTable)
 		{
 			Check.assumeNotNull(config, "Param 'config' is not null");
@@ -242,6 +265,7 @@ public class PartitionRequestFactory
 			this.config = config;
 			this.oldestFirst = oldestFirst;
 			this.recordToAttach = recordToAttach;
+			this.partitionToComplete = partitionToComplete;
 			this.onNotDLMTable = onNotDLMTable;
 		}
 
@@ -270,10 +294,15 @@ public class PartitionRequestFactory
 			return recordToAttach;
 		}
 
+		public I_DLM_Partition getPartitionToComplete()
+		{
+			return partitionToComplete;
+		}
+
 		@Override
 		public String toString()
 		{
-			return "CreatePartitionRequest [onNotDLMTable=" + onNotDLMTable + ", oldestFirst=" + oldestFirst + ", config=" + config + "]";
+			return "CreatePartitionRequest [onNotDLMTable=" + onNotDLMTable + ", oldestFirst=" + oldestFirst + ", partitionToComplete=" + partitionToComplete + ", recordToAttach=" + recordToAttach + ", config=" + config + "]";
 		}
 	}
 
@@ -301,6 +330,7 @@ public class PartitionRequestFactory
 			super(partitionRequest.getConfig(),
 					partitionRequest.isOldestFirst(),
 					partitionRequest.getRecordToAttach(),
+					partitionRequest.getPartitionToComplete(),
 					partitionRequest.getOnNotDLMTable());
 
 			this.partitionRequest = partitionRequest; // we use it for the toString() method

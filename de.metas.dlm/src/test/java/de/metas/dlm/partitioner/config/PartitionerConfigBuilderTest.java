@@ -46,9 +46,9 @@ public class PartitionerConfigBuilderTest
 	{
 		final PartitionerConfig config = PartitionerConfig.builder().setDLM_Partition_Config_ID(1)
 				.line("ABC").setDLM_Partition_Config_Line(2)
-				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName1").setDLM_Partition_Config_Reference(3).endRef()
+				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName1").setDLM_Partition_Config_Reference_ID(3).endRef()
 				.line("ABC")
-				.ref().setReferencedTableName("789").setReferencingColumnName("ABC_columnName2").setDLM_Partition_Config_Reference(4).endRef()
+				.ref().setReferencedTableName("789").setReferencingColumnName("ABC_columnName2").setDLM_Partition_Config_Reference_ID(4).endRef()
 				.line("123").setDLM_Partition_Config_Line(4)
 				.endLine()
 				.build();
@@ -122,7 +122,7 @@ public class PartitionerConfigBuilderTest
 	{
 		final PartitionerConfig config = PartitionerConfig.builder().setDLM_Partition_Config_ID(1)
 				.line("ABC").setDLM_Partition_Config_Line(2)
-				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName").setDLM_Partition_Config_Reference(3).endRef()
+				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName").setDLM_Partition_Config_Reference_ID(3).endRef()
 				.line("123").setDLM_Partition_Config_Line(4)
 				.endLine()
 				.build();

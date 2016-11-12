@@ -4,15 +4,18 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 
@@ -47,7 +50,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfig;
 @Immutable
 public class Partition
 {
-	private final List<ITableRecordReference> records;
+	private final Map<String, Collection<ITableRecordReference>> records;
 
 	private final boolean recordsChanged;
 
@@ -66,6 +69,8 @@ public class Partition
 
 	private final int DLM_Partition_ID;
 
+	private final boolean complete;
+
 	/**
 	 * Can be used to create a new instance when records were just be discovered and still need to be saved.
 	 *
@@ -83,11 +88,15 @@ public class Partition
 	 *
 	 * @param config
 	 * @param records
+	 * @param currentDLMLevel
 	 * @param targetDLMLevel
+	 * @param nextInspectionDate
+	 * @param DLM_Partition_ID
 	 * @return
 	 */
 	public static Partition loadedPartition(final PartitionerConfig config,
-			final Collection<ITableRecordReference> records,
+			final Map<String, Collection<ITableRecordReference>> records,
+			final boolean complete,
 			final int currentDLMLevel,
 			final int targetDLMLevel,
 			final Timestamp nextInspectionDate,
@@ -95,14 +104,15 @@ public class Partition
 	{
 		final boolean configChanged = false;
 		final boolean recordsChanged = false;
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	private Partition(
 			final PartitionerConfig config,
 			final boolean configChanged,
-			final Collection<ITableRecordReference> records,
+			final Map<String, Collection<ITableRecordReference>> records,
 			final boolean recordsChanged,
+			final boolean complete,
 			final int currentDLMLevel,
 			final int targetDLMLevel,
 			final Timestamp nextInspectionDate,
@@ -111,8 +121,10 @@ public class Partition
 		this.config = config;
 		this.configChanged = configChanged;
 
-		this.records = ImmutableList.copyOf(records); // will fail if the given 'records' or any of its elements is null
+		this.records = ImmutableMap.copyOf(records); // will fail if the given 'records' or any of its elements is null
 		this.recordsChanged = recordsChanged;
+
+		this.complete = complete;
 
 		this.currentDLMLevel = currentDLMLevel;
 		this.targetDLMLevel = targetDLMLevel;
@@ -128,12 +140,12 @@ public class Partition
 	 */
 	public Partition withTargetDLMLevel(final int targetDLMLevel)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	public Partition withCurrentDLMLevel(final int currentDLMLevel)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	/**
@@ -143,25 +155,25 @@ public class Partition
 	 * @param records
 	 * @return
 	 */
-	public Partition withRecords(final Collection<ITableRecordReference> records)
+	public Partition withRecords(final Map<String, Collection<ITableRecordReference>> records)
 	{
 		final boolean recordsChanged = true;
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	public Partition withNextInspectionDate(final Timestamp nextInspectionDate)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	public Partition withConfig(final PartitionerConfig config)
 	{
 		final boolean configChanged = true;
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	/**
-	 * Us this method if the underlying data was just stored.
+	 * Use this method if the underlying data was just stored.
 	 *
 	 * @param DLM_Partition_ID
 	 * @return
@@ -170,12 +182,18 @@ public class Partition
 	{
 		final boolean configChanged = false;
 		final boolean recordsChanged = false;
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
-	public Partition withDLM_Partition_ID(int DLM_Partition_ID)
+	public Partition withComplete(final boolean complete)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+	}
+
+	public Partition withDLM_Partition_ID(final int DLM_Partition_ID)
+	{
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
 	/**
@@ -183,10 +201,12 @@ public class Partition
 	 */
 	public Partition()
 	{
-		this(PartitionerConfig.builder().build(),
+		this(
+				PartitionerConfig.builder().build(),
 				false,
-				Collections.emptyList(),
+				Collections.emptyMap(),
 				false,
+				true, // complete
 				IMigratorService.DLM_Level_NOT_SET,
 				IMigratorService.DLM_Level_NOT_SET,
 				null,
@@ -194,18 +214,45 @@ public class Partition
 	}
 
 	/**
+	 * Gets the records that were added via {@link #withRecords(Map)} as a list.
+	 * <p>
+	 * <b>IMPORTANT:</b> the records of this partition are <b>not</b> loaded from DB via {@link IPartitionerService#loadPartition(de.metas.dlm.model.I_DLM_Partition)}.
+	 * There might be too many records on disk.
 	 *
-	 * @return the records of this partition. In order to be sure to have <i>all</i> records for this partition, invoke {@link IPartitionerService#loadPartition(de.metas.dlm.model.I_DLM_Partition)}.
+	 * @return the records of this partition.
 	 */
-	public List<ITableRecordReference> getRecords()
+	public List<ITableRecordReference> getRecordsFlat()
+	{
+		return records.values().stream().flatMap(v -> v.stream()).collect(Collectors.toList());
+	}
+
+	/**
+	 * Gets the records that were added via {@link #withRecords(Map)}.
+	 * <p>
+	 * <b>IMPORTANT:</b> please see the note at {@link #getRecordsFlat()}.
+	 *
+	 * @return the records of this partition.
+	 */
+	public Map<String, Collection<ITableRecordReference>> getRecords()
 	{
 		return records;
+	}
+
+	public Collection<ITableRecordReference> getRecordsWithTable(final String referencedTableName)
+	{
+		return records.getOrDefault(referencedTableName, Collections.emptyList());
 	}
 
 	public boolean isRecordsChanged()
 	{
 		return recordsChanged;
 	}
+
+	public boolean isComplete()
+	{
+		return complete;
+	}
+
 
 	public PartitionerConfig getConfig()
 	{
@@ -232,14 +279,57 @@ public class Partition
 		return nextInspectionDate;
 	}
 
-	@Override
-	public String toString()
-	{
-		return "Partition [records.size()=" + records.size() + ", recordsChanged=" + recordsChanged + ", configChanged=" + configChanged + ", targetDLMLevel=" + targetDLMLevel + ", currentDLMLevel=" + currentDLMLevel + ", nextInspectionDate=" + nextInspectionDate + "]";
-	}
-
 	public int getDLM_Partition_ID()
 	{
 		return DLM_Partition_ID;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Partition [DLM_Partition_ID=" + DLM_Partition_ID + ", records.size()=" + records.size() + ", recordsChanged=" + recordsChanged + ", configChanged=" + configChanged + ", targetDLMLevel=" + targetDLMLevel + ", currentDLMLevel=" + currentDLMLevel + ", nextInspectionDate=" + nextInspectionDate + "]";
+	}
+
+	public static class WorkQueue
+	{
+		public static WorkQueue of(I_DLM_Partition_Workqueue workqueueDB)
+		{
+			final ITableRecordReference tableRecordRef = ITableRecordReference.FromReferencedModelConverter.convert(workqueueDB);
+
+			WorkQueue result = new WorkQueue(tableRecordRef);
+			result.setDLM_Partition_Workqueue_ID(workqueueDB.getDLM_Partition_Workqueue_ID());
+			return result;
+		}
+
+		public static WorkQueue of(ITableRecordReference tableRecordRef)
+		{
+			return new WorkQueue(tableRecordRef);
+		}
+
+		private final ITableRecordReference tableRecordReference;
+
+		private int dlmPartitionWorkqueueId;
+
+		private WorkQueue(ITableRecordReference tableRecordReference)
+		{
+			this.tableRecordReference = tableRecordReference;
+		}
+
+		public ITableRecordReference getTableRecordReference()
+		{
+			return tableRecordReference;
+		}
+
+		public int getDLM_Partition_Workqueue_ID()
+		{
+			return dlmPartitionWorkqueueId;
+
+		}
+
+		public void setDLM_Partition_Workqueue_ID(int dlm_Partition_Workqueue_ID)
+		{
+			this.dlmPartitionWorkqueueId = dlm_Partition_Workqueue_ID;
+		}
+
 	}
 }

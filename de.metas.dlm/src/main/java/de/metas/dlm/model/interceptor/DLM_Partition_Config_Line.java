@@ -3,11 +3,14 @@ package de.metas.dlm.model.interceptor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
+import de.metas.dlm.model.interceptor.PartitionerInterceptor.AddToPartitionInterceptor;
 
 /*
  * #%L
@@ -34,6 +37,12 @@ import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 @Interceptor(I_DLM_Partition_Config_Line.class)
 public class DLM_Partition_Config_Line
 {
+	static final DLM_Partition_Config_Line INSTANCE = new DLM_Partition_Config_Line();
+
+	private DLM_Partition_Config_Line()
+	{
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteReferences(final I_DLM_Partition_Config_Line configLine)
 	{
@@ -43,4 +52,42 @@ public class DLM_Partition_Config_Line
 				.delete();
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DLM_Partition_Config_Line.COLUMNNAME_DLM_Referencing_Table_ID)
+	public void updatePartitionerInterceptorOnChange(final I_DLM_Partition_Config_Line configLine)
+	{
+		if (configLine.getDLM_Referencing_Table_ID() <= 0)
+		{
+			return;
+		}
+
+		final ModelValidationEngine engine = ModelValidationEngine.get();
+		final I_DLM_Partition_Config_Line oldConfigLine = InterfaceWrapperHelper.createOld(configLine, I_DLM_Partition_Config_Line.class);
+
+		engine.removeModelChange(oldConfigLine.getDLM_Referencing_Table().getTableName(), AddToPartitionInterceptor.INSTANCE);
+		engine.addModelChange(configLine.getDLM_Referencing_Table().getTableName(), AddToPartitionInterceptor.INSTANCE);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void updatePartitionerInterceptorOnNew(final I_DLM_Partition_Config_Line configLine)
+	{
+		if (configLine.getDLM_Referencing_Table_ID() <= 0)
+		{
+			return;
+		}
+
+		final ModelValidationEngine engine = ModelValidationEngine.get();
+		engine.addModelChange(configLine.getDLM_Referencing_Table().getTableName(), AddToPartitionInterceptor.INSTANCE);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void updatePartitionerInterceptorOnDelete(final I_DLM_Partition_Config_Line configLine)
+	{
+		if (configLine.getDLM_Referencing_Table_ID() <= 0)
+		{
+			return;
+		}
+
+		final ModelValidationEngine engine = ModelValidationEngine.get();
+		engine.removeModelChange(configLine.getDLM_Referencing_Table().getTableName(), AddToPartitionInterceptor.INSTANCE);
+	}
 }

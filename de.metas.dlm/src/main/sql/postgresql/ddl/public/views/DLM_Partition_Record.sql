@@ -1,8 +1,9 @@
 
+DROP VIEW IF EXISTS DLM_Partition_Record;
 CREATE VIEW DLM_Partition_Record AS
 SELECT 
 	c.DLM_Partition_Config_ID, p.DLM_Partition_ID, t.TableName, t.IsDLM, t.AD_Table_ID, 
-	records.Record_ID AS DLM_Partition_Records_ID,
+	records.Record_ID AS DLM_Partition_Record_ID,
 	records.AD_Client_ID,
 	records.DLM_Level,
 	records.AD_Org_ID,

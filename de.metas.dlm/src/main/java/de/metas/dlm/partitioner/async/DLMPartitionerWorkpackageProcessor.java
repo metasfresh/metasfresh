@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -23,7 +22,6 @@ import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.connection.IConnectionCustomizerService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -90,7 +88,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		final IWorkPackageBuilder wpBuilder = blockBuilder.newWorkpackage()
 
-		// Workpackage Parameters
+				// Workpackage Parameters
 				.parameters()
 				.setParameters(parameters)
 				.end();
@@ -111,7 +109,6 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 		final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
-		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
 
 		final IParams workpackageParams = workpackageParamDAO.retrieveWorkpackageParams(workPackage);
 
@@ -148,14 +145,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		loggable.addLog("Going to invoke the partitioner with CreatePartitionRequest={}", request);
 
-		try (final AutoCloseable temporaryCustomizer = connectionCustomizerService.registerTemporaryCustomizer(partitionerService.createConnectionCustomizer()))
-		{
-			partitionerService.createPartition(request);
-		}
-		catch (final Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
+		partitionerService.createPartition(request);
 
 		final boolean timeIsOver = dontReEnQueueAfter != null && SystemTime.asDate().after(dontReEnQueueAfter);
 		if (timeIsOver)
