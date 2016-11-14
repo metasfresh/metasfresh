@@ -18,6 +18,7 @@ Here come the actual release notes:
   * #557 Report Saldenbilanz & Account Info native Excel Export
   * #558 Marginal return calculation - Accountings without c_activity_id
   * #568 Change on Report "Lieferschein" for one specific Customer
+  * #555 Businesspartner Location isEDI shall not be ticked by default
 
 # metasfresh 4.43.42 (2016-45)
 
