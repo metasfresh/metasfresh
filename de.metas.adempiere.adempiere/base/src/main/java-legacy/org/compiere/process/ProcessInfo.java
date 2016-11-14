@@ -66,25 +66,25 @@ public final class ProcessInfo implements Serializable
 		ctx = builder.getCtx();
 
 		adProcessId = builder.getAD_Process_ID();
-		m_AD_PInstance_ID = builder.getAD_PInstance_ID();
+		adPInstanceId = builder.getAD_PInstance_ID();
 		
-		m_AD_Client_ID = builder.getAD_Client_ID();
-		m_AD_Org_ID = builder.getAD_Org_ID();
-		m_AD_User_ID = builder.getAD_User_ID();
+		adClientId = builder.getAD_Client_ID();
+		adOrgId = builder.getAD_Org_ID();
+		adUserId = builder.getAD_User_ID();
 		
 		title = builder.getTitle();
 		
-		_className = builder.getClassname();
-		_dbProcedureName = builder.getDBProcedureName();
+		className = builder.getClassname();
+		dbProcedureName = builder.getDBProcedureName();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
 		
-		m_Table_ID = builder.getAD_Table_ID();
-		m_Record_ID = builder.getRecord_ID();
-		m_whereClause = builder.getWhereClause();
+		adTableId = builder.getAD_Table_ID();
+		recordId = builder.getRecord_ID();
+		whereClause = builder.getWhereClause();
 
-		m_windowNo = builder.getWindowNo();
-		m_tabNo = builder.getTabNo();
+		windowNo = builder.getWindowNo();
+		tabNo = builder.getTabNo();
 
 		printPreview = builder.isPrintPreview();
 		reportingProcess = builder.isReportingProcess();
@@ -95,7 +95,7 @@ public final class ProcessInfo implements Serializable
 		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
 		
 		result = new ProcessExecutionResult();
-		result.setAD_PInstance_ID(m_AD_PInstance_ID);
+		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
@@ -106,29 +106,26 @@ public final class ProcessInfo implements Serializable
 	/** AD_Process_ID */
 	private final int adProcessId;
 	/** Table ID if the Process */
-	private final int m_Table_ID;
+	private final int adTableId;
 	/** Record ID if the Process */
-	private final int m_Record_ID;
-	/** Client_ID */
-	private final int m_AD_Client_ID;
-	private final int m_AD_Org_ID;
-	/** User_ID */
-	private final int m_AD_User_ID;
-	private final int m_windowNo;
-	private final int m_tabNo;
+	private final int recordId;
+	private final String whereClause;
+	private final int adClientId;
+	private final int adOrgId;
+	private final int adUserId;
+	private final int windowNo;
+	private final int tabNo;
 	/** Class Name */
-	private final Optional<String> _className;
-	private final Optional<String> _dbProcedureName;
+	private final Optional<String> className;
+	private final Optional<String> dbProcedureName;
 	private final int adWorkflowId;
 	private final boolean serverProcess;
 
-	// -- Optional --
-
 	/** Process Instance ID */
-	private int m_AD_PInstance_ID = 0;
+	private int adPInstanceId;
 
 	/** Batch */
-	private final boolean m_batch = false;
+	private final boolean batch = false;
 
 
 	/** Parameters */
@@ -156,10 +153,10 @@ public final class ProcessInfo implements Serializable
 				.omitNullValues()
 				.add("title", title)
 				.add("AD_Process_ID", adProcessId)
-				.add("AD_PInstance_ID", m_AD_PInstance_ID)
-				.add("AD_Table_ID", m_Table_ID)
-				.add("Record_ID", m_Record_ID)
-				.add("Classname", _className.orElse(null))
+				.add("AD_PInstance_ID", adPInstanceId)
+				.add("AD_Table_ID", adTableId)
+				.add("Record_ID", recordId)
+				.add("Classname", className.orElse(null))
 				.toString();
 	}
 
@@ -181,7 +178,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public boolean isBatch()
 	{
-		return m_batch;
+		return batch;
 	}	// isBatch
 
 	/**
@@ -191,7 +188,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public int getAD_PInstance_ID()
 	{
-		return m_AD_PInstance_ID;
+		return adPInstanceId;
 	}
 
 	/**
@@ -201,7 +198,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public void setAD_PInstance_ID(final int AD_PInstance_ID)
 	{
-		m_AD_PInstance_ID = AD_PInstance_ID;
+		adPInstanceId = AD_PInstance_ID;
 		result.setAD_PInstance_ID(AD_PInstance_ID);
 	}
 
@@ -222,12 +219,12 @@ public final class ProcessInfo implements Serializable
 	 */
 	public String getClassName()
 	{
-		return _className.orElse(null);
+		return className.orElse(null);
 	}
 
 	public Optional<String> getDBProcedureName()
 	{
-		return _dbProcedureName;
+		return dbProcedureName;
 	}
 	
 	public int getAD_Workflow_ID()
@@ -242,11 +239,11 @@ public final class ProcessInfo implements Serializable
 
 	public String getTableNameOrNull()
 	{
-		if (m_Table_ID <= 0)
+		if (adTableId <= 0)
 		{
 			return null;
 		}
-		return Services.get(IADTableDAO.class).retrieveTableName(m_Table_ID);
+		return Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 	}
 
 	/**
@@ -256,12 +253,12 @@ public final class ProcessInfo implements Serializable
 	 */
 	public int getTable_ID()
 	{
-		return m_Table_ID;
+		return adTableId;
 	}
 
 	public int getRecord_ID()
 	{
-		return m_Record_ID;
+		return recordId;
 	}
 
 	/**
@@ -355,12 +352,12 @@ public final class ProcessInfo implements Serializable
 
 	public int getAD_Client_ID()
 	{
-		return m_AD_Client_ID;
+		return adClientId;
 	}
 
 	public int getAD_User_ID()
 	{
-		return m_AD_User_ID;
+		return adUserId;
 	}
 
 	/**
@@ -420,7 +417,7 @@ public final class ProcessInfo implements Serializable
 	// metas: c.ghita@metas.ro
 	public int getAD_Org_ID()
 	{
-		return m_AD_Org_ID;
+		return adOrgId;
 	}
 	// metas: end
 
@@ -433,12 +430,12 @@ public final class ProcessInfo implements Serializable
 	 */
 	public int getWindowNo()
 	{
-		return m_windowNo;
+		return windowNo;
 	}
 
 	public int getTabNo()
 	{
-		return this.m_tabNo;
+		return this.tabNo;
 	}
 
 	// metas end
@@ -450,7 +447,7 @@ public final class ProcessInfo implements Serializable
 	@Deprecated
 	public String getWhereClause()
 	{
-		return m_whereClause;
+		return whereClause;
 	}
 
 	/**
@@ -460,15 +457,13 @@ public final class ProcessInfo implements Serializable
 	 */
 	public <T> IQueryFilter<T> getQueryFilter()
 	{
-		if (Check.isEmpty(m_whereClause, true))
+		if (Check.isEmpty(whereClause, true))
 		{
 			// no whereClause: return a "neutral" filter that does not exclude anything
 			return ConstantQueryFilter.of(true);
 		}
-		return new TypedSqlQueryFilter<T>(m_whereClause);
+		return new TypedSqlQueryFilter<T>(whereClause);
 	}
-
-	private final String m_whereClause;
 
 	/**
 	 *
