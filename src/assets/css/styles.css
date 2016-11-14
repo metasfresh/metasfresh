@@ -1524,10 +1524,10 @@ td.pulse-off input {
 
 .draggable-widget {
     border: 1px solid $brand-light-color;
-    margin: 0.5%;
+    width: calc(33.333% - 1rem);
+    margin: .5rem;
     background-color: white;
     display: inline-block;
-    width: 32%;
     border-radius: 3px;
     pointer-events: visible;
 }
@@ -1602,16 +1602,29 @@ td.pulse-off input {
 }
 
 .indicators-wrapper {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: space-around;
-    flex-wrap:wrap;
-    border-bottom: 1px solid $brand-border-color;
+    border: 1px solid $brand-border-color;
+    border-radius:3px;
+    overflow: hidden;
+    height: 130px;
+    margin: .5rem;
 }
 
 .indicator {
-    height: 130px;
-    padding: .5rem;
+    display: inline-block;
+    width:25%;
+    height:100%;
+}
+
+.indicator-hidden {
+    display: none;
+}
+
+.indicator iframe {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.indicator:not(:first-of-type){
+    border-left: 1px solid $brand-border-color;
 }

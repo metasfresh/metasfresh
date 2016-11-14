@@ -7,7 +7,8 @@ import HTML5Backend from 'react-dnd-html5-backend';
 
 import {
     getUserDashboardWidgets,
-    setUserDashboardWidgets
+    setUserDashboardWidgets,
+    getUserDashboardIndicators
 } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
@@ -18,11 +19,22 @@ export class DraggableWrapper extends Component {
             cards: [],
             isVisible: true,
             idMaximized: false,
+            indicators: []
         };
     }
 
     componentDidMount = () => {
         this.getDashboard();
+        this.getIndicators();
+    }
+
+    getIndicators = () => {
+        const {dispatch} = this.props;
+        dispatch(getUserDashboardIndicators()).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                indicators: response.data.items
+            }));
+        });
     }
 
     getDashboard = () => {
@@ -70,10 +82,28 @@ export class DraggableWrapper extends Component {
 
 
     render() {
-        const { cards, isVisible, idMaximized } = this.state;
-
+        const { cards, isVisible, idMaximized, indicators } = this.state;
         return (
             <div>
+                <div className={
+                    "indicators-wrapper " +
+                    (idMaximized !== false ? "indicator-hidden" : "")
+                }>
+                    {indicators.map((indicator, id) =>
+                        <div
+                            className={
+                                "indicator "
+                            }
+                            key={id}
+                        >
+                            <iframe
+                                src={indicator.url}
+                                scrolling="no"
+                                frameBorder="no"
+                            ></iframe>
+                        </div>
+                    )}
+                </div>
                 {cards.map((card, i) => {
                     return (
                         (isVisible || (idMaximized===i)) &&

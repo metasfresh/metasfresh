@@ -4,7 +4,8 @@ import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 
 import {
-    openModal
+    openModal,
+    printDoc
 } from '../../actions/WindowActions';
 
 import {
@@ -21,6 +22,10 @@ import {
 class Subheader extends Component {
     constructor(props){
         super(props);
+
+        this.state = {
+            pdfSrc: null
+        }
     }
     componentDidMount() {
         const {dispatch, windowType, dataId} = this.props;
@@ -47,10 +52,28 @@ class Subheader extends Component {
         dispatch(push("/window/" + type));
     }
 
+    handlePrint = (windowType, docId) => {
+        const {dispatch} = this.props;
+        dispatch(printDoc(windowType,docId)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                pdfSrc: response.data
+            }), () => {
+                this.pdf && this.pdf.print();
+            })
+        });
+    }
+
     render() {
-        const { windowType, onClick, references, actions, dataId } = this.props;
+        const { windowType, onClick, references, actions, dataId, pdfSrc } = this.props;
         return (
             <div className={"subheader-container overlay-shadow subheader-open"}>
+                {pdfSrc && <embed
+                    type="application/pdf"
+                    src={pdfSrc}
+                    ref={c => this.pdf = c}
+                    width="100%"
+                    height="100%"
+                />}
                 <div className="container-fluid">
                     <div className="row">
                         <div className="subheader-row">
@@ -59,7 +82,7 @@ class Subheader extends Component {
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>}
-                                <div className="subheader-item"><i className="meta-icon-print" /> Print</div>
+                                {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId)}><i className="meta-icon-print" /> Print</div>}
                                 <div className="subheader-item"><i className="meta-icon-message" /> Send message</div>
                                 <div className="subheader-item"><i className="meta-icon-duplicate" /> Clone</div>
                                 <div className="subheader-item"><i className="meta-icon-delete" /> Delete</div>
