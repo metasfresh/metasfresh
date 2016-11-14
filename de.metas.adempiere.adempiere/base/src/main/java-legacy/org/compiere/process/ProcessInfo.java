@@ -420,10 +420,6 @@ public final class ProcessInfo implements Serializable
 	// metas: c.ghita@metas.ro
 	public int getAD_Org_ID()
 	{
-		if (m_AD_Org_ID < 0)
-		{
-			return Env.getAD_Org_ID(getCtx());
-		}
 		return m_AD_Org_ID;
 	}
 	// metas: end
