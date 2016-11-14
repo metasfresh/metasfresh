@@ -624,7 +624,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 					<execution>
-						<id>package-sql</id>
+						<id>package-sql-only</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
