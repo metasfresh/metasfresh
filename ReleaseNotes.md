@@ -22,6 +22,7 @@ Here come the actual release notes:
   * #548 keep M_QualityNote and M_AttributeValue in sync
   * #577 Button Request shows too many results
   * #565 Report Revenue per Week and BPartner also show qty
+  * #416 Extended async notification features
  
 ## Fixes
 * metasfresh
