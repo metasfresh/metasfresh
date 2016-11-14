@@ -52,7 +52,7 @@ public final class ProcessInfoLog implements Serializable
 	 * @param P_Number Process Number
 	 * @param P_Msg Process message
 	 */
-	ProcessInfoLog(final int Log_ID, final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public ProcessInfoLog(final int Log_ID, final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		super();
 		m_Log_ID = Log_ID;

@@ -27,6 +27,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -793,22 +794,22 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		try
 		{
-			final I_AD_PInstance mpi = retrievePInstance();
-			if (mpi == null || mpi.getAD_PInstance_ID() <= 0)
+			final I_AD_PInstance adPInstance = retrievePInstance();
+			if (adPInstance == null || adPInstance.getAD_PInstance_ID() <= 0)
 			{
 				throw new AdempiereException("Did not find PInstance " + m_pi.getAD_PInstance_ID());
 			}
-			mpi.setWhereClause(m_pi.getWhereClause()); // make sure the WhereClause is set
-			mpi.setIsProcessing(false);
+			adPInstance.setWhereClause(m_pi.getWhereClause()); // make sure the WhereClause is set
+			adPInstance.setIsProcessing(false);
 			
 			final ProcessExecutionResult result = getResult();
-			mpi.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
-			mpi.setErrorMsg(result.getSummary());
-			InterfaceWrapperHelper.save(mpi);
+			adPInstance.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
+			adPInstance.setErrorMsg(result.getSummary());
+			InterfaceWrapperHelper.save(adPInstance);
 
-			log.debug("Unlocked: {}", mpi);
+			log.debug("Unlocked: {}", adPInstance);
 
-			ProcessInfoUtil.saveLogToDB(result);
+			Services.get(IADPInstanceDAO.class).saveProcessInfoLogs(adPInstance.getAD_PInstance_ID(), result.getCurrentLogs());
 		}
 		catch (Throwable e)
 		{

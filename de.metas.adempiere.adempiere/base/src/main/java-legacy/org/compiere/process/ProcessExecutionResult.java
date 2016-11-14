@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -378,7 +379,7 @@ public class ProcessExecutionResult
 	{
 		if (logs == null)
 		{
-			logs = new ArrayList<>(ProcessInfoUtil.retrieveLogsFromDB(getAD_PInstance_ID()));
+			logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
 		}
 		return logs;
 	}

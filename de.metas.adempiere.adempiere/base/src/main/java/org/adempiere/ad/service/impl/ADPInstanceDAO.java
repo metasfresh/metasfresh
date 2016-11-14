@@ -23,21 +23,32 @@ package org.adempiere.ad.service.impl;
  */
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
+import org.compiere.process.ProcessInfoLog;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -53,8 +64,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(ADPInstanceDAO.class);
 
-	@Override
-	public List<I_AD_PInstance_Para> retrievePInstanceParams(final Properties ctx, final int adPInstanceId)
+	private List<I_AD_PInstance_Para> retrieveAD_PInstance_Params(final Properties ctx, final int adPInstanceId)
 	{
 		if (adPInstanceId <= 0)
 		{
@@ -77,7 +87,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public List<ProcessInfoParameter> retrieveProcessInfoParameters(final Properties ctx, final int adPInstanceId)
 	{
-		return retrievePInstanceParams(ctx, adPInstanceId)
+		return retrieveAD_PInstance_Params(ctx, adPInstanceId)
 				.stream()
 				.map(adPInstancePara -> createProcessInfoParameter(adPInstancePara))
 				.collect(GuavaCollectors.toImmutableList());
@@ -167,7 +177,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		//
 		// Retrieve parameters from the database, indexed by ParameterName
 		final Properties ctx = Env.getCtx();
-		final Map<String, I_AD_PInstance_Para> adPInstanceParams = retrievePInstanceParams(ctx, adPInstanceId)
+		final Map<String, I_AD_PInstance_Para> adPInstanceParams = retrieveAD_PInstance_Params(ctx, adPInstanceId)
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(I_AD_PInstance_Para::getParameterName));
 
@@ -184,7 +194,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			I_AD_PInstance_Para adPInstanceParam = adPInstanceParams.get(piParam.getParameterName());
 
-			if (adPInstanceParam == null)  // if this Parameter is not yet existing in the DB
+			if (adPInstanceParam == null)   // if this Parameter is not yet existing in the DB
 			{
 				final int seqNo = lastSeqNo + 10;
 				adPInstanceParam = createAD_PInstance_Para(ctx, adPInstanceId, piParam, seqNo);
@@ -322,7 +332,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			valueString = value == null ? null : value.toString();
 			valueStringTo = valueTo == null ? null : valueTo.toString();
 		}
-		
+
 		if (hasChanges)
 		{
 			adPInstanceParam.setP_Date(valueDate);
@@ -331,11 +341,201 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			adPInstanceParam.setP_String_To(valueStringTo);
 			adPInstanceParam.setP_Number(valueBigDecimal);
 			adPInstanceParam.setP_Number_To(valueBigDecimalTo);
-			
+
 			adPInstanceParam.setInfo(piParam.getInfo());
 			adPInstanceParam.setInfo_To(piParam.getInfo_To());
-			
+
 			InterfaceWrapperHelper.save(adPInstanceParam);
 		}
+	}
+
+	@Override
+	public List<ProcessInfoLog> retrieveProcessInfoLogs(final int adPInstanceId)
+	{
+		if (adPInstanceId <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
+				+ "FROM AD_PInstance_Log "
+				+ "WHERE AD_PInstance_ID=? "
+				+ "ORDER BY Log_ID";
+		final Object[] sqlParams = new Object[] { adPInstanceId };
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final List<ProcessInfoLog> logs = new ArrayList<>();
+			while (rs.next())
+			{
+				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
+				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				log.markAsSavedInDB();
+				logs.add(log);
+			}
+
+			return logs;
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
+		}
+	}
+
+	@Override
+	public void saveProcessInfoLogs(final int AD_PInstance_ID, final List<ProcessInfoLog> logs)
+	{
+		if (AD_PInstance_ID <= 0)
+		{
+			return;
+		}
+
+		final List<ProcessInfoLog> logsToSave = logs
+				.stream()
+				.filter(log -> !log.isSavedInDB())
+				.collect(Collectors.toList());
+		if (logsToSave.isEmpty())
+		{
+			return;
+		}
+
+		if (Adempiere.isUnitTestMode())
+		{
+			// don't try this is we aren't actually connected
+			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
+			return;
+		}
+
+		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
+				+ " (AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
+				+ " VALUES (?, ?, ?, ?, ?, ?)";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			for (final ProcessInfoLog log : logsToSave)
+			{
+				final Object[] sqlParams = new Object[] {
+						AD_PInstance_ID,
+						log.getLog_ID(),
+						log.getP_Date(),
+						log.getP_ID() == 0 ? null : log.getP_ID(),
+						log.getP_Number(),
+						log.getP_Msg()
+				};
+
+				DB.setParameters(pstmt, sqlParams);
+				pstmt.addBatch();
+			}
+
+			pstmt.executeBatch();
+
+			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
+		}
+		catch (SQLException e)
+		{
+			// log only, don't fail
+			logger.error("Error while saving the process log lines", e);
+		}
+		finally
+		{
+			DB.close(pstmt);
+			pstmt = null;
+		}
+	}
+
+	@Override
+	public void retrieveResultSummary(final ProcessExecutionResult result)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		//
+		int sleepTime = 2000;	// 2 secomds
+		final int noRetry = 5;        // 10 seconds total
+		//
+		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
+				+ "WHERE AD_PInstance_ID=?"
+				+ " AND Result IS NOT NULL";
+		final Object[] sqlParams = new Object[] { result.getAD_PInstance_ID() };
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ITrx.TRXNAME_None);
+			for (int noTry = 0; noTry < noRetry; noTry++)
+			{
+				DB.setParameters(pstmt, sqlParams);
+
+				rs = pstmt.executeQuery();
+				if (rs.next())
+				{
+					// we have a result
+					int i = rs.getInt(1);
+					if (i == 1)
+					{
+						result.setSummary(msgBL.getMsg(Env.getCtx(), "Success"));
+					}
+					else
+					{
+						result.setSummary(msgBL.getMsg(Env.getCtx(), "Failure"), true);
+					}
+					String Message = rs.getString(2);
+					rs.close();
+					pstmt.close();
+					//
+					if (Message != null)
+						result.addSummary("  (" + msgBL.parseTranslation(Env.getCtx(), Message) + ")");
+					// s_log.debug("setSummaryFromDB - " + Message);
+					return;
+				}
+
+				rs.close();
+				// sleep
+				try
+				{
+					if (noTry >= 3)
+					{
+						logger.warn("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
+					}
+					else
+					{
+						logger.debug("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
+					}
+					Thread.sleep(sleepTime);
+				}
+				catch (InterruptedException ie)
+				{
+					logger.error("Sleep Thread", ie);
+				}
+			}
+			
+			pstmt.close();
+		}
+		catch (SQLException e)
+		{
+			logger.error(sql, e);
+			result.setThrowable(e);  // 03152
+			result.setSummary(e.getLocalizedMessage(), true);
+			return;
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+
+		result.setSummary(msgBL.getMsg(Env.getCtx(), "Timeout"), true);
 	}
 }

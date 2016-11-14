@@ -46,7 +46,6 @@ import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
@@ -471,7 +470,7 @@ public final class ProcessCtl
 			cstmt.executeUpdate();
 			
 			final ProcessExecutionResult result = pi.getResult();
-			ProcessInfoUtil.loadSummaryFromDB(result);
+			Services.get(IADPInstanceDAO.class).retrieveResultSummary(result);
 			result.markLogsAsStale();
 		}
 		catch (Exception e)

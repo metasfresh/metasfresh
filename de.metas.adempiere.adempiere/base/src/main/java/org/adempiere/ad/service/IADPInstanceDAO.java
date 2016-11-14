@@ -26,8 +26,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
+import org.compiere.process.ProcessInfoLog;
 import org.compiere.process.ProcessInfoParameter;
 
 public interface IADPInstanceDAO extends ISingletonService
@@ -60,5 +61,9 @@ public interface IADPInstanceDAO extends ISingletonService
 	 */
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(Properties ctx, int adPInstanceId);
 
-	List<I_AD_PInstance_Para> retrievePInstanceParams(Properties ctx, int adPInstanceId);
+	List<ProcessInfoLog> retrieveProcessInfoLogs(int adPInstanceId);
+
+	void saveProcessInfoLogs(int AD_PInstance_ID, List<ProcessInfoLog> logs);
+
+	void retrieveResultSummary(ProcessExecutionResult result);
 }
