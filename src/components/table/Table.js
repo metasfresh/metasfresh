@@ -379,7 +379,10 @@ class Table extends Component {
     }
 
     render() {
-        const {cols, type, docId, rowData, tabid, readonly, size, handleChangePage, pageLength, page, mainTable, updateDocList, sort, orderBy} = this.props;
+        const {
+            cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
+            pageLength, page, mainTable, updateDocList, sort, orderBy
+        } = this.props;
         const {x, y, contextMenu, selected, listenOnKeys} = this.state;
 
         return (
@@ -417,7 +420,14 @@ class Table extends Component {
                                 onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : (listenOnKeys && mainTable) ? (e) => this.handleKeyDownDocList(e) : ''}
                             >
                                 <thead>
-                                    <TableHeader cols={cols} mainTable={mainTable} sort={sort} orderBy={orderBy} deselect={this.deselectAllProducts} />
+                                    <TableHeader
+                                        cols={cols}
+                                        mainTable={mainTable}
+                                        sort={sort}
+                                        orderBy={orderBy}
+                                        deselect={this.deselectAllProducts}
+                                        page={page}
+                                    />
                                 </thead>
                                 <tbody>
                                     {this.renderTableBody()}

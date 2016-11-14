@@ -115,8 +115,6 @@ class DocumentList extends Component {
         const {data} = this.state;
         const {dispatch} = this.props;
 
-
-
         dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data

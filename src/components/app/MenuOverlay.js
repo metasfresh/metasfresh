@@ -109,6 +109,7 @@ class MenuOverlay extends Component {
         dispatch(push("/window/" + elementId + "/new"));
     }
 
+
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
         dispatch(pathRequest(nodeId)).then(response => {
@@ -238,10 +239,17 @@ class MenuOverlay extends Component {
                     {nodeId == 0 ?
                         //ROOT
                         <div>
-                            {deepNode &&
+                            {deepNode ?
                                 <div>
                                     <span className="menu-overlay-link" onClick={e => this.handleClickBack(e)}>&lt; Back</span>
                                 </div>
+                                :
+                                <span
+                                    className="menu-overlay-link"
+                                    onClick={() => dispatch(push("/"))}
+                                >
+                                    Home
+                                </span>
                             }
                             <div className="menu-overlay-root-body">
 

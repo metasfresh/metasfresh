@@ -19,7 +19,7 @@ class TableHeader extends Component {
     }
 
     renderSorting = (field, caption) => {
-        const {sort,display, orderBy, deselect} = this.props;
+        const {sort,display, orderBy, deselect, page} = this.props;
         let sorting = {};
 
         orderBy && orderBy.map((item, index) => {
@@ -31,7 +31,7 @@ class TableHeader extends Component {
         })
 
         return (
-            <div className="sort-menu" onClick={() => {sort(!sorting.asc, field, true); deselect()} }>
+            <div className="sort-menu" onClick={() => {sort(!sorting.asc, field, true, page); deselect()} }>
                 <span className="th-caption">{caption}</span>
                 <span className={sorting.name && sorting.asc ? 'sort rotate-90 sort-ico' : (sorting.name && !sorting.asc) ? 'sort sort-ico' : 'sort-ico'}><i className="meta-icon-chevron-1" /></span>
             </div>

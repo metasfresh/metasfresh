@@ -19,32 +19,37 @@ class TableContextMenu extends Component {
                 title: "Delete",
                 text: "Are you sure?",
                 buttons: {
-                  submit: "Delete",
-                  cancel: "Cancel"
+                    submit: "Delete",
+                    cancel: "Cancel"
                 }
             }
-       }
+        }
     }
+
     handleAdvancedEdit = () => {
         const {dispatch, tabId, type, selected} = this.props;
 
         dispatch(openModal("Advanced edit", type + "&advanced=true", tabId, selected[0]));
     }
-    handleDelete = () => {
-        const {dispatch,  tabId, type, docId, selected} = this.props;
 
+    handleDelete = () => {
         this.setState(update(this.state, {
-          prompt: {
-              open: {$set: true}
-          }
-        }))
+            prompt: {
+                open: {$set: true}
+            }
+        }));
+    }
+
+    handleOpenNewTab = () => {
+        const {type, selected} = this.props;
+        window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
     handlePromptCancelClick = () => {
         this.setState(update(this.state, {
-          prompt: {
-              open: {$set: false}
-          }
+            prompt: {
+                open: {$set: false}
+            }
         }))
 
         this.props.blur();
@@ -52,31 +57,31 @@ class TableContextMenu extends Component {
 
 
     handlePromptSubmitClick = () => {
-       const {dispatch,  tabId, type, docId, selected, deselect, mainTable, updateDocList} = this.props;
+        const {dispatch,  tabId, type, docId, selected, deselect, mainTable, updateDocList} = this.props;
         this.setState(update(this.state, {
-          prompt: {
-              open: {$set: false}
-          }
+            prompt: {
+                open: {$set: false}
+            }
         }))
 
         if(mainTable){
-          if(selected.length>1){
-            for(let i=0;i<selected.length;i++){
-              dispatch(deleteData(type, selected[i]));
-            }
-            updateDocList();
-            deselect();
-          } else {
-            dispatch(deleteData(type, selected))
-            .then(response => {
-               updateDocList();
-            }).then(response => {
+            if(selected.length>1){
+                for(let i=0;i<selected.length;i++){
+                    dispatch(deleteData(type, selected[i]));
+                }
+                updateDocList();
                 deselect();
-            });
-          }
-          
+            } else {
+                dispatch(deleteData(type, selected))
+                .then(response => {
+                    updateDocList();
+                }).then(response => {
+                    deselect();
+                });
+            }
+
         } else {
-          dispatch(deleteData(type, docId, tabId, selected))
+            dispatch(deleteData(type, docId, tabId, selected))
             .then(response => {
                 dispatch(deleteLocal(tabId, selected, "master"))
             }).then(response => {
@@ -100,28 +105,33 @@ class TableContextMenu extends Component {
 
         const isSelectedOne = selected.length === 1;
         return (
-
-            !!isDisplayed &&  <div
-                className="context-menu context-menu-open panel-bordered panel-primary"
-                ref={(c) => c && c.focus()}
-                tabIndex="0" style={style}
-                onBlur={blur}
-            >
-                {isSelectedOne && !mainTable && <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
-                    <i className="meta-icon-edit" /> Advanced edit
-                </div>}
+            !!isDisplayed &&
+                <div
+                    className="context-menu context-menu-open panel-bordered panel-primary"
+                    ref={(c) => c && c.focus()}
+                    tabIndex="0" style={style}
+                    onBlur={blur}
+                >
+                {isSelectedOne && !mainTable &&
+                    <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
+                        <i className="meta-icon-edit" /> Advanced edit
+                    </div>
+                }
 
                 <div className="context-menu-item" onClick={this.handleDelete}>
-                   <i className="meta-icon-edit" /> Delete
+                    <i className="meta-icon-edit" /> Delete
                 </div>
-               <Prompt
-                 isOpen={prompt.open}
-                 title={prompt.title}
-                 text={prompt.text}
-                 buttons={prompt.buttons}
-                 onCancelClick={this.handlePromptCancelClick}
-                 onSubmitClick={this.handlePromptSubmitClick}
-               />
+                <div className="context-menu-item" onClick={this.handleOpenNewTab}>
+                    <i className="meta-icon-file" /> Open in new tab
+                </div>
+                <Prompt
+                    isOpen={prompt.open}
+                    title={prompt.title}
+                    text={prompt.text}
+                    buttons={prompt.buttons}
+                    onCancelClick={this.handlePromptCancelClick}
+                    onSubmitClick={this.handlePromptSubmitClick}
+                />
             </div>
         )
 

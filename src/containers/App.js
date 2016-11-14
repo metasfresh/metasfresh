@@ -28,7 +28,7 @@ axios.interceptors.response.use(function (response) {
 }, function (error) {
     if(error.response.status == 403){
         store.dispatch(logoutSuccess());
-        store.dispatch(push('/login'));
+        store.dispatch(push('/login?redirect=true'));
     }
 
     if(localStorage.isLogged){
