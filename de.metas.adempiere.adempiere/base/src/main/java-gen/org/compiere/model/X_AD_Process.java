@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2070150932L;
+	private static final long serialVersionUID = 1939563412L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -665,50 +665,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getShowHelp () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ShowHelp);
-	}
-
-	/** Set Statistic Count.
-		@param Statistic_Count 
-		Internal statistics how often the entity was used
-	  */
-	@Override
-	public void setStatistic_Count (int Statistic_Count)
-	{
-		set_Value (COLUMNNAME_Statistic_Count, Integer.valueOf(Statistic_Count));
-	}
-
-	/** Get Statistic Count.
-		@return Internal statistics how often the entity was used
-	  */
-	@Override
-	public int getStatistic_Count () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Statistic_Count);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Statistic Seconds.
-		@param Statistic_Seconds 
-		Internal statistics how many seconds a process took
-	  */
-	@Override
-	public void setStatistic_Seconds (int Statistic_Seconds)
-	{
-		set_Value (COLUMNNAME_Statistic_Seconds, Integer.valueOf(Statistic_Seconds));
-	}
-
-	/** Get Statistic Seconds.
-		@return Internal statistics how many seconds a process took
-	  */
-	@Override
-	public int getStatistic_Seconds () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Statistic_Seconds);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Suchschlüssel.

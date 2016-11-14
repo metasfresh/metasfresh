@@ -43,13 +43,19 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Table_Process;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 
 public class ADProcessDAO implements IADProcessDAO
 {
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
+
 	/**
 	 * Map: AD_Table_ID to list of AD_Process_ID
 	 */
@@ -262,5 +268,37 @@ public class ADProcessDAO implements IADProcessDAO
 				.endOrderBy()
 				.create()
 				.listImmutable(I_AD_Process_Para.class);
+	}
+
+	@Override
+	public void addProcessStatistics(final Properties ctx, final int adProcessId, final int adClientId, final long durationMillisToAdd)
+	{
+		try
+		{
+			I_AD_Process_Stats processStats = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_Process_Stats.class, ctx, ITrx.TRXNAME_None)
+					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Client_ID, adClientId)
+					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Process_ID, adProcessId)
+					.create()
+					.firstOnly(I_AD_Process_Stats.class);
+			if (processStats == null)
+			{
+				processStats = InterfaceWrapperHelper.create(ctx, I_AD_Process_Stats.class, ITrx.TRXNAME_None);
+				InterfaceWrapperHelper.setValue(processStats, I_AD_Process_Stats.COLUMNNAME_AD_Client_ID, adClientId);
+				processStats.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+				processStats.setAD_Process_ID(adProcessId);
+			}
+
+			final int count = processStats.getStatistic_Count();
+			final int durationMillis = processStats.getStatistic_Millis();
+
+			processStats.setStatistic_Count(count + 1);
+			processStats.setStatistic_Millis((int)(durationMillis + durationMillisToAdd));
+			InterfaceWrapperHelper.save(processStats);
+		}
+		catch (Exception ex)
+		{
+			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}", adProcessId, adClientId, durationMillisToAdd, ex);
+		}
 	}
 }

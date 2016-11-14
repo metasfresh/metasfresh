@@ -173,32 +173,4 @@ public class MPInstance extends X_AD_PInstance
 	{
 		return getResult() == RESULT_OK;
 	}	//	isOK
-	
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		//	Update Statistics
-		if (!newRecord 
-			&& !isProcessing()
-			&& is_ValueChanged(COLUMNNAME_IsProcessing))
-		{
-			long ms = System.currentTimeMillis() - getCreated().getTime();
-			int seconds = (int)(ms / 1000);
-			if (seconds < 1)
-				seconds = 1;
-			MProcess prc = MProcess.get(getCtx(), getAD_Process_ID());
-			prc.addStatistics(seconds);
-			if (prc.get_ID() != 0 && prc.save())
-				log.debug("afterSave - Process Statistics updated Sec=" + seconds);
-			else
-				log.warn("afterSave - Process Statistics not updated");
-		}
-		return success;
-	}	//	afterSave
 }

@@ -806,9 +806,8 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			adPInstance.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
 			adPInstance.setErrorMsg(result.getSummary());
 			InterfaceWrapperHelper.save(adPInstance);
-
 			log.debug("Unlocked: {}", adPInstance);
-
+			
 			Services.get(IADPInstanceDAO.class).saveProcessInfoLogs(adPInstance.getAD_PInstance_ID(), result.getCurrentLogs());
 		}
 		catch (Throwable e)

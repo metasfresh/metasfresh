@@ -110,21 +110,6 @@ public class MProcess extends X_AD_Process
 		return sb.toString ();
 	}	//	toString
 
-
-	/**
-	 * 	Update Statistics
-	 *	@param seconds sec
-	 *
-	 * @deprecated this method shall be moved to a different API and the statistics shall not be stored in AD_Process!
-	 */
-	@Deprecated
-	public void addStatistics (int seconds)
-	{
-		setStatistic_Count(getStatistic_Count() + 1);
-		setStatistic_Seconds(getStatistic_Seconds() + seconds);
-	}	//	addStatistics
-
-
 	/**
 	 * 	After Save
 	 *	@param newRecord new

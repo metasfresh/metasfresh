@@ -21,12 +21,14 @@ import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -52,6 +54,8 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
 import org.compiere.wf.MWorkflow;
 import org.slf4j.Logger;
+
+import com.google.common.base.Stopwatch;
 
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -182,6 +186,7 @@ public final class ProcessCtl
 		//
 		final TrxRunnableAdapter processExecutor = new TrxRunnableAdapter()
 		{
+			private Stopwatch duration = null;
 
 			@Override
 			public void run(final String localTrxName) throws Exception
@@ -189,6 +194,8 @@ public final class ProcessCtl
 				// Lock
 				lock();
 
+				duration = Stopwatch.createStarted();
+				
 				//
 				// Execute the process (workflow/java/db process)
 				if(pi.getAD_Workflow_ID() > 0)
@@ -244,6 +251,14 @@ public final class ProcessCtl
 				s_currentOrg_ID.set(previousOrgId);
 				s_currentProcess_ID.set(previousProcessId);
 
+				//
+				// Update statistics
+				if(duration != null)
+				{
+					duration.stop();
+					Services.get(IADProcessDAO.class).addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS));
+				}
+
 				unlock();
 			}
 		};
@@ -284,11 +299,6 @@ public final class ProcessCtl
 	{
 		final ProcessExecutionResult result = pi.getResult();
 		
-		if (pi.isBatch())
-		{
-			result.setTimeout(true);
-		}
-
 		//
 		// Translate process summary if needed
 		final String summary = result.getSummary();

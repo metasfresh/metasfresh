@@ -340,7 +340,7 @@ public interface I_AD_Process
 	/**
 	 * Set Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -349,7 +349,7 @@ public interface I_AD_Process
 	/**
 	 * Get Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -730,56 +730,6 @@ public interface I_AD_Process
     public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_ShowHelp = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "ShowHelp", null);
     /** Column name ShowHelp */
     public static final String COLUMNNAME_ShowHelp = "ShowHelp";
-
-	/**
-	 * Set Statistic Count.
-	 * Internal statistics how often the entity was used
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStatistic_Count (int Statistic_Count);
-
-	/**
-	 * Get Statistic Count.
-	 * Internal statistics how often the entity was used
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getStatistic_Count();
-
-    /** Column definition for Statistic_Count */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Statistic_Count = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Statistic_Count", null);
-    /** Column name Statistic_Count */
-    public static final String COLUMNNAME_Statistic_Count = "Statistic_Count";
-
-	/**
-	 * Set Statistic Seconds.
-	 * Internal statistics how many seconds a process took
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStatistic_Seconds (int Statistic_Seconds);
-
-	/**
-	 * Get Statistic Seconds.
-	 * Internal statistics how many seconds a process took
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getStatistic_Seconds();
-
-    /** Column definition for Statistic_Seconds */
-    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Statistic_Seconds = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Statistic_Seconds", null);
-    /** Column name Statistic_Seconds */
-    public static final String COLUMNNAME_Statistic_Seconds = "Statistic_Seconds";
 
 	/**
 	 * Get Aktualisiert.
