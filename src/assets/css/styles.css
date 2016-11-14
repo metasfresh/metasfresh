@@ -1600,3 +1600,18 @@ td.pulse-off input {
     min-height: 280px;
     float: left;
 }
+
+.indicators-wrapper {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-around;
+    flex-wrap:wrap;
+    border-bottom: 1px solid $brand-border-color;
+}
+
+.indicator {
+    height: 130px;
+    padding: .5rem;
+}

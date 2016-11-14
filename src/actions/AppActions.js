@@ -41,8 +41,16 @@ export function dropdownRequest(windowType, propertyName, id, tabId, rowId) {
 	);
 }
 
-export function getUserDashboard() {
-    return () => axios.get(config.API_URL + '/dashboard/');
+export function getUserDashboardWidgets() {
+    return () => axios.get(config.API_URL + '/dashboard/kpis');
+}
+
+export function setUserDashboardWidgets(payload) {
+    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
+}
+
+export function getUserDashboardIndicators() {
+    return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
 }
 
 export function viewLayoutRequest(windowType, type){
