@@ -17,6 +17,7 @@ Here come the actual release notes:
   * #553 Report Account Info adjustments. Add parms date range.
   * #557 Report Saldenbilanz & Account Info native Excel Export
   * #558 Marginal return calculation - Accountings without c_activity_id
+  * #568 Change on Report "Lieferschein" for one specific Customer
 
 # metasfresh 4.43.42 (2016-45)
 
