@@ -45,22 +45,23 @@ export class Dashboard extends Component {
                 siteName = {"Dashboard"}
                 noMargin = {true}
             >
-
-                <div className="indicators-wrapper">
-                    {
-                        indicators.map((indicator, id) =>
-                            <iframe
-                                src={indicator.url}
-                                className="indicator"
-                                key={id}
-                                scrolling="no"
-                                frameBorder="no"
-                            ></iframe>
-                        )
-                    }
-                </div>
-
                 <div className="container-fluid dashboard-wrapper">
+                    <div className="indicators-wrapper">
+                        {
+                            indicators.map((indicator, id) =>
+                                <div
+                                    className="indicator"
+                                    key={id}
+                                >
+                                    <iframe
+                                        src={indicator.url}
+                                        scrolling="no"
+                                        frameBorder="no"
+                                    ></iframe>
+                                </div>
+                            )
+                        }
+                    </div>
                     <DraggableWrapper/>
                 </div>
 

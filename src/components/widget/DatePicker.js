@@ -20,7 +20,6 @@ class DatePicker extends Component {
     }
 
     handleClose = () => {
-        console.log('close')
         this.setState(Object.assign({}, this.state, {
             open: false
         }));
