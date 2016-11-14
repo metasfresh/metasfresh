@@ -21,7 +21,8 @@ Here come the actual release notes:
   * #555 Businesspartner Location isEDI shall not be ticked by default
   * #548 keep M_QualityNote and M_AttributeValue in sync
   * #577 Button Request shows too many results
-
+  * #565 Report Revenue per Week and BPartner also show qty
+ 
 ## Fixes
 * metasfresh
   * #578 Request Window Attachment Image too large in viewer
