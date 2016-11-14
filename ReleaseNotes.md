@@ -15,6 +15,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * #553 Report Account Info adjustments. Add parms date range.
+  * #557 Report Saldenbilanz & Account Info native Excel Export
 
 # metasfresh 4.43.42 (2016-45)
 
