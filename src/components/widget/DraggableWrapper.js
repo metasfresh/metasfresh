@@ -6,7 +6,8 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
 import {
-    getUserDashboard
+    getUserDashboardWidgets,
+    setUserDashboardWidgets
 } from '../../actions/AppActions';
 
 export class DraggableWrapper extends Component {
@@ -26,15 +27,16 @@ export class DraggableWrapper extends Component {
 
     getDashboard = () => {
         const {dispatch} = this.props;
-        dispatch(getUserDashboard()).then(response => {
+        dispatch(getUserDashboardWidgets()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 cards: response.data.items
-            }))
+            }));
         });
     }
 
     moveCard = (dragIndex, hoverIndex) => {
         const { cards } = this.state;
+        const {dispatch} = this.props;
         const dragCard = cards[dragIndex];
 
         this.setState(update(this.state, {
@@ -44,7 +46,13 @@ export class DraggableWrapper extends Component {
                     [hoverIndex, 0, dragCard]
                 ]
             }
-        }));
+        }), () => {
+            const changes = {
+                "jsonDashboardChanges": {
+                "dashboardItemIdsOrder": cards.map(item => item.id)
+            }};
+            dispatch(setUserDashboardWidgets(changes));
+        });
     }
 
     hideWidgets = (id) => {
@@ -66,20 +74,20 @@ export class DraggableWrapper extends Component {
 
         return (
             <div>
-            {cards.map((card, i) => {
-                return (
-                    (isVisible || (idMaximized===i)) &&
-                    <DraggableWidget key={card.id}
-                        index={i}
-                        id={card.id}
-                        text={card.caption}
-                        url={card.url}
-                        moveCard={this.moveCard}
-                        hideWidgets={this.hideWidgets}
-                        showWidgets={this.showWidgets}
-                    />
-                );
-            })}
+                {cards.map((card, i) => {
+                    return (
+                        (isVisible || (idMaximized===i)) &&
+                        <DraggableWidget key={card.id}
+                            index={i}
+                            id={card.id}
+                            text={card.caption}
+                            url={card.url}
+                            moveCard={this.moveCard}
+                            hideWidgets={this.hideWidgets}
+                            showWidgets={this.showWidgets}
+                        />
+                    );
+                })}
             </div>
         );
     }
@@ -90,4 +98,5 @@ DraggableWrapper.propTypes = {
 };
 
 DraggableWrapper = connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+
 export default DraggableWrapper;
