@@ -162,14 +162,6 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.commission</groupId>
-			<artifactId>de.metas.commission.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
 			<version>${metasfresh-dependency.version}</version>
