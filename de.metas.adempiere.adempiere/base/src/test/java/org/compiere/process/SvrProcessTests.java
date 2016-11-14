@@ -249,7 +249,7 @@ public class SvrProcessTests
 		trxManager.assertTrxNameNull(trxManager.getThreadInheritedTrxName());
 	}
 
-	private ProcessInfo createProcessInfo()
+	private ProcessInfo createProcessInfo(final SvrProcess processInstance)
 	{
 		// Create the AD_PInstance record
 		final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
@@ -261,6 +261,7 @@ public class SvrProcessTests
 				.setAD_PInstance(pinstance)
 				.setAD_Process_ID(0) // N/A
 				.setTitle("Test")
+				.setClassname(processInstance == null ? null : processInstance.getClass().getName())
 				.build();
 		return pi;
 	}
@@ -275,7 +276,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess process = new MockedSvrProcess();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
@@ -294,7 +295,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess process = new MockedSvrProcess();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
@@ -314,7 +315,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess process = new MockedSvrProcess();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
@@ -334,7 +335,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
@@ -353,7 +354,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
@@ -373,7 +374,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onPrepareThrowException = new ProcessCanceledException();
 		final boolean ok = process.startProcess(ctx, pi, trx);
@@ -392,7 +393,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
@@ -412,7 +413,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
@@ -433,7 +434,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onDoItThrowException = new ProcessCanceledException();
 		final boolean ok = process.startProcess(ctx, pi, trx);
@@ -459,7 +460,7 @@ public class SvrProcessTests
 	{
 		final MockedSvrProcess process = new MockedSvrProcess();
 		final ITrx trx = ITrx.TRX_None;
-		final ProcessInfo pi = createProcessInfo();
+		final ProcessInfo pi = createProcessInfo(process);
 
 		process.onPostProcessThrowException = new RuntimeException("fail on postProcess");
 		Boolean startProcess_ReturnValue = null;
