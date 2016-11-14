@@ -1,6 +1,9 @@
 -- 14.11.2016 11:21
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540740,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 11:21:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','N','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/umsatzreport_bpartner_with_qty/report.jasper','@PREFIX@de/metas/reports/umsatzreport_bpartner_with_qty/report_TabularView.jasper',0,'Umsatzreport Geschäftspartner mit Menge','N','Y',0,0,'Java',TO_TIMESTAMP('2016-11-14 11:21:58','YYYY-MM-DD HH24:MI:SS'),100,'Umsatzreport Geschäftspartner mit Menge (Jasper)')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	,Type,Updated,UpdatedBy,Value)
+	VALUES ('3',0,0,540740,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 11:21:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','N','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/umsatzreport_bpartner_with_qty/report.jasper','@PREFIX@de/metas/reports/umsatzreport_bpartner_with_qty/report_TabularView.jasper',0,'Umsatzreport Geschäftspartner mit Menge','N','Y'
+	,'Java',TO_TIMESTAMP('2016-11-14 11:21:58','YYYY-MM-DD HH24:MI:SS'),100,'Umsatzreport Geschäftspartner mit Menge (Jasper)')
 ;
 
 -- 14.11.2016 11:21
@@ -110,7 +113,10 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 14.11.2016 11:27
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540741,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 11:27:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','N','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/umsatzreport_bpartner_week_with_qty/report.jasper','@PREFIX@de/metas/reports/umsatzreport_bpartner_week_with_qty/report_TabularView.jasper',0,'Umsatzreport Geschäftspartner Woche mit Menge','N','Y',0,0,'Java',TO_TIMESTAMP('2016-11-14 11:27:38','YYYY-MM-DD HH24:MI:SS'),100,'Umsatzreport Geschäftspartner Woche mit Menge (Jasper)')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	,Type,Updated,UpdatedBy,Value)
+	VALUES ('3',0,0,540741,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 11:27:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','N','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/umsatzreport_bpartner_week_with_qty/report.jasper','@PREFIX@de/metas/reports/umsatzreport_bpartner_week_with_qty/report_TabularView.jasper',0,'Umsatzreport Geschäftspartner Woche mit Menge','N','Y'
+	,'Java',TO_TIMESTAMP('2016-11-14 11:27:38','YYYY-MM-DD HH24:MI:SS'),100,'Umsatzreport Geschäftspartner Woche mit Menge (Jasper)')
 ;
 
 -- 14.11.2016 11:27
