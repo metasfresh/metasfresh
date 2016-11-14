@@ -79,7 +79,7 @@ public class ModelExporter extends SvrProcess {
 		StringBuffer sb = new StringBuffer("AD_Table_ID=").append(AD_Table_ID);
 		sb.append("; Record_ID=").append(getRecord_ID());
 		// Parameter
-		ProcessInfoParameter[] paras = getParameter();
+		ProcessInfoParameter[] paras = getParametersAsArray();
 		for (ProcessInfoParameter para : paras) 
 		{
 			String name = para.getParameterName();

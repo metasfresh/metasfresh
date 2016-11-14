@@ -54,7 +54,7 @@ public class MigrationMerge extends SvrProcess {
 		
 		int fromId = 0, toId = 0;
 		
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for ( ProcessInfoParameter p : params)
 		{
 			String para = p.getParameterName();

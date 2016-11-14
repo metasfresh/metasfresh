@@ -67,7 +67,7 @@ public abstract class AbstractMRPSvrProcess extends SvrProcess
 	@Override
 	protected final void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

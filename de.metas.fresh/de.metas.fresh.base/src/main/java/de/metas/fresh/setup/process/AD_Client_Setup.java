@@ -157,7 +157,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 		{
 			final ClientSetup clientSetup = getClientSetup();
 
-			for (final ProcessInfoParameter para : getParameter())
+			for (final ProcessInfoParameter para : getParametersAsArray())
 			{
 				if (para.getParameter() == null)
 				{

@@ -57,7 +57,7 @@ public class ManageScheduler extends SvrProcess
 			p_AD_Scheduler_ID = getRecord_ID();
 		}
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

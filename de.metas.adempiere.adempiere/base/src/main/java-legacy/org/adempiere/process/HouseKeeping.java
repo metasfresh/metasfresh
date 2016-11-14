@@ -55,7 +55,7 @@ public class HouseKeeping extends SvrProcess{
 	private int		p_AD_HouseKeeping_ID = 0;
 	
 	protected void prepare() {
-		ProcessInfoParameter[] parameter = getParameter();
+		ProcessInfoParameter[] parameter = getParametersAsArray();
 		for (int i = 0; i < parameter.length; i++)
 		{
 			String name = parameter[i].getParameterName();

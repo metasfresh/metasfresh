@@ -49,7 +49,7 @@ public class FinReportJasper extends FinReport
 				.setFromAD_Process(proc)
 				.setRecord(getTable_ID(), getRecord_ID())
 				.setWhereClause(getProcessInfo().getWhereClause())
-				.addParameters(getParameter()) // Copy the list of parameters from the financial report
+				.addParameters(getParametersAsArray()) // Copy the list of parameters from the financial report
 				.addParameter(ProcessInfoParameter.of("T_Report_AD_PInstance_ID", getAD_PInstance_ID()))
 				.build();
 

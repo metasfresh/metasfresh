@@ -62,7 +62,7 @@ public class C_Dunning_Candidate_Create extends SvrProcess
 		p_DunningDate = Env.getContextAsDate(getCtx(), "#Date");
 		p_IsFullUpdate = false;
 
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

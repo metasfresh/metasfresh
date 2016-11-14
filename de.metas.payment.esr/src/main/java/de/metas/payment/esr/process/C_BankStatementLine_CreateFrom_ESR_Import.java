@@ -101,7 +101,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implem
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 

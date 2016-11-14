@@ -32,7 +32,7 @@ public class UpdateSequenceNo extends SvrProcess {
 
 	@Override
 	protected void prepare() {
-		ProcessInfoParameter[] parameters = this.getParameter();
+		ProcessInfoParameter[] parameters = this.getParametersAsArray();
 		for (ProcessInfoParameter p : parameters) {
 			if (p.getParameterName().equals("CalendarYear")) {
 				year = p.getParameter().toString();

@@ -103,7 +103,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess impleme
 			p_M_ShipperTransportation_ID = getRecord_ID();
 		}
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

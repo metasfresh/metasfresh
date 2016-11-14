@@ -46,7 +46,7 @@ public class FactAcctSummary extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] params = getParameter();
+		final ProcessInfoParameter[] params = getParametersAsArray();
 		for (final ProcessInfoParameter p : params)
 		{
 			final String parameterName = p.getParameterName();

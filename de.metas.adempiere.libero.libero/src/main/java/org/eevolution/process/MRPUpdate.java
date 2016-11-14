@@ -86,7 +86,7 @@ public class MRPUpdate extends SvrProcess
 	{
 		m_AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 //		Planner_ID = Integer.parseInt(Env.getContext(getCtx(), "#AD_User_ID"));
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

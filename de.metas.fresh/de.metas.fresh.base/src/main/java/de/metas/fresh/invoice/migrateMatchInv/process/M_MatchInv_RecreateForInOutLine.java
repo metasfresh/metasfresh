@@ -65,7 +65,7 @@ public class M_MatchInv_RecreateForInOutLine extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (PARAM_WhereClause.equals(name))

@@ -53,7 +53,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter param : getParameter())
+		for (final ProcessInfoParameter param : getParametersAsArray())
 		{
 			final String parameterName = param.getParameterName();
 			if (PARAM_Counter.equals(parameterName))

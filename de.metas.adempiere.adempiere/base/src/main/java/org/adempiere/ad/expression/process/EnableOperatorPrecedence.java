@@ -54,7 +54,7 @@ public class EnableOperatorPrecedence extends SvrProcess
 	protected void prepare()
 	{
 
-		ProcessInfoParameter[] paras = getParameter();
+		ProcessInfoParameter[] paras = getParametersAsArray();
 		for (ProcessInfoParameter para : paras)
 		{
 			final String name = para.getParameterName();

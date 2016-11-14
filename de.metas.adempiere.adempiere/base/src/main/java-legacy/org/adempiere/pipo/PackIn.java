@@ -98,7 +98,7 @@ public class PackIn extends SvrProcess {
 	@Override
 	protected void prepare() {
 		p_PackIn_ID = getRecord_ID();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 		}
 	} // prepare

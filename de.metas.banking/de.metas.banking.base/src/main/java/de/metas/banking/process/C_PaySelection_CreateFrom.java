@@ -54,7 +54,7 @@ public class C_PaySelection_CreateFrom extends SvrProcess
 		final I_C_PaySelection paySelection = getRecord(I_C_PaySelection.class);
 		paySelectionUpdater.setC_PaySelection(paySelection);
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

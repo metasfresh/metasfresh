@@ -86,7 +86,7 @@ public class ValidateSponsors extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Object[] params = readParameters(getCtx(), getParameter());
+		final Object[] params = readParameters(getCtx(), getParametersAsArray());
 		orgId = (Integer)params[0];
 
 	}

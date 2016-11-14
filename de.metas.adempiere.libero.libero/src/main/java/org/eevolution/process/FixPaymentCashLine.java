@@ -83,7 +83,7 @@ public class FixPaymentCashLine extends SvrProcess {
      */
     protected void prepare() 
     {
-    	ProcessInfoParameter[] para = getParameter();
+    	ProcessInfoParameter[] para = getParametersAsArray();
     	
     } //        prepare
 

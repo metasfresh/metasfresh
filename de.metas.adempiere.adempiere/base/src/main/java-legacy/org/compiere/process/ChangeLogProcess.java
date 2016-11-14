@@ -89,7 +89,7 @@ public class ChangeLogProcess extends SvrProcess
 	@Override
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

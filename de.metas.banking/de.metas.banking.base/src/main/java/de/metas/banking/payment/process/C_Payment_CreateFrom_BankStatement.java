@@ -77,7 +77,7 @@ public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements IS
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			final String name = para[i].getParameterName();

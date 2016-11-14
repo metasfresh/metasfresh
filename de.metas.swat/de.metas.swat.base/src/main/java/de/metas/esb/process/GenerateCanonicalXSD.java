@@ -82,7 +82,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -308,6 +308,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 				.setCtx(Env.getCtx())
 				.setTitle("GenerateCanonicalXSD")
 				.setAD_Process_ID(-1) // N/A
+				.setClassname(GenerateCanonicalXSD.class.getName())
 				.addParameter(ProcessInfoParameter.of("Target_Directory", outputFolder))
 				.addParameter(ProcessInfoParameter.of("EntityType", entityType))
 				.build();

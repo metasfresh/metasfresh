@@ -54,7 +54,7 @@ public class M_HU_DestroyEmptyHUs extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (PARAM_M_Warehouse_ID.equals(para.getParameterName()))
 			{

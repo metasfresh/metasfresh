@@ -87,7 +87,7 @@ public class CRPSummary extends SvrProcess
 	protected void prepare()
 	{
 		AD_Client_ID = Integer.parseInt(Env.getContext(Env.getCtx(), "#AD_Client_ID"));
-                ProcessInfoParameter[] para = getParameter();
+                ProcessInfoParameter[] para = getParametersAsArray();
                 
         AD_PInstance_ID = getAD_PInstance_ID();        
                

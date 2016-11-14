@@ -84,7 +84,7 @@ public class ComponentChange extends SvrProcess
 	{
 		int morepara = 0;
 		
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 

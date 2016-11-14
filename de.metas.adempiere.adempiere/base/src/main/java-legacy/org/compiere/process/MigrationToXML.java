@@ -36,7 +36,7 @@ public class MigrationToXML extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameterName().equals("AD_Migration_ID"))
 			{

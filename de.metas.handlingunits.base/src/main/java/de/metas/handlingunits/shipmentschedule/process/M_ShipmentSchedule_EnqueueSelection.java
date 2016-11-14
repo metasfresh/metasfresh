@@ -56,7 +56,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends SvrProcess
 		// don't FUD the user with AD_PInstance_Log records unless there is an actual error
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

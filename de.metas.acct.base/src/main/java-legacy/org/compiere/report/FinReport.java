@@ -53,7 +53,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
@@ -134,7 +133,7 @@ public class FinReport extends SvrProcess
 		StringBuilder sb = new StringBuilder("Record_ID=")
 				.append(getRecord_ID());
 		// Parameter
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -417,13 +416,9 @@ public class FinReport extends SvrProcess
 		scaleResults();
 
 		// Create Report
-		if (Ini.isClient())
-			getProcessInfo().setTransientObject(getPrintFormat());
-		else
-			getProcessInfo().setSerializableObject(getPrintFormat());
+		getResult().setPrintFormat(getPrintFormat());
 
-		log.debug((System.currentTimeMillis() - m_start) + " ms");
-		return "";
+		return MSG_OK;
 	}	// doIt
 
 	/**************************************************************************

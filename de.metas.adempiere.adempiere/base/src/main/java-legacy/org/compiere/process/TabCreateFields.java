@@ -70,7 +70,7 @@ public class TabCreateFields extends SvrProcess
 	protected void prepare()
 	{
 		p_AD_Tab_ID = getRecord_ID();
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

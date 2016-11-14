@@ -25,7 +25,6 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -50,12 +49,12 @@ public class ProcessParams implements IRangeAwareParams
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;
 	private Map<String, ProcessInfoParameter> _parameterName2parameter;
 
-	public ProcessParams(final ProcessInfoParameter[] parameters)
+	public ProcessParams(final List<ProcessInfoParameter> parameters)
 	{
 		super();
 
 		Check.assumeNotNull(parameters, "parameters not null");
-		this._parametersLoader = ImmutableReference.valueOf(Arrays.asList(parameters));
+		this._parametersLoader = ImmutableReference.valueOf(parameters);
 	}
 
 	/**

@@ -78,7 +78,7 @@ public abstract class AbstractSendDocumentsForSelection extends SvrProcess
 	{
 		//
 		// Init parameters first
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

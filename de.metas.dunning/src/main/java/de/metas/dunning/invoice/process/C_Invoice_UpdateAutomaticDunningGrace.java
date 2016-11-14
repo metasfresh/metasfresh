@@ -43,7 +43,7 @@ public class C_Invoice_UpdateAutomaticDunningGrace extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameterName() == null)

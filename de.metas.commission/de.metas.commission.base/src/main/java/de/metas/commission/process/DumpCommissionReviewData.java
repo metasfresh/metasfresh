@@ -161,7 +161,7 @@ public class DumpCommissionReviewData extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Object[] params = DumpTree.readParameters(getCtx(), getParameter());
+		final Object[] params = DumpTree.readParameters(getCtx(), getParametersAsArray());
 		orgId = (Integer)params[0];
 		period = (MPeriod)params[1];
 		outputFile = (File)params[2];

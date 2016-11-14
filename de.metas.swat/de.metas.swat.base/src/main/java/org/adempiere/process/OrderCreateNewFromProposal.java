@@ -139,7 +139,7 @@ public final class OrderCreateNewFromProposal extends SvrProcess
 					"This process may be started for proposals only");
 		}
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

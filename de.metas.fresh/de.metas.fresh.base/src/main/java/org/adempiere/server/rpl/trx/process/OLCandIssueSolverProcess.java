@@ -73,7 +73,7 @@ public class OLCandIssueSolverProcess extends SvrProcess
 		// NOTE: we do that because this process is called from window Gear and the user shall not see a popoup, only the status line.
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

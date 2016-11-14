@@ -34,7 +34,7 @@ public class PosKeyGenerate extends SvrProcess {
 	@Override
 	protected void prepare() {
 
-		for ( ProcessInfoParameter para : getParameter())
+		for ( ProcessInfoParameter para : getParametersAsArray())
 		{
 			
 			if ( para.getParameterName().equals("C_POSKeyLayout_ID") )

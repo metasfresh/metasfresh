@@ -42,7 +42,7 @@ public class MigrationCreate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for (ProcessInfoParameter p : params)
 		{
 			String para = p.getParameterName();

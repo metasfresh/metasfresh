@@ -64,7 +64,7 @@ public class C_Queue_Processor_Manage extends SvrProcess
 			p_C_Queue_Processor_ID = getRecord_ID();
 		}
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -62,7 +62,7 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (PARAM_IsComplete.equals(para.getParameterName()))
 			{

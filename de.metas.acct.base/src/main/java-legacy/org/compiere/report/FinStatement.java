@@ -22,8 +22,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
@@ -33,7 +31,6 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
 
@@ -101,12 +98,13 @@ public class FinStatement extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		StringBuffer sb = new StringBuffer ("Record_ID=")
 			.append(getRecord_ID());
 		//	Parameter
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -269,19 +267,17 @@ public class FinStatement extends SvrProcess
 	 *  Perform process.
 	 *  @return Message to be translated
 	 */
+	@Override
 	protected String doIt()
 	{
 		createBalanceLine();
 		createDetailLines();
 
-		int AD_PrintFormat_ID = 134;
-		if (Ini.isClient())
-			getProcessInfo().setTransientObject (MPrintFormat.get (getCtx(), AD_PrintFormat_ID, false));
-		else
-			getProcessInfo().setSerializableObject(MPrintFormat.get (getCtx(), AD_PrintFormat_ID, false));
+		final int AD_PrintFormat_ID = 134;
+		final MPrintFormat printFormat = MPrintFormat.get (getCtx(), AD_PrintFormat_ID, false);
+		getResult().setPrintFormat(printFormat);
 
-		log.debug((System.currentTimeMillis() - m_start) + " ms");
-		return "";
+		return MSG_OK;
 	}	//	doIt
 
 	/**

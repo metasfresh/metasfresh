@@ -54,7 +54,7 @@ public class AllocatePayment extends org.compiere.process.SvrProcess
 			p_C_Payment_ID = getRecord_ID();
 		}
 
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

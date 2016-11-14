@@ -135,7 +135,7 @@ public class PackOut extends SvrProcess
 	protected void prepare()
 	{
 		p_PackOut_ID = getRecord_ID();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 		}		

@@ -706,15 +706,28 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		return m_pi.getAD_Client_ID().intValue();
 	}	// getAD_Client_ID
 
-	/**************************************************************************
-	 * Get Parameter
-	 *
-	 * @return parameter
+	/**
+	 * Gets parameters.
+	 * 
+	 * @return parameters
 	 */
-	protected final ProcessInfoParameter[] getParameter()
+	protected final List<ProcessInfoParameter> getParameters()
 	{
 		return m_pi.getParameter();
-	}	// getParameter
+	}
+
+	/**
+	 * Gets parameters as array.
+	 * 
+	 * Please consider using {@link #getParameters()}.
+	 *
+	 * @return parameters array
+	 */
+	protected final ProcessInfoParameter[] getParametersAsArray()
+	{
+		final List<ProcessInfoParameter> parameters = m_pi.getParameter();
+		return parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+	}
 
 	/**
 	 * @return the process parameters as IParams instance

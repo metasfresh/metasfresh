@@ -39,7 +39,7 @@ public class MigrationApply extends SvrProcess
 	{
 		p_AD_Migration_ID = getRecord_ID();
 
-		for (ProcessInfoParameter p : getParameter())
+		for (ProcessInfoParameter p : getParametersAsArray())
 		{
 			final String name = p.getParameterName();
 			if (PARAM_FailOnError.equals(name))

@@ -50,7 +50,7 @@ public class CopyReportProcess extends SvrProcess {
 	@Override
 	protected void prepare() {
 		
-		ProcessInfoParameter[] params = getParameter();
+		ProcessInfoParameter[] params = getParametersAsArray();
 		for (ProcessInfoParameter parameter : params)
 		{
 			String para = parameter.getParameterName();

@@ -86,7 +86,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String parameterName = para.getParameterName();
 			if (I_M_Warehouse.COLUMNNAME_M_Warehouse_ID.equals(parameterName))

@@ -60,7 +60,7 @@ public class AD_Migration_CreateFromEntityType extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter p : getParameter())
+		for (final ProcessInfoParameter p : getParametersAsArray())
 		{
 			String para = p.getParameterName();
 			if ("EntityType".equals(para))

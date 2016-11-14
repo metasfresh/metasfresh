@@ -43,7 +43,7 @@ public class MigrationMergeToFrom extends SvrProcess
 	{
 		int migrationId = -1;
 		boolean isMergeTo = false;
-		for (ProcessInfoParameter p : getParameter())
+		for (ProcessInfoParameter p : getParametersAsArray())
 		{
 			String para = p.getParameterName();
 			if (para == null)
