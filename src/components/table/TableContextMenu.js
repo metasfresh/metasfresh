@@ -118,11 +118,11 @@ class TableContextMenu extends Component {
                     </div>
                 }
 
-                <div className="context-menu-item" onClick={this.handleDelete}>
-                    <i className="meta-icon-edit" /> Delete
-                </div>
                 <div className="context-menu-item" onClick={this.handleOpenNewTab}>
                     <i className="meta-icon-file" /> Open in new tab
+                </div>
+                <div className="context-menu-item" onClick={this.handleDelete}>
+                    <i className="meta-icon-edit" /> Delete
                 </div>
                 <Prompt
                     isOpen={prompt.open}

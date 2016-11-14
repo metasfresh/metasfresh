@@ -1615,6 +1615,10 @@ td.pulse-off input {
     height:100%;
 }
 
+.indicator-hidden {
+    display: none;
+}
+
 .indicator iframe {
     width: 100%;
     height: 100%;

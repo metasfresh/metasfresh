@@ -11,6 +11,7 @@ import {
     pathRequest,
     getWindowBreadcrumb
  } from '../../actions/MenuActions';
+
 class MenuOverlay extends Component {
     constructor(props){
         super(props);
@@ -245,10 +246,10 @@ class MenuOverlay extends Component {
                                 </div>
                                 :
                                 <span
-                                    className="menu-overlay-link"
+                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer"
                                     onClick={() => dispatch(push("/"))}
                                 >
-                                    Home
+                                    Dashboard
                                 </span>
                             }
                             <div className="menu-overlay-root-body">

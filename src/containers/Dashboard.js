@@ -8,37 +8,18 @@ import {
     getRootBreadcrumb
 } from '../actions/MenuActions';
 
-import {
-    getUserDashboardIndicators
-} from '../actions/AppActions';
-
 export class Dashboard extends Component {
     constructor(props){
         super(props);
-
-        this.state = {
-            indicators: []
-        }
     }
 
     componentDidMount = () => {
         const {dispatch} = this.props;
         dispatch(getRootBreadcrumb());
-        this.getIndicators();
-    }
-
-    getIndicators = () => {
-        const {dispatch} = this.props;
-        dispatch(getUserDashboardIndicators()).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                indicators: response.data.items
-            }));
-        });
     }
 
     render() {
         const {breadcrumb} = this.props;
-        const {indicators} = this.state;
         return (
             <Container
                 breadcrumb={breadcrumb}
@@ -46,22 +27,6 @@ export class Dashboard extends Component {
                 noMargin = {true}
             >
                 <div className="container-fluid dashboard-wrapper">
-                    <div className="indicators-wrapper">
-                        {
-                            indicators.map((indicator, id) =>
-                                <div
-                                    className="indicator"
-                                    key={id}
-                                >
-                                    <iframe
-                                        src={indicator.url}
-                                        scrolling="no"
-                                        frameBorder="no"
-                                    ></iframe>
-                                </div>
-                            )
-                        }
-                    </div>
                     <DraggableWrapper/>
                 </div>
 
