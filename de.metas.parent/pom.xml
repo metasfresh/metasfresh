@@ -262,8 +262,14 @@
 				but at least, i don't yet see the point..maybe it's just using so many SNAPSHOT 
 				dependencies is not a common case, or maybe we are misregarding other best 
 				practices.. -->
-			<!-- <dependency> <artifactId></artifactId> <groupId></groupId> <version>${project.version}</version> 
-				</dependency> -->
+			<!-- 
+			<dependency> 
+				<artifactId></artifactId> 
+				<groupId></groupId> 
+				<version>${project.version}</version> 
+			</dependency> 
+			-->
+
 			<dependency>
 				<groupId>de.metas.adempiere.libero</groupId>
 				<artifactId>de.metas.adempiere.libero.libero</artifactId>

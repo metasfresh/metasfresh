@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.44.42 (2016-46)
+
+## Features
+* metasfresh
+  * #553 Report Account Info adjustments. Add parms date range.
+
 # metasfresh 4.43.42 (2016-45)
 
 ## Features
