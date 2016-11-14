@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -64,7 +66,7 @@ public final class ProcessClassInfo
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
-	public static final ProcessClassInfo of(final Class<?> processClass)
+	public static final ProcessClassInfo of(@Nullable final Class<?> processClass)
 	{
 		if (processClass == null)
 		{
