@@ -86,9 +86,9 @@ public class IterateResult
 	 * Adds the given <code>tableRecordReference</code> to the result, and also declares that the table reference belongs to the given <code>dlmPartitionId</code>.
 	 * <p>
 	 * Note that <code>tableRecordReference</code> was not yet added earlier <b>and</b> if <code>dlmPartitionId</code> is less or equal zero,
-	 * then this method also adds the given record to the in-memory-queue wo that it will eventually be returned by {@link #nextFromQueue()}.
+	 * then this method also adds the given record to the in-memory-queues so that it will eventually be returned by {@link #nextFromQueue()}.
 	 *
-	 * In case of <code>dlmPartitionId</code> bein greater than zero, we don't need to add it to the queue, because it si an "edge" record that marks the "border" to an already existing partition.
+	 * In case of <code>dlmPartitionId</code> being greater than zero, we don't need to add it to the queue, because it si an "edge" record that marks the "border" to an already existing partition.
 	 *
 	 * @param tableRecordReference
 	 * @param dlmPartitionId
@@ -175,6 +175,14 @@ public class IterateResult
 		return iteratorEmpty && outerHull.isEmpty();
 	}
 
+	/**
+	 * Returns the next record from out work queue.
+	 * If the record entered the queue as "initital result" via {@link #IterateResult(Iterator, IContextAware)}, then the record is now also loaded and added to this instance properly
+	 * together with its <code>DLM_Partition_ID</code> that is known only after loading. So, after this method was called, {@link #size()} might have increated by one.
+	 *
+	 * @return
+	 * @see #add(ITableRecordReference, int)
+	 */
 	public ITableRecordReference nextFromQueue()
 	{
 		final WorkQueue result = nextFromQueue0();

@@ -948,14 +948,15 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	/**
-	 * Persists the given <code>result</code> to DB and invokes {@link IterateResult#clearAfterPartitionStored()} to release memory.
+	 * Persists the given <code>result</code> to DB and invokes {@link IterateResult#clearAfterPartitionStored(Partition)} to release memory.
 	 *
-	 * @param config
-	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(int)}
+	 * @param config not actually used in this method, but forwarded to the new {@link Partition} that <code>clearAfterPartitionStored</code> will be called with.
+	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}
 	 * @param ctxAware
 	 * @return
 	 */
-	private void storeIterateResult(final PartitionerConfig config,
+	@VisibleForTesting
+	/* package */ void storeIterateResult(final PartitionerConfig config,
 			final IterateResult result,
 			final IContextAware ctxAware)
 	{
@@ -968,7 +969,9 @@ public class PartitionerService implements IPartitionerService
 			return;
 		}
 
-		final Partition resultPartition = result.getPartition()
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final Partition resultPartition = result.getPartition() // the partiton returned by result might be empty, if this is the first time we are in this method
 				.withConfig(config)
 				.withComplete(result.isQueueEmpty())
 				.withRecords(result.getTableName2Record());
@@ -983,44 +986,46 @@ public class PartitionerService implements IPartitionerService
 					resultPartition,
 					true);
 		}
-		else if (dlmPartitionId2Record.size() == 1)
+		else
 		{
-			// if there is just "not set" (i.e. <= 0), then create a new partition
-			final Integer singleKey = dlmPartitionId2Record.keySet().iterator().next();
+			// check the DLM_Partition_IDs we know about and see if there is one > 0, i.e. see if there is one already persisted parttion in the plan
+			final Set<Integer> keySet = new HashSet<>(dlmPartitionId2Record.keySet());
+			keySet.add(resultPartition.getDLM_Partition_ID());
 
-			if (singleKey <= 0 && result.getPartition().getDLM_Partition_ID() > 0)
+			final Optional<Integer> firstKeyIfAny = keySet
+					.stream()
+					.sorted() // sort them by ID, because we need it deterministic; TODO: sort them by partition size so that the biggest existing parttion can be left unchanged
+					.filter(dlmPartitionId -> dlmPartitionId > 0) // we want the first partition ID that is already "persisted" in the DB
+					.findFirst();
+
+			// in any case, store the partition, i.e. also persist the records that were found and added to result.getDlmPartitionId2Record()
+			final int firstKey;
+			if (firstKeyIfAny.isPresent())
 			{
-				// the records in "result" don't yet have a DLM_Partition_ID, but their "siblings" were already stored earlier to a partiton, so we sore them in that same partition
+				// there is at least one stored partition
+				firstKey = firstKeyIfAny.get();
+
+				// update the existing parttion
 				storedPartition = storePartition(
-						resultPartition,
+						resultPartition
+								.withDLM_Partition_ID(firstKey)
+								.withTargetDLMLevel(IMigratorService.DLM_Level_NOT_SET)
+								.withNextInspectionDate(null),
 						true);
 			}
 			else
 			{
-				// in unit test mode, singleKey might be -1, see POJOWrapper.DEFAULT_VALUE_ID
-				Check.errorUnless((singleKey <= -1 && resultPartition.getDLM_Partition_ID() <= 0) ||
-						singleKey == resultPartition.getDLM_Partition_ID(),
-						"singleKey={} needs to be the same as result.getDlmPartitionId()={}; result={}",
-						singleKey, resultPartition.getDLM_Partition_ID(), result);
-
+				// store a brand new partition
 				storedPartition = storePartition(
-						resultPartition
-								.withDLM_Partition_ID(singleKey),
+						resultPartition,
 						true);
+				firstKey = storedPartition.getDLM_Partition_ID();
 			}
-		}
-		else // dlmPartitionId2Record.size() > 1
-		{
-			// if there are multiple IDs, then merge the partitions: load all records for all different DLM_Partitons, pick one DLM_Partition_ID and add all records that DLM_Partition_ID.
-			final Integer firstKey = dlmPartitionId2Record
-					.keySet().stream()
-					.filter(dlmPartitionId -> dlmPartitionId > 0) // we want the first partition ID that is "persisted" in the DB
-					.findFirst()
-					.orElseThrow(Check.supplyEx("We have more than one DLM_Partition_IDs, but none of them >0. DLM_Partition_ID={} ", dlmPartitionId2Record.keySet()));
 
+			// now iterate the keyset and merge all other partitions with the one that has "firstKey" as it's ID
 			final IDLMService dlmService = Services.get(IDLMService.class);
 
-			dlmPartitionId2Record.keySet().stream()
+			keySet.stream()
 
 					// no point loading all the records that already have the DLM_Partition_ID we want to update our records to
 					.filter(dlmPartitionId -> dlmPartitionId != firstKey)
@@ -1032,31 +1037,27 @@ public class PartitionerService implements IPartitionerService
 					.forEach(dlmPartitionId -> {
 						dlmService.directUpdateDLMColumn(ctxAware, dlmPartitionId, IDLMAware.COLUMNNAME_DLM_Partition_ID, firstKey);
 
-						// we know that the partitition with dlmPartitionId is now empty, so let's update its PartitionSize value
-						// note that we don't want to delete it because we don't know that there aren't any DLM_Partition_WorkQueue_records
-						final I_DLM_Partition emptyPartitionDB = InterfaceWrapperHelper.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName());
-						emptyPartitionDB.setPartitionSize(0);
-						InterfaceWrapperHelper.save(emptyPartitionDB);
-					});
+						// we know that the partitition with dlmPartitionId is now empty, so let's delete it
+						queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
+								.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_ID, dlmPartitionId)
+								.create()
+								.updateDirectly()
+								.addSetColumnValue(I_DLM_Partition_Workqueue.COLUMNNAME_DLM_Partition_ID, firstKey)
+								.execute();
 
-			storedPartition = storePartition(
-					resultPartition
-							.withDLM_Partition_ID(firstKey)
-							.withTargetDLMLevel(IMigratorService.DLM_Level_NOT_SET)
-							.withNextInspectionDate(null),
-					true);
+						final I_DLM_Partition emptyPartitionDB = InterfaceWrapperHelper.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName());
+						InterfaceWrapperHelper.delete(emptyPartitionDB);
+					});
 		}
 
+		// store and delete DLM_Partition_Workqueue records according to the records we processed and the records we newly added since the lat time this method was called.
 		{
-			// rewrite the queue TODO log what was deleted and created
-			// maybe in future we can have a more efficient sync
 			result.getQueueRecordsToDelete()
 					.forEach(r -> {
 
 						// It's not a must to delete them 1-by-1, but we can't just create one chuck with unknow size!
 						// If we want to delete more than one at a time, we need to create chucks of a fixed size that is less than 2^32.
-						Services.get(IQueryBL.class)
-								.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
+						queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
 								.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_Workqueue_ID, r.getDLM_Partition_Workqueue_ID())
 								.create()
 								.deleteDirectly();
@@ -1164,7 +1165,7 @@ public class PartitionerService implements IPartitionerService
 	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ Partition loadWithAllRecords(Partition partition)
+	/* package */ Partition loadWithAllRecords(final Partition partition)
 	{
 		if (partition.getDLM_Partition_ID() <= 0)
 		{
@@ -1192,7 +1193,7 @@ public class PartitionerService implements IPartitionerService
 		return loadedPartition.withRecords(allRecords);
 	}
 
-	Iterator<WorkQueue> loadForTable(Partition partition, final String tableName)
+	Iterator<WorkQueue> loadForTable(final Partition partition, final String tableName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

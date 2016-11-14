@@ -46,6 +46,8 @@ public class DLM_Partition_Destroy extends SvrProcess
 		final I_DLM_Partition partitionDB = getProcessInfo().getRecord(I_DLM_Partition.class);
 
 		dlmService.directUpdateDLMColumn(this, partitionDB.getDLM_Partition_ID(), IDLMAware.COLUMNNAME_DLM_Partition_ID, 0);
+
+		// TODO consider deleting the whole parttion, if there aren't any DLM_Partition_WorkQueue records left.
 		partitionDB.setPartitionSize(0);
 		InterfaceWrapperHelper.save(partitionDB);
 		return MSG_OK;
