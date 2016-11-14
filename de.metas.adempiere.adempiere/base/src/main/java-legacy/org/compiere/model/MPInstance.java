@@ -23,13 +23,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
@@ -92,55 +89,6 @@ public class MPInstance extends X_AD_PInstance
 		super(ctx, rs, ITrx.TRXNAME_None);
 	}	//	MPInstance
 
-	/**
-	 * Create Process Instance from Process and create parameters
-	 *
-	 * @param process process
-	 * @param adTableId
-	 * @param Record_ID Record
-	 */
-	public MPInstance (final I_AD_Process process, final int adTableId, final int Record_ID)
-	{
-		this(InterfaceWrapperHelper.getCtx(process), process, adTableId, Record_ID);
-	}
-	
-	private MPInstance(final Properties ctx, final I_AD_Process process, final int adTableId, final int recordId)
-	{
-		this(ctx, 0, ITrx.TRXNAME_None);
-		setAD_Process_ID(process.getAD_Process_ID());
-		if (adTableId > 0)
-		{
-			setAD_Table_ID(adTableId);
-		}
-		setRecord_ID(recordId);
-		setAD_User_ID(Env.getAD_User_ID(ctx));
-		setAD_Role_ID(Env.getAD_Role_ID(ctx));
-
-		DB.saveConstraints();
-		try
-		{
-			DB.getConstraints().incMaxTrx(1).addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
-
-			saveEx();		// need to save for parameters // metas: use saveEx
-
-			// Set Parameter Base Info
-			int seqNo = 10; // metas
-			for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retrieveProcessParameters(process))
-			{
-				I_AD_PInstance_Para pip = new MPInstancePara(this, seqNo); // metas: use seqNo instead of para[i].getSeqNo()
-				pip.setParameterName(para.getColumnName());
-				pip.setInfo(para.getName());
-				InterfaceWrapperHelper.save(pip);
-				seqNo += 10; // metas
-			}
-
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
-	}	// MPInstance
-
 	public MPInstance (final Properties ctx, ProcessInfo pi)
 	{
 		this(ctx, pi.getAD_Process_ID(), pi.getTable_ID(), pi.getRecord_ID());
@@ -168,25 +116,6 @@ public class MPInstance extends X_AD_PInstance
 		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		setIsProcessing (false);
 	}	//	MPInstance
-	
-
-	/**	Parameters						*/
-	private List<I_AD_PInstance_Para> m_parameters = null;
-
-	/**
-	 * 	Get Parameters
-	 *	@return parameter array
-	 */
-	public List<I_AD_PInstance_Para> getParameters()
-	{
-		if (m_parameters == null)
-		{
-			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-			final List<I_AD_PInstance_Para> parametersList = adPInstanceDAO.retrievePInstanceParams(getCtx(), getAD_PInstance_ID());
-			m_parameters = ImmutableList.copyOf(parametersList);
-		}
-		return m_parameters;
-	}	//	getParameters
 
 	/**
 	 *	Get Logs

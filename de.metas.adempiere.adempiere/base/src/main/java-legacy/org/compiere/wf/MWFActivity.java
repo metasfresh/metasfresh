@@ -24,24 +24,29 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MAttachment;
@@ -52,6 +57,7 @@ import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MPInstance;
+import org.compiere.model.MPInstancePara;
 import org.compiere.model.MProcess;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
@@ -998,23 +1004,22 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Report ******/
 		else if (MWFNode.ACTION_AppsReport.equals(action))
 		{
-			log.debug("Report:AD_Process_ID=" + m_node.getAD_Process_ID());
+			log.debug("Report:AD_Process_ID={}", m_node.getAD_Process_ID());
 			// Process
-			final MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
-			process.set_TrxName(trx != null ? trx.getTrxName() : null);
-			if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
+			final I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			if (!process.isReport())
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
-			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			pInstance.set_TrxName(trx != null ? trx.getTrxName() : ITrx.TRXNAME_None);
-			fillParameter(pInstance, trx);
+			final I_AD_PInstance pInstance = new MPInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
+			InterfaceWrapperHelper.save(pInstance);
+			createPInstanceParameters(pInstance, process, getPO(trx));
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
 					.setAD_PInstance(pInstance)
-					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setFromAD_Process(process)
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
@@ -1044,8 +1049,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
 			I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
-			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			fillParameter(pInstance, trx);
+			//
+			final I_AD_PInstance pInstance = new MPInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
+			InterfaceWrapperHelper.save(pInstance);
+			createPInstanceParameters(pInstance, process, getPO(trx));
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
 					.setCtx(getCtx())
@@ -1477,122 +1484,121 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		setWFState(StateEngine.STATE_Completed);
 	}	// setUserConfirmation
 
-	/**
-	 * Fill Parameter
-	 *
-	 * @param pInstance process instance
-	 * @param trx transaction
-	 */
-	private void fillParameter(MPInstance pInstance, Trx trx)
+	
+	private void createPInstanceParameters(final I_AD_PInstance adPInstance, final I_AD_Process adProcess, final PO po)
 	{
-		getPO(trx);
-		//
-		MWFNodePara[] nParams = m_node.getParameters();
-		for (final I_AD_PInstance_Para iPara : pInstance.getParameters())
+		final Map<String, MWFNodePara> attributeName2wfNodePara = Stream.of(m_node.getParameters())
+				.collect(GuavaCollectors.toImmutableMapByKey(MWFNodePara::getAttributeName));
+		
+		int seqNo = 10; // metas
+		for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retrieveProcessParameters(adProcess))
 		{
-			for (int np = 0; np < nParams.length; np++)
+			I_AD_PInstance_Para pip = new MPInstancePara(adPInstance, seqNo);
+			pip.setParameterName(para.getColumnName());
+			pip.setInfo(para.getName());
+			InterfaceWrapperHelper.save(pip);
+			seqNo += 10; // metas
+
+			final MWFNodePara wfNodePara = attributeName2wfNodePara.get(pip.getParameterName());
+			if(wfNodePara != null)
 			{
-				MWFNodePara nPara = nParams[np];
-				if (iPara.getParameterName().equals(nPara.getAttributeName()))
+				fillPInstancePara(pip, wfNodePara, po);
+			}
+		}
+		
+	}
+	
+	private final void fillPInstancePara(final I_AD_PInstance_Para iPara, final MWFNodePara nPara, final PO po)
+	{
+		final String attributeName = nPara.getAttributeName();
+		
+		final String variableName = nPara.getAttributeValue();
+		log.debug(attributeName + " = " + variableName);
+		// Value - Constant/Variable
+		Object value = variableName;
+		if (variableName == null || (variableName != null && variableName.length() == 0))
+			value = null;
+		else if (variableName.indexOf('@') != -1 && po != null)	// we have a variable
+		{
+			// Strip
+			int index = variableName.indexOf('@');
+			String columnName = variableName.substring(index + 1);
+			index = columnName.indexOf('@');
+			if (index == -1)
+			{
+				log.warn(attributeName + " - cannot evaluate=" + variableName);
+				return;
+			}
+			columnName = columnName.substring(0, index);
+			index = po.get_ColumnIndex(columnName);
+			if (index != -1)
+			{
+				value = po.get_Value(index);
+			}
+			else
+			// not a column
+			{
+				// try Env
+				String env = Env.getContext(getCtx(), columnName);
+				if (env.length() == 0)
 				{
-					String variableName = nPara.getAttributeValue();
-					log.debug(nPara.getAttributeName() + " = " + variableName);
-					// Value - Constant/Variable
-					Object value = variableName;
-					if (variableName == null || (variableName != null && variableName.length() == 0))
-						value = null;
-					else if (variableName.indexOf('@') != -1 && m_po != null)	// we have a variable
-					{
-						// Strip
-						int index = variableName.indexOf('@');
-						String columnName = variableName.substring(index + 1);
-						index = columnName.indexOf('@');
-						if (index == -1)
-						{
-							log.warn(nPara.getAttributeName() + " - cannot evaluate=" + variableName);
-							break;
-						}
-						columnName = columnName.substring(0, index);
-						index = m_po.get_ColumnIndex(columnName);
-						if (index != -1)
-						{
-							value = m_po.get_Value(index);
-						}
-						else
-						// not a column
-						{
-							// try Env
-							String env = Env.getContext(getCtx(), columnName);
-							if (env.length() == 0)
-							{
-								log.warn(nPara.getAttributeName() + " - not column nor environment =" + columnName + "(" + variableName + ")");
-								break;
-							}
-							else
-								value = env;
-						}
-					}	// @variable@
-
-					// No Value
-					if (value == null)
-					{
-						if (nPara.isMandatory())
-							log.warn(nPara.getAttributeName() + " - empty - mandatory!");
-						else
-							log.debug(nPara.getAttributeName() + " - empty");
-						break;
-					}
-
-					// Convert to Type
-					try
-					{
-						if (DisplayType.isNumeric(nPara.getDisplayType())
-								|| DisplayType.isID(nPara.getDisplayType()))
-						{
-							BigDecimal bd = null;
-							if (value instanceof BigDecimal)
-								bd = (BigDecimal)value;
-							else if (value instanceof Integer)
-								bd = new BigDecimal(((Integer)value).intValue());
-							else
-								bd = new BigDecimal(value.toString());
-							iPara.setP_Number(bd);
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName + " (=" + bd + "=)");
-						}
-						else if (DisplayType.isDate(nPara.getDisplayType()))
-						{
-							Timestamp ts = null;
-							if (value instanceof Timestamp)
-								ts = (Timestamp)value;
-							else
-								ts = Timestamp.valueOf(value.toString());
-							iPara.setP_Date(ts);
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName + " (=" + ts + "=)");
-						}
-						else
-						{
-							iPara.setP_String(value.toString());
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName
-									+ " (=" + value + "=) " + value.getClass().getName());
-						}
-
-						InterfaceWrapperHelper.save(iPara);
-					}
-					catch (Exception e)
-					{
-						log.warn(nPara.getAttributeName()
-								+ " = " + variableName + " (" + value
-								+ ") " + value.getClass().getName()
-								+ " - " + e.getLocalizedMessage());
-					}
-					break;
+					log.warn(attributeName + " - not column nor environment =" + columnName + "(" + variableName + ")");
+					return;
 				}
-			}	// node parameter loop
-		}	// instance parameter loop
-	}	// fillParameter
+				else
+					value = env;
+			}
+		}	// @variable@
+
+		// No Value
+		if (value == null)
+		{
+			if (nPara.isMandatory())
+				log.warn(attributeName + " - empty - mandatory!");
+			else
+				log.debug(attributeName + " - empty");
+			return;
+		}
+
+		// Convert to Type
+		try
+		{
+			if (DisplayType.isNumeric(nPara.getDisplayType())
+					|| DisplayType.isID(nPara.getDisplayType()))
+			{
+				BigDecimal bd = null;
+				if (value instanceof BigDecimal)
+					bd = (BigDecimal)value;
+				else if (value instanceof Integer)
+					bd = new BigDecimal(((Integer)value).intValue());
+				else
+					bd = new BigDecimal(value.toString());
+				iPara.setP_Number(bd);
+				log.debug(attributeName + " = " + variableName + " (=" + bd + "=)");
+			}
+			else if (DisplayType.isDate(nPara.getDisplayType()))
+			{
+				Timestamp ts = null;
+				if (value instanceof Timestamp)
+					ts = (Timestamp)value;
+				else
+					ts = Timestamp.valueOf(value.toString());
+				iPara.setP_Date(ts);
+				log.debug(attributeName + " = " + variableName + " (=" + ts + "=)");
+			}
+			else
+			{
+				iPara.setP_String(value.toString());
+				log.debug(attributeName + " = " + variableName + " (=" + value + "=) " + value.getClass().getName());
+			}
+
+			InterfaceWrapperHelper.save(iPara);
+		}
+		catch (Exception e)
+		{
+			log.warn(attributeName + " = " + variableName + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
+		}
+	}
 
 	/*********************************
 	 * Send EMail
