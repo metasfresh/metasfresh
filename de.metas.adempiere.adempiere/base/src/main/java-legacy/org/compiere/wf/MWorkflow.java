@@ -36,6 +36,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MMenu;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_Workflow;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
@@ -678,7 +679,7 @@ public class MWorkflow extends X_AD_Workflow
 			{
 				final MWFProcess wfProcess = new MWFProcess(MWorkflow.this, pi, ITrx.TRXNAME_ThreadInherited);
 				InterfaceWrapperHelper.save(wfProcess);
-				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
+				pi.getResult().setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "Processing"));
 				wfProcess.startWork();
 				
 				return wfProcess;
@@ -689,8 +690,10 @@ public class MWorkflow extends X_AD_Workflow
 			{
 				log.error("Failed starting workflow {} for {}", MWorkflow.this, pi, ex);
 				
-				pi.setThrowable(ex); // 03152
-				pi.setSummary(ex.getMessage(), true);
+				final ProcessExecutionResult result = pi.getResult();
+				result.setThrowable(ex); // 03152
+				result.setSummary(ex.getMessage(), true);
+				
 				return ROLLBACK;
 			}
 		});
@@ -701,7 +704,7 @@ public class MWorkflow extends X_AD_Workflow
 	 * 	@param pi process info with Record_ID record for the workflow
 	 *	@return process
 	 */
-	public MWFProcess startWait (ProcessInfo pi)
+	public MWFProcess startWait (final ProcessInfo pi)
 	{
 		final int SLEEP = 500;		//	1/2 sec
 		final int MAXLOOPS = 30;	//	15 sec	
@@ -717,8 +720,9 @@ public class MWorkflow extends X_AD_Workflow
 			if (loops > MAXLOOPS)
 			{
 				log.warn("startWait: Timeout after {} seconds", ((SLEEP*MAXLOOPS)/1000));
-				pi.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
-				pi.setIsTimeout(true);
+				final ProcessExecutionResult result = pi.getResult();
+				result.setSummary(Services.get(IMsgBL.class).getMsg(getCtx(), "ProcessRunning"));
+				result.setTimeout(true);
 				return process;
 			}
 		//	System.out.println("--------------- " + loops + ": " + state);
@@ -730,8 +734,9 @@ public class MWorkflow extends X_AD_Workflow
 			catch (InterruptedException e)
 			{
 				log.error("startWait: interrupted", e);
-				pi.setThrowable(e); // 03152
-				pi.setSummary("Interrupted");
+				final ProcessExecutionResult result = pi.getResult();
+				result.setThrowable(e); // 03152
+				result.setSummary("Interrupted");
 				return process;
 			}
 			Thread.yield();
@@ -740,7 +745,9 @@ public class MWorkflow extends X_AD_Workflow
 		String summary = process.getProcessMsg();
 		if (summary == null || summary.trim().length() == 0)
 			summary = state.toString();
-		pi.setSummary(summary, state.isTerminated() || state.isAborted());
+		
+		final ProcessExecutionResult result = pi.getResult();
+		result.setSummary(summary, state.isTerminated() || state.isAborted());
 		log.debug("startWait done: {}", summary);
 		return process;
 	}	//	startWait

@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 
 import de.metas.logging.LogManager;
@@ -42,7 +43,8 @@ public interface ASyncProcess
 {
 	default void onProcessInitError(final ProcessInfo pi)
 	{
-		final Throwable cause = pi.getThrowable();
+		final ProcessExecutionResult processResult = pi.getResult();
+		final Throwable cause = processResult.getThrowable();
 		if (cause != null)
 		{
 			LogManager.getLogger(ASyncProcess.class).warn("Process initialization failed: {}", pi, cause);

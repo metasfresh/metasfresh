@@ -70,6 +70,14 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
+	public static final ProcessInfoParameter of(final String parameterName, final boolean parameterValue)
+	{
+		final Boolean parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
 	
 	//
 	// Constants used to pass process parameters to Jasper Process

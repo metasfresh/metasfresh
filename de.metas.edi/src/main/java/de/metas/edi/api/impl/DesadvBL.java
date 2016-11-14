@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -443,7 +442,7 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessInfo processInfo = ProcessInfo.builder()
-				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
+				.setAD_PInstance(pinstance)
 				.setFromAD_Process(process)
 				.build();
 
@@ -451,21 +450,8 @@ public class DesadvBL implements IDesadvBL
 		// Execute the actual printing process
 		ProcessCtl.builder()
 				.setProcessInfo(processInfo)
+				.onErrorThrowException()
 				.executeSync();
-
-		//
-		// Throw process exception in case it failed.
-		if (processInfo.isError())
-		{
-			if (processInfo.getThrowable() != null)
-			{
-				throw AdempiereException.wrapIfNeeded(processInfo.getThrowable());
-			}
-			else
-			{
-				throw new AdempiereException(processInfo.getSummary());
-			}
-		}
 	}
 
 	@Override

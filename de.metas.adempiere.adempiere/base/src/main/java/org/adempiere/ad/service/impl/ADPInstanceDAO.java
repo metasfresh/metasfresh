@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
@@ -82,40 +81,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				.stream()
 				.map(adPInstancePara -> createProcessInfoParameter(adPInstancePara))
 				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	@Override
-	public void loadFromDB(final ProcessInfo pi)
-	{
-		Check.assumeNotNull(pi, "pi not null");
-
-		//
-		// Retrieve and create ProcessInfoParameters
-		final Properties ctx = pi.getCtx();
-		final int adPInstanceId = pi.getAD_PInstance_ID();
-
-		//
-		// Set ProcessInfo's AD_Client_ID and AD_User_ID (if not already set)
-		final Integer adClientId = pi.getAD_Client_ID();
-		final Integer adUserId = pi.getAD_User_ID();
-		if (adPInstanceId > 0 && (adClientId == null || adUserId == null))
-		{
-			final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-			if (adClientId == null)
-			{
-				pi.setAD_Client_ID(adPInstance.getAD_Client_ID());
-			}
-			if (adUserId == null)
-			{
-				pi.setAD_User_ID(adPInstance.getAD_User_ID());
-			}
-		}
-
-		//
-		// Set ProcessInfo's Parameters
-		final List<ProcessInfoParameter> processInfoParams = retrieveProcessInfoParameters(ctx, adPInstanceId);
-		final ProcessInfoParameter[] paramsArr = processInfoParams.toArray(new ProcessInfoParameter[processInfoParams.size()]);
-		pi.setParameter(paramsArr);
 	}
 
 	// package level for testing
@@ -168,7 +133,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void saveParameterToDB(final int adPInstanceId, final ProcessInfoParameter[] piParams)
+	public void saveParameterToDB(final int adPInstanceId, final List<ProcessInfoParameter> piParams)
 	{
 		DB.saveConstraints();
 		try
@@ -189,10 +154,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	 *
 	 * Called by {@link #saveParameterToDB(ProcessInfo)} to do the actual work.
 	 */
-	private void saveParametersToDB0(final int adPInstanceId, final ProcessInfoParameter[] piParams)
+	private void saveParametersToDB0(final int adPInstanceId, final List<ProcessInfoParameter> piParams)
 	{
 		// exit if this ProcessInfo has no Parameters
-		if (piParams == null || piParams.length == 0)
+		if (piParams == null || piParams.isEmpty())
 		{
 			return;
 		}

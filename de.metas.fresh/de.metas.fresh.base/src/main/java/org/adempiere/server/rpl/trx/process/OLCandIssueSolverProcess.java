@@ -44,7 +44,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
+import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 

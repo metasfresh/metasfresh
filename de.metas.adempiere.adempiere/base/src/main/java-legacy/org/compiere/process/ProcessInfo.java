@@ -18,8 +18,6 @@ package org.compiere.process;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,22 +33,16 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
-import de.metas.logging.LogManager;
 
 /**
  * Process Information (Value Object)
@@ -60,6 +52,7 @@ import de.metas.logging.LogManager;
  * @author victor.perez@e-evolution.com
  * @see FR 1906632 http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1906632&group_id=176962
  */
+@SuppressWarnings("serial")
 public final class ProcessInfo implements Serializable
 {
 	public static final ProcessInfoBuilder builder()
@@ -72,22 +65,20 @@ public final class ProcessInfo implements Serializable
 		super();
 		ctx = builder.getCtx();
 
-		m_AD_Process_ID = builder.getAD_Process_ID();
+		adProcessId = builder.getAD_Process_ID();
 		m_AD_PInstance_ID = builder.getAD_PInstance_ID();
 		
 		m_AD_Client_ID = builder.getAD_Client_ID();
 		m_AD_Org_ID = builder.getAD_Org_ID();
 		m_AD_User_ID = builder.getAD_User_ID();
 		
-		m_Title = builder.getTitle();
+		title = builder.getTitle();
 		
 		_className = builder.getClassname();
 		_dbProcedureName = builder.getDBProcedureName();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
 		
-		_refreshAllAfterExecution = builder.isRefreshAllAfterExecution();
-
 		m_Table_ID = builder.getAD_Table_ID();
 		m_Record_ID = builder.getRecord_ID();
 		m_whereClause = builder.getWhereClause();
@@ -101,41 +92,32 @@ public final class ProcessInfo implements Serializable
 		reportTemplate = builder.getReportTemplate();
 
 		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
-		if (parameters == null)
-		{
-			this.m_parameter = null;
-			this.m_parameterLoaded = false;
-		}
-		else
-		{
-			this.m_parameter = parameters.toArray(new ProcessInfoParameter[parameters.size()]);
-			this.m_parameterLoaded = true;
-		}
+		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
+		
+		result = new ProcessExecutionResult();
+		result.setAD_PInstance_ID(m_AD_PInstance_ID);
+		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	/** Serialization Info **/
-	static final long serialVersionUID = -1993220053515488725L;
-
-	// services
-	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
-
+	private final Properties ctx;
+	
 	/** Title of the Process/Report */
-	private final String m_Title;
-	/** Process ID */
-	private int m_AD_Process_ID;
+	private final String title;
+	/** AD_Process_ID */
+	private final int adProcessId;
 	/** Table ID if the Process */
 	private final int m_Table_ID;
 	/** Record ID if the Process */
 	private final int m_Record_ID;
 	/** Client_ID */
-	private Integer m_AD_Client_ID;
-	/** User_ID */
-	private Integer m_AD_User_ID;
+	private final int m_AD_Client_ID;
 	private final int m_AD_Org_ID;
+	/** User_ID */
+	private final int m_AD_User_ID;
 	private final int m_windowNo;
 	private final int m_tabNo;
 	/** Class Name */
-	private Optional<String> _className = Optional.empty();
+	private final Optional<String> _className;
 	private final Optional<String> _dbProcedureName;
 	private final int adWorkflowId;
 	private final boolean serverProcess;
@@ -145,45 +127,22 @@ public final class ProcessInfo implements Serializable
 	/** Process Instance ID */
 	private int m_AD_PInstance_ID = 0;
 
-	/** Summary of Execution */
-	private String m_Summary = "";
-	/** Execution had an error */
-	private boolean m_Error = false;
-	private transient boolean m_ErrorWasReportedToUser = false;
-
-	/* General Data Object */
-	private Serializable m_SerializableObject = null;
-	/* General Data Object */
-	private transient Object m_TransientObject = null;
 	/** Batch */
-	private boolean m_batch = false;
-	/** Process timed out */
-	private boolean m_timeout = false;
+	private final boolean m_batch = false;
 
-	/** Log Info */
-	private List<ProcessInfoLog> _logs = new ArrayList<>();
-	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
-	/** Log Info */
-	private ProcessInfoParameter[] m_parameter = null;
-	private boolean m_parameterLoaded = false;
+	/** Parameters */
+	private List<ProcessInfoParameter> parameters = null; // lazy loaded
 
-	private final Properties ctx;
-
+	//
+	// Reporting related
 	private final boolean printPreview;
 	private final boolean reportingProcess;
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
 
-	/**
-	 * If the process fails with an Throwable, the Throwable is caught and stored here
-	 */
-	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
-	private Throwable m_throwable = null;
-
-	private boolean _refreshAllAfterExecution;
-
-	private ITableRecordReference _recordToSelectAfterExecution = null;
+	/** Process result */
+	private final ProcessExecutionResult result;
 
 	/**
 	 * String representation
@@ -193,112 +152,27 @@ public final class ProcessInfo implements Serializable
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("ProcessInfo[");
-		sb.append(m_Title)
-				.append(",Process_ID=").append(m_AD_Process_ID);
-		if (m_AD_PInstance_ID != 0)
-			sb.append(",AD_PInstance_ID=").append(m_AD_PInstance_ID);
-		if (m_Record_ID > 0)
-			sb.append(",Record_ID=").append(m_Record_ID);
-		if (_className != null)
-			sb.append(",ClassName=").append(_className);
-		sb.append(",Error=").append(isError());
-		if (m_TransientObject != null)
-			sb.append(",Transient=").append(m_TransientObject);
-		if (m_SerializableObject != null)
-			sb.append(",Serializable=").append(m_SerializableObject);
-
-		sb.append(",Summary=").append(getSummary());
-
-		final List<ProcessInfoLog> logs = _logs;
-		sb.append(",Log=").append(logs == null ? 0 : logs.size());
-
-		sb.append("]");
-		return sb.toString();
-	}   // toString
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("title", title)
+				.add("AD_Process_ID", adProcessId)
+				.add("AD_PInstance_ID", m_AD_PInstance_ID)
+				.add("AD_Table_ID", m_Table_ID)
+				.add("Record_ID", m_Record_ID)
+				.add("Classname", _className.orElse(null))
+				.toString();
+	}
 
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
 	}
-
-	/**************************************************************************
-	 * Set Summary
-	 *
-	 * @param summary summary (will be translated)
-	 */
-	public void setSummary(String summary)
+	
+	/** @return execution result */
+	public ProcessExecutionResult getResult()
 	{
-		m_Summary = summary;
-	}	// setSummary
-
-	/**
-	 * Method getSummary
-	 *
-	 * @return String
-	 */
-	public String getSummary()
-	{
-		return Util.cleanAmp(m_Summary);
-	}	// getSummary
-
-	/**
-	 * Method setSummary
-	 *
-	 * @param translatedSummary String
-	 * @param error boolean
-	 */
-	public void setSummary(String translatedSummary, boolean error)
-	{
-		setSummary(translatedSummary);
-		setError(error);
-	}	// setSummary
-
-	/**
-	 * Method addSummary
-	 *
-	 * @param additionalSummary String
-	 */
-	public void addSummary(String additionalSummary)
-	{
-		m_Summary += additionalSummary;
-	}	// addSummary
-
-	/**
-	 * @param error true if the process execution failed
-	 */
-	public void setError(final boolean error)
-	{
-		m_Error = error;
-	}	// setError
-
-	/**
-	 * @return true if the process execution failed
-	 */
-	public boolean isError()
-	{
-		return m_Error;
-	}	// isError
-
-	public void setErrorWasReportedToUser()
-	{
-		m_ErrorWasReportedToUser = true;
+		return result;
 	}
-
-	public boolean isErrorWasReportedToUser()
-	{
-		return m_ErrorWasReportedToUser;
-	}
-
-	/**
-	 * Batch
-	 *
-	 * @param batch true if batch processing
-	 */
-	public void setIsBatch(boolean batch)
-	{
-		m_batch = batch;
-	}	// setTimeout
 
 	/**
 	 * Batch - i.e. UI not blocked
@@ -309,135 +183,6 @@ public final class ProcessInfo implements Serializable
 	{
 		return m_batch;
 	}	// isBatch
-
-	/**
-	 * Timeout
-	 *
-	 * @param timeout true still running
-	 */
-	public void setIsTimeout(boolean timeout)
-	{
-		m_timeout = timeout;
-	}	// setTimeout
-
-	/**
-	 * Timeout - i.e process did not complete
-	 *
-	 * @return boolean
-	 */
-	public boolean isTimeout()
-	{
-		return m_timeout;
-	}	// isTimeout
-
-	/**
-	 * Sets if the process logs (if any) shall be displayed to user
-	 *
-	 * @param showProcessLogsPolicy
-	 */
-	public final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
-	{
-		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
-		this.showProcessLogsPolicy = showProcessLogsPolicy;
-	}
-
-	/**
-	 * @return true if the process logs (if any) shall be displayed to user
-	 */
-	public final boolean isShowProcessLogs()
-	{
-		switch (showProcessLogsPolicy)
-		{
-			case Always:
-				return true;
-			case Never:
-				return false;
-			case OnError:
-				return isError();
-			default:
-				logger.warn("Unknown ShowProcessLogsPolicy: " + showProcessLogsPolicy + ". Considering " + ShowProcessLogs.Always);
-				return true;
-		}
-	}
-
-	/**
-	 * Set Log of Process.
-	 *
-	 * <pre>
-	 *  - Translated Process Message
-	 *  - List of log entries
-	 *      Date - Number - Msg
-	 * </pre>
-	 *
-	 * @param html if true with HTML markup
-	 * @return Log Info
-	 */
-	public String getLogInfo(final boolean html)
-	{
-		final List<ProcessInfoLog> logs = getLogsInnerList();
-		if (logs.isEmpty())
-		{
-			return "";
-		}
-
-		//
-		final StringBuilder sb = new StringBuilder();
-		SimpleDateFormat dateFormat = DisplayType.getDateFormat(DisplayType.DateTime);
-		if (html)
-			sb.append("<table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"2\">");
-		//
-		for (final ProcessInfoLog log : logs)
-		{
-			if (html)
-			{
-				sb.append("<tr>");
-			}
-			else
-			{
-				sb.append("\n");
-			}
-
-			//
-			if (log.getP_Date() != null)
-			{
-				sb.append(html ? "<td>" : "")
-						.append(dateFormat.format(log.getP_Date()))
-						.append(html ? "</td>" : " \t");
-			}
-			//
-			if (log.getP_Number() != null)
-			{
-				sb.append(html ? "<td>" : "")
-						.append(log.getP_Number())
-						.append(html ? "</td>" : " \t");
-			}
-			//
-			if (log.getP_Msg() != null)
-			{
-				sb.append(html ? "<td>" : "")
-						.append(Services.get(IMsgBL.class).parseTranslation(getCtx(), log.getP_Msg()))
-						.append(html ? "</td>" : "");
-			}
-			//
-			if (html)
-			{
-				sb.append("</tr>");
-			}
-		}
-		if (html)
-			sb.append("</table>");
-		return sb.toString();
-	}	// getLogInfo
-
-	/**
-	 * Get ASCII Log Info
-	 *
-	 * @return Log Info
-	 */
-	public String getLogInfo()
-	{
-		return getLogInfo(false);
-	}	// getLogInfo
 
 	/**
 	 * Method getAD_PInstance_ID
@@ -454,9 +199,10 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @param AD_PInstance_ID int
 	 */
-	public void setAD_PInstance_ID(int AD_PInstance_ID)
+	public void setAD_PInstance_ID(final int AD_PInstance_ID)
 	{
 		m_AD_PInstance_ID = AD_PInstance_ID;
+		result.setAD_PInstance_ID(AD_PInstance_ID);
 	}
 
 	/**
@@ -466,18 +212,7 @@ public final class ProcessInfo implements Serializable
 	 */
 	public int getAD_Process_ID()
 	{
-		return m_AD_Process_ID;
-	}
-
-	/**
-	 * Method setAD_Process_ID
-	 *
-	 * @param AD_Process_ID int
-	 */
-	@Deprecated
-	public void setAD_Process_ID(int AD_Process_ID)
-	{
-		m_AD_Process_ID = AD_Process_ID;
+		return adProcessId;
 	}
 
 	/**
@@ -490,23 +225,6 @@ public final class ProcessInfo implements Serializable
 		return _className.orElse(null);
 	}
 
-	/**
-	 * Method setClassName
-	 *
-	 * @param classname String
-	 */
-	public void setClassName(final String classname)
-	{
-		if (Check.isEmpty(classname, true))
-		{
-			_className = Optional.empty();
-		}
-		else
-		{
-			_className = Optional.of(classname.trim());
-		}
-	}
-	
 	public Optional<String> getDBProcedureName()
 	{
 		return _dbProcedureName;
@@ -520,46 +238,6 @@ public final class ProcessInfo implements Serializable
 	public boolean isServerProcess()
 	{
 		return serverProcess;
-	}
-	
-	/**
-	 * Method getTransientObject
-	 *
-	 * @return Object
-	 */
-	public Object getTransientObject()
-	{
-		return m_TransientObject;
-	}
-
-	/**
-	 * Method setTransientObject
-	 *
-	 * @param TransientObject Object
-	 */
-	public void setTransientObject(Object TransientObject)
-	{
-		m_TransientObject = TransientObject;
-	}
-
-	/**
-	 * Method getSerializableObject
-	 *
-	 * @return Serializable
-	 */
-	public Serializable getSerializableObject()
-	{
-		return m_SerializableObject;
-	}
-
-	/**
-	 * Method setSerializableObject
-	 *
-	 * @param SerializableObject Serializable
-	 */
-	public void setSerializableObject(Serializable SerializableObject)
-	{
-		m_SerializableObject = SerializableObject;
 	}
 
 	public String getTableNameOrNull()
@@ -672,45 +350,15 @@ public final class ProcessInfo implements Serializable
 	 */
 	public String getTitle()
 	{
-		return m_Title;
+		return title;
 	}
 
-	/**
-	 * Method setAD_Client_ID
-	 *
-	 * @param AD_Client_ID int
-	 */
-	public void setAD_Client_ID(int AD_Client_ID)
-	{
-		this.m_AD_Client_ID = AD_Client_ID;
-	}
-
-	/**
-	 * Method getAD_Client_ID
-	 *
-	 * @return Integer
-	 */
-	public Integer getAD_Client_ID()
+	public int getAD_Client_ID()
 	{
 		return m_AD_Client_ID;
 	}
 
-	/**
-	 * Method setAD_User_ID
-	 *
-	 * @param AD_User_ID int
-	 */
-	public void setAD_User_ID(int AD_User_ID)
-	{
-		m_AD_User_ID = AD_User_ID;
-	}
-
-	/**
-	 * Method getAD_User_ID
-	 *
-	 * @return Integer
-	 */
-	public Integer getAD_User_ID()
+	public int getAD_User_ID()
 	{
 		return m_AD_User_ID;
 	}
@@ -722,20 +370,18 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return Parameter Array
 	 */
-	public final ProcessInfoParameter[] getParameter()
+	public final List<ProcessInfoParameter> getParameter()
 	{
-		if (!m_parameterLoaded)
+		if (parameters == null)
 		{
-			Services.get(IADPInstanceDAO.class).loadFromDB(this);
-			Check.assume(m_parameterLoaded, "parameters shall be loaded at this time");
-			Check.assumeNotNull(m_parameter, "m_parameter not null");
+			parameters = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(getCtx(), getAD_PInstance_ID());
 		}
-		return m_parameter;
+		return parameters;
 	}	// getParameter
 
-	public final ProcessInfoParameter[] getParametersNoLoad()
+	public final List<ProcessInfoParameter> getParametersNoLoad()
 	{
-		return m_parameter;
+		return parameters;
 	}
 
 	/**
@@ -744,110 +390,6 @@ public final class ProcessInfo implements Serializable
 	public final IRangeAwareParams getParameterAsIParams()
 	{
 		return new ProcessParams(getParameter());
-	}
-
-	/**
-	 * Set Parameters.
-	 *
-	 * NOTE: calling this method will override current existing paramters (if any) and it will prevent them to be loaded from database.
-	 *
-	 * @param parameter Parameter Array
-	 */
-	@Deprecated
-	public void setParameter(final ProcessInfoParameter[] parameter)
-	{
-		m_parameter = parameter;
-		m_parameterLoaded = true;
-	}	// setParameter
-
-	/**************************************************************************
-	 * Add to Log
-	 *
-	 * @param Log_ID Log ID
-	 * @param P_ID Process ID
-	 * @param P_Date Process Date
-	 * @param P_Number Process Number
-	 * @param P_Msg Process Message
-	 */
-	public void addLog(int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
-	{
-		addLog(new ProcessInfoLog(Log_ID, P_ID, P_Date, P_Number, P_Msg));
-	}	// addLog
-
-	/**
-	 * Add to Log.
-	 *
-	 * @param P_ID Process ID
-	 * @param P_Date Process Date if <code>null</code> then the current {@link SystemTime} is used.
-	 * @param P_Number Process Number
-	 * @param P_Msg Process Message
-	 */
-	public void addLog(int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
-	{
-		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
-
-		addLog(new ProcessInfoLog(P_ID, timestampToUse, P_Number, P_Msg));
-	}	// addLog
-
-	/**
-	 * Add to Log
-	 *
-	 * @param logEntry log entry
-	 */
-	public void addLog(final ProcessInfoLog logEntry)
-	{
-		if (logEntry == null)
-		{
-			return;
-		}
-
-		final List<ProcessInfoLog> logs;
-		if (_logs == null)
-		{
-			logs = _logs = new ArrayList<>();
-		}
-		else
-		{
-			logs = _logs;
-		}
-
-		logs.add(logEntry);
-	}
-
-	/**
-	 * Gets current logs.
-	 * 
-	 * If needed, it will load the logs.
-	 *
-	 * @return logs inner list
-	 */
-	private final List<ProcessInfoLog> getLogsInnerList()
-	{
-		if (_logs == null)
-		{
-			_logs = new ArrayList<>(ProcessInfoUtil.retrieveLogsFromDB(getAD_PInstance_ID()));
-		}
-		return _logs;
-	}
-
-	public void markLogsAsStale()
-	{
-		// TODO: shall we save existing ones ?!
-		_logs = null;
-	}
-
-	/**
-	 * Get current logs (i.e. logs which were recorded to this instance).
-	 * 
-	 * This method will not load the logs.
-	 * 
-	 * @return current logs
-	 */
-	/* package */List<ProcessInfoLog> getCurrentLogs()
-	{
-		// NOTE: don't load them!
-		final List<ProcessInfoLog> logs = _logs;
-		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
 	}
 
 	/**
@@ -885,23 +427,6 @@ public final class ProcessInfo implements Serializable
 		return m_AD_Org_ID;
 	}
 	// metas: end
-
-	// metas: t.schoeneberg@metas.de
-	// 03152
-	/**
-	 * If the process has failed with a Throwable, that Throwable can be retrieved using this getter.
-	 *
-	 * @return
-	 */
-	public Throwable getThrowable()
-	{
-		return m_throwable;
-	}
-
-	public void setThrowable(Throwable t)
-	{
-		this.m_throwable = t;
-	}
 
 	// metas: end
 
@@ -991,56 +516,14 @@ public final class ProcessInfo implements Serializable
 		return ProcessClassInfo.of(processClass);
 	}
 
-	/**
-	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-	 */
-	public boolean isRefreshAllAfterExecution()
-	{
-		return _refreshAllAfterExecution;
-	}
-
-	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
-	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
-	{
-		this._refreshAllAfterExecution = refreshAllAfterExecution;
-	}
-
-	/**
-	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 */
-	public ITableRecordReference getRecordToSelectAfterExecution()
-	{
-		return _recordToSelectAfterExecution;
-	}
-
-	/**
-	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 *
-	 * @param recordToSelectAfterExecution
-	 */
-	public void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
-	{
-		this._recordToSelectAfterExecution = recordToSelectAfterExecution;
-	}
-
-	/**
-	 * Display process logs to user policy
-	 */
-	public static enum ShowProcessLogs
-	{
-		/** Always display them */
-		Always, /** Display them only if the process failed */
-		OnError, /** Never display them */
-		Never,
-	};
-
 	public static final class ProcessInfoBuilder
 	{
 		private Properties ctx;
 
 		private int adPInstanceId;
-		private I_AD_Process _adProcess;
+		private I_AD_PInstance _adPInstance;
 		private int adProcessId;
+		private I_AD_Process _adProcess;
 		private Integer _adClientId;
 		private Integer _adUserId;
 		private String title = null;
@@ -1087,6 +570,13 @@ public final class ProcessInfo implements Serializable
 			{
 				return _adClientId;
 			}
+			
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if(adPInstance != null)
+			{
+				return adPInstance.getAD_Client_ID();
+			}
+			
 			return Env.getAD_Client_ID(getCtx());
 		}
 		
@@ -1098,6 +588,12 @@ public final class ProcessInfo implements Serializable
 		
 		private int getAD_Org_ID()
 		{
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if(adPInstance != null)
+			{
+				return adPInstance.getAD_Org_ID();
+			}
+			
 			return Env.getAD_Org_ID(getCtx());
 		}
 
@@ -1108,6 +604,13 @@ public final class ProcessInfo implements Serializable
 			{
 				return _adUserId;
 			}
+			
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if(adPInstance != null)
+			{
+				return adPInstance.getAD_User_ID();
+			}
+
 			return Env.getAD_User_ID(getCtx());
 		}
 		
@@ -1141,12 +644,38 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 		
+		private I_AD_PInstance getAD_PInstanceOrNull()
+		{
+			final int adPInstanceId = getAD_PInstance_ID();
+			if (adPInstanceId <= 0)
+			{
+				return null;
+			}
+			if (_adPInstance != null && _adPInstance.getAD_PInstance_ID() != adPInstanceId)
+			{
+				_adPInstance = null;
+			}
+			if (_adPInstance == null)
+			{
+				final Properties ctx = getCtx();
+				_adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+			}
+			return _adPInstance;
+		}
+		
 		public ProcessInfoBuilder setAD_PInstance_ID(final int adPInstanceId)
 		{
 			this.adPInstanceId = adPInstanceId;
 			return this;
 		}
-		
+
+		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
+		{
+			this._adPInstance = adPInstance;
+			setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
+			return this;
+		}
+
 		private int getAD_PInstance_ID()
 		{
 			return adPInstanceId;
@@ -1154,10 +683,13 @@ public final class ProcessInfo implements Serializable
 
 		private int getAD_Process_ID()
 		{
-			if(adProcessId <= 0 && adPInstanceId > 0)
+			if(adProcessId <= 0)
 			{
-				final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(getCtx(), adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-				adProcessId = adPInstance.getAD_Process_ID();
+				final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+				if (adPInstance != null)
+				{
+					adProcessId = adPInstance.getAD_Process_ID();
+				}
 			}
 			return adProcessId;
 		}
@@ -1420,6 +952,36 @@ public final class ProcessInfo implements Serializable
 		private List<ProcessInfoParameter> getParametersOrNull()
 		{
 			return parameters;
+		}
+		
+		public ProcessInfoBuilder addParameter(final String parameterName, final int parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final String parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final java.util.Date parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final BigDecimal parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final boolean parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
 		}
 
 		public ProcessInfoBuilder addParameter(ProcessInfoParameter param)

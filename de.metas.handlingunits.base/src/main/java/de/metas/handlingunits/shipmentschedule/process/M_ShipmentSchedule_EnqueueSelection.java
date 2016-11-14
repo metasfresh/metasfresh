@@ -26,7 +26,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
+import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 

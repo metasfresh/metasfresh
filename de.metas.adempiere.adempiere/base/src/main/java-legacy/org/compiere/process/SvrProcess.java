@@ -16,10 +16,10 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,7 +45,7 @@ import org.adempiere.util.lang.ImmutableReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MPInstance;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
+import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -146,7 +146,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	public synchronized final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assumeNotNull(pi, "ProcessInfo not null");
-		pi.setClassName(getClass().getName()); // make sure that we have the correct className in place. We need it to get the ProcessClassInfo
 
 		// Preparation
 		// FRESH-314: store #AD_PInstance_ID in a copied context (shall only live as long as this process does).
@@ -233,9 +232,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 		//
 		// outside transaction processing [ teo_sarca, 1646891 ]
-		postProcess(!m_pi.isError());
+		postProcess(!getResult().isError());
 
-		return !m_pi.isError();
+		// NOTE: we shall check again the result because it might be changed by postProcess()
+		return !getResult().isError();
 	}   // startProcess
 
 	/**
@@ -354,14 +354,12 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					catch (Exception e)
 					{
 						log.error("Commit failed.", e);
-						m_pi.addSummary("Commit Failed.");
-						m_pi.setError(true);
+						final ProcessExecutionResult result = getResult();
+						result.addSummary("Commit Failed.");
+						result.setError(true);
 						// Set the ProcessInfo throwable only it is not already set.
 						// Because if it's set, that's the main error and not this one.
-						if (m_pi.getThrowable() == null)
-						{
-							m_pi.setThrowable(e);
-						}
+						result.setThrowableIfNotSet(e);
 					}
 				}
 				else
@@ -388,7 +386,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 
 		final boolean error = false;
-		m_pi.setSummary(msgTrl, error);
+		getResult().setSummary(msgTrl, error);
 
 	}
 
@@ -415,9 +413,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		}
 
 		//
-		// Update ProcessInfo
+		// Update ProcessInfo's result
+		final ProcessExecutionResult result = getResult();
 		final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
-		m_pi.setSummary(msgTrl, error);
+		result.setSummary(msgTrl, error);
 		if (error)
 		{
 			if (e.getCause() != null)
@@ -428,7 +427,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			{
 				log.error(msg, e);
 			}
-			m_pi.setThrowable(e); // only if it's really an error
+			result.setThrowable(e); // only if it's really an error
 		}
 	}
 
@@ -585,6 +584,11 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		return m_pi;
 	}   // getProcessInfo
+	
+	protected final ProcessExecutionResult getResult()
+	{
+		return m_pi.getResult();
+	}
 
 	/**
 	 * Get Properties
@@ -666,28 +670,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	protected final int getAD_User_ID()
 	{
-		if (m_pi.getAD_User_ID() == null || m_pi.getAD_Client_ID() == null)
-		{
-			try
-			{
-				final I_AD_PInstance pinstance = retrievePInstance();
-				if (pinstance != null && pinstance.getAD_PInstance_ID() > 0)
-				{
-					m_pi.setAD_User_ID(pinstance.getAD_User_ID());
-					m_pi.setAD_Client_ID(pinstance.getAD_User_ID());
-				}
-			}
-			catch (Exception e)
-			{
-				// make sure this method never fails (to keep the legacy contract)
-				log.error("Failed loading AD_User_ID/AD_Client_ID from AD_PInstance. Ignored.", e);
-			}
-		}
-		if (m_pi.getAD_User_ID() == null)
-		{
-			return -1;
-		}
-		return m_pi.getAD_User_ID().intValue();
+		return m_pi.getAD_User_ID();
 	}   // getAD_User_ID
 
 	/**
@@ -697,13 +680,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	protected final int getAD_Client_ID()
 	{
-		if (m_pi.getAD_Client_ID() == null)
-		{
-			getAD_User_ID();	// sets also Client
-			if (m_pi.getAD_Client_ID() == null)
-				return 0;
-		}
-		return m_pi.getAD_Client_ID().intValue();
+		return m_pi.getAD_Client_ID();
 	}	// getAD_Client_ID
 
 	/**
@@ -745,7 +722,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	protected final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
 	{
-		m_pi.setShowProcessLogs(showProcessLogsPolicy);
+		getResult().setShowProcessLogs(showProcessLogsPolicy);
 	}
 
 	/**************************************************************************
@@ -758,8 +735,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	public final void addLog(int id, Timestamp date, BigDecimal number, String msg)
 	{
-		if (m_pi != null)
-			m_pi.addLog(id, date, number, msg);
+		getResult().addLog(id, date, number, msg);
 
 		if (log.isDebugEnabled())
 		{
@@ -787,36 +763,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			addLog(0, null, null, StringUtils.formatMessage(msg, msgParameters));
 		}
 	}	// addLog
-
-	/**************************************************************************
-	 * Execute function
-	 *
-	 * @param className class
-	 * @param methodName method
-	 * @param args arguments
-	 * @return result
-	 */
-	public final Object doIt(String className, String methodName, Object args[])
-	{
-		try
-		{
-			Class<?> clazz = Class.forName(className);
-			Object object = clazz.newInstance();
-			Method[] methods = clazz.getMethods();
-			for (int i = 0; i < methods.length; i++)
-			{
-				if (methods[i].getName().equals(methodName))
-					return methods[i].invoke(object, args);
-			}
-
-			return null;
-		}
-		catch (Exception ex)
-		{
-			log.error("doIt", ex);
-			throw new AdempiereException(ex);
-		}
-	}	// doIt
 
 	/**
 	 * Lock Process Instance
@@ -854,13 +800,15 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			}
 			mpi.setWhereClause(m_pi.getWhereClause()); // make sure the WhereClause is set
 			mpi.setIsProcessing(false);
-			mpi.setResult(m_pi.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
-			mpi.setErrorMsg(m_pi.getSummary());
+			
+			final ProcessExecutionResult result = getResult();
+			mpi.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
+			mpi.setErrorMsg(result.getSummary());
 			InterfaceWrapperHelper.save(mpi);
 
 			log.debug("Unlocked: {}", mpi);
 
-			ProcessInfoUtil.saveLogToDB(m_pi);
+			ProcessInfoUtil.saveLogToDB(result);
 		}
 		catch (Throwable e)
 		{
@@ -930,7 +878,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	protected final void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
 	{
-		m_pi.setRecordToSelectAfterExecution(recordToSelectAfterExecution);
+		getResult().setRecordToSelectAfterExecution(recordToSelectAfterExecution);
 	}
 
 

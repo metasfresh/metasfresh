@@ -4,7 +4,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
+import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 

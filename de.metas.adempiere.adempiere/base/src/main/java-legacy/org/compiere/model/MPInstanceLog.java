@@ -41,7 +41,7 @@ public class MPInstanceLog
 	 *	@param P_Number number
 	 *	@param P_Msg msg
 	 */
-	public MPInstanceLog (int AD_PInstance_ID, int Log_ID, Timestamp P_Date,
+	MPInstanceLog (int AD_PInstance_ID, int Log_ID, Timestamp P_Date,
 	  int P_ID, BigDecimal P_Number, String P_Msg)
 	{
 		setAD_PInstance_ID(AD_PInstance_ID);
@@ -57,7 +57,7 @@ public class MPInstanceLog
 	 * 	@param rs Result Set
 	 * 	@throws SQLException
 	 */
-	public MPInstanceLog (ResultSet rs) throws SQLException
+	MPInstanceLog (ResultSet rs) throws SQLException
 	{
 		setAD_PInstance_ID(rs.getInt("AD_PInstance_ID"));
 		setLog_ID(rs.getInt("Log_ID"));
@@ -80,6 +80,7 @@ public class MPInstanceLog
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer("PPInstance_Log[");

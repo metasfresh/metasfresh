@@ -121,6 +121,7 @@ import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessClassInfo;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
@@ -3165,8 +3166,10 @@ public class APanel extends CPanel
 		// Process Result
 		if (notPrint)   // refresh if not print
 		{
+			final ProcessExecutionResult result = pi.getResult();
+
 			// Refresh data
-			if (pi.isRefreshAllAfterExecution())
+			if (result.isRefreshAllAfterExecution())
 			{
 				final boolean retainCurrentRowIfAny = false;
 				m_curTab.dataRefreshAll(retainCurrentRowIfAny);
@@ -3178,15 +3181,15 @@ public class APanel extends CPanel
 
 			//
 			// Select record after execution (if any)
-			if (pi.getRecordToSelectAfterExecution() != null)
+			if (result.getRecordToSelectAfterExecution() != null)
 			{
-				m_curTab.setCurrentRowByRecord(pi.getRecordToSelectAfterExecution());
+				m_curTab.setCurrentRowByRecord(result.getRecordToSelectAfterExecution());
 			}
 
 			// Timeout
-			if (pi.isTimeout())  		// set temporarily to R/O
+			if (result.isTimeout())  		// set temporarily to R/O
 			{
-				Env.setContext(m_ctx, m_curWindowNo, "Processed", "Y");
+				Env.setContext(m_ctx, m_curWindowNo, "Processed", true);
 			}
 
 			m_curGC.dynamicDisplay(0);
@@ -3201,31 +3204,32 @@ public class APanel extends CPanel
 
 	private final void updateStatusLine(final ProcessInfo pi)
 	{
+		final ProcessExecutionResult result = pi.getResult();
+		
 		// Update Status Line
-		setStatusLine(pi.getSummary(), pi.isError());
+		setStatusLine(result.getSummary(), result.isError());
 
 		//
 		// If the error or the process logs was not already reported to user, we shall display a popup now
-		if(!pi.isErrorWasReportedToUser())
+		if(!result.isErrorWasReportedToUser())
 		{
 			// Show error if any
-			if (pi.isError())
+			if (result.isError())
 			{
-				ADialog.error(m_curWindowNo, this, null, pi.getSummary());
-				pi.setErrorWasReportedToUser();
+				ADialog.error(m_curWindowNo, this, null, result.getSummary());
+				result.setErrorWasReportedToUser();
 			}
 			// Show process logs if any
-			else if (pi.isShowProcessLogs())
+			else if (result.isShowProcessLogs())
 			{
-				final String logInfo = pi.getLogInfo();
+				final String logInfo = result.getLogInfo();
 				if(!Check.isEmpty(logInfo, true))
 				{
 					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
-					pi.setErrorWasReportedToUser();
+					result.setErrorWasReportedToUser();
 				}
 			}
 		}
-
 	}
 
 	/**

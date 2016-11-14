@@ -38,7 +38,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
+import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;

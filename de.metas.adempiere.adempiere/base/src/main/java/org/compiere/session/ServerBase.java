@@ -121,7 +121,7 @@ public class ServerBase implements IServerService
 	 * @return resulting Process Info
 	 */
 	@Override
-	public void process(Properties ctx, int adPInstanceId)
+	public void process(final Properties ctx, final int adPInstanceId)
 	{
 		// TODO: implement remote process
 		m_processCount++;

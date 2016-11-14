@@ -15,8 +15,11 @@ package org.compiere.print.layout;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Check;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstanceLog;
 import org.compiere.model.MQuery;
@@ -24,7 +27,6 @@ import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.print.MPrintTableFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
-import org.compiere.util.Util;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
@@ -39,21 +41,23 @@ public class PInstanceLogElement extends GridElement {
 		//
 		int AD_PInstance_ID = query.getAD_PInstance_ID();
 		if (AD_PInstance_ID > 0) {
-			MPInstance instance = new MPInstance(ctx, AD_PInstance_ID, null);
-			MPInstanceLog[] logs = instance.getLog();
-			for (int r = 0; r < logs.length; r++) {
+			MPInstance instance = new MPInstance(ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
+			List<MPInstanceLog> logs = instance.getLog();
+			for (int r = 0; r < logs.size(); r++)
+			{
+				final MPInstanceLog logRecord = logs.get(r);
 				int col = 0;
-				String msg = logs[r].getP_Msg();
-				if (!Util.isEmpty(msg, true)) {
+				String msg = logRecord.getP_Msg();
+				if (!Check.isEmpty(msg, true)) {
 					String s = Msg.parseTranslation(ctx, msg);
 					setData (r, col++, s, tFormat.getParameter_Font(), tFormat.getParameter_Color());
 				}
-				BigDecimal num = logs[r].getP_Number();
+				BigDecimal num = logRecord.getP_Number();
 				if (num != null) {
 					String s = num.toString();
 					setData (r, col++, s, tFormat.getParameter_Font(), tFormat.getParameter_Color());
 				}
-				Timestamp date = logs[r].getP_Date();
+				Timestamp date = logRecord.getP_Date();
 				if (date != null) {
 					String s = date.toString();
 					setData (r, col++, s, tFormat.getParameter_Font(), tFormat.getParameter_Color());

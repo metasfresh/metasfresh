@@ -46,7 +46,7 @@ public class AD_UI_ElementGroup_Move extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		getProcessInfo().setRefreshAllAfterExecution(true);
+		getResult().setRefreshAllAfterExecution(true);
 
 		final I_AD_UI_ElementGroup uiElementGroup = getRecord(I_AD_UI_ElementGroup.class);
 		final I_AD_UI_Column toUIColumn = InterfaceWrapperHelper.create(getCtx(), p_AD_UI_Column_ID, I_AD_UI_Column.class, ITrx.TRXNAME_ThreadInherited);

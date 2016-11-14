@@ -16,12 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -31,12 +28,15 @@ import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  *  Process Instance Model
@@ -104,7 +104,7 @@ public class MPInstance extends X_AD_PInstance
 		this(InterfaceWrapperHelper.getCtx(process), process, adTableId, Record_ID);
 	}
 	
-	public MPInstance(final Properties ctx, final I_AD_Process process, final int adTableId, final int Record_ID)
+	private MPInstance(final Properties ctx, final I_AD_Process process, final int adTableId, final int recordId)
 	{
 		this(ctx, 0, ITrx.TRXNAME_None);
 		setAD_Process_ID(process.getAD_Process_ID());
@@ -112,7 +112,7 @@ public class MPInstance extends X_AD_PInstance
 		{
 			setAD_Table_ID(adTableId);
 		}
-		setRecord_ID(Record_ID);
+		setRecord_ID(recordId);
 		setAD_User_ID(Env.getAD_User_ID(ctx));
 		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
@@ -141,11 +141,6 @@ public class MPInstance extends X_AD_PInstance
 		}
 	}	// MPInstance
 
-	public MPInstance (final I_AD_Process process)
-	{
-		this(process, 0, 0); // adTableId=0, recordId=0
-	}
-
 	public MPInstance (final Properties ctx, ProcessInfo pi)
 	{
 		this(ctx, pi.getAD_Process_ID(), pi.getTable_ID(), pi.getRecord_ID());
@@ -160,9 +155,9 @@ public class MPInstance extends X_AD_PInstance
 	 * @param adTableId
 	 * @param Record_ID record
 	 */
-	public MPInstance (Properties ctx, int AD_Process_ID, int AD_Table_ID, int Record_ID)
+	public MPInstance (final Properties ctx, final int AD_Process_ID, final int AD_Table_ID, final int Record_ID)
 	{
-		this(ctx, 0, null);
+		this(ctx, 0, ITrx.TRXNAME_None);
 		setAD_Process_ID (AD_Process_ID);
 		if(AD_Table_ID > 0)
 		{
@@ -188,75 +183,47 @@ public class MPInstance extends X_AD_PInstance
 		{
 			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 			final List<I_AD_PInstance_Para> parametersList = adPInstanceDAO.retrievePInstanceParams(getCtx(), getAD_PInstance_ID());
-			m_parameters = Collections.unmodifiableList(parametersList);
+			m_parameters = ImmutableList.copyOf(parametersList);
 		}
 		return m_parameters;
 	}	//	getParameters
 
-
-	/**	Log Entries					*/
-	private ArrayList<MPInstanceLog>	m_log	= new ArrayList<MPInstanceLog>();
-
 	/**
 	 *	Get Logs
-	 *	@return array of logs
+	 *	@return logs
 	 */
-	public MPInstanceLog[] getLog()
+	public List<MPInstanceLog> getLog()
 	{
 		//	load it from DB
-		m_log.clear();
-		String sql = "SELECT * FROM AD_PInstance_Log WHERE AD_PInstance_ID=? ORDER BY Log_ID";
+		final String sql = "SELECT * FROM AD_PInstance_Log WHERE AD_PInstance_ID=? ORDER BY Log_ID";
+		final Object[] sqlParams = new Object[] { getAD_PInstance_ID() };
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
 			pstmt.setInt(1, getAD_PInstance_ID());
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
+			
+			final ImmutableList.Builder<MPInstanceLog> logs = ImmutableList.builder();
 			while (rs.next())
 			{
-				m_log.add(new MPInstanceLog(rs));
+				logs.add(new MPInstanceLog(rs));
 			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
+			
+			return logs.build();
 		}
-		catch (Exception e)
+		catch (SQLException e)
 		{
-			log.error(sql, e);
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
-			try
-			{
-				if (pstmt != null)
-					pstmt.close ();
-			}
-			catch (Exception e)
-			{}
-			pstmt = null;
+			DB.close(rs, pstmt);
 		}
+	}
 
-		MPInstanceLog[] retValue = new MPInstanceLog[m_log.size()];
-		m_log.toArray(retValue);
-		return retValue;
-	}	//	getLog
-
-	/**
-	 *	@param P_Date date
-	 *	@param P_ID id
-	 *	@param P_Number number
-	 *	@param P_Msg msg
-	 */
-	public void addLog (Timestamp P_Date, int P_ID, BigDecimal P_Number, String P_Msg)
-	{
-		MPInstanceLog logEntry = new MPInstanceLog (getAD_PInstance_ID(), m_log.size()+1,
-			P_Date, P_ID, P_Number, P_Msg);
-		m_log.add(logEntry);
-		//	save it to DB ?
-	//	log.save();
-	}	//	addLog
-
-	
 	/**
 	 * 	Set AD_Process_ID.
 	 * 	Check Role if process can be performed.
@@ -291,18 +258,13 @@ public class MPInstance extends X_AD_PInstance
 			log.info("Set to 0 from " + Record_ID);
 			Record_ID = 0;
 		}
-		set_ValueNoCheck ("Record_ID", new Integer(Record_ID));
+		set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}	//	setRecord_ID
 
-	/**
-	 * 	String Representation
-	 *	@see java.lang.Object#toString()
-	 *	@return info
-	 */
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MPInstance[")
+		StringBuilder sb = new StringBuilder("MPInstance[")
 			.append (get_ID())
 			.append(",OK=").append(isOK());
 		String msg = getErrorMsg();
@@ -311,17 +273,6 @@ public class MPInstance extends X_AD_PInstance
 		sb.append ("]");
 		return sb.toString ();
 	}	//	toString
-
-	/**
-	 * 	Dump Log
-	 */
-	public void log()
-	{
-		log.info(toString());
-		MPInstanceLog[] pil = getLog();
-		for (int i = 0; i < pil.length; i++)
-			log.info(i + "=" + pil[i]);
-	}	//	log
 
 	/** Result OK = 1			*/
 	public static final int		RESULT_OK = 1;
@@ -332,19 +283,10 @@ public class MPInstance extends X_AD_PInstance
 	 * 	Is it OK
 	 *	@return Result == OK
 	 */
-	public boolean isOK()
+	private boolean isOK()
 	{
 		return getResult() == RESULT_OK;
 	}	//	isOK
-	
-//	/**
-//	 * 	Set Result
-//	 *	@param ok 
-//	 */
-//	public void setResult (boolean ok)
-//	{
-//		super.setResult (ok ? RESULT_OK : RESULT_ERROR);
-//	}	//	setResult
 	
 	/**
 	 * 	After Save
@@ -358,7 +300,7 @@ public class MPInstance extends X_AD_PInstance
 		//	Update Statistics
 		if (!newRecord 
 			&& !isProcessing()
-			&& is_ValueChanged("IsProcessing"))
+			&& is_ValueChanged(COLUMNNAME_IsProcessing))
 		{
 			long ms = System.currentTimeMillis() - getCreated().getTime();
 			int seconds = (int)(ms / 1000);
@@ -373,43 +315,4 @@ public class MPInstance extends X_AD_PInstance
 		}
 		return success;
 	}	//	afterSave
-	
-	/**
-	 * Create Process Instance Parameter and save to database
-	 * @param seqNo parameter sequence#
-	 * @param parameterName parameter name
-	 * @param value parameter value
-	 * @return
-	 */
-	public MPInstancePara createParameter(int seqNo, String parameterName, Object value)
-	{
-		MPInstancePara ip = new MPInstancePara(this, seqNo);
-		if (value == null)
-		{
-			ip.setParameter(parameterName, (String)null);
-		}
-		else if (value instanceof BigDecimal)
-		{
-			ip.setParameter(parameterName, (BigDecimal)value);
-		}
-		else if (value instanceof Integer)
-		{
-			ip.setParameter(parameterName, (Integer)value);
-		}
-		else if (value instanceof Timestamp)
-		{
-			ip.setParameter(parameterName, (Timestamp)value);
-		}
-		else if (value instanceof Boolean)
-		{
-			ip.setParameter(parameterName, (Boolean)value);
-		}
-		else
-		{
-			ip.setParameter(parameterName, value.toString());
-		}
-		//
-		ip.saveEx();
-		return ip;
-	}
-}	//	MPInstance
+}

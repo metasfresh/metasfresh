@@ -33,13 +33,6 @@ import org.compiere.process.ProcessInfoParameter;
 public interface IADPInstanceDAO extends ISingletonService
 {
 	/**
-	 * Set Parameter of Process (and AD_Client_ID/AD_User_ID if not already set)
-	 * 
-	 * @param pi process Info
-	 */
-	void loadFromDB(ProcessInfo pi);
-
-	/**
 	 * Saves the parameters of the given ProcessInfo object to the Database. Parameters which are already saved in the database will be:
 	 * <li>Ignored if the value has not changed
 	 * <li>Overwritten if the
@@ -56,7 +49,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * @param piParams
 	 * @see #saveParameterToDB(ProcessInfo)
 	 */
-	void saveParameterToDB(int adPInstanceId, ProcessInfoParameter[] piParams);
+	void saveParameterToDB(int adPInstanceId, List<ProcessInfoParameter> piParams);
 
 	/**
 	 * Retrieve process parameters for given AD_PInstance_ID

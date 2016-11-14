@@ -54,7 +54,7 @@ public class ProcessInfoUtil
 	 * 
 	 * @param pi process info
 	 */
-	public static void setSummaryFromDB(ProcessInfo pi)
+	public static void loadSummaryFromDB(final ProcessExecutionResult result)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -65,7 +65,7 @@ public class ProcessInfoUtil
 		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
 				+ "WHERE AD_PInstance_ID=?"
 				+ " AND Result IS NOT NULL";
-		final Object[] sqlParams = new Object[] { pi.getAD_PInstance_ID() };
+		final Object[] sqlParams = new Object[] { result.getAD_PInstance_ID() };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -83,18 +83,18 @@ public class ProcessInfoUtil
 					int i = rs.getInt(1);
 					if (i == 1)
 					{
-						pi.setSummary(msgBL.getMsg(Env.getCtx(), "Success"));
+						result.setSummary(msgBL.getMsg(Env.getCtx(), "Success"));
 					}
 					else
 					{
-						pi.setSummary(msgBL.getMsg(Env.getCtx(), "Failure"), true);
+						result.setSummary(msgBL.getMsg(Env.getCtx(), "Failure"), true);
 					}
 					String Message = rs.getString(2);
 					rs.close();
 					pstmt.close();
 					//
 					if (Message != null)
-						pi.addSummary("  (" + msgBL.parseTranslation(Env.getCtx(), Message) + ")");
+						result.addSummary("  (" + msgBL.parseTranslation(Env.getCtx(), Message) + ")");
 					// s_log.debug("setSummaryFromDB - " + Message);
 					return;
 				}
@@ -105,11 +105,11 @@ public class ProcessInfoUtil
 				{
 					if (noTry >= 3)
 					{
-						s_log.warn("Waiting for AD_PInstance_ID={} to return a result", pi.getAD_PInstance_ID());
+						s_log.warn("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
 					}
 					else
 					{
-						s_log.debug("Waiting for AD_PInstance_ID={} to return a result", pi.getAD_PInstance_ID());
+						s_log.debug("Waiting for AD_PInstance_ID={} to return a result", result.getAD_PInstance_ID());
 					}
 					Thread.sleep(sleepTime);
 				}
@@ -123,8 +123,8 @@ public class ProcessInfoUtil
 		catch (SQLException e)
 		{
 			s_log.error(sql, e);
-			pi.setThrowable(e);  // 03152
-			pi.setSummary(e.getLocalizedMessage(), true);
+			result.setThrowable(e);  // 03152
+			result.setSummary(e.getLocalizedMessage(), true);
 			return;
 		}
 		finally
@@ -132,7 +132,7 @@ public class ProcessInfoUtil
 			DB.close(rs, pstmt);
 		}
 
-		pi.setSummary(msgBL.getMsg(Env.getCtx(), "Timeout"), true);
+		result.setSummary(msgBL.getMsg(Env.getCtx(), "Timeout"), true);
 	}	// setSummaryFromDB
 
 	static List<ProcessInfoLog> retrieveLogsFromDB(final int adPInstanceId)
@@ -184,14 +184,14 @@ public class ProcessInfoUtil
 	 * 
 	 * @param pi process info
 	 */
-	static void saveLogToDB(final ProcessInfo pi)
+	static void saveLogToDB(final ProcessExecutionResult result)
 	{
-		if (pi.getAD_PInstance_ID() <= 0)
+		if (result.getAD_PInstance_ID() <= 0)
 		{
 			return;
 		}
 
-		final List<ProcessInfoLog> logsToSave = pi.getCurrentLogs()
+		final List<ProcessInfoLog> logsToSave = result.getCurrentLogs()
 				.stream()
 				.filter(log->!log.isSavedInDB())
 				.collect(Collectors.toList());
@@ -217,7 +217,7 @@ public class ProcessInfoUtil
 			for (final ProcessInfoLog log : logsToSave)
 			{
 				final Object[] sqlParams = new Object[] {
-						pi.getAD_PInstance_ID(),
+						result.getAD_PInstance_ID(),
 						log.getLog_ID(),
 						log.getP_Date(),
 						log.getP_ID() == 0 ? null : log.getP_ID(),

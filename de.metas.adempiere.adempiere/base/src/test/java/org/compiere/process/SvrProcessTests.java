@@ -175,16 +175,20 @@ public class SvrProcessTests
 			final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(Env.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
 			Assert.assertNotNull("AD_PInstance record exists in database", pinstance);
 			Assert.assertTrue("AD_PInstance record exists in database (ID exists)", pinstance.getAD_PInstance_ID() > 0); // shall not happen
+			
+			final ProcessExecutionResult result = pi.getResult();
+			Assert.assertEquals("Result AD_PInstance_ID shall match ProcessInfo's AD_PInstance_ID", pi.getAD_PInstance_ID(), result.getAD_PInstance_ID());
 
 			// Validate AD_PInstance flags
-			final int resultExpected = pi.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK;
+			final int resultExpected = result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK;
 			Assert.assertEquals("Invalid AD_PInstance.Result", resultExpected, pinstance.getResult());
-			Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", pi.getSummary(), pinstance.getErrorMsg());
+			Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", result.getSummary(), pinstance.getErrorMsg());
 			Assert.assertEquals("Invalid AD_PInstance.Processing", false, pinstance.isProcessing());
 			Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", pi.getWhereClause(), pinstance.getWhereClause());
+			
 
 			// Make sure postProcess was executed and it's success parameter was consistent with ProcessInfo.isError
-			final boolean expected_postProcess_param_Success = !pi.isError();
+			final boolean expected_postProcess_param_Success = !result.isError();
 			assertPostProcessExecuted(expected_postProcess_param_Success);
 		}
 
@@ -254,7 +258,7 @@ public class SvrProcessTests
 		//
 		// Create ProcessInfo descriptor
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setAD_PInstance_ID(pinstance.getAD_PInstance_ID())
+				.setAD_PInstance(pinstance)
 				.setAD_Process_ID(0) // N/A
 				.setTitle("Test")
 				.build();
@@ -275,10 +279,11 @@ public class SvrProcessTests
 
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", true, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.IsError", "Process executed", pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", "Process executed", result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -294,10 +299,11 @@ public class SvrProcessTests
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", false, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -313,10 +319,11 @@ public class SvrProcessTests
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", false, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -331,10 +338,11 @@ public class SvrProcessTests
 
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", true, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -350,10 +358,11 @@ public class SvrProcessTests
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", false, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -368,10 +377,11 @@ public class SvrProcessTests
 
 		process.onPrepareThrowException = new ProcessCanceledException();
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", true, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -387,9 +397,11 @@ public class SvrProcessTests
 		process.onDoItReturnMsg = "Process executed";
 		final boolean ok = process.startProcess(ctx, pi, trx);
 
+		final ProcessExecutionResult result = pi.getResult();
+
 		Assert.assertEquals("Invalid result", true, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -405,10 +417,12 @@ public class SvrProcessTests
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
 		final boolean ok = process.startProcess(ctx, pi, trx);
+		
+		final ProcessExecutionResult result = pi.getResult();
 
 		Assert.assertEquals("Invalid result", false, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -424,9 +438,11 @@ public class SvrProcessTests
 		process.onDoItThrowException = new ProcessCanceledException();
 		final boolean ok = process.startProcess(ctx, pi, trx);
 
+		final ProcessExecutionResult result = pi.getResult();
+
 		Assert.assertEquals("Invalid result", true, ok);
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, pi.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", pi.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();

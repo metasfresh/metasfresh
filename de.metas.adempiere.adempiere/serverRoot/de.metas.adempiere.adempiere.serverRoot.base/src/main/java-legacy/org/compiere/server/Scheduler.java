@@ -56,6 +56,7 @@ import org.compiere.model.MTask;
 import org.compiere.model.MUser;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
@@ -360,12 +361,13 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// Process
-		ProcessCtl.builder()
+		final ProcessExecutionResult result = ProcessCtl.builder()
 				.setProcessInfo(pi)
-				.executeSync();
-		if (pi.isError())
+				.executeSync()
+				.getResult();
+		if (result.isError())
 		{
-			return "Process failed: (" + pi.getClassName() + ") " + pi.getSummary();
+			return "Process failed: (" + pi.getClassName() + ") " + result.getSummary();
 		}
 
 		// Report
@@ -396,7 +398,7 @@ public class Scheduler extends AdempiereServer
 			attachment.save();
 		}
 		//
-		return pi.getSummary();
+		return result.getSummary();
 	}	// runReport
 
 	/**
@@ -410,27 +412,28 @@ public class Scheduler extends AdempiereServer
 	{
 		log.debug("Run process: {}", pi);
 
-		ProcessCtl.builder()
+		final ProcessExecutionResult result = ProcessCtl.builder()
 				.setProcessInfo(pi)
-				.executeSync();
-		final boolean ok = !pi.isError();
+				.executeSync()
+				.getResult();
+		final boolean ok = !result.isError();
 		
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
 		final MUser from = new MUser(pi.getCtx(), pi.getAD_User_ID(), ITrx.TRXNAME_None);
-		final int adPInstanceTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
+		final int adPInstanceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
 
 		notify(ok,
 				from,
 				pi.getTitle(),
-				pi.getSummary(),
-				pi.getLogInfo(),
-				adPInstanceTableID,
-				pi.getAD_PInstance_ID());
+				result.getSummary(),
+				result.getLogInfo(),
+				adPInstanceTableId,
+				result.getAD_PInstance_ID());
 		// metas: c.ghita@metas.ro: end
 
 		m_success = ok; // stored it, so we can persist it in the scheduler log
-		return pi.getSummary();
+		return result.getSummary();
 	}	// runProcess
 
 	/**

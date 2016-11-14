@@ -79,7 +79,7 @@ public class ESR_Complete_Process extends SvrProcess
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		if (success)
 		{
@@ -87,11 +87,11 @@ public class ESR_Complete_Process extends SvrProcess
 			final boolean processed = Services.get(IESRImportBL.class).isProcessed(esrImport);
 			if (processed)
 			{
-				getProcessInfo().addSummary(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@ESR_Complete_Process_postProcess@"));
+				getResult().addSummary(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@ESR_Complete_Process_postProcess@"));
 			}
 			else
 			{
-				getProcessInfo().addSummary(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@"));
+				getResult().addSummary(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@"));
 			}
 
 		}

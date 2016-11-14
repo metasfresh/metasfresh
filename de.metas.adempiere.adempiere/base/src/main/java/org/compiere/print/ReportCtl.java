@@ -16,8 +16,10 @@
  *****************************************************************************/
 package org.compiere.print;
 
+import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -25,10 +27,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.MProcess;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -60,14 +61,14 @@ public final class ReportCtl
 	private static ReportViewerProvider defaultReportEngineViewerProvider = re -> logger.warn("No {} registered to display {}", ReportViewerProvider.class, re);
 
 	private final ProcessInfo processInfo;
-	private final ASyncProcess asyncParent;
 	private final JRReportViewerProvider jrReportViewerProvider;
+
+	private Optional<String> printerName;
 
 	private ReportCtl(final Builder builder)
 	{
 		super();
 		this.processInfo = builder.getProcessInfo();
-		this.asyncParent = builder.getASyncParent();
 		this.jrReportViewerProvider = builder.getJRReportViewerProvider();
 	}
 
@@ -79,19 +80,6 @@ public final class ReportCtl
 	{
 		logger.info("start - {}", processInfo);
 
-		//
-		// Get printer name
-		String printerName = null;
-		final IPrinterRoutingBL printerRouting = Services.get(IPrinterRoutingBL.class);
-		if (printerRouting != null)
-		{
-			printerName = printerRouting.findPrinterName(processInfo);
-		}
-
-		//
-		// Custom print format
-		final MPrintFormat customPrintFormat = null; // nothing
-
 		final int adProcessId = processInfo.getAD_Process_ID();
 		final int reportEngineDocumentType = extractReportEngineDocumentType(adProcessId);
 
@@ -99,32 +87,51 @@ public final class ReportCtl
 		// Payment Check Print
 		if (adProcessId == 313)     		// C_Payment
 		{
-			final int WindowNo = processInfo.getWindowNo();
 			final int C_Payment_ID = processInfo.getRecord_ID();
-			final int adTableId = I_C_PaySelectionCheck.Table_ID;
 			final int C_PaySelectionCheck_ID = prepareCheckPrint(C_Payment_ID);
-			startDocumentPrint(ReportEngine.CHECK, customPrintFormat, C_PaySelectionCheck_ID, adTableId, processInfo.getAD_PInstance_ID(), asyncParent, WindowNo, !processInfo.isPrintPreview(), printerName);
+			startDocumentPrint(ReportEngine.CHECK, I_C_PaySelectionCheck.Table_ID, C_PaySelectionCheck_ID);
 		}
 		//
 		// Standard document print
 		else if (reportEngineDocumentType >= 0)
 		{
-			final int WindowNo = processInfo.getWindowNo();
-			startDocumentPrint(reportEngineDocumentType, customPrintFormat, processInfo.getRecord_ID(), processInfo.getTable_ID(), processInfo.getAD_PInstance_ID(), asyncParent, WindowNo, !processInfo.isPrintPreview(), printerName);
+			startDocumentPrint(reportEngineDocumentType, processInfo.getTable_ID(), processInfo.getRecord_ID());
 		}
 		//
 		// Financial reporting
 		else if (adProcessId == 202			// Financial Report
 				|| adProcessId == 204)     			// Financial Statement
 		{
+			final String printerName = getPrinterName();
 			startFinReport(processInfo, printerName);
 		}
 		//
 		// Standard report
 		else
 		{
+			final String printerName = getPrinterName();
 			startStandardReport(processInfo, printerName);
 		}
+	}
+	
+	private String getPrinterName()
+	{
+		if (printerName == null)
+		{
+			printerName = Optional.ofNullable(findPrinterName());
+		}
+		return printerName.orElse(null);
+	}
+	
+	private final String findPrinterName()
+	{
+		String printerName = null;
+		final IPrinterRoutingBL printerRouting = Services.get(IPrinterRoutingBL.class);
+		if (printerRouting != null)
+		{
+			printerName = printerRouting.findPrinterName(processInfo);
+		}
+		return printerName;
 	}
 
 	private static final int extractReportEngineDocumentType(final int adProcessId)
@@ -191,17 +198,11 @@ public final class ReportCtl
 	{
 		//
 		// Create Report Engine by using attached MPrintFormat (if any)
-		Object piObject = pi.getTransientObject();
-		if (piObject == null)
-		{
-			piObject = pi.getSerializableObject();
-		}
-
-		if (piObject instanceof MPrintFormat)
+		final MPrintFormat format = pi.getResult().getPrintFormat();
+		if (format != null)
 		{
 			final Properties ctx = Env.getCtx();
-			final MPrintFormat format = (MPrintFormat)piObject;
-			final String TableName = MTable.getTableName(ctx, format.getAD_Table_ID());
+			final String TableName = Services.get(IADTableDAO.class).retrieveTableName(format.getAD_Table_ID());
 			final MQuery query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
 			final PrintInfo info = new PrintInfo(pi);
 			return new ReportEngine(ctx, format, query, info);
@@ -240,11 +241,7 @@ public final class ReportCtl
 		final MQuery query = MQuery.get(ctx, pi.getAD_PInstance_ID(), TableName);
 
 		// Get PrintFormat
-		MPrintFormat format = (MPrintFormat)pi.getTransientObject();
-		if (format == null)
-		{
-			format = (MPrintFormat)pi.getSerializableObject();
-		}
+		final MPrintFormat format = pi.getResult().getPrintFormat();
 		if (format == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@: " + pi);
@@ -256,39 +253,18 @@ public final class ReportCtl
 		return re;
 	}
 
-	/**
-	 * Start Document Print for Type with specified printer.
-	 *
-	 * @param type document type in ReportEngine
-	 * @param Record_ID id
-	 * @param parent The window which invoked the printing
-	 * @param windowNo The windows number which invoked the printing
-	 * @param printerName Specified printer name
-	 * @return true if success
-	 */
 	private void startDocumentPrint(
-			final int type //
-			, final MPrintFormat customPrintFormat //
-			, final int Record_ID //
-			, final int tableId //
-			, final int pInstanceId //
-			, final ASyncProcess parent //
-			, final int windowNo //
-			, final boolean isDirectPrint //
-			, final String printerName //
+			final int reportEngineDocumentType //
+			, final int adTableId //
+			, final int recordId //
 	)
 	{
 		final Properties ctx = Env.getCtx();
-		final ReportEngine re = ReportEngine.get(ctx, type, Record_ID, pInstanceId, ITrx.TRXNAME_None);
+		final int adPInstanceId = processInfo.getAD_PInstance_ID();
+		final ReportEngine re = ReportEngine.get(ctx, reportEngineDocumentType, recordId, adPInstanceId, ITrx.TRXNAME_None);
 		if (re == null)
 		{
 			throw new AdempiereException("@NoDocPrintFormat@");
-		}
-
-		// Use custom print format if available
-		if (customPrintFormat != null)
-		{
-			re.setPrintFormat(customPrintFormat);
 		}
 
 		final MPrintFormat printFormat = re.getPrintFormat();
@@ -300,26 +276,43 @@ public final class ReportCtl
 		if (printFormat.getJasperProcess_ID() > 0)
 		{
 			final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
-					.setWindowNo(windowNo)
+					.setWindowNo(processInfo.getWindowNo())
 					.setAD_Process_ID(printFormat.getJasperProcess_ID())
-					.setRecord(tableId, re.getPrintInfo().getRecord_ID())
-					.setPrintPreview(!isDirectPrint)
+					.setRecord(adTableId, recordId)
+					.setPrintPreview(processInfo.isPrintPreview())
 					.setReportLanguage(printFormat.getLanguage())
 					.build();
 
 			// Execute Process
 			ProcessCtl.builder()
-					.setAsyncParent(parent)
 					.setProcessInfo(jasperProcessInfo)
 					.setJRReportViewerProvider(jrReportViewerProvider)
-					.execute();
+					.executeSync();
+
+			//
+			// Throw exception in case of failure
+			final ProcessExecutionResult jasperProcessResult = jasperProcessInfo.getResult();
+			if(jasperProcessResult.isError())
+			{
+				final Throwable throwable = jasperProcessResult.getThrowable();
+				if(throwable != null)
+				{
+					throw AdempiereException.wrapIfNeeded(throwable);
+				}
+				else
+				{
+					throw new AdempiereException(jasperProcessResult.getSummary());
+				}
+			}
 		}
 		else
 		{
-			createOutput(re, !isDirectPrint, printerName);
-			if (isDirectPrint)
+			final boolean isPrintPreview = processInfo.isPrintPreview();
+			final String printerName = getPrinterName();
+			createOutput(re, isPrintPreview, printerName);
+			if (!isPrintPreview)
 			{
-				ReportEngine.printConfirm(type, Record_ID);
+				ReportEngine.printConfirm(reportEngineDocumentType, recordId);
 			}
 		}
 	}
@@ -390,7 +383,6 @@ public final class ReportCtl
 	public static final class Builder
 	{
 		private ProcessInfo processInfo;
-		private ASyncProcess asyncParent;
 		private JRReportViewerProvider jrReportViewerProvider;
 		
 		private Builder()
@@ -417,17 +409,6 @@ public final class ReportCtl
 			return processInfo;
 		}
 
-		public Builder setAsyncParent(final ASyncProcess asyncParent)
-		{
-			this.asyncParent = asyncParent;
-			return this;
-		}
-
-		private ASyncProcess getASyncParent()
-		{
-			return asyncParent;
-		}
-		
 		public Builder setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider)
 		{
 			this.jrReportViewerProvider = jrReportViewerProvider;

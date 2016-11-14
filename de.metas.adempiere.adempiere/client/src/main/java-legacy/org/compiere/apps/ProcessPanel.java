@@ -22,6 +22,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.X_AD_Process;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CPanel;
@@ -534,7 +535,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		boolean closeWindow = false;
 		{
 			// If it was a report which finished successfully and we don't allow process re-run
-			if (m_IsReport && !pi.isError())
+			if (m_IsReport && !pi.getResult().isError())
 			{
 				closeWindow = true;
 			}
@@ -554,7 +555,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		}
 		else
 		{
-			loadResultsAndShow(pi);
+			loadResultsAndShow(pi.getResult());
 		}
 
 		if (asyncParent != null)
@@ -563,23 +564,23 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		}
 	}   // unlockUI
 
-	private final void loadResultsAndShow(final ProcessInfo pi)
+	private final void loadResultsAndShow(final ProcessExecutionResult result)
 	{
-		final StringBuilder m_messageText = new StringBuilder();
+		final StringBuilder messageText = new StringBuilder();
 		// Show process logs if any
-		if (pi.isShowProcessLogs())
+		if (result.isShowProcessLogs())
 		{
 			//
 			// Update message
-			m_messageText.append("<p><font color=\"").append(pi.isError() ? "#FF0000" : "#0000FF").append("\">** ")
-					.append(pi.getSummary())
+			messageText.append("<p><font color=\"").append(result.isError() ? "#FF0000" : "#0000FF").append("\">** ")
+					.append(result.getSummary())
 					.append("</font></p>");
-			m_messageText.append(pi.getLogInfo(true));
+			messageText.append(result.getLogInfo(true));
 		}
-		resultMessagePane.setText(m_messageText.toString());
+		resultMessagePane.setText(messageText.toString());
 		resultMessagePane.moveCaretToEnd(); // scroll down
 
-		pi.setErrorWasReportedToUser();
+		result.setErrorWasReportedToUser();
 
 		//
 		// Show the results panel

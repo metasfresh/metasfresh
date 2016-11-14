@@ -31,6 +31,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -1005,14 +1006,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
 			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			pInstance.set_TrxName(trx != null ? trx.getTrxName() : null);
+			pInstance.set_TrxName(trx != null ? trx.getTrxName() : ITrx.TRXNAME_None);
 			fillParameter(pInstance, trx);
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
-					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
+					.setAD_PInstance(pInstance)
 					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
@@ -1050,7 +1051,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
-					.setAD_PInstance_ID(pInstance.getAD_PInstance_ID())
+					.setAD_PInstance(pInstance)
 					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
@@ -1508,8 +1509,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						index = columnName.indexOf('@');
 						if (index == -1)
 						{
-							log.warn(nPara.getAttributeName()
-									+ " - cannot evaluate=" + variableName);
+							log.warn(nPara.getAttributeName() + " - cannot evaluate=" + variableName);
 							break;
 						}
 						columnName = columnName.substring(0, index);
@@ -1525,9 +1525,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 							String env = Env.getContext(getCtx(), columnName);
 							if (env.length() == 0)
 							{
-								log.warn(nPara.getAttributeName()
-										+ " - not column nor environment =" + columnName
-										+ "(" + variableName + ")");
+								log.warn(nPara.getAttributeName() + " - not column nor environment =" + columnName + "(" + variableName + ")");
 								break;
 							}
 							else
@@ -1539,11 +1537,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					if (value == null)
 					{
 						if (nPara.isMandatory())
-							log.warn(nPara.getAttributeName()
-									+ " - empty - mandatory!");
+							log.warn(nPara.getAttributeName() + " - empty - mandatory!");
 						else
-							log.debug(nPara.getAttributeName()
-									+ " - empty");
+							log.debug(nPara.getAttributeName() + " - empty");
 						break;
 					}
 

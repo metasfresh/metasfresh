@@ -19,7 +19,9 @@ package de.metas.process;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -41,6 +43,7 @@ import org.compiere.print.JRReportViewerProvider;
 import org.compiere.print.JRReportViewerProviderAware;
 import org.compiere.print.ReportCtl;
 import org.compiere.process.ProcessCall;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.ProcessInfoUtil;
@@ -111,6 +114,7 @@ public final class ProcessCtl
 	private final ASyncProcess parent;
 	private final ProcessInfo pi;
 	private final JRReportViewerProvider jrReportViewerProvider;
+	private final boolean onErrorThrowException;
 
 	private Thread m_thread; // metas
 
@@ -121,6 +125,7 @@ public final class ProcessCtl
 		pi = builder.getProcessInfo();
 		parent = builder.getASyncParent();
 		jrReportViewerProvider = builder.getJRReportViewerProvider();
+		onErrorThrowException = builder.onErrorThrowException;
 	}
 
 	/**
@@ -217,10 +222,9 @@ public final class ProcessCtl
 				{
 					ReportCtl.builder()
 							.setProcessInfo(pi)
-							.setAsyncParent(null) // sync!
 							.setJRReportViewerProvider(jrReportViewerProvider)
 							.start();
-					pi.setSummary("Report");
+					pi.getResult().setSummary("Report");
 				}
 			}
 
@@ -228,9 +232,10 @@ public final class ProcessCtl
 			public boolean doCatch(Throwable e) throws Throwable
 			{
 				logger.warn("Got error", e);
-				pi.setThrowable(e);
-				pi.setSummary(e.getLocalizedMessage());
-				pi.setError(true);
+				final ProcessExecutionResult result = pi.getResult();
+				result.setThrowable(e);
+				result.setSummary(e.getLocalizedMessage());
+				result.setError(true);
 				return ROLLBACK;
 			}
 
@@ -252,6 +257,13 @@ public final class ProcessCtl
 		{
 			trxManager.run(ITrx.TRXNAME_ThreadInherited, processExecutor);
 		}
+		
+		//
+		// Propagate the error if asked
+		if(onErrorThrowException)
+		{
+			pi.getResult().propagateErrorIfAny();
+		}
 	}
 
 	/**
@@ -271,17 +283,19 @@ public final class ProcessCtl
 	 */
 	private void unlock()
 	{
+		final ProcessExecutionResult result = pi.getResult();
+		
 		if (pi.isBatch())
 		{
-			pi.setIsTimeout(true);
+			result.setTimeout(true);
 		}
 
 		//
 		// Translate process summary if needed
-		final String summary = pi.getSummary();
+		final String summary = result.getSummary();
 		if (summary != null && summary.indexOf('@') >= 0)
 		{
-			pi.setSummary(msgBL.parseTranslation(pi.getCtx(), summary));
+			result.setSummary(msgBL.parseTranslation(pi.getCtx(), summary));
 		}
 
 		if (parent != null)
@@ -372,16 +386,16 @@ public final class ProcessCtl
 		engine.put(MRule.ARGUMENTS_PREFIX + "AD_PInstance_ID", pi.getAD_PInstance_ID());
 		engine.put(MRule.ARGUMENTS_PREFIX + "Table_ID", pi.getTable_ID());
 		// Add process parameters
-		final ProcessInfoParameter[] para = pi.getParameter();
-		if (para != null)
+		final List<ProcessInfoParameter> parameters = pi.getParameter();
+		if (parameters != null)
 		{
-			engine.put(MRule.ARGUMENTS_PREFIX + "Parameter", pi.getParameter());
-			for (int i = 0; i < para.length; i++)
+			engine.put(MRule.ARGUMENTS_PREFIX + "Parameter", parameters);
+			for (final ProcessInfoParameter para : parameters)
 			{
-				String name = para[i].getParameterName();
-				if (para[i].getParameter_To() == null)
+				String name = para.getParameterName();
+				if (para.getParameter_To() == null)
 				{
-					Object value = para[i].getParameter();
+					Object value = para.getParameter();
 					if (name.endsWith("_ID") && (value instanceof BigDecimal))
 						engine.put(MRule.PARAMETERS_PREFIX + name, ((BigDecimal)value).intValue());
 					else
@@ -389,8 +403,8 @@ public final class ProcessCtl
 				}
 				else
 				{
-					Object value1 = para[i].getParameter();
-					Object value2 = para[i].getParameter_To();
+					Object value1 = para.getParameter();
+					Object value2 = para.getParameter_To();
 					if (name.endsWith("_ID") && (value1 instanceof BigDecimal))
 						engine.put(MRule.PARAMETERS_PREFIX + name + "1", ((BigDecimal)value1).intValue());
 					else
@@ -411,8 +425,9 @@ public final class ProcessCtl
 			throw new AdempiereException(msg);
 		}
 
-		// Parse Variables
-		pi.setSummary(msgBL.parseTranslation(ctx, msg));
+		// Update result
+		final ProcessExecutionResult result = pi.getResult();
+		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
 	private final boolean startJavaProcess() throws Exception
@@ -455,8 +470,9 @@ public final class ProcessCtl
 			DB.setParameters(cstmt, sqlParams);
 			cstmt.executeUpdate();
 			
-			ProcessInfoUtil.setSummaryFromDB(pi);
-			pi.markLogsAsStale();
+			final ProcessExecutionResult result = pi.getResult();
+			ProcessInfoUtil.loadSummaryFromDB(result);
+			result.markLogsAsStale();
 		}
 		catch (Exception e)
 		{
@@ -482,7 +498,11 @@ public final class ProcessCtl
 				logger.info("Process thread interrupted", e);
 			}
 		}
-
+	}
+	
+	public ProcessExecutionResult getResult()
+	{
+		return pi.getResult();
 	}
 
 	public static final class Builder
@@ -492,6 +512,8 @@ public final class ProcessCtl
 		private ProcessInfo pi;
 		private ASyncProcess asyncParent = null;
 		private JRReportViewerProvider jrReportViewerProvider;
+		private boolean onErrorThrowException = false;
+		private Consumer<ProcessInfo> beforeCallback = null;
 
 		private Builder()
 		{
@@ -504,10 +526,11 @@ public final class ProcessCtl
 			worker.execute();
 		}
 
-		public void executeSync()
+		public ProcessCtl executeSync()
 		{
 			final ProcessCtl worker = build();
 			worker.executeSync();
+			return worker;
 		}
 
 		private ProcessCtl build()
@@ -520,9 +543,10 @@ public final class ProcessCtl
 			}
 			catch (final Throwable e)
 			{
-				pi.setSummary(e.getLocalizedMessage());
-				pi.setThrowable(e);
-				pi.setError(true);
+				final ProcessExecutionResult result = pi.getResult();
+				result.setSummary(e.getLocalizedMessage());
+				result.setThrowable(e);
+				result.setError(true);
 
 				if(asyncParent != null)
 				{
@@ -550,10 +574,17 @@ public final class ProcessCtl
 
 			//
 			// Save Parameters to AD_PInstance_Para, if needed
-			final ProcessInfoParameter[] parameters = pi.getParametersNoLoad();
-			if(parameters != null && parameters.length > 0)
+			final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
+			if(parameters != null && !parameters.isEmpty())
 			{
 				adPInstanceDAO.saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
+			}
+
+			//
+			// Execute before call callback
+			if(beforeCallback != null)
+			{
+				beforeCallback.accept(pi);
 			}
 		}
 
@@ -588,6 +619,21 @@ public final class ProcessCtl
 		private JRReportViewerProvider getJRReportViewerProvider()
 		{
 			return jrReportViewerProvider;
+		}
+		
+		/**
+		 * Advice the executor to propagate the error in case the execution failed. 
+		 */
+		public Builder onErrorThrowException()
+		{
+			this.onErrorThrowException = true;
+			return this;
+		}
+		
+		public Builder callBefore(final Consumer<ProcessInfo> beforeCallback)
+		{
+			this.beforeCallback = beforeCallback;
+			return this;
 		}
 	}
 

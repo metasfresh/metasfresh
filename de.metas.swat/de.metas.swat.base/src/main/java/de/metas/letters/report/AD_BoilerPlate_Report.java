@@ -3,30 +3,6 @@
  */
 package de.metas.letters.report;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
@@ -34,7 +10,6 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.report.ReportStarter;
-import org.compiere.util.Ini;
 import org.compiere.util.Trx;
 
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
@@ -83,11 +58,8 @@ public class AD_BoilerPlate_Report extends SvrProcess
 		// Set Custom PrintFormat if needed
 		if (p_AD_PrintFormat_ID > 0)
 		{
-			MPrintFormat pf = MPrintFormat.get(getCtx(), p_AD_PrintFormat_ID, false);
-			if (Ini.isClient())
-				getProcessInfo().setTransientObject (pf);
-			else
-				getProcessInfo().setSerializableObject(pf);
+			final MPrintFormat pf = MPrintFormat.get(getCtx(), p_AD_PrintFormat_ID, false);
+			getResult().setPrintFormat(pf);
 		}
 		//
 		// Jasper Report
@@ -125,9 +97,6 @@ public class AD_BoilerPlate_Report extends SvrProcess
 		//
 		ReportStarter proc = new ReportStarter();
 		proc.startProcess(getCtx(), pi, Trx.get(get_TrxName(), false));
-		if (pi.isError())
-		{
-			throw new AdempiereException(pi.getSummary());
-		}
+		pi.getResult().propagateErrorIfAny();
 	}
 }

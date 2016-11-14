@@ -1186,11 +1186,8 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			query.addRestriction(whereClause);
 
 		//	Get Print Format
-		MPrintFormat format = null;
-		Object so = pi.getSerializableObject();
-		if (so instanceof MPrintFormat)
-			format = (MPrintFormat)so;
-		if (format == null && AD_PrintFormat_ID != 0)
+		MPrintFormat format = pi.getResult().getPrintFormat();
+		if (format == null && AD_PrintFormat_ID > 0)
 		{
 			//	We have a PrintFormat with the correct Client
 			if (Client_ID == AD_Client_ID)
