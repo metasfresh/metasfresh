@@ -112,8 +112,8 @@ node('agent && linux && libc6-i386')
 				// we currently deploy *and* also archive, but that might change in future
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
 				
-				 // collect test results
-				junit '**/target/surefire-reports/*.xml'
+				// endcustomer.mf15 currently has no tests, so we allow empty results.
+				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 				
 			  	// we currently deploy *and* also archive, but that might change in future
 				archiveArtifacts 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/target/*.tar.gz,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.zip,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.exe'
