@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-14T11:11:23 -->
+<!-- 2016-11-14T15:16:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -57,6 +57,7 @@
 	<field name="param_product" class="java.lang.String"/>
 	<field name="param_product_category" class="java.lang.String"/>
 	<field name="param_attributes" class="java.lang.String"/>
+	<field name="currency" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
@@ -70,6 +71,7 @@
 		<groupExpression><![CDATA[$F{bp_name}]]></groupExpression>
 		<groupHeader>
 			<band height="129">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
 				<textField>
 					<reportElement x="37" y="20" width="200" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -267,102 +269,193 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="104" width="90" height="12" uuid="d66aba59-e2f8-4cd2-bff6-ecc332feb3c7"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="687" y="104" width="90" height="12" uuid="abf66263-a91a-46ed-8786-4e370503c6da"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="847" y="104" width="70" height="12" uuid="98f6f910-1cf8-429c-93b6-7519eff549c4"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="237" y="116" width="90" height="12" uuid="77a777bf-d76e-4c12-b661-7b72c1460696"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="417" y="116" width="90" height="12" uuid="dcc0ebc8-54c9-4640-8e71-92700dd9af97"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="597" y="116" width="90" height="12" uuid="9d71f893-1c0f-4af7-a347-7b72355b8033"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="327" y="116" width="90" height="12" uuid="65c09cc0-77bd-449b-ba47-1922e936c799"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="507" y="116" width="90" height="12" uuid="5e35afa1-3df4-4209-803a-a1ae326dec78"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="687" y="116" width="90" height="12" uuid="9dc952ae-0d07-4902-896e-5e9808db98b0"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="847" y="116" width="70" height="12" uuid="8e56b4e2-8d8d-4922-b0b0-178e34e4aa2c"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="24">
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
-					<reportElement x="777" y="12" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="777" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="597" y="12" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="597" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="237" y="12" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="237" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="12" width="200" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="417" y="12" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="417" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement x="37" y="0" width="200" height="12" uuid="0b1339b5-489c-46e8-8352-de5c9dc7c837"/>
+				<textField>
+					<reportElement x="327" y="0" width="90" height="12" uuid="c48f824a-cdf8-4fcc-b8c3-ee67782045d4"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="507" y="0" width="90" height="12" uuid="e7ba660e-3c0d-4332-aa0d-35b88f1392b4"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="687" y="0" width="90" height="12" uuid="cd4eef2c-5dd1-4553-8476-511f3fcbd2e2"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement x="847" y="0" width="70" height="12" uuid="67f1d1e4-217a-49a8-9ba1-2e4eb3f9839b"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="0" width="200" height="12" uuid="760a9d05-04bd-4062-a00e-c66d6a85ff2c"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<text><![CDATA[]]></text>
-				</staticText>
-				<textField>
-					<reportElement x="327" y="12" width="90" height="12" uuid="c48f824a-cdf8-4fcc-b8c3-ee67782045d4"/>
-					<textElement textAlignment="Right">
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="507" y="12" width="90" height="12" uuid="e7ba660e-3c0d-4332-aa0d-35b88f1392b4"/>
+					<reportElement x="327" y="12" width="90" height="12" uuid="7fdff3fa-e051-4918-ae26-733cb87bf1f8"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="687" y="12" width="90" height="12" uuid="cd4eef2c-5dd1-4553-8476-511f3fcbd2e2"/>
+					<reportElement x="237" y="12" width="90" height="12" uuid="72c51f8a-d5c1-4dd4-bd5a-fd61b7a8e618"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="false">
-					<reportElement x="847" y="12" width="70" height="12" uuid="67f1d1e4-217a-49a8-9ba1-2e4eb3f9839b"/>
+				<textField>
+					<reportElement x="417" y="12" width="90" height="12" uuid="02bee04d-c9a3-463c-8c4a-efe82dc8bb19"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="597" y="12" width="90" height="12" uuid="d91351ef-37e9-4ffd-9139-6bf212455dfa"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="507" y="12" width="90" height="12" uuid="e08e29f4-f9b4-49d7-8538-12a0c3c0108e"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="687" y="12" width="90" height="12" uuid="c5bb55ad-437f-4c5b-8083-aabdd1a4f429"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="847" y="12" width="70" height="12" uuid="1025159d-2679-48ff-8bed-35a2406dd615"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

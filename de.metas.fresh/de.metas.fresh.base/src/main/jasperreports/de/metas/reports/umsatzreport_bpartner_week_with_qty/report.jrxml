@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-11T16:44:40 -->
+<!-- 2016-11-14T15:01:55 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner_week/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -346,14 +346,14 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="479" y="105" width="96" height="12" uuid="947104db-724c-4414-a3db-40174cee042b"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="655" y="105" width="80" height="12" uuid="98b5ef06-7e06-4f04-94cc-f1ec7cad0f9d">
@@ -362,17 +362,50 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="775" y="105" width="40" height="12" uuid="75ffc039-544e-4d38-ae89-cadf2ddf6f6c"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="117" width="80" height="12" uuid="94bd8d23-96b9-4181-bb9e-20aeba696873">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="117" width="96" height="12" uuid="13d63d2b-dd92-4a61-91dc-1d509600f003"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="117" width="80" height="12" uuid="2ef9589d-bb16-47fb-a4fd-332b80b1017c">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="775" y="117" width="40" height="12" uuid="4dfd778e-034a-4c11-bc46-435c4f8e2ce5"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="44">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
 					<reportElement x="735" y="20" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -435,28 +468,60 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="479" y="20" width="96" height="12" uuid="6e716eee-abb2-48f5-912a-1f4a9cecdce6"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="655" y="20" width="80" height="12" uuid="4a90dc59-ee21-44a4-b95d-ca804d398557"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
 					<reportElement x="775" y="20" width="40" height="12" uuid="662dec25-1e27-41cc-9bda-b40ec85eed42"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="775" y="32" width="40" height="12" uuid="07b2587e-7283-43bf-8924-a186d4690636"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="32" width="80" height="12" uuid="cbe5f8c9-eab3-4ddd-a6f9-f3f5a6e004b4">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="32" width="96" height="12" uuid="3bc74d6c-16ec-4212-82fa-6822e9b5e7da"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="32" width="80" height="12" uuid="e1bc81e3-ac9d-4895-a2e5-49e084e84cdb">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
