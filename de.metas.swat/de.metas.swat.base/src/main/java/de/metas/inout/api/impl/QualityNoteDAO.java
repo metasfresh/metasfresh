@@ -4,7 +4,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
@@ -33,15 +38,67 @@ import de.metas.inout.model.I_M_QualityNote;
 
 public class QualityNoteDAO implements IQualityNoteDAO
 {
+	public static String QualityNoteAttribute = "QualityNotice";
 
 	@Override
-	public I_M_QualityNote retrieveQualityNoteForName(final Properties ctx, final String name)
+	public I_M_QualityNote retrieveQualityNoteForValue(final Properties ctx, final String value)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_QualityNote.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_QualityNote.COLUMN_Name, name)
+				.addEqualsFilter(I_M_QualityNote.COLUMN_Value, value)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_QualityNote.class);
+	}
+
+	@Override
+	public I_M_Attribute getQualityNoteAttribute(final Properties ctx)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		return attributeDAO.retrieveAttributeByValue(ctx, QualityNoteAttribute, I_M_Attribute.class);
+	}
+
+	@Override
+	public I_M_AttributeValue retrieveAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
+	{
+
+		return createQueryForQualityNote(qualityNote).firstOnly(I_M_AttributeValue.class);
+	}
+
+	private IQuery<I_M_AttributeValue> createQueryForQualityNote(final I_M_QualityNote qualityNote)
+	{
+		final I_M_Attribute attribute = getQualityNoteAttribute(InterfaceWrapperHelper.getCtx(qualityNote));
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class, qualityNote)
+				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, qualityNote.getValue())
+				// we want so sync QualityNote with AttributeValue completely, even for inactive records so the OnlyActive clause is not used
+				.create();
+	}
+
+	@Override
+	public void deleteAttribueValueForQualityNote(final I_M_QualityNote qualityNote)
+	{
+
+		createQueryForQualityNote(qualityNote).delete();
+	}
+
+	@Override
+	public void modifyAttributeValueName(final I_M_QualityNote qualityNote)
+	{
+		final I_M_AttributeValue attribueValueForQualityNote = retrieveAttribueValueForQualityNote(qualityNote);
+
+		if (attribueValueForQualityNote == null)
+		{
+			// shall not happen. All M_QualityNote entries shall have a similar M_AttributeValue
+			return;
+		}
+
+		final String noteName = qualityNote.getName();
+
+		attribueValueForQualityNote.setName(noteName);
+		attribueValueForQualityNote.setIsActive(qualityNote.isActive());
+
+		InterfaceWrapperHelper.save(attribueValueForQualityNote);
 	}
 
 }

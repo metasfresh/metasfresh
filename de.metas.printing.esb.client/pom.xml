@@ -87,24 +87,28 @@
 						<manifestEntries>
 							<!-- required when we run this jar as an applet. 
 							     See http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/manifest.html#permissions -->
+							<!--
+							metas-ts: commented out because right now we are not interested in applets, but it took me a lot of effort to get there and i would like to keep it around for future reference.
 							<Permissions>all-permissions</Permissions>
+							-->
 							<Implementation-Version>${project.version}-${env.BUILD_NUMBER}</Implementation-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
+						<id>make-assembly</id> 
+						<phase>package</phase> 
 						<goals>
 							<goal>single</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
-
+		<!-- 
+		metas-ts: commented out because right now we are not interested in signing code, but it took me a lot of effort to get there and i would like to keep it around for future reference.
 			<plugin>
-				<!-- sign the uber-jar that we just created with the maven-assembly-plugin -->
+				sign the uber-jar that we just created with the maven-assembly-plugin 
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
 				<executions>
@@ -124,6 +128,7 @@
 					<archive>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</archive>
 				</configuration>
 			</plugin>
+		-->
 		</plugins>
 	</build>
 </project>

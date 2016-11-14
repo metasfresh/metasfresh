@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-14T15:01:55 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner_week/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.9487171000000079"/>
+	<property name="ireport.x" value="46"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IsSOTrx" class="java.lang.String"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_AttributeSetInstance_ID" class="java.math.BigDecimal"/>
+	<parameter name="Base_Year_Start" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Year_End" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Week_Start" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Base_Week_End" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Year_Start" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Year_End" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Week_Start" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Comp_Week_End" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="C_Currency_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_week_report(
+	$P{Base_Year_Start},
+	$P{Base_Year_End},
+	$P{Base_Week_Start},
+	$P{Base_Week_End},
+	$P{Comp_Year_Start},
+	$P{Comp_Year_End},
+	$P{Comp_Week_Start},
+	$P{Comp_Week_End},
+	$P{IsSOTrx},
+	$P{C_BPartner_ID},
+	$P{M_Product_ID},
+	$P{M_Product_Category_ID},
+	$P{M_AttributeSetInstance_ID},
+	$P{C_Currency_ID}
+);]]>
+	</queryString>
+	<field name="bp_name" class="java.lang.String"/>
+	<field name="pc_name" class="java.lang.String"/>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="sameperiodsum" class="java.math.BigDecimal"/>
+	<field name="compperiodsum" class="java.math.BigDecimal"/>
+	<field name="sameperiodqtysum" class="java.math.BigDecimal"/>
+	<field name="compperiodqtysum" class="java.math.BigDecimal"/>
+	<field name="perioddifference" class="java.math.BigDecimal"/>
+	<field name="periodqtydifference" class="java.math.BigDecimal"/>
+	<field name="perioddiffpercentage" class="java.math.BigDecimal"/>
+	<field name="periodqtydiffpercentage" class="java.math.BigDecimal"/>
+	<field name="base_week_start" class="java.lang.String"/>
+	<field name="base_week_end" class="java.lang.String"/>
+	<field name="comp_week_start" class="java.lang.String"/>
+	<field name="comp_week_end" class="java.lang.String"/>
+	<field name="param_issotrx" class="java.lang.String"/>
+	<field name="param_bp" class="java.lang.String"/>
+	<field name="param_product" class="java.lang.String"/>
+	<field name="param_product_category" class="java.lang.String"/>
+	<field name="param_attributes" class="java.lang.String"/>
+	<field name="param_currency" class="java.lang.String"/>
+	<variable name="sameperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodtotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="sameperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodtotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="perioddifferencetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[$V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})]]></variableExpression>
+	</variable>
+	<variable name="perioddifferencetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[$V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})]]></variableExpression>
+	</variable>
+	<variable name="perioddiffpercentagetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[(($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).signum() != 0 && $V{compperiodtotal_pc}.signum() != 0) ?
+($V{sameperiodtotal_pc}.subtract($V{compperiodtotal_pc})).divide($V{compperiodtotal_pc}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<variable name="perioddiffpercentagetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[(($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).signum() != 0 && $V{compperiodtotal_bp}.signum() != 0) ?
+($V{sameperiodtotal_bp}.subtract($V{compperiodtotal_bp})).divide($V{compperiodtotal_bp}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<variable name="sameperiodqtytotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodqtysum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="sameperiodqtytotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodqtysum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodqtytotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodqtysum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="compperiodqtytotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner" calculation="Sum">
+		<variableExpression><![CDATA[$F{compperiodqtysum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="periodqtydifferencetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[$V{sameperiodqtytotal_pc}.subtract($V{compperiodqtytotal_pc})]]></variableExpression>
+	</variable>
+	<variable name="periodqtydifferencetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[$V{sameperiodqtytotal_bp}.subtract($V{compperiodqtytotal_bp})]]></variableExpression>
+	</variable>
+	<variable name="periodqtydiffpercentagetotal_pc" class="java.math.BigDecimal" resetType="Group" resetGroup="Category">
+		<variableExpression><![CDATA[(($V{sameperiodqtytotal_pc}.subtract($V{compperiodqtytotal_pc})).signum() != 0 && $V{compperiodqtytotal_pc}.signum() != 0) ?
+($V{sameperiodqtytotal_pc}.subtract($V{compperiodqtytotal_pc})).divide($V{compperiodqtytotal_pc}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<variable name="periodqtydiffpercentagetotal_bp" class="java.math.BigDecimal" resetType="Group" resetGroup="BPartner">
+		<variableExpression><![CDATA[(($V{sameperiodqtytotal_bp}.subtract($V{compperiodqtytotal_bp})).signum() != 0 && $V{compperiodqtytotal_bp}.signum() != 0) ?
+($V{sameperiodqtytotal_bp}.subtract($V{compperiodqtytotal_bp})).divide($V{compperiodqtytotal_bp}, 2).multiply(new BigDecimal("100")) : null]]></variableExpression>
+	</variable>
+	<group name="BPartner" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{bp_name}]]></groupExpression>
+		<groupHeader>
+			<band height="129">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
+				<textField>
+					<reportElement x="37" y="20" width="289" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Umsatzreport Geschäftspartner Woche"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Art"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{base_week_start} + " - " + $F{base_week_end}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{comp_week_start} + " - " + $F{comp_week_end}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_issotrx}.equals("Y") ? $R{sales} : $R{purchase}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="181" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{bp_name}!=null ? $F{bp_name} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_product_category}!=null ? $F{param_product_category} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="59" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Artikelkategorie"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_product} !=null ? $F{param_product} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="70" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_attributes} !=null ? $F{param_attributes} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="81" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Merkmal"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="105" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="229" y="105" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="389" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="575" y="105" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="735" y="105" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="338" y="48" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Währung"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="425" y="48" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="229" y="117" width="80" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="389" y="117" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="575" y="117" width="80" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="105" width="80" height="12" uuid="dbb8121d-9b35-4299-ba04-ee66e6139240">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="105" width="96" height="12" uuid="947104db-724c-4414-a3db-40174cee042b"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="105" width="80" height="12" uuid="98b5ef06-7e06-4f04-94cc-f1ec7cad0f9d">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="775" y="105" width="40" height="12" uuid="75ffc039-544e-4d38-ae89-cadf2ddf6f6c"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="117" width="80" height="12" uuid="94bd8d23-96b9-4181-bb9e-20aeba696873">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="117" width="96" height="12" uuid="13d63d2b-dd92-4a61-91dc-1d509600f003"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="117" width="80" height="12" uuid="2ef9589d-bb16-47fb-a4fd-332b80b1017c">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="775" y="117" width="40" height="12" uuid="4dfd778e-034a-4c11-bc46-435c4f8e2ce5"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="44">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
+				<textField isBlankWhenNull="false">
+					<reportElement x="735" y="20" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="575" y="20" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="229" y="20" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="20" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="389" y="20" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="575" y="32" width="80" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="389" y="32" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="229" y="32" width="80" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="20" width="80" height="12" uuid="d89bf000-ab41-4f9b-9a62-1c5ef5a669da"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="20" width="96" height="12" uuid="6e716eee-abb2-48f5-912a-1f4a9cecdce6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="20" width="80" height="12" uuid="4a90dc59-ee21-44a4-b95d-ca804d398557"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement x="775" y="20" width="40" height="12" uuid="662dec25-1e27-41cc-9bda-b40ec85eed42"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="775" y="32" width="40" height="12" uuid="07b2587e-7283-43bf-8924-a186d4690636"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="655" y="32" width="80" height="12" uuid="cbe5f8c9-eab3-4ddd-a6f9-f3f5a6e004b4">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="479" y="32" width="96" height="12" uuid="3bc74d6c-16ec-4212-82fa-6822e9b5e7da"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="309" y="32" width="80" height="12" uuid="e1bc81e3-ac9d-4895-a2e5-49e084e84cdb">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="12">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<textField>
+					<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddifferencetotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal_bp}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="229" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodtotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="389" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodtotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="309" y="0" width="80" height="12" uuid="ebe39a71-0392-4985-9157-aa428c987107"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodqtytotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="479" y="0" width="96" height="12" uuid="f77e462d-277b-4fc9-87b8-6c035c41103d"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodqtytotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="655" y="0" width="80" height="12" uuid="34d4f5dc-9124-4215-9df8-a535bad94409"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{periodqtydifferencetotal_bp}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="775" y="0" width="40" height="12" uuid="7513b30e-11bb-4ca7-8762-9abe722e1c99"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{periodqtydiffpercentagetotal_bp}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Category" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{pc_name}]]></groupExpression>
+		<groupHeader>
+			<band height="24">
+				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null)]]></printWhenExpression>
+				<textField>
+					<reportElement x="37" y="12" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{pc_name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="12">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null)]]></printWhenExpression>
+				<textField pattern="#,##0">
+					<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddifferencetotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="389" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodtotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Total " + $F{pc_name}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal_pc}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="229" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodtotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="309" y="0" width="80" height="12" uuid="645cb2e7-314a-4c68-a6d1-f895dccb28f0"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sameperiodqtytotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="479" y="0" width="96" height="12" uuid="d5238cf3-c8bf-4109-9857-b150619bfd93"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{compperiodqtytotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0">
+					<reportElement x="655" y="0" width="80" height="12" uuid="bf8cae82-6d87-417f-b94d-27720f8ba065"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{periodqtydifferencetotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="775" y="0" width="40" height="12" uuid="d0369286-b7a5-4e07-837a-c3b7470e07f6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{periodqtydiffpercentagetotal_pc}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="12" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement>
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="229" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="389" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="309" y="0" width="80" height="12" uuid="95a48aba-726c-4740-b7a0-856eb839950b"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="479" y="0" width="96" height="12" uuid="bc627c63-389d-4a54-aa85-701abb99e53f"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{compperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="655" y="0" width="80" height="12" uuid="6d4e2079-403c-4eb8-9ce4-7faba3d957e9"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{periodqtydifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="775" y="0" width="40" height="12" uuid="554c46df-ccd6-4af3-8354-ce57fe21b13f"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{periodqtydiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="34" splitType="Stretch"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

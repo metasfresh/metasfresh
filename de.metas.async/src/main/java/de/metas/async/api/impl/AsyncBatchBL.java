@@ -27,6 +27,7 @@ package de.metas.async.api.impl;
 
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -39,11 +40,15 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
+import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.model.X_C_Async_Batch_Type;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
@@ -57,6 +62,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 {
 	/* package */final static int PROCESSEDTIME_OFFSET_Min = Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMin", 1);
 
+	// services
+	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
+
 	private final ReentrantLock lock = new ReentrantLock();
 
 	@Override
@@ -65,9 +73,43 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return new AsyncBatchBuilder(this);
 	}
 
-	// FIXME: instead of synchronizing on AsyncBatchBL, consider increasing the value directly on the DB, in an "atomic" way, and then just refresh asyncBatch
 	@Override
-	public void increaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	public int increaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	{
+		return setAsyncBatchCountEnqueued(workPackage, +1);
+	}
+
+	@Override
+	public int decreaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	{
+		return setAsyncBatchCountEnqueued(workPackage, -1);
+	}
+
+	@Override
+	public void createNotificationRecord(final I_C_Queue_WorkPackage workPackage)
+	{
+		final int asyncBatchId = workPackage.getC_Async_Batch_ID();
+
+		if (asyncBatchId > 0)
+		{
+			final I_C_Async_Batch asyncBatch = workPackage.getC_Async_Batch();
+			final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+			if (X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
+			{
+				final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+				final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
+				
+				final I_C_Queue_WorkPackage_Notified wpNotified = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage_Notified.class, trxName);
+				wpNotified.setC_Async_Batch_ID(asyncBatchId);
+				wpNotified.setC_Queue_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
+				wpNotified.setBachWorkpackageSeqNo(workPackage.getBatchEnqueuedCount());
+				wpNotified.setIsNotified(false);
+				Services.get(IQueueDAO.class).saveInLocalTrx(wpNotified);
+			}
+		}
+	}
+
+	private int setAsyncBatchCountEnqueued(final I_C_Queue_WorkPackage workPackage, final int offset)
 	{
 		final int asyncBatchId = workPackage.getC_Async_Batch_ID();
 
@@ -86,18 +128,23 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				}
 
 				asyncBatch.setLastEnqueued(enqueued);
-				asyncBatch.setCountEnqueued(asyncBatch.getCountEnqueued() + 1);
+				int countEnqueued = asyncBatch.getCountEnqueued() + offset;
+				asyncBatch.setCountEnqueued(countEnqueued);
 				save(asyncBatch);
+				return countEnqueued;
 			}
 			finally
 			{
 				lock.unlock();
 			}
 		}
-
+		else
+		{
+			return 0;
+		}
 	}
 
-	// FIXME: instead of synchronizing on AsyncBatchBL, consider increasing the value directly on the DB, in an "atomic" way, and then just refresh asyncBatch
+
 	@Override
 	public void increaseProcessed(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -113,6 +160,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				InterfaceWrapperHelper.refresh(asyncBatch);
 				final Timestamp processed = SystemTime.asTimestamp();
 				asyncBatch.setLastProcessed(processed);
+				asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
 				asyncBatch.setCountProcessed(asyncBatch.getCountProcessed() + 1);
 				save(asyncBatch);
 			}
@@ -143,7 +191,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
-		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, prio);
+		final I_C_Queue_WorkPackage queueWorkpackage = queue.newBlock()
+														.setContext(ctx)
+														.newWorkpackage()
+														.setPriority(prio)
+														.build();
 
 		// Make sure that the watch processor is not in the same batch (because it will affect the counter which we are checking...)
 		queueWorkpackage.setC_Async_Batch(null);
@@ -245,106 +297,74 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return true;
 	}
 
-//	@Override
-//	public void sendEMail(final I_C_Async_Batch asyncBatch)
-//	{
-//
-//		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
-//		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
-//
-//		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-//		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
-//
-//		// do nothing is the flag for sending mail is not checked
-//		if (!asyncBatchType.isSendMail())
-//		{
-//			return;
-//		}
-//
-//		final I_AD_BoilerPlate boilerPlate = asyncBatchType.getAD_BoilerPlate();
-//		Check.assumeNotNull(boilerPlate, "Boiler plate should not be null for async batch type ! ", asyncBatchType.getC_Async_Batch_Type_ID());
-//
-//		final MADBoilerPlate text = InterfaceWrapperHelper.create(boilerPlate, MADBoilerPlate.class);
-//		if (text == null)
-//		{
-//			return; // nothing to send
-//		}
-//
-//		MADBoilerPlate.sendEMail(new IEMailEditor()
-//		{
-//			@Override
-//			public Object getBaseObject()
-//			{
-//				return InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
-//			}
-//
-//			@Override
-//			public int getAD_Table_ID()
-//			{
-//				return InterfaceWrapperHelper.getTableId(I_C_Async_Batch.class);
-//			}
-//
-//			@Override
-//			public int getRecord_ID()
-//			{
-//				return asyncBatch.getC_Async_Batch_ID();
-//			}
-//
-//			@Override
-//			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
-//			{
-//				final MClient client = LegacyAdapters.convertToPO(Services.get(IClientDAO.class).retriveClient(ctx));
-//
-//				variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
-//
-//				// try to set language; take first from partner; if does not exists, take it from client
-//				final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
-//				final I_C_BPartner partner = user.getC_BPartner();
-//				String language = "";
-//				if (partner != null && partner.getC_BPartner_ID() > 0)
-//				{
-//					language = partner.getAD_Language();
-//				}
-//				if (Check.isEmpty(language, true))
-//				{
-//					language = client.getAD_Language();
-//				}
-//				variables.put(MADBoilerPlate.VAR_AD_Language, language);
-//				//
-//				final String message = text.getTextSnippetParsed(variables);
-//				//
-//				if (Check.isEmpty(message, true))
-//					return null;
-//				//
-//
-//				// prepare mail
-//				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-//				String to = st.nextToken();
-//
-//				if (asyncBatch.getCreatedBy() > 0)
-//					to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName).getEMail();
-//				final EMail email = client.createEMail(null,
-//						to, // to
-//						text.getSubject(), // subject
-//						message, // message
-//						true);
-//				if (email == null)
-//				{
-//					throw new AdempiereException("Cannot create email. Check log.");
-//				}
-//				while (st.hasMoreTokens())
-//					email.addTo(st.nextToken());
-//
-//				// now send mail
-//				final String status = email.send();
-//
-//				if (!email.isSentOK())
-//				{
-//					throw new AdempiereException(status);
-//				}
-//
-//				return email;
-//			}
-//		}, false);
-//	}
+	@Override
+	public boolean keepAliveTimeExpired(final I_C_Async_Batch asyncBatch)
+	{
+		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
+		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
+
+		// if null or empty, keep alive for ever
+		if (Check.isEmpty(keepAliveTimeHours, true))
+		{
+			return false;
+		}
+
+		final int keepAlive = Integer.valueOf(keepAliveTimeHours);
+
+		// if 0, keep alive for ever
+		if (keepAlive == 0)
+		{
+			return false;
+		}
+
+		final Timestamp lastUpdated = asyncBatch.getUpdated();
+		final Timestamp today = SystemTime.asTimestamp();
+
+		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
+
+		if (diffHours > keepAlive)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public I_C_Queue_WorkPackage notify(final I_C_Async_Batch asyncBatch, final I_C_Queue_WorkPackage workpackage)
+	{
+		//
+		// retrieves not notified workpackages in order of the seqNo
+		final List<I_C_Queue_WorkPackage_Notified> unNotifiedWPS = asyncBatchDAO.retrieveWorkPackagesNotified(asyncBatch, false);
+
+		//
+		// if there is not package not notified below the current one, do not notify
+		int count = 0;
+		for (final I_C_Queue_WorkPackage_Notified unNotifiedWP : unNotifiedWPS)
+		{
+			// if the given workpackage is the first one and is not notified, notify
+			if (unNotifiedWP.getC_Queue_WorkPackage_ID() == workpackage.getC_Queue_WorkPackage_ID() && count == 0 && !unNotifiedWP.isNotified())
+			{
+				return workpackage;
+			}
+
+			// if the first workpackage is not notified, notify
+			if (!unNotifiedWP.isNotified() && count == 0)
+			{
+				return unNotifiedWP.getC_Queue_WorkPackage();
+			}
+
+			count++;
+		}
+
+		return null;
+
+	}
+
+	@Override
+	public void markWorkpackageNotified(final I_C_Queue_WorkPackage_Notified workpackageNotified)
+	{
+		workpackageNotified.setIsNotified(true);
+		InterfaceWrapperHelper.save(workpackageNotified);
+	}
 }
