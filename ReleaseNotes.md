@@ -20,6 +20,7 @@ Here come the actual release notes:
   * #568 Change on Report "Lieferschein" for one specific Customer
   * #555 Businesspartner Location isEDI shall not be ticked by default
   * #548 keep M_QualityNote and M_AttributeValue in sync
+  * #577 Button Request shows too many results
 
 # metasfresh 4.43.42 (2016-45)
 
