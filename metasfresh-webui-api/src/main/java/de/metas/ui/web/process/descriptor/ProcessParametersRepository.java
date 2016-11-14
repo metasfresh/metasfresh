@@ -143,10 +143,10 @@ public class ProcessParametersRepository implements DocumentsRepository
 	public void save(final Document processParameters)
 	{
 		final int adPInstanceId = processParameters.getDocumentIdAsInt();
-		final ProcessInfoParameter[] piParams = processParameters.getFieldViews()
+		final List<ProcessInfoParameter> piParams = processParameters.getFieldViews()
 				.stream()
 				.map(field -> createProcessInfoParameter(field))
-				.toArray(size -> new ProcessInfoParameter[size]);
+				.collect(GuavaCollectors.toImmutableList());
 		adPInstanceDAO.saveParameterToDB(adPInstanceId, piParams);
 	}
 

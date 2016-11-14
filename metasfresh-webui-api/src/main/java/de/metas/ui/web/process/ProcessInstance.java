@@ -6,6 +6,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
@@ -120,10 +121,11 @@ public class ProcessInstance
 		//
 		// Build and return the execution result
 		{
+			final ProcessExecutionResult processExecutionResult = pi.getResult();
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
-					.setAD_PInstance_ID(pi.getAD_PInstance_ID())
-					.setSummary(pi.getSummary())
-					.setError(pi.isError());
+					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
+					.setSummary(processExecutionResult.getSummary())
+					.setError(processExecutionResult.isError());
 			//
 			// Result: report
 			final byte[] reportData = jrReportViewerProvider.getReportData();
@@ -153,7 +155,7 @@ public class ProcessInstance
 		final String classname = processDescriptor.getProcessClassname();
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_PInstance_ID(adPInstanceId)
+				.setAD_PInstance(adPInstance)
 				.setAD_Process_ID(adProcessId)
 				.setTitle(name)
 				.setClassname(classname)
