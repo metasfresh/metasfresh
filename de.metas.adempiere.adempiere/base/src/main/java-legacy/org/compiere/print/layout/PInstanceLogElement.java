@@ -18,13 +18,13 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.util.Check;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MPInstanceLog;
+import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.print.MPrintTableFormat;
+import org.compiere.process.ProcessInfoLog;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
@@ -39,13 +39,13 @@ public class PInstanceLogElement extends GridElement {
 	{
 		super (calculateRowCount(query, ctx), 4);
 		//
-		int AD_PInstance_ID = query.getAD_PInstance_ID();
-		if (AD_PInstance_ID > 0) {
-			MPInstance instance = new MPInstance(ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
-			List<MPInstanceLog> logs = instance.getLog();
+		final int AD_PInstance_ID = query.getAD_PInstance_ID();
+		if (AD_PInstance_ID > 0)
+		{
+			final List<ProcessInfoLog> logs = Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(AD_PInstance_ID);
 			for (int r = 0; r < logs.size(); r++)
 			{
-				final MPInstanceLog logRecord = logs.get(r);
+				final ProcessInfoLog logRecord = logs.get(r);
 				int col = 0;
 				String msg = logRecord.getP_Msg();
 				if (!Check.isEmpty(msg, true)) {

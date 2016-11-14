@@ -16,24 +16,17 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  *  Process Instance Model
@@ -116,42 +109,6 @@ public class MPInstance extends X_AD_PInstance
 		setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		setIsProcessing (false);
 	}	//	MPInstance
-
-	/**
-	 *	Get Logs
-	 *	@return logs
-	 */
-	public List<MPInstanceLog> getLog()
-	{
-		//	load it from DB
-		final String sql = "SELECT * FROM AD_PInstance_Log WHERE AD_PInstance_ID=? ORDER BY Log_ID";
-		final Object[] sqlParams = new Object[] { getAD_PInstance_ID() };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			pstmt.setInt(1, getAD_PInstance_ID());
-			rs = pstmt.executeQuery();
-			
-			final ImmutableList.Builder<MPInstanceLog> logs = ImmutableList.builder();
-			while (rs.next())
-			{
-				logs.add(new MPInstanceLog(rs));
-			}
-			
-			return logs.build();
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
 
 	/**
 	 * 	Set AD_Process_ID.
