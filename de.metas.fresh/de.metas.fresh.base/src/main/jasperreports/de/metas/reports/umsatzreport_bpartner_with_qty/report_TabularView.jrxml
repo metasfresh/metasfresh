@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-11T16:58:04 -->
+<!-- 2016-11-14T11:11:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -291,7 +291,8 @@
 					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="29">
+			<band height="24">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
 					<reportElement x="777" y="12" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -366,7 +367,8 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="17">
+			<band height="12">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<textField>
 					<reportElement x="37" y="0" width="200" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
@@ -455,7 +457,8 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="17">
+			<band height="12">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null )]]></printWhenExpression>
 				<textField pattern="#,##0">
 					<reportElement x="597" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -536,7 +539,8 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="17" splitType="Stretch">
+		<band height="12" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 1 )]]></printWhenExpression>
 			<textField>
 				<reportElement x="37" y="0" width="200" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>

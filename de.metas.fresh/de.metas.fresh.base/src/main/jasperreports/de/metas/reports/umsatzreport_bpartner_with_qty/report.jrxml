@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-11T16:50:04 -->
+<!-- 2016-11-14T13:28:38 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -66,6 +66,7 @@
 	<field name="param_product" class="java.lang.String"/>
 	<field name="param_product_category" class="java.lang.String"/>
 	<field name="param_attributes" class="java.lang.String"/>
+	<field name="currency" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
@@ -223,7 +224,7 @@
 					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="569" y="105" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="575" y="105" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -232,7 +233,7 @@
 					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="729" y="105" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="735" y="105" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -250,14 +251,16 @@
 					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="479" y="105" width="90" height="12" uuid="7a0538b8-f711-43fc-a9dd-198fbaa38888"/>
+					<reportElement x="479" y="105" width="96" height="12" uuid="7a0538b8-f711-43fc-a9dd-198fbaa38888">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Vergleichsperiode Menge"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="649" y="105" width="80" height="12" uuid="1e782e64-78da-4bd7-bc5c-7f22c549188a">
+					<reportElement x="655" y="105" width="80" height="12" uuid="1e782e64-78da-4bd7-bc5c-7f22c549188a">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -266,7 +269,7 @@
 					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="769" y="105" width="40" height="12" uuid="c0170e27-e860-4c2b-8c90-a6730a65e1a9">
+					<reportElement x="775" y="105" width="40" height="12" uuid="c0170e27-e860-4c2b-8c90-a6730a65e1a9">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -274,18 +277,39 @@
 					</textElement>
 					<textFieldExpression><![CDATA["% Menge"]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement x="229" y="117" width="80" height="12" uuid="8bd0b1c1-0248-4d16-b62e-a256b3039304"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="400" y="117" width="80" height="12" uuid="b779199f-14fd-464c-9924-3fd87812bf5e"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="575" y="117" width="80" height="12" uuid="af67e4a1-6af6-4b14-9a06-653ab66f29d6"/>
+					<textElement textAlignment="Right">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{currency}]]></textFieldExpression>
+				</textField>
 			</band>
 			<band height="32">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
-					<reportElement x="729" y="20" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="735" y="20" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="569" y="20" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="575" y="20" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
@@ -320,21 +344,21 @@
 					<textFieldExpression><![CDATA["Zeitperiode Menge"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="479" y="20" width="90" height="12" uuid="e8c27978-8fcf-4f57-ab35-7a4d6bf65556"/>
+					<reportElement x="479" y="20" width="96" height="12" uuid="e8c27978-8fcf-4f57-ab35-7a4d6bf65556"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="649" y="20" width="80" height="12" uuid="71b8c3db-d946-4a6a-9aad-54c458012a7f"/>
+					<reportElement x="655" y="20" width="80" height="12" uuid="71b8c3db-d946-4a6a-9aad-54c458012a7f"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Differenz Menge"]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement x="769" y="20" width="40" height="12" uuid="c3f62ee0-bac8-4d42-b187-daf68bfce66e"/>
+					<reportElement x="775" y="20" width="40" height="12" uuid="c3f62ee0-bac8-4d42-b187-daf68bfce66e"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
@@ -353,14 +377,14 @@
 					<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement x="569" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="729" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
@@ -388,21 +412,21 @@
 					<textFieldExpression><![CDATA[$F{sameperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement x="479" y="0" width="90" height="12" uuid="6846f333-2e7b-4712-9a39-c7fbceefed9d"/>
+					<reportElement x="479" y="0" width="96" height="12" uuid="6846f333-2e7b-4712-9a39-c7fbceefed9d"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{compperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement x="649" y="0" width="80" height="12" uuid="f31c33e4-9a65-44f0-8c13-b09c52312850"/>
+					<reportElement x="655" y="0" width="80" height="12" uuid="f31c33e4-9a65-44f0-8c13-b09c52312850"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{periodqtydifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="769" y="0" width="40" height="12" uuid="1b567b7a-fb13-4d47-bcad-c135e9011a84"/>
+					<reportElement x="775" y="0" width="40" height="12" uuid="1b567b7a-fb13-4d47-bcad-c135e9011a84"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="true"/>
 					</textElement>
@@ -430,7 +454,7 @@
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean ( $F{pc_name} != null )]]></printWhenExpression>
 				<textField pattern="#,##0">
-					<reportElement x="569" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
@@ -451,7 +475,7 @@
 					<textFieldExpression><![CDATA["Total " + $F{pc_name}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="729" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
@@ -472,21 +496,21 @@
 					<textFieldExpression><![CDATA[$F{sameperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement x="479" y="0" width="90" height="12" uuid="93818581-23b5-44a6-9092-986db436ca41"/>
+					<reportElement x="479" y="0" width="96" height="12" uuid="93818581-23b5-44a6-9092-986db436ca41"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{compperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement x="649" y="0" width="80" height="12" uuid="8e81656b-d54e-4ff8-8df9-de6a5ec693f9"/>
+					<reportElement x="655" y="0" width="80" height="12" uuid="8e81656b-d54e-4ff8-8df9-de6a5ec693f9"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{periodqtydifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="769" y="0" width="40" height="12" uuid="7326aa90-28dd-4f6d-8b52-7813c2870c22"/>
+					<reportElement x="775" y="0" width="40" height="12" uuid="7326aa90-28dd-4f6d-8b52-7813c2870c22"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
@@ -526,14 +550,14 @@
 				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
-				<reportElement x="569" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="575" y="0" width="80" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="729" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="735" y="0" width="40" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
@@ -554,21 +578,21 @@
 				<textFieldExpression><![CDATA[$F{sameperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
-				<reportElement x="479" y="0" width="90" height="12" uuid="d28c8e0b-6bf5-4cdb-8f05-ff2c87329c5d"/>
+				<reportElement x="479" y="0" width="96" height="12" uuid="d28c8e0b-6bf5-4cdb-8f05-ff2c87329c5d"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{compperiodqtysum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
-				<reportElement x="649" y="0" width="80" height="12" uuid="e2e05cb5-bed9-446a-9d48-6413f823b796"/>
+				<reportElement x="655" y="0" width="80" height="12" uuid="e2e05cb5-bed9-446a-9d48-6413f823b796"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{periodqtydifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="769" y="0" width="40" height="12" uuid="a726d3dc-7fe3-40b1-9d49-a92516f94e46"/>
+				<reportElement x="775" y="0" width="40" height="12" uuid="a726d3dc-7fe3-40b1-9d49-a92516f94e46"/>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
