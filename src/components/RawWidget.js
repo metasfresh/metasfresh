@@ -192,7 +192,7 @@ class RawWidget extends Component {
                         <input
                             type="text"
                             className="input-field js-input-field"
-                            value={data[0].value}
+                            value={selectedField}
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}

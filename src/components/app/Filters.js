@@ -175,11 +175,12 @@ class Filters extends Component {
 	}
 
 	renderStandardFilter = (filterData) => {
+        const {filters} = this.props;
 		const {notFrequentListOpen, filterDataItem, notFrequentFilterOpen} = this.state;
 
         //have to check wheter any of standard filters is active
         //once it is rendered
-        const isActive = filterDataItem.filterId && !!getItemsByProperty(filterData, "filterId", filterDataItem.filterId).length;
+        const isActive = filters[0] && !!getItemsByProperty(filterData, "filterId", filters[0].filterId).length;
 
 		return (
 			<div className="filter-wrapper">
@@ -217,24 +218,28 @@ class Filters extends Component {
 	}
 
     renderFrequentFilterWrapper = (filterData) => {
-		const {frequentFilterOpen, filterDataItem, selectedItem, active} = this.state;
+        const {filters} = this.props;
+		const {frequentFilterOpen, selectedItem, active} = this.state;
 		return (
 			<div className="filter-wrapper">
-				{filterData.map((item, index) =>
-					<div className="filter-wrapper" key={index}>
-						<button
-                            onClick={() => this.toggleFrequentFilter(index, item)}
-                            className={
-                                "btn btn-meta-outline-secondary btn-distance btn-sm" +
-                                (filterDataItem.filterId === item.filterId ? " btn-active": "")
-                            }
-                        >
-							<i className="meta-icon-preview" />
-							{ filterDataItem.filterId === item.filterId ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
-						</button>
-						{frequentFilterOpen === index && this.renderFiltersItem(item) }
-					</div>
-				)}
+				{filterData.map((item, index) => {
+                    const isActive = !!getItemsByProperty(filters, "filterId", item.filterId).length;
+                    return (
+                        <div className="filter-wrapper" key={index}>
+    						<button
+                                onClick={() => this.toggleFrequentFilter(index, item)}
+                                className={
+                                    "btn btn-meta-outline-secondary btn-distance btn-sm" +
+                                    (isActive ? " btn-active": "")
+                                }
+                            >
+    							<i className="meta-icon-preview" />
+    							{ isActive ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
+    						</button>
+    						{frequentFilterOpen === index && this.renderFiltersItem(item) }
+    					</div>
+                    )
+                })}
 			</div>
 		)
 	}
@@ -245,7 +250,7 @@ class Filters extends Component {
         let freqFilter = [];
         let notFreqFilter = [];
 
-        filterData.map((item) => {
+        filterData && filterData.map((item) => {
             if(item.frequent){
                 freqFilter.push(item);
             }else{
@@ -255,7 +260,7 @@ class Filters extends Component {
 
 		return (
             <div>
-    			{!!filterData.length &&
+    			{filterData && !!filterData.length &&
     				<div className="filter-wrapper">
     					<span>Filters: </span>
     					<div className="filter-wrapper">

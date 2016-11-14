@@ -5,6 +5,7 @@ module.exports = {
     devtool: 'cheap-module-source-map',
     entry: [
         './src/index.jsx',
+        './favicon.png',
         './index.html'
     ],
     output: {
@@ -26,7 +27,7 @@ module.exports = {
             include: path.join(__dirname, 'src')
         }, {
             test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
-            loader: 'file?name=[path][name].[hash].[ext]'
+            loader: 'file?name=[path][name].[ext]'
         }, {
             test: /\.css$/,
             loaders: ["style-loader","css-loader","postcss-loader"]
