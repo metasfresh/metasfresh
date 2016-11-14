@@ -84,7 +84,6 @@ class RawWidget extends Component {
                             <DatePicker
                                 timeFormat={false}
                                 dateFormat={true}
-                                locale="de"
                                 inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                                 value={selectedField ? new Date(selectedField) : null}
                                 onChange={(date) => handlePatch(widgetField, date)}
@@ -105,7 +104,6 @@ class RawWidget extends Component {
                         <DatePicker
                             timeFormat={true}
                             dateFormat={true}
-                            locale="de"
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={widgetData.value ? new Date(widgetData.value) : null}
                             onChange={(date) => handlePatch(widgetField, date)}
@@ -125,7 +123,6 @@ class RawWidget extends Component {
                         <DatePicker
                             timeFormat={true}
                             dateFormat={false}
-                            locale="de"
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={selectedField ? new Date(selectedField) : null}
                             onChange={(date) => handlePatch(widgetField, date)}

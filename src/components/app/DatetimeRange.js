@@ -39,7 +39,10 @@ class DatetimeRange extends Component {
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
-                locale={{"firstDay": 1}}
+                locale={{
+                    "firstDay": 1,
+                    "monthNames": Moment.months()
+                }}
                 autoApply={true}
                 applyClass="hidden-xl-down"
                 cancelClass="hidden-xl-down"

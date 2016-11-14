@@ -9,6 +9,8 @@ import config from '../config.js';
 import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, Route, browserHistory } from 'react-router';
 
+import Moment from 'moment';
+
 import {
     noConnection
 } from '../actions/WindowActions'
@@ -17,6 +19,8 @@ import {
     addNotification,
     logoutSuccess
 } from '../actions/AppActions';
+
+Moment.locale(navigator.language);
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
