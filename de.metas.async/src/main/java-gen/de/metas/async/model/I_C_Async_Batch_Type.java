@@ -236,6 +236,77 @@ public interface I_C_Async_Batch_Type
     public static final String COLUMNNAME_IsSendMail = "IsSendMail";
 
 	/**
+	 * Set Send Notification.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSendNotification (boolean IsSendNotification);
+
+	/**
+	 * Get Send Notification.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSendNotification();
+
+    /** Column definition for IsSendNotification */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsSendNotification = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "IsSendNotification", null);
+    /** Column name IsSendNotification */
+    public static final String COLUMNNAME_IsSendNotification = "IsSendNotification";
+
+	/**
+	 * Set Keep Alive Time (Hours).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setKeepAliveTimeHours (java.lang.String KeepAliveTimeHours);
+
+	/**
+	 * Get Keep Alive Time (Hours).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getKeepAliveTimeHours();
+
+    /** Column definition for KeepAliveTimeHours */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_KeepAliveTimeHours = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "KeepAliveTimeHours", null);
+    /** Column name KeepAliveTimeHours */
+    public static final String COLUMNNAME_KeepAliveTimeHours = "KeepAliveTimeHours";
+
+	/**
+	 * Set Benachrichtigungs-Art.
+	 * Art der Benachrichtigung
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setNotificationType (java.lang.String NotificationType);
+
+	/**
+	 * Get Benachrichtigungs-Art.
+	 * Art der Benachrichtigung
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getNotificationType();
+
+    /** Column definition for NotificationType */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_NotificationType = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "NotificationType", null);
+    /** Column name NotificationType */
+    public static final String COLUMNNAME_NotificationType = "NotificationType";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

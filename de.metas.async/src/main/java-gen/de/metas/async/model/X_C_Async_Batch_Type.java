@@ -40,6 +40,8 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
         {
 			setC_Async_Batch_Type_ID (0);
 			setInternalName (null);
+			setNotificationType (null);
+// ABP
         } */
     }
 
@@ -151,5 +153,73 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Send Notification.
+		@param IsSendNotification Send Notification	  */
+	@Override
+	public void setIsSendNotification (boolean IsSendNotification)
+	{
+		set_Value (COLUMNNAME_IsSendNotification, Boolean.valueOf(IsSendNotification));
+	}
+
+	/** Get Send Notification.
+		@return Send Notification	  */
+	@Override
+	public boolean isSendNotification () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSendNotification);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Keep Alive Time (Hours).
+		@param KeepAliveTimeHours Keep Alive Time (Hours)	  */
+	@Override
+	public void setKeepAliveTimeHours (java.lang.String KeepAliveTimeHours)
+	{
+		set_Value (COLUMNNAME_KeepAliveTimeHours, KeepAliveTimeHours);
+	}
+
+	/** Get Keep Alive Time (Hours).
+		@return Keep Alive Time (Hours)	  */
+	@Override
+	public java.lang.String getKeepAliveTimeHours () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_KeepAliveTimeHours);
+	}
+
+	/** 
+	 * NotificationType AD_Reference_ID=540643
+	 * Reference name: _NotificationType
+	 */
+	public static final int NOTIFICATIONTYPE_AD_Reference_ID=540643;
+	/** Async Batch Processed = ABP */
+	public static final String NOTIFICATIONTYPE_AsyncBatchProcessed = "ABP";
+	/** Workpackage Processed = WPP */
+	public static final String NOTIFICATIONTYPE_WorkpackageProcessed = "WPP";
+	/** Set Benachrichtigungs-Art.
+		@param NotificationType 
+		Art der Benachrichtigung
+	  */
+	@Override
+	public void setNotificationType (java.lang.String NotificationType)
+	{
+
+		set_Value (COLUMNNAME_NotificationType, NotificationType);
+	}
+
+	/** Get Benachrichtigungs-Art.
+		@return Art der Benachrichtigung
+	  */
+	@Override
+	public java.lang.String getNotificationType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_NotificationType);
 	}
 }

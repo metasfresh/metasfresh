@@ -1,0 +1,26 @@
+-- 09.03.2016 10:01:02 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET DisplayLogic=NULL,Updated=TO_TIMESTAMP('2016-03-09 10:01:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540728
+;
+
+-- 09.03.2016 10:02:33 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsSearchCollapsed='N',Updated=TO_TIMESTAMP('2016-03-09 10:02:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540728
+;
+
+-- 09.03.2016 10:02:53 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2016-03-09 10:02:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554181
+;
+
+-- 09.03.2016 10:02:59 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2016-03-09 10:02:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554189
+;
+
+-- 09.03.2016 10:03:03 OEZ
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2016-03-09 10:03:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554188
+;
+
+
