@@ -178,6 +178,7 @@ node('agent && linux')
 stage('Invoke downstream jobs') 
 {
 	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
+	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too 
 }
 
@@ -210,7 +211,7 @@ node('agent && linux && libc6-i386')
 	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
 
-	stage('Deployement')
+	stage('Deployment')
 	{
 		def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
