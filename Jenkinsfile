@@ -127,7 +127,7 @@ node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
+		(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{	
 			stage('Preparation') // for display purposes
 			{	
@@ -282,3 +282,5 @@ node('agent && linux && libc6-i386')
 	}
 } // timestamps
 
+// clean up the works spave, including the local maven repositories that the withMaven steps created
+step([$class: 'WsCleanup', cleanWhenFailure: false])
