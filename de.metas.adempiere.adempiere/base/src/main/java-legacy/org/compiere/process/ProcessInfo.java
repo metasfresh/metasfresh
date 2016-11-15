@@ -39,6 +39,7 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
@@ -373,7 +374,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return adUserId;
 	}
-	
+
 	public int getAD_Role_ID()
 	{
 		return adRoleId;
@@ -569,11 +570,11 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfo build()
 		{
 			Properties ctx = getCtx();
-			if(createTemporaryCtx)
+			if (createTemporaryCtx)
 			{
 				ctx = createTemporaryCtx(ctx);
 			}
-			
+
 			return new ProcessInfo(ctx, this);
 		}
 
@@ -587,7 +588,7 @@ public final class ProcessInfo implements Serializable
 		{
 			return Env.coalesce(ctx);
 		}
-		
+
 		public ProcessInfoBuilder setCreateTemporaryCtx()
 		{
 			this.createTemporaryCtx = true;
@@ -628,7 +629,7 @@ public final class ProcessInfo implements Serializable
 			//
 			// AD_Role
 			int adRoleId = getAD_Role_ID();
-			if(adRoleId < 0)
+			if (adRoleId < 0)
 			{
 				// Use the first user role, which has access to our organization.
 				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
@@ -943,6 +944,22 @@ public final class ProcessInfo implements Serializable
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			this.recordId = recordId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(final ITableRecordReference recordRef)
+		{
+			if (recordRef == null)
+			{
+				adTableId = null;
+				recordId = null;
+			}
+			else
+			{
+				adTableId = recordRef.getAD_Table_ID();
+				recordId = recordRef.getRecord_ID();
+			}
+
 			return this;
 		}
 
