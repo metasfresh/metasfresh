@@ -127,8 +127,8 @@ node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
-		{	
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
+		{
 			stage('Preparation') // for display purposes
 			{	
 				// use this line in the "real" multibranch pipeline builds
@@ -212,16 +212,6 @@ node('agent && linux && libc6-i386')
 
 	stage('Deployement')
 	{
-		def userInput = input message: 'Deploy artifacts?', 
-		parameters: [
-			string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST'),
-//			string(defaultValue: '', description: 'host to deploy the webui to. Leave empty to deploy it to MF_TARGET_HOST', name: 'MF_webui-api_TARGET_HOST'),
-//			string(defaultValue: '', description: 'host to deploy the swing client to', name: 'MF_swingui_TARGET_HOST'),
-//			string(defaultValue: '', description: '''Host to deploy the SQL migration script to. The scripts will also applied in this host.
-//It doesn\'t need to be the DB, but needs to have java and a local_setting.properties file.
-//Leave empty to deploy the SQL on MF_TARGET_HOST.''', name: 'MF_de.metas.endcustomer.mf15.dist-sql-only_TARGET_HOST')
-		]
-
 		def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
 			def packagingPart=packaging ? ":${packaging}" : ""
@@ -247,7 +237,9 @@ node('agent && linux && libc6-i386')
 		
 			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ./${shellScript}\"" 
 		} 
-				
+	
+		def userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')]
+	
 		node('master')
 		{
 			if(userInput['MF_TARGET_HOST'])
