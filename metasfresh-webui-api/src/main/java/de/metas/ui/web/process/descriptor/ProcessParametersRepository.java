@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
@@ -106,12 +104,12 @@ public class ProcessParametersRepository implements DocumentsRepository
 			throw new IllegalArgumentException("parentDocument is not supported");
 		}
 
-		final Properties ctx = Env.getCtx();
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		adPInstance.setAD_Process_ID(parametersDescriptor.getDocumentTypeId(DocumentType.Process));
 		// TODO set, user, role, table/record
-		adPInstance.setRecord_ID(0);
-		InterfaceWrapperHelper.save(adPInstance);
+		final Properties ctx = Env.getCtx();
+		final int adProcessId = parametersDescriptor.getDocumentTypeId(DocumentType.Process);
+		final int adTableId = 0;
+		final int recordId = 0;
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, adTableId, recordId);
 		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
 
 		//

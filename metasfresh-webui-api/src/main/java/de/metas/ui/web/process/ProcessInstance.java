@@ -2,9 +2,8 @@ package de.metas.ui.web.process;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+import org.adempiere.ad.service.IADPInstanceDAO;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
@@ -142,23 +141,16 @@ public class ProcessInstance
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
 
 		final int adPInstanceId = getAD_PInstance_ID();
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(adPInstance, "Parameter pInstance is not null");
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, adPInstanceId);
 
 		final ProcessDescriptor processDescriptor = getDescriptor();
 		final String adLanguage = Env.getAD_Language(ctx);
 		final String name = processDescriptor.getCaption(adLanguage);
-		final int adProcessId = adPInstance.getAD_Process_ID();
-		final int AD_Table_ID = adPInstance.getAD_Table_ID();
-		final int Record_ID = adPInstance.getRecord_ID();
-		final String classname = processDescriptor.getProcessClassname();
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
+				.setCreateTemporaryCtx()
 				.setAD_PInstance(adPInstance)
-				.setAD_Process_ID(adProcessId)
 				.setTitle(name)
-				.setClassname(classname)
-				.setRecord(AD_Table_ID, Record_ID)
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
