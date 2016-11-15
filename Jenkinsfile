@@ -68,9 +68,6 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
-Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''', 
-			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
@@ -238,8 +235,10 @@ node('agent && linux && libc6-i386')
 			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ./${shellScript}\"" 
 		} 
 	
-		def userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')]
-	
+		def userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+
+		echo "Received userInput=$userInput";
+
 		node('master')
 		{
 			if(userInput['MF_TARGET_HOST'])
@@ -272,7 +271,8 @@ node('agent && linux && libc6-i386')
 			}
 		}
 	}
+	
+	// clean up the workspace, including the local maven repositories that the withMaven steps created
+	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // timestamps
 
-// clean up the works spave, including the local maven repositories that the withMaven steps created
-step([$class: 'WsCleanup', cleanWhenFailure: false])
