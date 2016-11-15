@@ -171,6 +171,9 @@ node('agent && linux')
 			// TODO: notify zapier that the "main" stuff was build
 		} // withMaven
 	} // configFileProvider
+	
+	// clean up the workspace, including the local maven repositories that the withMaven steps created
+	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node			
 
 // invoke external build jobs like webui
@@ -205,6 +208,9 @@ node('agent && linux && libc6-i386')
 			}
 		} // withMaven
 	} // configFileProvider
+	
+	// clean up the workspace, including the local maven repositories that the withMaven steps created
+	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
 
 	stage('Deployement')
@@ -232,7 +238,7 @@ node('agent && linux && libc6-i386')
 		
 		def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
 		
-			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ./${shellScript}\"" 
+			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 		} 
 	
 		def userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
@@ -261,18 +267,17 @@ node('agent && linux && libc6-i386')
 				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
 								
 				def invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
-				invokeRemoteInInstallDir('stop_service.sh');
-				invokeRemoteInInstallDir('sql_remote.sh');
-				invokeRemoteInInstallDir('minor_remote.sh');
-				invokeRemoteInInstallDir('start_service.sh');
+				invokeRemoteInInstallDir('./stop_service.sh');
+				invokeRemoteInInstallDir('./sql_remote.sh');
+				invokeRemoteInInstallDir('./minor_remote.sh');
+				invokeRemoteInInstallDir('./start_service.sh');
 				
 				// also provide the webui-api; TODO actually deploy it
 				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', BUILD_MAVEN_VERSION, 'jar', null, sshTargetHost, sshTargetUser);
 			}
+			// clean up the workspace, including the local maven repositories that the withMaven steps created
+			step([$class: 'WsCleanup', cleanWhenFailure: true])
 		}
 	}
-	
-	// clean up the workspace, including the local maven repositories that the withMaven steps created
-	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // timestamps
 
