@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.empties.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.math.BigDecimal;
@@ -60,6 +59,7 @@ import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
+import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKeyLayout;
 import de.metas.handlingunits.inout.IEmptiesInOutProducer;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -84,8 +84,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 	public static enum BPartnerReturnType
 	{
-		ReturnToVendor(X_M_Transaction.MOVEMENTTYPE_VendorReturns, Color.CYAN),
-		ReturnFromCustomer(X_M_Transaction.MOVEMENTTYPE_CustomerReturns, Color.ORANGE);
+		ReturnToVendor(X_M_Transaction.MOVEMENTTYPE_VendorReturns, Color.CYAN), ReturnFromCustomer(X_M_Transaction.MOVEMENTTYPE_CustomerReturns, Color.ORANGE);
 
 		private final String movementType;
 		private final Color color;
@@ -130,12 +129,21 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	private final I_M_Warehouse _warehouse;
 	private BPartnerReturnType _bpartnerReturnType = null;
 	private KeyNamePair _bpartnerKNP = null;
+
+	/**
+	 * BPartner for which the empties inout will be created
+	 */
 	private I_C_BPartner _bpartner;
+
+	/**
+	 * The BPartner Location for which the empties inout will be created
+	 */
+	private I_C_BPartner_Location _bpLocation = null;
 	private final SimpleTableLookup<I_C_BPartner> bpartnerLookup = new SimpleTableLookup<I_C_BPartner>(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name);
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
-	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId, final int partnerId)
+	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId, final int partnerId, final int bpLocationId)
 	{
 		super(terminalContext);
 
@@ -144,13 +152,22 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		Check.assumeNotNull(_warehouse, "warehouse not null");
 
 		_date = Env.getDate(terminalContext.getCtx()); // use Login date (08306)
-		
-		if(partnerId > 0)
+
+		// load bpartner if selected. This will be the suggested bpartner. It is free for the user to change it if needed
+		if (partnerId > 0)
 		{
 			_bpartner = InterfaceWrapperHelper.create(terminalContext.getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(),  _bpartner.getValue());
+			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(), _bpartner.getValue());
+
+			// In case the bpartner was selected or taken from order/ receipt schedule, the suggested return type will be ReturnToVendor
 			_bpartnerReturnType = BPartnerReturnType.ReturnToVendor;
-			
+
+		}
+
+		// load location if set. It can be also modified by the user
+		if (bpLocationId > 0)
+		{
+			_bpLocation = InterfaceWrapperHelper.create(terminalContext.getCtx(), bpLocationId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
 		}
 
 		{
@@ -461,7 +478,24 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		final I_C_BPartner bpartner = getC_BPartner();
 		final List<I_C_BPartner_Location> shipToLocations = bpartnerDAO.retrieveBPartnerShipToLocations(bpartner);
 		_bpLocationKeyLayout.createAndSetKeysFromBPartnerLocations(shipToLocations);
-		_bpLocationKeyLayout.selectFirstKeyIfAny();
+
+		// in case the location was already taken from the order / receipt schedule
+		// It is safe to consider this location as a shipTo location because all C_BPartner_Locations in order line must be ShipTo
+		if (_bpLocation != null)
+		{
+			final ITerminalContext terminalContext = getTerminalContext();
+
+			// recreate the key the same way as for the key layout
+			final BPartnerLocationKey key = new BPartnerLocationKey(terminalContext, _bpLocation);
+
+			// mark this key as selected.
+			_bpLocationKeyLayout.setSelectedKey(key);
+		}
+		else
+		{
+			// if no location was selected, just select the first one, as before
+			_bpLocationKeyLayout.selectFirstKeyIfAny();
+		}
 	}
 
 	public I_M_Warehouse getM_Warehouse()
