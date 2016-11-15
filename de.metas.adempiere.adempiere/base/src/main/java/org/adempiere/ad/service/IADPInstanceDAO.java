@@ -61,9 +61,13 @@ public interface IADPInstanceDAO extends ISingletonService
 	 */
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(Properties ctx, int adPInstanceId);
 
+	void saveProcessInfoOnly(ProcessInfo pi);
+
+	void lock(Properties ctx, int adPInstanceId);
+
+	void unlockAndSaveResult(Properties ctx, ProcessExecutionResult result);
+
+	void loadResultSummary(ProcessExecutionResult result);
+
 	List<ProcessInfoLog> retrieveProcessInfoLogs(int adPInstanceId);
-
-	void saveProcessInfoLogs(int AD_PInstance_ID, List<ProcessInfoLog> logs);
-
-	void retrieveResultSummary(ProcessExecutionResult result);
 }

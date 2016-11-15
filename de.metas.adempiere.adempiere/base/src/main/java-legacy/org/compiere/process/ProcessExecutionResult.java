@@ -11,13 +11,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -45,6 +49,7 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
@@ -57,15 +62,23 @@ public class ProcessExecutionResult
 	private boolean error = false;
 	private transient boolean errorWasReportedToUser = false;
 
-	private MPrintFormat printFormat;
-
 	/** Process timed out */
 	private boolean timeout = false;
 
 	/** Log Info */
-	private List<ProcessInfoLog> logs = new ArrayList<>();
-
+	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
+
+	//
+	// Reporting
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private transient MPrintFormat printFormat;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private byte[] reportData;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String reportFilename;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String reportContentType;
 
 	/**
 	 * Display process logs to user policy
@@ -82,15 +95,17 @@ public class ProcessExecutionResult
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
-	private Throwable throwable = null;
+	private transient Throwable throwable = null;
 
 	private boolean refreshAllAfterExecution = false;
 
-	private ITableRecordReference recordToSelectAfterExecution = null;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private TableRecordReference recordToSelectAfterExecution = null;
 
 	public ProcessExecutionResult()
 	{
 		super();
+		logs = new ArrayList<>();
 	}
 
 	@Override
@@ -102,6 +117,7 @@ public class ProcessExecutionResult
 				.add("error", error)
 				.add("printFormat", printFormat)
 				.add("logs.size", logs == null ? 0 : logs.size())
+				.add("AD_PInstance_ID", AD_PInstance_ID)
 				.toString();
 	}
 
@@ -125,17 +141,17 @@ public class ProcessExecutionResult
 		this.summary = summary;
 	}
 
-	/**
-	 * Sets summary and error flag.
-	 *
-	 * @param translatedSummary String
-	 * @param error boolean
-	 */
-	public void setSummary(final String translatedSummary, final boolean error)
-	{
-		setSummary(translatedSummary);
-		setError(error);
-	}
+//	/**
+//	 * Sets summary and error flag.
+//	 *
+//	 * @param translatedSummary String
+//	 * @param error boolean
+//	 */
+//	public void setSummary(final String translatedSummary, final boolean error)
+//	{
+//		setSummary(translatedSummary);
+//		setError(error);
+//	}
 
 	public void addSummary(final String additionalSummary)
 	{
@@ -149,14 +165,42 @@ public class ProcessExecutionResult
 		}
 
 	}
-
-	/**
-	 * @param error true if the process execution failed
-	 */
-	public void setError(final boolean error)
+	
+	public void markAsSuccess(final String summary)
 	{
-		this.error = error;
+		this.summary = summary;
+		this.throwable = null;
+		this.error = false;
 	}
+
+	public void markAsError(final Throwable throwable)
+	{
+		Check.assumeNotNull(throwable, "Parameter throwable is not null");
+		final String summary = throwable.getLocalizedMessage();
+		markAsError(summary, throwable);
+	}
+
+	public void markAsError(final String errorMsg)
+	{
+		final Throwable throwable = null;
+		markAsError(errorMsg, throwable);
+	}
+
+	public void markAsError(final String summary, final Throwable throwable)
+	{
+		this.summary = summary;
+		this.throwable = throwable;
+		this.error = true;
+	}
+
+
+//	/**
+//	 * @param error true if the process execution failed
+//	 */
+//	public void setError(final boolean error)
+//	{
+//		this.error = error;
+//	}
 
 	/**
 	 * @return true if the process execution failed
@@ -166,10 +210,10 @@ public class ProcessExecutionResult
 		return error;
 	}
 
-	public void setThrowable(final Throwable throwable)
-	{
-		this.throwable = throwable;
-	}
+//	public void setThrowable(final Throwable throwable)
+//	{
+//		this.throwable = throwable;
+//	}
 
 	public void setThrowableIfNotSet(final Throwable throwable)
 	{
@@ -227,6 +271,7 @@ public class ProcessExecutionResult
 	/**
 	 * @return true if the process logs (if any) shall be displayed to user
 	 */
+	@JsonIgnore
 	public final boolean isShowProcessLogs()
 	{
 		switch (showProcessLogsPolicy)
@@ -260,7 +305,7 @@ public class ProcessExecutionResult
 	/**
 	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
 	 */
-	public ITableRecordReference getRecordToSelectAfterExecution()
+	public TableRecordReference getRecordToSelectAfterExecution()
 	{
 		return recordToSelectAfterExecution;
 	}
@@ -270,7 +315,7 @@ public class ProcessExecutionResult
 	 *
 	 * @param recordToSelectAfterExecution
 	 */
-	public void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
+	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
 	{
 		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
 	}
@@ -283,6 +328,28 @@ public class ProcessExecutionResult
 	public MPrintFormat getPrintFormat()
 	{
 		return printFormat;
+	}
+
+	public void setReportData(final byte[] data, final String filename, final String contentType)
+	{
+		reportData = data;
+		reportFilename = filename;
+		reportContentType = contentType;
+	}
+
+	public byte[] getReportData()
+	{
+		return reportData;
+	}
+
+	public String getReportFilename()
+	{
+		return reportFilename;
+	}
+
+	public String getReportContentType()
+	{
+		return reportContentType;
 	}
 
 	/**
@@ -391,7 +458,7 @@ public class ProcessExecutionResult
 	 *
 	 * @return current logs
 	 */
-	/* package */List<ProcessInfoLog> getCurrentLogs()
+	public List<ProcessInfoLog> getCurrentLogs()
 	{
 		// NOTE: don't load them!
 		final List<ProcessInfoLog> logs = this.logs;
@@ -474,5 +541,31 @@ public class ProcessExecutionResult
 		{
 			throw new AdempiereException(getSummary());
 		}
+	}
+
+	public void updateFrom(final ProcessExecutionResult otherResult)
+	{
+		summary = otherResult.getSummary();
+		error = otherResult.isError();
+		throwable = otherResult.getThrowable();
+
+		errorWasReportedToUser = otherResult.isErrorWasReportedToUser();
+
+		timeout = otherResult.isTimeout();
+
+		// Logs
+		markLogsAsStale(); // IMPORTANT: not copying them because they are transient
+		showProcessLogsPolicy = otherResult.showProcessLogsPolicy;
+
+		//
+		// Reporting
+		printFormat = otherResult.printFormat;
+		reportData = otherResult.reportData;
+		reportFilename = otherResult.reportFilename;
+		reportContentType = otherResult.reportContentType;
+
+		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
+
+		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 	}
 }

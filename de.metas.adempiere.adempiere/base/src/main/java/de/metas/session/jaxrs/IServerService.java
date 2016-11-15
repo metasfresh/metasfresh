@@ -8,6 +8,7 @@ import javax.ws.rs.PathParam;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
+import org.compiere.process.ProcessExecutionResult;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
@@ -60,12 +61,12 @@ public interface IServerService extends ISingletonService
 	/**
 	 * Execute process
 	 *
-	 * @param ctx context
 	 * @param adPInstanceId
+	 * @return process execution result
 	 */
 	@POST
 	@Path("process")
-	public void process(Properties ctx, int adPInstanceId);
+	public ProcessExecutionResult process(int adPInstanceId);
 
 	/**
 	 * Send the email

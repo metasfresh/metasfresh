@@ -34,15 +34,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MRule;
-import org.compiere.print.JRReportViewerProvider;
-import org.compiere.print.JRReportViewerProviderAware;
 import org.compiere.print.ReportCtl;
 import org.compiere.process.ProcessCall;
 import org.compiere.process.ProcessExecutionResult;
@@ -50,6 +45,7 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
 import org.compiere.wf.MWorkflow;
@@ -59,6 +55,7 @@ import com.google.common.base.Stopwatch;
 
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.session.jaxrs.IServerService;
 
 /**
  * Process Interface Controller.
@@ -102,8 +99,6 @@ public final class ProcessCtl
 		return processId;
 	}
 
-//	private static final String JASPER_STARTER_CLASS = "org.compiere.report.ReportStarter";
-
 	//
 	// Thread locals
 	private static final ThreadLocal<Integer> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
@@ -113,21 +108,19 @@ public final class ProcessCtl
 	private static final transient Logger logger = LogManager.getLogger(ProcessCtl.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private final ASyncProcess parent;
 	private final ProcessInfo pi;
-	private final JRReportViewerProvider jrReportViewerProvider;
 	private final boolean onErrorThrowException;
 
 	private Thread m_thread; // metas
-
 
 	private ProcessCtl(final Builder builder)
 	{
 		super();
 		pi = builder.getProcessInfo();
 		parent = builder.getASyncParent();
-		jrReportViewerProvider = builder.getJRReportViewerProvider();
 		onErrorThrowException = builder.onErrorThrowException;
 	}
 
@@ -175,40 +168,66 @@ public final class ProcessCtl
 	 */
 	private void executeSync()
 	{
-		logger.debug("running: {}", pi);
+		if (pi.isServerProcess() && Ini.isClient())
+		{
+			executeSync_Remote();
+		}
+		else
+		{
+			executeSync_Local();
+		}
+	}
 
-		//
-		final Integer previousProcessId = s_currentProcess_ID.get();
-		final Integer previousOrgId = s_currentOrg_ID.get();
-		s_currentProcess_ID.set(pi.getAD_Process_ID());
-		s_currentOrg_ID.set(pi.getAD_Org_ID());
+	private void executeSync_Remote()
+	{
+		// Make sure process info is persisted
+		adPInstanceDAO.saveProcessInfoOnly(pi);
+
+		try
+		{
+			lock(false);
+
+			final ProcessExecutionResult result = pi.getResult();
+
+			final ProcessExecutionResult remoteResult = Services.get(IServerService.class).process(pi.getAD_PInstance_ID());
+			result.updateFrom(remoteResult);
+		}
+		catch (Exception e)
+		{
+			final Throwable cause = AdempiereException.extractCause(e);
+			logger.warn("Got error", cause);
+
+			final ProcessExecutionResult result = pi.getResult();
+			result.markAsError(cause);
+			result.markLogsAsStale();
+		}
+		finally
+		{
+			unlock(false);
+		}
+
+	}
+
+	private void executeSync_Local()
+	{
+		logger.debug("running: {}", pi);
 
 		//
 		final TrxRunnableAdapter processExecutor = new TrxRunnableAdapter()
 		{
-			private Stopwatch duration = null;
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				// Lock
-				lock();
-
-				duration = Stopwatch.createStarted();
-				
 				//
 				// Execute the process (workflow/java/db process)
-				if(pi.getAD_Workflow_ID() > 0)
+				if (pi.getAD_Workflow_ID() > 0)
 				{
 					startWorkflow();
 					return;
 				}
 				else if (!Check.isEmpty(pi.getClassName(), true))
 				{
-					if (!startJavaOrScriptProcess())
-					{
-						return;
-					}
+					startJavaOrScriptProcess();
 				}
 				else if (pi.getDBProcedureName().isPresent())
 				{
@@ -228,63 +247,88 @@ public final class ProcessCtl
 				{
 					ReportCtl.builder()
 							.setProcessInfo(pi)
-							.setJRReportViewerProvider(jrReportViewerProvider)
 							.start();
 					pi.getResult().setSummary("Report");
 				}
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e)
 			{
 				logger.warn("Got error", e);
 				final ProcessExecutionResult result = pi.getResult();
-				result.setThrowable(e);
-				result.setSummary(e.getLocalizedMessage());
-				result.setError(true);
+				result.markAsError(e);
 				return ROLLBACK;
-			}
-
-			@Override
-			public void doFinally()
-			{
-				s_currentOrg_ID.set(previousOrgId);
-				s_currentProcess_ID.set(previousProcessId);
-
-				//
-				// Update statistics
-				if(duration != null)
-				{
-					duration.stop();
-					Services.get(IADProcessDAO.class).addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS));
-				}
-
-				unlock();
 			}
 		};
 
-		if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
+		final Integer previousProcessId = s_currentProcess_ID.get();
+		final Integer previousOrgId = s_currentOrg_ID.get();
+		Stopwatch duration = null;
+		try
 		{
-			trxManager.runOutOfTransaction(processExecutor);
+			s_currentProcess_ID.set(pi.getAD_Process_ID());
+			s_currentOrg_ID.set(pi.getAD_Org_ID());
+
+			// Lock
+			lock(true);
+
+			duration = Stopwatch.createStarted();
+
+			//
+			// Execute
+			if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
+			{
+				trxManager.runOutOfTransaction(processExecutor);
+			}
+			else
+			{
+				trxManager.run(ITrx.TRXNAME_ThreadInherited, processExecutor);
+			}
 		}
-		else
+		finally
 		{
-			trxManager.run(ITrx.TRXNAME_ThreadInherited, processExecutor);
+			//
+			// Update statistics
+			if (duration != null)
+			{
+				duration.stop();
+				IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+				adProcessDAO.addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
+			}
+
+			// Unlock
+			unlock(true); // never throws exception
+
+			// Clear thread local AD_Org_ID/AD_Process_ID/etc
+			s_currentOrg_ID.set(previousOrgId);
+			s_currentProcess_ID.set(previousProcessId);
 		}
-		
+
 		//
 		// Propagate the error if asked
-		if(onErrorThrowException)
+		if (onErrorThrowException)
 		{
 			pi.getResult().propagateErrorIfAny();
 		}
 	}
 
 	/**
-	 * Lock UI & show Waiting
+	 * Lock the process instance and notify the parent
+	 * 
+	 * NOTE: it's OK to throw exceptions
 	 */
-	private void lock()
+	private void lock(final boolean runningLocally)
 	{
+		//
+		// Database: lock the AD_PInstance
+		if (runningLocally)
+		{
+			adPInstanceDAO.lock(pi.getCtx(), pi.getAD_PInstance_ID());
+		}
+
+		//
+		// Notify parent
 		if (parent != null)
 		{
 			parent.lockUI(pi);
@@ -292,28 +336,56 @@ public final class ProcessCtl
 	}
 
 	/**
-	 * Unlock UI & dispose Waiting.
-	 * Called from run()
+	 * Unlock the process instance and notify the parent.
+	 * 
+	 * NOTE: it's very important this method to never throw exception.
 	 */
-	private void unlock()
+	private void unlock(final boolean runningLocally)
 	{
+		final Properties ctx = pi.getCtx();
 		final ProcessExecutionResult result = pi.getResult();
-		
+
 		//
 		// Translate process summary if needed
-		final String summary = result.getSummary();
-		if (summary != null && summary.indexOf('@') >= 0)
+		if (runningLocally)
 		{
-			result.setSummary(msgBL.parseTranslation(pi.getCtx(), summary));
+			final String summary = result.getSummary();
+			if (summary != null && summary.indexOf('@') >= 0)
+			{
+				result.setSummary(msgBL.parseTranslation(ctx, summary));
+			}
 		}
 
-		if (parent != null)
+		//
+		// Notify parent
+		try
 		{
-			parent.unlockUI(pi);
+			if (parent != null)
+			{
+				parent.unlockUI(pi);
+			}
 		}
-	}   // unlock
+		catch (Exception ex)
+		{
+			logger.warn("Failed notifying the parent {} to unlock {}", parent, pi, ex);
+		}
 
-	/**************************************************************************
+		//
+		// Database: unlock and save the result
+		if (runningLocally)
+		{
+			try
+			{
+				adPInstanceDAO.unlockAndSaveResult(ctx, result);
+			}
+			catch (Throwable e)
+			{
+				logger.error("Failed unlocking for {}", result, e);
+			}
+		}
+	}
+
+	/**
 	 * Start Workflow.
 	 *
 	 * @param AD_Workflow_ID workflow
@@ -345,18 +417,17 @@ public final class ProcessCtl
 	 * @return true if success
 	 * @throws Exception
 	 */
-	private boolean startJavaOrScriptProcess() throws Exception
+	private void startJavaOrScriptProcess() throws Exception
 	{
 		logger.debug("startProcess: {}", pi);
 
 		if (pi.getClassName().toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
 		{
 			startScriptProcess();
-			return true;
 		}
 		else
 		{
-			return startJavaProcess();
+			startJavaProcess();
 		}
 	}
 
@@ -439,7 +510,7 @@ public final class ProcessCtl
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private final boolean startJavaProcess() throws Exception
+	private final void startJavaProcess() throws Exception
 	{
 		final String className = pi.getClassName();
 
@@ -449,17 +520,9 @@ public final class ProcessCtl
 			classLoader = getClass().getClassLoader();
 
 		final ProcessCall process = (ProcessCall)classLoader.loadClass(className).newInstance();
-		
-		if(process instanceof JRReportViewerProviderAware)
-		{
-			final JRReportViewerProviderAware jrReportViewerProviderAware = (JRReportViewerProviderAware)process;
-			jrReportViewerProviderAware.setJRReportViewerProvider(jrReportViewerProvider);
-		}
 
-		final Properties ctx = pi.getCtx();
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		final boolean success = process.startProcess(ctx, pi, trx);
-		return success;
+		process.startProcess(pi, trx);
 	}
 
 	/**
@@ -478,9 +541,9 @@ public final class ProcessCtl
 		{
 			DB.setParameters(cstmt, sqlParams);
 			cstmt.executeUpdate();
-			
+
 			final ProcessExecutionResult result = pi.getResult();
-			Services.get(IADPInstanceDAO.class).retrieveResultSummary(result);
+			adPInstanceDAO.loadResultSummary(result);
 			result.markLogsAsStale();
 		}
 		catch (Exception e)
@@ -508,7 +571,7 @@ public final class ProcessCtl
 			}
 		}
 	}
-	
+
 	public ProcessExecutionResult getResult()
 	{
 		return pi.getResult();
@@ -520,7 +583,6 @@ public final class ProcessCtl
 
 		private ProcessInfo pi;
 		private ASyncProcess asyncParent = null;
-		private JRReportViewerProvider jrReportViewerProvider;
 		private boolean onErrorThrowException = false;
 		private Consumer<ProcessInfo> beforeCallback = null;
 
@@ -553,11 +615,9 @@ public final class ProcessCtl
 			catch (final Throwable e)
 			{
 				final ProcessExecutionResult result = pi.getResult();
-				result.setSummary(e.getLocalizedMessage());
-				result.setThrowable(e);
-				result.setError(true);
+				result.markAsError(e);
 
-				if(asyncParent != null)
+				if (asyncParent != null)
 				{
 					asyncParent.onProcessInitError(pi);
 				}
@@ -574,24 +634,19 @@ public final class ProcessCtl
 		{
 			//
 			// Create a new AD_PInstance_ID if there is none (task 05978)
-			if (pi.getAD_PInstance_ID() <= 0)
-			{
-				final I_AD_PInstance adPInstance = new MPInstance(pi.getCtx(), pi);
-				InterfaceWrapperHelper.save(adPInstance);
-				pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
-			}
+			adPInstanceDAO.saveProcessInfoOnly(pi);
 
 			//
 			// Save Parameters to AD_PInstance_Para, if needed
 			final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
-			if(parameters != null && !parameters.isEmpty())
+			if (parameters != null && !parameters.isEmpty())
 			{
 				adPInstanceDAO.saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
 			}
 
 			//
 			// Execute before call callback
-			if(beforeCallback != null)
+			if (beforeCallback != null)
 			{
 				beforeCallback.accept(pi);
 			}
@@ -618,27 +673,16 @@ public final class ProcessCtl
 		{
 			return asyncParent;
 		}
-		
-		public Builder setJRReportViewerProvider(final JRReportViewerProvider jrReportViewerProvider)
-		{
-			this.jrReportViewerProvider = jrReportViewerProvider;
-			return this;
-		}
-		
-		private JRReportViewerProvider getJRReportViewerProvider()
-		{
-			return jrReportViewerProvider;
-		}
-		
+
 		/**
-		 * Advice the executor to propagate the error in case the execution failed. 
+		 * Advice the executor to propagate the error in case the execution failed.
 		 */
 		public Builder onErrorThrowException()
 		{
 			this.onErrorThrowException = true;
 			return this;
 		}
-		
+
 		public Builder callBefore(final Consumer<ProcessInfo> beforeCallback)
 		{
 			this.beforeCallback = beforeCallback;

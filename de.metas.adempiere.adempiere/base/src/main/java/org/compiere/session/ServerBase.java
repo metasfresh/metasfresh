@@ -22,21 +22,27 @@ package org.compiere.session;
  * #L%
  */
 
-
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.MTask;
+import org.compiere.process.ProcessExecutionResult;
+import org.compiere.process.ProcessInfo;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessCtl;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -52,24 +58,17 @@ public class ServerBase implements IServerService
 	/** Logger */
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	//
-	private static int s_no = 0;
+	private static final AtomicInteger s_no = new AtomicInteger(0);
 	private final int m_no;
 	//
-	private final int m_windowCount = 0;
-	private int m_postCount = 0;
-	private int m_processCount = 0;
-	private int m_workflowCount = 0;
-	private final int m_paymentCount = 0;
-	private final int m_nextSeqCount = 0;
-	private final int m_stmt_rowSetCount = 0;
-	private final int m_stmt_updateCount = 0;
-	private int m_cacheResetCount = 0;
-	private final int m_updateLOBCount = 0;
+	private AtomicInteger m_postCount = new AtomicInteger(0);
+	private AtomicInteger m_processCount = new AtomicInteger(0);
+	private AtomicInteger m_cacheResetCount = new AtomicInteger(0);
 
 	public ServerBase()
 	{
 		super();
-		m_no = ++s_no;
+		m_no = s_no.incrementAndGet();
 	}
 
 	/**
@@ -89,9 +88,8 @@ public class ServerBase implements IServerService
 			final int AD_Table_ID, final int Record_ID,
 			final boolean force)
 	{
-		log.info("[" + m_no + "] Table=" + AD_Table_ID + ", Record=" + Record_ID);
-
-		m_postCount++;
+		log.info("[{}] postImmediate: Table={}, Record_ID={}", m_no, AD_Table_ID, Record_ID);
+		m_postCount.incrementAndGet();
 
 		final String trxName = ITrx.TRXNAME_None;
 
@@ -118,14 +116,29 @@ public class ServerBase implements IServerService
 	 *
 	 * @param ctx Context
 	 * @param pi Process Info
+	 * @return
 	 * @return resulting Process Info
 	 */
 	@Override
-	public void process(final Properties ctx, final int adPInstanceId)
+	public ProcessExecutionResult process(final int adPInstanceId)
 	{
-		// TODO: implement remote process
-		m_processCount++;
-		throw new UnsupportedOperationException();
+		m_processCount.incrementAndGet();
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setAD_PInstance_ID(adPInstanceId)
+				.setCreateTemporaryCtx()
+				.build();
+
+		final Properties processCtx = processInfo.getCtx(); 
+		try (final IAutoCloseable contextRestorer = Env.switchContext(processCtx))
+		{
+			final ProcessExecutionResult result = ProcessCtl.builder()
+					.setProcessInfo(processInfo)
+					.executeSync()
+					.getResult();
+
+			return result;
+		}
 	}	// process
 
 	@Override
@@ -157,8 +170,9 @@ public class ServerBase implements IServerService
 	@Override
 	public int cacheReset(final String tableName, final int Record_ID)
 	{
-		log.info(tableName + " - " + Record_ID);
-		m_cacheResetCount++;
+		log.info("[{}] cacheReset: Table={}, Record_ID={}", m_no, tableName, Record_ID);
+		m_cacheResetCount.incrementAndGet();
+
 		return CacheMgt.get().reset(tableName, Record_ID);
 	}	// cacheReset
 
@@ -170,21 +184,12 @@ public class ServerBase implements IServerService
 	@Override
 	public String getStatus()
 	{
-		final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-		sb.append("[")
-				.append(m_no)
-				.append("-Window=").append(m_windowCount)
-				.append(",Post=").append(m_postCount)
-				.append(",Process=").append(m_processCount)
-				.append(",NextSeq=").append(m_nextSeqCount)
-				.append(",Workflow=").append(m_workflowCount)
-				.append(",Payment=").append(m_paymentCount)
-				.append(",RowSet=").append(m_stmt_rowSetCount)
-				.append(",Update=").append(m_stmt_updateCount)
-				.append(",CacheReset=").append(m_cacheResetCount)
-				.append(",UpdateLob=").append(m_updateLOBCount)
-				.append("]");
-		return sb.toString();
+		return MoreObjects.toStringHelper(this)
+				.add("instanceNo", m_no)
+				.add("Post", m_postCount)
+				.add("Process", m_processCount)
+				.add("CacheReset", m_cacheResetCount)
+				.toString();
 	}	// getStatus
 
 	/**

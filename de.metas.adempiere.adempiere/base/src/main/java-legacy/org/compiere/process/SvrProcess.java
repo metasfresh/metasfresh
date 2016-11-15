@@ -27,13 +27,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
@@ -41,10 +39,8 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.MPInstance;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
 import org.compiere.util.DB;
@@ -144,7 +140,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * @see org.compiere.process.ProcessCall#startProcess(Properties, ProcessInfo, ITrx)
 	 */
 	@Override
-	public synchronized final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
+	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assumeNotNull(pi, "ProcessInfo not null");
 
@@ -152,7 +148,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		// FRESH-314: store #AD_PInstance_ID in a copied context (shall only live as long as this process does).
 		// We might want to access this information (currently in AD_ChangeLog)
 		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
-		m_ctx = Env.copyCtx(Env.coalesce(ctx));
+		m_ctx = Env.copyCtx(pi.getCtx());
 
 		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
 
@@ -236,7 +232,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		postProcess(!getResult().isError());
 
 		// NOTE: we shall check again the result because it might be changed by postProcess()
-		return !getResult().isError();
+		getResult().propagateErrorIfAny();
 	}   // startProcess
 
 	/**
@@ -356,8 +352,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					{
 						log.error("Commit failed.", e);
 						final ProcessExecutionResult result = getResult();
-						result.addSummary("Commit Failed.");
-						result.setError(true);
+						result.markAsError("Commit Failed.");
 						// Set the ProcessInfo throwable only it is not already set.
 						// Because if it's set, that's the main error and not this one.
 						result.setThrowableIfNotSet(e);
@@ -386,9 +381,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			msgTrl = msgBL.parseTranslation(getCtx(), msg);
 		}
 
-		final boolean error = false;
-		getResult().setSummary(msgTrl, error);
-
+		getResult().markAsSuccess(msgTrl);
 	}
 
 	private final void setProcessResultError(final Throwable e)
@@ -417,18 +410,16 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		// Update ProcessInfo's result
 		final ProcessExecutionResult result = getResult();
 		final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
-		result.setSummary(msgTrl, error);
-		if (error)
+		
+		if(!error)
 		{
-			if (e.getCause() != null)
-			{
-				log.error(msg, e.getCause());
-			}
-			else
-			{
-				log.error(msg, e);
-			}
-			result.setThrowable(e); // only if it's really an error
+			result.markAsSuccess(msgTrl);
+		}
+		else
+		{
+			final Throwable cause = AdempiereException.extractCause(e);
+			result.markAsError(msgTrl, cause);
+			log.error(msg, cause);
 		}
 	}
 
@@ -770,21 +761,6 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	private final void lock()
 	{
-		log.debug("Locking AD_PInstance_ID={}", m_pi.getAD_PInstance_ID());
-		try
-		{
-			Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_PInstance.class, getCtx(), ITrx.TRXNAME_None) // outside trx
-					.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, m_pi.getAD_PInstance_ID())
-					.create()
-					.updateDirectly()
-					.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
-					.execute();
-		}
-		catch (Exception e)
-		{
-			log.error("Lock failed", e);
-		}
 	}   // lock
 
 	/**
@@ -792,44 +768,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	private final void unlock()
 	{
-		try
-		{
-			final I_AD_PInstance adPInstance = retrievePInstance();
-			if (adPInstance == null || adPInstance.getAD_PInstance_ID() <= 0)
-			{
-				throw new AdempiereException("Did not find PInstance " + m_pi.getAD_PInstance_ID());
-			}
-			adPInstance.setWhereClause(m_pi.getWhereClause()); // make sure the WhereClause is set
-			adPInstance.setIsProcessing(false);
-			
-			final ProcessExecutionResult result = getResult();
-			adPInstance.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
-			adPInstance.setErrorMsg(result.getSummary());
-			InterfaceWrapperHelper.save(adPInstance);
-			log.debug("Unlocked: {}", adPInstance);
-			
-			Services.get(IADPInstanceDAO.class).saveProcessInfoLogs(adPInstance.getAD_PInstance_ID(), result.getCurrentLogs());
-		}
-		catch (Throwable e)
-		{
-			// NOTE: it's very important this method to never throw exception.
-
-			log.error("Unlock failed", e);
-		}
 	}   // unlock
-
-	/**
-	 * @return {@link I_AD_PInstance} (out of transaction) or null if not found
-	 */
-	private final I_AD_PInstance retrievePInstance()
-	{
-		final int adPInstanceId = m_pi.getAD_PInstance_ID();
-		if (adPInstanceId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(getCtx(), adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
-	}
 
 	/**
 	 * Return the main transaction of the current process.
@@ -838,8 +777,11 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 */
 	public final String get_TrxName()
 	{
-		if (m_trx != null)
-			return m_trx.getTrxName();
+		final ITrx trx = m_trx;
+		if (trx != null)
+		{
+			return trx.getTrxName();
+		}
 		return ITrx.TRXNAME_None;
 	}	// get_TrxName
 
@@ -876,7 +818,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 *
 	 * @param recordToSelectAfterExecution
 	 */
-	protected final void setRecordToSelectAfterExecution(final ITableRecordReference recordToSelectAfterExecution)
+	protected final void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
 	{
 		getResult().setRecordToSelectAfterExecution(recordToSelectAfterExecution);
 	}

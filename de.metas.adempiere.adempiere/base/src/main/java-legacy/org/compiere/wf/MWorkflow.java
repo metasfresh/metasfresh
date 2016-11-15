@@ -689,11 +689,8 @@ public class MWorkflow extends X_AD_Workflow
 			public boolean doCatch(Throwable ex) throws Throwable
 			{
 				log.error("Failed starting workflow {} for {}", MWorkflow.this, pi, ex);
-				
 				final ProcessExecutionResult result = pi.getResult();
-				result.setThrowable(ex); // 03152
-				result.setSummary(ex.getMessage(), true);
-				
+				result.markAsError(ex);
 				return ROLLBACK;
 			}
 		});
@@ -735,8 +732,7 @@ public class MWorkflow extends X_AD_Workflow
 			{
 				log.error("startWait: interrupted", e);
 				final ProcessExecutionResult result = pi.getResult();
-				result.setThrowable(e); // 03152
-				result.setSummary("Interrupted");
+				result.markAsError("Interrupted", e);
 				return process;
 			}
 			Thread.yield();
@@ -747,7 +743,14 @@ public class MWorkflow extends X_AD_Workflow
 			summary = state.toString();
 		
 		final ProcessExecutionResult result = pi.getResult();
-		result.setSummary(summary, state.isTerminated() || state.isAborted());
+		if (state.isTerminated() || state.isAborted())
+		{
+			result.markAsError(summary);
+		}
+		else
+		{
+			result.markAsSuccess(summary);
+		}
 		log.debug("startWait done: {}", summary);
 		return process;
 	}	//	startWait

@@ -25,7 +25,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
 /**
@@ -82,12 +81,6 @@ public class MPInstance extends X_AD_PInstance
 		super(ctx, rs, ITrx.TRXNAME_None);
 	}	//	MPInstance
 
-	public MPInstance (final Properties ctx, ProcessInfo pi)
-	{
-		this(ctx, pi.getAD_Process_ID(), pi.getTable_ID(), pi.getRecord_ID());
-		setWhereClause(pi.getWhereClause());
-	}
-
 	/**
 	 * New Constructor
 	 *
@@ -119,13 +112,16 @@ public class MPInstance extends X_AD_PInstance
 	@Override
 	public void setAD_Process_ID (int AD_Process_ID)
 	{
-		final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
-		if (role.getAD_Role_ID() > 0)
+		if(getAD_Process_ID() != AD_Process_ID)
 		{
-			final Boolean access = role.getProcessAccess(AD_Process_ID);
-			if (access == null || !access.booleanValue())
+			final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
+			if (role.getAD_Role_ID() > 0)
 			{
-				throw new AdempiereException("Cannot access Process " + AD_Process_ID + " with role: " + role.getName());
+				final Boolean access = role.getProcessAccess(AD_Process_ID);
+				if (access == null || !access.booleanValue())
+				{
+					throw new AdempiereException("Cannot access Process " + AD_Process_ID + " with role: " + role.getName());
+				}
 			}
 		}
 		super.setAD_Process_ID (AD_Process_ID);
@@ -173,4 +169,10 @@ public class MPInstance extends X_AD_PInstance
 	{
 		return getResult() == RESULT_OK;
 	}	//	isOK
+	
+	@Override
+	protected boolean beforeSave(boolean newRecord)
+	{
+		return super.beforeSave(newRecord);
+	}
 }

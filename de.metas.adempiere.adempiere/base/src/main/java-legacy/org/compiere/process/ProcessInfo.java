@@ -18,6 +18,7 @@ package org.compiere.process;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,14 +27,21 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -43,6 +51,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Process;
+import de.metas.adempiere.report.jasper.OutputType;
 
 /**
  * Process Information (Value Object)
@@ -60,25 +69,26 @@ public final class ProcessInfo implements Serializable
 		return new ProcessInfoBuilder();
 	}
 
-	private ProcessInfo(final ProcessInfoBuilder builder)
+	private ProcessInfo(final Properties ctx, final ProcessInfoBuilder builder)
 	{
 		super();
-		ctx = builder.getCtx();
+		this.ctx = ctx;
 
 		adProcessId = builder.getAD_Process_ID();
 		adPInstanceId = builder.getAD_PInstance_ID();
-		
+
 		adClientId = builder.getAD_Client_ID();
 		adOrgId = builder.getAD_Org_ID();
 		adUserId = builder.getAD_User_ID();
-		
+		adRoleId = builder.getAD_Role_ID();
+
 		title = builder.getTitle();
-		
+
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
-		
+
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
 		whereClause = builder.getWhereClause();
@@ -90,17 +100,18 @@ public final class ProcessInfo implements Serializable
 		reportingProcess = builder.isReportingProcess();
 		reportLanguage = builder.getReportLanguage();
 		reportTemplate = builder.getReportTemplate();
+		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
 		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
 		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
-		
+
 		result = new ProcessExecutionResult();
 		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
 	private final Properties ctx;
-	
+
 	/** Title of the Process/Report */
 	private final String title;
 	/** AD_Process_ID */
@@ -113,6 +124,7 @@ public final class ProcessInfo implements Serializable
 	private final int adClientId;
 	private final int adOrgId;
 	private final int adUserId;
+	private final int adRoleId;
 	private final int windowNo;
 	private final int tabNo;
 	/** Class Name */
@@ -127,7 +139,6 @@ public final class ProcessInfo implements Serializable
 	/** Batch */
 	private final boolean batch = false;
 
-
 	/** Parameters */
 	private List<ProcessInfoParameter> parameters = null; // lazy loaded
 
@@ -137,6 +148,7 @@ public final class ProcessInfo implements Serializable
 	private final boolean reportingProcess;
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
+	private final OutputType jrDesiredOutputType;
 
 	/** Process result */
 	private final ProcessExecutionResult result;
@@ -164,8 +176,10 @@ public final class ProcessInfo implements Serializable
 	{
 		return Env.coalesce(ctx);
 	}
-	
-	/** @return execution result */
+
+	/**
+	 * @return execution result
+	 */
 	public ProcessExecutionResult getResult()
 	{
 		return result;
@@ -226,7 +240,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return dbProcedureName;
 	}
-	
+
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
@@ -359,6 +373,11 @@ public final class ProcessInfo implements Serializable
 	{
 		return adUserId;
 	}
+	
+	public int getAD_Role_ID()
+	{
+		return adRoleId;
+	}
 
 	/**
 	 * Get Process Parameters.
@@ -473,10 +492,15 @@ public final class ProcessInfo implements Serializable
 	{
 		return this.reportLanguage;
 	}
-	
+
 	public Optional<String> getReportTemplate()
 	{
 		return reportTemplate;
+	}
+
+	public OutputType getJRDesiredOutputType()
+	{
+		return jrDesiredOutputType;
 	}
 
 	/**
@@ -510,27 +534,30 @@ public final class ProcessInfo implements Serializable
 	public static final class ProcessInfoBuilder
 	{
 		private Properties ctx;
+		private boolean createTemporaryCtx = false;
 
 		private int adPInstanceId;
-		private I_AD_PInstance _adPInstance;
+		private transient I_AD_PInstance _adPInstance;
 		private int adProcessId;
-		private I_AD_Process _adProcess;
+		private transient I_AD_Process _adProcess;
 		private Integer _adClientId;
 		private Integer _adUserId;
+		private Integer _adRoleId;
 		private String title = null;
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
-		private int adTableId;
-		private int recordId;
+		private Integer adTableId;
+		private Integer recordId;
 
-		private String whereClause = "";
+		private Optional<String> whereClause = null;
 
 		private int windowNo = Env.WINDOW_None;
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
 		private Boolean printPreview;
+		private OutputType jrDesiredOutputType = null;
 
 		private List<ProcessInfoParameter> parameters = null;
 
@@ -541,7 +568,13 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfo build()
 		{
-			return new ProcessInfo(this);
+			Properties ctx = getCtx();
+			if(createTemporaryCtx)
+			{
+				ctx = createTemporaryCtx(ctx);
+			}
+			
+			return new ProcessInfo(ctx, this);
 		}
 
 		public ProcessInfoBuilder setCtx(final Properties ctx)
@@ -555,62 +588,140 @@ public final class ProcessInfo implements Serializable
 			return Env.coalesce(ctx);
 		}
 		
+		public ProcessInfoBuilder setCreateTemporaryCtx()
+		{
+			this.createTemporaryCtx = true;
+			return this;
+		}
+
+		private Properties createTemporaryCtx(final Properties ctx)
+		{
+			final Properties processCtx = Env.newTemporaryCtx();
+
+			//
+			// AD_Client, AD_Language
+			final IClientDAO clientDAO = Services.get(IClientDAO.class);
+			final int adClientId = getAD_Client_ID();
+			final I_AD_Client processClient = clientDAO.retriveClient(ctx, adClientId);
+			Env.setContext(processCtx, Env.CTXNAME_AD_Client_ID, processClient.getAD_Client_ID());
+			Env.setContext(processCtx, Env.CTXNAME_AD_Language, processClient.getAD_Language());
+
+			//
+			// AD_Org, M_Warehouse
+			final int adOrgId = getAD_Org_ID();
+			Env.setContext(processCtx, Env.CTXNAME_AD_Org_ID, adOrgId);
+			if (adOrgId > 0)
+			{
+				final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(processCtx, adOrgId, ITrx.TRXNAME_None);
+				if (schedOrg.getM_Warehouse_ID() > 0)
+				{
+					Env.setContext(processCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getM_Warehouse_ID());
+				}
+			}
+
+			//
+			// AD_User_ID, SalesRep_ID
+			final int adUserId = getAD_User_ID();
+			Env.setContext(processCtx, Env.CTXNAME_AD_User_ID, adUserId);
+			Env.setContext(processCtx, Env.CTXNAME_SalesRep_ID, adUserId);
+
+			//
+			// AD_Role
+			int adRoleId = getAD_Role_ID();
+			if(adRoleId < 0)
+			{
+				// Use the first user role, which has access to our organization.
+				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
+						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId, adOrgId)
+						.orNull();
+				adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
+			}
+			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
+
+			//
+			// Date
+			final Timestamp date = SystemTime.asDayTimestamp();
+			Env.setContext(processCtx, Env.CTXNAME_Date, date);
+
+			return processCtx;
+		}
+
 		private int getAD_Client_ID()
 		{
-			if(_adClientId != null)
+			if (_adClientId != null)
 			{
 				return _adClientId;
 			}
-			
+
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
-			if(adPInstance != null)
+			if (adPInstance != null)
 			{
 				return adPInstance.getAD_Client_ID();
 			}
-			
+
 			return Env.getAD_Client_ID(getCtx());
 		}
-		
+
 		public ProcessInfoBuilder setAD_Client_ID(final int adClientId)
 		{
 			this._adClientId = adClientId;
 			return this;
 		}
-		
+
 		private int getAD_Org_ID()
 		{
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
-			if(adPInstance != null)
+			if (adPInstance != null)
 			{
 				return adPInstance.getAD_Org_ID();
 			}
-			
+
 			return Env.getAD_Org_ID(getCtx());
 		}
 
-		
 		private int getAD_User_ID()
 		{
-			if(_adUserId != null)
+			if (_adUserId != null)
 			{
 				return _adUserId;
 			}
-			
+
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
-			if(adPInstance != null)
+			if (adPInstance != null)
 			{
 				return adPInstance.getAD_User_ID();
 			}
 
 			return Env.getAD_User_ID(getCtx());
 		}
-		
+
 		public ProcessInfoBuilder setAD_User_ID(final int adUserId)
 		{
 			this._adUserId = adUserId;
 			return this;
 		}
 
+		public ProcessInfoBuilder setAD_Role_ID(final int adRoleId)
+		{
+			this._adRoleId = adRoleId;
+			return this;
+		}
+
+		private int getAD_Role_ID()
+		{
+			if (_adRoleId != null)
+			{
+				return _adRoleId;
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null)
+			{
+				return adPInstance.getAD_Role_ID();
+			}
+
+			return Env.getAD_Role_ID(getCtx());
+		}
 
 		private String getTitle()
 		{
@@ -634,7 +745,7 @@ public final class ProcessInfo implements Serializable
 			this.title = title;
 			return this;
 		}
-		
+
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
 			final int adPInstanceId = getAD_PInstance_ID();
@@ -653,7 +764,7 @@ public final class ProcessInfo implements Serializable
 			}
 			return _adPInstance;
 		}
-		
+
 		public ProcessInfoBuilder setAD_PInstance_ID(final int adPInstanceId)
 		{
 			this.adPInstanceId = adPInstanceId;
@@ -674,7 +785,7 @@ public final class ProcessInfo implements Serializable
 
 		private int getAD_Process_ID()
 		{
-			if(adProcessId <= 0)
+			if (adProcessId <= 0)
 			{
 				final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 				if (adPInstance != null)
@@ -749,7 +860,7 @@ public final class ProcessInfo implements Serializable
 
 			return classname;
 		}
-		
+
 		private Optional<String> getDBProcedureName()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
@@ -763,24 +874,24 @@ public final class ProcessInfo implements Serializable
 				return Optional.of(dbProcedureName.trim());
 			}
 		}
-		
+
 		private Optional<String> getReportTemplate()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if(adProcess == null)
+			if (adProcess == null)
 			{
 				return Optional.empty();
 			}
-			
+
 			final String reportTemplate = adProcess.getJasperReport();
-			if(Check.isEmpty(reportTemplate, true))
+			if (Check.isEmpty(reportTemplate, true))
 			{
 				return Optional.empty();
 			}
-			
+
 			return Optional.of(reportTemplate.trim());
 		}
-		
+
 		private int getAD_Workflow_ID()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
@@ -818,6 +929,7 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setTableName(final String tableName)
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = 0;
 			return this;
 		}
 
@@ -837,12 +949,34 @@ public final class ProcessInfo implements Serializable
 
 		private int getAD_Table_ID()
 		{
-			return adTableId;
+			if (adTableId != null)
+			{
+				return adTableId;
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null)
+			{
+				return adPInstance.getAD_Table_ID();
+			}
+
+			return 0;
 		}
 
 		private int getRecord_ID()
 		{
-			return recordId;
+			if (recordId != null)
+			{
+				return recordId;
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null)
+			{
+				return adPInstance.getRecord_ID();
+			}
+
+			return 0;
 		}
 
 		/**
@@ -855,6 +989,17 @@ public final class ProcessInfo implements Serializable
 		{
 			this.reportLanguage = reportLanguage;
 			return this;
+		}
+
+		public ProcessInfoBuilder setJRDesiredOutputType(OutputType jrDesiredOutputType)
+		{
+			this.jrDesiredOutputType = jrDesiredOutputType;
+			return this;
+		}
+
+		private OutputType getJRDesiredOutputType()
+		{
+			return jrDesiredOutputType;
 		}
 
 		private Language getReportLanguage()
@@ -876,17 +1021,17 @@ public final class ProcessInfo implements Serializable
 				return printPreview;
 			}
 
-			if (Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
+			if (Ini.isClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
 			{
 				return true;
 			}
-			
+
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if(adProcess != null && !adProcess.isDirectPrint())
+			if (adProcess != null && !adProcess.isDirectPrint())
 			{
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -912,30 +1057,41 @@ public final class ProcessInfo implements Serializable
 			return tabNo;
 		}
 
-		public ProcessInfoBuilder setWhereClause(String whereClause)
+		public ProcessInfoBuilder setWhereClause(final String whereClause)
 		{
-			this.whereClause = whereClause;
+			this.whereClause = Optional.ofNullable(whereClause);
 			return this;
 		}
 
 		private String getWhereClause()
 		{
-			return whereClause;
+			if (whereClause != null)
+			{
+				return whereClause.orElse(null);
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null)
+			{
+				return adPInstance.getWhereClause();
+			}
+
+			return null;
 		}
-		
+
 		private boolean isServerProcess()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
 			return adProcess != null ? adProcess.isServerProcess() : false;
 		}
-		
+
 		private boolean isReportingProcess()
 		{
 			if (getReportTemplate().isPresent())
 			{
 				return true;
 			}
-			
+
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
 			return adProcess != null ? adProcess.isReport() : false;
 		}
@@ -944,7 +1100,7 @@ public final class ProcessInfo implements Serializable
 		{
 			return parameters;
 		}
-		
+
 		public ProcessInfoBuilder addParameter(final String parameterName, final int parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));

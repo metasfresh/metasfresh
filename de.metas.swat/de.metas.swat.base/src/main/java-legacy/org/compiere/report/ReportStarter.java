@@ -15,19 +15,19 @@ package org.compiere.report;
 
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.print.JRReportViewerProvider;
-import org.compiere.print.JRReportViewerProviderAware;
 import org.compiere.process.ClientProcess;
 import org.compiere.process.ProcessCall;
+import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
-import org.compiere.util.DB;
+import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -48,13 +48,11 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author Ashley Ramdass
  * @author tsa
  */
-public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewerProviderAware
+public class ReportStarter implements ProcessCall, ClientProcess
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ReportStarter.class);
-	private static JRReportViewerProvider defaultJRReportViewerProvider = new SwingJRViewerProvider();
-	
-	private JRReportViewerProvider jrReportViewerProvider;
+	private static JRReportViewerProvider swingJRReportViewerProvider = new SwingJRViewerProvider();
 
 	/**
 	 * Start Jasper reporting process. Based on {@link ProcessInfo#isPrintPreview()}, it will:
@@ -64,61 +62,42 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 	 * </ul>
 	 */
 	@Override
-	public final boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
+	public final void startProcess(final ProcessInfo pi, final ITrx trx) throws Exception
 	{
-		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(ctx, pi);
+		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(pi);
 
-		String errorMsg = null;
-		try
+		//
+		// Create report and print it directly
+		if (!reportPrintingInfo.isPrintPreview())
 		{
-			//
-			// Create report and print it directly
-			if (!reportPrintingInfo.isPrintPreview())
+			// task 08283: direct print can be done in background; no need to let the user wait for this
+			Services.get(ITaskExecutorService.class).submit(new Runnable()
 			{
-				// task 08283: direct print can be done in background; no need to let the user wait for this
-				Services.get(ITaskExecutorService.class).submit(new Runnable()
+				@Override
+				public void run()
 				{
-					@Override
-					public void run()
+					try
 					{
-						try
-						{
-							log.info("Doing direct print without preview: {}", reportPrintingInfo);
-							startProcessDirectPrint(reportPrintingInfo);
-						}
-						catch (final Exception e)
-						{
-							reportResult(pi.getAD_PInstance_ID(), e.getLocalizedMessage(), ITrx.TRXNAME_None);
-							Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
-						}
+						log.info("Doing direct print without preview: {}", reportPrintingInfo);
+						startProcessDirectPrint(reportPrintingInfo);
 					}
-				},
-						ReportStarter.class.getSimpleName());
-			}
-			//
-			// Create report and preview
-			else
-			{
-				startProcessPrintPreview(reportPrintingInfo);
-			}
+					catch (final Exception e)
+					{
+						final ProcessExecutionResult result = pi.getResult();
+						result.markAsError(e);
+						Services.get(IADPInstanceDAO.class).unlockAndSaveResult(pi.getCtx(), result);
+						Services.get(IClientUI.class).warn(pi.getWindowNo(), e);
+					}
+				}
+			},
+					ReportStarter.class.getSimpleName());
 		}
-		catch (final Exception e)
+		//
+		// Create report and preview
+		else
 		{
-			errorMsg = e.getLocalizedMessage();
-			if (errorMsg == null || errorMsg.length() < 4)
-			{
-				errorMsg = e.toString();
-			}
-
-			log.error("Error while running the report: {}", errorMsg);
-			throw AdempiereException.wrapIfNeeded(e);
+			startProcessPrintPreview(reportPrintingInfo);
 		}
-		finally
-		{
-			final String trxName = trx == null ? ITrx.TRXNAME_None : trx.getTrxName();
-			reportResult(pi.getAD_PInstance_ID(), errorMsg, trxName);
-		}
-		return true;
 	}
 
 	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
@@ -140,8 +119,12 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 	private void startProcessPrintPreview(final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
 		final Properties ctx = reportPrintingInfo.getCtx();
-		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
-		final JRReportViewerProvider jrReportViewerProvider = reportPrintingInfo.getReportViewerProvider();
+		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
+
+		//
+		// Get Jasper report viewer provider
+		final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
+		final OutputType desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
 
 		//
 		// Based on reporting system type, determine: output type
@@ -152,7 +135,7 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 			//
 			// Jasper reporting
 			case Jasper:
-				outputType = jrReportViewerProvider.getDesiredOutputType();
+				outputType = Util.coalesce(desiredOutputType, processInfo.getJRDesiredOutputType(), OutputType.PDF);
 				break;
 
 			//
@@ -166,73 +149,31 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 
 		//
 		// Generate report data
-		log.info("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, pi.getTitle(), outputType);
+		log.info("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final JRClient jrClient = JRClient.get();
-		final byte[] data = jrClient.report(ctx, pi, outputType);
-		
+		final byte[] reportData = jrClient.report(ctx, processInfo, outputType);
+
 		//
-		// Send data to viewer
-		jrReportViewerProvider.openViewer(data, outputType, pi);
-	}
+		// Set report data to process execution result
+		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
+		final String reportFilename = "report." + outputType.getFileExtension(); // TODO: find a better name
+		final String reportContentType = outputType.getContentType();
+		processExecutionResult.setReportData(reportData, reportFilename, reportContentType);
 
-	/**
-	 * Update {@link I_AD_PInstance} result
-	 */
-	private void reportResult(final int AD_PInstance_ID, final String errMsg, final String trxName)
-	{
-		final int result = errMsg == null ? 1 : 0;
-		final String sql = "UPDATE AD_PInstance SET result=?, errormsg=? WHERE AD_PInstance_ID=?";
-		final Object[] sqlParams = new Object[] { result, errMsg, AD_PInstance_ID };
-		try
+		//
+		// Print preview (if swing client)
+		if (Ini.isClient() && swingJRReportViewerProvider != null)
 		{
-			DB.executeUpdateEx(sql, sqlParams, trxName);
-		}
-		catch (final Exception e)
-		{
-			log.error(e.getLocalizedMessage(), e);
+			swingJRReportViewerProvider.openViewer(reportData, outputType, processInfo);
 		}
 	}
 
-	/**
-	 * Set jasper report viewer provider.
-	 *
-	 * @param provider
-	 */
-	public static void setDefaultJRReportViewerProvider(final JRReportViewerProvider provider)
-	{
-		Check.assumeNotNull(provider, "provider not null");
-		defaultJRReportViewerProvider = provider;
-	}
-	
-	@Override
-	public void setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider)
-	{
-		this.jrReportViewerProvider = jrReportViewerProvider;
-	}
-
-	/**
-	 * Get the current jasper report viewer provider
-	 *
-	 * @return {@link JRReportViewerProvider}; never returns null
-	 */
-	private JRReportViewerProvider getJRReportViewerProvider()
-	{
-		if(jrReportViewerProvider != null)
-		{
-			return jrReportViewerProvider;
-		}
-		return defaultJRReportViewerProvider;
-	}
-	
-	
-
-	private ReportPrintingInfo extractReportPrintingInfo(final Properties ctx, final ProcessInfo pi)
+	private ReportPrintingInfo extractReportPrintingInfo(final ProcessInfo pi)
 	{
 		final ReportPrintingInfo info = new ReportPrintingInfo();
-		info.setCtx(ctx);
+		info.setCtx(pi.getCtx());
 		info.setProcessInfo(pi);
 		info.setPrintPreview(pi.isPrintPreview());
-		info.setReportViewerProvider(getJRReportViewerProvider());
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
@@ -251,6 +192,22 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 		}
 
 		return info;
+	}
+
+	/**
+	 * 
+	 * @return {@link JRReportViewerProvider} or null
+	 */
+	private JRReportViewerProvider getJRReportViewerProviderOrNull()
+	{
+		if (Ini.isClient())
+		{
+			return swingJRReportViewerProvider;
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private static enum ReportingSystemType
@@ -316,16 +273,6 @@ public class ReportStarter implements ProcessCall, ClientProcess, JRReportViewer
 		public boolean isPrintPreview()
 		{
 			return printPreview;
-		}
-
-		public void setReportViewerProvider(final JRReportViewerProvider reportViewerProvider)
-		{
-			this.reportViewerProvider = reportViewerProvider;
-		}
-
-		public JRReportViewerProvider getReportViewerProvider()
-		{
-			return reportViewerProvider;
 		}
 	}
 }

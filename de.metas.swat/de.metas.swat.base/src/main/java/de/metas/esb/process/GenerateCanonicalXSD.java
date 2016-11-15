@@ -317,7 +317,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 		process.p_FilterBy_AD_Client_ID = false;
 
 		LogManager.setLevel(Level.INFO);
-		process.startProcess(Env.getCtx(), pi, ITrx.TRX_None);
+		process.startProcess(pi, ITrx.TRX_None);
 
 		//
 		// CanonicalXSDGenerator.validateXML(new File("d:/tmp/C_BPartner.xml"), proc.getSchemaFile());

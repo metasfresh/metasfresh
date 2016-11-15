@@ -61,7 +61,6 @@ public final class ReportCtl
 	private static ReportViewerProvider defaultReportEngineViewerProvider = re -> logger.warn("No {} registered to display {}", ReportViewerProvider.class, re);
 
 	private final ProcessInfo processInfo;
-	private final JRReportViewerProvider jrReportViewerProvider;
 
 	private Optional<String> printerName;
 
@@ -69,7 +68,6 @@ public final class ReportCtl
 	{
 		super();
 		this.processInfo = builder.getProcessInfo();
-		this.jrReportViewerProvider = builder.getJRReportViewerProvider();
 	}
 
 
@@ -276,34 +274,37 @@ public final class ReportCtl
 		if (printFormat.getJasperProcess_ID() > 0)
 		{
 			final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+					//
+					.setCtx(processInfo.getCtx())
+					.setCreateTemporaryCtx()
+					.setAD_Client_ID(processInfo.getAD_Client_ID())
+					.setAD_User_ID(processInfo.getAD_User_ID())
+					.setAD_Role_ID(processInfo.getAD_Role_ID())
+					.setWhereClause(processInfo.getWhereClause())
 					.setWindowNo(processInfo.getWindowNo())
+					.setTabNo(processInfo.getTabNo())
+					.setPrintPreview(processInfo.isPrintPreview())
+					//
 					.setAD_Process_ID(printFormat.getJasperProcess_ID())
 					.setRecord(adTableId, recordId)
-					.setPrintPreview(processInfo.isPrintPreview())
 					.setReportLanguage(printFormat.getLanguage())
+					//
 					.build();
 
 			// Execute Process
 			ProcessCtl.builder()
 					.setProcessInfo(jasperProcessInfo)
-					.setJRReportViewerProvider(jrReportViewerProvider)
 					.executeSync();
 
 			//
 			// Throw exception in case of failure
 			final ProcessExecutionResult jasperProcessResult = jasperProcessInfo.getResult();
-			if(jasperProcessResult.isError())
-			{
-				final Throwable throwable = jasperProcessResult.getThrowable();
-				if(throwable != null)
-				{
-					throw AdempiereException.wrapIfNeeded(throwable);
-				}
-				else
-				{
-					throw new AdempiereException(jasperProcessResult.getSummary());
-				}
-			}
+			jasperProcessResult.propagateErrorIfAny();
+			
+			//
+			// Update caller process result
+			final ProcessExecutionResult callerProcessResult = processInfo.getResult();
+			callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
 		}
 		else
 		{
@@ -383,7 +384,6 @@ public final class ReportCtl
 	public static final class Builder
 	{
 		private ProcessInfo processInfo;
-		private JRReportViewerProvider jrReportViewerProvider;
 		
 		private Builder()
 		{
@@ -407,17 +407,6 @@ public final class ReportCtl
 		{
 			Check.assumeNotNull(processInfo, "Parameter processInfo is not null");
 			return processInfo;
-		}
-
-		public Builder setJRReportViewerProvider(JRReportViewerProvider jrReportViewerProvider)
-		{
-			this.jrReportViewerProvider = jrReportViewerProvider;
-			return this;
-		}
-		
-		private JRReportViewerProvider getJRReportViewerProvider()
-		{
-			return jrReportViewerProvider;
 		}
 	}
 

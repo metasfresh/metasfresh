@@ -1,7 +1,5 @@
 package org.compiere.process;
 
-import java.util.Properties;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.junit.After;
 import org.junit.Assert;
@@ -36,9 +34,8 @@ public class ProcessClassInfoTests
 	public static class ProcessCallImpl implements ProcessCall
 	{
 		@Override
-		public boolean startProcess(final Properties ctx, final ProcessInfo pi, final ITrx trx)
+		public void startProcess(final ProcessInfo pi, final ITrx trx)
 		{
-			return true;
 		}
 	}
 

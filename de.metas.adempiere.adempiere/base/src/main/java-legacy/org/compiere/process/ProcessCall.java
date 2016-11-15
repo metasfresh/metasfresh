@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.Properties;
-
 import org.adempiere.ad.trx.api.ITrx;
 
 /**
@@ -38,11 +36,10 @@ public interface ProcessCall
 	 *  It should only return false, if the function could not be performed
 	 *  as this causes the process to abort.
 	 *
-	 *  @param ctx  Context
 	 *  @param pi	Process Info
 	 *  @param trx	transaction
-	 *  @return true if the next process should be performed
+	 *  @throws Exception in case of any failure
 	 */
-	public boolean startProcess (Properties ctx, ProcessInfo pi, ITrx trx);
+	public void startProcess (ProcessInfo pi, ITrx trx) throws Exception;
 
 }   //  ProcessCall

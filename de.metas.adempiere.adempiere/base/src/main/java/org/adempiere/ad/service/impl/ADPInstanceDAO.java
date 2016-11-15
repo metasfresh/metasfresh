@@ -10,12 +10,12 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,15 +37,17 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoLog;
@@ -194,7 +196,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			I_AD_PInstance_Para adPInstanceParam = adPInstanceParams.get(piParam.getParameterName());
 
-			if (adPInstanceParam == null)   // if this Parameter is not yet existing in the DB
+			if (adPInstanceParam == null)      // if this Parameter is not yet existing in the DB
 			{
 				final int seqNo = lastSeqNo + 10;
 				adPInstanceParam = createAD_PInstance_Para(ctx, adPInstanceId, piParam, seqNo);
@@ -394,8 +396,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 	}
 
-	@Override
-	public void saveProcessInfoLogs(final int AD_PInstance_ID, final List<ProcessInfoLog> logs)
+	private void saveProcessInfoLogs(final int AD_PInstance_ID, final List<ProcessInfoLog> logs)
 	{
 		if (AD_PInstance_ID <= 0)
 		{
@@ -444,7 +445,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			// log only, don't fail
 			logger.error("Error while saving the process log lines", e);
@@ -457,12 +458,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void retrieveResultSummary(final ProcessExecutionResult result)
+	public void loadResultSummary(final ProcessExecutionResult result)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		//
-		int sleepTime = 2000;	// 2 secomds
+		final int sleepTime = 1000;	// 1 seconds
 		final int noRetry = 5;        // 10 seconds total
 		//
 		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
@@ -483,26 +482,21 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				if (rs.next())
 				{
 					// we have a result
-					int i = rs.getInt(1);
-					if (i == 1)
+					final int resultInt = rs.getInt(1);
+					final String message = rs.getString(2);
+					if (resultInt == MPInstance.RESULT_OK)
 					{
-						result.setSummary(msgBL.getMsg(Env.getCtx(), "Success"));
+						result.markAsSuccess(message);
 					}
 					else
 					{
-						result.setSummary(msgBL.getMsg(Env.getCtx(), "Failure"), true);
+						result.markAsError(message);
 					}
-					String Message = rs.getString(2);
-					rs.close();
-					pstmt.close();
-					//
-					if (Message != null)
-						result.addSummary("  (" + msgBL.parseTranslation(Env.getCtx(), Message) + ")");
-					// s_log.debug("setSummaryFromDB - " + Message);
 					return;
 				}
 
 				rs.close();
+				
 				// sleep
 				try
 				{
@@ -516,26 +510,86 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 					}
 					Thread.sleep(sleepTime);
 				}
-				catch (InterruptedException ie)
+				catch (final InterruptedException ie)
 				{
 					logger.error("Sleep Thread", ie);
 				}
 			}
-			
-			pstmt.close();
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			logger.error(sql, e);
-			result.setThrowable(e);  // 03152
-			result.setSummary(e.getLocalizedMessage(), true);
+			result.markAsError(e);
 			return;
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 		}
+	}
 
-		result.setSummary(msgBL.getMsg(Env.getCtx(), "Timeout"), true);
+	@Override
+	public void lock(final Properties ctx, final int adPInstanceId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_PInstance.class, ctx, ITrx.TRXNAME_None) // outside trx
+				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, adPInstanceId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
+				.execute();
+	}
+
+	@Override
+	public void unlockAndSaveResult(final Properties ctx, final ProcessExecutionResult result)
+	{
+		final int adPInstanceId = result.getAD_PInstance_ID();
+		if (adPInstanceId <= 0)
+		{
+			throw new AdempiereException("Cannot save process execution result because there is no AD_PInstance_ID: " + result);
+		}
+
+		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+		Check.assumeNotNull(adPInstance, "adPInstance is not null for AD_PInstance_ID={} of {}", adPInstanceId, result);
+
+		adPInstance.setIsProcessing(false); // unlock
+		adPInstance.setResult(result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK);
+		adPInstance.setErrorMsg(result.getSummary());
+		InterfaceWrapperHelper.save(adPInstance);
+
+		saveProcessInfoLogs(adPInstanceId, result.getCurrentLogs());
+	}
+
+	@Override
+	public void saveProcessInfoOnly(final ProcessInfo pi)
+	{
+		//
+		// Create/Load the AD_PInstance
+		final I_AD_PInstance adPInstance;
+		if (pi.getAD_PInstance_ID() <= 0)
+		{
+			adPInstance = InterfaceWrapperHelper.create(pi.getCtx(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			InterfaceWrapperHelper.setValue(adPInstance, I_AD_PInstance.COLUMNNAME_AD_Client_ID, pi.getAD_Client_ID());
+		}
+		else
+		{
+			adPInstance = InterfaceWrapperHelper.create(pi.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			Check.assumeNotNull(adPInstance, "Parameter adPInstance is not null for {}", pi);
+		}
+
+		//
+		// Update the AD_PInstance and save
+		adPInstance.setAD_Org_ID(pi.getAD_Org_ID());
+		adPInstance.setAD_User_ID(pi.getAD_User_ID());
+		adPInstance.setAD_Role_ID(pi.getAD_Role_ID());
+		adPInstance.setAD_Table_ID(pi.getTable_ID());
+		adPInstance.setRecord_ID(pi.getRecord_ID());
+		adPInstance.setWhereClause(pi.getWhereClause());
+		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		InterfaceWrapperHelper.save(adPInstance);
+
+		//
+		// Update ProcessInfo's AD_PInstance_ID
+		pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
 	}
 }

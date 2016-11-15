@@ -514,20 +514,20 @@ public final class MPayment extends X_C_Payment
 	 * @return true if the next process should be performed
 	 */
 	@Override
-	public boolean startProcess(Properties ctx, ProcessInfo pi, ITrx trx)
+	public void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
-		log.info("startProcess - " + pi.getRecord_ID());
-		boolean retValue = false;
+		log.info("startProcess: {}", pi);
 		//
-		if (pi.getRecord_ID() != get_ID())
+		if (pi.getRecord_ID() != getC_Payment_ID())
 		{
-			log.error("startProcess - Not same Payment - " + pi.getRecord_ID());
-			return false;
+			throw new AdempiereException("startProcess - Not same Payment - " + pi.getRecord_ID());
 		}
 		// Process it
-		retValue = processOnline();
+		if (!processOnline())
+		{
+			throw new AdempiereException("Failed processing online: " + getErrorMessage());
+		}
 		saveEx(); // metas: changed to saveEx
-		return retValue;    // Payment processed
 	}   // startProcess
 
 	/**
