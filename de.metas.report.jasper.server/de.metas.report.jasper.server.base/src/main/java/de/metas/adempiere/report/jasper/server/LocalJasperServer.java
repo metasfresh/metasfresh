@@ -25,16 +25,17 @@ package de.metas.adempiere.report.jasper.server;
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.MPInstance;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -64,18 +65,13 @@ public class LocalJasperServer implements IJasperServer
 		int recordId = -1;
 		if (pinstanceId <= 0)
 		{
-			final MPInstance pinstance = new MPInstance(ctx, processId, 0, 0);
-			pinstance.saveEx();
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, processId, 0, 0);
 			logger.info("Given AD_PInstance_ID was 0; Created new {}", pinstance);
 			pinstanceId = pinstance.getAD_PInstance_ID();
 		}
 		else
 		{
-			final I_AD_PInstance pinstance = new MPInstance(ctx, pinstanceId, ITrx.TRXNAME_None);
-			if (pinstance.getAD_PInstance_ID() != pinstanceId)
-			{
-				throw new AdempiereException("@NotFound@ @AD_PInstance_ID@ " + pinstanceId);
-			}
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, pinstanceId);
 			if (processId > 0 && pinstance.getAD_Process_ID() != processId)
 			{
 				throw new AdempiereException("@Invalid@ @AD_Process_ID@ (" + processId + " != " + pinstance.getAD_Process_ID());
