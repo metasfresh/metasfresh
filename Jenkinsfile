@@ -241,11 +241,11 @@ node('agent && linux && libc6-i386')
 
 		node('master')
 		{
-			if(userInput['MF_TARGET_HOST'])
+			if(userInput)
 			{
 				def distArtifactId='de.metas.endcustomer.mf15.dist';
 				def packaging='tar.gz';
-				def sshTargetHost=userInput['MF_TARGET_HOST'];
+				def sshTargetHost=userInput;
 				def sshTargetUser='metasfresh'
 			
 				// main part: provide and rollout the "main" distributable
