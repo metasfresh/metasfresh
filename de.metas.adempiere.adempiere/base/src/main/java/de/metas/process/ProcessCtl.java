@@ -27,6 +27,8 @@ import java.util.function.Consumer;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +47,7 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
@@ -270,6 +273,10 @@ public final class ProcessCtl
 			s_currentProcess_ID.set(pi.getAD_Process_ID());
 			s_currentOrg_ID.set(pi.getAD_Org_ID());
 
+			//
+			// Check permissions
+			assertPermissions();
+
 			// Lock
 			lock(true);
 
@@ -310,6 +317,26 @@ public final class ProcessCtl
 		if (onErrorThrowException)
 		{
 			pi.getResult().propagateErrorIfAny();
+		}
+	}
+
+	private final void assertPermissions()
+	{
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
+				pi.getAD_Role_ID() //
+				, pi.getAD_User_ID() //
+				, pi.getAD_Client_ID() //
+				, Env.getDate(pi.getCtx()) //
+		);
+		
+		if (permissions.getAD_Role_ID() > 0)
+		{
+			final int adProcessId = pi.getAD_Process_ID();
+			final Boolean access = permissions.getProcessAccess(adProcessId);
+			if (access == null || !access.booleanValue())
+			{
+				throw new AdempiereException("Cannot access Process " + adProcessId + " with role: " + permissions.getName());
+			}
 		}
 	}
 

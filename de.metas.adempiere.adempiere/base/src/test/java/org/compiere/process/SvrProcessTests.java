@@ -24,6 +24,7 @@ package org.compiere.process;
 
 import java.util.Properties;
 
+import org.adempiere.ad.service.impl.ADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
@@ -32,7 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.MPInstance;
 import org.compiere.process.SvrProcess.ProcessCanceledException;
 import org.compiere.util.Env;
 import org.junit.After;
@@ -187,7 +187,7 @@ public class SvrProcessTests
 			if (validateAD_PInstance_Values)
 			{
 				final I_AD_PInstance pinstance = retrieveAD_PInstance();
-				final int resultExpected = result.isError() ? MPInstance.RESULT_ERROR : MPInstance.RESULT_OK;
+				final int resultExpected = result.isError() ? ADPInstanceDAO.RESULT_ERROR : ADPInstanceDAO.RESULT_OK;
 				Assert.assertEquals("Invalid AD_PInstance.Result", resultExpected, pinstance.getResult());
 				Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", result.getSummary(), pinstance.getErrorMsg());
 				Assert.assertEquals("Invalid AD_PInstance.Processing", false, pinstance.isProcessing());

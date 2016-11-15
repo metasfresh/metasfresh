@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +38,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.MPInstance;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 
@@ -420,8 +420,7 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create AD_PInstance
 		final I_AD_Process process = adProcessDAO.retriveProcessByValue(ctx, AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print);
-		final I_AD_PInstance pinstance = new MPInstance(ctx, process.getAD_Process_ID(), 0, 0);
-		InterfaceWrapperHelper.save(pinstance);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, process.getAD_Process_ID(), 0, 0);
 
 		// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
 		// The report will fetch it from selection.

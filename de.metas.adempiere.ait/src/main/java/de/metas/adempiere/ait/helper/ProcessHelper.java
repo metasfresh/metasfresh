@@ -11,12 +11,14 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.compiere.model.MPInstance;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.MPInstancePara;
-import org.compiere.model.MProcess;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.process.ProcessInfo;
@@ -48,8 +50,8 @@ public class ProcessHelper
 	
 	private final List<IProcessHelperListener> listeners = new ArrayList<IProcessHelperListener>();
 	
-	private MProcess process;
-	private MPInstance pinstance;
+	private I_AD_Process process;
+	private I_AD_PInstance pinstance;
 
 	private Class<? extends Exception> expectedException;
 	
@@ -286,8 +288,7 @@ public class ProcessHelper
 		{
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false);
 
-			this.pinstance = new MPInstance(helper.getCtx(), processId, tableId, recordId);
-			pinstance.saveEx();
+			this.pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(helper.getCtx(), processId, tableId, recordId);
 
 			//
 			// Add parameters:

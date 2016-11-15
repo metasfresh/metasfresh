@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
@@ -56,7 +57,6 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstancePara;
 import org.compiere.model.MProcess;
 import org.compiere.model.MTable;
@@ -1010,8 +1010,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			if (!process.isReport())
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
-			final I_AD_PInstance pInstance = new MPInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
-			InterfaceWrapperHelper.save(pInstance);
+			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
 			createPInstanceParameters(pInstance, process, getPO(trx));
 			//
 			final ProcessInfo pi = ProcessInfo.builder()
@@ -1048,10 +1047,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			final I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
 			//
-			final I_AD_PInstance pInstance = new MPInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
-			InterfaceWrapperHelper.save(pInstance);
+			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
 			createPInstanceParameters(pInstance, process, getPO(trx));
 			//
 			final ProcessInfo pi = ProcessInfo.builder()

@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,8 +37,8 @@ import org.adempiere.processing.interfaces.IProcessablePO;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MIssue;
-import org.compiere.model.MPInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Issue;
@@ -73,7 +74,7 @@ public class ProcessingService implements IProcessingService
 		final int processId;
 		if (e.getAdPInstanceId() != NO_AD_PINSTANCE_ID)
 		{
-			final MPInstance pInstance = new MPInstance(ctx, e.getAdPInstanceId(), trxName);
+			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, e.getAdPInstanceId());
 			processId = pInstance.getAD_Process_ID();
 		}
 		else

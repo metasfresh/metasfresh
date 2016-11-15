@@ -27,9 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -38,13 +37,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
@@ -58,6 +57,7 @@ import de.metas.letters.model.I_T_Letter_Spool;
 import de.metas.letters.model.LetterDocumentLocationAdapter;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.spi.ILetterProducer;
+import de.metas.logging.LogManager;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {
@@ -173,9 +173,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		// final int clientId = Env.getAD_Client_ID(ctx);
 
 		final int jasperProcessId = getJasperProcess_ID(letter);
-		final MProcess process = MProcess.get(ctx, jasperProcessId);
-		final MPInstance pinstance = new MPInstance(ctx, process.getAD_Process_ID(), 0, 0); // recordId=0
-		pinstance.saveEx();
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, jasperProcessId, 0, 0);
 
 		createLetterSpoolRecord(pinstance.getAD_PInstance_ID(), letter);
 

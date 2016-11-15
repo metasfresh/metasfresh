@@ -19,40 +19,43 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
+
+import com.google.common.base.MoreObjects;
 
 /**
- *  Process Instance Model
+ * Process Instance Model
  *
- *  @author Jorg Janke
- *  @version $Id: MPInstance.java,v 1.3 2006/07/30 00:58:36 jjanke Exp $
- * 
+ * @author Jorg Janke
+ * @version $Id: MPInstance.java,v 1.3 2006/07/30 00:58:36 jjanke Exp $
+ *
  * @author Teo Sarca, www.arhipac.ro
- * 		<li>FR [ 2818478 ] Introduce MPInstance.createParameter helper method
- * 			https://sourceforge.net/tracker/?func=detail&aid=2818478&group_id=176962&atid=879335
+ *         <li>FR [ 2818478 ] Introduce MPInstance.createParameter helper method
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818478&group_id=176962&atid=879335
  */
+@Deprecated
 public class MPInstance extends X_AD_PInstance
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 209806970824523840L;
 
 	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param AD_PInstance_ID instance or 0
-	 *	@param trxName_IGNORED no transaction support
+	 *
 	 */
-	public MPInstance (Properties ctx, int AD_PInstance_ID, String trxName_IGNORED)
+	private static final long serialVersionUID = -3627385062090630722L;
+
+	/**
+	 * Standard Constructor
+	 * 
+	 * @param ctx context
+	 * @param AD_PInstance_ID instance or 0
+	 * @param trxName_IGNORED no transaction support
+	 */
+	public MPInstance(final Properties ctx, final int AD_PInstance_ID, final String trxName_IGNORED)
 	{
-		super (ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
+		super(ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
 
 		// metas: WARN developer if he/she is loading the AD_PInstance using transactions (because that is not allowed)
 		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
@@ -60,118 +63,40 @@ public class MPInstance extends X_AD_PInstance
 			final AdempiereException ex = new AdempiereException("AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
 			log.warn(ex.getLocalizedMessage(), ex);
 		}
-		
-		//	New Process
+
+		// New Process
 		if (AD_PInstance_ID == 0)
 		{
-		//	setAD_Process_ID (0);	//	parent
-		//	setRecord_ID (0);
-			setIsProcessing (false);
+			// setAD_Process_ID (0); // parent
+			// setRecord_ID (0);
+			setIsProcessing(false);
 		}
-	}	//	MPInstance
+	}	// MPInstance
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param ignored no transaction support
+	 * Load Constructor
+	 * 
+	 * @param ctx context
+	 * @param rs result set
+	 * @param ignored no transaction support
 	 */
-	public MPInstance (Properties ctx, ResultSet rs, String ignored)
+	public MPInstance(final Properties ctx, final ResultSet rs, final String ignored)
 	{
 		super(ctx, rs, ITrx.TRXNAME_None);
-	}	//	MPInstance
-
-	/**
-	 * New Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_Process_ID Process ID
-	 * @param adTableId
-	 * @param Record_ID record
-	 */
-	public MPInstance (final Properties ctx, final int AD_Process_ID, final int AD_Table_ID, final int Record_ID)
-	{
-		this(ctx, 0, ITrx.TRXNAME_None);
-		setAD_Process_ID (AD_Process_ID);
-		if(AD_Table_ID > 0)
-		{
-			setAD_Table_ID(AD_Table_ID);
-		}
-		setRecord_ID (Record_ID);
-		setAD_User_ID(Env.getAD_User_ID(ctx));
-		setAD_Role_ID(Env.getAD_Role_ID(ctx));
-		setIsProcessing (false);
-	}	//	MPInstance
-
-	/**
-	 * 	Set AD_Process_ID.
-	 * 	Check Role if process can be performed.
-	 *	@param AD_Process_ID process
-	 *  @throws AdempiereException if the current role can't access the process
-	 */
-	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
-	{
-		if(getAD_Process_ID() != AD_Process_ID)
-		{
-			final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
-			if (role.getAD_Role_ID() > 0)
-			{
-				final Boolean access = role.getProcessAccess(AD_Process_ID);
-				if (access == null || !access.booleanValue())
-				{
-					throw new AdempiereException("Cannot access Process " + AD_Process_ID + " with role: " + role.getName());
-				}
-			}
-		}
-		super.setAD_Process_ID (AD_Process_ID);
-	}	//	setAD_Process_ID
-
-	/**
-	 * 	Set Record ID.
-	 * 	direct internal record ID
-	 * 	@param Record_ID record
-	 **/
-	@Override
-	public void setRecord_ID (int Record_ID)
-	{
-		if (Record_ID < 0)
-		{
-			log.info("Set to 0 from " + Record_ID);
-			Record_ID = 0;
-		}
-		set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
-	}	//	setRecord_ID
+	}	// MPInstance
 
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("MPInstance[")
-			.append (get_ID())
-			.append(",OK=").append(isOK());
-		String msg = getErrorMsg();
-		if (msg != null && msg.length() > 0)
-			sb.append(msg);
-		sb.append ("]");
-		return sb.toString ();
-	}	//	toString
+		return MoreObjects.toStringHelper(this)
+				.add("AD_PInstance_ID", getAD_PInstance_ID())
+				.add("Result", getResult())
+				.add("ErrorMsg", getErrorMsg())
+				.toString();
+	}	// toString
 
-	/** Result OK = 1			*/
-	public static final int		RESULT_OK = 1;
-	/** Result FALSE = 0		*/
-	public static final int		RESULT_ERROR = 0;
-
-	/**
-	 * 	Is it OK
-	 *	@return Result == OK
-	 */
-	private boolean isOK()
-	{
-		return getResult() == RESULT_OK;
-	}	//	isOK
-	
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		return super.beforeSave(newRecord);
 	}

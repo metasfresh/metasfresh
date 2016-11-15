@@ -28,10 +28,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.model.MPInstance;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.IJasperReportEngineAdapter;
 import org.compiere.print.MPrintFormat;
@@ -59,8 +61,7 @@ public class JasperReportEngineAdapter implements IJasperReportEngineAdapter
 
 		final int adTableId = printInfo.getAD_Table_ID();
 		final int recordId = printInfo.getRecord_ID();
-		final MPInstance pinstance = new MPInstance(ctx, jasperProcessId, adTableId, recordId);
-		pinstance.saveEx();
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, jasperProcessId, adTableId, recordId);
 
 		final JRClient jrClient = JRClient.get();
 		
