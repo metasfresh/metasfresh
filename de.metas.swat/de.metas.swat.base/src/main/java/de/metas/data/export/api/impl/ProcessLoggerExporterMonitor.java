@@ -38,7 +38,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInstance;
@@ -158,7 +157,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 				continue;
 			}
 
-			final I_AD_PInstance_Para pipa = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, Trx.TRXNAME_None);
+			final I_AD_PInstance_Para pipa = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
 			pipa.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
 			pipa.setSeqNo(seqNo);
 			pipa.setParameterName(pd.getName());
