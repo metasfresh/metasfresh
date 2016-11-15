@@ -1530,6 +1530,10 @@ td.pulse-off input {
     display: inline-block;
     border-radius: 3px;
     pointer-events: visible;
+
+    @media screen and (max-width: 991px){
+        width: calc(100% - 1rem);
+    }
 }
 
 .draggable-widget-header {
@@ -1613,6 +1617,18 @@ td.pulse-off input {
     display: inline-block;
     width:25%;
     height:100%;
+}
+
+@media screen and (max-width: 991px) {
+    .indicators-wrapper {
+        height: 100%;
+    }
+    .indicator {
+        width:100%;
+        height: 130px;
+        border:0 !important;
+        display: block;
+    }
 }
 
 .indicator-hidden {
