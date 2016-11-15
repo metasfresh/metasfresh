@@ -163,7 +163,9 @@ public class MProcess extends X_AD_Process
 	 * @param value
 	 * @param trxName
 	 * @return
+	 * @deprecated Please use {@link IADProcessDAO#retriveProcessIdByValue(Properties, String)}
 	 */
+	@Deprecated
 	public static int getProcess_ID(String value, String trxName)
 	{
 		int retValue = DB.getSQLValueEx(trxName, "SELECT AD_Process_ID FROM AD_Process WHERE Value=?", value);
@@ -178,9 +180,9 @@ public class MProcess extends X_AD_Process
 	 * Not overwritten: name, value, entitytype
 	 * @param source
 	 */
-	public void copyFrom (MProcess source)
+	public void copyFrom (final I_AD_Process source)
 	{
-		log.debug("Copying from:" + source + ", to: " + this);
+		log.debug("Copying from: {} to: {}", source, this);
 		setAccessLevel(source.getAccessLevel());
 		setAD_Form_ID(source.getAD_Form_ID());
 		setAD_PrintFormat_ID(source.getAD_PrintFormat_ID());
