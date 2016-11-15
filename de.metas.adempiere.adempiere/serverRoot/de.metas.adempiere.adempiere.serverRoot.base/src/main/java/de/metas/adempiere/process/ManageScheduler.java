@@ -114,12 +114,12 @@ public class ManageScheduler extends SvrProcess
 		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());
 		if (scheduler == null)
 		{
-			addLog("Creating server scheduler for " + schedulerModel.getName());
 			adempiereServerMgr.add(schedulerModel);
+			addLog("Created server scheduler for " + schedulerModel.getName());
 		}
 
-		addLog("Starting " + schedulerModel.getName());
 		adempiereServerMgr.start(schedulerModel.getServerID());
+		addLog("Started " + schedulerModel.getName());
 		return true;
 	}
 
