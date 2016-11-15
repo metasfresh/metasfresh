@@ -38,10 +38,13 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Session;
 import org.compiere.util.Ini;
 
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.api.impl.AsyncBatchDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.spi.impl.DefaultAsyncBatchListener;
 import de.metas.event.IEventBusFactory;
 
 /**
@@ -81,6 +84,7 @@ public class Main extends AbstractModuleInterceptor
 		// Data import (async support)
 		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(AsyncImportWorkpackageProcessor.TOPIC_RecordsImported);
+	Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
 	/**
@@ -109,6 +113,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Queue_PackageProcessor(), client);
 		engine.addModelValidator(new C_Queue_Processor(), client);
 		engine.addModelValidator(new de.metas.lock.model.validator.Main(), client);
+		engine.addModelValidator(new C_Async_Batch(), client);
 	}
 
 	/**
