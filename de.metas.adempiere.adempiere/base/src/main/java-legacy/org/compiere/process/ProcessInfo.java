@@ -759,8 +759,7 @@ public final class ProcessInfo implements Serializable
 			}
 			if (_adPInstance == null)
 			{
-				final Properties ctx = getCtx();
-				_adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+				_adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(getCtx(), adPInstanceId);
 			}
 			return _adPInstance;
 		}

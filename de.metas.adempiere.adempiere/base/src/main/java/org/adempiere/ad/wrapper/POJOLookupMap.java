@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -55,15 +53,14 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -75,7 +72,9 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
@@ -1062,9 +1061,10 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public I_AD_PInstance createSelectionPInstance(final Properties ctx)
 	{
-		final IContextAware contextProvider = new PlainContextAware(ctx);
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class, contextProvider);
-		InterfaceWrapperHelper.save(adPInstance);
+		final int adProcessId = 0; // N/A
+		final int adTableId = 0;
+		final int recordId = 0;
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, adTableId, recordId);
 		return adPInstance;
 	}
 

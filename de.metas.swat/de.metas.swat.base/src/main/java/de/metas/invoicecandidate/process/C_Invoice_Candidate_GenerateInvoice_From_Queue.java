@@ -28,9 +28,8 @@ package de.metas.invoicecandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_PInstance;
@@ -59,8 +58,7 @@ public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends SvrProcess
 		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
 
 		final Properties ctx = getCtx();
-		final String trxName = ITrx.TRXNAME_None; // AD_PInstance can be fetched only out of trx
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, getAD_PInstance_ID(), I_AD_PInstance.class, trxName);
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, getAD_PInstance_ID());
 
 		final IInvoiceGenerateResult result = service.generateInvoicesFromQueue(adPInstance);
 

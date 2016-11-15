@@ -29,6 +29,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.misc.service.IProcessPA;
@@ -37,7 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInstance;
@@ -120,11 +120,8 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 
 	private I_AD_PInstance createPInstance()
 	{
-		final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		pinstance.setAD_Process_ID(adProcessId);
-		pinstance.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pinstance.setAD_Role_ID(Env.getAD_Role_ID(ctx));
-		pinstance.setRecord_ID(0); // mandatory
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, 0, 0);
+		
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 

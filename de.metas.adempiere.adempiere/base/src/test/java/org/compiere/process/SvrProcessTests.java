@@ -24,12 +24,12 @@ package org.compiere.process;
 
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.impl.ADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
@@ -164,7 +164,7 @@ public class SvrProcessTests
 			final ProcessInfo pi = getProcessInfo();
 			Assert.assertNotNull("ProcessInfo not null", pi);
 
-			final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(Env.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(Env.getCtx(), pi.getAD_PInstance_ID());
 
 			// Make sure AD_PInstance record was created in database
 			Assert.assertNotNull("AD_PInstance record exists in database", pinstance);
@@ -259,15 +259,16 @@ public class SvrProcessTests
 		final Properties ctx = Env.getCtx();
 		
 		// Create the AD_PInstance record
-		final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(pinstance);
+		int AD_Process_ID = 0; // N/A
+		int AD_Table_ID = 0;
+		int recordId = 0;
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, AD_Process_ID, AD_Table_ID, recordId);
 
 		//
 		// Create ProcessInfo descriptor
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_PInstance(pinstance)
-				.setAD_Process_ID(0) // N/A
 				.setTitle("Test")
 				.setClassname(processInstance == null ? null : processInstance.getClass().getName())
 				.build();
