@@ -135,7 +135,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
-	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId)
+	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId, final int partnerId)
 	{
 		super(terminalContext);
 
@@ -144,6 +144,13 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		Check.assumeNotNull(_warehouse, "warehouse not null");
 
 		_date = Env.getDate(terminalContext.getCtx()); // use Login date (08306)
+		
+		if(partnerId > 0)
+		{
+			_bpartner = InterfaceWrapperHelper.create(terminalContext.getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(),  _bpartner.getValue());
+			_bpartnerReturnType = BPartnerReturnType.ReturnToVendor;
+		}
 
 		{
 			_bpLocationKeyLayout = new BPartnerLocationKeyLayout(terminalContext);
