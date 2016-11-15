@@ -171,9 +171,6 @@ node('agent && linux')
 			// TODO: notify zapier that the "main" stuff was build
 		} // withMaven
 	} // configFileProvider
-	
-	// clean up the workspace, including the local maven repositories that the withMaven steps created
-	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node			
 
 // invoke external build jobs like webui
@@ -208,7 +205,7 @@ node('agent && linux && libc6-i386')
 			}
 		} // withMaven
 	} // configFileProvider
-	
+
 	// clean up the workspace, including the local maven repositories that the withMaven steps created
 	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
