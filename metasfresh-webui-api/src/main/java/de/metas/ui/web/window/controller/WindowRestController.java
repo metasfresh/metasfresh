@@ -451,7 +451,8 @@ public class WindowRestController implements IWindowRestController
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
-		headers.setContentDispositionFormData(reportFilename, reportFilename);
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline");
+		//headers.setContentDispositionFormData(reportFilename, reportFilename);
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
 		return response;
