@@ -201,7 +201,7 @@ class Filters extends Component {
 
 				{ notFrequentFilterOpen &&
 					<div className="filters-overlay">
-						{ (notFrequentListOpen && isActive) ?
+						{ (notFrequentListOpen && !isActive) ?
 							<ul className="filter-menu">
 								{filterData.map((item, index) =>
 									<li key={index} onClick={() => this.showFilter(item)}>
