@@ -53,14 +53,12 @@ import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MPackage;
 import org.compiere.model.MProcess;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfo;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
@@ -566,16 +564,8 @@ public class RoutingService implements IDPDRoutingservice
 	private JasperPrint retrieveJasperPrint(final Properties ctx, final String processName, final int adTableId, final int recordId, final String trxName)
 	{
 		final int processId = MProcess.getProcess_ID(processName, trxName);
-		final MPInstance instance = new MPInstance(ctx, processId, adTableId, recordId);
-		
-		DB.saveConstraints();
-		try {
-			DB.getConstraints().incMaxTrx(1).addAllowedTrxNamePrefix("POSave");
-			instance.saveEx();
-		} finally { DB.restoreConstraints(); }
 		
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setAD_PInstance(instance)
 				.setAD_Process_ID(processId)
 				.setTitle(processName)
 				.setRecord(adTableId, recordId)
