@@ -170,5 +170,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger an< downstream builds"
 	}
 
+	// clean up the works spave, including the local maven repositories that the withMaven steps created
+	step([$class: 'WsCleanup', cleanWhenFailure: false])
 } // node
 } // timestamps   
