@@ -5,7 +5,7 @@
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch)
+def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -50,7 +50,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_BUILD_ID', value: buildId),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
-		], wait: true
+		], wait: wait
 }
 
 //
@@ -180,7 +180,7 @@ node('agent && linux')
 // wait for the results, but don't block a node for it
 stage('Invoke downstream jobs') 
 {
-	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, BRANCH_NAME)
+	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too 
 }
 
