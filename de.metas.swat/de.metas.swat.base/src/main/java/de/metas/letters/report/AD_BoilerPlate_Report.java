@@ -9,12 +9,11 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
-import org.compiere.report.ReportStarter;
-import org.compiere.util.Trx;
 
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
+import de.metas.process.ProcessCtl;
 
 /**
  * @author teo_sarca
@@ -24,7 +23,7 @@ public class AD_BoilerPlate_Report extends SvrProcess
 {
 	private String p_MsgText = null;
 	private int p_AD_PrintFormat_ID = -1;
-	
+
 	@Override
 	protected void prepare()
 	{
@@ -32,7 +31,7 @@ public class AD_BoilerPlate_Report extends SvrProcess
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
-				;			
+				;
 			else if (X_T_BoilerPlate_Spool.COLUMNNAME_MsgText.equals(name))
 			{
 				p_MsgText = para.getParameter().toString();
@@ -69,22 +68,22 @@ public class AD_BoilerPlate_Report extends SvrProcess
 		}
 		return "OK";
 	}
-	
+
 	private void createRecord(String text)
 	{
 		MADBoilerPlate.createSpoolRecord(getCtx(), getAD_Client_ID(), getAD_PInstance_ID(), text, get_TrxName());
 	}
-	
+
 	private boolean isJasperReport()
 	{
-		final String whereClause = I_AD_Process.COLUMNNAME_AD_Process_ID+"=?"
-		+" AND "+I_AD_Process.COLUMNNAME_JasperReport+" IS NOT NULL";
+		final String whereClause = I_AD_Process.COLUMNNAME_AD_Process_ID + "=?"
+				+ " AND " + I_AD_Process.COLUMNNAME_JasperReport + " IS NOT NULL";
 		return new Query(getCtx(), I_AD_Process.Table_Name, whereClause, get_TrxName())
-		.setParameters(getProcessInfo().getAD_Process_ID())
-		.match();
+				.setParameters(getProcessInfo().getAD_Process_ID())
+				.match();
 	}
-	
-	private void startJasper()
+
+	private void startJasper() throws Exception
 	{
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(getCtx())
@@ -94,9 +93,10 @@ public class AD_BoilerPlate_Report extends SvrProcess
 				.setAD_Process_ID(0)
 				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
 				.build();
-		//
-		ReportStarter proc = new ReportStarter();
-		proc.startProcess(getCtx(), pi, Trx.get(get_TrxName(), false));
-		pi.getResult().propagateErrorIfAny();
+
+		ProcessCtl.builder()
+				.setProcessInfo(pi)
+				.onErrorThrowException()
+				.executeSync();
 	}
 }
