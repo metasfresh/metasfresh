@@ -201,8 +201,10 @@ node('agent && linux && libc6-i386')
 				// we currently deploy *and* also archive, but that might change in future
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
 		
-				// endcustomer.mf15 currently has no tests, so we allow empty results.
-				junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
+				// ERROR: Test reports were found but none of them are new. Did tests run? 
+				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
+				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 			}
 		} // withMaven
 	} // configFileProvider
