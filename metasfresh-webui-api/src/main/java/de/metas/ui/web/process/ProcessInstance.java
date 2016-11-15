@@ -10,6 +10,7 @@ import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessCtl;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
@@ -109,13 +110,11 @@ public class ProcessInstance
 		//
 		// Process info
 		final ProcessInfo pi = createProcessInfo();
-		final WebuiJRReportViewerProvider jrReportViewerProvider = new WebuiJRReportViewerProvider();
 
 		//
 		// Execute the process/report
 		ProcessCtl.builder()
 				.setProcessInfo(pi)
-				.setJRReportViewerProvider(jrReportViewerProvider)
 				.executeSync();
 
 		//
@@ -128,10 +127,10 @@ public class ProcessInstance
 					.setError(processExecutionResult.isError());
 			//
 			// Result: report
-			final byte[] reportData = jrReportViewerProvider.getReportData();
+			final byte[] reportData = processExecutionResult.getReportData();
 			if (reportData != null && reportData.length > 0)
 			{
-				resultBuilder.setReportData(reportData, jrReportViewerProvider.getReportType().getContentType());
+				resultBuilder.setReportData(reportData, processExecutionResult.getReportContentType());
 			}
 
 			return resultBuilder.build();
@@ -161,6 +160,7 @@ public class ProcessInstance
 				.setClassname(classname)
 				.setRecord(AD_Table_ID, Record_ID)
 				.setPrintPreview(true)
+				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
 
 		return pi;
