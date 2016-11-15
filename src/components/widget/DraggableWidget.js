@@ -65,7 +65,8 @@ export class DraggableWidget extends Component {
         super(props);
         this.state = {
             toggleWidgetMenu: false,
-            isMaximize: false
+            isMaximize: false,
+            refresh: false
         };
     }
 
@@ -96,9 +97,20 @@ export class DraggableWidget extends Component {
         }))
     }
 
+    handleRefresh = () => {
+        this.setState(Object.assign({}, this.state, {
+            refresh: true
+        }), () => {
+            this.setState(Object.assign({}, this.state, {
+                refresh: false,
+                toggleWidgetMenu: false
+            }));
+        });
+    }
+
     render() {
         const { text, url, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
-        const { toggleWidgetMenu, isMaximize } = this.state;
+        const { toggleWidgetMenu, isMaximize, refresh } = this.state;
 
 
         return connectDragSource(connectDropTarget(
@@ -114,13 +126,13 @@ export class DraggableWidget extends Component {
                                 <span onClick={() => {this.maximizeWidget(); hideWidgets(index)} }>Maximize</span>
                             }
 
-                            <span>Refresh</span>
+                            <span onClick={this.handleRefresh}>Refresh</span>
                         </div>
                     }
                 </div>
                 <div className="draggable-widget-body">
                     <iframe
-                        src={url}
+                        src={!refresh && url}
                         scrolling="no"
                         frameBorder="no"
                     ></iframe>
