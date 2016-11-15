@@ -211,27 +211,6 @@ node('agent && linux && libc6-i386')
 	} // configFileProvider
 } // node
 
-def downloadForDeployment(String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser)
-{
-	def packagingPart=packaging ? ":${packaging}" : ""
-	def classifierPart=classifier ? ":${classifier}" : ""
-	def artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
-
-	// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
-	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
-	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
-	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
-		{
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact}"
-			
-			// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
-			sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"
-		}
-	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}.${packaging}"
-}
-
 	stage('Deployement')
 	{
 		def userInput = input message: 'Deploy artifacts?', 
@@ -244,22 +223,47 @@ def downloadForDeployment(String groupId, String artifactId, String version, Str
 //Leave empty to deploy the SQL on MF_TARGET_HOST.''', name: 'MF_de.metas.endcustomer.mf15.dist-sql-only_TARGET_HOST')
 		]
 
-		def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ./${shellScript}\"" } 
+		def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+
+			def packagingPart=packaging ? ":${packaging}" : ""
+			def classifierPart=classifier ? ":${classifier}" : ""
+			def artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
+
+			// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
+			// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
+			configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+			{
+				withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
+				{
+					sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact}"
+					
+					// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
+					sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"
+				}
+			}
+			sh "scp ${WORKSPACE}/deploy/${artifactId}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}.${packaging}"
+		}
 		
+		def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
+		
+			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ./${shellScript}\"" 
+		} 
+				
 		node('master')
 		{
 			if(userInput['MF_TARGET_HOST'])
 			{
-				def artifactId='de.metas.endcustomer.mf15.dist';
+				def distArtifactId='de.metas.endcustomer.mf15.dist';
 				def packaging='tar.gz';
 				def sshTargetHost=userInput['MF_TARGET_HOST'];
 				def sshTargetUser='metasfresh'
-				
-				// get the deployable file to the target host
-				downloadForDeployment("de.metas.endcustomer.mf15", artifactId, BUILD_MAVEN_VERSION, packaging, "dist", sshTargetHost, sshTargetUser);
+			
+				// main part: provide and rollout the "main" distributable
+				// get the deployable dist file to the target host
+				downloadForDeployment("de.metas.endcustomer.mf15", distArtifactId, BUILD_MAVEN_VERSION, packaging, "dist", sshTargetHost, sshTargetUser);
 				
 				// extract the tar.gz
-				def fileAndDirName="${artifactId}-${BUILD_MAVEN_VERSION}"
+				def fileAndDirName="${distArtifactId}-${BUILD_MAVEN_VERSION}"
 				def deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 				
 				// Look Ma, I'm currying!!
@@ -271,13 +275,10 @@ def downloadForDeployment(String groupId, String artifactId, String version, Str
 				invokeRemoteInInstallDir('sql_remote.sh');
 				invokeRemoteInInstallDir('minor_remote.sh');
 				invokeRemoteInInstallDir('start_service.sh');
+				
+				// also provide the webui-api; TODO actually deploy it
+				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', BUILD_MAVEN_VERSION, 'jar', null, sshTargetHost, sshTargetUser);
 			}
-//			if(userInput['MF_swingui_TARGET_HOST'])
-//			{
-//				def sshTargetHost=userInput['MF_swingui_TARGET_HOST'];
-//				downloadForDeployment("de.metas.endcustomer.mf15", "de.metas.endcustomer.mf15.dist", BUILD_MAVEN_VERSION, "zip", "client", sshTargetHost, "metasfresh");		
-//				sh "ssh metasfresh@${sshTargetHost} \"/bin/bash /home/metasfresh/install_client.sh\""
-//			}
 		}
 	}
 } // timestamps
