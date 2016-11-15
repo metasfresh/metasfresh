@@ -32,12 +32,19 @@ class FiltersItem extends Component {
     }
 
 	render() {
-        const {filterData, clearFilterData, applyFilters, notValidFields} = this.props;
+        const {filterData, clearFilterData, applyFilters, notValidFields, isActive} = this.props;
         return (
             <div className="filter-menu filter-widget">
                 <div>Active filter:
                     <span className="filter-active">{filterData.caption}</span>
-                    <span className="filter-clear" onClick={() => { clearFilterData(filterData)}}>Clear filter <i className="meta-icon-trash"></i></span>
+                    {isActive &&
+                        <span
+                            className="filter-clear"
+                            onClick={() => { clearFilterData(filterData)}}
+                        >
+                            Clear filter <i className="meta-icon-trash" />
+                        </span>
+                    }
                 </div>
                 <div className="form-group row filter-content">
                     <div className="col-sm-12">

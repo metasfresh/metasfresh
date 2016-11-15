@@ -52,7 +52,8 @@ class Filters extends Component {
 	closeFilterMenu = () => {
 		this.setState(Object.assign({}, this.state, {
             notFrequentFilterOpen: false,
-			frequentFilterOpen: false
+			frequentFilterOpen: false,
+            notFrequentListOpen: true
 		}))
 	}
 
@@ -152,7 +153,7 @@ class Filters extends Component {
 		this.setSelectedItem('', true);
 	}
 
-	renderFiltersItem = (item, key) => {
+	renderFiltersItem = (item, key, isActive) => {
 		const {windowType, updateDocList} = this.props;
 		const {filterDataItem, selectedItem,notValidFields} = this.state;
 		return (
@@ -170,6 +171,7 @@ class Filters extends Component {
 				clearFilterData={this.clearFilterData}
 				applyFilters={this.applyFilters}
                 notValidFields={notValidFields}
+                isActive={isActive}
 			/>
 		)
 	}
@@ -180,7 +182,8 @@ class Filters extends Component {
 
         //have to check wheter any of standard filters is active
         //once it is rendered
-        const isActive = filters[0] && !!getItemsByProperty(filterData, "filterId", filters[0].filterId).length;
+        const active = filters[0] ? getItemsByProperty(filterData, "filterId", filters[0].filterId)[0] : null;
+        const isActive = active ? !!active : false;
 
 		return (
 			<div className="filter-wrapper">
@@ -193,12 +196,12 @@ class Filters extends Component {
                     }
                 >
 					<i className="meta-icon-preview" />
-					{ isActive ? 'Filter: ' + filterDataItem.caption : 'Select other filter'}
+					{ isActive ? 'Filter: ' + active.caption : 'Select other filter'}
 				</button>
 
 				{ notFrequentFilterOpen &&
 					<div className="filters-overlay">
-						{ notFrequentListOpen ?
+						{ (notFrequentListOpen && isActive) ?
 							<ul className="filter-menu">
 								{filterData.map((item, index) =>
 									<li key={index} onClick={() => this.showFilter(item)}>
@@ -208,7 +211,7 @@ class Filters extends Component {
 							</ul>
                             :
 							<div>
-								{this.renderFiltersItem(filterDataItem)}
+								{this.renderFiltersItem(filterDataItem, 0, isActive)}
 							</div>
 						}
 					</div>
@@ -229,14 +232,14 @@ class Filters extends Component {
     						<button
                                 onClick={() => this.toggleFrequentFilter(index, item)}
                                 className={
-                                    "btn btn-meta-outline-secondary btn-distance btn-sm" +
+                                    "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
                                     (isActive ? " btn-active": "")
                                 }
                             >
     							<i className="meta-icon-preview" />
     							{ isActive ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
     						</button>
-    						{frequentFilterOpen === index && this.renderFiltersItem(item) }
+    						{frequentFilterOpen === index && this.renderFiltersItem(item, index, isActive) }
     					</div>
                     )
                 })}

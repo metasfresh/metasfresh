@@ -61,8 +61,9 @@ export class DraggableWrapper extends Component {
         }), () => {
             const changes = {
                 "jsonDashboardChanges": {
-                "dashboardItemIdsOrder": cards.map(item => item.id)
-            }};
+                    "dashboardItemIdsOrder": cards.map(item => item.id)
+                }
+            };
             dispatch(setUserDashboardWidgets(changes));
         });
     }
