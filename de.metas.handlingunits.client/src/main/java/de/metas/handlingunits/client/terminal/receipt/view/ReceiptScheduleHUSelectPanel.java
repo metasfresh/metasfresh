@@ -26,12 +26,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Order;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
@@ -396,33 +393,9 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 
 		final ReceiptScheduleHUSelectModel model = getModel();
 		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected
-
-		// # 597: in case the partner was selected it will be automatically set for empties. If it is not, the empties will works for any selected partner
-		int partnerId = model.getC_BPartner_ID(false); // failIfNotSelected = false
-
-		if (partnerId <= 0)
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
-			final int orderId = model.getC_Order_ID();
-
-			if (orderId > 0)
-			{
-
-				final I_C_Order order = InterfaceWrapperHelper.create(terminalContext.getCtx(), orderId, I_C_Order.class, ITrx.TRXNAME_None);
-				
-				if(order != null)
-				{
-					partnerId = order.getC_BPartner_ID();
-				}
-
-			}
-		}
-
-		try (
-
-		final ITerminalContextReferences refs = terminalContext.newReferences())
-
-		{
-			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId, partnerId);
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId);
 			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
 			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
@@ -430,7 +403,6 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 
 			dialog.activate();
 		}
-
 	}
 
 	/**
