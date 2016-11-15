@@ -110,7 +110,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		adPInstance.setAD_Process_ID(parametersDescriptor.getDocumentTypeId(DocumentType.Process));
 		// TODO set, user, role, table/record
-		adPInstance.setRecord_ID(-1);
+		adPInstance.setRecord_ID(0);
 		InterfaceWrapperHelper.save(adPInstance);
 		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
 
