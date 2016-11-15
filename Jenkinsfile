@@ -60,7 +60,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 //
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
-// disabling concurrent builds as long as we work with "SNAPSHOTS"
 properties([
 	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
@@ -78,8 +77,8 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]), 
-	pipelineTriggers([]), 
-	disableConcurrentBuilds()
+	pipelineTriggers([]) 
+	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
 
