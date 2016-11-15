@@ -83,10 +83,10 @@ import io.swagger.annotations.ApiParam;
 public class WindowRestController implements IWindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
-	private static final String PARAM_WindowId = "type";
-	private static final String PARAM_DocumentId = "id";
-	private static final String PARAM_TabId = "tabid";
-	private static final String PARAM_RowId = "rowId";
+	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
+	private static final String PARAM_DocumentId = WebConfig.PARAM_DocumentId;
+	private static final String PARAM_TabId = WebConfig.PARAM_TabId;
+	private static final String PARAM_RowId = WebConfig.PARAM_RowId;
 	private static final String PARAM_Field = "field";
 	private static final String PARAM_FieldsList = "fields";
 	private static final String PARAM_Advanced = "advanced";
