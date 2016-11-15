@@ -446,13 +446,13 @@ public class WindowRestController implements IWindowRestController
 
 		final ProcessExecutionResult processExecutionResult = pi.getResult();
 		final byte[] reportData = processExecutionResult.getReportData();
-		final String reportFilename = processExecutionResult.getReportFilename();
+		// final String reportFilename = processExecutionResult.getReportFilename();
 		final String reportContentType = processExecutionResult.getReportContentType();
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline");
-		//headers.setContentDispositionFormData(reportFilename, reportFilename);
+		// headers.setContentDispositionFormData(reportFilename, reportFilename);
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
 		return response;

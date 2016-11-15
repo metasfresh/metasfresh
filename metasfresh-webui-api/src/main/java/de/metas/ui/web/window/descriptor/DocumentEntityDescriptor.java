@@ -271,7 +271,7 @@ public class DocumentEntityDescriptor
 	 * @param detailId
 	 * @return included {@link DocumentEntityDescriptor}; never returns null
 	 */
-	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId) throws NoSuchElementException
+	public DocumentEntityDescriptor getIncludedEntityByDetailId(final DetailId detailId) throws NoSuchElementException
 	{
 		final DocumentEntityDescriptor includedEntityDescriptor = includedEntitiesByDetailId.get(detailId);
 		if (includedEntityDescriptor == null)

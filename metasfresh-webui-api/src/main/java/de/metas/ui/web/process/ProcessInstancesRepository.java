@@ -6,6 +6,7 @@ import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.descriptor.ProcessParametersRepository;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -88,22 +90,21 @@ public class ProcessInstancesRepository
 		processInstances.put(processInstance.getAD_PInstance_ID(), processInstance.copy(CopyMode.CheckInReadonly));
 	}
 
-	public ProcessInstance createNewProcessInstance(final int adProcessId)
+	public ProcessInstance createNewProcessInstance(final ProcessInfo processInfo)
 	{
-		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
+		final int adPInstanceId = processInfo.getAD_PInstance_ID();
 
 		//
 		// Build the parameters (as document)
+		final int adProcessId = processInfo.getAD_Process_ID();
+		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
 		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-		final Document parametersDoc = parametersDescriptor
-				.getDataBinding()
-				.getDocumentsRepository()
-				.createNewDocument(parametersDescriptor);
+		final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
 
-		final int adPInstanceId = parametersDoc.getDocumentIdAsInt();
-		
+		//
 		final ProcessInstance pinstance = new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
-		processInstances.put(pinstance.getAD_PInstance_ID(), pinstance.copy(CopyMode.CheckInReadonly));
+		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;
 	}
 

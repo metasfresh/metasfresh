@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -292,6 +293,24 @@ public class DocumentCollection
 		}
 	}
 
+	public TableRecordReference getTableRecordReference(final DocumentPath documentPath)
+	{
+		final DocumentEntityDescriptor rootEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(documentPath.getAD_Window_ID())
+				.getEntityDescriptor();
+
+		if (documentPath.isRootDocument())
+		{
+			final String tableName = rootEntityDescriptor.getTableName();
+			final int recordId = documentPath.getDocumentId().toInt();
+			return TableRecordReference.of(tableName, recordId);
+		}
+		
+		final DocumentEntityDescriptor includedEntityDescriptor = rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
+		final String tableName = includedEntityDescriptor.getTableName();
+		final int recordId = documentPath.getSingleRowId().toInt();
+		return TableRecordReference.of(tableName, recordId);
+	}
+
 	private static final class DocumentKey
 	{
 		public static final DocumentKey of(final Document document)
@@ -356,13 +375,13 @@ public class DocumentCollection
 					&& documentTypeId == other.documentTypeId
 					&& DataTypes.equals(documentId, other.documentId);
 		}
-		
+
 		public int getAD_Window_ID()
 		{
 			Check.assume(documentType == DocumentType.Window, "documentType shall be {} but it was {}", DocumentType.Window, documentType);
 			return documentTypeId;
 		}
-		
+
 		public DocumentId getDocumentId()
 		{
 			return documentId;

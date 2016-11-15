@@ -7,11 +7,9 @@ import java.util.Properties;
 import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.Env;
 
-import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -95,23 +93,15 @@ public class ProcessParametersRepository implements DocumentsRepository
 		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, id -> LookupValue.fromObject(id, parameterDisplay));
 		return parameterValueConv;
 	}
-
+	
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentProcessParameters)
 	{
-		if (parentProcessParameters != null)
-		{
-			throw new IllegalArgumentException("parentDocument is not supported");
-		}
+		throw new UnsupportedOperationException();
+	}
 
-		// TODO set, user, role, table/record
-		final Properties ctx = Env.getCtx();
-		final int adProcessId = parametersDescriptor.getDocumentTypeId(DocumentType.Process);
-		final int adTableId = 0;
-		final int recordId = 0;
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, adProcessId, adTableId, recordId);
-		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
-
+	public Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final int adPInstanceId)
+	{
 		//
 		// Build the parameters (as document)
 		return Document.builder()
