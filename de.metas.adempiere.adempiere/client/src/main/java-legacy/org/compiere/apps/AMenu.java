@@ -706,16 +706,16 @@ public final class AMenu extends CFrame
 	 */
 	private int getRequests()
 	{
-		if (m_requestSQL == null)
+ 		if (m_requestSQL == null)
 			m_requestSQL = Env.getUserRolePermissions().addAccessSQL("SELECT COUNT(1) FROM R_Request "
-					+ "WHERE (SalesRep_ID=? OR AD_Role_ID=?) AND Processed='N'"
+					+ " WHERE (SalesRep_ID=? OR AD_Role_ID=?) AND Processed='N'"
 					+ " AND (DateNextAction IS NULL OR TRUNC(DateNextAction) <= TRUNC(now()))"
-					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (SELECT R_Status_ID FROM R_Status WHERE IsClosed='N'))"
+					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (select R_Status_ID from R_Status where IsClosed='N'))"
 					// #577
 					// Only count the R_Request entries that have request types used for Partner Request Window (the flag IsUseForPartnerRequestWindow is on true)
 					+ " AND ("+ I_R_Request.COLUMNNAME_R_RequestType_ID
-					+ " IN ( SELECT "+ I_R_RequestType.COLUMNNAME_R_RequestType_ID + " FROM " + I_R_RequestType.Table_Name
-					+ " WHERE " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))", 
+					+ " IN ( select "+ I_R_RequestType.COLUMNNAME_R_RequestType_ID + " from " + I_R_RequestType.Table_Name
+					+ "  where " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))", 
 					"R_Request", false, true);	// not qualified - RW
 		int retValue = DB.getSQLValue(null, m_requestSQL, m_AD_User_ID, m_AD_Role_ID);
 		return retValue;
