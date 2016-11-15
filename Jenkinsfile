@@ -127,7 +127,7 @@ node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{	
 			stage('Preparation') // for display purposes
 			{	
@@ -190,7 +190,7 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M -XX:MaxHeapSize=512m') 
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
 			stage('Build dist') 
 			{
@@ -203,9 +203,6 @@ node('agent && linux && libc6-i386')
 		
 				// endcustomer.mf15 currently has no tests, so we allow empty results.
 				junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-				
-			  	// we currently deploy *and* also archive, but that might change in future
-				// archiveArtifacts 'de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.dist/target/*.tar.gz,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.zip,de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/target/*.exe'
 			}
 		} // withMaven
 	} // configFileProvider
