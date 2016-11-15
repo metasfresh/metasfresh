@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -223,6 +224,8 @@ public class AgentSyncIntegrationTest
 		syncBPartner.setName("Test");
 		syncBPartner.setSyncContracts(false);
 
+		usersRepo.deleteAllInBatch(); // make sure the users table is really empty
+		
 		//
 		// Import the BPartner with a User
 		final SyncUser syncUser1 = new SyncUser();
