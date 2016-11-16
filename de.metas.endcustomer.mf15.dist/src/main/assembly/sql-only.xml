@@ -16,7 +16,7 @@
 			<outputDirectory>sql</outputDirectory>
 		</fileSet>
 		
-		<!-- also add the rollout scripts to that we can perform the SQL rollout -->
+		<!-- also add the rollout scripts so that we can perform the SQL rollout -->
 		<fileSet>
 			<directory>${project.build.directory}/dist/install</directory>
 			<outputDirectory>install</outputDirectory>
@@ -32,7 +32,6 @@
 			<excludes>
 				<exclude>**/*.sh</exclude>
 			</excludes>
-			<lineEnding>unix</lineEnding>
 		</fileSet>
 		
 	</fileSets>
