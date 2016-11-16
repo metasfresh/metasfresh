@@ -86,12 +86,12 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 final MF_UPSTREAM_BRANCH;
 if(params.MF_UPSTREAM_BRANCH)
 {
-	echo "Setting BRANCH_NAME from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
+	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
 	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
 }
 else
 {
-	echo "Setting BRANCH_NAME from env.BRANCH_NAME=${env.BRANCH_NAME}"
+	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
 	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
 }
 if(params.MF_BUILD_ID)
