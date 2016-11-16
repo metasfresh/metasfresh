@@ -334,6 +334,7 @@
     border-bottom-width: 0;
     padding: .2rem .68rem;
     color: $brand-link-color;
+    pointer-events: visible;
 }
 
 .menu-overlay-header {

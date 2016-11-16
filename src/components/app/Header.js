@@ -50,17 +50,17 @@ class Header extends Component {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
 
-        let toggelBreadcrumb = () => {
+        let toggleBreadcrumb = () => {
             this.setState(Object.assign({}, this.state, {
                 menuOverlay: nodeId
             }));
         }
         if(isSubheaderShow){
-            this.handleBackdropClick(toggelBreadcrumb);
+            this.handleBackdropClick(toggleBreadcrumb);
         }else if(isSideListShow){
-            this.handleCloseSideList(toggelBreadcrumb);
+            this.handleCloseSideList(toggleBreadcrumb);
         }else{
-            toggelBreadcrumb();
+            toggleBreadcrumb();
         }
 
     }
