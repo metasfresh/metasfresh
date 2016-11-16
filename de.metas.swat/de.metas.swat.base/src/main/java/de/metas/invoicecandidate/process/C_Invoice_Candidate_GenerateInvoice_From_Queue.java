@@ -31,13 +31,11 @@ import java.util.Properties;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.process.IADPInstanceDAO;
 import de.metas.process.SvrProcess;
 
 /**
@@ -58,9 +56,7 @@ public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends SvrProcess
 		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
 
 		final Properties ctx = getCtx();
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, getAD_PInstance_ID());
-
-		final IInvoiceGenerateResult result = service.generateInvoicesFromQueue(adPInstance);
+		final IInvoiceGenerateResult result = service.generateInvoicesFromQueue(ctx);
 
 		final ADHyperlinkBuilder linkHelper = new ADHyperlinkBuilder();
 
