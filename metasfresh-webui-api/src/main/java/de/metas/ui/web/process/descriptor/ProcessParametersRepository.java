@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.Env;
 
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;

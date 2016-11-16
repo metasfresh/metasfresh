@@ -2,11 +2,9 @@ package de.metas.ui.web.process;
 
 import java.util.concurrent.ExecutionException;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +16,8 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.ProcessParametersRepository;

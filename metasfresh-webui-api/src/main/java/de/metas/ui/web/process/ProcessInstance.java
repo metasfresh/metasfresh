@@ -2,15 +2,15 @@ package de.metas.ui.web.process;
 
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -112,7 +112,7 @@ public class ProcessInstance
 
 		//
 		// Execute the process/report
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.executeSync();
 

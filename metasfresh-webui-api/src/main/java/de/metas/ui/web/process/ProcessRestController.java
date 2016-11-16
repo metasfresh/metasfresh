@@ -3,7 +3,6 @@ package de.metas.ui.web.process;
 import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.process.ProcessInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessLayout;

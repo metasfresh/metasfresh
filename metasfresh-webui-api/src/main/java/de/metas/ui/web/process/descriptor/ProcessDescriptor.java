@@ -2,13 +2,13 @@ package de.metas.ui.web.process.descriptor;
 
 import java.util.Optional;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*

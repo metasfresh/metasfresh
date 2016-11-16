@@ -2,12 +2,11 @@ package de.metas.ui.web.process.json;
 
 import java.util.Map;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.process.ISvrProcessPrecondition;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 

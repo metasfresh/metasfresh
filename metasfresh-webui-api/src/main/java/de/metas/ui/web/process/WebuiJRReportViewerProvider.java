@@ -2,9 +2,9 @@ package de.metas.ui.web.process;
 
 import org.adempiere.util.Check;
 import org.compiere.print.JRReportViewerProvider;
-import org.compiere.process.ProcessInfo;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.ProcessInfo;
 
 /*
  * #%L

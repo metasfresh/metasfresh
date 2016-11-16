@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.DocumentPreconditionsContext;
@@ -440,7 +440,7 @@ public class WindowRestController implements IWindowRestController
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.executeSync();
 

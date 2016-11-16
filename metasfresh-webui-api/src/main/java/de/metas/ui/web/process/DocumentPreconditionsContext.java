@@ -1,10 +1,10 @@
 package de.metas.ui.web.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.model.Document;
 
 /*
