@@ -66,7 +66,7 @@ public class JasperReportEngineAdapter implements IJasperReportEngineAdapter
 				.build();
 
 		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(jasperProcessInfo, jasperProcessInfo.getJRDesiredOutputType());
+		final byte[] pdf = jrClient.report(jasperProcessInfo);
 
 		return pdf;
 	}

@@ -141,7 +141,7 @@ public class JRClient
 		return jasperPrint;
 	}
 
-	public byte[] report(final int AD_Process_ID, final int AD_PInstance_ID, final Language language, final OutputType outputType)
+	private byte[] report(final int AD_Process_ID, final int AD_PInstance_ID, final Language language, final OutputType outputType)
 	{
 		try
 		{
@@ -151,6 +151,11 @@ public class JRClient
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+	}
+
+	public byte[] report(final ProcessInfo pi)
+	{
+		return report(pi, pi.getJRDesiredOutputType());
 	}
 
 	public byte[] report(final ProcessInfo pi, final OutputType outputType)

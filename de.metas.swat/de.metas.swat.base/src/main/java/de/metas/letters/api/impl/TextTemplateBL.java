@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.Query;
@@ -58,6 +57,7 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {
@@ -167,21 +167,22 @@ public final class TextTemplateBL implements ITextTemplateBL
 	}
 
 	@Override
-	public byte[] createPDF(I_C_Letter letter)
+	public byte[] createPDF(final I_C_Letter letter)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
-		// final int clientId = Env.getAD_Client_ID(ctx);
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(getJasperProcess_ID(letter))
+				// .setRecord(recordRef) // no record
+				.setReportLanguage(Env.getLanguage(ctx))
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
+		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(jasperProcessInfo);
 
-		final int jasperProcessId = getJasperProcess_ID(letter);
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, jasperProcessId, 0, 0);
-
-		createLetterSpoolRecord(pinstance.getAD_PInstance_ID(), letter);
+		createLetterSpoolRecord(jasperProcessInfo.getAD_PInstance_ID(), letter);
 
 		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(pinstance.getAD_Process_ID(),
-				pinstance.getAD_PInstance_ID(),
-				Env.getLanguage(ctx),
-				OutputType.PDF);
+		final byte[] pdf = jrClient.report(jasperProcessInfo);
 
 		return pdf;
 	}
