@@ -32,9 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.DB;
 
@@ -58,9 +55,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_BPartner_Product;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
@@ -97,8 +91,7 @@ public class DesadvBL implements IDesadvBL
 					"EDI_DesadvLine {} of EDI_Desadv {} has M_Product_ID {} and C_OrderLine {} of C_Order {} has M_Product_ID {}, but both have POReference {} and Line {} ",
 					desadvLine, desadv, desadvLine.getM_Product_ID(),
 					orderLine, order, orderLine.getM_Product_ID(),
-					order.getPOReference(), orderLine.getLine()
-					);
+					order.getPOReference(), orderLine.getLine());
 
 			orderLine.setEDI_DesadvLine(desadvLine);
 			InterfaceWrapperHelper.save(orderLine);
@@ -415,43 +408,23 @@ public class DesadvBL implements IDesadvBL
 		Check.assumeNotNull(ctx, "ctx not null");
 		Check.assumeNotEmpty(desadvLineSSCC_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-		//
-		// Create AD_PInstance
-		final I_AD_Process process = adProcessDAO.retriveProcessByValue(ctx, AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print);
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, process.getAD_Process_ID(), 0, 0);
-		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
-
-		// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
-		// The report will fetch it from selection.
-		DB.createT_Selection(adPInstanceId, desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_None);
-
-		// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
-		{
-			final I_AD_PInstance_Para para_ReportSqlQuery = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
-			para_ReportSqlQuery.setAD_PInstance_ID(adPInstanceId);
-			para_ReportSqlQuery.setSeqNo(10);
-			para_ReportSqlQuery.setParameterName(JasperConstants.REPORT_PARAM_SQL_QUERY);
-			para_ReportSqlQuery.setP_String("select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
-					+ " where AD_PInstance_ID=" + adPInstanceId
-					+ " order by EDI_DesadvLine_SSCC_ID");
-			InterfaceWrapperHelper.save(para_ReportSqlQuery);
-		}
-
 		//
 		// Create the process info based on AD_Process and AD_PInstance
-		final ProcessInfo processInfo = ProcessInfo.builder()
+		ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_PInstance(adPInstance)
-				.setAD_Process(process)
-				.build();
-
-		//
-		// Execute the actual printing process
-		ProcessExecutor.builder()
-				.setProcessInfo(processInfo)
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
+				//
+				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
+				.addParameter(JasperConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
+						+ " where AD_PInstance_ID=" + JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
+						+ " order by EDI_DesadvLine_SSCC_ID")
+				//
+				// Execute the actual printing process
+				.buildAndPrepareExecution()
 				.onErrorThrowException()
+				// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
+				// The report will fetch it from selection.
+				.callBefore(pi -> DB.createT_Selection(pi.getAD_PInstance_ID(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_None))
 				.executeSync();
 	}
 
