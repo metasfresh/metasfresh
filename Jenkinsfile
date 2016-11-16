@@ -190,7 +190,7 @@ stage('Invoke downstream jobs')
 	withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 	{
 		final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-		final jsonPayload = "{\"BUILD_VERSION\":\"${BUILD_VERSION}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
+		final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
 		
 		sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 	}
