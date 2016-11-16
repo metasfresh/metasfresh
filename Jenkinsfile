@@ -189,10 +189,10 @@ stage('Invoke downstream jobs')
 	// notify zapier so we can do further things external to this jenkins instance
 	withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 	{
-		final webhookUrl = https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET};
-		final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
+		final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+		final jsonPayload = "{\"BUILD_VERSION\":\"${BUILD_VERSION}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
 		
-		sh "curl -v -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+		sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 	}
 }
 
