@@ -173,6 +173,9 @@ public final class ProcessInfo implements Serializable
 				.add("AD_Table_ID", adTableId)
 				.add("Record_ID", recordId)
 				.add("Classname", className.orElse(null))
+				.add("reportTemplate", reportTemplate.orElse(null))
+				.add("reportLanguage", reportLanguage)
+				.add("jrDesiredOutputType", jrDesiredOutputType)
 				.toString();
 	}
 
