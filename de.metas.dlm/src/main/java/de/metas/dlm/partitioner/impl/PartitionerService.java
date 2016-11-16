@@ -186,26 +186,21 @@ public class PartitionerService implements IPartitionerService
 
 		if (request.getRecordToAttach() == null && request.getPartitionToComplete() == null)
 		{
-			// TODO addLog
-			final I_DLM_Partition incompletePartitionDB = Services.get(IQueryBL.class).createQueryBuilder(I_DLM_Partition.class, ctxAware)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_DLM_Partition.COLUMN_IsPartitionComplete, false)
-					.orderBy().addColumn(I_DLM_Partition.COLUMN_DLM_Partition_ID).endOrderBy()
-					.create().first();
-
-			if (incompletePartitionDB != null)
+			ILoggable.THREADLOCAL.getLoggable().addLog("The request does not explicitly tell us where to start; request={}", request);
+			final Iterator<WorkQueue> incompletePartitionQueue = retrieveIncompletePartitionOrNull(ctxAware);
+			if (incompletePartitionQueue != null)
 			{
-				final Iterator<WorkQueue> queue = PartitionerTools.loadQueue(incompletePartitionDB.getDLM_Partition_ID(), ctxAware);
-
+				ILoggable.THREADLOCAL.getLoggable().addLog("Working with an inclomplete partition");
 				final Partition partition = attachToPartitionAndCheck(
 						request,
 						new IterateResult(
-								queue,
+								incompletePartitionQueue,
 								ctxAware));
 				partitions.add(partition);
 			}
 			else
 			{
+				ILoggable.THREADLOCAL.getLoggable().addLog("Iterating the config's lines and working on one record for each line");
 				// iterate the lines and look for the first record out o
 				for (final PartitionerConfigLine line : lines)
 				{
@@ -223,6 +218,37 @@ public class PartitionerService implements IPartitionerService
 			}
 		}
 		return partitions;
+	}
+
+	private Iterator<WorkQueue> retrieveIncompletePartitionOrNull(final PlainContextAware ctxAware)
+	{
+		for (int i = 0; i < 50; i++)
+		{
+			final I_DLM_Partition incompletePartitionDB = Services.get(IQueryBL.class).createQueryBuilder(I_DLM_Partition.class, ctxAware)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_DLM_Partition.COLUMN_IsPartitionComplete, false)
+					.orderBy().addColumn(I_DLM_Partition.COLUMN_DLM_Partition_ID).endOrderBy()
+					.create()
+					.first();
+
+			if (incompletePartitionDB == null)
+			{
+				return null;
+			}
+
+			final Iterator<WorkQueue> queue = PartitionerTools.loadQueue(incompletePartitionDB.getDLM_Partition_ID(), ctxAware);
+			if (queue.hasNext())
+			{
+				return queue;
+			}
+			else
+			{
+				logger.warn("{} is flagged as IsPartitionComplete='N', but has no WorkQueue records. Updating to IsPartitionComplete='Y'", incompletePartitionDB);
+				incompletePartitionDB.setIsPartitionComplete(true);
+				InterfaceWrapperHelper.save(incompletePartitionDB);
+			}
+		}
+		return null;
 	}
 
 	private Partition attachToPartitionAndCheck(
@@ -632,9 +658,9 @@ public class PartitionerService implements IPartitionerService
 	}
 
 	@Override
-	public Partition storePartition(final Partition partition, final boolean outOfTrx)
+	public Partition storePartition(final Partition partition, final boolean runInOwnTrx)
 	{
-		if (outOfTrx)
+		if (runInOwnTrx)
 		{
 			final Mutable<Partition> result = new Mutable<>();
 
@@ -947,16 +973,35 @@ public class PartitionerService implements IPartitionerService
 		return result;
 	}
 
+	private void storeIterateResult(final PartitionerConfig config,
+			final IterateResult result,
+			final IContextAware ctxAware)
+	{
+
+		Services.get(ITrxManager.class).run(new TrxRunnable()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				storeIterateResult0(config, 
+						result, 
+						PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName));
+			}
+		});
+	}
+
 	/**
 	 * Persists the given <code>result</code> to DB and invokes {@link IterateResult#clearAfterPartitionStored(Partition)} to release memory.
+	 * <p>
+	 * This method is invoked in its own transaction via {@link ITrxManager#run(TrxRunnable)}.
 	 *
 	 * @param config not actually used in this method, but forwarded to the new {@link Partition} that <code>clearAfterPartitionStored</code> will be called with.
-	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}
+	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}, so the stored partition will be contained within the result
 	 * @param ctxAware
 	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ void storeIterateResult(final PartitionerConfig config,
+	/* package */ void storeIterateResult0(final PartitionerConfig config,
 			final IterateResult result,
 			final IContextAware ctxAware)
 	{
@@ -965,7 +1010,7 @@ public class PartitionerService implements IPartitionerService
 			// this can happen if a DLM_Partition_Record has IsCompletePartition=N but still doesn't have any workqueue records,
 			// or if the respective referenced records were deleted meanwhile.
 			// or if for a given work queue queue, there where no additional records found.
-			// TODO: log
+			logger.info("storeIterateResult: result={} is empty. Nothing to do", result);
 			return;
 		}
 
@@ -981,10 +1026,10 @@ public class PartitionerService implements IPartitionerService
 
 		if (dlmPartitionId2Record.isEmpty())
 		{
-			logger.debug("Result={} has no records; config={}", result, config);
+			logger.debug("storeIterateResult: Result={} has no records; config={}", result, config);
 			storedPartition = storePartition(
 					resultPartition,
-					true);
+					false); // runInOwnTrx=false because this whole method is already running in its own transaction
 		}
 		else
 		{
@@ -994,7 +1039,7 @@ public class PartitionerService implements IPartitionerService
 
 			final Optional<Integer> firstKeyIfAny = keySet
 					.stream()
-					.sorted() // sort them by ID, because we need it deterministic; TODO: sort them by partition size so that the biggest existing parttion can be left unchanged
+					.sorted() // sort them by ID, because we need it deterministic; TODO: sort them by partition size so that the biggest existing partition can be left unchanged
 					.filter(dlmPartitionId -> dlmPartitionId > 0) // we want the first partition ID that is already "persisted" in the DB
 					.findFirst();
 
@@ -1011,14 +1056,14 @@ public class PartitionerService implements IPartitionerService
 								.withDLM_Partition_ID(firstKey)
 								.withTargetDLMLevel(IMigratorService.DLM_Level_NOT_SET)
 								.withNextInspectionDate(null),
-						true);
+						false); // runInOwnTrx=false because this whole method is already running in its own transaction
 			}
 			else
 			{
 				// store a brand new partition
 				storedPartition = storePartition(
 						resultPartition,
-						true);
+						false); // runInOwnTrx=false because this whole method is already running in its own transaction
 				firstKey = storedPartition.getDLM_Partition_ID();
 			}
 
@@ -1050,19 +1095,23 @@ public class PartitionerService implements IPartitionerService
 					});
 		}
 
-		// store and delete DLM_Partition_Workqueue records according to the records we processed and the records we newly added since the lat time this method was called.
+		// store and delete DLM_Partition_Workqueue records according to the records we processed and the records we newly added since the last time this method was called.
 		{
+			final Mutable<Integer> deletedSum = new Mutable<>(0);
 			result.getQueueRecordsToDelete()
 					.forEach(r -> {
 
 						// It's not a must to delete them 1-by-1, but we can't just create one chuck with unknow size!
-						// If we want to delete more than one at a time, we need to create chucks of a fixed size that is less than 2^32.
-						queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
+						// If we want to delete more than one at a time, we need to create chuncks of a fixed size that is less than 2^32.
+						final int delete = queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
 								.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_Workqueue_ID, r.getDLM_Partition_Workqueue_ID())
 								.create()
 								.deleteDirectly();
+						deletedSum.setValue(deletedSum.getValue() + delete);
 					});
+			logger.debug("storeIterateResult: Deleted {} DLM_Partition_Workqueue records", deletedSum.getValue());
 
+			final Mutable<Integer> storedSum = new Mutable<>(0);
 			result.getQueueRecordsToStore()
 					.forEach(r -> {
 
@@ -1076,7 +1125,10 @@ public class PartitionerService implements IPartitionerService
 						InterfaceWrapperHelper.save(newQueueRecord);
 
 						r.setDLM_Partition_Workqueue_ID(newQueueRecord.getDLM_Partition_Workqueue_ID());
+
+						storedSum.setValue(storedSum.getValue() + 1);
 					});
+			logger.debug("storeIterateResult: Stored {} DLM_Partition_Workqueue records", storedSum.getValue());
 		}
 
 		result.clearAfterPartitionStored(storedPartition);

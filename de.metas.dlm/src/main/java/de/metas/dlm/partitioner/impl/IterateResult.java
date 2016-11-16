@@ -40,12 +40,17 @@ import de.metas.dlm.model.IDLMAware;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+/**
+ * This class is heavily used by {@link PartitionerService} when it looks for records to be assigned to a partition.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class IterateResult
 {
 	private final Iterator<WorkQueue> iterator;
 
-	private final LinkedList<WorkQueue> outerHull;
+	private final LinkedList<WorkQueue> queueItemsToProcess;
 
 	private final ArrayList<WorkQueue> queueItemsToDelete;
 
@@ -78,7 +83,7 @@ public class IterateResult
 	{
 		this.ctxAware = ctxAware;
 		iterator = initialQueue;
-		outerHull = new LinkedList<>();
+		queueItemsToProcess = new LinkedList<>();
 		queueItemsToDelete = new ArrayList<>();
 	}
 
@@ -119,7 +124,7 @@ public class IterateResult
 			size++;
 			if (!neverAddToqueue && dlmPartitionId <= 0)
 			{
-				outerHull.addLast(WorkQueue.of(tableRecordReference));
+				queueItemsToProcess.addLast(WorkQueue.of(tableRecordReference));
 			}
 		}
 		return added;
@@ -129,6 +134,8 @@ public class IterateResult
 	{
 		this.dlmPartitionId2Record.clear();
 		this.tableName2Record.clear();
+		this.queueItemsToDelete.clear();
+
 		this.size = 0;
 		this.partition = partition;
 	}
@@ -172,7 +179,7 @@ public class IterateResult
 	public boolean isQueueEmpty()
 	{
 		final boolean iteratorEmpty = !iterator.hasNext();
-		return iteratorEmpty && outerHull.isEmpty();
+		return iteratorEmpty && queueItemsToProcess.isEmpty();
 	}
 
 	/**
@@ -206,12 +213,12 @@ public class IterateResult
 			return next;
 		}
 
-		return outerHull.removeFirst();
+		return queueItemsToProcess.removeFirst();
 	}
 
 	public List<WorkQueue> getQueueRecordsToStore()
 	{
-		return outerHull;
+		return queueItemsToProcess;
 	}
 
 	public List<WorkQueue> getQueueRecordsToDelete()
@@ -226,4 +233,13 @@ public class IterateResult
 	{
 		return partition;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "IterateResult [iterator=" + iterator + ", queueItemsToProcess.size()=" + queueItemsToProcess.size() + ", queueItemsToDelete.size()=" + queueItemsToDelete.size()
+				+ ", size=" + size + ", tableName2Record.size()=" + tableName2Record.size() + ", dlmPartitionId2Record.size()=" + dlmPartitionId2Record.size()
+				+ ", ctxAware=" + ctxAware + ", partition=" + partition + "]";
+	}
+
 }

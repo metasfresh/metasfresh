@@ -2,6 +2,7 @@ package de.metas.dlm.partitioner;
 
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.connection.ITemporaryConnectionCustomizer;
@@ -63,9 +64,10 @@ public interface IPartitionerService extends ISingletonService
 	 * Create or update a {@link I_DLM_Partition_Record} for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
 	 *
 	 * @param partition
+	 * @param runInOwnTrx if <code>true</code>, then this method will create a dedicated transaction using {@link ITrxManager#run(org.compiere.util.TrxRunnable)} to perform the actual storing in.
 	 * @return a news instance that represents the just-stored partition
 	 */
-	Partition storePartition(Partition partition, boolean outOfTrx);
+	Partition storePartition(Partition partition, boolean runInOwnTrx);
 
 	/**
 	 * Persist the given config in the DB and update the ID properties on the given <code>config</code> that is stored.
