@@ -105,18 +105,20 @@ else
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_MAVEN_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
+
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID;
+echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
 // the maven artifact version that will be set to the artifacts in this build
 // examples: "1-master-543-SNAPSHOT", "2-FRESH-123-9842-SNAPSHOT"
-final BUILD_MAVEN_VERSION=BUILD_MAVEN_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
+final BUILD_MAVEN_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
+echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 
 // the version range used when resolving depdendencies for this build
 // example: "[1-master-SNAPSHOT],[2-FRESH-123-SNAPSHOT]
 final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
-
-echo "Setting BUILD_MAVEN_VERSION_PREFIX=$BUILD_MAVEN_VERSION_PREFIX"
-echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
@@ -251,7 +253,11 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(!params.MF_SKIP_SQL_MIGRATION_TEST)
+if(params.MF_SKIP_SQL_MIGRATION_TEST)
+{
+	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+}
+else
 {
 	stage('Test SQL-Migration')
 	{
@@ -281,7 +287,11 @@ if(!params.MF_SKIP_SQL_MIGRATION_TEST)
 	}
 }
 
-if(!params.MF_SKIP_DEPLOYMENT)
+if(params.MF_SKIP_DEPLOYMENT)
+{
+	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+}
+else
 {
 	stage('Deployment')
 	{
