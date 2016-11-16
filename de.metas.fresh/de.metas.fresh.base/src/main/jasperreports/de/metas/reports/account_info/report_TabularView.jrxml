@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-08-18T17:50:43 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<!-- 2016-11-10T14:39:25 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1520" pageHeight="842" columnWidth="1520" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+	<property name="net.sf.jasperreports.export.xls.white.page.background" value="false"/>
+	<property name="net.sf.jasperreports.export.xls.detect.cell.type" value="true"/>
+	<property name="net.sf.jasperreports.export.xls.password" value=""/>
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
@@ -29,12 +33,16 @@
 	<parameter name="DisplayOnlyEmptyActivity" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="StartDate" class="java.sql.Date"/>
+	<parameter name="EndDate" class="java.sql.Date"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
 	$P{Account_From_ID},
 	$P{Account_To_ID},
 	$P{C_Period_Start_ID},
 	$P{C_Period_End_ID},
+	$P{StartDate},
+	$P{EndDate},
 	$P{C_Activity_ID},
 	$P{DisplayVoidDocuments},
 	$P{showCurrencyExchange},
@@ -68,354 +76,477 @@
 	</group>
 	<group name="All" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{param_acct_value}]]></groupExpression>
-		<groupHeader>
-			<band height="115">
-				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
-				<textField isBlankWhenNull="true">
-					<reportElement x="37" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<box rightPadding="3"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="787" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Haben"]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="377" y="98" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
-					<textElement>
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="177" y="98" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
-					<textElement>
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="717" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Soll"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="28" width="178" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Konten - Information"]]></textFieldExpression>
-				</textField>
-				<textField pattern="dd.MM.yyyy HH:mm">
-					<reportElement x="857" y="63" width="120" height="9" uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf"/>
-					<textElement textAlignment="Center">
-						<font size="7"/>
-					</textElement>
-					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="107" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement>
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="857" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="54" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Konto-Nr."]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="63" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="72" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="107" y="54" width="360" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="107" y="72" width="360" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="107" y="63" width="360" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="647" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="81" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="107" y="81" width="360" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="7" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
-    $F{param_activity_value} + " - " + $F{param_activity_name}:
-    "Alle"]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="577" y="98" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement>
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Gegenkonto"]]></textFieldExpression>
-				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="927" y="98" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["Belegstatus"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="14" width="178" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[""]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="0" width="37" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[""]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="0" width="178" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[""]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="37" y="40" width="178" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-					<textElement>
-						<font size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[""]]></textFieldExpression>
-				</textField>
-			</band>
-			<band>
-				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1 && $F{overallcount} < 150000)]]></printWhenExpression>
-			</band>
-		</groupHeader>
 	</group>
 	<background>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+		</band>
 	</background>
 	<title>
-		<band splitType="Stretch"/>
+		<band height="117" splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="379" y="91" width="80" height="12" uuid="c0443765-5ea5-4aee-b188-afc1d6fe58a6">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1159" y="91" width="70" height="12" uuid="a7f039fd-5e17-45ea-be0e-218826759121">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Haben"]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="729" y="91" width="220" height="12" uuid="496eb4da-1798-4d56-81fa-d1cc40ce6aec">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="529" y="91" width="200" height="12" uuid="12047f48-9b03-4b6d-b0a6-82fe36dd0ad3">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1089" y="91" width="70" height="12" uuid="15ceb9e0-5706-4f71-9d41-f8e10d2ac0a4">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Soll"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="28" width="163" height="14" uuid="3807113b-3def-451d-84d6-94a55d220314">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Konten - Information"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy HH:mm">
+				<reportElement x="1299" y="17" width="100" height="12" uuid="11b0efb1-1985-45bc-a4ff-f270dd20dd07">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="459" y="91" width="70" height="12" uuid="6961c4a3-666f-4924-8f15-48d2cfdf43a9">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1229" y="91" width="70" height="12" uuid="c5f38378-26ad-4a1c-8dc7-d32bf992c44d">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="56" width="163" height="12" uuid="cf66fb57-aa39-4092-8307-c9d43e43ef3b">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="56" width="179" height="12" uuid="1cde3b72-9886-430d-9485-c2f5ef819cd3">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1019" y="91" width="70" height="12" uuid="03aa48fa-4d54-44aa-b737-6124e9e9f16c">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="68" width="163" height="12" uuid="549c6bdf-f5b2-46cf-af73-bcff64e73fe1">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="200" y="68" width="179" height="12" uuid="71f0faa0-8190-46d9-8d21-acb0ddfb927d">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
+    $F{param_activity_value} + " - " + $F{param_activity_name}:
+    "Alle"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="949" y="91" width="70" height="12" uuid="95935449-36ef-4a56-bf10-1efbd2a86bc7">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Gegenkonto"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1299" y="91" width="100" height="12" uuid="ebf347e7-093b-473b-a679-5e6528d88525">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Belegstatus"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="14" width="163" height="14" uuid="ab518f20-13b3-48e8-96e0-99acb870bfb8">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="163" height="14" uuid="a69cc22d-5294-4246-8b97-7696d1392e03">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="42" width="163" height="14" uuid="818b0314-ac60-44e3-b997-0d6a07ae3043">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="91" width="179" height="12" uuid="f3665ac3-3fee-46ae-a14d-b6ee1154dc42">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="37" y="91" width="163" height="12" uuid="e8949d27-676d-4505-87d8-76f70d6aa83e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Konto-Nr."]]></textFieldExpression>
+			</textField>
+		</band>
 	</title>
 	<pageHeader>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+		</band>
 	</pageHeader>
 	<columnHeader>
-		<band splitType="Stretch"/>
+		<band splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+		</band>
 	</columnHeader>
 	<detail>
-		<band height="10" splitType="Stretch">
+		<band height="24" splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="37" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="379" y="0" width="80" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="787" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1159" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="377" y="0" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="729" y="0" width="220" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="177" y="0" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="529" y="0" width="200" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="717" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1089" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="107" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="459" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="857" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1229" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{saldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="647" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1019" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="577" y="0" width="70" height="9" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18"/>
+				<reportElement x="949" y="0" width="70" height="12" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account2_id}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="927" y="0" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="1299" y="0" width="100" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{docstatus}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="179" height="12" uuid="f93765b2-4bd6-43ce-a3fc-c3e4bb48ad1e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="37" y="0" width="163" height="12" uuid="0c5602f7-df82-449d-8f06-7f7971dba31a">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="10">
+		<band height="12">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="37" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="379" y="0" width="80" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="787" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1159" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="377" y="0" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="729" y="0" width="220" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="177" y="0" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="529" y="0" width="200" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="717" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1089" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="107" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="459" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="647" y="0" width="70" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="1019" y="0" width="70" height="12" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="37" y="0" width="163" height="12" uuid="945c91b5-d197-40d1-9cb3-adcce7d5ba16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="179" height="12" uuid="dfbfe2f1-2df6-44d1-8cf1-990129b99837">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<box rightPadding="3"/>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="10">
+		<band height="12">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="377" y="0" width="200" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="729" y="0" width="220" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="857" y="0" width="70" height="9" uuid="3ed5e779-b96e-4c30-bb05-4091249f759d"/>
+				<reportElement x="1229" y="0" width="70" height="12" uuid="3ed5e779-b96e-4c30-bb05-4091249f759d">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
-		<band height="34" splitType="Stretch"/>
+		<band height="34" splitType="Stretch">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+		</band>
 	</pageFooter>
 	<lastPageFooter>
-		<band height="1"/>
+		<band height="1">
+			<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+		</band>
 	</lastPageFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
 </jasperReport>

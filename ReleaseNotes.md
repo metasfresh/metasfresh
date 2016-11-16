@@ -10,11 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.44.42 (2016-46)
+# metasfresh 4.44.44 (2016-47)
+
+## Fixes
+* metasfresh
+  * #589 console error when doing bpartner setup
+
+# metasfresh 4.44.43 (2016-46)
 
 ## Features
 * metasfresh
   * #553 Report Account Info adjustments. Add parms date range.
+  * #557 Report Saldenbilanz & Account Info native Excel Export
+  * #558 Marginal return calculation - Accountings without c_activity_id
+  * #568 Change on Report "Lieferschein" for one specific Customer
+  * #555 Businesspartner Location isEDI shall not be ticked by default
+  * #548 keep M_QualityNote and M_AttributeValue in sync
+  * #577 Button Request shows too many results
+  * #565 Report Revenue per Week and BPartner also show qty
+  * #416 Extended async notification features
+ 
+## Fixes
+* metasfresh
+  * #578 Request Window Attachment Image too large in viewer
 
 # metasfresh 4.43.42 (2016-45)
 

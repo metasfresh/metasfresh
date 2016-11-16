@@ -30,6 +30,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
@@ -64,6 +65,8 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
 
 /**
@@ -79,8 +82,18 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		CopyRecordFactory.addOnRecordCopiedListener(new CloneASIListener());
+		
+		// 
+		registerFactories();
 	}
 
+	public void registerFactories()
+	{
+		//
+		// Register notifier
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNotifier(new NotifyAsyncBatch());
+	}
+	
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{

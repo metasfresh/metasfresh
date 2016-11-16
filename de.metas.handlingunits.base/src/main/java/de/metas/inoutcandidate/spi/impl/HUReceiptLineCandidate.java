@@ -34,6 +34,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.model.I_M_QualityNote;
 
 /**
  * Collects {@link HUReceiptLinePartCandidate}s and behaves like a candidate for receipt line (i.e. {@link I_M_InOutLine}).
@@ -53,6 +54,11 @@ import de.metas.inout.model.I_M_InOutLine;
 	private Object _asiAggregationKey = null;
 
 	private final List<HUReceiptLinePartCandidate> receiptLinePartCandidates = new ArrayList<HUReceiptLinePartCandidate>();
+
+	/**
+	 * This variable will keep the QualityNote of the current Receipt Line Candidate
+	 */
+	private I_M_QualityNote _qualityNote = null;
 
 	//
 	// Aggregated values
@@ -185,6 +191,12 @@ import de.metas.inout.model.I_M_InOutLine;
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
+			// In case there are several qualityNotes, only the first one shall be remembered
+			if(_qualityNote == null)
+			{
+				_qualityNote = receiptLinePart.getQualityNote();
+			}
+			
 			final IQtyAndQuality partQtyAndQuality = receiptLinePart.getQtyAndQuality();
 			if (partQtyAndQuality.isZero())
 			{
@@ -234,5 +246,10 @@ import de.metas.inout.model.I_M_InOutLine;
 	{
 		updateIfStale();
 		return _qtyAndQuality;
+	}
+	
+	public I_M_QualityNote get_qualityNote()
+	{
+		return _qualityNote;
 	}
 }
