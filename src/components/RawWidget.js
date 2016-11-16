@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import Moment from 'moment';
 
 import {
     patch,
@@ -22,6 +23,7 @@ class RawWidget extends Component {
         }
     }
 
+
     handleSelectedValue = (item) => {
         const {setSelectedItem} = this.props
         this.setState(Object.assign({}, this.state, {
@@ -34,7 +36,7 @@ class RawWidget extends Component {
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id, range
+            filterId, parameterName, setSelectedItem, selectedItem, id, range, setEditedFlag
         } = this.props;
 
         const {textValue} = this.state;
@@ -84,9 +86,13 @@ class RawWidget extends Component {
                             <DatePicker
                                 timeFormat={false}
                                 dateFormat={true}
-                                inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
-                                value={selectedField ? new Date(selectedField) : null}
-                                onChange={(date) => handlePatch(widgetField, date)}
+                                inputProps={{
+                                    placeholder: widgetFields.emptyText,
+                                    disabled: widgetData.readonly,
+                                    onBlur: (e) => handlePatch(widgetField, Moment(e.target.value).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))
+                                }}
+                                value={selectedField}
+                                // onChange={(date) => handleChange(widgetField, date)}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -106,7 +112,7 @@ class RawWidget extends Component {
                             dateFormat={true}
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={widgetData.value ? new Date(widgetData.value) : null}
-                            onChange={(date) => handlePatch(widgetField, date)}
+                            onChange={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -125,7 +131,7 @@ class RawWidget extends Component {
                             dateFormat={false}
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={selectedField ? new Date(selectedField) : null}
-                            onChange={(date) => handlePatch(widgetField, date)}
+                            onChange={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -193,7 +199,7 @@ class RawWidget extends Component {
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
@@ -215,7 +221,7 @@ class RawWidget extends Component {
                             disabled={widgetData.readonly}
                             placeholder={widgetFields.emptyText}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(e, widgetField)}
+                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -238,7 +244,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -259,7 +265,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetFields.field)}
+                            onChange={(e) => handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -282,7 +288,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -305,7 +311,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>
@@ -326,7 +332,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={(e) => handleFocus(e, e.target.value)}
-                            onChange={(e) => handleChange(e, widgetField)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
                         />
                     </div>

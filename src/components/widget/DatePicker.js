@@ -20,9 +20,14 @@ class DatePicker extends Component {
     }
 
     handleClose = () => {
+        const {patch} = this.props;
         this.setState(Object.assign({}, this.state, {
             open: false
         }));
+    }
+
+    focusInput = () => {
+        console.log(this.picker._reactInternalInstance._currentElement)
     }
 
     handleClickOutside = () => {
@@ -45,7 +50,8 @@ class DatePicker extends Component {
         return (<Datetime
             className={open && "rdtOpen"}
             onFocus={this.handleFocus}
-            onBlur={this.handleClose}
+            ref={c => this.picker = c}
+            onChange={this.focusInput}
             renderDay={this.renderDay}
             {...this.props}
         />)

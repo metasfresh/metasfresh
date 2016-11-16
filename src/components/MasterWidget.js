@@ -26,9 +26,9 @@ class Widget extends Component {
 
     componentWillReceiveProps(nextProps) {
         const {widgetData} = this.props;
-        const {edited} = this.state;
+        const {edited, editedProp} = this.state;
 
-        if(widgetData[0].value !== nextProps.widgetData[0].value) {
+        if(JSON.stringify(widgetData[0].value) !== JSON.stringify(nextProps.widgetData[0].value)) {
             if(!edited) {
                 this.setState(
                     Object.assign({}, this.state, {
@@ -64,10 +64,10 @@ class Widget extends Component {
         }
 
         let customWindowType = windowType;
+
         if(isAdvanced){
             customWindowType += "&advanced=true";
         }
-
 
         //do patch only when value is not equal state
         //or cache is set and it is not equal value
@@ -97,16 +97,17 @@ class Widget extends Component {
     // but is need to handle controlled components if
     // they patch on other event than onchange
     //
-    handleChange = (e, property) => {
-        const {dispatch, tabId, rowId, isModal, relativeDocId, precision} = this.props;
+    handleChange = (property, val) => {
+        const {
+            dispatch, tabId, rowId, isModal, relativeDocId, precision, widgetType
+        } = this.props;
+
         let currRowId = rowId;
-        const val = e.target.value;
-        e.preventDefault();
 
         this.setState(Object.assign({}, this.state, {
             edited: true
         }), () => {
-            if(!this.validatePrecision(val)){
+            if(widgetType != "Date" && !this.validatePrecision(val)){
                 return;
             }
 
@@ -117,6 +118,12 @@ class Widget extends Component {
             dispatch(updateProperty(property, val, tabId, currRowId, isModal));
 
         });
+    }
+
+    setEditedFlag = (edited) => {
+        this.setState(Object.assign({}, this.state, {
+            edited: edited
+        }));
     }
 
     handleFocus = (e, value) => {
@@ -131,7 +138,10 @@ class Widget extends Component {
         const {widgetType} = this.props;
         let {precision} = this.props;
 
-        if(widgetType === "Integer" || widgetType === "Quantity"){
+        if(
+            widgetType === "Integer" ||
+            widgetType === "Quantity"
+        ){
             precision = 0;
         }
 
@@ -141,9 +151,6 @@ class Widget extends Component {
             return true;
         }
     }
-
-
-
 
     render() {
         const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, isModal} = this.props;
@@ -171,6 +178,8 @@ class Widget extends Component {
                                     handleFocus={this.handleFocus}
                                     updated={updated}
                                     isModal={isModal}
+                                    setEditedFlag={this.setEditedFlag}
+                                    test={this.test}
                                 />
                             </div>
                         </div>
