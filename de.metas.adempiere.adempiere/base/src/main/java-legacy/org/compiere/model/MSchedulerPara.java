@@ -38,8 +38,7 @@ public class MSchedulerPara extends X_AD_Scheduler_Para
 	 *	@param AD_Scheduler_Para_ID id
 	 *	@param trxName transaction
 	 */
-	public MSchedulerPara (Properties ctx, int AD_Scheduler_Para_ID,
-		String trxName)
+	public MSchedulerPara (Properties ctx, int AD_Scheduler_Para_ID, String trxName)
 	{
 		super (ctx, AD_Scheduler_Para_ID, trxName);
 	}	//	MSchedulerPara
@@ -54,9 +53,6 @@ public class MSchedulerPara extends X_AD_Scheduler_Para
 	{
 		super (ctx, rs, trxName);
 	}	//	MSchedulerPara
-	
-	/** Parameter Column Name		*/
-	private MProcessPara	m_parameter = null;
 	
 	/**
 	 * 	Get Parameter Column Name 

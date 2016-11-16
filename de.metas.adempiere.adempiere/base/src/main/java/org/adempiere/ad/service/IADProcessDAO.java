@@ -28,7 +28,9 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Role;
 
 public interface IADProcessDAO extends ISingletonService
 {
@@ -93,6 +95,15 @@ public interface IADProcessDAO extends ISingletonService
 	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
 
 	/**
+	 * Retrieves {@link I_AD_Process} by given ID.
+	 * 
+	 * @param ctx
+	 * @param adProcessId
+	 * @return process; never returns null
+	 */
+	I_AD_Process retrieveProcessById(Properties ctx, int adProcessId);
+
+	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Value} is equal to the given <code>processValue</code>. Assumes that <code>AD_Process.Value</code> is unique.
 	 *
 	 * @param ctx
@@ -126,4 +137,22 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param durationMillisToAdd
 	 */
 	void addProcessStatistics(Properties ctx, int adProcessId, int adClientId, long durationMillisToAdd);
+
+	I_AD_Process_Access retrieveProcessAccessOrCreateDraft(Properties ctx, int adProcessId, I_AD_Role role);
+
+	I_AD_Process_Access createProcessAccessDraft(Properties ctx, int adProcessId, I_AD_Role role);
+
+	I_AD_Process_Access retrieveProcessAccess(Properties ctx, int adProcessId, int adRoleId);
+
+	/**
+	 * Copy settings from another process
+	 * overwrites existing data
+	 * (including translations)
+	 * and saves.
+	 * Not overwritten: name, value, entitytype
+	 * 
+	 * @param targetProcess
+	 * @param sourceProcess
+	 */
+	void copyAD_Process(I_AD_Process targetProcess, I_AD_Process sourceProcess);
 }

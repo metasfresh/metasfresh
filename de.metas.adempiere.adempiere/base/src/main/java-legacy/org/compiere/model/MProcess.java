@@ -19,15 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADProcessDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /**
  *  Process Model
@@ -46,22 +38,6 @@ public class MProcess extends X_AD_Process
 	 *
 	 */
 	private static final long serialVersionUID = 2404724380401712390L;
-
-	private static final Logger log = LogManager.getLogger(MProcess.class);
-
-
-	/**
-	 * 	Get MProcess from Cache
-	 *	@param ctx context
-	 *	@param AD_Process_ID id
-	 *	@return MProcess
-	 */
-	public static MProcess get (Properties ctx, int AD_Process_ID)
-	{
-		// NOTE: we assume IModelCacheService is activated
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, AD_Process_ID, I_AD_Process.class, ITrx.TRXNAME_None);
-		return LegacyAdapters.convertToPO(process);
-	}	//	get
 
 
 	/**************************************************************************
@@ -127,86 +103,36 @@ public class MProcess extends X_AD_Process
 		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name")
 			|| is_ValueChanged("Description") || is_ValueChanged("Help"))
 		{
-			MMenu[] menues = MMenu.get(getCtx(), "AD_Process_ID=" + getAD_Process_ID(), get_TrxName());
-			for (int i = 0; i < menues.length; i++)
+			for (final I_AD_Menu menu : MMenu.get(getCtx(), "AD_Process_ID=" + getAD_Process_ID(), get_TrxName()))
 			{
-				menues[i].setIsActive(isActive());
-				menues[i].setName(getName());
-				menues[i].setDescription(getDescription());
-				menues[i].saveEx();
+				menu.setIsActive(isActive());
+				menu.setName(getName());
+				menu.setDescription(getDescription());
+				InterfaceWrapperHelper.save(menu);
 			}
-			X_AD_WF_Node[] nodes = MWindow.getWFNodes(getCtx(), "AD_Process_ID=" + getAD_Process_ID(), get_TrxName());
-			for (int i = 0; i < nodes.length; i++)
+			for (final I_AD_WF_Node node : MWindow.getWFNodes(getCtx(), "AD_Process_ID=" + getAD_Process_ID(), get_TrxName()))
 			{
 				boolean changed = false;
-				if (nodes[i].isActive() != isActive())
+				if (node.isActive() != isActive())
 				{
-					nodes[i].setIsActive(isActive());
+					node.setIsActive(isActive());
 					changed = true;
 				}
-				if (nodes[i].isCentrallyMaintained())
+				if (node.isCentrallyMaintained())
 				{
-					nodes[i].setName(getName());
-					nodes[i].setDescription(getDescription());
-					nodes[i].setHelp(getHelp());
+					node.setName(getName());
+					node.setDescription(getDescription());
+					node.setHelp(getHelp());
 					changed = true;
 				}
+				//
 				if (changed)
-					nodes[i].saveEx();
+				{
+					InterfaceWrapperHelper.save(node);
+				}
 			}
 		}
 		return success;
 	}	//	afterSave
 
-	/**
-	 * Grant independence to GenerateModel from AD_Process_ID
-	 * @param value
-	 * @param trxName
-	 * @return
-	 * @deprecated Please use {@link IADProcessDAO#retriveProcessIdByValue(Properties, String)}
-	 */
-	@Deprecated
-	public static int getProcess_ID(String value, String trxName)
-	{
-		int retValue = DB.getSQLValueEx(trxName, "SELECT AD_Process_ID FROM AD_Process WHERE Value=?", value);
-		return retValue;
-	}
-
-	/**
-	 * Copy settings from another process
-	 * overwrites existing data
-	 * (including translations)
-	 * and saves.
-	 * Not overwritten: name, value, entitytype
-	 * @param source
-	 */
-	public void copyFrom (final I_AD_Process source)
-	{
-		log.debug("Copying from: {} to: {}", source, this);
-		setAccessLevel(source.getAccessLevel());
-		setAD_Form_ID(source.getAD_Form_ID());
-		setAD_PrintFormat_ID(source.getAD_PrintFormat_ID());
-		setAD_ReportView_ID(source.getAD_ReportView_ID());
-		setAD_Workflow_ID(source.getAD_Workflow_ID());
-		setClassname(source.getClassname());
-		setDescription(source.getDescription());
-		setHelp(source.getHelp());
-		setIsBetaFunctionality(source.isBetaFunctionality());
-		setIsDirectPrint(source.isDirectPrint());
-		setIsReport(source.isReport());
-		setIsServerProcess(source.isServerProcess());
-		setJasperReport(source.getJasperReport());
-		setProcedureName(source.getProcedureName());
-		setShowHelp(source.getShowHelp());
-
-		saveEx();
-
-		// copy parameters
-		// TODO? Perhaps should delete existing first?
-		for (final I_AD_Process_Para sourcePara : Services.get(IADProcessDAO.class).retrieveProcessParameters(source))
-		{
-			MProcessPara targetPara = new MProcessPara(this);
-			targetPara.copyFrom (sourcePara);  // saves automatically
-		}
-	}
 }	//	MProcess

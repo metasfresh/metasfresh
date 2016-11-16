@@ -109,6 +109,7 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.GridWorkbench;
 import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
@@ -133,7 +134,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;

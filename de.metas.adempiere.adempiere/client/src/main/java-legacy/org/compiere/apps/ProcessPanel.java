@@ -21,6 +21,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
 import org.compiere.process.ProcessExecutionResult;
 import org.compiere.process.ProcessInfo;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessCtl;
 

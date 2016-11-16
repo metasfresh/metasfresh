@@ -35,21 +35,21 @@ import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.MProcessPara;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_PInstance;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 
 /**
  * 
  * @deprecated Please use {@link IADProcessDAO}
  */
+@Deprecated
 public class ProcessPA implements IProcessPA
 {
 
@@ -90,7 +90,7 @@ public class ProcessPA implements IProcessPA
 	}
 
 	@Override
-	public MProcessPara retrieveProcessPara(
+	public I_AD_Process_Para retrieveProcessPara(
 			final Properties ctx,
 			final int adProcessId,
 			final String trxName)

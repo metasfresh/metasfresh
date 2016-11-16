@@ -37,8 +37,8 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Scheduler;
-import org.compiere.model.MProcessPara;
 import org.compiere.model.MQuery;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.X_AD_Scheduler;
@@ -154,7 +154,7 @@ public class OLCandProcessor extends CalloutEngine
 			final IProcessPA processPA = Services.get(IProcessPA.class);
 
 			final int adProcessId = processPA.retrieveProcessId(ProcessOLCands.class, trxName);
-			final MProcessPara processPara = processPA.retrieveProcessPara(ctx, adProcessId, trxName);
+			final I_AD_Process_Para processPara = processPA.retrieveProcessPara(ctx, adProcessId, trxName);
 
 			tab.dataNew(DataNewCopyMode.NoCopy);
 			tab.setValue(I_AD_Scheduler.COLUMNNAME_Name, Msg.translate(ctx, I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID) + " \"" + processor.getName() + "\"");
@@ -179,7 +179,7 @@ public class OLCandProcessor extends CalloutEngine
 
 			final MSchedulerPara newPara = new MSchedulerPara(ctx, 0, trxName);
 			newPara.setAD_Scheduler_ID(schedulerIdToUse);
-			newPara.setAD_Process_Para_ID(processPara.get_ID());
+			newPara.setAD_Process_Para(processPara);
 			newPara.setParameterDefault(Integer.toString(processor.getC_OLCandProcessor_ID()));
 			newPara.saveEx();
 		}

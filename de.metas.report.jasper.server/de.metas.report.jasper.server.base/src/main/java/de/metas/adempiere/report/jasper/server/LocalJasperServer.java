@@ -36,6 +36,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -47,7 +48,6 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
 import de.metas.report.engine.IReportEngine;
 import de.metas.report.engine.ReportContext;
-import de.metas.report.model.I_AD_Process;
 import de.metas.report.xls.engine.XlsReportEngine;
 
 public class LocalJasperServer implements IJasperServer

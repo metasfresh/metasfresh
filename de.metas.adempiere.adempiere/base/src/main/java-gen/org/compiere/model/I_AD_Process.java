@@ -511,6 +511,31 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
+	 * Set Allow one instance only.
+	 * At the same time allow to run only one instance of this process
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsOneInstanceOnly (boolean IsOneInstanceOnly);
+
+	/**
+	 * Get Allow one instance only.
+	 * At the same time allow to run only one instance of this process
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isOneInstanceOnly();
+
+    /** Column definition for IsOneInstanceOnly */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_IsOneInstanceOnly = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "IsOneInstanceOnly", null);
+    /** Column name IsOneInstanceOnly */
+    public static final String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
+
+	/**
 	 * Set Bericht.
 	 * Indicates a Report record
 	 *
@@ -632,6 +657,31 @@ public interface I_AD_Process
     public static final String COLUMNNAME_JasperReport_Tabular = "JasperReport_Tabular";
 
 	/**
+	 * Set Wait Timeout.
+	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLockWaitTimeout (int LockWaitTimeout);
+
+	/**
+	 * Get Wait Timeout.
+	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLockWaitTimeout();
+
+    /** Column definition for LockWaitTimeout */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_LockWaitTimeout = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "LockWaitTimeout", null);
+    /** Column name LockWaitTimeout */
+    public static final String COLUMNNAME_LockWaitTimeout = "LockWaitTimeout";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -730,6 +780,54 @@ public interface I_AD_Process
     public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_ShowHelp = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "ShowHelp", null);
     /** Column name ShowHelp */
     public static final String COLUMNNAME_ShowHelp = "ShowHelp";
+
+	/**
+	 * Set SQLStatement.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSQLStatement (java.lang.String SQLStatement);
+
+	/**
+	 * Get SQLStatement.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSQLStatement();
+
+    /** Column definition for SQLStatement */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_SQLStatement = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "SQLStatement", null);
+    /** Column name SQLStatement */
+    public static final String COLUMNNAME_SQLStatement = "SQLStatement";
+
+	/**
+	 * Set Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setType (java.lang.String Type);
+
+	/**
+	 * Get Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getType();
+
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Aktualisiert.

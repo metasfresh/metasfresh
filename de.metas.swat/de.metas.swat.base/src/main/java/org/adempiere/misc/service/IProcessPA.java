@@ -30,15 +30,15 @@ import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.model.MProcessPara;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.process.SvrProcess;
-
-import de.metas.adempiere.model.I_AD_Process;
 
 /**
  *
  * @deprecated Please use {@link IADProcessDAO}
  */
+@Deprecated
 public interface IProcessPA extends ISingletonService {
 
 	List<? extends I_AD_PInstance> retrieveRunningInstances(final Class<? extends SvrProcess> clazz,
@@ -55,7 +55,7 @@ public interface IProcessPA extends ISingletonService {
 	
 	I_AD_Process retrieveProcess(Properties ctx, String value, String trxName);
 
-	MProcessPara retrieveProcessPara(Properties ctx, int adProcessId, String trxName);
+	I_AD_Process_Para retrieveProcessPara(Properties ctx, int adProcessId, String trxName);
 	
 	I_AD_Process retrieveProcessByForm(Properties ctx, int AD_Form_ID, String trxName);
 
