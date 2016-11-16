@@ -247,7 +247,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return dbProcedureName;
 	}
-	
+
 	public Optional<String> getSQLStatement()
 	{
 		return sqlStatement;
@@ -286,7 +286,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return recordId;
 	}
-	
+
 	public boolean isRecordSet()
 	{
 		return getTable_ID() > 0 && getRecord_ID() > 0;
@@ -514,7 +514,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return reportTemplate;
 	}
-	
+
 	public boolean isReportApplySecuritySettings()
 	{
 		return reportApplySecuritySettings;
@@ -597,6 +597,14 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return new ProcessInfo(ctx, this);
+		}
+
+		public ProcessExecutor.Builder buildAndPrepareExecution()
+		{
+			final ProcessInfo processInfo = build();
+			return ProcessExecutor.builder()
+					.setProcessInfo(processInfo);
+
 		}
 
 		public ProcessInfoBuilder setCtx(final Properties ctx)
@@ -823,7 +831,7 @@ public final class ProcessInfo implements Serializable
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			return this;
 		}
-		
+
 		public ProcessInfoBuilder setAD_ProcessByValue(final String processValue)
 		{
 			final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retriveProcessByValue(getCtx(), processValue);
@@ -902,7 +910,7 @@ public final class ProcessInfo implements Serializable
 				return Optional.of(dbProcedureName.trim());
 			}
 		}
-		
+
 		private Optional<String> getSQLStatement()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
@@ -916,7 +924,6 @@ public final class ProcessInfo implements Serializable
 				return Optional.of(sqlStatement.trim());
 			}
 		}
-
 
 		private Optional<String> getReportTemplate()
 		{
@@ -934,7 +941,7 @@ public final class ProcessInfo implements Serializable
 
 			return Optional.of(reportTemplate.trim());
 		}
-		
+
 		private boolean isReportApplySecuritySettings()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
