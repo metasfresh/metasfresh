@@ -42,12 +42,14 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
 
@@ -155,8 +157,15 @@ public class JRClient
 	{
 		try
 		{
+			// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
+			if(pi.getAD_PInstance_ID() <= 0)
+			{
+				Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(pi);
+			}
+			
 			final Language language = extractLanguage(pi);
-			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputType);
+			final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
+			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputTypeEffective);
 			return data;
 		}
 		catch (Exception e)
