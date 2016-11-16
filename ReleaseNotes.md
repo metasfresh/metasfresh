@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.44.44 (2016-47)
+
+## Fixes
+* metasfresh
+  * #589 console error when doing bpartner setup
+
 # metasfresh 4.44.43 (2016-46)
 
 ## Features
