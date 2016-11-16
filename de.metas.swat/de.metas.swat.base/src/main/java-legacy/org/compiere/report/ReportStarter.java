@@ -13,8 +13,6 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.util.Properties;
-
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -103,10 +101,9 @@ public class ReportStarter implements ProcessCall
 
 	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
 	{
-		final Properties ctx = reportPrintingInfo.getCtx();
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
 		final JRClient jrClient = JRClient.get();
-		final JasperPrint jasperPrint = jrClient.createJasperPrint(ctx, pi);
+		final JasperPrint jasperPrint = jrClient.createJasperPrint(pi);
 		log.info("ReportStarter.startProcess print report: {}", jasperPrint.getName());
 
 		//
@@ -119,7 +116,6 @@ public class ReportStarter implements ProcessCall
 
 	private void startProcessPrintPreview(final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
-		final Properties ctx = reportPrintingInfo.getCtx();
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
 		//
@@ -152,7 +148,7 @@ public class ReportStarter implements ProcessCall
 		// Generate report data
 		log.info("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final JRClient jrClient = JRClient.get();
-		final byte[] reportData = jrClient.report(ctx, processInfo, outputType);
+		final byte[] reportData = jrClient.report(processInfo, outputType);
 
 		//
 		// Set report data to process execution result
@@ -172,7 +168,6 @@ public class ReportStarter implements ProcessCall
 	private ReportPrintingInfo extractReportPrintingInfo(final ProcessInfo pi)
 	{
 		final ReportPrintingInfo info = new ReportPrintingInfo();
-		info.setCtx(pi.getCtx());
 		info.setProcessInfo(pi);
 		info.setPrintPreview(pi.isPrintPreview());
 
@@ -218,7 +213,6 @@ public class ReportStarter implements ProcessCall
 
 	private static final class ReportPrintingInfo
 	{
-		private Properties ctx;
 		private ProcessInfo processInfo;
 		private ReportingSystemType reportingSystemType;
 		private boolean printPreview;
@@ -234,16 +228,6 @@ public class ReportStarter implements ProcessCall
 					.add("processInfo", processInfo)
 					.add("reportViewerProvider", reportViewerProvider)
 					.toString();
-		}
-
-		public void setCtx(final Properties ctx)
-		{
-			this.ctx = ctx;
-		}
-
-		public Properties getCtx()
-		{
-			return ctx;
 		}
 
 		public void setProcessInfo(final ProcessInfo processInfo)

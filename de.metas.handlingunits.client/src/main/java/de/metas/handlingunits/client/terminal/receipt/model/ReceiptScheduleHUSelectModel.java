@@ -464,7 +464,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		//
 		// Create ProcessInfo
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setReportLanguage(bpartnerLaguage)

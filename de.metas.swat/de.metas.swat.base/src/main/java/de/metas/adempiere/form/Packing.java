@@ -68,7 +68,6 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
@@ -550,7 +549,7 @@ public abstract class Packing extends MvcGenForm
 		});
 	}
 
-	private ProcessExecutor invokeProcess(final IPackingDetailsModel model)
+	private void invokeProcess(final IPackingDetailsModel model)
 	{
 		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
 		// NOTE assume this is not called

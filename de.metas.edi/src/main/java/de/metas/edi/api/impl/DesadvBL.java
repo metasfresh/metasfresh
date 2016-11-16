@@ -442,7 +442,7 @@ public class DesadvBL implements IDesadvBL
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setAD_PInstance(pinstance)
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.build();
 
 		//

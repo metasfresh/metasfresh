@@ -46,7 +46,7 @@ public class FinReportJasper extends FinReport
 		final I_AD_Process proc = paReport.getJasperProcess();
 
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setFromAD_Process(proc)
+				.setAD_Process(proc)
 				.setRecord(getTable_ID(), getRecord_ID())
 				.setWhereClause(getProcessInfo().getWhereClause())
 				.addParameters(getParametersAsArray()) // Copy the list of parameters from the financial report

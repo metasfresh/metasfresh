@@ -442,7 +442,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		final I_AD_Process process = processPA.retrieveProcessByForm(getCtx(), AD_Form_ID);
 
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.addParameter(ProcessInfoParameter.of("M_PackagingTree_ID", M_PackagingTree_ID))
 				.addParameter(ProcessInfoParameter.of("C_BPartner_ID", model.getPackingTreeModel().getBp_id()))
 				.addParameter(ProcessInfoParameter.of("shipper", model.selectedShipperId))
@@ -450,7 +450,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 
 		try
 		{
-			jasperPrint = JRClient.get().createJasperPrint(Env.getCtx(), pi);
+			jasperPrint = JRClient.get().createJasperPrint(pi);
 		}
 		catch (final Exception e)
 		{

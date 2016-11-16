@@ -108,11 +108,11 @@ public class JRClient
 		}
 	}
 
-	public JasperPrint createJasperPrint(final Properties ctx, final ProcessInfo pi)
+	public JasperPrint createJasperPrint(final ProcessInfo pi)
 	{
 		try
 		{
-			final Language language = extractLanguage(ctx, pi);
+			final Language language = extractLanguage(pi);
 			return createJasperPrint(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language);
 		}
 		catch (Exception e)
@@ -154,11 +154,11 @@ public class JRClient
 		}
 	}
 
-	public byte[] report(final Properties ctx, final ProcessInfo pi, final OutputType outputType)
+	public byte[] report(final ProcessInfo pi, final OutputType outputType)
 	{
 		try
 		{
-			final Language language = extractLanguage(ctx, pi);
+			final Language language = extractLanguage(pi);
 			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputType);
 			return data;
 		}
@@ -195,7 +195,7 @@ public class JRClient
 		return server;
 	}
 
-	private static Language extractLanguage(final Properties ctx, final ProcessInfo pi)
+	private static Language extractLanguage(final ProcessInfo pi)
 	{
 		//
 		// Get Language from ProcessInfo, if any (08023)
@@ -210,7 +210,7 @@ public class JRClient
 
 		if (lang == null && pi.getWindowNo() > 0)
 		{
-			lang = takeLanguageFromDraftInOut(ctx, pi);
+			lang = takeLanguageFromDraftInOut(pi);
 		}
 
 		//
@@ -218,7 +218,7 @@ public class JRClient
 		if (lang == null && pi.getWindowNo() > 0)
 		{
 			// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
-			final String languageString = Env.getContext(ctx, pi.getWindowNo(), "AD_Language", true);
+			final String languageString = Env.getContext(pi.getCtx(), pi.getWindowNo(), "AD_Language", true);
 			if (languageString != null && !languageString.equals(""))
 			{
 				lang = Language.getLanguage(languageString);
@@ -229,10 +229,10 @@ public class JRClient
 		// Get Language from the BPartner set in window context, if any (03040)
 		if (lang == null && pi.getWindowNo() > 0)
 		{
-			final Integer C_BPartner_ID = Env.getContextAsInt(ctx, pi.getWindowNo(), "C_BPartner_ID");
+			final Integer C_BPartner_ID = Env.getContextAsInt(pi.getCtx(), pi.getWindowNo(), "C_BPartner_ID");
 			if (C_BPartner_ID != null)
 			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, C_BPartner_ID);
+				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), C_BPartner_ID);
 			}
 		}
 
@@ -245,7 +245,7 @@ public class JRClient
 			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 			if(bPartnerID > 0)
 			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bPartnerID);
+				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), bPartnerID);
 				return lang;
 			}
 		}
@@ -254,7 +254,7 @@ public class JRClient
 		// Get Organization Language if any (03040)
 		if (null == lang)
 		{
-			lang = Services.get(ILanguageBL.class).getOrgLanguage(ctx, pi.getAD_Org_ID());
+			lang = Services.get(ILanguageBL.class).getOrgLanguage(pi.getCtx(), pi.getAD_Org_ID());
 		}
 
 		// If we got an Language already, return it
@@ -289,7 +289,7 @@ public class JRClient
 	 * @return the login language if conditions fulfilled, null otherwise.
 	 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 	 */
-	private static Language takeLanguageFromDraftInOut(final Properties ctx, final ProcessInfo pi)
+	private static Language takeLanguageFromDraftInOut(final ProcessInfo pi)
 	{
 
 		final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
@@ -351,6 +351,7 @@ public class JRClient
 		}
 
 		// If all the conditions described above are fulfilled, take the language from the login
+		final Properties ctx = pi.getCtx();
 		final String languageString = Env.getAD_Language(ctx);
 
 		return Language.getLanguage(languageString);

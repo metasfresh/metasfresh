@@ -448,7 +448,7 @@ public class Scheduler extends AdempiereServer
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(schedulerCtx)
-				.setFromAD_Process(adProcess)
+				.setAD_Process(adProcess)
 				//.setRecord(-1, -1)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
 				.build();

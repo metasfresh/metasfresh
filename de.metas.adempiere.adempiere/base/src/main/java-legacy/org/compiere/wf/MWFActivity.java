@@ -1017,7 +1017,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
 					.setAD_PInstance(pInstance)
-					.setFromAD_Process(process)
+					.setAD_Process(process)
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();

@@ -412,7 +412,7 @@ public class HUReportModel implements IDisposable
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguage)

@@ -795,10 +795,17 @@ public final class ProcessInfo implements Serializable
 			return adProcessId;
 		}
 
-		public ProcessInfoBuilder setFromAD_Process(final org.compiere.model.I_AD_Process adProcess)
+		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			return this;
+		}
+		
+		public ProcessInfoBuilder setAD_ProcessByValue(final String processValue)
+		{
+			final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retriveProcessByValue(getCtx(), processValue);
+			setAD_Process(adProcess);
 			return this;
 		}
 

@@ -148,6 +148,7 @@ class JasperReportViewerPanel extends JRViewer
 			final ProcessInfo oldPi = getProcessInfo();
 
 			final ProcessInfo newPi = ProcessInfo.builder()
+					.setCtx(oldPi.getCtx())
 					.setAD_Process_ID(jasperProcessId)
 					.setTitle(oldPi.getTitle())
 					.setRecord(oldPi.getTable_ID(), oldPi.getRecord_ID())
@@ -157,7 +158,7 @@ class JasperReportViewerPanel extends JRViewer
 			JasperPrint newJasperPrint = null;
 			try
 			{
-				newJasperPrint = JRClient.get().createJasperPrint(Env.getCtx(), newPi);
+				newJasperPrint = JRClient.get().createJasperPrint(newPi);
 			}
 			catch (final Exception e1)
 			{
@@ -412,7 +413,7 @@ class JasperReportViewerPanel extends JRViewer
 			// Reason: in some cases we are using an alternative jasper report to better layout the data for given export format (e.g. excel)
 			else
 			{
-				final byte[] exportData = JRClient.get().report(getCtx(), getProcessInfo(), exportFormat);
+				final byte[] exportData = JRClient.get().report(getProcessInfo(), exportFormat);
 				Util.writeBytes(file, exportData);
 			}
 		}

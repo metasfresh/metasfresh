@@ -437,7 +437,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	{
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(getCtx())
-				.setFromAD_Process(_adProcessTrl)
+				.setAD_Process(_adProcessTrl)
 				.setWhereClause(whereClause)
 				.setRecord(adTableId, recordId)
 				.setWindowNo(m_WindowNo).setTabNo(m_TabNo)

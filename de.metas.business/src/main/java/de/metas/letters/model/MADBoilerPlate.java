@@ -157,7 +157,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
 				.build();
 		
