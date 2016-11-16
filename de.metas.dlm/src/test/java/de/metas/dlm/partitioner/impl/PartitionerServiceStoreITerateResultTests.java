@@ -103,7 +103,7 @@ public class PartitionerServiceStoreITerateResultTests
 		assertThat(result.size(), is(1));
 
 		// call the method under test
-		partitionerService.storeIterateResult(config, result, ctxAware);
+		partitionerService.storeIterateResult0(config, result, ctxAware);
 
 		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
 		assertThat(result.getDlmPartitionId2Record().isEmpty(), is(true));
@@ -143,7 +143,7 @@ public class PartitionerServiceStoreITerateResultTests
 		result.add(tableRecordReference, p2.getDLM_Partition_ID());
 
 		// invoke the method under test
-		partitionerService.storeIterateResult(config, result, ctxAware);
+		partitionerService.storeIterateResult0(config, result, ctxAware);
 
 		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
 	}
