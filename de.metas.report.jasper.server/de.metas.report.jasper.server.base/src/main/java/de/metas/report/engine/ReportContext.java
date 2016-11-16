@@ -6,12 +6,14 @@ import java.util.Properties;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
@@ -26,12 +28,12 @@ import de.metas.process.ProcessInfoParameter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -84,7 +86,7 @@ public final class ReportContext
 				.omitNullValues()
 				// .add("ctx", ctx)
 				.add("AD_Process_ID", AD_Process_ID)
-				//.add("adProcess", adProcess)
+				// .add("adProcess", adProcess)
 				.add("AD_PInstance_ID", AD_PInstance_ID)
 				.add("AD_Language", AD_Language)
 				.add("outputType", outputType)
@@ -193,7 +195,7 @@ public final class ReportContext
 		{
 			return new ReportContext(this);
 		}
-		
+
 		public Builder setCtx(final Properties ctx)
 		{
 			this.ctx = ctx;
@@ -237,7 +239,7 @@ public final class ReportContext
 			return this;
 		}
 
-		public Builder setSQLStatement(String sqlStatement)
+		public Builder setSQLStatement(final String sqlStatement)
 		{
 			this.sqlStatement = sqlStatement;
 			return this;
@@ -251,7 +253,30 @@ public final class ReportContext
 
 		private final List<ProcessInfoParameter> getProcessInfoParameters()
 		{
-			return Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(ctx, AD_PInstance_ID);
+			return Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(ctx, AD_PInstance_ID)
+					.stream()
+					.map(this::transformProcessInfoParameter)
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
+		private final ProcessInfoParameter transformProcessInfoParameter(final ProcessInfoParameter piParam)
+		{
+			//
+			// Corner case: REPORT_SQL_QUERY
+			// => replace @AD_PInstance_ID@ placeholder with actual value
+			if (JasperConstants.REPORT_PARAM_SQL_QUERY.equals(piParam.getParameter()))
+			{
+				final String parameterValue = piParam.getParameterAsString();
+				if (parameterValue != null)
+				{
+					final String parameterValueEffective = parameterValue.replace(JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder, String.valueOf(AD_PInstance_ID));
+					return ProcessInfoParameter.of(JasperConstants.REPORT_PARAM_SQL_QUERY, parameterValueEffective);
+				}
+			}
+
+			//
+			// Default: don't touch the original parameter
+			return piParam;
 		}
 	}
 }
