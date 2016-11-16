@@ -8,7 +8,7 @@
 	<formats>
 		<format>tar.gz</format>
 	</formats>
-	<baseDirectory></baseDirectory>
+	<baseDirectory>dist</baseDirectory>
 	<fileSets>
 	
 		<fileSet>
