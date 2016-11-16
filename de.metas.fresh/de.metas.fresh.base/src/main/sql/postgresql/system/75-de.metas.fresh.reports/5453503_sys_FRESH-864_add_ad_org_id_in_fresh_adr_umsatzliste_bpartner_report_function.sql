@@ -36,7 +36,7 @@ CREATE TABLE report.fresh_ADR_umsatzliste_bpartner_report
 	attributes character varying(250),
 	
 	startdate character varying(250),
-	enddate character varying(250)
+	enddate character varying(250),
 	ad_org_id numeric
 	
 );
@@ -63,7 +63,7 @@ SELECT
 	 ,COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $5), 'alle') AS attributes
 	 ,to_char($1, 'DD.MM.YYYY') AS Base_Period_Start
 	 ,to_char($2, 'DD.MM.YYYY') AS Base_Period_End
-	 ,ad_org_id 
+	 ,um.ad_org_id 
 	 FROM report.fresh_umsatzliste_bpartner_report(
 			$1,
 			$2,
@@ -80,7 +80,7 @@ SELECT
 	join m_product p on p.name = um.p_name
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $6
 	left join C_BPartner_Product bpp  ON p.M_Product_ID = bpp.M_Product_ID and bpp.c_bpartner_id = $4 AND bpp.isActive = 'Y'
-	group by  COALESCE(pt.name, p.name), bpp.productcategory 
+	group by  COALESCE(pt.name, p.name), bpp.productcategory ,um.ad_org_id 
 	
 $BODY$
 LANGUAGE sql STABLE;
