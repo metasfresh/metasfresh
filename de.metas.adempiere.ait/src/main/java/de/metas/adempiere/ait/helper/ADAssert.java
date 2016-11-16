@@ -43,6 +43,7 @@ import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Color;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_ModelValidator;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_C_DocType;
@@ -65,7 +66,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.document.IDocumentPA;
 
 /**

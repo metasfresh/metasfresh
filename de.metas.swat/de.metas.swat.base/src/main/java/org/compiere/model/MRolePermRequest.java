@@ -30,7 +30,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -216,25 +218,23 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		a.saveEx();
 		logGranted(MWindow.COLUMNNAME_AD_Window_ID, window.getName());
 	}
-	private void grantProcessAccess(int AD_Process_ID)
+	private void grantProcessAccess(final int AD_Process_ID)
 	{
-		setIsReadWrite(true); // we always need read write access to processes 
-		final MProcess process = new MProcess(getCtx(), AD_Process_ID, get_TrxName());
-		MProcessAccess a = getAccessRecord(MProcessAccess.Table_Name, MProcessAccess.COLUMNNAME_AD_Process_ID, AD_Process_ID, null);
-		if (a == null)
-		{
-			a = new MProcessAccess(process, getAD_Role());
-		}
+		setIsReadWrite(true); // we always need read write access to processes
+		
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final I_AD_Process adProcess = adProcessDAO.retrieveProcessById(getCtx(), AD_Process_ID);
+		final I_AD_Process_Access a = adProcessDAO.retrieveProcessAccessOrCreateDraft(getCtx(), AD_Process_ID, getAD_Role());
 		a.setIsReadWrite(isReadWrite());
 		a.setIsActive(true);
-		a.saveEx();
-		logGranted(MProcess.COLUMNNAME_AD_Process_ID, process.getName());
+		InterfaceWrapperHelper.save(a);
+		logGranted(I_AD_Process.COLUMNNAME_AD_Process_ID, adProcess.getName());
 		//
 		// Recursively grant access to child elements:
-		if (process.getAD_Form_ID() > 0)
-			grantFormAccess(process.getAD_Form_ID());
-		if (process.getAD_Workflow_ID() > 0)
-			grantWorkflowAccess(process.getAD_Workflow_ID());
+		if (adProcess.getAD_Form_ID() > 0)
+			grantFormAccess(adProcess.getAD_Form_ID());
+		if (adProcess.getAD_Workflow_ID() > 0)
+			grantWorkflowAccess(adProcess.getAD_Workflow_ID());
 	}
 	private void grantFormAccess(int AD_Form_ID)
 	{
@@ -302,19 +302,19 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				a.setIsActive(false);
 				a.saveEx();
 			}
-			final MWindow window = (MWindow)getAD_Window();
+			final I_AD_Window window = getAD_Window();
 			logRevoked(MWindow.COLUMNNAME_AD_Window_ID, window.getName());
 		}
 		else if (getAD_Process_ID() > 0)
 		{
-			MProcessAccess a = getAccessRecord(MProcessAccess.Table_Name, MProcessAccess.COLUMNNAME_AD_Process_ID, getAD_Process_ID(), null);
+			final I_AD_Process_Access a = Services.get(IADProcessDAO.class).retrieveProcessAccess(getCtx(), getAD_Process_ID(), getAD_Role_ID());
 			if (a != null)
 			{
 				a.setIsActive(false);
-				a.saveEx();
+				InterfaceWrapperHelper.save(a);
 			}
-			final MProcess process = (MProcess)getAD_Process();
-			logRevoked(MProcess.COLUMNNAME_AD_Process_ID, process.getName());
+			final I_AD_Process process = getAD_Process();
+			logRevoked(I_AD_Process.COLUMNNAME_AD_Process_ID, process.getName());
 		}
 		else if (getAD_Form_ID() > 0)
 		{
@@ -324,7 +324,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				a.setIsActive(false);
 				a.saveEx();
 			}
-			final MForm form = (MForm)getAD_Form();
+			final I_AD_Form form = getAD_Form();
 			logRevoked(MForm.COLUMNNAME_AD_Form_ID, form.getName());
 		}
 		else if (getAD_Task_ID() > 0)
@@ -335,7 +335,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				a.setIsActive(false);
 				a.saveEx();
 			}
-			final MTask task = (MTask)getAD_Task();
+			final I_AD_Task task = getAD_Task();
 			logRevoked(MTask.COLUMNNAME_AD_Task_ID, task.getName());
 		}
 		else if (getAD_Workflow_ID() > 0)
@@ -346,7 +346,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				a.setIsActive(false);
 				a.saveEx();
 			}
-			final MWorkflow wf = (MWorkflow)getAD_Workflow();
+			final I_AD_Workflow wf = getAD_Workflow();
 			logRevoked(MWorkflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
 		}
 		else if (getDocAction() != null)
@@ -360,7 +360,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				a.setIsActive(false);
 				a.saveEx();
 			}
-			final MDocType dt = (MDocType)getC_DocType();
+			final I_C_DocType dt = getC_DocType();
 			logRevoked(MDocType.COLUMNNAME_C_DocType_ID, dt.getName());
 		}
 		else
@@ -384,7 +384,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 			String parentColumnName, int parent_id,
 			String additionalWhereClause)
 	{
-		final StringBuffer whereClause = new StringBuffer("AD_Role_ID=?");
+		final StringBuilder whereClause = new StringBuilder("AD_Role_ID=?");
 		whereClause.append(" AND ").append(parentColumnName).append("=?");
 		if (!Check.isEmpty(additionalWhereClause, true))
 		{

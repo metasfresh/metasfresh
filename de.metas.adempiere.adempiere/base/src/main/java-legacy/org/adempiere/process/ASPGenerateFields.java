@@ -30,10 +30,10 @@ package org.adempiere.process;
 
 import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.MColumn;
 import org.compiere.model.MField;
-import org.compiere.model.MProcess;
 import org.compiere.model.MTab;
 import org.compiere.model.X_ASP_Field;
 import org.compiere.model.X_ASP_Process;
@@ -135,7 +135,7 @@ public class ASPGenerateFields extends SvrProcess
 
 	private void generateProcess(int p_AD_Process_ID) {
 		// Add Process and Parameters
-		MProcess process = new MProcess(getCtx(), p_AD_Process_ID, get_TrxName());
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(getCtx(), p_AD_Process_ID);
 		int asp_process_id = DB.getSQLValueEx(get_TrxName(),
 				"SELECT COUNT(*) FROM ASP_Process WHERE ASP_Level_ID = ? AND AD_Process_ID = ?",
 				p_ASP_Level_ID, process.getAD_Process_ID());

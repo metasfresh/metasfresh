@@ -25,7 +25,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelectionCheck;
-import org.compiere.model.MProcess;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.process.ProcessExecutionResult;
@@ -156,11 +155,11 @@ public final class ReportCtl
 		}
 		// else if(adProcessId == 313) // Payment // => will be handled on upper level
 		// return;
-		if (adProcessId == MProcess.getProcess_ID("Rpt PP_Order", ITrx.TRXNAME_None))
+		if (adProcessId == 53028) // Rpt PP_Order
 		{
 			return ReportEngine.MANUFACTURING_ORDER;
 		}
-		if (adProcessId == MProcess.getProcess_ID("Rpt DD_Order", ITrx.TRXNAME_None))
+		if (adProcessId == 53044) // Rpt DD_Order
 		{
 			return ReportEngine.DISTRIBUTION_ORDER;
 		}

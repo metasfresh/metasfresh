@@ -9,13 +9,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.report.model.I_AD_Process;
 
 /*
  * #%L
@@ -209,11 +209,6 @@ public final class ReportContext
 		{
 			this.adProcess = adProcess;
 			return this;
-		}
-
-		public Builder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
-		{
-			return setAD_Process(InterfaceWrapperHelper.create(adProcess, I_AD_Process.class));
 		}
 
 		public Builder setAD_PInstance_ID(final int AD_PInstance_ID)

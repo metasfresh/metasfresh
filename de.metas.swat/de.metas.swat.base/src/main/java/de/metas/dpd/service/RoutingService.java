@@ -42,6 +42,7 @@ import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
@@ -54,7 +55,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MPackage;
-import org.compiere.model.MProcess;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
@@ -563,8 +563,7 @@ public class RoutingService implements IDPDRoutingservice
 
 	private JasperPrint retrieveJasperPrint(final Properties ctx, final String processName, final int adTableId, final int recordId, final String trxName)
 	{
-		final int processId = MProcess.getProcess_ID(processName, trxName);
-		
+		final int processId = Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, processName);
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setAD_Process_ID(processId)
 				.setTitle(processName)
@@ -642,7 +641,7 @@ public class RoutingService implements IDPDRoutingservice
 		final IPrintingService printingService = Services.get(IPrinterRoutingBL.class).findPrintingService(
 				ctx,
 				-1, // C_DocType_ID
-				MProcess.getProcess_ID(jasperProcessName, null), // AD_Process_ID
+				Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, jasperProcessName), // AD_Process_ID
 				IPrinterRoutingBL.PRINTERTYPE_Label);
 
 		final PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();

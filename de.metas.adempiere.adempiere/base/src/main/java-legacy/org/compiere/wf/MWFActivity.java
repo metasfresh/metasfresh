@@ -58,7 +58,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MPInstancePara;
-import org.compiere.model.MProcess;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserRoles;
@@ -1006,7 +1005,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Report:AD_Process_ID={}", m_node.getAD_Process_ID());
 			// Process
-			final I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			final I_AD_Process process = m_node.getAD_Process();
 			if (!process.isReport())
 				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
 			//
@@ -1047,7 +1046,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
 			// Process
-			final I_AD_Process process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
+			final I_AD_Process process = m_node.getAD_Process();
 			//
 			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
 			createPInstanceParameters(pInstance, process, getPO(trx));

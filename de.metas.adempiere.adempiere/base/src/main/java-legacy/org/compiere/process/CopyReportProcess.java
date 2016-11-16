@@ -15,56 +15,62 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MProcess;
-import org.compiere.util.Msg;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
 
 /**
- * 
+ *
  * @author Paul Bowden (phib)
- * Adaxa Pty Ltd
- * Copy settings and parameters from source "Report and Process" to target
- * overwrites existing data (including translations)
+ *         Adaxa Pty Ltd
+ *         Copy settings and parameters from source "Report and Process" to target
+ *         overwrites existing data (including translations)
  *
  */
-public class CopyReportProcess extends SvrProcess {
+public class CopyReportProcess extends SvrProcess
+{
 
 	private int sourceId = 0;
 	private int targetId = 0;
 
 	@Override
-	protected String doIt() throws Exception {
-		
-		MProcess source = new MProcess(getCtx(), sourceId, get_TrxName());
-		MProcess target = new MProcess(getCtx(), targetId, get_TrxName());
-		
-		if ( sourceId <= 0 || targetId <= 0 || source == null || target == null )
-			throw new AdempiereException(Msg.getMsg(getCtx(), "CopyProcessRequired"));
-		
-		target.copyFrom(source);  // saves automatically
-		
-		return "@OK@";
-		
+	protected void prepare()
+	{
+		for (final ProcessInfoParameter parameter : getParameters())
+		{
+			final String para = parameter.getParameterName();
+			if ("AD_Process_ID".equals(para))
+			{
+				sourceId = parameter.getParameterAsInt();
+			}
+			else if ("AD_Process_To_ID".equals(para))
+			{
+				targetId = parameter.getParameterAsInt();
+			}
+		}
+
+		if (targetId <= 0 && I_AD_Process.Table_Name.equals(getTableName()))
+		{
+			targetId = getRecord_ID();
+		}
+
 	}
 
 	@Override
-	protected void prepare() {
-		
-		ProcessInfoParameter[] params = getParametersAsArray();
-		for (ProcessInfoParameter parameter : params)
+	protected String doIt() throws Exception
+	{
+		final I_AD_Process source = InterfaceWrapperHelper.create(getCtx(), sourceId, I_AD_Process.class, get_TrxName());
+		final I_AD_Process target = InterfaceWrapperHelper.create(getCtx(), targetId, I_AD_Process.class, get_TrxName());
+
+		if (sourceId <= 0 || targetId <= 0 || source == null || target == null)
 		{
-			String para = parameter.getParameterName();
-			if ( para.equals("AD_Process_ID") )
-				sourceId = parameter.getParameterAsInt();
-			else if ( para.equals("AD_Process_To_ID"))
-				targetId = parameter.getParameterAsInt();
-			else
-				log.warn("Unknown paramter: " + para);
+			throw new AdempiereException("@CopyProcessRequired@");
 		}
-		
-		if ( targetId == 0 )
-			targetId = getRecord_ID();
 
+		Services.get(IADProcessDAO.class).copyAD_Process(target, source);
+
+		return MSG_OK;
 	}
-
 }

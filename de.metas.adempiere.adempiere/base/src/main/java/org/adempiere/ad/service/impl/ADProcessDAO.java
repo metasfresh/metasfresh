@@ -42,9 +42,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table_Process;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -95,6 +98,16 @@ public class ADProcessDAO implements IADProcessDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly();
+	}
+
+	@Override
+	public I_AD_Process retrieveProcessById(final Properties ctx, final int adProcessId)
+	{
+		// NOTE: we assume IModelCacheService is activated
+		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
+		Check.assumeNotNull(process, "Process shall exist for AD_Process_ID={}", adProcessId);
+		return process;
+
 	}
 
 	@Override
@@ -301,4 +314,140 @@ public class ADProcessDAO implements IADProcessDAO
 			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}", adProcessId, adClientId, durationMillisToAdd, ex);
 		}
 	}
+
+	@Override
+	public I_AD_Process_Access retrieveProcessAccessOrCreateDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
+	{
+		I_AD_Process_Access pa = retrieveProcessAccess(ctx, adProcessId, role.getAD_Role_ID());
+		if (pa == null)
+		{
+			pa = createProcessAccessDraft(ctx, adProcessId, role);
+		}
+		return pa;
+	}
+
+	@Override
+	public I_AD_Process_Access retrieveProcessAccess(final Properties ctx, final int adProcessId, final int adRoleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Process_Access.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Process_ID, adProcessId)
+				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Role_ID, adRoleId)
+				.create()
+				.firstOnly(I_AD_Process_Access.class);
+	}
+
+	@Override
+	public I_AD_Process_Access createProcessAccessDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
+	{
+		final I_AD_Process_Access pa = InterfaceWrapperHelper.create(ctx, I_AD_Process_Access.class, ITrx.TRXNAME_ThreadInherited);
+		InterfaceWrapperHelper.setValue(pa, I_AD_Process_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+		pa.setAD_Org_ID(role.getAD_Org_ID());
+
+		pa.setAD_Process_ID(adProcessId);
+		pa.setAD_Role(role);
+
+		pa.setIsActive(true);
+		pa.setIsReadWrite(true);
+
+		return pa;
+	}
+
+	@Override
+	public void copyAD_Process(final I_AD_Process targetProcess, final I_AD_Process sourceProcess)
+	{
+		logger.debug("Copying from: {} to: {}", sourceProcess, targetProcess);
+		
+		targetProcess.setAccessLevel(sourceProcess.getAccessLevel());
+		targetProcess.setAD_Form_ID(sourceProcess.getAD_Form_ID());
+		targetProcess.setAD_PrintFormat_ID(sourceProcess.getAD_PrintFormat_ID());
+		targetProcess.setAD_ReportView_ID(sourceProcess.getAD_ReportView_ID());
+		targetProcess.setAD_Workflow_ID(sourceProcess.getAD_Workflow_ID());
+		targetProcess.setClassname(sourceProcess.getClassname());
+		targetProcess.setDescription(sourceProcess.getDescription());
+		targetProcess.setHelp(sourceProcess.getHelp());
+		targetProcess.setIsBetaFunctionality(sourceProcess.isBetaFunctionality());
+		targetProcess.setIsDirectPrint(sourceProcess.isDirectPrint());
+		targetProcess.setIsReport(sourceProcess.isReport());
+		targetProcess.setIsServerProcess(sourceProcess.isServerProcess());
+		targetProcess.setJasperReport(sourceProcess.getJasperReport());
+		targetProcess.setProcedureName(sourceProcess.getProcedureName());
+		targetProcess.setShowHelp(sourceProcess.getShowHelp());
+		InterfaceWrapperHelper.save(targetProcess);
+
+		// copy parameters
+		// TODO? Perhaps should delete existing first?
+		for (final I_AD_Process_Para sourcePara : retrieveProcessParameters(sourceProcess))
+		{
+			copyAD_Process_Para(targetProcess, sourcePara);
+		}
+	}
+
+	/**
+	 * Copy settings from another process parameter
+	 * overwrites existing data
+	 * (including translations)
+	 * and saves
+	 * 
+	 * @param sourcePara
+	 */
+	private I_AD_Process_Para copyAD_Process_Para(final I_AD_Process targetProcess, final I_AD_Process_Para sourcePara)
+	{
+		logger.debug("Copying parameter from {} to {}", sourcePara, targetProcess);
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(targetProcess);
+		final String trxName = InterfaceWrapperHelper.getTrxName(targetProcess);
+
+		final I_AD_Process_Para targetPara = InterfaceWrapperHelper.create(ctx, I_AD_Process_Para.class, trxName);
+		targetPara.setAD_Org_ID(sourcePara.getAD_Org_ID());
+		targetPara.setAD_Process(targetProcess);
+		targetPara.setEntityType(targetProcess.getEntityType());
+
+
+		targetPara.setAD_Element_ID(sourcePara.getAD_Element_ID());
+		targetPara.setAD_Reference_ID(sourcePara.getAD_Reference_ID());
+		targetPara.setAD_Reference_Value_ID(sourcePara.getAD_Reference_Value_ID());
+		targetPara.setAD_Val_Rule_ID(sourcePara.getAD_Val_Rule_ID());
+		targetPara.setColumnName(sourcePara.getColumnName());
+		targetPara.setDefaultValue(sourcePara.getDefaultValue());
+		targetPara.setDefaultValue2(sourcePara.getDefaultValue2());
+		targetPara.setDescription(sourcePara.getDescription());
+		targetPara.setDisplayLogic(sourcePara.getDisplayLogic());
+		targetPara.setFieldLength(sourcePara.getFieldLength());
+		targetPara.setHelp(sourcePara.getHelp());
+		targetPara.setIsActive(sourcePara.isActive());
+		targetPara.setIsCentrallyMaintained(sourcePara.isCentrallyMaintained());
+		targetPara.setIsMandatory(sourcePara.isMandatory());
+		targetPara.setIsRange(sourcePara.isRange());
+		targetPara.setName(sourcePara.getName());
+		targetPara.setReadOnlyLogic(sourcePara.getReadOnlyLogic());
+		targetPara.setSeqNo(sourcePara.getSeqNo());
+		targetPara.setValueMax(sourcePara.getValueMax());
+		targetPara.setValueMin(sourcePara.getValueMin());
+		targetPara.setVFormat(sourcePara.getVFormat());
+		targetPara.setIsAutocomplete(sourcePara.isAutocomplete());
+		InterfaceWrapperHelper.save(targetPara);
+
+		//
+		// Delete newly created translations and copy translations from source
+		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
+		{
+			final int adProcessParaId = targetPara.getAD_Process_Para_ID();
+			final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + adProcessParaId;
+			int count = DB.executeUpdateEx(sqlDelete, trxName);
+			logger.debug("AD_Process_Para_Trl deleted: " + count);
+
+			final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
+					" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+					" Name, Description, Help, IsTranslated) " +
+					" SELECT AD_Process_Para_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+					" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
+					" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + adProcessParaId;
+			count = DB.executeUpdateEx(sqlInsert, trxName);
+			logger.debug("AD_Process_Para_Trl inserted: " + count);
+		}
+		
+		return targetPara;
+	}
+
 }

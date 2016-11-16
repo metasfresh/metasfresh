@@ -44,6 +44,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
@@ -51,7 +52,6 @@ import org.compiere.util.Language;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.adempiere.report.jasper.OutputType;
 
 /**

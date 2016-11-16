@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.M_Element;
 import org.compiere.process.ProcessClassInfo;
@@ -18,8 +19,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.Function;
-
-import de.metas.adempiere.model.I_AD_Process;
 
 /*
  * #%L
