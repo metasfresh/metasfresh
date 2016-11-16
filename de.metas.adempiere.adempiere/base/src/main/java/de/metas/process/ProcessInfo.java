@@ -86,6 +86,7 @@ public final class ProcessInfo implements Serializable
 
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
+		sqlStatement = builder.getSQLStatement();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
 
@@ -100,6 +101,7 @@ public final class ProcessInfo implements Serializable
 		reportingProcess = builder.isReportingProcess();
 		reportLanguage = builder.getReportLanguage();
 		reportTemplate = builder.getReportTemplate();
+		reportApplySecuritySettings = builder.isReportApplySecuritySettings();
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
 		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
@@ -130,6 +132,7 @@ public final class ProcessInfo implements Serializable
 	/** Class Name */
 	private final Optional<String> className;
 	private final Optional<String> dbProcedureName;
+	private final Optional<String> sqlStatement;
 	private final int adWorkflowId;
 	private final boolean serverProcess;
 
@@ -148,6 +151,7 @@ public final class ProcessInfo implements Serializable
 	private final boolean reportingProcess;
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
+	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
 
 	/** Process result */
@@ -240,6 +244,11 @@ public final class ProcessInfo implements Serializable
 	{
 		return dbProcedureName;
 	}
+	
+	public Optional<String> getSQLStatement()
+	{
+		return sqlStatement;
+	}
 
 	public int getAD_Workflow_ID()
 	{
@@ -273,6 +282,11 @@ public final class ProcessInfo implements Serializable
 	public int getRecord_ID()
 	{
 		return recordId;
+	}
+	
+	public boolean isRecordSet()
+	{
+		return getTable_ID() > 0 && getRecord_ID() > 0;
 	}
 
 	/**
@@ -496,6 +510,11 @@ public final class ProcessInfo implements Serializable
 	public Optional<String> getReportTemplate()
 	{
 		return reportTemplate;
+	}
+	
+	public boolean isReportApplySecuritySettings()
+	{
+		return reportApplySecuritySettings;
 	}
 
 	public OutputType getJRDesiredOutputType()
@@ -880,6 +899,21 @@ public final class ProcessInfo implements Serializable
 				return Optional.of(dbProcedureName.trim());
 			}
 		}
+		
+		private Optional<String> getSQLStatement()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			final String sqlStatement = process == null ? null : process.getSQLStatement();
+			if (Check.isEmpty(sqlStatement, true))
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(sqlStatement.trim());
+			}
+		}
+
 
 		private Optional<String> getReportTemplate()
 		{
@@ -896,6 +930,16 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return Optional.of(reportTemplate.trim());
+		}
+		
+		private boolean isReportApplySecuritySettings()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if (adProcess == null)
+			{
+				return false;
+			}
+			return adProcess.isApplySecuritySettings();
 		}
 
 		private int getAD_Workflow_ID()
