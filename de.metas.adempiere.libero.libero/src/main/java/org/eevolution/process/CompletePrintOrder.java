@@ -28,7 +28,7 @@ import org.compiere.print.ReportEngine;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPOrder;
 
-import de.metas.process.ClientProcess;
+import de.metas.process.Process;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SvrProcess;
 
@@ -37,8 +37,8 @@ import de.metas.process.SvrProcess;
  * @author victor.perez@e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
+@Process(clientOnly = true)
 public class CompletePrintOrder extends SvrProcess
-implements ClientProcess
 {
 	/** The Order */
 	private int p_PP_Order_ID = 0;

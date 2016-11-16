@@ -77,7 +77,7 @@ public final class ProcessClassInfo
 		catch (ExecutionException e)
 		{
 			// shall never happen
-			logger.error("Failed fetching ProcessClassInfo from cache for " + processClass, e);
+			logger.error("Failed fetching ProcessClassInfo from cache for {}", processClass, e);
 		}
 		return ProcessClassInfo.NULL;
 	}
@@ -139,7 +139,7 @@ public final class ProcessClassInfo
 		}
 		catch (Throwable e)
 		{
-			logger.error("Failed introspecting process class info: " + processClass + ". Fallback to defaults: " + NULL, e);
+			logger.error("Failed introspecting process class info: {}. Fallback to defaults: {}", processClass, NULL, e);
 			return NULL;
 		}
 	}
@@ -198,16 +198,13 @@ public final class ProcessClassInfo
 		// from given processClass and it's super classes,
 		// ordered by methods of processClass first, methods from super classes after
 		@SuppressWarnings("unchecked")
-		final Set<Method> methods = ReflectionUtils.getAllMethods(processClass
-				, ReflectionUtils.withName(methodName)
-				, ReflectionUtils.withParameters()
-				, ReflectionUtils.withReturnType(returnType));
+		final Set<Method> methods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withName(methodName), ReflectionUtils.withParameters(), ReflectionUtils.withReturnType(returnType));
 
 		// No methods of given format were found.
 		// This could be OK in case our process is NOT extending SvrProcess but the ProcessCall interface.
 		if (methods.isEmpty())
 		{
-			logger.info("Method {} with return type {} was not found in {} or in its inerited types. Ignored.", new Object[] { methodName, returnType, processClass });
+			logger.info("Method {} with return type {} was not found in {} or in its inerited types. Ignored.", methodName, returnType, processClass);
 			// throw new IllegalStateException("Method " + methodName + " with return type " + returnType + " was not found in " + processClass + " or in its inerited types");
 			return false;
 		}
@@ -270,19 +267,17 @@ public final class ProcessClassInfo
 		this.parameterInfos = ImmutableList.copyOf(createProcessClassParamInfos(processClass));
 
 		//
-		// Check ClientProcess marker
-		this.clientOnly = ClientProcess.class.isAssignableFrom(processClass);
-
-		//
 		// Load from @Process annotation
 		final Process processAnn = processClass.getAnnotation(Process.class);
 		if (processAnn != null)
 		{
 			this.existingCurrentRecordRequiredWhenCalledFromGear = processAnn.requiresCurrentRecordWhenCalledFromGear();
+			this.clientOnly = processAnn.clientOnly();
 		}
 		else
 		{
 			this.existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
+			this.clientOnly = false;
 		}
 	}
 
@@ -292,19 +287,25 @@ public final class ProcessClassInfo
 		return ObjectUtils.toString(this);
 	}
 
-	/** @return <code>true</code> if we shall run {@link SvrProcess#prepare()} method out of transaction */
+	/**
+	 * @return <code>true</code> if we shall run {@link SvrProcess#prepare()} method out of transaction
+	 */
 	public boolean isRunPrepareOutOfTransaction()
 	{
 		return runPrepareOutOfTransaction;
 	}
 
-	/** @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction */
+	/**
+	 * @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction
+	 */
 	public boolean isRunDoItOutOfTransaction()
 	{
 		return runDoItOutOfTransaction;
 	}
-	
-	/** @return true if this process shall be executed on client side only */
+
+	/**
+	 * @return true if this process shall be executed on client side only
+	 */
 	public boolean isClientOnly()
 	{
 		return clientOnly;

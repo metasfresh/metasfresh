@@ -32,8 +32,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
-import de.metas.process.ClientProcess;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.Process;
 import de.metas.process.ProcessCall;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -48,7 +48,8 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author Ashley Ramdass
  * @author tsa
  */
-public class ReportStarter implements ProcessCall, ClientProcess
+@Process(clientOnly = true)
+public class ReportStarter implements ProcessCall
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ReportStarter.class);
