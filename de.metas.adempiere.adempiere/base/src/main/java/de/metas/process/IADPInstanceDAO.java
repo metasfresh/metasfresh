@@ -31,17 +31,6 @@ import org.compiere.model.I_AD_PInstance;
 public interface IADPInstanceDAO extends ISingletonService
 {
 	/**
-	 * Saves the parameters of the given ProcessInfo object to the Database. Parameters which are already saved in the database will be:
-	 * <li>Ignored if the value has not changed
-	 * <li>Overwritten if the
-	 * Value has changed Parameters that are saved in the Database but not included in the ProcessInfo are not affected.
-	 * 
-	 * @param pi process info
-	 * @task US1007
-	 */
-	void saveParameterToDB(ProcessInfo pi);
-
-	/**
 	 * 
 	 * @param adPInstanceId
 	 * @param piParams

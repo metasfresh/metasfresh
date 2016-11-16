@@ -119,7 +119,7 @@ public class JRClient
 		}
 	}
 
-	public JasperPrint createJasperPrint(final int AD_Process_ID, final int AD_PInstance_ID, final Language language)
+	private JasperPrint createJasperPrint(final int AD_Process_ID, final int AD_PInstance_ID, final Language language)
 	{
 		try
 		{

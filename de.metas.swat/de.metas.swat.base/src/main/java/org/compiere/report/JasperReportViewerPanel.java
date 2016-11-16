@@ -135,15 +135,15 @@ class JasperReportViewerPanel extends JRViewer
 		public void actionPerformed(final ActionEvent e)
 		{
 
-			final KeyNamePair pp = comboReport.getSelectedItem();
-			if (pp == null)
+			final KeyNamePair jasperProcessKNP = comboReport.getSelectedItem();
+			if (jasperProcessKNP == null)
 			{
 				return;
 			}
 			//
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-			final int jasperProcessId = pp.getKey();
+			final int jasperProcessId = jasperProcessKNP.getKey();
 
 			final ProcessInfo oldPi = getProcessInfo();
 

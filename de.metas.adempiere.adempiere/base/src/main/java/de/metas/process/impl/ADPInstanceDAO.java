@@ -143,12 +143,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public void saveParameterToDB(final ProcessInfo pi)
-	{
-		saveParameterToDB(pi.getAD_PInstance_ID(), pi.getParameter());
-	}
-
-	@Override
 	public void saveParameterToDB(final int adPInstanceId, final List<ProcessInfoParameter> piParams)
 	{
 		DB.saveConstraints();
