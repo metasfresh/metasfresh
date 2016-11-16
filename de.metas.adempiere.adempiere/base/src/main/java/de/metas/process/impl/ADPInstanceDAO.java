@@ -597,6 +597,15 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Update ProcessInfo's AD_PInstance_ID
 		pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
 	}
+	
+	@Override
+	public int createAD_PInstance_ID(final Properties ctx)
+	{
+		final String trxName = ITrx.TRXNAME_None;
+		final int adPInstanceId = DB.getNextID(ctx, I_AD_PInstance.Table_Name, trxName);
+		Check.assume(adPInstanceId > 0, "Invalid generated AD_PInstance_ID: {}", adPInstanceId);
+		return adPInstanceId;
+	}
 
 	@Override
 	public I_AD_PInstance createAD_PInstance(final Properties ctx, final int AD_Process_ID, final int AD_Table_ID, final int recordId)

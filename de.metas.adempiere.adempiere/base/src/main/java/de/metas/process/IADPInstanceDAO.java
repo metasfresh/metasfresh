@@ -69,6 +69,16 @@ public interface IADPInstanceDAO extends ISingletonService
 	List<ProcessInfoLog> retrieveProcessInfoLogs(int adPInstanceId);
 
 	/**
+	 * Creates a new AD_PInstance_ID.
+	 * 
+	 * NOTE: this method is NOT creating an {@link I_AD_PInstance} record.
+	 * 
+	 * @param ctx
+	 * @return new AD_PInstance_ID
+	 */
+	int createAD_PInstance_ID(Properties ctx);
+
+	/**
 	 * Creates and saves a new AD_PInstance.
 	 * 
 	 * @param ctx

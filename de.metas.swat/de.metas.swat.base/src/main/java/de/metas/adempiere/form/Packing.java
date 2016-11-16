@@ -68,6 +68,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
@@ -105,7 +106,7 @@ public abstract class Packing extends MvcGenForm
 		super();
 
 		this.ctx = Env.getCtx();
-		this.adPInstanceId = shipmentSchedulePA.createADPInstanceId(ctx);
+		this.adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
 	}
 
 	@SuppressWarnings("unchecked")
