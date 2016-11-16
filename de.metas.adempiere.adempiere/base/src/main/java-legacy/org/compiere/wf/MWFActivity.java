@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
@@ -35,19 +34,16 @@ import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_WF_Node_Para;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -55,7 +51,6 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
-import org.compiere.model.MPInstancePara;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserRoles;
@@ -74,10 +69,9 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Workflow Activity Model.
@@ -1003,24 +997,21 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Report ******/
 		else if (MWFNode.ACTION_AppsReport.equals(action))
 		{
-			log.debug("Report:AD_Process_ID={}", m_node.getAD_Process_ID());
-			// Process
-			final I_AD_Process process = m_node.getAD_Process();
-			if (!process.isReport())
-				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
-			//
-			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
-			createPInstanceParameters(pInstance, process, getPO(trx));
-			//
+			log.debug("Report: AD_Process_ID={}", m_node.getAD_Process_ID());
 			final ProcessInfo pi = ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
-					.setAD_PInstance(pInstance)
-					.setAD_Process(process)
+					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.addParameters(createProcessInfoParameters(getPO(trx)))
 					.build();
+			if (!pi.isReportingProcess())
+			{
+				throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
+			}
+
 			// Report
 			ReportEngine re = ReportEngine.get(getCtx(), pi);
 			if (re == null)
@@ -1044,21 +1035,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Process ******/
 		else if (MWFNode.ACTION_AppsProcess.equals(action))
 		{
-			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
-			// Process
-			final I_AD_Process process = m_node.getAD_Process();
-			//
-			final I_AD_PInstance pInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(getCtx(), process.getAD_Process_ID(), getAD_Table_ID(), getRecord_ID());
-			createPInstanceParameters(pInstance, process, getPO(trx));
-			//
+			log.debug("Process: AD_Process_ID={}", m_node.getAD_Process_ID());
 			final ProcessInfo pi = ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
-					.setAD_PInstance(pInstance)
 					.setAD_Process_ID(m_node.getAD_Process_ID())
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.addParameters(createProcessInfoParameters(getPO(trx)))
 					.build();
 			
 			ProcessExecutor.builder()
@@ -1482,49 +1467,34 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	}	// setUserConfirmation
 
 	
-	private void createPInstanceParameters(final I_AD_PInstance adPInstance, final I_AD_Process adProcess, final PO po)
+	private List<ProcessInfoParameter> createProcessInfoParameters(final PO po)
 	{
-		final Map<String, MWFNodePara> attributeName2wfNodePara = Stream.of(m_node.getParameters())
-				.collect(GuavaCollectors.toImmutableMapByKey(MWFNodePara::getAttributeName));
-		
-		int seqNo = 10; // metas
-		for (final I_AD_Process_Para para : Services.get(IADProcessDAO.class).retrieveProcessParameters(adProcess))
-		{
-			I_AD_PInstance_Para pip = new MPInstancePara(adPInstance, seqNo);
-			pip.setParameterName(para.getColumnName());
-			pip.setInfo(para.getName());
-			InterfaceWrapperHelper.save(pip);
-			seqNo += 10; // metas
-
-			final MWFNodePara wfNodePara = attributeName2wfNodePara.get(pip.getParameterName());
-			if(wfNodePara != null)
-			{
-				fillPInstancePara(pip, wfNodePara, po);
-			}
-		}
-		
+		return Stream.of(m_node.getParameters())
+				.map(wfNodePara -> createProcessInfoParameter(wfNodePara, po))
+				.filter(pip -> pip != null)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 	
-	private final void fillPInstancePara(final I_AD_PInstance_Para iPara, final MWFNodePara nPara, final PO po)
+	private final ProcessInfoParameter createProcessInfoParameter(final I_AD_WF_Node_Para nPara, final PO po)
 	{
 		final String attributeName = nPara.getAttributeName();
+		final String attributeValue = nPara.getAttributeValue();
+		log.debug("{} = {}", attributeName, attributeValue);
 		
-		final String variableName = nPara.getAttributeValue();
-		log.debug(attributeName + " = " + variableName);
 		// Value - Constant/Variable
-		Object value = variableName;
-		if (variableName == null || (variableName != null && variableName.length() == 0))
+		Object value = attributeValue;
+		if (attributeValue == null || (attributeValue != null && attributeValue.length() == 0))
 			value = null;
-		else if (variableName.indexOf('@') != -1 && po != null)	// we have a variable
+		else if (attributeValue.indexOf('@') != -1 && po != null)	// we have a variable
 		{
 			// Strip
-			int index = variableName.indexOf('@');
-			String columnName = variableName.substring(index + 1);
+			int index = attributeValue.indexOf('@');
+			String columnName = attributeValue.substring(index + 1);
 			index = columnName.indexOf('@');
 			if (index == -1)
 			{
-				log.warn(attributeName + " - cannot evaluate=" + variableName);
-				return;
+				log.warn(attributeName + " - cannot evaluate=" + attributeValue);
+				return null;
 			}
 			columnName = columnName.substring(0, index);
 			index = po.get_ColumnIndex(columnName);
@@ -1539,29 +1509,32 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				String env = Env.getContext(getCtx(), columnName);
 				if (env.length() == 0)
 				{
-					log.warn(attributeName + " - not column nor environment =" + columnName + "(" + variableName + ")");
-					return;
+					log.warn(attributeName + " - not column nor environment =" + columnName + "(" + attributeValue + ")");
+					return null;
 				}
 				else
 					value = env;
 			}
 		}	// @variable@
+		
+		final I_AD_Process_Para adProcessPara = nPara.getAD_Process_Para();
 
 		// No Value
 		if (value == null)
 		{
-			if (nPara.isMandatory())
+			if (adProcessPara.isMandatory())
 				log.warn(attributeName + " - empty - mandatory!");
 			else
 				log.debug(attributeName + " - empty");
-			return;
+			return null;
 		}
 
 		// Convert to Type
 		try
 		{
-			if (DisplayType.isNumeric(nPara.getDisplayType())
-					|| DisplayType.isID(nPara.getDisplayType()))
+			final int displayType = adProcessPara.getAD_Reference_ID();
+			if (DisplayType.isNumeric(displayType)
+					|| DisplayType.isID(displayType))
 			{
 				BigDecimal bd = null;
 				if (value instanceof BigDecimal)
@@ -1570,30 +1543,26 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					bd = new BigDecimal(((Integer)value).intValue());
 				else
 					bd = new BigDecimal(value.toString());
-				iPara.setP_Number(bd);
-				log.debug(attributeName + " = " + variableName + " (=" + bd + "=)");
+				return ProcessInfoParameter.of(attributeName, bd);
 			}
-			else if (DisplayType.isDate(nPara.getDisplayType()))
+			else if (DisplayType.isDate(displayType))
 			{
 				Timestamp ts = null;
 				if (value instanceof Timestamp)
 					ts = (Timestamp)value;
 				else
 					ts = Timestamp.valueOf(value.toString());
-				iPara.setP_Date(ts);
-				log.debug(attributeName + " = " + variableName + " (=" + ts + "=)");
+				return ProcessInfoParameter.of(attributeName, ts);
 			}
 			else
 			{
-				iPara.setP_String(value.toString());
-				log.debug(attributeName + " = " + variableName + " (=" + value + "=) " + value.getClass().getName());
+				return ProcessInfoParameter.of(attributeName, value.toString());
 			}
-
-			InterfaceWrapperHelper.save(iPara);
 		}
 		catch (Exception e)
 		{
-			log.warn(attributeName + " = " + variableName + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
+			log.warn("Failed on {} = {} ({})", attributeName, attributeValue, value, e);
+			return null;
 		}
 	}
 

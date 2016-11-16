@@ -3,8 +3,6 @@ package de.metas.adempiere.ait.helper;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -17,7 +15,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.MPInstancePara;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.process.StateEngine;
@@ -26,6 +23,7 @@ import org.compiere.util.Trx;
 
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SvrProcess;
 
 @SuppressWarnings("unused")
@@ -289,33 +287,25 @@ public class ProcessHelper
 		{
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false);
 
-			this.pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(helper.getCtx(), processId, tableId, recordId);
+			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+			this.pinstance = adPInstanceDAO.createAD_PInstance(helper.getCtx(), processId, tableId, recordId);
 
 			//
 			// Add parameters:
-			int seqNo = 10;
+			final List<ProcessInfoParameter> piParams = new ArrayList<>();
 			for (Map.Entry<String, Object> e : parameters.entrySet())
 			{
 				final String name = e.getKey();
 				final Object value = e.getValue();
-				MPInstancePara para = new MPInstancePara(pinstance, seqNo);
 				if (value == null)
-					; // skip
-				else if (value instanceof Integer)
-					para.setParameter(name, (Integer)value);
-				else if (value instanceof BigDecimal)
-					para.setParameter(name, (BigDecimal)value);
-				else if (value instanceof Boolean)
-					para.setParameter(name, (Boolean)value);
-				else if (value instanceof Timestamp)
-					para.setParameter(name, (Timestamp)value);
-				else if (value instanceof String)
-					para.setParameter(name, (String)value);
-				else
-					fail("Parameter type " + value.getClass() + " not supported for " + name + "=" + value);
-				para.saveEx();
-				seqNo += 10;
+				{
+					continue;
+				}
+				
+				piParams.add(ProcessInfoParameter.ofValueObject(name, value));
 			}
+			
+			adPInstanceDAO.saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
 		}
 		finally
 		{
