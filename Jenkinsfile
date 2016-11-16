@@ -184,7 +184,16 @@ stage('Invoke downstream jobs')
 {
 	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
 	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
-	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too 
+	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
+	
+	// notify zapier so we can do further things external to this jenkins instance
+	withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+	{
+		final webhookUrl = https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET};
+		final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
+		
+		sh "curl -v -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+	}
 }
 
 	
