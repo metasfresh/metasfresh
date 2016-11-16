@@ -420,20 +420,21 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create AD_PInstance
 		final I_AD_Process process = adProcessDAO.retriveProcessByValue(ctx, AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print);
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, process.getAD_Process_ID(), 0, 0);
+		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(ctx, process.getAD_Process_ID(), 0, 0);
+		final int adPInstanceId = adPInstance.getAD_PInstance_ID();
 
 		// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
 		// The report will fetch it from selection.
-		DB.createT_Selection(pinstance.getAD_PInstance_ID(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_None);
+		DB.createT_Selection(adPInstanceId, desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_None);
 
 		// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
 		{
 			final I_AD_PInstance_Para para_ReportSqlQuery = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
-			para_ReportSqlQuery.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
+			para_ReportSqlQuery.setAD_PInstance_ID(adPInstanceId);
 			para_ReportSqlQuery.setSeqNo(10);
 			para_ReportSqlQuery.setParameterName(JasperConstants.REPORT_PARAM_SQL_QUERY);
 			para_ReportSqlQuery.setP_String("select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
-					+ " where AD_PInstance_ID=" + pinstance.getAD_PInstance_ID()
+					+ " where AD_PInstance_ID=" + adPInstanceId
 					+ " order by EDI_DesadvLine_SSCC_ID");
 			InterfaceWrapperHelper.save(para_ReportSqlQuery);
 		}
@@ -441,7 +442,8 @@ public class DesadvBL implements IDesadvBL
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessInfo processInfo = ProcessInfo.builder()
-				.setAD_PInstance(pinstance)
+				.setCtx(ctx)
+				.setAD_PInstance(adPInstance)
 				.setAD_Process(process)
 				.build();
 
