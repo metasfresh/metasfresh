@@ -140,7 +140,7 @@ node('agent && linux')
 				// we use this more complicated approach because that way we can also clean the workspace ('CleanCheckout')
 				checkout([
 					$class: 'GitSCM', 
-					branches: [[name: '${env.BRANCH_NAME}']], 
+					branches: [[name: "${env.BRANCH_NAME}"]], 
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [[$class: 'CleanCheckout']], 
 					submoduleCfg: [], 
