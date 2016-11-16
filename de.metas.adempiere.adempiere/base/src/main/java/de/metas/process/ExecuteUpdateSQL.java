@@ -1,8 +1,7 @@
 package de.metas.process;
 
-import org.adempiere.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
@@ -14,11 +13,10 @@ public class ExecuteUpdateSQL extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final int adProcessId = getProcessInfo().getAD_Process_ID();
-		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(getCtx(), adProcessId);
-
 		// the rawSql will be transformed into a one-liner, so it's important to make sure that it will work even without line breaks
-		final String rawSql = process.getSQLStatement();
+		final String rawSql = getProcessInfo()
+				.getSQLStatement()
+				.orElseThrow(() -> new AdempiereException("@FillMandatory@ @SQLStatement@"));
 		sql = rawSql
 				.replaceAll("--.*[\r\n\t]", "") // remove one-line-comments (comments within /* and */ are OK)
 				.replaceAll("[\r\n\t]", " "); // replace line-breaks with spaces
