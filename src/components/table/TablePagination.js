@@ -47,20 +47,37 @@ class TablePagination extends Component {
 
     handleFirstDotsState = () => {
         const {firstDotsState} = this.state;
-        this.setState(
-            Object.assign({}, this.state, {
-                firstDotsState: !firstDotsState
-            })
-        );
+        this.setState(Object.assign({}, this.state, {
+            firstDotsState: !firstDotsState
+        }), () => {
+            this.goToPage.focus();
+        });
     }
 
     handleSecondDotsState = () => {
         const {secondDotsState} = this.state;
-        this.setState(
-            Object.assign({}, this.state, {
-                secondDotsState: !secondDotsState
-            })
-        );
+        this.setState(Object.assign({}, this.state, {
+            secondDotsState: !secondDotsState
+        }), () => {
+            this.goToPage.focus();
+        });
+    }
+
+    renderGoToPage = (pages, value) => {
+        return (
+            <div className="page-dots-open">
+                <span>Go to page</span>
+                <input
+                    type="number"
+                    min="1"
+                    ref={c => this.goToPage = c}
+                    max={pages}
+                    value={value}
+                    onChange={e => this.handleValue(e)}
+                    onKeyDown={(e) => this.handleSubmit(e, value, pages)}
+                />
+            </div>
+        )
     }
 
     renderFirstPartPagination = (pagination, pages) => {
@@ -69,17 +86,11 @@ class TablePagination extends Component {
         pagination.push(
             <li className="page-item" key={1} onClick={() => {handleChangePage(1); deselect()} }>
                 <a className="page-link">{1}</a>
-                {}
             </li>
         );
         pagination.push(
             <li className="page-item page-dots" key={0}>
-                { firstDotsState &&
-                <div className="page-dots-open">
-                    <span>Go to page</span>
-                    <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
-                </div>
-                }
+                { firstDotsState && this.renderGoToPage(pages, value) }
                 <a className="page-link" onClick={() => this.handleFirstDotsState()}>{'...'}</a>
             </li>
         );
@@ -91,12 +102,7 @@ class TablePagination extends Component {
 
         pagination.push(
             <li className="page-item page-dots" key={99990}>
-                { secondDotsState &&
-                <div className="page-dots-open">
-                    <span>Go to page</span>
-                    <input type="number" min="1" max={pages} value={value} onChange={e => this.handleValue(e)} onKeyDown={(e) => this.handleSubmit(e, value, pages)} />
-                </div>
-                }
+                { secondDotsState && this.renderGoToPage(pages, value) }
                 <a className="page-link" onClick={() => this.handleSecondDotsState()}>{'...'}</a>
             </li>
         );
