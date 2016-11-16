@@ -86,12 +86,6 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	
-	//
-	// Constants used to pass process parameters to Jasper Process
-	public static final String PARAM_PRINT_FORMAT = "PRINT_FORMAT";
-
-
 	/**
 	 * Construct Parameter
 	 * 

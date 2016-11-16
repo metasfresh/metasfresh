@@ -37,7 +37,6 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
-import org.compiere.print.MPrintFormat;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -50,7 +49,6 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 
 public class JRClient
@@ -260,17 +258,6 @@ public class JRClient
 		if (null != lang)
 		{
 			return lang;
-		}
-
-		//
-		// Fallback: get it from Print Format
-		for (final ProcessInfoParameter pip : pi.getParameter())
-		{
-			if (ProcessInfoParameter.PARAM_PRINT_FORMAT.equals(pip.getParameterName()))
-			{
-				final MPrintFormat pf = (MPrintFormat)pip.getParameter();
-				return pf.getLanguage();
-			}
 		}
 
 		//
