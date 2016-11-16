@@ -52,7 +52,6 @@ import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
 
 /**
  * Wareneingang (POS).
@@ -468,7 +467,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setReportLanguage(bpartnerLaguage)
-				.addParameter(ProcessInfoParameter.of(PARA_C_Orderline_ID, orderLineId))
+				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				.build();
 
 		//

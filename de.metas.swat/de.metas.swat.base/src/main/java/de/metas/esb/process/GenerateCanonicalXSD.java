@@ -75,21 +75,24 @@ import de.metas.process.SvrProcess;
  */
 public class GenerateCanonicalXSD extends SvrProcess
 {
+	private static final String PARAM_Target_Directory = "Target_Directory";
 	private String p_Target_Directory = null;
+	
+	private static final String PARAM_EntityType = "EntityType";
 	private String p_EntityType = null;
 	private boolean p_FilterBy_AD_Client_ID = true;
 
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParameters())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 				;
-			else if ("Target_Directory".equals(name))
+			else if (PARAM_Target_Directory.equals(name))
 				p_Target_Directory = (String)para.getParameter();
-			else if ("EntityType".equals(name))
+			else if (PARAM_EntityType.equals(name))
 				p_EntityType = (String)para.getParameter();
 		}
 	}
@@ -98,9 +101,9 @@ public class GenerateCanonicalXSD extends SvrProcess
 	protected String doIt() throws Exception
 	{
 		if (p_Target_Directory == null)
-			throw new FillMandatoryException("Target_Directory");
+			throw new FillMandatoryException(PARAM_Target_Directory);
 		if (p_EntityType == null)
-			throw new FillMandatoryException("EntityType");
+			throw new FillMandatoryException(PARAM_EntityType);
 
 		final IQueryBuilder<I_EXP_Format> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EXP_Format.class, this);
 
@@ -294,7 +297,7 @@ public class GenerateCanonicalXSD extends SvrProcess
 			throw new AdempiereException("Please set the OutputFolder");
 		}
 
-		final String entityType = System.getProperty("EntityType");
+		final String entityType = System.getProperty(PARAM_EntityType);
 		if (Check.isEmpty(entityType, true))
 		{
 			throw new AdempiereException("Please set the EntityType");
@@ -309,8 +312,8 @@ public class GenerateCanonicalXSD extends SvrProcess
 				.setTitle("GenerateCanonicalXSD")
 				.setAD_Process_ID(-1) // N/A
 				.setClassname(GenerateCanonicalXSD.class.getName())
-				.addParameter(ProcessInfoParameter.of("Target_Directory", outputFolder))
-				.addParameter(ProcessInfoParameter.of("EntityType", entityType))
+				.addParameter(PARAM_Target_Directory, outputFolder)
+				.addParameter(PARAM_EntityType, entityType)
 				.build();
 
 		final GenerateCanonicalXSD process = new GenerateCanonicalXSD();

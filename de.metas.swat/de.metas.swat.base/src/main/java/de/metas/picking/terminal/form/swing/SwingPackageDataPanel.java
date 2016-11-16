@@ -79,7 +79,6 @@ import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -443,9 +442,9 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setAD_Process(process)
-				.addParameter(ProcessInfoParameter.of("M_PackagingTree_ID", M_PackagingTree_ID))
-				.addParameter(ProcessInfoParameter.of("C_BPartner_ID", model.getPackingTreeModel().getBp_id()))
-				.addParameter(ProcessInfoParameter.of("shipper", model.selectedShipperId))
+				.addParameter("M_PackagingTree_ID", M_PackagingTree_ID)
+				.addParameter("C_BPartner_ID", model.getPackingTreeModel().getBp_id())
+				.addParameter("shipper", model.selectedShipperId)
 				.build();
 
 		try

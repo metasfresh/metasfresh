@@ -69,8 +69,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import it.sauronsoftware.cron4j.Predictor;
@@ -449,7 +449,6 @@ public class Scheduler extends AdempiereServer
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
-				//.setRecord(-1, -1)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
 				.build();
 

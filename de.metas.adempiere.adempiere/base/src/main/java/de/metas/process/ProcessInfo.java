@@ -1153,33 +1153,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder addParameter(ProcessInfoParameter param)
+		private ProcessInfoBuilder addParameter(ProcessInfoParameter param)
 		{
 			if (parameters == null)
 			{
 				parameters = new ArrayList<>();
 			}
 			parameters.add(param);
-
-			return this;
-		}
-
-		public ProcessInfoBuilder addParameters(final ProcessInfoParameter[] params)
-		{
-			if (params == null || params.length == 0)
-			{
-				return this;
-			}
-
-			if (parameters == null)
-			{
-				parameters = new ArrayList<>();
-			}
-
-			for (ProcessInfoParameter param : params)
-			{
-				parameters.add(param);
-			}
 
 			return this;
 		}
