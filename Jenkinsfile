@@ -294,7 +294,9 @@ else
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}";
+			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
+			        .replaceAll('-', '_'); // postgresql is allergic to '-' in DB names
+
 			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
 			
 			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
