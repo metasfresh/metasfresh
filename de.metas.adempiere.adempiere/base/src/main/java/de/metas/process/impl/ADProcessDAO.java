@@ -68,9 +68,16 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
 	{
+		final String processClassname = processClass.getName();
+		return retriveProcessIdByClassIfUnique(ctx, processClassname);
+	}
+	
+	@Override
+	public int retriveProcessIdByClassIfUnique(final Properties ctx, final String processClassname)
+	{
 		List<Integer> processIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClass.getName())
+				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds();

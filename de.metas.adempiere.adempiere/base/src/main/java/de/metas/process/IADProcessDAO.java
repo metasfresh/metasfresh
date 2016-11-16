@@ -97,6 +97,11 @@ public interface IADProcessDAO extends ISingletonService
 	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
 
 	/**
+	 * @see #retriveProcessIdByClassIfUnique(Properties, Class) 
+	 */
+	int retriveProcessIdByClassIfUnique(Properties ctx, String processClassname);
+
+	/**
 	 * Retrieves {@link I_AD_Process} by given ID.
 	 * 
 	 * @param ctx
