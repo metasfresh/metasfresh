@@ -26,6 +26,9 @@ import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Link Business Partner to Organization.
  *	Either to existing or create new one

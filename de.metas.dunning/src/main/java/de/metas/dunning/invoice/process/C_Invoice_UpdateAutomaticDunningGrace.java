@@ -29,10 +29,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_Org;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class C_Invoice_UpdateAutomaticDunningGrace extends SvrProcess
 {

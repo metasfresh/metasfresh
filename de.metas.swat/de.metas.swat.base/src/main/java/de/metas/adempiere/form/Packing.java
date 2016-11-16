@@ -44,7 +44,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -55,8 +54,6 @@ import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnable;
@@ -71,7 +68,9 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 
 /**
@@ -87,7 +86,6 @@ public abstract class Packing extends MvcGenForm
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IProcessPA processPA = Services.get(IProcessPA.class);
 
 	private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
 	private static final String MSG_SHIP_TO_ADDRESS = "Lieferanschrift";
@@ -552,7 +550,7 @@ public abstract class Packing extends MvcGenForm
 		});
 	}
 
-	private ProcessCtl invokeProcess(final IPackingDetailsModel model)
+	private ProcessExecutor invokeProcess(final IPackingDetailsModel model)
 	{
 		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
 		// NOTE assume this is not called

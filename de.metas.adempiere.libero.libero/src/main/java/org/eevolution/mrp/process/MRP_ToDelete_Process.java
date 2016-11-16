@@ -24,9 +24,10 @@ package org.eevolution.mrp.process;
 
 
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.mrp.api.IMRPDocumentDeleteService;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Delete all documents which were flagged to be deleted

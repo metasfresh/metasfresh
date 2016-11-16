@@ -73,7 +73,6 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -87,6 +86,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 /**
  *	Report Engine.

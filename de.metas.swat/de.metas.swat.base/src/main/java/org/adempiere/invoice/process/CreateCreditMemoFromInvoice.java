@@ -31,10 +31,10 @@ import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class CreateCreditMemoFromInvoice extends SvrProcess
 {

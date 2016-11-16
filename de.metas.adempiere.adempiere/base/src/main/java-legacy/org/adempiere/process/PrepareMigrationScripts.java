@@ -39,10 +39,11 @@ import java.util.Scanner;
 import java.util.Vector;
 import org.compiere.Adempiere;
 import org.compiere.model.MSequence;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class PrepareMigrationScripts extends SvrProcess {
 

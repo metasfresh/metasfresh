@@ -39,11 +39,12 @@ import java.util.Date;
 import org.adempiere.model.GenericPO;
 import org.compiere.model.MTable;
 import org.compiere.model.X_AD_HouseKeeping;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	House Keeping

@@ -8,10 +8,10 @@ import javax.ws.rs.PathParam;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.ProcessExecutionResult;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
+import de.metas.process.ProcessExecutionResult;
 
 /*
  * #%L

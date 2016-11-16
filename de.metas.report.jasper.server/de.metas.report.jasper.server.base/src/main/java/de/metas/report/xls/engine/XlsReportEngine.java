@@ -14,7 +14,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -24,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 

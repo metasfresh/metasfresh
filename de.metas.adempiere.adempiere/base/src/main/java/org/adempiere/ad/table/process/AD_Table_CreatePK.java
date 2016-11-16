@@ -1,7 +1,8 @@
 package org.adempiere.ad.table.process;
 
 import org.compiere.model.I_AD_Table;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

@@ -16,11 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Synchronize Column with Database

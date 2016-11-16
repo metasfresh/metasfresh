@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_M_Product;

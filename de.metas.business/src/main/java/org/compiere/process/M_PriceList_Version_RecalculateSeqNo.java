@@ -35,6 +35,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.process.ProcessInfo;
+import de.metas.process.SvrProcess;
 
 public class M_PriceList_Version_RecalculateSeqNo extends SvrProcess
 {

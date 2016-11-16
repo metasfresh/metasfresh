@@ -24,6 +24,9 @@ import java.sql.Timestamp;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Import ReportLines from I_ReportLine
  *

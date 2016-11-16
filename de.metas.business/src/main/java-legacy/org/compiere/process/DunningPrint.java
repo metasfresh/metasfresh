@@ -32,13 +32,15 @@ import org.compiere.model.MUserMail;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.ASyncProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Dunning Letter Print
@@ -47,7 +49,10 @@ import de.metas.email.IMailTextBuilder;
  *  @version $Id: DunningPrint.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  *  
  *  FR 2872010 - Dunning Run for a complete Dunning (not just level) - Developer: Carlos Ruiz - globalqss - Sponsor: Metas
+ *  
+ *  @deprecated This class is not working anymore, not used and we consider to drop it
  */
+@Deprecated
 public class DunningPrint extends SvrProcess
 {
 	/**	Mail PDF				*/

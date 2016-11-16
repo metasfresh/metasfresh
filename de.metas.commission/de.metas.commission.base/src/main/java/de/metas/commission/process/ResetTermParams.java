@@ -27,10 +27,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MTable;
-import org.compiere.process.SvrProcess;
 
 import de.metas.commission.model.I_C_AdvCommissionTerm;
 import de.metas.commission.service.ICommissionTermDAO;
+import de.metas.process.SvrProcess;
 
 /**
  * Resets the params for a given C_AdvCommissionTerm by deleting and recreating them with default values. Use this process if an term's business logic has changed and there is a different set of

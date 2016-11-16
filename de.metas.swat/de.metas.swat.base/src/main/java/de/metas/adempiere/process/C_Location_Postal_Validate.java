@@ -29,9 +29,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.process.SvrProcess;
 
 public class C_Location_Postal_Validate extends SvrProcess
 {

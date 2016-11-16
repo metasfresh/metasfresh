@@ -31,13 +31,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.interfaces.I_C_PaySelection;
 import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Process that creates SEPA xmls in 3 steps:

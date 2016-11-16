@@ -9,7 +9,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -21,6 +20,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

@@ -56,8 +56,9 @@ import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MCost;
 import org.compiere.model.X_C_AcctSchema;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create Cost Element

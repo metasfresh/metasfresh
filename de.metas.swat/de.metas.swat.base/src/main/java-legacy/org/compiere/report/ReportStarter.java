@@ -15,16 +15,11 @@ package org.compiere.report;
 
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.print.JRReportViewerProvider;
-import org.compiere.process.ClientProcess;
-import org.compiere.process.ProcessCall;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
@@ -37,6 +32,11 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
+import de.metas.process.ClientProcess;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessCall;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
 
 /**

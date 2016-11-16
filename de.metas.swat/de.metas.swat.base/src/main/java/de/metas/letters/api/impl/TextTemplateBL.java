@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -58,6 +57,7 @@ import de.metas.letters.model.LetterDocumentLocationAdapter;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {

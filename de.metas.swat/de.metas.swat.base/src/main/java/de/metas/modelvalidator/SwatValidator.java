@@ -99,7 +99,6 @@ import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
-import de.metas.adempiere.modelvalidator.AD_Process;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
@@ -195,7 +194,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_InOut(), client); // 03771
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
-		engine.addModelValidator(new AD_Process(), client);
 		engine.addModelValidator(new C_InvoiceLine(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.

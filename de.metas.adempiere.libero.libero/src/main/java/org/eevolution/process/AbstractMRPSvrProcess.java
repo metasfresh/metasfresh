@@ -33,8 +33,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IResourceDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPContext;
@@ -42,6 +40,9 @@ import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
 import org.eevolution.mrp.api.IMutableMRPContext;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public abstract class AbstractMRPSvrProcess extends SvrProcess
 {

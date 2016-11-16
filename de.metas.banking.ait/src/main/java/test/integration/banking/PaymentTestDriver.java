@@ -41,7 +41,6 @@ import org.compiere.model.MPayment;
 import org.compiere.model.MQuery;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,6 +60,7 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.SvrProcess;
 import test.integration.swat.sales.SalesTestDriver;
 
 @RunWith(IntegrationTestRunner.class)

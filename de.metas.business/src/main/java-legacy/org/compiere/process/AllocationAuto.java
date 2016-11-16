@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MAllocationHdr;

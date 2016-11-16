@@ -36,14 +36,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create missing reference numbers

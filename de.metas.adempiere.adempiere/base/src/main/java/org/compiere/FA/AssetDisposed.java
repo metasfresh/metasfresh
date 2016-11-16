@@ -44,9 +44,10 @@ import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_A_Asset_Disposed;
 import org.compiere.model.X_A_Depreciation_Exp;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 
 /**

@@ -26,9 +26,10 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.process.DocumentTypeVerify;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+
+import de.metas.process.SvrProcess;
 
 
 /**

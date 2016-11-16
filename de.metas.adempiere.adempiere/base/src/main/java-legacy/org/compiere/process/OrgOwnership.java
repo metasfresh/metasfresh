@@ -20,6 +20,9 @@ import java.math.BigDecimal;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Org Ownership Process
  *	

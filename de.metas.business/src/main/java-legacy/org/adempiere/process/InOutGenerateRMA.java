@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -33,8 +35,6 @@ import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 

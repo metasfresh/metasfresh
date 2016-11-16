@@ -22,6 +22,9 @@ import org.compiere.model.MInvoiceBatchLine;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Process Invoice Batch	

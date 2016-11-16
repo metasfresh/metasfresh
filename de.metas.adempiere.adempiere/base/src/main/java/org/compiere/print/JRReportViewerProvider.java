@@ -1,8 +1,7 @@
 package org.compiere.print;
 
-import org.compiere.process.ProcessInfo;
-
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.ProcessInfo;
 
 /*
  * #%L

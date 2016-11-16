@@ -22,10 +22,11 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

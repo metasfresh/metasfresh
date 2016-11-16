@@ -33,7 +33,6 @@ import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -41,6 +40,7 @@ import org.compiere.util.Trx;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
+import de.metas.process.SvrProcess;
 
 /**
  *

@@ -37,7 +37,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import com.lowagie.text.Document;
@@ -49,6 +48,7 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.SvrProcess;
 
 public class ConcatenatePdfs extends SvrProcess
 {

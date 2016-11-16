@@ -44,11 +44,11 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
  * Uses {@link IOLCandValdiatorBL} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>

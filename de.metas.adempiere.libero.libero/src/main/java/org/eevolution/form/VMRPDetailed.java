@@ -128,7 +128,6 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -154,6 +153,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ASyncProcess;
 import de.metas.logging.LogManager;
 
 /**
@@ -1103,14 +1103,14 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public void lockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		confirmPanel.getRefreshButton().setEnabled(false);
 	}
 
 	@Override
-	public void unlockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getDefaultCursor());
 		confirmPanel.getRefreshButton().setEnabled(true);

@@ -34,6 +34,9 @@ import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.process.ProcessInfo;
+import de.metas.process.SvrProcess;
+
 /**
  * Recalculate for {@link I_AD_User_SortPref_Line}
  *

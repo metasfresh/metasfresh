@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.spi.impl.PasswordResetWorkpackageProcessor;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -40,6 +39,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.process.SvrProcess;
 
 public class AD_User_ResetPassword_EnqueueForSelection extends SvrProcess
 {

@@ -34,6 +34,9 @@ import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Msg;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  * Validate Business Partner
  * 

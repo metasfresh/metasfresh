@@ -43,10 +43,10 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class M_MatchInv_CreateMissing extends SvrProcess
 {

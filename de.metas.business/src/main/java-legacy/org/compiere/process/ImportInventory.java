@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;

@@ -32,8 +32,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
-import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,7 +64,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -77,7 +74,10 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 
 /**
  * Workflow Activity Model.
@@ -1061,7 +1061,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.build();
 			
-			ProcessCtl.builder()
+			ProcessExecutor.builder()
 					.setProcessInfo(pi)
 					.executeSync();
 			return true;

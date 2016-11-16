@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -40,14 +39,15 @@ import org.compiere.model.MField;
 import org.compiere.model.MTable;
 import org.compiere.model.M_Element;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 
 public final class ColumnInstaller extends Installer {
 
@@ -182,7 +182,7 @@ public final class ColumnInstaller extends Installer {
 				.build();
 
 		// final Trx trx = Trx.get(trxName, false);
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.execute();
 

@@ -27,11 +27,11 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Export SEPA Customer Direct Debit XML (not used in vs82, but kept in case we extend the requirements).

@@ -1,9 +1,9 @@
 package de.metas.procurement.base.order.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.rfq.IRfQConfiguration;

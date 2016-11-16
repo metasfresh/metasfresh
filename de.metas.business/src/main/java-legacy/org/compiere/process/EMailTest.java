@@ -23,6 +23,8 @@ import org.compiere.model.MStore;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import de.metas.process.SvrProcess;
+
 /**
  *	Client EMail Test
  *	

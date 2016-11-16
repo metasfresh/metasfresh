@@ -19,8 +19,9 @@ package org.compiere.install;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MLanguage;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 
 /**

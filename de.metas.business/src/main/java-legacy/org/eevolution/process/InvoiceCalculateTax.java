@@ -24,8 +24,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Re-calculate Invoice Tax (and unpost the document)

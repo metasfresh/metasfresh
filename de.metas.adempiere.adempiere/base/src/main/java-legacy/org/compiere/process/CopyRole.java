@@ -25,6 +25,9 @@ import org.compiere.model.X_AD_Role_Included;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Copy role access records

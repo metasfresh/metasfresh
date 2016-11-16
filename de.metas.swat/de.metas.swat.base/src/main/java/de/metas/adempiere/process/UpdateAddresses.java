@@ -39,8 +39,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -49,6 +47,8 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author cg

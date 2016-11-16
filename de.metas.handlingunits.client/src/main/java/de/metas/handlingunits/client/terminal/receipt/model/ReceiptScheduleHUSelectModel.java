@@ -21,8 +21,6 @@ import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.Language;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -52,7 +50,9 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Wareneingang (POS).
@@ -473,7 +473,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Execute report in a new transaction
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.executeSync();
 	}

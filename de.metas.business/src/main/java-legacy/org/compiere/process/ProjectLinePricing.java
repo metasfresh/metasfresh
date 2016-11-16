@@ -19,6 +19,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.compiere.model.MProductPricing;
 import org.compiere.model.MProject;

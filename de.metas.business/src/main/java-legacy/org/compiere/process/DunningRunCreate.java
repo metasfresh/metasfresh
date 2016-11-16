@@ -31,6 +31,10 @@ import org.compiere.model.MPayment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Create Dunning Run Entries/Lines

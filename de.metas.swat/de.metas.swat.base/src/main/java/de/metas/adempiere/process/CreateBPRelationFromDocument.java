@@ -31,8 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create BP relation from document.

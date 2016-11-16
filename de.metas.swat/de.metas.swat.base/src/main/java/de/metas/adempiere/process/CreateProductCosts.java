@@ -33,7 +33,8 @@ import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /**
  * @author tsa

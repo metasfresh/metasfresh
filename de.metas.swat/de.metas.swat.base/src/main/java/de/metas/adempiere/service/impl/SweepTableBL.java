@@ -46,12 +46,11 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.SvrProcess;
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.util.CacheIgnore;
 

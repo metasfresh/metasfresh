@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -42,6 +41,7 @@ import org.compiere.print.ReportEngine;
 import de.metas.adempiere.report.jasper.JasperUtil;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
+import de.metas.process.IADPInstanceDAO;
 
 public class JasperReportEngineAdapter implements IJasperReportEngineAdapter
 {

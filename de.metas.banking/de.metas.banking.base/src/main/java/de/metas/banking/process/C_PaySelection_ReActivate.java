@@ -1,11 +1,11 @@
 package de.metas.banking.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

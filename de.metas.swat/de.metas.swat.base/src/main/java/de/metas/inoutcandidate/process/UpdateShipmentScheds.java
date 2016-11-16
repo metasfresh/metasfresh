@@ -26,11 +26,11 @@ package de.metas.inoutcandidate.process;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public final class UpdateShipmentScheds extends SvrProcess
 {

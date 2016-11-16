@@ -11,7 +11,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -21,11 +20,13 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.MPInstancePara;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.process.SvrProcess;
 
 @SuppressWarnings("unused")
 public class ProcessHelper

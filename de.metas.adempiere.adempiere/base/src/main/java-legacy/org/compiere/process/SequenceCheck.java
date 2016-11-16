@@ -19,6 +19,7 @@ package org.compiere.process;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;

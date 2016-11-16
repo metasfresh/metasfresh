@@ -38,8 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
-import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -49,6 +47,8 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
  * @author cg

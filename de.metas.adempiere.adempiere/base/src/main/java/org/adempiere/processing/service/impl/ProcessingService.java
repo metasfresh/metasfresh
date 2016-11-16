@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,12 +41,13 @@ import org.compiere.model.MIssue;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Issue;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.SvrProcess;
 
 public class ProcessingService implements IProcessingService
 {

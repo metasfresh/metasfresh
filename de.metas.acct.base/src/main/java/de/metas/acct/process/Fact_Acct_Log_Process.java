@@ -5,13 +5,13 @@ import java.util.Properties;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
-import org.compiere.process.SvrProcess;
 
 import de.metas.acct.IFactAcctLogBL;
 import de.metas.acct.IFactAcctLogDAO;
 import de.metas.acct.async.FactAcctLogProcessRequest;
 import de.metas.acct.async.FactAcctLogWorkpackageProcessor;
 import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

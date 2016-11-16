@@ -21,6 +21,9 @@ import org.compiere.report.MReportLine;
 import org.compiere.report.MReportLineSet;
 import org.compiere.report.MReportSource;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Copy Line Set at the end of the Line Set
  *

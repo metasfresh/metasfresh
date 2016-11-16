@@ -48,6 +48,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Accounting Fact Reset
  *	

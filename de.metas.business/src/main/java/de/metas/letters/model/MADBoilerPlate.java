@@ -74,8 +74,6 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -89,7 +87,9 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -161,7 +161,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
 				.build();
 		
-		ProcessCtl.builder().setProcessInfo(pi).executeSync();
+		ProcessExecutor.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}

@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;

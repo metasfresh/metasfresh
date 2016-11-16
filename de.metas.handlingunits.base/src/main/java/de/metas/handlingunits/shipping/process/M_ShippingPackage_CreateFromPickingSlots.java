@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipping.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.IContextAware;
@@ -35,8 +34,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUPackageBL;
@@ -49,6 +46,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.shipping.api.IShipperDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;

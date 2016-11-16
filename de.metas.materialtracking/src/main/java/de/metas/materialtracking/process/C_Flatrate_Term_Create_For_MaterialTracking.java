@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
@@ -16,6 +15,7 @@ import de.metas.flatrate.process.C_Flatrate_Term_Create;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
+import de.metas.process.ISvrProcessPrecondition;
 
 /*
  * #%L

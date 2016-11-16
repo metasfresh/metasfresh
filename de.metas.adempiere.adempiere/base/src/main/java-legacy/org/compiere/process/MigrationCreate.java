@@ -29,6 +29,9 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 public class MigrationCreate extends SvrProcess
 {
 

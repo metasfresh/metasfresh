@@ -23,6 +23,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_I_GLJournal;
 
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
 
 /**
  * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.

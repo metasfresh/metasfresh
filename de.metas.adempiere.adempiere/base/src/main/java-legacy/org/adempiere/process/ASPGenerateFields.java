@@ -28,7 +28,6 @@
 ***********************************************************************/
 package org.adempiere.process;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
@@ -40,11 +39,13 @@ import org.compiere.model.X_ASP_Process;
 import org.compiere.model.X_ASP_Process_Para;
 import org.compiere.model.X_ASP_Tab;
 import org.compiere.model.X_ASP_Workflow;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.wf.MWorkflow;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * 	Generate ASP fields for a window

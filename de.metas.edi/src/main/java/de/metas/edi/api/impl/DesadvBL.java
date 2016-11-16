@@ -27,8 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -38,7 +36,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
@@ -61,7 +58,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_BPartner_Product;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class DesadvBL implements IDesadvBL
@@ -447,7 +447,7 @@ public class DesadvBL implements IDesadvBL
 
 		//
 		// Execute the actual printing process
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(processInfo)
 				.onErrorThrowException()
 				.executeSync();

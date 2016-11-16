@@ -121,11 +121,7 @@ import org.compiere.model.PO;
 import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessClassInfo;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CPanel;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -137,6 +133,12 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ASyncProcess;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ui.AProcess;
+import de.metas.process.ui.ProcessDialog;
 
 /**
  * Main Panel of application window.
@@ -2840,8 +2842,7 @@ public class APanel extends CPanel
 	 * 
 	 * @param vButton button
 	 */
-	// metas: tsa: changed to protected
-	protected void actionButton(final VButton vButton)
+	public void actionButton(final VButton vButton)
 	{
 		try
 		{

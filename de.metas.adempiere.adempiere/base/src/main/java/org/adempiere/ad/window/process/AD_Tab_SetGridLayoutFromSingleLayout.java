@@ -31,7 +31,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /**
  * Copy Single Layout settings (one row layout) to grid layout.

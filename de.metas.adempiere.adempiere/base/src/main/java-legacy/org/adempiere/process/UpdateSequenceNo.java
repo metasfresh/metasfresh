@@ -15,9 +15,10 @@ package org.adempiere.process;
 
 import java.sql.PreparedStatement;
 
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into

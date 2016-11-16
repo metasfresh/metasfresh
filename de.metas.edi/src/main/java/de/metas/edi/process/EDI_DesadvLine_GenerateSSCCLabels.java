@@ -24,13 +24,13 @@ package de.metas.edi.process;
 
 
 import org.adempiere.util.Check;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Creates as many {@link I_EDI_DesadvLine_SSCC} records as asked and then print them

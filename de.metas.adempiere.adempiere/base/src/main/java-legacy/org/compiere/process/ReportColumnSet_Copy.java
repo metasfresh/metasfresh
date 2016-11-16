@@ -20,6 +20,9 @@ import java.math.BigDecimal;
 import org.compiere.report.MReportColumn;
 import org.compiere.report.MReportColumnSet;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *  Copy Column Set at the end of the Column Set
  *

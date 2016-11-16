@@ -11,12 +11,12 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

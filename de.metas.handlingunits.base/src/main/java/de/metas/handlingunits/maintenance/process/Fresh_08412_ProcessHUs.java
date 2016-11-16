@@ -46,7 +46,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
@@ -70,6 +69,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.process.SvrProcess;
 
 /**
  *

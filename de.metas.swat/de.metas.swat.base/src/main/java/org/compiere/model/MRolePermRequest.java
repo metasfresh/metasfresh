@@ -30,17 +30,18 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflow;
 import org.compiere.wf.MWorkflowAccess;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.SvrProcess;
 
 /**
  * @author teo_sarca

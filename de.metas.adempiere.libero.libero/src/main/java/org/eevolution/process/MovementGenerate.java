@@ -56,8 +56,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MStorage;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -67,6 +65,8 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.product.IProductBL;
 
 

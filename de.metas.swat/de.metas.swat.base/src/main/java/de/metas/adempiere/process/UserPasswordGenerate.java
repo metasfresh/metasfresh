@@ -36,8 +36,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MUser;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author teo_sarca

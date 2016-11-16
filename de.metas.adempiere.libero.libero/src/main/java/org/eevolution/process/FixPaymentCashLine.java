@@ -48,14 +48,14 @@ import java.util.Properties;
 
 import org.compiere.model.MCashLine;
 import org.compiere.model.MPayment;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.logging.LogManager;
 
 

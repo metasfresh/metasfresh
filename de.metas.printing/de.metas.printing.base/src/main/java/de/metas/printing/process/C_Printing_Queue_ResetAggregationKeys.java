@@ -31,10 +31,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
-import org.compiere.process.SvrProcess;
 
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.process.SvrProcess;
 
 public class C_Printing_Queue_ResetAggregationKeys extends SvrProcess
 {

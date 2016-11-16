@@ -22,8 +22,9 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.SvrProcess;
 
 /**
  * Enable Native Sequence

@@ -26,10 +26,11 @@ package de.metas.adempiere.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTable;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class ManageScheduler extends SvrProcess
 {

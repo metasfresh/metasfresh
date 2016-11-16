@@ -48,8 +48,6 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.MPrintFormatItem;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -57,6 +55,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.logging.LogManager;
 
 /**

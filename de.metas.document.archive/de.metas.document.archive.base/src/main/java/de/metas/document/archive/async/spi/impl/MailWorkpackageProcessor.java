@@ -54,7 +54,7 @@ import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
 
 /**
  * Workpackage processor for mails
@@ -151,8 +151,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final String mailCustomType = null;
 
-		final int processID = pInstance == null ? ProcessCtl.getCurrentProcessId() : pInstance.getAD_Process_ID();
-		final int orgID = pInstance == null ? ProcessCtl.getCurrentOrgId() : pInstance.getAD_Org_ID();
+		final int processID = pInstance == null ? ProcessExecutor.getCurrentProcessId() : pInstance.getAD_Process_ID();
+		final int orgID = pInstance == null ? ProcessExecutor.getCurrentOrgId() : pInstance.getAD_Org_ID();
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
 		final I_C_DocType docType = log.getC_DocType();

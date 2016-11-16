@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,7 +46,7 @@ import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.model.X_AD_User_SortPref_Hdr;
-import org.compiere.process.SvrProcess;
+
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;

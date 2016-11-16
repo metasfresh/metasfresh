@@ -31,10 +31,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Update {@link I_C_Dunning_Candidate#COLUMNNAME_DunningDate} field for selected records.

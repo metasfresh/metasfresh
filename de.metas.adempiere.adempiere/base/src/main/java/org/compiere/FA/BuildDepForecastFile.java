@@ -49,9 +49,10 @@ import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.model.X_A_Depreciation_Forecast;
 import org.compiere.model.X_A_Depreciation_Method;
 import org.compiere.model.X_A_Depreciation_Workfile;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Build Depreciation Forecast File

@@ -25,7 +25,6 @@ package de.metas.adempiere.report.jasper.server;
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -46,6 +45,7 @@ import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.JasperEngine;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.report.engine.IReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.report.xls.engine.XlsReportEngine;

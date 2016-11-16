@@ -38,8 +38,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.SvrProcess;
 
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 public class ApplyMigrationScripts extends SvrProcess {

@@ -46,8 +46,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Period;
@@ -63,6 +61,8 @@ import de.metas.commission.model.I_C_AdvCommissionCondition;
 import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.service.ICommissionConditionDAO;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * 

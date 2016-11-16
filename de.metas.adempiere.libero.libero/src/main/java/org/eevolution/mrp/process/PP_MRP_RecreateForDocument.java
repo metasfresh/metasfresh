@@ -25,14 +25,15 @@ package org.eevolution.mrp.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
+
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
 
 /**
  * Recreates {@link I_PP_MRP} records for selected document/record

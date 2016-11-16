@@ -49,11 +49,11 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * CopyPriceToStandard

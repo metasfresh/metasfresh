@@ -33,11 +33,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.process.SvrProcess;
 
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.process.SvrProcess;
 
 public class ESR_Complete_Process extends SvrProcess
 {

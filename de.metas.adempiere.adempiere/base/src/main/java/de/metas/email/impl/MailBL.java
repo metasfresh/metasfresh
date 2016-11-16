@@ -30,7 +30,7 @@ import de.metas.email.IMailDAO;
 import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -141,8 +141,8 @@ public class MailBL implements IMailBL
 		final I_C_DocType docType = null; // C_DocType - Task FRESH-203 : This shall work as before
 		final Mailbox mailbox = findMailBox(
 				client //
-				, ProcessCtl.getCurrentOrgId() //
-				, ProcessCtl.getCurrentProcessId() //
+				, ProcessExecutor.getCurrentOrgId() //
+				, ProcessExecutor.getCurrentProcessId() //
 				, docType //
 				, mailCustomType //
 				, from //

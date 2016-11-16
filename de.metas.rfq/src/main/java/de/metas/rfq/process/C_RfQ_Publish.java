@@ -2,11 +2,11 @@ package de.metas.rfq.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;

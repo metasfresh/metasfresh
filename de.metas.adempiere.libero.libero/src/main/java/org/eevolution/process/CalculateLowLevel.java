@@ -39,9 +39,10 @@ package org.eevolution.process;
  */
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductLowLevelUpdater;
+
+import de.metas.process.SvrProcess;
 
 /**
  * CalculateLowLevel for MRP

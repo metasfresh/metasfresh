@@ -32,10 +32,10 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.tourplanning.api.ITourInstanceBL;
 import de.metas.tourplanning.api.ITourInstanceDAO;

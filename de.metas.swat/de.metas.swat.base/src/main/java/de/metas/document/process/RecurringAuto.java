@@ -27,10 +27,10 @@ import java.util.Collection;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Recurring;
-import org.compiere.process.SvrProcess;
 
 import de.metas.document.IRecurringBL;
 import de.metas.document.IRecurringPA;
+import de.metas.process.SvrProcess;
 
 public class RecurringAuto extends SvrProcess {
 

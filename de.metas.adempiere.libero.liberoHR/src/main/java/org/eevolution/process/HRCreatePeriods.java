@@ -17,9 +17,10 @@
 //package org.eevolution.process;
 package org.eevolution.process;
 
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 import org.eevolution.model.MHRYear;
+
+import de.metas.process.SvrProcess;
 
 /**
  *	Create Periods of Payroll

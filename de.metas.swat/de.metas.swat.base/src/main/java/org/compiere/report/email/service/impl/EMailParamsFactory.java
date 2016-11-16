@@ -5,9 +5,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.report.email.service.IEmailParamsFactory;
+
+import de.metas.process.ProcessInfo;
 
 public class EMailParamsFactory implements IEmailParamsFactory
 {

@@ -20,9 +20,10 @@ import java.sql.Timestamp;
 import org.compiere.model.MSLACriteria;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 
 /**

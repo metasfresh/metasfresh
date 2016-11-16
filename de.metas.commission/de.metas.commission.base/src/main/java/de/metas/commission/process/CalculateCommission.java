@@ -44,8 +44,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -73,6 +71,8 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class CalculateCommission extends SvrProcess
 {

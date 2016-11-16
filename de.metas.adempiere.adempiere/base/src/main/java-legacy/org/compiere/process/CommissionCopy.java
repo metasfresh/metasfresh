@@ -19,6 +19,9 @@ package org.compiere.process;
 import org.compiere.model.MCommission;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Copy Commission	

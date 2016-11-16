@@ -21,7 +21,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;

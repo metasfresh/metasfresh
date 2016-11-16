@@ -23,6 +23,9 @@ import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MBankStatementMatcher;
 import org.compiere.model.X_I_BankStatement;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Bank Statement Matching
  *	

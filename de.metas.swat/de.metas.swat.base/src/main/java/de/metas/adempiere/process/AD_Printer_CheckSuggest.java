@@ -28,9 +28,9 @@ import javax.print.PrintServiceLookup;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_AD_Printer;
+import de.metas.process.SvrProcess;
 
 public class AD_Printer_CheckSuggest extends SvrProcess
 {

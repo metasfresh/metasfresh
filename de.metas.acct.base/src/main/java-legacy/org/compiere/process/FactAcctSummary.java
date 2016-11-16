@@ -20,6 +20,8 @@ package org.compiere.process;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;

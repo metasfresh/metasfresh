@@ -29,11 +29,11 @@ package de.metas.dunning.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.process.SvrProcess;
 
 /**
  * Process to invoke {@link IDunningBL#processDunningDoc(IDunningContext, I_C_DunningDoc)} on a given {@link I_C_DunningDoc}.

@@ -41,7 +41,6 @@ package de.metas.banking.payment.process;
 
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -51,13 +50,14 @@ import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).

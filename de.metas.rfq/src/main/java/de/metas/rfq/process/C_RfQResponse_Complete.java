@@ -1,8 +1,8 @@
 package de.metas.rfq.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.SvrProcess;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponse;
 

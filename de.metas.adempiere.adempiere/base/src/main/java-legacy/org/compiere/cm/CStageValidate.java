@@ -17,8 +17,9 @@
 package org.compiere.cm;
 
 import org.compiere.model.MCStage;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * 	Validate Container Stage

@@ -26,6 +26,9 @@ import org.compiere.model.X_C_Conversion_Rate;
 import org.compiere.model.X_I_Conversion_Rate;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Import Currency Conversion Rates 
  *	

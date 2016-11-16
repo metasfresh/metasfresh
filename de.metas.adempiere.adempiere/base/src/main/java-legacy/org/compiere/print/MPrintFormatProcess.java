@@ -17,8 +17,9 @@
 package org.compiere.print;
 
 import java.math.BigDecimal;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	MPrintFormat Process.

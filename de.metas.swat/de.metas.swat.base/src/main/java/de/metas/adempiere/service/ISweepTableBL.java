@@ -27,7 +27,8 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 public interface ISweepTableBL extends ISingletonService
 {

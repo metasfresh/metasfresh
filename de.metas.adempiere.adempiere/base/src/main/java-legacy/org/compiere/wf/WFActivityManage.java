@@ -17,9 +17,10 @@
 package org.compiere.wf;
 
 import org.compiere.model.MUser;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.StateEngine;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Manage Workflow Activity

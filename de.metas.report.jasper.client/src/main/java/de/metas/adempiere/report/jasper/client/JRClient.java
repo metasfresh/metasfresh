@@ -38,8 +38,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.print.MPrintFormat;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -51,6 +49,8 @@ import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 
 public class JRClient

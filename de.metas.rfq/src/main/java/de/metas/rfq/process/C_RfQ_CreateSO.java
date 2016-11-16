@@ -8,10 +8,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.process.Param;
+import de.metas.process.SvrProcess;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;

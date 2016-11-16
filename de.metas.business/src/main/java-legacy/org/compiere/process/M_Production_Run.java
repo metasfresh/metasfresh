@@ -40,6 +40,8 @@ import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.product.IProductBL;
 
 /**

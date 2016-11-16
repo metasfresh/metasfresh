@@ -30,10 +30,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.SvrProcess;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;

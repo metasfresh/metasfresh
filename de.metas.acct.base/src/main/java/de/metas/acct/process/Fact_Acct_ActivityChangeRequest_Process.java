@@ -15,13 +15,13 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

@@ -1,7 +1,6 @@
 package de.metas.procurement.base.event.process;
 
-import org.compiere.process.SvrProcess;
-
+import de.metas.process.SvrProcess;
 import de.metas.procurement.base.event.impl.PMMQtyReportEventsProcessor;
 
 /*

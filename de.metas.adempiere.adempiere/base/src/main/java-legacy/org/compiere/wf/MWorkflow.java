@@ -36,8 +36,6 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.MMenu;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_Workflow;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -45,6 +43,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 
 /**
  *	WorkFlow Model

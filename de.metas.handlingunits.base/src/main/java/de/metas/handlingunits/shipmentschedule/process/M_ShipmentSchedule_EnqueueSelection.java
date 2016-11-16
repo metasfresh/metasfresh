@@ -26,15 +26,15 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessExecutionResult.ShowProcessLogs;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
