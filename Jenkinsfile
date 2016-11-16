@@ -132,18 +132,21 @@ node('agent && linux')
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
-			stage('Preparation') // for display purposes
-			{	
-				// use this line in the "real" multibranch pipeline builds
-				// checkout scm
-				
-				// use this line when developing this scrip in a normal pipeline job
-				git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
-			}
-		
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
+				// checkout our code. 
+				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
+				// we use this more complicated approach because that way we can also clean the workspace ('CleanCheckout')
+				checkout([
+					$class: 'GitSCM', 
+					branches: [[name: '${env.BRANCH_NAME}']], 
+					doGenerateSubmoduleConfigurations: false, 
+					extensions: [[$class: 'CleanCheckout']], 
+					submoduleCfg: [], 
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
+				])
+			
 				// deploy de.metas.parent/pom.xml as it is no (still with version "3-development-SNAPSHOT") so that other nodes can find it when they modify their own pom.xml versions
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
 				
@@ -183,17 +186,17 @@ stage('Invoke downstream jobs')
 	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
-// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-node('linux')
-{	
-	withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
-	{
-		final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-		final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
-		
-		sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+	node('linux')
+	{	
+		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+		{
+			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+			final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+			
+			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+		}
 	}
-}
 }
 
 	
@@ -206,6 +209,18 @@ node('agent && linux && libc6-i386')
 		{
 			stage('Build dist') 
 			{
+				// checkout our code..sparsely..we only need /de.metas.endcustomer.mf15
+				// note that we don not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
+				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
+				checkout([
+					$class: 'GitSCM', 
+					branches: [[name: "${env.BRANCH_NAME}"]], 
+					doGenerateSubmoduleConfigurations: false, 
+					extensions: [[$class: 'CleanCheckout'], [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]], 
+					submoduleCfg: [], 
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
+				])
+		
 				// *Now* set the artifact version of everything below de.metas.endcustomer.mf15/pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
