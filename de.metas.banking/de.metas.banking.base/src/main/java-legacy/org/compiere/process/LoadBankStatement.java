@@ -22,6 +22,9 @@ import java.util.Properties;
 import org.compiere.model.MBankStatementLoader;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Process for loading Bank Statements into I_BankStatement

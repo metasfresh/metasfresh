@@ -29,6 +29,9 @@ import org.compiere.model.X_AD_ChangeLog;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Process Change Logs

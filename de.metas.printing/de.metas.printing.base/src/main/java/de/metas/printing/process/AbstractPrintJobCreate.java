@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
@@ -41,6 +40,7 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintJobMonitor;
 import de.metas.printing.spi.impl.UserConfirmationPrintJobMonitor;
+import de.metas.process.SvrProcess;
 
 /**
  * Process all {@link I_C_Printing_Queue} items from selection (see {@link #createSelection()}) and creates corresponding {@link I_C_Print_Job}s.

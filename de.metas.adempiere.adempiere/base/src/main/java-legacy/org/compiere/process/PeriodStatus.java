@@ -27,6 +27,8 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.service.IPeriodBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Open/Close all Period (Control)

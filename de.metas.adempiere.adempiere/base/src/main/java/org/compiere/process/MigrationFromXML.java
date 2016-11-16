@@ -28,6 +28,9 @@ import java.io.FilenameFilter;
 import org.adempiere.ad.migration.xml.XMLLoader;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 public class MigrationFromXML extends SvrProcess
 {
 

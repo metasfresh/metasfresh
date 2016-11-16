@@ -25,7 +25,6 @@ package de.metas.materialtracking.process;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
@@ -35,7 +34,6 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.inout.IInOutDAO;
@@ -49,6 +47,8 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>

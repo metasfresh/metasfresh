@@ -18,34 +18,23 @@ package org.compiere.process;
 
 import org.compiere.util.Env;
 
+import de.metas.process.Process;
+import de.metas.process.SvrProcess;
+
 /**
- *	Reset Cache
+ * Reset Cache
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: CacheReset.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: CacheReset.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class CacheReset extends SvrProcess implements ClientProcess
+@Process(clientOnly = true)
+public class CacheReset extends SvrProcess
 {
-	/**
-	 *  Prepare - e.g., get Parameters.
-	 */
 	@Override
-	protected void prepare()
+	protected String doIt()
 	{
-	}	//	prepare
-
-
-	/**
-	 *  Perform process.
-	 *  @return Message to be translated
-	 *  @throws Exception
-	 */
-	@Override
-	protected String doIt() throws java.lang.Exception
-	{
-		log.info("");
-		Env.reset(false);	// not final
-		return "Cache Reset";
-	}	//	doIt
-
-}	//	CacheReset
+		boolean finalCall = false;
+		Env.reset(finalCall);
+		return MSG_OK;
+	}
+}

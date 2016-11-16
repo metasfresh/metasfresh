@@ -24,9 +24,9 @@ package de.metas.async.process;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.api.impl.WorkpackageCleanupStaleEntries;
+import de.metas.process.SvrProcess;
 
 /**
  * Identifies and deactivates stale workpackages.

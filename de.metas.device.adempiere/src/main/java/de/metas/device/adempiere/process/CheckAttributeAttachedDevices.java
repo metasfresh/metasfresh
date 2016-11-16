@@ -15,7 +15,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
@@ -28,6 +27,7 @@ import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

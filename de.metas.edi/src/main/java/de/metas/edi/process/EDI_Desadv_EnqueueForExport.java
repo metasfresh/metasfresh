@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -50,6 +49,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
 
 /**
  * Send EDI documents for selected desadv entries.

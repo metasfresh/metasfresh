@@ -13,18 +13,11 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.util.Properties;
-
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.print.JRReportViewerProvider;
-import org.compiere.process.ClientProcess;
-import org.compiere.process.ProcessCall;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
@@ -37,6 +30,11 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.Process;
+import de.metas.process.ProcessCall;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
 
 /**
@@ -48,7 +46,8 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author Ashley Ramdass
  * @author tsa
  */
-public class ReportStarter implements ProcessCall, ClientProcess
+@Process(clientOnly = true)
+public class ReportStarter implements ProcessCall
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ReportStarter.class);
@@ -102,10 +101,9 @@ public class ReportStarter implements ProcessCall, ClientProcess
 
 	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
 	{
-		final Properties ctx = reportPrintingInfo.getCtx();
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
 		final JRClient jrClient = JRClient.get();
-		final JasperPrint jasperPrint = jrClient.createJasperPrint(ctx, pi);
+		final JasperPrint jasperPrint = jrClient.createJasperPrint(pi);
 		log.info("ReportStarter.startProcess print report: {}", jasperPrint.getName());
 
 		//
@@ -118,7 +116,6 @@ public class ReportStarter implements ProcessCall, ClientProcess
 
 	private void startProcessPrintPreview(final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
-		final Properties ctx = reportPrintingInfo.getCtx();
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
 		//
@@ -151,7 +148,7 @@ public class ReportStarter implements ProcessCall, ClientProcess
 		// Generate report data
 		log.info("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final JRClient jrClient = JRClient.get();
-		final byte[] reportData = jrClient.report(ctx, processInfo, outputType);
+		final byte[] reportData = jrClient.report(processInfo, outputType);
 
 		//
 		// Set report data to process execution result
@@ -171,7 +168,6 @@ public class ReportStarter implements ProcessCall, ClientProcess
 	private ReportPrintingInfo extractReportPrintingInfo(final ProcessInfo pi)
 	{
 		final ReportPrintingInfo info = new ReportPrintingInfo();
-		info.setCtx(pi.getCtx());
 		info.setProcessInfo(pi);
 		info.setPrintPreview(pi.isPrintPreview());
 
@@ -217,7 +213,6 @@ public class ReportStarter implements ProcessCall, ClientProcess
 
 	private static final class ReportPrintingInfo
 	{
-		private Properties ctx;
 		private ProcessInfo processInfo;
 		private ReportingSystemType reportingSystemType;
 		private boolean printPreview;
@@ -233,16 +228,6 @@ public class ReportStarter implements ProcessCall, ClientProcess
 					.add("processInfo", processInfo)
 					.add("reportViewerProvider", reportViewerProvider)
 					.toString();
-		}
-
-		public void setCtx(final Properties ctx)
-		{
-			this.ctx = ctx;
-		}
-
-		public Properties getCtx()
-		{
-			return ctx;
 		}
 
 		public void setProcessInfo(final ProcessInfo processInfo)

@@ -32,6 +32,8 @@ package org.adempiere.process;
 import java.io.File;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -39,8 +41,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.MCity;
 import org.compiere.model.MSetup;
 import org.compiere.print.PrintUtil;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;

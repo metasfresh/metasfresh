@@ -24,6 +24,9 @@ import org.adempiere.ad.migration.executor.IMigrationExecutorContext.MigrationOp
 import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
 import org.adempiere.util.Services;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 public class MigrationApply extends SvrProcess
 {
 	private int p_AD_Migration_ID = -1;

@@ -26,6 +26,9 @@ import org.compiere.model.MPaySelectionLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  * Create Checks from Payment Selection Line
  * 

@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
@@ -47,7 +46,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
@@ -56,6 +54,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  *
@@ -1531,7 +1530,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public int createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
-		final int newSelectionId = DB.getNextID(getCtx(), I_AD_PInstance.Table_Name, ITrx.TRXNAME_None);
+		final int newSelectionId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
 
 		// Populate the selection
 		final int count = createSelection(newSelectionId);

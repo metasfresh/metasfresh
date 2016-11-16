@@ -18,6 +18,8 @@ package org.adempiere.acct.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.adempiere.acct.api.impl.TaxDeclarationLinesBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -25,8 +27,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_TaxDeclaration;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 /**
  * Create Tax Declaration

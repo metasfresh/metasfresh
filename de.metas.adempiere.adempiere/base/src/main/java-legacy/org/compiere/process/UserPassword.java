@@ -25,6 +25,9 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  * Reset Password
  * 

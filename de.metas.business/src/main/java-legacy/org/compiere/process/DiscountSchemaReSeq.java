@@ -23,6 +23,8 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Renumber Discount Schema
@@ -37,7 +39,7 @@ public class DiscountSchemaReSeq extends SvrProcess
 
 	/**
 	 * 	Prepare
-	 *	@see org.compiere.process.SvrProcess#prepare()
+	 *	@see de.metas.process.SvrProcess#prepare()
 	 */
 	protected void prepare ()
 	{

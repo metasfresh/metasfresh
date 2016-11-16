@@ -48,6 +48,8 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create PriceList by copying purchase prices (M_Product_PO) and applying product category discounts (M_CategoryDiscount)

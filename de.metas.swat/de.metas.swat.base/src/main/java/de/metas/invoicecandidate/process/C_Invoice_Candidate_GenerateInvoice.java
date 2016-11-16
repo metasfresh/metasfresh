@@ -30,12 +30,12 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author tsa

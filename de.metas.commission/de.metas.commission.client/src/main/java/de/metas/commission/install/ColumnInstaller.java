@@ -30,9 +30,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.MColumn;
@@ -40,14 +38,13 @@ import org.compiere.model.MField;
 import org.compiere.model.MTable;
 import org.compiere.model.M_Element;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 
 public final class ColumnInstaller extends Installer {
 
@@ -174,15 +171,13 @@ public final class ColumnInstaller extends Installer {
 		checkSaved();
 
 		final String processValue = "AD_Column Sync";
-		final int processId = Services.get(IADProcessDAO.class).retriveProcessIdByValue(Env.getCtx(), processValue);
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setAD_Process_ID(processId)
-				.setTitle(processValue)
+				.setAD_ProcessByValue(processValue)
 				.setRecord(I_AD_Column.Table_Name, column.getAD_Column_ID())
 				.build();
 
 		// final Trx trx = Trx.get(trxName, false);
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.execute();
 

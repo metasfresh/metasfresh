@@ -29,6 +29,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.process.SvrProcess;
+
 /**
  * 
  * Process to apply a single migration step

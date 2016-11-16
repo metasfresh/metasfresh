@@ -63,7 +63,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
@@ -897,14 +896,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public IInvoiceGenerateResult generateInvoicesFromQueue(final I_AD_PInstance adPInstance)
+	public IInvoiceGenerateResult generateInvoicesFromQueue(final Properties ctx)
 	{
-		Check.assume(adPInstance != null, "Param 'adPInstance' is not null");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(adPInstance);
-		// Note: if there is an MPInstance behind 'adPInstance', then this will return null which is not what we expect
-		// final String trxName = InterfaceWrapperHelper.getTrxName(adPInstance);
-
 		// note that we don't want to store the actual invoices in the result to omit memory-problems
 		final InvoiceGenerateResult result = new InvoiceGenerateResult(false);
 		final IWorkpackageProcessor packageProcessor = new InvoiceCandWorkpackageProcessor(result);

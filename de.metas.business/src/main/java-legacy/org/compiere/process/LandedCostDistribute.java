@@ -19,6 +19,8 @@ package org.compiere.process;
 import org.compiere.model.MLandedCost;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.SvrProcess;
+
 /**
  * 	Distribute Landed Costs
  *	

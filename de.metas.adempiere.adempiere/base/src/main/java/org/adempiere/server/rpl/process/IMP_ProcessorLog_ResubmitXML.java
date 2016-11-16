@@ -33,7 +33,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 public class IMP_ProcessorLog_ResubmitXML extends SvrProcess
 {

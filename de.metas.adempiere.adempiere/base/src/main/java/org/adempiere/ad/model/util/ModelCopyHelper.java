@@ -1,5 +1,7 @@
 package org.adempiere.ad.model.util;
 
+import java.util.HashSet;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -50,6 +52,8 @@ public class ModelCopyHelper implements IModelCopyHelper
 			.add("Updated")
 			.add("UpdatedBy")
 			.build();
+	
+	private final Set<String> targetColumnNamesToSkip = new HashSet<>();
 
 	@Override
 	public void copy()
@@ -61,6 +65,12 @@ public class ModelCopyHelper implements IModelCopyHelper
 		{
 			// Skip this column if it does not exist in our "from" model
 			if (!from.hasColumnName(columnName))
+			{
+				continue;
+			}
+			
+			// Skip columns which were advised to be skipped
+			if(targetColumnNamesToSkip.contains(columnName))
 			{
 				continue;
 			}
@@ -147,6 +157,13 @@ public class ModelCopyHelper implements IModelCopyHelper
 	public IModelCopyHelper setSkipCalculatedColumns(boolean skipCalculatedColumns)
 	{
 		this._skipCalculatedColumns = skipCalculatedColumns;
+		return this;
+	}
+
+	@Override
+	public IModelCopyHelper addTargetColumnNameToSkip(final String columnName)
+	{
+		targetColumnNamesToSkip.add(columnName);
 		return this;
 	}
 }

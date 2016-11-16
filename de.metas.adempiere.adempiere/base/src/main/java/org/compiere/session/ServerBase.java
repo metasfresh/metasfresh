@@ -31,8 +31,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.MTask;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -42,7 +40,9 @@ import com.google.common.base.MoreObjects;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -132,7 +132,7 @@ public class ServerBase implements IServerService
 		final Properties processCtx = processInfo.getCtx(); 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processCtx))
 		{
-			final ProcessExecutionResult result = ProcessCtl.builder()
+			final ProcessExecutionResult result = ProcessExecutor.builder()
 					.setProcessInfo(processInfo)
 					.executeSync()
 					.getResult();

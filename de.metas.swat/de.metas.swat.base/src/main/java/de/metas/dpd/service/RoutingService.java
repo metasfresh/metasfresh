@@ -42,7 +42,6 @@ import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
@@ -58,7 +57,6 @@ import org.compiere.model.MPackage;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
@@ -77,6 +75,8 @@ import de.metas.dpd.model.MDPDService;
 import de.metas.dpd.model.MDPDServiceInfo;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.X_M_ShippingPackage;
 import net.sf.jasperreports.engine.JRException;
@@ -561,23 +561,14 @@ public class RoutingService implements IDPDRoutingservice
 		return printPackageLabel(ctx, inOut, pack, M_Shipper_ID, trxName);
 	}
 
-	private JasperPrint retrieveJasperPrint(final Properties ctx, final String processName, final int adTableId, final int recordId, final String trxName)
+	private JasperPrint retrieveJasperPrint(final Properties ctx, final String processValue, final int adTableId, final int recordId, final String trxName)
 	{
-		final int processId = Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, processName);
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setAD_Process_ID(processId)
-				.setTitle(processName)
+				.setCtx(ctx)
+				.setAD_ProcessByValue(processValue)
 				.setRecord(adTableId, recordId)
 				.build();
-
-		try
-		{
-			return JRClient.get().createJasperPrint(ctx, pi);
-		}
-		catch (Exception e)
-		{
-			throw new AdempiereException("Error retrieving jasper print", e);
-		}
+		return JRClient.get().createJasperPrint(pi);
 	}
 
 	public boolean printPackageLabel(
@@ -611,18 +602,18 @@ public class RoutingService implements IDPDRoutingservice
 		}
 
 		final JasperPrint jasperPrint;
-		final String jasperProcessName;
+		final String jasperProcessValue;
 		if (pack == null)
 		{
-			jasperProcessName = JasperProcess_Label;
+			jasperProcessValue = JasperProcess_Label;
 			final int adTableId = InterfaceWrapperHelper.getModelTableId(inOut);
-			jasperPrint = retrieveJasperPrint(ctx, jasperProcessName, adTableId, inOut.getM_InOut_ID(), trxName);
+			jasperPrint = retrieveJasperPrint(ctx, jasperProcessValue, adTableId, inOut.getM_InOut_ID(), trxName);
 		}
 		else
 		{
-			jasperProcessName = JasperProcess_Package;
+			jasperProcessValue = JasperProcess_Package;
 			final int adTableId = InterfaceWrapperHelper.getModelTableId(pack);
-			jasperPrint = retrieveJasperPrint(ctx, jasperProcessName, adTableId, pack.getM_Package_ID(), trxName);
+			jasperPrint = retrieveJasperPrint(ctx, jasperProcessValue, adTableId, pack.getM_Package_ID(), trxName);
 		}
 
 		if (jasperPrint == null)
@@ -641,7 +632,7 @@ public class RoutingService implements IDPDRoutingservice
 		final IPrintingService printingService = Services.get(IPrinterRoutingBL.class).findPrintingService(
 				ctx,
 				-1, // C_DocType_ID
-				Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, jasperProcessName), // AD_Process_ID
+				Services.get(IADProcessDAO.class).retriveProcessIdByValue(ctx, jasperProcessValue), // AD_Process_ID
 				IPrinterRoutingBL.PRINTERTYPE_Label);
 
 		final PrintServiceAttributeSet printServiceAttributeSet = new HashPrintServiceAttributeSet();

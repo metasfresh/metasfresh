@@ -27,14 +27,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 
 /**
  * Report Controller.
@@ -291,7 +291,7 @@ public final class ReportCtl
 					.build();
 
 			// Execute Process
-			ProcessCtl.builder()
+			ProcessExecutor.builder()
 					.setProcessInfo(jasperProcessInfo)
 					.executeSync();
 

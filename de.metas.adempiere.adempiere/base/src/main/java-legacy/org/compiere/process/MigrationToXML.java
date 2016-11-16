@@ -19,6 +19,9 @@ import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.xml.XMLWriter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  * 
  * Process to export an AD migration script as XML

@@ -43,10 +43,11 @@ import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author tsa

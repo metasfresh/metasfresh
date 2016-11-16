@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.process.SvrProcess;
+
 //import org.compiere.util.*;
 
 /**

@@ -29,6 +29,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
 import org.compiere.util.CacheMgt;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  * Update Role Access
  * 

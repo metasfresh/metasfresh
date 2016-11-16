@@ -1,36 +1,10 @@
 package de.metas.flatrate.process;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.ad.process.ISvrProcessPrecondition.PreconditionsContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.MTable;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -38,6 +12,9 @@ import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.SvrProcess;
+import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
 
 public class C_Flatrate_Term_Create_From_OLCand extends SvrProcess implements ISvrProcessPrecondition
 {

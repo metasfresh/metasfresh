@@ -29,7 +29,8 @@ import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /**
  * Sort migration steps by Created

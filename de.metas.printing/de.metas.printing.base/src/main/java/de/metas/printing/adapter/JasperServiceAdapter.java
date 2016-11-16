@@ -32,11 +32,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.report.IJasperService;
 
 import de.metas.printing.model.I_AD_Archive;
+import de.metas.process.ProcessInfo;
 
 
 

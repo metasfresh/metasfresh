@@ -38,13 +38,13 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
 
 /**
  * task 09373

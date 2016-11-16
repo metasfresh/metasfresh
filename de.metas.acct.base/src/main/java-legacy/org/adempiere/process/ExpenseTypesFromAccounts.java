@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
@@ -43,8 +45,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Product_Acct;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 /**

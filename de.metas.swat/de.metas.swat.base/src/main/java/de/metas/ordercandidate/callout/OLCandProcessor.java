@@ -25,7 +25,6 @@ package de.metas.ordercandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
@@ -48,6 +47,7 @@ import org.compiere.util.Msg;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.process.ProcessOLCands;
+import de.metas.process.IADProcessDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.relation.grid.VRelationTarget;
 
@@ -151,10 +151,10 @@ public class OLCandProcessor extends CalloutEngine
 		final GridTab tab = schedulerFrame.getAPanel().getCurrentTab();
 		if (schedulerId <= 0)
 		{
-			final IProcessPA processPA = Services.get(IProcessPA.class);
+			final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class); 
 
-			final int adProcessId = processPA.retrieveProcessId(ProcessOLCands.class, trxName);
-			final I_AD_Process_Para processPara = processPA.retrieveProcessPara(ctx, adProcessId, trxName);
+			final int adProcessId = adProcessDAO.retriveProcessIdByClassIfUnique(ctx, ProcessOLCands.class);
+			final I_AD_Process_Para processPara = adProcessDAO.retriveProcessParameter(ctx, adProcessId, ProcessOLCands.PARAM_C_OLCandProcessor_ID);
 
 			tab.dataNew(DataNewCopyMode.NoCopy);
 			tab.setValue(I_AD_Scheduler.COLUMNNAME_Name, Msg.translate(ctx, I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID) + " \"" + processor.getName() + "\"");

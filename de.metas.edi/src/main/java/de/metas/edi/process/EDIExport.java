@@ -27,12 +27,12 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
+import de.metas.process.SvrProcess;
 
 /**
  * EDI-Exports a single document.

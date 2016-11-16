@@ -34,12 +34,12 @@ import org.compiere.model.MEXPFormat;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DisplayType;
 
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.interfaces.I_EXP_FormatLine;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author tsa

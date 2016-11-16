@@ -1,8 +1,8 @@
 package de.metas.product.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.SvrProcess;
 import de.metas.product.model.I_M_Product;
 
 /*

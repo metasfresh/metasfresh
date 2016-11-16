@@ -41,9 +41,10 @@ import javax.swing.ListSelectionModel;
 
 import org.compiere.model.MCountry;
 import org.compiere.model.MTax;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.SvrProcess;
 
 /**
  * Creates duplicates of the tax identified by the given C_Tax_ID for all

@@ -34,9 +34,10 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.SvrProcess;
+
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;

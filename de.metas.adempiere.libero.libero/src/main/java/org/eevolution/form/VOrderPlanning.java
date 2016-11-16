@@ -79,7 +79,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -89,6 +88,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ASyncProcess;
 import de.metas.logging.LogManager;
 
 /**
@@ -384,7 +384,7 @@ public class VOrderPlanning extends CPanel
 	}
 
 	@Override
-	public void lockUI(org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 
@@ -399,7 +399,7 @@ public class VOrderPlanning extends CPanel
 	}
 
 	@Override
-	public void unlockUI(org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 

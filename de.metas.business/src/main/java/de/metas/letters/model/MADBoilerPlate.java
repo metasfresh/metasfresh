@@ -53,7 +53,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
 import org.compiere.model.MAsset;
@@ -74,8 +73,6 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -89,7 +86,9 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -148,20 +147,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
 		//
 		// Get Process
-		final I_AD_Process process = new Query(Env.getCtx(), I_AD_Process.Table_Name, I_AD_Process.COLUMNNAME_Classname + "=?", null)
-				.setParameters(new Object[] {
-						"de.metas.letters.report.AD_BoilerPlate_Report",
-						// AD_BoilerPlate_Report.class.getCanonicalName()
-				})
-				.firstOnly();
+		final String processClassname = "de.metas.letters.report.AD_BoilerPlate_Report";
+		final int processId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(Env.getCtx(), processClassname);
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setFromAD_Process(process)
-				.addParameter(ProcessInfoParameter.of(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text))
+				.setAD_Process_ID(processId)
+				.addParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
 				.build();
 		
-		ProcessCtl.builder().setProcessInfo(pi).executeSync();
+		ProcessExecutor.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}

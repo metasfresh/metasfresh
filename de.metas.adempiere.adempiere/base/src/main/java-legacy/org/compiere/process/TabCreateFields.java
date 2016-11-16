@@ -37,6 +37,8 @@ import org.compiere.model.MTab;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)

@@ -24,9 +24,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.process.SvrProcess;
 
 /**
  *  Creates Order from RMA document

@@ -34,12 +34,11 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.document.engine.IDocActionBL;
 
 public final class OrderCreateNewFromProposal extends SvrProcess 

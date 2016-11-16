@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import org.compiere.model.MDocTypeCounter;
 
+import de.metas.process.SvrProcess;
+
 /**
  *	Validate Counter Document
  *	

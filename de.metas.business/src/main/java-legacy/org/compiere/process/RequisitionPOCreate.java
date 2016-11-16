@@ -40,6 +40,8 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_PriceList;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**

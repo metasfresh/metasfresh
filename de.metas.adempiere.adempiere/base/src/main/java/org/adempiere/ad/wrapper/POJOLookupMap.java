@@ -53,7 +53,6 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
+import de.metas.process.IADPInstanceDAO;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {

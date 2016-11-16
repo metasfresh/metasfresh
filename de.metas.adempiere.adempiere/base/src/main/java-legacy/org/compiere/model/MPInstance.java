@@ -40,19 +40,13 @@ import com.google.common.base.MoreObjects;
 @Deprecated
 public class MPInstance extends X_AD_PInstance
 {
+	// NOTE: the only reason why we are still keeping it is because we want to enforce TRXNAME_None on load
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -3627385062090630722L;
 
-	/**
-	 * Standard Constructor
-	 * 
-	 * @param ctx context
-	 * @param AD_PInstance_ID instance or 0
-	 * @param trxName_IGNORED no transaction support
-	 */
 	public MPInstance(final Properties ctx, final int AD_PInstance_ID, final String trxName_IGNORED)
 	{
 		super(ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
@@ -73,13 +67,6 @@ public class MPInstance extends X_AD_PInstance
 		}
 	}	// MPInstance
 
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param ignored no transaction support
-	 */
 	public MPInstance(final Properties ctx, final ResultSet rs, final String ignored)
 	{
 		super(ctx, rs, ITrx.TRXNAME_None);

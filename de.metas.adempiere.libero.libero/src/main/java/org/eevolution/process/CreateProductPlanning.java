@@ -47,11 +47,12 @@ import java.util.ArrayList;
 
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MWarehouse;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.MPPProductPlanning;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * CreateProductPlanning

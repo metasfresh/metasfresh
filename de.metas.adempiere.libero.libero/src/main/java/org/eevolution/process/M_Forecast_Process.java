@@ -27,8 +27,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable;
+
+import de.metas.process.SvrProcess;
 
 public class M_Forecast_Process extends SvrProcess
 {

@@ -20,6 +20,8 @@ import org.compiere.model.MIssue;
 import org.compiere.model.MSystem;
 import org.compiere.util.AdempiereSystemError;
 
+import de.metas.process.SvrProcess;
+
 /**
  * 	Report System Issue
  *	

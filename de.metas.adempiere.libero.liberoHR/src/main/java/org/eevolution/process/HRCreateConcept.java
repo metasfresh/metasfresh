@@ -15,9 +15,10 @@
 package org.eevolution.process;
 
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRPayrollConcept;
+
+import de.metas.process.SvrProcess;
 
 /**
  *	Create Concept of current Payroll

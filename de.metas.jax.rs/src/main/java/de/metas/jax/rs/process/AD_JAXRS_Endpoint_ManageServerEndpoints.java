@@ -1,11 +1,11 @@
 package de.metas.jax.rs.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

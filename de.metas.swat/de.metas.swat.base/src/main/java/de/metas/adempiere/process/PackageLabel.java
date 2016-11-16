@@ -37,11 +37,11 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Package;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class PackageLabel extends SvrProcess
 {

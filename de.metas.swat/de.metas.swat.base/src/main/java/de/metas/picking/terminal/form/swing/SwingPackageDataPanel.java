@@ -44,15 +44,12 @@ import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_M_PackagingTree;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -79,7 +76,9 @@ import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -327,7 +326,7 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		}
 		else if (AbstractPackageDataPanel.ACTION_OK.equals(evt.getNewValue()))
 		{
-			final ProcessCtl worker = packageTerminalPanel.processPackingDetails();
+			final ProcessExecutor worker = packageTerminalPanel.processPackingDetails();
 			if (worker != null)
 			{
 				worker.waitToComplete();
@@ -442,15 +441,15 @@ public class SwingPackageDataPanel extends AbstractPackageDataPanel
 		final I_AD_Process process = processPA.retrieveProcessByForm(getCtx(), AD_Form_ID);
 
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setFromAD_Process(process)
-				.addParameter(ProcessInfoParameter.of("M_PackagingTree_ID", M_PackagingTree_ID))
-				.addParameter(ProcessInfoParameter.of("C_BPartner_ID", model.getPackingTreeModel().getBp_id()))
-				.addParameter(ProcessInfoParameter.of("shipper", model.selectedShipperId))
+				.setAD_Process(process)
+				.addParameter("M_PackagingTree_ID", M_PackagingTree_ID)
+				.addParameter("C_BPartner_ID", model.getPackingTreeModel().getBp_id())
+				.addParameter("shipper", model.selectedShipperId)
 				.build();
 
 		try
 		{
-			jasperPrint = JRClient.get().createJasperPrint(Env.getCtx(), pi);
+			jasperPrint = JRClient.get().createJasperPrint(pi);
 		}
 		catch (final Exception e)
 		{

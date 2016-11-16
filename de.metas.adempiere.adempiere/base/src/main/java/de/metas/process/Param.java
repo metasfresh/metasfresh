@@ -7,9 +7,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.adempiere.ad.process.AD_Process_Para_UpdateFromAnnotations;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.processtools.AD_Process_Para_UpdateFromAnnotations;
 
 /*
  * #%L

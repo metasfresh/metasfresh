@@ -38,8 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessCall;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -57,6 +55,8 @@ import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.process.ProcessCall;
+import de.metas.process.ProcessInfo;
 
 /**
  * Payment Model. - retrieve and create payments for invoice

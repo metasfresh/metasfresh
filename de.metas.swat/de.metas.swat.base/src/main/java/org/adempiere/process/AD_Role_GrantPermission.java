@@ -29,10 +29,11 @@ package org.adempiere.process;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.MRolePermRequest;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Grant Permission

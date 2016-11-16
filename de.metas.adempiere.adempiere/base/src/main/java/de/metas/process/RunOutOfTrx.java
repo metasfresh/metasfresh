@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.compiere.process.SvrProcess;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

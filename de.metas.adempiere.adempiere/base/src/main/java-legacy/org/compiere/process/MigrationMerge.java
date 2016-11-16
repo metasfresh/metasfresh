@@ -21,6 +21,9 @@ import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 public class MigrationMerge extends SvrProcess {
 
 	private I_AD_Migration migrationFrom;

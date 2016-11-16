@@ -14,7 +14,7 @@
 //package org.eevolution.process;
 package org.eevolution.process;
 
-import org.compiere.process.SvrProcess;
+import de.metas.process.SvrProcess;
 
 /**
  *	Create Concept of current Payroll

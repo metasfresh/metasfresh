@@ -56,9 +56,6 @@ import org.compiere.model.MTask;
 import org.compiere.model.MUser;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessExecutionResult;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -72,7 +69,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
@@ -361,7 +361,7 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// Process
-		final ProcessExecutionResult result = ProcessCtl.builder()
+		final ProcessExecutionResult result = ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.executeSync()
 				.getResult();
@@ -412,7 +412,7 @@ public class Scheduler extends AdempiereServer
 	{
 		log.debug("Run process: {}", pi);
 
-		final ProcessExecutionResult result = ProcessCtl.builder()
+		final ProcessExecutionResult result = ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.executeSync()
 				.getResult();
@@ -448,8 +448,7 @@ public class Scheduler extends AdempiereServer
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(schedulerCtx)
-				.setFromAD_Process(adProcess)
-				//.setRecord(-1, -1)
+				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
 				.build();
 

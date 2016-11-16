@@ -30,11 +30,10 @@ import java.util.Properties;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;

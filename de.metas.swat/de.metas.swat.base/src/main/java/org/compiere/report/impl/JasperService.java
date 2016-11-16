@@ -39,12 +39,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.MUser;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;

@@ -30,7 +30,8 @@ import org.adempiere.appdict.validation.api.IADValidatorResult;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.IADValidator;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /**
  * 

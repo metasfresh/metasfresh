@@ -26,8 +26,6 @@ package de.metas.dunning.process;
 import java.util.Iterator;
 
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -35,6 +33,8 @@ import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
 import de.metas.dunning.api.impl.AbstractDunningCandidateSource;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates

@@ -22,6 +22,9 @@ import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Copy all Tabs of a Window
  *	

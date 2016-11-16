@@ -48,9 +48,10 @@ import org.compiere.model.X_A_Asset_Addition;
 import org.compiere.model.X_A_Asset_Group_Acct;
 import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Create Asset from FA GL Process

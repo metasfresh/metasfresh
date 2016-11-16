@@ -19,6 +19,9 @@ package org.compiere.process;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Material Transaction Cross Reference

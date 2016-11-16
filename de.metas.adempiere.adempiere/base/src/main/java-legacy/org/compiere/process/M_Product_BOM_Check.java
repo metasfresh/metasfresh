@@ -28,6 +28,8 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Title:	Check BOM Structure (free of cycles)

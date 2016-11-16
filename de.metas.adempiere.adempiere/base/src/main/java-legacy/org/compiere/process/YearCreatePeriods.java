@@ -20,6 +20,9 @@ import java.sql.Timestamp;
 import org.compiere.model.MYear;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Create Periods of year
  *	

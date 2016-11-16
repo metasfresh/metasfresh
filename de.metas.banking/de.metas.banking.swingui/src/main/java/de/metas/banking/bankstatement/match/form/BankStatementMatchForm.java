@@ -2,15 +2,15 @@ package de.metas.banking.bankstatement.match.form;
 
 import java.awt.BorderLayout;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.model.I_C_BankStatement;
-import org.compiere.process.ProcessInfo;
 
 import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
+import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.ProcessInfo;
 
 /*
  * #%L

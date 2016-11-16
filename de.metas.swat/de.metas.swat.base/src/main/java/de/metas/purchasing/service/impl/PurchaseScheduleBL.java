@@ -57,13 +57,13 @@ import org.compiere.model.MStorage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import de.metas.process.SvrProcess;
 import de.metas.product.IProductPA;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;

@@ -37,7 +37,6 @@ import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,7 +45,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.model.I_AD_Process;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -64,7 +62,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
-import de.metas.process.ProcessCtl;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 
 /**
  * Model responsible for generating HU labels and reports
@@ -412,7 +412,7 @@ public class HUReportModel implements IDisposable
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setFromAD_Process(process)
+				.setAD_Process(process)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguage)
@@ -423,7 +423,7 @@ public class HUReportModel implements IDisposable
 
 		//
 		// Execute report in a new transaction
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();

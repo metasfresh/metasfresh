@@ -27,12 +27,13 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Process;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
+
+import de.metas.process.ProcessInfo;
 
 
 /**

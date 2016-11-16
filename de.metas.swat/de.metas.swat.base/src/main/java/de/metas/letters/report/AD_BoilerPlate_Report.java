@@ -6,14 +6,14 @@ package de.metas.letters.report;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * @author teo_sarca
@@ -94,7 +94,7 @@ public class AD_BoilerPlate_Report extends SvrProcess
 				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
 				.build();
 
-		ProcessCtl.builder()
+		ProcessExecutor.builder()
 				.setProcessInfo(pi)
 				.onErrorThrowException()
 				.executeSync();

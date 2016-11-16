@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.process.SvrProcess;
 
 /**
  * 	Register Entity Type

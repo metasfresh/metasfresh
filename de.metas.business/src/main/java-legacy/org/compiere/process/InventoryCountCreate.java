@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.Vector;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MInventory;

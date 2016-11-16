@@ -27,11 +27,11 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Create Payment Selection Lines from AP Invoices

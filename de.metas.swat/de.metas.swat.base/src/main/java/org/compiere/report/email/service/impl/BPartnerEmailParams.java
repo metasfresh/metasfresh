@@ -4,13 +4,13 @@ import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MUser;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 /**
  * Returns generic email parameters for a process that contains a

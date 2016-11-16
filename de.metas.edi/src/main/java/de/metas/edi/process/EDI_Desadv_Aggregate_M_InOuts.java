@@ -37,14 +37,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.SvrProcess;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.process.ProcessInfo;
+import de.metas.process.SvrProcess;
 
 /**
  * Aggregates edi-enabled inOuts into desadv records.

@@ -18,6 +18,9 @@ package org.compiere.process;
 
 import org.compiere.model.MTree;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Tree Maintenance	
  *	

@@ -41,6 +41,8 @@ import org.compiere.util.DB;
 
 import de.metas.email.MailAuthenticator;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 import de.metas.logging.LogManager;
 
 /**

@@ -35,8 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.service.ISweepTableBL;
@@ -48,6 +46,8 @@ import de.metas.commission.model.I_C_AdvCommissionInstance;
 import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.model.I_C_AdvCommissionPayrollLine;
 import de.metas.commission.model.MCAdvCommissionFact;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Helper process that supports regression tests by deleting all commission data that was created after a given date

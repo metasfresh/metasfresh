@@ -48,8 +48,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
 import org.compiere.model.MSysConfig;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 import org.eevolution.exceptions.CRPException;
 import org.eevolution.model.MPPOrder;
@@ -58,6 +56,9 @@ import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.reasoner.CRPReasoner;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Capacity Requirement Planning

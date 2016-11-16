@@ -19,6 +19,8 @@ package org.compiere.process;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_MatchInv;
 
+import de.metas.process.SvrProcess;
+
 
 /**
  *	Delete Inv Match

@@ -9,12 +9,12 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest_Source_v;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

@@ -38,8 +38,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -57,6 +55,8 @@ import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.commission.service.ICommissionFactCandDAO;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * 

@@ -23,10 +23,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Reverse Package Install.

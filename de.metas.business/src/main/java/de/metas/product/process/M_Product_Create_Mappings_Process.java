@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.process.SvrProcess;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductConstants;
 import de.metas.product.model.I_M_Product;

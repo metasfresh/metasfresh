@@ -2,18 +2,18 @@ package de.metas.procurement.base.process;
 
 import java.sql.Timestamp;
 
-import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
-import org.compiere.process.SvrProcess;
 
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.process.ISvrProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.SvrProcess;
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;

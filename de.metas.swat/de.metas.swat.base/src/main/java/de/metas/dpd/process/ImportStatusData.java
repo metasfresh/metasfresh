@@ -38,8 +38,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.MPackage;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
@@ -50,6 +48,8 @@ import de.metas.dpd.service.Iso7064;
 import de.metas.impex.model.I_ImpEx_Connector;
 import de.metas.impex.model.MImpExConnector;
 import de.metas.impex.spi.IImportConnector;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class ImportStatusData extends SvrProcess
 {

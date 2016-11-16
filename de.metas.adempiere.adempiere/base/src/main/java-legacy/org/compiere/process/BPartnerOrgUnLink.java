@@ -19,6 +19,9 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.compiere.model.MBPartner;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	UnLink Business Partner from Organization 
  *	

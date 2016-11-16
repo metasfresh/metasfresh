@@ -21,6 +21,8 @@ import org.adempiere.acct.api.IGLDistributionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 
+import de.metas.process.SvrProcess;
+
 /**
  * Verify GL Distribution
  *

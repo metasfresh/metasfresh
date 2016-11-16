@@ -57,13 +57,13 @@ import org.compiere.model.MPaySelectionLine;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_PaySelectionCheck;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.process.SvrProcess;
 
 /**
  * 

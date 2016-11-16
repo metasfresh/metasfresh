@@ -21,6 +21,9 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Delete Data in Import Table
  *	

@@ -21,6 +21,9 @@ import org.compiere.model.MContainer;
 import org.compiere.model.MNewsChannel;
 import org.compiere.model.MNewsItem;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Reindex all Content
  *	

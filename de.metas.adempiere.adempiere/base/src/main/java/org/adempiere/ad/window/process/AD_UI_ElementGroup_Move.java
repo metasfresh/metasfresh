@@ -6,9 +6,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_ElementGroup;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

@@ -37,11 +37,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfo;
+import de.metas.process.SvrProcess;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;

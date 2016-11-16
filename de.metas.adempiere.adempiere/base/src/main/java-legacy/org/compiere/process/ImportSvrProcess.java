@@ -6,6 +6,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.SvrProcess;
 
 /**
  * {@link IImportProcess} to {@link SvrProcess} adapter.

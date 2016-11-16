@@ -111,7 +111,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.CTextPane;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -129,6 +128,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ASyncProcess;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -1555,7 +1555,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	}
 
 	@Override
-	public void lockUI(org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 
@@ -1570,7 +1570,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 	}
 
 	@Override
-	public void unlockUI(org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 

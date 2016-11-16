@@ -10,7 +10,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

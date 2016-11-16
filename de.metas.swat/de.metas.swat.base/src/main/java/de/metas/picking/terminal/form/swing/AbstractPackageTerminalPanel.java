@@ -60,7 +60,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessCtl;
+import de.metas.process.ProcessExecutor;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -425,7 +425,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		}
 	}
 
-	public ProcessCtl processPackingDetails()
+	public ProcessExecutor processPackingDetails()
 	{
 		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
 		// NOTE assume this is not called

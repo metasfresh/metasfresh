@@ -23,14 +23,14 @@ import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.compiere.Adempiere;
 import org.compiere.model.X_AD_Package_Imp_Proc;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 /**
  * IntPackIn Tool.

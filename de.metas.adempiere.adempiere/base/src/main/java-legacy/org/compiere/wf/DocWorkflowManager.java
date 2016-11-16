@@ -22,12 +22,12 @@ import java.sql.ResultSet;
 import org.adempiere.util.Check;
 import org.compiere.model.DocWorkflowMgr;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 
 /**

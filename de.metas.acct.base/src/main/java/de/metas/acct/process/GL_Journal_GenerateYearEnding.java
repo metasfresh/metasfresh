@@ -26,8 +26,9 @@ import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.X_C_ElementValue;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.model.X_GL_JournalBatch;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
+
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

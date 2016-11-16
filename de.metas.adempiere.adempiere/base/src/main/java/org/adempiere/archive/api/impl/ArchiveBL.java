@@ -43,8 +43,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.PrintInfo;
 import org.compiere.model.X_AD_Client;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
+
+import de.metas.process.ProcessInfo;
 
 public class ArchiveBL implements IArchiveBL
 {

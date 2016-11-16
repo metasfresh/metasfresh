@@ -26,6 +26,8 @@ import org.compiere.util.DB;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Title:	Create the (new) costing information

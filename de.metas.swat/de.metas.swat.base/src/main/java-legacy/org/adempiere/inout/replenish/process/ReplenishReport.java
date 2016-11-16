@@ -61,8 +61,6 @@ import org.compiere.model.MStorage;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.model.X_T_Replenish;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
@@ -71,6 +69,8 @@ import org.compiere.util.Msg;
 import org.compiere.util.ReplenishInterface;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 
 

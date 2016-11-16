@@ -25,6 +25,9 @@ import org.compiere.model.MClient;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 
 /**
  *  Inventory Valuation.

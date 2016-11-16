@@ -52,9 +52,10 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_InvoiceLine;
 import org.compiere.model.X_M_Product;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  *	Create Asset from Invoice Process

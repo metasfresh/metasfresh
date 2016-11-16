@@ -28,11 +28,11 @@ import java.io.ByteArrayOutputStream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;

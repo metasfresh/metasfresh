@@ -19,6 +19,9 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.compiere.util.DB;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
+
 /**
  *	Delete Notes (Notice)
  *	

@@ -40,11 +40,11 @@ import java.beans.PropertyChangeEvent;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.process.ProcessInfo;
-import org.compiere.util.ASyncProcess;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ASyncProcess;
+import de.metas.process.ProcessInfo;
 
 /**
  * Custom form controller base class

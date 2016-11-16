@@ -28,8 +28,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import org.compiere.apps.AEnv;
-import org.compiere.process.ProcessInfo;
 
+import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 

@@ -33,8 +33,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MOrder;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.SvrProcess;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 

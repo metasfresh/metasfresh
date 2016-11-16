@@ -57,8 +57,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.MRole;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.report.email.service.IEmailParamsFactory;
@@ -74,6 +72,8 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -135,19 +135,20 @@ class JasperReportViewerPanel extends JRViewer
 		public void actionPerformed(final ActionEvent e)
 		{
 
-			final KeyNamePair pp = comboReport.getSelectedItem();
-			if (pp == null)
+			final KeyNamePair jasperProcessKNP = comboReport.getSelectedItem();
+			if (jasperProcessKNP == null)
 			{
 				return;
 			}
 			//
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-			final int jasperProcessId = pp.getKey();
+			final int jasperProcessId = jasperProcessKNP.getKey();
 
 			final ProcessInfo oldPi = getProcessInfo();
 
 			final ProcessInfo newPi = ProcessInfo.builder()
+					.setCtx(oldPi.getCtx())
 					.setAD_Process_ID(jasperProcessId)
 					.setTitle(oldPi.getTitle())
 					.setRecord(oldPi.getTable_ID(), oldPi.getRecord_ID())
@@ -157,7 +158,7 @@ class JasperReportViewerPanel extends JRViewer
 			JasperPrint newJasperPrint = null;
 			try
 			{
-				newJasperPrint = JRClient.get().createJasperPrint(Env.getCtx(), newPi);
+				newJasperPrint = JRClient.get().createJasperPrint(newPi);
 			}
 			catch (final Exception e1)
 			{
@@ -412,7 +413,7 @@ class JasperReportViewerPanel extends JRViewer
 			// Reason: in some cases we are using an alternative jasper report to better layout the data for given export format (e.g. excel)
 			else
 			{
-				final byte[] exportData = JRClient.get().report(getCtx(), getProcessInfo(), exportFormat);
+				final byte[] exportData = JRClient.get().report(getProcessInfo(), exportFormat);
 				Util.writeBytes(file, exportData);
 			}
 		}

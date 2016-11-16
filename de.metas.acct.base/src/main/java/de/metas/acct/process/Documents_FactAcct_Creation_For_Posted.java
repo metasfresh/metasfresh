@@ -10,11 +10,11 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IDocumentBL;
 import de.metas.process.Param;
+import de.metas.process.SvrProcess;
 
 /*
  * #%L

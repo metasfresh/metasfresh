@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.service.IADPInstanceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,6 +58,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.IPrintingQueueHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * @author cg

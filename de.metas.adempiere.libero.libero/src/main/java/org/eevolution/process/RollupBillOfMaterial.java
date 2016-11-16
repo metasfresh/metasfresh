@@ -53,8 +53,6 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.MCostType;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
@@ -64,6 +62,9 @@ import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 /**
  * Roll-UP Bill of Material

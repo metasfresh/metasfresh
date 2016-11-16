@@ -48,9 +48,10 @@ import org.compiere.model.I_AD_TreeNodeMM;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.SvrProcess;
 
 public class AD_Migration_CreateFromEntityType extends SvrProcess
 {

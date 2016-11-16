@@ -38,10 +38,10 @@ import javax.swing.text.rtf.RTFEditorKit;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.SvrProcess;
 
 public class ConvertBPartnerMemo extends SvrProcess {
 

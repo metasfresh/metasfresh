@@ -27,8 +27,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IDDOrderBL;
+
+import de.metas.process.SvrProcess;
 
 public class M_Forecast_CompleteBackwardDDOrders extends SvrProcess
 {

@@ -31,7 +31,8 @@ import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.SvrProcess;
 
 /**
  * Singleton with generic methods for deferred processing of POs

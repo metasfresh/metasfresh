@@ -3,8 +3,9 @@ package org.eevolution.process;
 import org.compiere.model.MDocType;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MSequence;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
+
+import de.metas.process.SvrProcess;
 
 
 /**

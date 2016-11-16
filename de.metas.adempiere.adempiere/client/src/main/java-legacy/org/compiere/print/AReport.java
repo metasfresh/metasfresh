@@ -28,17 +28,17 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
 import org.compiere.apps.ADialog;
-import org.compiere.apps.ProcessDialog;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ASyncProcess;
+import de.metas.process.ui.ProcessDialog;
 import de.metas.logging.LogManager;
 
 /**
