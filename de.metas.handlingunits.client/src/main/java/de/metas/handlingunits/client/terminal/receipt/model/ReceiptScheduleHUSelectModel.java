@@ -8,17 +8,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Language;
@@ -435,11 +432,10 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
 
 		final int reportProcessId = Integer.parseInt(reportConfigValue);
-		final I_AD_Process reportProcess = InterfaceWrapperHelper.create(getCtx(), reportProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
 
 		//
 		// Print report
-		doJasperPrint0(reportProcess, orderLine);
+		doJasperPrint0(reportProcessId, orderLine);
 	}
 
 	/**
@@ -453,7 +449,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return getRowsSelected().size() == 1;
 	}
 
-	private void doJasperPrint0(final I_AD_Process process, final I_C_OrderLine orderLine)
+	private void doJasperPrint0(final int reportProcessId, final I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		final int orderLineId = orderLine.getC_OrderLine_ID();
@@ -463,7 +459,8 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		//
 		// Create ProcessInfo
 		final ProcessInfo pi = ProcessInfo.builder()
-				.setAD_Process(process)
+				.setCtx(getCtx())
+				.setAD_Process_ID(reportProcessId)
 				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setReportLanguage(bpartnerLaguage)
