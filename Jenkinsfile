@@ -68,11 +68,14 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
+		booleanParam(defaultValue: true, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration''', 
+			name: 'MF_SKIP_SQL_MIGRATION_TEST'), // skipping by default until we have this covered in our infrastructure
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]), 
-	pipelineTriggers([]) 
+	pipelineTriggers([]),
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
@@ -211,76 +214,109 @@ node('agent && linux && libc6-i386')
 	step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
 
-	stage('Deployment')
+// we need this one for both "Test-SQL" and "Deployment
+def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+
+	def packagingPart=packaging ? ":${packaging}" : ""
+	def classifierPart=classifier ? ":${classifier}" : ""
+	def artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
+
+	// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
+	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
+	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
-
-			def packagingPart=packaging ? ":${packaging}" : ""
-			def classifierPart=classifier ? ":${classifier}" : ""
-			def artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
-
-			// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
-			// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
-			configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
-			{
-				withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
-				{
-					sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact}"
-					
-					// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
-					sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"
-				}
-			}
-			sh "scp ${WORKSPACE}/deploy/${artifactId}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}.${packaging}"
-		}
-		
-		def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
-		
-			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
-		} 
-	
-		def userInput;
-		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
-		timeout(time:1, unit:'DAYS') 
+		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
-			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
-		}
-		
-		echo "Received userInput=$userInput";
-
-		node('master')
-		{
-			if(userInput)
-			{
-				def distArtifactId='de.metas.endcustomer.mf15.dist';
-				def packaging='tar.gz';
-				def sshTargetHost=userInput;
-				def sshTargetUser='metasfresh'
+			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact}"
 			
-				// main part: provide and rollout the "main" distributable
-				// get the deployable dist file to the target host
-				downloadForDeployment("de.metas.endcustomer.mf15", distArtifactId, BUILD_MAVEN_VERSION, packaging, "dist", sshTargetHost, sshTargetUser);
-				
-				// extract the tar.gz
-				def fileAndDirName="${distArtifactId}-${BUILD_MAVEN_VERSION}"
-				def deployDir="/home/${sshTargetUser}/${fileAndDirName}"
-				
-				// Look Ma, I'm currying!!
-				def invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
-								
-				def invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
-				invokeRemoteInInstallDir('./stop_service.sh');
-				invokeRemoteInInstallDir('./sql_remote.sh');
-				invokeRemoteInInstallDir('./minor_remote.sh');
-				invokeRemoteInInstallDir('./start_service.sh');
-				
-				// also provide the webui-api; TODO actually deploy it
-				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', BUILD_MAVEN_VERSION, 'jar', null, sshTargetHost, sshTargetUser);
-			}
-			// clean up the workspace, including the local maven repositories that the withMaven steps created
-			step([$class: 'WsCleanup', cleanWhenFailure: true])
+			// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
+			sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"
 		}
 	}
+	sh "scp ${WORKSPACE}/deploy/${artifactId}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}.${packaging}"
+}
+
+// we need this one for both "Test-SQL" and "Deployment
+def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
+
+	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
+}
+
+if(!MF_SKIP_SQL_MIGRATION_TEST)
+{
+	stage('Test SQL-Migration')
+	{
+		node('master')
+		{
+			def distArtifactId='de.metas.endcustomer.mf15.dist';
+			def packaging='tar.gz';
+			def sshTargetHost='mf15cloudit';
+			def sshTargetUser='metasfresh'
+
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_MAVEN_VERSION, packaging, 'sql-only', sshTargetHost, sshTargetUser);
+			
+			// Look Ma, I'm currying!!
+			def invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+
+			def invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+			def VALIDATE_MIGRATION_TEMPLATE_DB='mf15_cloud_it';
+			def VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_MAVEN_VERSION}";
+			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
+		}
+	}
+}
+
+stage('Deployment')
+{
+	def userInput;
+	// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
+	timeout(time:1, unit:'DAYS') 
+	{
+		// use milestones to abort older builds as soon as a receent build is deployed
+		// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
+		milestone 1
+		userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+		milestone 2
+	}
+	
+	echo "Received userInput=$userInput";
+
+	node('master')
+	{
+		if(userInput)
+		{
+			def distArtifactId='de.metas.endcustomer.mf15.dist';
+			def packaging='tar.gz';
+			def sshTargetHost=userInput;
+			def sshTargetUser='metasfresh'
+
+			// main part: provide and rollout the "main" distributable
+			// get the deployable dist file to the target host
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_MAVEN_VERSION, packaging, 'dist', sshTargetHost, sshTargetUser);
+
+			// extract the tar.gz
+			def fileAndDirName="${distArtifactId}-${BUILD_MAVEN_VERSION}"
+			def deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+
+			// Look Ma, I'm currying!!
+			def invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+
+			// stop the service, perform the rollout and start the service
+			def invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+			invokeRemoteInInstallDir('./stop_service.sh');
+			invokeRemoteInInstallDir('./sql_remote.sh');
+			invokeRemoteInInstallDir('./minor_remote.sh');
+			invokeRemoteInInstallDir('./start_service.sh');
+
+			// also provide the webui-api and procurement-webui; TODO actually deploy them
+			downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', BUILD_MAVEN_VERSION, 'jar', null, sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', BUILD_MAVEN_VERSION, 'jar', null, sshTargetHost, sshTargetUser);
+		}
+		// clean up the workspace, including the local maven repositories that the withMaven steps created
+		step([$class: 'WsCleanup', cleanWhenFailure: true])
+	}
+} // node
 } // timestamps
 
