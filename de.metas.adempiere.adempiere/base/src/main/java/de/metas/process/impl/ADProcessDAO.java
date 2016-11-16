@@ -71,7 +71,7 @@ public class ADProcessDAO implements IADProcessDAO
 		final String processClassname = processClass.getName();
 		return retriveProcessIdByClassIfUnique(ctx, processClassname);
 	}
-	
+
 	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final String processClassname)
 	{
@@ -296,7 +296,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.create()
 				.map(I_AD_Process_Para.class, I_AD_Process_Para::getColumnName);
 	}
-	
+
 	@Override
 	public void addProcessStatistics(final Properties ctx, final int adProcessId, final int adClientId, final long durationMillisToAdd)
 	{
@@ -371,22 +371,14 @@ public class ADProcessDAO implements IADProcessDAO
 	public void copyAD_Process(final I_AD_Process targetProcess, final I_AD_Process sourceProcess)
 	{
 		logger.debug("Copying from: {} to: {}", sourceProcess, targetProcess);
-		
-		targetProcess.setAccessLevel(sourceProcess.getAccessLevel());
-		targetProcess.setAD_Form_ID(sourceProcess.getAD_Form_ID());
-		targetProcess.setAD_PrintFormat_ID(sourceProcess.getAD_PrintFormat_ID());
-		targetProcess.setAD_ReportView_ID(sourceProcess.getAD_ReportView_ID());
-		targetProcess.setAD_Workflow_ID(sourceProcess.getAD_Workflow_ID());
-		targetProcess.setClassname(sourceProcess.getClassname());
-		targetProcess.setDescription(sourceProcess.getDescription());
-		targetProcess.setHelp(sourceProcess.getHelp());
-		targetProcess.setIsBetaFunctionality(sourceProcess.isBetaFunctionality());
-		targetProcess.setIsDirectPrint(sourceProcess.isDirectPrint());
-		targetProcess.setIsReport(sourceProcess.isReport());
-		targetProcess.setIsServerProcess(sourceProcess.isServerProcess());
-		targetProcess.setJasperReport(sourceProcess.getJasperReport());
-		targetProcess.setProcedureName(sourceProcess.getProcedureName());
-		targetProcess.setShowHelp(sourceProcess.getShowHelp());
+
+		InterfaceWrapperHelper.copy()
+				.setSkipCalculatedColumns(true)
+				.addTargetColumnNameToSkip(I_AD_Process.COLUMNNAME_Value)
+				.addTargetColumnNameToSkip(I_AD_Process.COLUMNNAME_Name)
+				.setFrom(sourceProcess)
+				.setTo(targetProcess)
+				.copy();
 		InterfaceWrapperHelper.save(targetProcess);
 
 		// copy parameters
@@ -408,7 +400,7 @@ public class ADProcessDAO implements IADProcessDAO
 	private I_AD_Process_Para copyAD_Process_Para(final I_AD_Process targetProcess, final I_AD_Process_Para sourcePara)
 	{
 		logger.debug("Copying parameter from {} to {}", sourcePara, targetProcess);
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(targetProcess);
 		final String trxName = InterfaceWrapperHelper.getTrxName(targetProcess);
 
@@ -416,7 +408,6 @@ public class ADProcessDAO implements IADProcessDAO
 		targetPara.setAD_Org_ID(sourcePara.getAD_Org_ID());
 		targetPara.setAD_Process(targetProcess);
 		targetPara.setEntityType(targetProcess.getEntityType());
-
 
 		targetPara.setAD_Element_ID(sourcePara.getAD_Element_ID());
 		targetPara.setAD_Reference_ID(sourcePara.getAD_Reference_ID());
@@ -460,7 +451,7 @@ public class ADProcessDAO implements IADProcessDAO
 			count = DB.executeUpdateEx(sqlInsert, trxName);
 			logger.debug("AD_Process_Para_Trl inserted: " + count);
 		}
-		
+
 		return targetPara;
 	}
 
