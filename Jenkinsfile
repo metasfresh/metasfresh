@@ -62,7 +62,7 @@ properties([
 	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
 		string(defaultValue: '', 
-			description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
@@ -238,8 +238,13 @@ node('agent && linux && libc6-i386')
 			sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 		} 
 	
-		def userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: '', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
-
+		def userInput;
+		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
+		timeout(time:1, unit:'DAYS') 
+		{
+			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+		}
+		
 		echo "Received userInput=$userInput";
 
 		node('master')
