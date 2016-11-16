@@ -7,9 +7,9 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
@@ -47,22 +47,23 @@ public final class ReportContext
 
 	private final Properties ctx;
 	private final int AD_Process_ID;
-	private final I_AD_Process adProcess;
 	private final int AD_PInstance_ID;
 	private final String AD_Language;
 	private OutputType outputType;
 	private final int AD_Table_ID;
 	private final int Record_ID;
 	private final ImmutableList<ProcessInfoParameter> processInfoParameters;
+	private final String reportTemplatePath;
+	private final String sqlStatement;
+	private final boolean applySecuritySettings;
 
 	private ReportContext(final Builder builder)
 	{
 		super();
 		ctx = builder.ctx;
 
-		adProcess = builder.adProcess;
-		Check.assumeNotNull(adProcess, "AD_Process not null");
-		AD_Process_ID = adProcess.getAD_Process_ID();
+		AD_Process_ID = builder.AD_Process_ID;
+		Check.assume(AD_Process_ID > 0, "AD_Process_ID > 0");
 
 		AD_PInstance_ID = builder.AD_PInstance_ID;
 		AD_Language = builder.AD_Language;
@@ -70,48 +71,50 @@ public final class ReportContext
 		AD_Table_ID = builder.AD_Table_ID;
 		Record_ID = builder.Record_ID;
 		processInfoParameters = ImmutableList.copyOf(builder.getProcessInfoParameters());
+
+		reportTemplatePath = builder.reportTemplatePath;
+		sqlStatement = builder.sqlStatement;
+		applySecuritySettings = builder.applySecuritySettings;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "ReportContext ["
-				+ "adProcess=" + adProcess
-				+ ", AD_PInstance_ID=" + AD_PInstance_ID
-				+ ", AD_Language=" + AD_Language
-				+ ", outputType=" + outputType
-				+ ", AD_Table_ID=" + AD_Table_ID
-				+ ", Record_ID=" + Record_ID
-				+ ", processInfoParameters=" + processInfoParameters
-				+ "]";
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				// .add("ctx", ctx)
+				.add("AD_Process_ID", AD_Process_ID)
+				//.add("adProcess", adProcess)
+				.add("AD_PInstance_ID", AD_PInstance_ID)
+				.add("AD_Language", AD_Language)
+				.add("outputType", outputType)
+				.add("AD_Table_ID", AD_Table_ID)
+				.add("Record_ID", Record_ID)
+				.add("processInfoParameters", processInfoParameters)
+				.add("reportTemplatePath", reportTemplatePath)
+				.add("sqlStatement", sqlStatement)
+				.add("applySecuritySettings", applySecuritySettings)
+				.toString();
 	}
 
 	public Properties getCtx()
 	{
 		return ctx;
 	}
-	
+
 	public String getReportTemplatePath()
 	{
-		return getAD_Process().getJasperReport();
+		return reportTemplatePath;
 	}
-	
+
 	public String getSQLStatement()
 	{
-		return getAD_Process().getSQLStatement();
+		return sqlStatement;
 	}
 
 	public int getAD_Process_ID()
 	{
 		return AD_Process_ID;
-	}
-
-	/**
-	 * @return {@link I_AD_Process}; never returns null
-	 */
-	private I_AD_Process getAD_Process()
-	{
-		return adProcess;
 	}
 
 	public int getAD_PInstance_ID()
@@ -133,7 +136,7 @@ public final class ReportContext
 	{
 		this.outputType = outputType;
 	}
-	
+
 	public String getTableNameOrNull()
 	{
 		if (AD_Table_ID <= 0)
@@ -152,13 +155,12 @@ public final class ReportContext
 	{
 		return Record_ID;
 	}
-	
+
 	public boolean isApplySecuritySettings()
 	{
-		final I_AD_Process adProcess = getAD_Process();
-		return adProcess == null ? false : adProcess.isApplySecuritySettings();
+		return applySecuritySettings;
 	}
-	
+
 	public IUserRolePermissions getUserRolePermissions()
 	{
 		return Env.getUserRolePermissions(getCtx());
@@ -172,12 +174,15 @@ public final class ReportContext
 	public static final class Builder
 	{
 		private Properties ctx;
-		private I_AD_Process adProcess;
+		private int AD_Process_ID;
 		private int AD_PInstance_ID;
 		private String AD_Language;
 		private OutputType outputType;
 		private int AD_Table_ID;
 		private int Record_ID;
+		private String reportTemplatePath;
+		private String sqlStatement;
+		private boolean applySecuritySettings;
 
 		private Builder()
 		{
@@ -188,16 +193,16 @@ public final class ReportContext
 		{
 			return new ReportContext(this);
 		}
-
+		
 		public Builder setCtx(final Properties ctx)
 		{
 			this.ctx = ctx;
 			return this;
 		}
 
-		public Builder setAD_Process(final I_AD_Process adProcess)
+		public Builder setAD_Process_ID(final int AD_Process_ID)
 		{
-			this.adProcess = adProcess;
+			this.AD_Process_ID = AD_Process_ID;
 			return this;
 		}
 
@@ -223,6 +228,24 @@ public final class ReportContext
 		{
 			this.AD_Table_ID = AD_Table_ID;
 			this.Record_ID = Record_ID;
+			return this;
+		}
+
+		public Builder setReportTemplatePath(final String reportTemplatePath)
+		{
+			this.reportTemplatePath = reportTemplatePath;
+			return this;
+		}
+
+		public Builder setSQLStatement(String sqlStatement)
+		{
+			this.sqlStatement = sqlStatement;
+			return this;
+		}
+
+		public Builder setApplySecuritySettings(final boolean applySecuritySettings)
+		{
+			this.applySecuritySettings = applySecuritySettings;
 			return this;
 		}
 
