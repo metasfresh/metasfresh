@@ -147,7 +147,7 @@ public class LocalJasperServer implements IJasperServer
 	 * @param adTableId record's AD_Table_ID
 	 * @param recordId record's ID
 	 */
-	private final void updateContextFromRecord(final Properties ctx, final int adTableId, final int recordId)
+	private static final void updateContextFromRecord(final Properties ctx, final int adTableId, final int recordId)
 	{
 		if (adTableId <= 0 || recordId <= 0)
 		{

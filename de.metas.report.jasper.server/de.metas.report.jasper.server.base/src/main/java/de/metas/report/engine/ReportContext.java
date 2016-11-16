@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
@@ -110,18 +109,9 @@ public final class ReportContext
 	/**
 	 * @return {@link I_AD_Process}; never returns null
 	 */
-	public I_AD_Process getAD_Process()
+	private I_AD_Process getAD_Process()
 	{
 		return adProcess;
-	}
-	
-	/**
-	 * @param type
-	 * @return {@link I_AD_Process}; never returns null
-	 */
-	public <T extends I_AD_Process> T getAD_Process(final Class<T> type)
-	{
-		return InterfaceWrapperHelper.create(adProcess, type);
 	}
 
 	public int getAD_PInstance_ID()
@@ -162,7 +152,7 @@ public final class ReportContext
 	{
 		return Record_ID;
 	}
-
+	
 	public boolean isApplySecuritySettings()
 	{
 		final I_AD_Process adProcess = getAD_Process();

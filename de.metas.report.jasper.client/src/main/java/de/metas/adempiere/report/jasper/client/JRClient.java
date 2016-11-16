@@ -133,8 +133,7 @@ public class JRClient
 		}
 	}
 
-	private JasperPrint createJasperPrint0(
-			final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
+	private JasperPrint createJasperPrint0(final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
 	{
 		byte[] data = getJasperServer().report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));

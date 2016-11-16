@@ -65,7 +65,7 @@ public class XlsReportEngine extends AbstractReportEngine
 		}
 
 		final ClassLoader reportClassLoader = createReportClassLoader(reportContext);
-		final String templateResourceName = reportContext.getAD_Process().getJasperReport();
+		final String templateResourceName = reportContext.getReportTemplatePath();
 		Check.assumeNotEmpty(templateResourceName, "templateResourceName not defined in process: {}", reportContext);
 
 		//
