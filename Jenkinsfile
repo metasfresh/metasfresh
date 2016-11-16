@@ -77,7 +77,8 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]), 
-	pipelineTriggers([]) 
+	pipelineTriggers([]),
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
@@ -149,13 +150,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
             {
         		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
         		sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
+				
+				junit '**/target/surefire-reports/*.xml'
             }
 		}
-	}
-
-	stage('Collect test results') 
-	{
-		junit '**/target/surefire-reports/*.xml'
 	}
    
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
@@ -167,7 +165,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	}
 	else
 	{
-		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger an< downstream builds"
+		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
 	}
 
 	// clean up the works spave, including the local maven repositories that the withMaven steps created
