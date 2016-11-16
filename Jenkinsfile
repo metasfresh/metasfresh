@@ -23,8 +23,9 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
 		
-		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/metasfresh ${upstreamBranch}"
+		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
+
 	if(exitCode == 0)
 	{
 		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
@@ -82,16 +83,16 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
-
+final MF_UPSTREAM_BRANCH;
 if(params.MF_UPSTREAM_BRANCH)
 {
 	echo "Setting BRANCH_NAME from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	BRANCH_NAME=params.MF_UPSTREAM_BRANCH
+	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
 }
 else
 {
 	echo "Setting BRANCH_NAME from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	BRANCH_NAME=env.BRANCH_NAME
+	MF_UPSTREAM_BRANCH=env.BRANCH_NAMEBRANCH_NAME
 }
 if(params.MF_BUILD_ID)
 {
@@ -105,22 +106,22 @@ else
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-def BUILD_MAVEN_VERSION_PREFIX = BRANCH_NAME.equals('master') ? "1" : "2"
+final BUILD_MAVEN_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 
 // the maven artifact version that will be set to the artifacts in this build
 // examples: "1-master-543-SNAPSHOT", "2-FRESH-123-9842-SNAPSHOT"
-def BUILD_MAVEN_VERSION=BUILD_MAVEN_VERSION_PREFIX + "-" + BRANCH_NAME + "-" + MF_BUILD_ID + "-SNAPSHOT"
+final BUILD_MAVEN_VERSION=BUILD_MAVEN_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
 
 // the version range used when resolving depdendencies for this build
 // example: "[1-master-SNAPSHOT],[2-FRESH-123-SNAPSHOT]
-def BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
+final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
 
 echo "Setting BUILD_MAVEN_VERSION_PREFIX=$BUILD_MAVEN_VERSION_PREFIX"
 echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
-currentBuild.displayName="#" + currentBuild.number + "-" + BRANCH_NAME + "-" + MF_BUILD_ID
+currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
 
 timestamps 
@@ -133,7 +134,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// checkout scm
 
 		// use this line when developing this scrip in a normal pipeline job
-		git branch: "$BRANCH_NAME", url: 'https://github.com/metasfresh/metasfresh-webui.git'
+		git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh-webui.git'
 	}
 
     configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
@@ -160,7 +161,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	{
 		stage('Invoke downstream job') 
 		{
-			invokeDownStreamJobs('metasfresh', MF_BUILD_ID, BRANCH_NAME, false); // wait=false 
+			invokeDownStreamJobs('metasfresh', MF_BUILD_ID, MF_UPSTREAM_BRANCH, false); // wait=false 
 		}
 	}
 	else
