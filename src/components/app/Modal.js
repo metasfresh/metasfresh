@@ -2,16 +2,18 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Window from '../Window';
+import Process from '../Process';
 
 import {
     closeModal,
-    createWindow
+    createWindow,
+    createProcess
 } from '../../actions/WindowActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
-        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
+        const {dispatch, windowType, dataId, tabId, rowId, modalType} = this.props;
 
         this.state = {
             scrolled: false,
@@ -20,9 +22,16 @@ class Modal extends Component {
             init: false
         }
 
-        dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
-            this.handleClose();
-        });
+        switch(modalType){
+            case "window":
+                dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
+                    this.handleClose();
+                });
+                break;
+            case "process":
+                dispatch(createProcess(windowType));
+                break;
+        }
     }
 
     isAdvancedEdit = () => {
@@ -80,7 +89,7 @@ class Modal extends Component {
     }
 
     render() {
-        const {data, layout, modalTitle, tabId, rowId, dataId} = this.props;
+        const {data, layout, modalTitle, tabId, rowId, dataId, modalType} = this.props;
         const {isAdvanced, scrolled} = this.state
 
         return (
@@ -96,16 +105,21 @@ class Modal extends Component {
                         </div>
                     </div>
                     <div className="panel-modal-content js-panel-modal-content container-fluid">
-                        <Window
-                            data={data}
-                            dataId={dataId}
-                            layout={layout}
-                            modal={true}
-                            tabId={tabId}
-                            rowId={rowId}
-                            isModal={true}
-                            isAdvanced={isAdvanced}
-                        />
+                        {modalType === "window" ?
+                            <Window
+                                data={data}
+                                dataId={dataId}
+                                layout={layout}
+                                modal={true}
+                                tabId={tabId}
+                                rowId={rowId}
+                                isModal={true}
+                                isAdvanced={isAdvanced}
+                            />
+                        :
+                            <Process />
+                        }
+
                     </div>
                 </div>
             </div>

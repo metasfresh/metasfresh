@@ -77,6 +77,7 @@ class MasterWindow extends Component {
                         tabId={modal.tabId}
                         rowId={modal.rowId}
                         modalTitle={modal.title}
+                        modalType={modal.modalType}
                         closeCallback={this.closeModalCallback}
                      />
                  }

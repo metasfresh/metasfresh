@@ -95,15 +95,17 @@ export function noConnection(status){
     }
 }
 
-export function openModal(title, windowType, tabId, rowId){
+export function openModal(title, windowType, type, tabId, rowId){
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
+        modalType: type,
         tabId: tabId,
         rowId: rowId,
         title: title
     }
 }
+
 export function closeModal(){
     return {
         type: types.CLOSE_MODAL
@@ -300,6 +302,37 @@ export function updateProperty(property, value, tabid, rowid, isModal){
         }
     }
 }
+
+
+// PROCESS ACTIONS
+
+export function createProcess(processType){
+    return (dispatch) => {
+        dispatch(getProcessData(processType)
+            ).then(response => {
+                const preparedData = nullToEmptyStrings(response.data.parameters);
+
+                dispatch(initDataSuccess(preparedData, "modal"));
+                
+                return response;
+            }).then(response =>
+                dispatch(getProcessLayout(response.data.pinstanceId))
+            ).then(response =>
+                dispatch(initLayoutSuccess(response.data, "modal")
+            ));
+    }
+}
+
+function getProcessData(processType) {
+    return () => axios.put(config.API_URL + '/process/instance?processId=' + processType);
+}
+
+function getProcessLayout(processType) {
+    return () => axios.get(config.API_URL + '/process/instance/' + processType);
+}
+
+// END PROCESS ACTIONS
+
 
 export function initLayout(windowType, tabId){
     return () => axios.get(
