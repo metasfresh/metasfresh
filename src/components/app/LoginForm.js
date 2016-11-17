@@ -63,7 +63,8 @@ class LoginForm extends Component {
                 }else{
                     this.setState(Object.assign({}, this.state, {
                         roleSelect: true,
-                        roles: response.data.roles
+                        roles: response.data.roles,
+                        role: response.data.roles[0]
                     }))
                 }
             }).catch(err => {
@@ -123,7 +124,7 @@ class LoginForm extends Component {
                                 ref={c => this.passwd = c}
                             />
                         </div>
-                        
+
                     </div>
                 }
                 <div className="mt-2">

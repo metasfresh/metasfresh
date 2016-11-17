@@ -235,7 +235,16 @@ class MenuOverlay extends Component {
 
         return (
             <div className="menu-overlay menu-overlay-primary">
-                <div className="menu-overlay-caption">{ (index === 0) ? <span className="ico-home"><i className="meta-icon-menu" /></span> : nodeData && nodeData.captionBreadcrumb}</div>
+                <div
+                    className="menu-overlay-caption"
+                    onClick={() => this.handleClickOutside()}
+                >
+                    { (index === 0) ?
+                        <span className="ico-home">
+                            <i className="meta-icon-menu" />
+                        </span>
+                        : nodeData && nodeData.captionBreadcrumb}
+                </div>
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
