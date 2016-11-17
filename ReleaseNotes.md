@@ -18,6 +18,8 @@ Here come the actual release notes:
   * #563 Report Statistics qty per Week
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
   * #597 Empties mask and functionality with autom. set the selected bpartner
+* webui
+  * #567 WebUI - Material Receipt Schedule
 
 ## Fixes
 * metasfresh
