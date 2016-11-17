@@ -10,16 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.45.44 (2016-47)
+# metasfresh 4.44.44 (2016-47)
 
-## Features
-* metasfresh
-  * #553 Report Account Info adjustments. Add parms date range.
-  
-  
 ## Fixes
 * metasfresh
   * #589 console error when doing bpartner setup
+  * #553 Report Account Info adjustments. Add parms date range.
 
 # metasfresh 4.44.43 (2016-46)
 
