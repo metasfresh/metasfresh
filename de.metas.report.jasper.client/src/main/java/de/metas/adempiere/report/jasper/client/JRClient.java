@@ -34,6 +34,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
@@ -53,10 +54,8 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
 
-public class JRClient
+public final class JRClient
 {
-	private static final JRClient instance = new JRClient();
-
 	public static JRClient get()
 	{
 		return instance;
@@ -66,14 +65,22 @@ public class JRClient
 	public static final String SYSCONFIG_JRServerClass_DEFAULT = "de.metas.adempiere.report.jasper.server.RemoteServletServer";
 	public static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(JRClient.class);
 
-	private IJasperServer server = null;
+	// NOTE: keep this one after all other static declarations, to avoid NPE on initialization
+	private static final JRClient instance = new JRClient();
+
+	//
+	// ---------------------
+	//
+
+	/** Jasper server supplier */
+	private final ExtendedMemorizingSupplier<IJasperServer> serverSupplier = ExtendedMemorizingSupplier.of(() -> createJasperServer());
 
 	/**
 	 * Force the Jasper servlet cache to reset together with the others.
 	 */
-	private CacheInterface cacheListener = new CacheInterface()
+	private final CacheInterface cacheListener = new CacheInterface()
 	{
 		@Override
 		public int size()
@@ -84,7 +91,10 @@ public class JRClient
 		@Override
 		public int reset()
 		{
-			final IJasperServer server = getJasperServer();
+			// Force recreating of jasper server, just in case the config changed
+			serverSupplier.forget();
+
+			final IJasperServer server = serverSupplier.get();
 			if (server != null)
 			{
 				server.cacheReset();
@@ -95,11 +105,8 @@ public class JRClient
 
 	private JRClient()
 	{
-		init();
-	}
-
-	private void init()
-	{
+		super();
+		
 		// If the instance is not a client, reset the Jasper servlet cache.
 		if (!Ini.isClient())
 		{
@@ -135,7 +142,8 @@ public class JRClient
 
 	private JasperPrint createJasperPrint0(final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
 	{
-		byte[] data = getJasperServer().report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
+		final IJasperServer server = serverSupplier.get();
+		byte[] data = server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
 		JasperPrint jasperPrint = (JasperPrint)ois.readObject();
 		return jasperPrint;
@@ -145,7 +153,8 @@ public class JRClient
 	{
 		try
 		{
-			return getJasperServer().report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), outputType);
+			final IJasperServer server = serverSupplier.get();
+			return server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), outputType);
 		}
 		catch (Exception e)
 		{
@@ -163,11 +172,11 @@ public class JRClient
 		try
 		{
 			// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
-			if(pi.getAD_PInstance_ID() <= 0)
+			if (pi.getAD_PInstance_ID() <= 0)
 			{
 				Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(pi);
 			}
-			
+
 			final Language language = extractLanguage(pi);
 			final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
 			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputTypeEffective);
@@ -179,13 +188,8 @@ public class JRClient
 		}
 	}
 
-	public synchronized IJasperServer getJasperServer()
+	private final IJasperServer createJasperServer()
 	{
-		if (server != null)
-		{
-			return server;
-		}
-
 		final String jrClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerClass, SYSCONFIG_JRServerClass_DEFAULT);
 		logger.info("JasperServer classname: {}", jrClassname);
 
@@ -194,16 +198,14 @@ public class JRClient
 			cl = getClass().getClassLoader();
 		try
 		{
-			server = (IJasperServer)cl.loadClass(jrClassname).newInstance();
+			final IJasperServer server = (IJasperServer)cl.loadClass(jrClassname).newInstance();
+			logger.info("JasperServer instance: " + server);
+			return server;
 		}
 		catch (Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
-		logger.info("JasperServer instance: " + server);
-
-		return server;
 	}
 
 	private static Language extractLanguage(final ProcessInfo pi)
@@ -247,14 +249,13 @@ public class JRClient
 			}
 		}
 
-		
 		// task 09740
 		// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
 		if (lang == null)
 		{
 			final IRangeAwareParams parameterAsIParams = pi.getParameterAsIParams();
 			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
-			if(bPartnerID > 0)
+			if (bPartnerID > 0)
 			{
 				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), bPartnerID);
 				return lang;
