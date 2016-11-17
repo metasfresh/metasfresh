@@ -9,8 +9,14 @@ class DatePicker extends Component {
         super(props);
 
         this.state = {
-            open: undefined
+            open: false
         }
+    }
+
+    handleBlur = (date) => {
+        const {patch} = this.props;
+        this.handleClose();
+        patch(date);
     }
 
     handleFocus = () => {
@@ -20,14 +26,9 @@ class DatePicker extends Component {
     }
 
     handleClose = () => {
-        const {patch} = this.props;
         this.setState(Object.assign({}, this.state, {
             open: false
         }));
-    }
-
-    focusInput = () => {
-        console.log(this.picker._reactInternalInstance._currentElement)
     }
 
     handleClickOutside = () => {
@@ -38,7 +39,7 @@ class DatePicker extends Component {
         return (
             <td
                 {...props}
-                onDoubleClick={this.handleClose}
+                onDoubleClick={() => this.handleClose()}
             >
                 {currentDate.date()}
             </td>
@@ -48,16 +49,15 @@ class DatePicker extends Component {
     render() {
         const {open} = this.state;
         return (<Datetime
-            className={open && "rdtOpen"}
-            onFocus={this.handleFocus}
-            ref={c => this.picker = c}
-            onChange={this.focusInput}
+            // open={open}
+            closeOnTab={true}
             renderDay={this.renderDay}
+            onBlur={this.handleBlur}
+            onFocus={this.handleFocus}
             {...this.props}
         />)
     }
 }
 
-DatePicker = connect()(onClickOutside(DatePicker))
 
 export default DatePicker

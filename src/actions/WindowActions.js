@@ -148,6 +148,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 }
 
                 docId = response.data[0].id;
+                console.log(response.data)
                 const preparedData = nullToEmptyStrings(response.data[0].fields);
 
                 dispatch(initDataSuccess(preparedData, getScope(isModal)));

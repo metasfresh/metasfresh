@@ -88,11 +88,11 @@ class RawWidget extends Component {
                                 dateFormat={true}
                                 inputProps={{
                                     placeholder: widgetFields.emptyText,
-                                    disabled: widgetData.readonly,
-                                    onBlur: (e) => handlePatch(widgetField, Moment(e.target.value).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))
+                                    disabled: widgetData.readonly
                                 }}
                                 value={selectedField}
-                                // onChange={(date) => handleChange(widgetField, date)}
+                                onChange={(date) => handleChange(widgetField, date)}
+                                patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
