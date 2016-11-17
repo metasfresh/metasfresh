@@ -25,6 +25,4 @@ public interface IProcessPrecondition
 	 * @return true if the process will be displayed.
 	 */
 	boolean isPreconditionApplicable(PreconditionsContext context);
-
-	// boolean isPreconditionApplicable(GridTab gridTab);
 }
