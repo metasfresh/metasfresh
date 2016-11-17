@@ -1,6 +1,11 @@
 -- Sep 23, 2016 1:28 AM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('4',0,0,540725,'Y','de.metas.order.elasticsearch.process.ES_IndexTable','N',TO_TIMESTAMP('2016-09-23 01:28:41','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.elasticsearch','Y','N','N','N','N','N','N','Y',0,'Elasticsearch - Index this table','N','Y',0,0,'Java',TO_TIMESTAMP('2016-09-23 01:28:41','YYYY-MM-DD HH24:MI:SS'),100,'ES_IndexTable')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+-- 	,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+	VALUES ('4',0,0,540725,'Y','de.metas.order.elasticsearch.process.ES_IndexTable','N',TO_TIMESTAMP('2016-09-23 01:28:41','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.elasticsearch','Y','N','N','N','N','N','N','Y',0,'Elasticsearch - Index this table','N','Y'
+--	,0,0
+	,'Java',TO_TIMESTAMP('2016-09-23 01:28:41','YYYY-MM-DD HH24:MI:SS'),100,'ES_IndexTable')
 ;
 
 -- Sep 23, 2016 1:28 AM
