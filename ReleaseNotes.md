@@ -10,7 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.44.44 (2016-47)
+# metasfresh 4.45.44 (2016-47)
+
+## Features
+* metasfresh
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
 
 ## Fixes
 * metasfresh
