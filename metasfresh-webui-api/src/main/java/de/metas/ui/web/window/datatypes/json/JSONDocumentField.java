@@ -57,10 +57,11 @@ public final class JSONDocumentField implements Serializable
 	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field)
 	{
 		final String name = field.getFieldName();
+		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getDescriptor().getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject();
 		final String reason = null; // N/A
 
-		final JSONDocumentField jsonField = new JSONDocumentField(name)
+		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, reason)
 				.setReadonly(field.isReadonly(), reason)
 				.setMandatory(field.isMandatory(), reason)
@@ -81,20 +82,22 @@ public final class JSONDocumentField implements Serializable
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
-		return new JSONDocumentField(FIELD_VALUE_ID)
+		return new JSONDocumentField(FIELD_VALUE_ID, JSONLayoutWidgetType.Integer)
 				.setValue(jsonValue, reason);
 	}
 
 	public static final JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
 	{
 		final String reason = null; // N/A
-		return new JSONDocumentField(fieldName)
+		final JSONLayoutWidgetType widgetType = null; // N/A
+		return new JSONDocumentField(fieldName, widgetType)
 				.setValue(jsonValue, reason);
 	}
 
 	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
 	{
-		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName());
+		final JSONLayoutWidgetType widgetType = null;
+		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName(), widgetType);
 
 		if (event.isValueSet())
 		{
@@ -134,6 +137,10 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.ALWAYS)
 	private final String field;
 	public static final String FIELD_VALUE_ID = "ID";
+	
+	@JsonProperty("widgetType")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONLayoutWidgetType widgetType;
 
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -179,10 +186,11 @@ public final class JSONDocumentField implements Serializable
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonCreator
-	/* package */ JSONDocumentField(@JsonProperty("field") final String fieldName)
+	/* package */ JSONDocumentField(@JsonProperty("field") final String field, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType)
 	{
 		super();
-		field = fieldName;
+		this.field = field;
+		this.widgetType = widgetType;
 	}
 
 	@Override
