@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
@@ -783,8 +784,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 			final I_M_PurchaseSchedule sched,
 			final String trxName)
 	{
-		final MRelationType relType =
-				MRelationType.retrieveForInternalName(ctx, MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, trxName);
+		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, trxName);
 
 		BigDecimal qtyReserved = BigDecimal.ZERO;
 		BigDecimal qtyOrdered = BigDecimal.ZERO;

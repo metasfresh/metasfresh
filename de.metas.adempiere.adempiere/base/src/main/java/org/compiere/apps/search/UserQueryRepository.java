@@ -311,6 +311,10 @@ public class UserQueryRepository
 		for (int rowIndex = 0, rowsCount = rows.size(); rowIndex < rowsCount; rowIndex++)
 		{
 			final IUserQueryRestriction row = rows.get(rowIndex);
+			if(row.isEmpty())
+			{
+				continue;
+			}
 
 			//
 			// Join Operator
@@ -326,8 +330,9 @@ public class UserQueryRepository
 			final IUserQueryField field = row.getSearchField();
 			if (field == null)
 			{
-				continue;
+				throw new FillMandatoryException("AD_Field_ID");
 			}
+			
 			final String columnName = field.getColumnName();
 			final String columnDisplayName = field.getDisplayName().translate(Env.getAD_Language(getCtx()));
 			final String columnSql = field.getColumnSQL();
@@ -337,7 +342,7 @@ public class UserQueryRepository
 			final Operator operator = row.getOperator();
 			if (operator == null)
 			{
-				continue;
+				throw new FillMandatoryException("Operator");
 			}
 
 			//
@@ -345,12 +350,14 @@ public class UserQueryRepository
 			final Object value = row.getValue();
 			if (value == null)
 			{
-				continue;
+				// allow saving restrictions without a value specified
+				//continue;
 			}
 			final Object valueConverted = field.convertValueToFieldType(value);
 			if (valueConverted == null)
 			{
-				continue;
+				// allow saving restrictions without a value specified
+				//continue;
 			}
 			final String valueDisplay = field.getValueDisplay(value);
 
@@ -362,13 +369,15 @@ public class UserQueryRepository
 				valueTo = row.getValueTo();
 				if (valueTo == null)
 				{
-					continue;
+					// allow saving restrictions without a value specified
+					// continue;
 				}
 
 				final Object valueToConverted = field.convertValueToFieldType(valueTo);
 				if (valueToConverted == null)
 				{
-					continue;
+					// allow saving restrictions without a value specified
+					// continue;
 				}
 
 				final String valueToDisplay = field.getValueDisplay(valueTo);
@@ -391,7 +400,7 @@ public class UserQueryRepository
 			userQueryCode.append(joinOperator.getCode())
 					.append(FIELD_SEPARATOR).append(columnName)
 					.append(FIELD_SEPARATOR).append(operator.getCode())
-					.append(FIELD_SEPARATOR).append(value.toString())
+					.append(FIELD_SEPARATOR).append(value != null ? value.toString() : "")
 					.append(FIELD_SEPARATOR).append(valueTo != null ? valueTo.toString() : "");
 		}
 

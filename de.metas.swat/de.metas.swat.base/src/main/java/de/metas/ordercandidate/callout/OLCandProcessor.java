@@ -26,6 +26,7 @@ package de.metas.ordercandidate.callout;
 import java.util.Properties;
 
 import org.adempiere.misc.service.IProcessPA;
+import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
 import org.adempiere.util.Services;
@@ -109,7 +110,7 @@ public class OLCandProcessor extends CalloutEngine
 		}
 
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-		final MRelationType relType = MRelationType.retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor), null);
+		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor), null);
 
 		if (relType == null)
 		{

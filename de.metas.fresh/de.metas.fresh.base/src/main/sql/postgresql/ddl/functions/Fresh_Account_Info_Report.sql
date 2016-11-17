@@ -1,21 +1,23 @@
 -- Function: report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric)
 
 -- DROP FUNCTION report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric);
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,date, date, numeric, character varying, character varying, character varying, numeric);
+-- DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,date, date, numeric, character varying, character varying, character varying, numeric);
 
 DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric, numeric,numeric, numeric, numeric, character varying, character varying, character varying, numeric);
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric, numeric, date, date, numeric, numeric, numeric, character varying, character varying, character varying, numeric);
 
 CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
-    IN account_start_id numeric,
-    IN account_end_id numeric,
-    IN C_Period_Start_ID numeric, 
-    IN C_Period_End_ID numeric, 
-    IN c_activity_id numeric,
-    IN displayvoiddocuments character varying,
-    IN showcurrencyexchange character varying,
-    IN showonlyemptyactivity character varying,
-    IN ad_org_id numeric)
+    IN account_start_id numeric, --$1
+    IN account_end_id numeric, --$2
+    IN C_Period_Start_ID numeric,  --$3
+    IN C_Period_End_ID numeric,  --$4
+    IN StartDate date, --$5
+    IN EndDate date, --$6
+    IN c_activity_id numeric, --$7
+    IN displayvoiddocuments character varying, --$8
+    IN showcurrencyexchange character varying, --$9
+    IN showonlyemptyactivity character varying, --$10
+    IN ad_org_id numeric) --$11
   RETURNS TABLE
 	(dateacct date, 
 	fact_acct_id numeric, 
@@ -77,13 +79,13 @@ SELECT
 	CarryBalance,
 	param_acct_value,
 	param_acct_name,
-	(SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4) AS Param_End_Date,
-	(SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3) AS Param_Start_Date,
+	COALESCE ($6::date, (SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4)) AS Param_End_Date,
+	COALESCE ($5::date, (SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3)) AS Param_Start_Date,
 	pa.value AS Param_Activity_Value,
 	pa.Name AS Param_Activit_Name,
 	fa.docStatus,
 	ConversionMultiplyRate,
-	CASE WHEN $7 = 'Y' AND ConversionMultiplyRate IS NOT NULL  THEN ConversionMultiplyRate * (CarryBalance + SUM( Balance ) OVER ()) ELSE NULL END AS EuroSaldo,
+	CASE WHEN $9 = 'Y' AND ConversionMultiplyRate IS NOT NULL  THEN ConversionMultiplyRate * (CarryBalance + SUM( Balance ) OVER ()) ELSE NULL END AS EuroSaldo,
 	containsEUR,
 	fa.ad_org_id
 FROM
@@ -92,11 +94,22 @@ FROM
 			fa.Account_ID, fa.C_Activity_ID, fa.description, DateAcct, Fact_Acct_ID, AD_Table_ID, Line_ID, AmtAcctDr, AmtAcctCr, fa.C_BPartner_ID,
 			ev.value AS Param_Acct_Value, ev.name AS Param_Acct_Name,fa.Record_ID,
 			COALESCE(AmtAcctDr - AmtAcctCr, 0 ) AS Balance,
-			(de_metas_acct.acctbalanceuntildate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID,(SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3), $9)).Balance AS CarryBalance,
+			(de_metas_acct.acctbalanceuntildate
+											(ev.C_ElementValue_ID, 
+											acs.C_AcctSchema_ID,
+											COALESCE($5::date,(SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3)),
+											$11)).Balance 
+			AS CarryBalance,
 			fa.DocStatus,
 		        --currencyrate returns the multiplyrate of the conversion rate for: currency from , currency to, date, conversion type, client id and org id
-			currencyrate(c.c_currency_id, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') , (SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4), (SELECT C_ConversionType_ID FROM C_ConversionType where value ='P'), ci.AD_Client_ID, ci.ad_org_id) AS ConversionMultiplyRate,
-			CASE WHEN $7='N' -- we don't need to check if the elementValue has a foreign currency
+			currencyrate(
+						c.c_currency_id, 
+						(SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') , 
+						COALESCE($6::date,(SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4)), 
+						(SELECT C_ConversionType_ID FROM C_ConversionType where value ='P'), 
+						ci.AD_Client_ID, ci.ad_org_id) 
+			AS ConversionMultiplyRate,
+			CASE WHEN $9='N' -- we don't need to check if the elementValue has a foreign currency
 			THEN false
 			ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
 				(
@@ -117,9 +130,9 @@ FROM
 			) ev
 			
 			LEFT OUTER JOIN Fact_Acct fa ON fa.Account_ID = ev.C_ElementValue_ID 
-				AND DateAcct >= (SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3)
-				AND DateAcct <= (SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4) 
-				AND (CASE WHEN $5 IS NOT NULL THEN COALESCE( C_Activity_ID = $5, false ) ELSE TRUE END) -- this used to be COALESCE( C_Activity_ID = $5, true) and it was showing the empty ones too when activity id was set
+				AND DateAcct >= COALESCE($5::date,(SELECT startdate::date FROM C_Period WHERE C_Period_ID = $3))
+				AND DateAcct <= COALESCE($6::date,(SELECT enddate::date FROM C_Period WHERE C_Period_ID = $4)) 
+				AND (CASE WHEN $7 IS NOT NULL THEN COALESCE( C_Activity_ID = $7, false ) ELSE TRUE END) -- this used to be COALESCE( C_Activity_ID = $7, true) and it was showing the empty ones too when activity id was set
 		
 			--taking the currency of the client to convert it into euro
 			LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=ev.ad_client_id
@@ -133,10 +146,10 @@ FROM
 	LEFT OUTER JOIN AD_Table tbl ON fa.AD_Table_ID = tbl.AD_Table_ID
 	LEFT OUTER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID
 	LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID
-	LEFT OUTER JOIN C_Activity pa ON COALESCE( pa.C_Activity_ID = $5, false )
+	LEFT OUTER JOIN C_Activity pa ON COALESCE( pa.C_Activity_ID = $7, false )
 WHERE
 			
-		CASE WHEN ($6 = 'Y') THEN
+		CASE WHEN ($8 = 'Y') THEN
  			1=1
  			ELSE
  			(
@@ -144,9 +157,9 @@ WHERE
 			)
 			END
 			
-		AND fa.ad_org_id = $9
+		AND fa.ad_org_id = $11
 		
-		AND CASE WHEN ($8 = 'N') THEN
+		AND CASE WHEN ($10 = 'N') THEN
 			1=1
 			ELSE
 			(
@@ -176,6 +189,8 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
     IN account_to_id numeric,
     IN C_Period_Start_ID numeric,
     IN C_Period_End_ID numeric,
+    IN StartDate date,
+    IN EndDate date,
     IN c_activity_id numeric,
     IN displayvoiddocuments character varying,
     IN showcurrencyexchange character varying,
@@ -208,23 +223,23 @@ $$
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, 
 		Param_Activity_Name, count(0) OVER () AS overallcount, 2 AS UnionOrder, DocStatus, null::numeric, null::boolean,
 		ad_org_id
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	WHERE	Fact_Acct_ID IS NOT NULL
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Anfangssaldo', null::text, null::text, null::numeric, null::numeric, CarrySaldo, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 1, null::text, null::numeric, null::boolean,
 		ad_org_id
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 	SELECT DISTINCT null::date, null::numeric, null, 'Summe', null::text, null::text, AmtAcctDrEnd, AmtAcctCrEnd, CarrySaldo, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 3, null::text, null::numeric, null::boolean,
 		ad_org_id
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 	(SELECT DISTINCT null::date, null::numeric, null, 'Summe in EUR', null::text, null::text, null::numeric, null::numeric, null::numeric, 
 		Param_Acct_Value, Param_Acct_Name, Param_End_Date, Param_Start_Date, Param_Activity_Value, Param_Activity_Name,count(0) OVER () AS overallcount, 4, null::text, EuroSaldo, containsEUR,
 		ad_org_id
-	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	FROM 	report.fresh_Account_Info_Report_Sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	WHERE containsEUR = 'Y' )
 ORDER BY
 	Param_Acct_Value,UnionOrder,  DateAcct, 
