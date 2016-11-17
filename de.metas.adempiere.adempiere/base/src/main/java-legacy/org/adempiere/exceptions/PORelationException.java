@@ -15,19 +15,26 @@ package org.adempiere.exceptions;
 
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Msg;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /**
  * 
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and
  *         RelationTypes
  */
-public class PORelationException extends AdempiereException {
+@SuppressWarnings("serial")
+public class PORelationException extends AdempiereException
+{
+	public static PORelationException throwWrongKeyColumnCount(final IZoomSource source)
+	{
+		final Object[] msgParams = new Object[] { source.toString(), source.getKeyColumnNames().size() };
+		throw new PORelationException(MSG_ERR_KEY_COLUMNS_2P, msgParams);
+	}
 
-	private static final Logger logger = LogManager.getLogger(PORelationException.class);
+	public static PORelationException throwMissingWindowId(final String referenceName, final String tableName, final boolean isSOTrx)
+	{
+		final Object[] msgParams = { referenceName, tableName, DisplayType.toBooleanString(isSOTrx) };
+		throw new PORelationException(MSG_ERR_WINDOW_3P, msgParams);
+	}
 
 	/**
 	 * Message indicates that a po has more or less than one key columns.
@@ -36,7 +43,7 @@ public class PORelationException extends AdempiereException {
 	 * <li>Param 2: the number of key columns</li>
 	 * </ul>
 	 */
-	public static final String MSG_ERR_KEY_COLUMNS_2P = "MRelationType_Err_KeyColumns_2P";
+	private static final String MSG_ERR_KEY_COLUMNS_2P = "MRelationType_Err_KeyColumns_2P";
 
 	/**
 	 * Message indicates that neither the reference nor the table have an
@@ -47,52 +54,10 @@ public class PORelationException extends AdempiereException {
 	 * <li>Param 3: Whether we are in the ctx of a SO (Y or N)</li>
 	 * </ul>
 	 */
-	public static final String MSG_ERR_WINDOW_3P = "MRelationType_Err_Window_3P";
+	private static final String MSG_ERR_WINDOW_3P = "MRelationType_Err_Window_3P";
 
-	public final String adMsg;
-
-	public final Object[] msgParams;
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -906400765022362887L;
-
-	private PORelationException(final String msg, final String adMsg,
-			final Object... msgParams) {
-
-		super(msg);
-
-		this.adMsg = adMsg;
-		this.msgParams = msgParams;
-	}
-
-	public static void throwWrongKeyColumnCount(final IZoomSource source)
+	private PORelationException(final String adMsg, final Object... msgParams)
 	{
-		logger.debug("Invoked with {}", source);
-
-		final Object[] msgParams = new Object[] { source.toString(), source.getKeyColumnNames().size() };
-
-		final String msg = Msg.getMsg(source.getCtx(), MSG_ERR_KEY_COLUMNS_2P, msgParams);
-
-		final StringBuffer sb = new StringBuffer(msg);
-
-		for (final String keyCol : source.getKeyColumnNames()) {
-			sb.append("\n");
-			sb.append(keyCol);
-		}
-
-		throw new PORelationException(sb.toString(), MSG_ERR_KEY_COLUMNS_2P, msgParams);
-	}
-
-	public static void throwMissingWindowId(final IZoomSource source,
-			final String referenceName, final String tableName,
-			final boolean isSOTrx) {
-
-		final Object[] msgParams = { referenceName, tableName, DisplayType.toBooleanString(isSOTrx) };
-
-		final String msg = Msg.getMsg(source.getCtx(), MSG_ERR_WINDOW_3P, msgParams);
-
-		throw new PORelationException(msg, MSG_ERR_WINDOW_3P, msgParams);
+		super(adMsg, msgParams);
 	}
 }

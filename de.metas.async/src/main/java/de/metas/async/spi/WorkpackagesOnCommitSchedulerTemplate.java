@@ -143,7 +143,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	/**
 	 * Returns a map of parameters to be added to the workpackage for the given item. This implementation returns an empty map.
 	 * <p>
-	 * <b>Important:</b> this mathod is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
+	 * <b>Important:</b> this method is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
 	 *
 	 * @param item
 	 * @return an empty map. Overwrite as required
@@ -285,7 +285,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");
 
 			final Object oldValue = parameters.put(parameterName, parameterValue);
-			Check.errorIf(oldValue != null,
+			Check.errorIf(oldValue != null
+					// gh #409: it's ok if an equal value is added more than once. This for example happens if an inout is reversed, because there the counter doc's model interceptor is fired twice within the same transaction.
+					&& !oldValue.equals(parameterValue),
 					"Illegal attempt to overwrite parameter name={} with newValue={}; it was already set to oldValue={}",
 					parameterName, parameterValue, oldValue);
 

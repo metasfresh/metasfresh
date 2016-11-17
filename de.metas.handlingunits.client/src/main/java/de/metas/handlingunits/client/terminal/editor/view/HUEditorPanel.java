@@ -55,6 +55,7 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.TerminalDialogListenerAdapter;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
@@ -584,6 +585,10 @@ public class HUEditorPanel
 				final HUAssignTULUPanel assignTULUPanel = new HUAssignTULUPanel(assignTULUModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
 				final ITerminalDialog assignTULUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_AssignTULU, assignTULUPanel);
 
 				//
@@ -610,6 +615,10 @@ public class HUEditorPanel
 				final HUDistributeCUTUPanel distributeCUTUPanel = new HUDistributeCUTUPanel(distributeCUTUModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
 				final ITerminalDialog distributeCUTUDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_DistributeCUTU, distributeCUTUPanel);
 
 				//
@@ -628,7 +637,7 @@ public class HUEditorPanel
 
 	private void doSplit()
 	{
-		model.doSplit(new Predicate<HUSplitModel>()
+		final Predicate<HUSplitModel> huSplitModel = new Predicate<HUSplitModel>()
 		{
 			@Override
 			public boolean evaluate(final HUSplitModel splitModel)
@@ -636,6 +645,10 @@ public class HUEditorPanel
 				final HUSplitPanel splitPanel = new HUSplitPanel(splitModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
 				final ITerminalDialog splitDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Split, splitPanel);
 
 				//
@@ -647,8 +660,9 @@ public class HUEditorPanel
 				final boolean edited = !splitDialog.isCanceled();
 				return edited;
 			}
-		});
+		};
 
+		model.doSplit(huSplitModel);
 		load(); // refresh window (i.e toggle select) after operation
 	}
 
@@ -662,6 +676,10 @@ public class HUEditorPanel
 				final HUJoinPanel joinPanel = new HUJoinPanel(joinModel);
 
 				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
 				final ITerminalDialog joinDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_Join, joinPanel);
 
 				//
@@ -727,7 +745,7 @@ public class HUEditorPanel
 		for (final IHUKey child : children)
 		{
 			if (!model.isSelected(child) && selectAll // SelectAll
-					|| model.isSelected(child) && !selectAll)  // DeselectAll
+					|| model.isSelected(child) && !selectAll)    // DeselectAll
 			{
 				model.toggleSelected(child);
 			}
@@ -765,24 +783,24 @@ public class HUEditorPanel
 			currentHU = ((HUKey)currentHUKey).getM_HU();
 		}
 
-		final HUReportModel reportModel = new HUReportModel(getTerminalContext(), currentHU, selectedHUs);
-		final HUReportPanel reportPanel = new HUReportPanel(reportModel);
-
-		final String reportDialogTitle = msgBL.translate(getTerminalContext().getCtx(), HUEditorPanel.ACTION_PrintLabel);
-		final ITerminalDialog reportDialog = getTerminalFactory().createModalDialog(this, reportDialogTitle, reportPanel);
-
-		try
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			reportDialog.activate();
-		}
-		catch (final Exception e)
-		{
-			if (reportDialog != null)
+			final HUReportModel reportModel = new HUReportModel(getTerminalContext(), currentHU, selectedHUs);
+			final HUReportPanel reportPanel = new HUReportPanel(reportModel);
+
+			final String reportDialogTitle = msgBL.translate(getTerminalContext().getCtx(), HUEditorPanel.ACTION_PrintLabel);
+
+			// this dialog works with the reportModel and reportPanel which we just created and which we will want to dispose after the dialog closed, to avoid memory issues.
+			final ITerminalDialog reportDialog = getTerminalFactory().createModalDialog(this, reportDialogTitle, reportPanel);
+
+			try
 			{
-				reportDialog.dispose();
+				reportDialog.activate();
 			}
-
-			throw new AdempiereException("@Error@: " + reportDialogTitle, e);
+			catch (final Exception e)
+			{
+				throw new AdempiereException("@Error@: " + reportDialogTitle, e);
+			}
 		}
 	}
 

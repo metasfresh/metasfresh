@@ -350,7 +350,6 @@ public class HUTestHelper
 	 */
 	public HUTestHelper(final boolean init)
 	{
-		super();
 		if (init)
 		{
 			init();

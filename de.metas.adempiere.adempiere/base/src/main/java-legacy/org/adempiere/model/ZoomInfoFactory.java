@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,11 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -45,6 +51,7 @@ public class ZoomInfoFactory implements IZoomProvider
 	public static interface IZoomSource
 	{
 		Properties getCtx();
+		Evaluatee createEvaluationContext();
 
 		String getTrxName();
 
@@ -59,6 +66,11 @@ public class ZoomInfoFactory implements IZoomProvider
 		List<String> getKeyColumnNames();
 
 		int getRecord_ID();
+		
+		default boolean isSOTrx()
+		{
+			return Env.isSOTrx(getCtx());
+		}
 	}
 
 	public static final class POZoomSource implements IZoomSource
@@ -161,6 +173,45 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return po.get_TrxName();
 		}
+		
+		@Override
+		public Evaluatee createEvaluationContext()
+		{
+			final Properties privateCtx = Env.deriveCtx(getCtx());
+			
+			final PO po = getPO();
+			final POInfo poInfo = po.getPOInfo();
+			for (int i = 0; i < poInfo.getColumnCount(); i++)
+			{
+				final Object val;
+				final int dispType = poInfo.getColumnDisplayType(i);
+				if (DisplayType.isID(dispType))
+				{
+					// make sure we get a 0 instead of a null for foreign keys
+					val = po.get_ValueAsInt(i);
+				}
+				else
+				{
+					val = po.get_Value(i);
+				}
+
+				if (val == null)
+				{
+					continue;
+				}
+
+				if (val instanceof Integer)
+				{
+					Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (Integer)val);
+				}
+				else if (val instanceof String)
+				{
+					Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (String)val);
+				}
+			}
+
+			return Evaluatees.ofCtx(privateCtx, Env.WINDOW_None, false);
+		}
 	}
 
 	/**
@@ -170,20 +221,23 @@ public class ZoomInfoFactory implements IZoomProvider
 	 * @author ts
 	 * 
 	 */
-	public static final class ZoomInfo
+	@SuppressWarnings("serial")
+	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(int windowId, MQuery query, String destinationDisplay)
+		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
-			return new ZoomInfo(windowId, query, destinationDisplay);
+			return new ZoomInfo(zoomInfoId, windowId, query, destinationDisplay);
 		}
 
+		private final String _zoomInfoId;
 		private final String _destinationDisplay;
 		private final MQuery _query;
 		private final int _windowId;
 
-		private ZoomInfo(int windowId, MQuery query, String destinationDisplay)
+		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
 			super();
+			this._zoomInfoId = zoomInfoId;
 			this._windowId = windowId;
 			this._query = query;
 			this._destinationDisplay = destinationDisplay;
@@ -193,20 +247,21 @@ public class ZoomInfoFactory implements IZoomProvider
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.add("zoomInfoId", _zoomInfoId)
 					.add("display", _destinationDisplay)
 					.add("AD_Window_ID", _windowId)
 					.add("RecordCount", _query == null ? "<no query>" : _query.getRecordCount())
 					.toString();
 		}
 
+		public String getId()
+		{
+			return _zoomInfoId;
+		}
+
 		public String getLabel()
 		{
 			return _destinationDisplay + " (#" + getRecordCount() + ")";
-		}
-
-		public String getId()
-		{
-			return _destinationDisplay;
 		}
 
 		public int getRecordCount()
@@ -273,7 +328,7 @@ public class ZoomInfoFactory implements IZoomProvider
 			}
 			catch (Exception e)
 			{
-				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source);
+				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, e);
 			}
 		}
 

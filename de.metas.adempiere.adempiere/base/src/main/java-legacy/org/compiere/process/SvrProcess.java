@@ -647,7 +647,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	public final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		String trxName = getTrxName();
-		
+
 		// In case the transaction is null, it's better to use the thread inherited trx marker.
 		// This will cover the cases when the process runs out of transaction
 		// but the transaction is managed inside the process implementation and this method is called from there.
@@ -655,7 +655,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		{
 			trxName = ITrx.TRXNAME_ThreadInherited;
 		}
-		
+
 		return m_pi.getRecord(modelClass, trxName);
 	}
 
@@ -736,7 +736,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**************************************************************************
-	 * Add Log Entry
+	 * Add Log Entry, if our internal {@link ProcessInfo} reference is not <code>null</code>
 	 *
 	 * @param date date or null
 	 * @param id record id or 0
@@ -762,7 +762,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}	// addLog
 
 	/**
-	 * Add Log
+	 * Add Log, if the given <code>msg<code> is not <code>null</code>
 	 *
 	 * @param msg message
 	 */

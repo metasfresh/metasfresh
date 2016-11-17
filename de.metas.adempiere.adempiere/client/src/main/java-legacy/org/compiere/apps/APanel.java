@@ -114,6 +114,7 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.print.AReport;
@@ -1173,16 +1174,16 @@ public class APanel extends CPanel
 					{
 						GridTab pTab = m_mWorkbench.getMWindow(0).getTab(entry.getKey());
 						Object[] value = entry.getValue();
-						MQuery pquery = new MQuery(pTab.getAD_Table_ID());
-						pquery.addRestriction((String)value[0], "=", value[1]);
+						MQuery pquery = new MQuery(pTab.getTableName());
+						pquery.addRestriction((String)value[0], Operator.EQUAL, value[1]);
 						pTab.setQuery(pquery);
 						GridController gc = (GridController)tabPanel.getComponentAt(entry.getKey());
 						gc.activate();
 						gc.query(false, 0, GridTabMaxRows.NO_RESTRICTION);
 					}
 
-					MQuery targetQuery = new MQuery(gTab.getAD_Table_ID());
-					targetQuery.addRestriction(gTab.getLinkColumnName(), "=", parentId);
+					MQuery targetQuery = new MQuery(gTab.getTableName());
+					targetQuery.addRestriction(gTab.getLinkColumnName(), Operator.EQUAL, parentId);
 					gTab.setQuery(targetQuery);
 					GridController gc = null;
 					if (!includedTabId2ParentGC.containsKey(gTab.getAD_Tab_ID()))
@@ -2506,9 +2507,9 @@ public class APanel extends CPanel
 		if (link.length() != 0)
 		{
 			if (link.endsWith("_ID"))
-				query.addRestriction(link, MQuery.EQUAL, Env.getContextAsInt(m_ctx, m_curWindowNo, link));
+				query.addRestriction(link, Operator.EQUAL, Env.getContextAsInt(m_ctx, m_curWindowNo, link));
 			else
-				query.addRestriction(link, MQuery.EQUAL, Env.getContext(m_ctx, m_curWindowNo, link));
+				query.addRestriction(link, Operator.EQUAL, Env.getContext(m_ctx, m_curWindowNo, link));
 		}
 		new AZoomAcross(aZoomAcross.getButton(), m_curTab.getTableName(), m_curTab.getAD_Window_ID(), query);
 	}	// cmd_zoom
@@ -2630,19 +2631,37 @@ public class APanel extends CPanel
 	private void cmd_attachment()
 	{
 		int record_ID = m_curTab.getRecord_ID();
-		log.info("Record_ID=" + record_ID);
+		log.info("Record_ID={}", record_ID);
 		if (record_ID == -1)  	// No Key
 		{
 			aAttachment.setEnabled(false);
 			return;
 		}
 
-		// Attachment va =
-		new Attachment(getCurrentFrame(), m_curWindowNo,
-				m_curTab.getAD_AttachmentID(), m_curTab.getAD_Table_ID(), record_ID, null);
-		//
-		m_curTab.loadAttachments();				// reload
-		aAttachment.setPressed(m_curTab.hasAttachment());
+		final Attachment va = new Attachment(
+				getCurrentFrame() //
+				, m_curWindowNo //
+				, m_curTab.getAD_AttachmentID() //
+				, m_curTab.getAD_Table_ID(), record_ID //
+		);
+		va.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowOpened(WindowEvent e)
+			{
+				va.requestFocus();
+			}
+			
+			@Override
+			public void windowClosed(final WindowEvent e)
+			{
+				m_curTab.loadAttachments();				// reload
+				
+				aAttachment.setPressed(m_curTab.hasAttachment());
+			}
+		});
+		
+		AEnv.showCenterScreen(va);
 	}	// attachment
 
 	/**

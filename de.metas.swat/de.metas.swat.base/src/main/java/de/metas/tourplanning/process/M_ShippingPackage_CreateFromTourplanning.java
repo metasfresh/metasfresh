@@ -34,7 +34,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -69,10 +68,10 @@ public class M_ShippingPackage_CreateFromTourplanning extends SvrProcess impleme
 	private I_M_Shipper shipper;
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
 		// task 06058: if the document is processed, we not allowed to run this process
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(gridTab, I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = context.getModel(I_M_ShipperTransportation.class);
 		return !shipperTransportation.isProcessed();
 	}
 

@@ -93,12 +93,12 @@ public final class LogManager
 
 	public static boolean isFileLoggingEnabled()
 	{
-		return MetasfreshFileLoggerHelper.get().isDisabled();
+		return !MetasfreshFileLoggerHelper.get().isDisabled();
 	}
 
 	public static void setFileLoggingEnabled(final boolean fileLoggingEnabled)
 	{
-		Ini.setProperty(Ini.P_TRACEFILE, fileLoggingEnabled);
+		Ini.setProperty(Ini.P_TRACEFILE_ENABLED, fileLoggingEnabled);
 		MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);
 	}
 
@@ -482,7 +482,7 @@ public final class LogManager
 
 		if (Ini.isClient())
 		{
-			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE);
+			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE_ENABLED);
 			MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);
 		}
 	}
@@ -518,7 +518,7 @@ public final class LogManager
 	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
 	 *
 	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
-	 * 
+	 *
 	 * @param logger
 	 */
 	public static void dumpAllLevelsUpToRoot(final Logger logger)

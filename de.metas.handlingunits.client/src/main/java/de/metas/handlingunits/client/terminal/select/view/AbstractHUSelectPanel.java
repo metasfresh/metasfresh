@@ -25,8 +25,6 @@ package de.metas.handlingunits.client.terminal.select.view;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -140,6 +138,8 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 					{
 						throw AdempiereException.wrapIfNeeded(e);
 					}
+					// Refresh lines (even if user canceled the editing)
+					getModel().refreshLines(true);
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
 				{
@@ -183,7 +183,10 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	/**
 	 * Implement this method based on the requirements regarding processing in the Select Panel you are working on.
 	 *
-	 * NOTE: It is not mandatory to implement it only in case of a POS with lines.
+	 * Notes:
+	 * <li>It is not mandatory to implement it only in case of a POS with lines.
+	 * <li>Make sure not to create components that "lie outside" of the processed lines,
+	 * because this method is invoked with its on {@link ITerminalContextReferences} that will be deleted right after the method finishes.
 	 */
 	protected abstract void doProcessSelectedLines(MT model);
 
@@ -302,16 +305,14 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 	 * @return <code>true</code> if editor was closed with OK; false if editor was closed with Cancel.
 	 */
 	@Override
-	@OverridingMethodsMustInvokeSuper
 	public boolean editHUs(final HUEditorModel huEditorModel)
 	{
 		final HUEditorPanel editorPanel = createHUEditorPanelInstance(huEditorModel);
 
-		// we already have our own terminal context ref that was created when 'huEditorModel' was created
-		final boolean maintainOwnContextReferences = false;
+		// we already have our own terminal context ref that was created when 'huEditorModel' was created in AbstractHUSelectModel.doProcessSelectedLines()
 
 		final ITerminalDialog editorDialog = getTerminalFactory()
-				.createModalDialog(this, "Edit", editorPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
+				.createModalDialog(this, "Edit", editorPanel); // TODO ts: Hardcoded ?!?
 
 		editorDialog.setSize(getTerminalContext().getScreenResolution());
 
@@ -348,22 +349,22 @@ public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> im
 			return;
 		}
 
-		final WebCamReceiptScheduleModel webcamModel = new WebCamReceiptScheduleModel(getTerminalContext(), selectedRecord);
-		final WebCamReceiptSchedulePanel webcamPanel = new WebCamReceiptSchedulePanel(webcamModel);
-		final ITerminalDialog webCamDialog = getTerminalFactory().createModalDialog(this, "Web Photo", webcamPanel);
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
+		{
+			final WebCamReceiptScheduleModel webcamModel = new WebCamReceiptScheduleModel(getTerminalContext(), selectedRecord);
+			final WebCamReceiptSchedulePanel webcamPanel = new WebCamReceiptSchedulePanel(webcamModel);
 
-		try
-		{
-			webCamDialog.activate();
-		}
-		catch (final Exception e)
-		{
-			if (webCamDialog != null)
+			// we maintain our context references right here so that we can also dispose WebCamReceiptScheduleModel and ..Panel to avoid memory problems
+			final ITerminalDialog webCamDialog = getTerminalFactory().createModalDialog(this, "Web Photo", webcamPanel);
+
+			try
 			{
-				webCamDialog.dispose();
+				webCamDialog.activate();
 			}
-
-			throw new AdempiereException("@" + MSG_ErrorOpeningWebcamDialog + "@", e);
+			catch (final Exception e)
+			{
+				throw new AdempiereException("@" + MSG_ErrorOpeningWebcamDialog + "@", e);
+			}
 		}
 	}
 

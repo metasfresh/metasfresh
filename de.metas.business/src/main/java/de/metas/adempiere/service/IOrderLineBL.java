@@ -13,11 +13,11 @@ package de.metas.adempiere.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,7 +36,6 @@ public interface IOrderLineBL extends ISingletonService
 
 	// task 08002
 	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
-
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
@@ -212,4 +211,23 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return
 	 */
 	int getPrecision(org.compiere.model.I_C_OrderLine orderLine);
+
+	/**
+	 * Copy the details from the original order line into the new order line of the counter document
+	 * 
+	 * @param line
+	 * @param fromLine
+	 */
+	void copyOrderLineCounter(org.compiere.model.I_C_OrderLine line, org.compiere.model.I_C_OrderLine fromLine);
+
+	/**
+	 * Filter out the cases when an orderline from an order shall not be copied in the counter document.
+	 * For the time being, make sure the packaging material lines are not copied.
+	 * The reason for this is that the packing instructions are not the same for both orgs and we cannot use them inter-org.
+	 * Later in the life of the counter document the packing material lines will be created based on the correct data from the new org.
+	 * 
+	 * @param fromLine
+	 * @return true if the line shall be copied and false if not
+	 */
+	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 }

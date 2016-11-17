@@ -110,6 +110,11 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, Object value);
 
 	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
+	
+	IQueryBuilder<T> addNotNull(ModelColumn<T, ?> column);
+
+	IQueryBuilder<T> addNotNull(String columnName);
+
 
 	IQueryBuilder<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 

@@ -42,7 +42,7 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	/**
 	 * Default exception handler used.
 	 */
-	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LogTrxItemExceptionHandler.instance;
+	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LoggerTrxItemExceptionHandler.instance;
 
 	/**
 	 * Default policy for the case that processing one item fails.
@@ -79,7 +79,7 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 
 	/**
-	 * Sets if the executor shall use transaction savepoints internally.
+	 * See {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)}.
 	 *
 	 * @param useTrxSavepoints
 	 * @deprecated please use {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)} instead.

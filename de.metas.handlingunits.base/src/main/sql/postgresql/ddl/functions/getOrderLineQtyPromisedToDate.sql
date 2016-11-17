@@ -25,6 +25,5 @@ $BODY$
 $BODY$
   LANGUAGE sql STABLE
   COST 100;
-ALTER FUNCTION "de.metas.handlingunits".getorderlineqtypromisedtodate(numeric, timestamp without time zone)
-  OWNER TO adempiere;
+
 COMMENT ON FUNCTION "de.metas.handlingunits".getorderlineqtypromisedtodate(numeric, timestamp without time zone) IS 'fresh 07701: Select all reserved quantity from orderlines to date for given Product ID';

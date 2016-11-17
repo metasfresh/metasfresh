@@ -293,7 +293,7 @@ public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		GridFieldVO vo = GridFieldVO.createStdField(ctx, m_WindowNo, 0,
 				m_Window, MTab.getTab_ID(m_Window, "Order"), false, false, false);
 		// M_AttributeSetInstance_ID
-		vo.AD_Column_ID = MColumn.getColumn_ID(MPPOrder.Table_Name, MPPOrder.COLUMNNAME_M_AttributeSetInstance_ID);
+		vo.setAD_Column_ID(MColumn.getColumn_ID(MPPOrder.Table_Name, MPPOrder.COLUMNNAME_M_AttributeSetInstance_ID));
 		GridField field = new GridField(vo);
 		attribute.setField(field);
 		// 4Layers - Further init

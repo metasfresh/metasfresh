@@ -60,6 +60,8 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.apps.wf.WFPanel;
 import org.compiere.grid.tree.VTreePanel;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.I_R_RequestType;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CButton;
@@ -708,7 +710,12 @@ public final class AMenu extends CFrame
 			m_requestSQL = Env.getUserRolePermissions().addAccessSQL("SELECT COUNT(1) FROM R_Request "
 					+ "WHERE (SalesRep_ID=? OR AD_Role_ID=?) AND Processed='N'"
 					+ " AND (DateNextAction IS NULL OR TRUNC(DateNextAction) <= TRUNC(now()))"
-					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (SELECT R_Status_ID FROM R_Status WHERE IsClosed='N'))",
+					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (SELECT R_Status_ID FROM R_Status WHERE IsClosed='N'))"
+					// #577
+					// Only count the R_Request entries that have request types used for Partner Request Window (the flag IsUseForPartnerRequestWindow is on true)
+					+ " AND ("+ I_R_Request.COLUMNNAME_R_RequestType_ID
+					+ " IN ( SELECT "+ I_R_RequestType.COLUMNNAME_R_RequestType_ID + " FROM " + I_R_RequestType.Table_Name
+					+ " WHERE " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))", 
 					"R_Request", false, true);	// not qualified - RW
 		int retValue = DB.getSQLValue(null, m_requestSQL, m_AD_User_ID, m_AD_Role_ID);
 		return retValue;

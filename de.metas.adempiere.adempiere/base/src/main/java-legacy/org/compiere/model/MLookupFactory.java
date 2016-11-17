@@ -202,6 +202,12 @@ public class MLookupFactory
 		{
 			info = getLookup_Table(WindowNo, AD_Reference_Value_ID);
 		}
+		// Account
+		else if (AD_Reference_ID == DisplayType.Account)
+		{
+			final ITableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
+			info = getLookupInfo(WindowNo, accountTableRefInfo);
+		}
 		// TableDir, Search, ID, ...
 		else
 		{

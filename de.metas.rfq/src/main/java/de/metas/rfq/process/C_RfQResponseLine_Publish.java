@@ -1,9 +1,7 @@
 package de.metas.rfq.process;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.process.SvrProcess;
 
 import de.metas.rfq.IRfQConfiguration;
@@ -43,9 +41,9 @@ public class C_RfQResponseLine_Publish extends SvrProcess implements ISvrProcess
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		final I_C_RfQResponseLine rfqResponseLine = InterfaceWrapperHelper.create(gridTab, I_C_RfQResponseLine.class);
+		final I_C_RfQResponseLine rfqResponseLine = context.getModel(I_C_RfQResponseLine.class);
 		final I_C_RfQResponse rfqResponse = rfqResponseLine.getC_RfQResponse();
 		return rfqBL.isDraft(rfqResponse);
 	}

@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.receipt.view;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -33,7 +32,6 @@ import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalButton;
@@ -42,6 +40,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel.SelectionMode;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -125,17 +124,6 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		});
 
 		load();
-	}
-
-	@Override
-	protected final boolean onBeforeDispose()
-	{
-		btnEmptiesShipReceive = DisposableHelper.dispose(btnEmptiesShipReceive);
-		btnJasperPrint = DisposableHelper.dispose(btnJasperPrint);
-		btnCorrectReceivedHU = DisposableHelper.dispose(btnCorrectReceivedHU);
-		purchaseOrderPanel = DisposableHelper.dispose(purchaseOrderPanel);
-
-		return true;
 	}
 
 	@Override
@@ -329,7 +317,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	}
 
 	/**
-	 * Load Model to View
+	 * Evaluates the module and set the enabled status of different buttons.
 	 */
 	private void load()
 	{
@@ -379,11 +367,10 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 	{
 		final LUTUConfigurationEditorPanel lutuPanel = new LUTUConfigurationEditorPanel(lutuConfigurationModel);
 
-		// we already have our own terminal context ref that was created when 'lutuConfigurationModel' was created
-		final boolean maintainOwnContextReferences = false;
+		// we already have our own terminal context ref that was created when 'lutuConfigurationModel' was created in ReceiptScheduleHUSelectModel.doProcessSelectedLines()
 
 		final ITerminalDialog editorDialog = getTerminalFactory()
-				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel, maintainOwnContextReferences); // TODO ts: Hardcoded ?!?
+				.createModalDialog(ReceiptScheduleHUSelectPanel.this, "Quantity to use", lutuPanel); // TODO ts: Hardcoded ?!?
 
 		// Activate editor dialog and wait until user closes the window
 		editorDialog.activate();
@@ -406,13 +393,16 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 
 		final ReceiptScheduleHUSelectModel model = getModel();
 		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected
-		final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId);
-		final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
+		{
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId);
+			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
-		final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
-		final ITerminalDialog dialog = terminalFactory.createModalDialog(this, title, emptiesShipReceivePanel);
+			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
+			final ITerminalDialog dialog = terminalFactory.createModalDialog(this, title, emptiesShipReceivePanel);
 
-		dialog.activate();
+			dialog.activate();
+		}
 	}
 
 	/**
@@ -428,22 +418,27 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		{
 			throw new TerminalException("@NoSelection@");
 		}
-		final ReceiptCorrectHUEditorModel receiptCorrectModel = new ReceiptCorrectHUEditorModel(getTerminalContext());
-		receiptCorrectModel.loadFromReceiptSchedule(receiptSchedule);
 
-		//
-		// Create Receipt Correct Panel and display it to user
-		final ReceiptCorrectHUEditorPanel receiptCorrectPanel = new ReceiptCorrectHUEditorPanel(receiptCorrectModel);
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnCorrectReceivedHU.getText(), receiptCorrectPanel);
-		editorDialog.setSize(getTerminalContext().getScreenResolution());
-		// Activate editor dialog and wait until user closes the window
-		editorDialog.activate();
-		if (editorDialog.isCanceled())
+		final ITerminalContext terminalContext = getTerminalContext();
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
-			// user canceled!
-			return;
-		}
+			final ReceiptCorrectHUEditorModel receiptCorrectModel = new ReceiptCorrectHUEditorModel(getTerminalContext());
+			receiptCorrectModel.loadFromReceiptSchedule(receiptSchedule);
 
+			// Create Receipt Correct Panel and display it to user
+			final ReceiptCorrectHUEditorPanel receiptCorrectPanel = new ReceiptCorrectHUEditorPanel(receiptCorrectModel);
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnCorrectReceivedHU.getText(), receiptCorrectPanel);
+			editorDialog.setSize(getTerminalContext().getScreenResolution());
+
+			// Activate editor dialog and wait until user closes the window
+			editorDialog.activate();
+
+			if (editorDialog.isCanceled())
+			{
+				// user canceled!
+				return;
+			}
+		}
 		//
 		// Refresh ALL lines, because current receipt schedule was changed now.
 		// And it could be that also other receipt schedules are affected (in case of an HU which is assigned to multiple receipts).

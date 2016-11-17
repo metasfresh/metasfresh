@@ -26,7 +26,6 @@ package de.metas.handlingunits.inout.process;
 import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.SvrProcess;
 
@@ -58,14 +57,14 @@ public class M_InOut_ResetPackingLines extends SvrProcess implements ISvrProcess
 	 * Returns <code>true</code> for unprocessed shipments only.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (!I_M_InOut.Table_Name.equals(gridTab.get_TableName()))
+		if (!I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
 			return false;
 		}
 
-		final I_M_InOut inout = InterfaceWrapperHelper.create(gridTab, I_M_InOut.class);
+		final I_M_InOut inout = context.getModel(I_M_InOut.class);
 		return inout.isSOTrx() && !inout.isProcessed();
 	}
 

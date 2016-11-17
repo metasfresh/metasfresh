@@ -10,18 +10,17 @@ package de.metas.storage.spi.hu.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
 	private final transient List<I_M_Warehouse> _warehouses = new ArrayList<>(); // needed only for summary info
 
-	/* package */HUStorageQuery()
+	/* package */ HUStorageQuery()
 	{
 		super();
 
@@ -104,7 +103,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 			huQueryBuilder.addHUStatusToInclude(huStatus);
 		}
 
-		// consider only HUs which are *not* in an after-picking locator (08123)
+		// by default, consider only HUs which are *not* in an after-picking locator (08123)
 		huQueryBuilder.setExcludeAfterPickingLocator(true);
 	}
 
@@ -359,10 +358,19 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 		return huQueryBuilder.getOnlyInWarehouseIds();
 	}
 
+	/**
+	 * Adds a filter for the given attribute, <b>if</b> it is relevant according to {@link IHUStorageBL#getAvailableAttributeIds(java.util.Properties)}.
+	 */
 	@Override
 	public IStorageQuery addAttribute(final I_M_Attribute attribute, final String attributeValueType, final Object attributeValue)
 	{
 		Check.assumeNotNull(attribute, "attribute not null");
+
+		// Skip null values because in this case user filled nothing => so we accept any value
+		if (attributeValue == null)
+		{
+			return this;
+		}
 
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
@@ -399,13 +407,6 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 
 			final Object value = attributeSet.getValue(attribute);
 
-			//
-			// Skip null values because in this case user filled nothing => so we accept any value
-			if (value == null)
-			{
-				continue;
-			}
-
 			final String attributeValueType = attributeSet.getAttributeValueType(attribute);
 			addAttribute(attribute, attributeValueType, value);
 		}
@@ -417,8 +418,16 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 	{
 		if (_availableAttributeIds == null)
 		{
-			_availableAttributeIds = Services.get(IHUStorageBL.class).getAvailableAttributeIds(Env.getCtx());
+			final IHUStorageBL huStorageBL = Services.get(IHUStorageBL.class);
+			_availableAttributeIds = huStorageBL.getAvailableAttributeIds(Env.getCtx());
 		}
 		return _availableAttributeIds;
+	}
+
+	@Override
+	public IStorageQuery setExcludeAfterPickingLocator(final boolean excludeAfterPickingLocator)
+	{
+		huQueryBuilder.setExcludeAfterPickingLocator(excludeAfterPickingLocator);
+		return this;
 	}
 }

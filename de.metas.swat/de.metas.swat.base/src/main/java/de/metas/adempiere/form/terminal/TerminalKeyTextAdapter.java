@@ -10,45 +10,45 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.text.ParseException;
+
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
-public class TerminalKeyTextAdapter implements ITerminalKeyListener
+/**
+ * Created, maintained and invoked by {@link TerminalKeyPanel}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */ class TerminalKeyTextAdapter implements ITerminalKeyListener
 {
-	private final Logger log = LogManager.getLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 	private final ITerminalTextField textField;
 	private final IKeyLayout keylayout;
 
-	public TerminalKeyTextAdapter(ITerminalTextField textField)
+	/* package */  TerminalKeyTextAdapter(final ITerminalTextField textField, final IKeyLayout keylayout)
 	{
-		this(textField, textField.getKeyLayout());
-	}
-
-	public TerminalKeyTextAdapter(ITerminalTextField textField, IKeyLayout keylayout)
-	{
-		super();
-		
 		this.textField = textField;
 		this.keylayout = keylayout;
 	}
 
 	@Override
-	public void keyReturned(ITerminalKey key)
+	public void keyReturned(final ITerminalKey key)
 	{
 		final String head = textField.getTextHead();
 		final String tail = textField.getTextTail();
@@ -104,7 +104,7 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 						// greater than 9, add to existing
 						else
 						{
-							Object current = textField.getValue();
+							final Object current = textField.getValue();
 							if (current == null)
 							{
 								textField.setText(Integer.toString(number));
@@ -116,20 +116,20 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 							}
 							else if (current instanceof Integer)
 							{
-								textField.setText(Integer.toString(((Integer)current) + number));
+								textField.setText(Integer.toString((Integer)current + number));
 							}
 							else if (current instanceof Long)
 							{
-								textField.setText(Long.toString(((Long)current) + number));
+								textField.setText(Long.toString((Long)current + number));
 							}
 							else if (current instanceof Double)
 							{
-								textField.setText(Double.toString(((Double)current) + number));
+								textField.setText(Double.toString((Double)current + number));
 							}
 							else if (current instanceof String)
 							{
 								final String currentStr = ((String)current).trim();
-								if(!currentStr.isEmpty())
+								if (!currentStr.isEmpty())
 								{
 									final BigDecimal currentBD = new BigDecimal(currentStr);
 									final BigDecimal currentBDNew = currentBD.add(BigDecimal.valueOf(number));
@@ -139,7 +139,7 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 						}
 
 					}
-					catch (NumberFormatException e)
+					catch (final NumberFormatException e)
 					{
 						// ignore non-numbers
 					}
@@ -149,7 +149,7 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 				{
 					textField.commitEdit();
 				}
-				catch (ParseException e)
+				catch (final ParseException e)
 				{
 					log.debug("JFormattedTextField commit failed", e);
 				}
@@ -157,9 +157,19 @@ public class TerminalKeyTextAdapter implements ITerminalKeyListener
 		}
 	}
 
+	/**
+	 * Does nothing.
+	 */
 	@Override
-	public void keyReturning(ITerminalKey key)
+	public void keyReturning(final ITerminalKey key)
 	{
-		// nothing
 	}
+
+	@Override
+	public String toString()
+	{
+		return "TerminalKeyTextAdapter [textField=" + textField + ", keylayout=" + keylayout + "]";
+	}
+
+
 }

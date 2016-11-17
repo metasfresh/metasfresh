@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.api;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 
 /**
  * Service which is creating the right {@link IReceiptScheduleProducer} for given parameters.
@@ -47,6 +48,10 @@ public interface IReceiptScheduleProducerFactory extends ISingletonService
 	 */
 	IReceiptScheduleProducer createProducer(String tableName, final boolean async);
 
-	void registerProducer(String tableName, Class<? extends IReceiptScheduleProducer> producerClass);
+	IReceiptScheduleProducerFactory registerProducer(String tableName, Class<? extends IReceiptScheduleProducer> producerClass);
+
+	IReceiptScheduleWarehouseDestProvider getWarehouseDestProvider();
+
+	IReceiptScheduleProducerFactory registerWarehouseDestProvider(IReceiptScheduleWarehouseDestProvider provider);
 
 }

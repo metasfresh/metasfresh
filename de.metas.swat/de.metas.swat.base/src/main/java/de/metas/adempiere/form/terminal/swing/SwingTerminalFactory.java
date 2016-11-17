@@ -16,15 +16,14 @@ package de.metas.adempiere.form.terminal.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Canvas;
 import java.awt.Component;
@@ -413,7 +412,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final de.metas.adempiere.form.terminal.swing.SwingKeyLayoutPanel keyLayoutPanel = new de.metas.adempiere.form.terminal.swing.SwingKeyLayoutPanel(getTerminalContext(), keylayout, listener);
 
-		// addToDisposableComponents(keyLayoutPanel);  already done within the constructor
+		// addToDisposableComponents(keyLayoutPanel); already done within the constructor
 		return keyLayoutPanel;
 	}
 
@@ -676,7 +675,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalComponentWrapper componentWrapper = new SwingTerminalComponentWrapper(getTerminalContext(), (Component)component);
 
-		//addToDisposableComponents(componentWrapper); already done in the constructor
+		// addToDisposableComponents(componentWrapper); already done in the constructor
 		return componentWrapper;
 	}
 
@@ -718,23 +717,18 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public ITerminalDialog createModalDialog(final IComponent parent, final String title, final IComponent content)
-	{
-		final boolean maintainOwnContextReferences = true; // the default
-		return createModalDialog(parent, title, content, maintainOwnContextReferences);
-	}
-
-	@Override
 	public ITerminalDialog createModalDialog(
 			final IComponent parent,
 			final String title,
-			final IComponent content,
-			final boolean maintainOwnContextReferences)
+			final IComponent content)
 	{
-		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content, maintainOwnContextReferences);
+		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content);
 		dialog.setTitle(title);
 
+		// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
+		// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
 		addToDisposableComponents(dialog);
+
 		return dialog;
 	}
 

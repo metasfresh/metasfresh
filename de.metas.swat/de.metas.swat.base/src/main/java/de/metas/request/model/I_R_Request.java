@@ -34,30 +34,40 @@ public interface I_R_Request extends org.compiere.model.I_R_Request
 	public static final String IsMaterialReturned_Returned = "Y";
 	public static final String IsMaterialReturned_Partially = "P";
 	// @formatter:on
-	
+
 	// @formatter:off
 	public static final String COLUMNNAME_DateDelivered = "DateDelivered";
 
 	public void setDateDelivered(java.sql.Timestamp DateDelivered);
 	public java.sql.Timestamp getDateDelivered();
 	// @formatter:on
-	
+
 	// @formatter:off
 	public static final String COLUMNNAME_PerformanceType = "PerformanceType";
 		
+	@Override
 	public void setPerformanceType(String PerformanceType);
+	@Override
 	public String getPerformanceType();
 	
 	public static final String PerformanceType_DeliveryPerformance = "LP";
 	public static final String PerformanceType_QualityPerformance = "QP";
 	
 	// @formatter:on
-	
-	// @formatter:off
-	public static final String COLUMNNAME_QualityNote = "QualityNote";
-		
-	public void setQualityNote(String QualityNote);
-	public String getQualityNote();
-	// @formatter:on
 
+	// @formatter:off
+	
+
+    /** Column definition for M_QualityNote_ID */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, de.metas.inout.model.I_M_QualityNote> COLUMN_M_QualityNote_ID = new org.adempiere.model.ModelColumn<I_R_Request, de.metas.inout.model.I_M_QualityNote>(I_R_Request.class, "M_QualityNote_ID", de.metas.inout.model.I_M_QualityNote.class);
+    /** Column name M_QualityNote_ID */
+    public static final String COLUMNNAME_M_QualityNote_ID = "M_QualityNote_ID";
+    
+	public void setM_QualityNote_ID (int M_QualityNote_ID);
+	public int getM_QualityNote_ID();
+
+	public de.metas.inout.model.I_M_QualityNote getM_QualityNote();
+	public void setM_QualityNote(de.metas.inout.model.I_M_QualityNote M_QualityNote);
+    
+	// @formatter:on
 }

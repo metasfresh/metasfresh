@@ -15,7 +15,7 @@ $BODY$
 		bpp.ProductNo AS CustomerProductNumber,
 		COALESCE( pt.name, plc.ProductName ) AS ProductName,
 		plc.IsSeasonFixedPrice,
-		plc.ItemProductName,
+		CASE WHEN plc.ItemProductName like 'VirtualPI%' THEN NULL ELSE plc.ItemProductName END AS ItemProductName,
 		plc.QtyCUsPerTU,
 		plc.PackingMaterialName,
 		plc.PriceStd,

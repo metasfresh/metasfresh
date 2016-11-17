@@ -1181,7 +1181,7 @@ public class GridField
 	 */
 	public boolean isEncryptedField()
 	{
-		return m_vo.IsEncryptedField;
+		return m_vo.isEncryptedField();
 	}
 
 	/**
@@ -1191,7 +1191,7 @@ public class GridField
 	 */
 	public boolean isEncrypted()
 	{
-		if (m_vo.IsEncryptedField)
+		if (m_vo.isEncryptedField())
 			return true;
 		String ob = getObscureType();
 		if (ob != null && ob.length() > 0)
@@ -1443,14 +1443,15 @@ public class GridField
 		final Properties ctx = getGridFieldContextRW();
 		final int displayType = m_vo.getDisplayType();
 		// Set Context
-		if (displayType == DisplayType.Text
-				|| displayType == DisplayType.Memo
-				|| displayType == DisplayType.TextLong
-				|| displayType == DisplayType.Binary
+		if (displayType == DisplayType.Binary
 				|| displayType == DisplayType.RowID
+				// || displayType == DisplayType.Text
+				// || displayType == DisplayType.Memo
+				// || displayType == DisplayType.TextLong
 				|| isEncrypted())
 		{
-			;	// ignore
+			// ignore
+			log.trace("Skip updating context for {} because displayType={}", this, displayType);
 		}
 		else if (m_value instanceof Boolean)
 		{
@@ -1744,7 +1745,7 @@ public class GridField
 		{
 			final Properties ctx = getGridFieldContext();
 			m_backupValue = Env.getContext(ctx, m_vo.WindowNo, m_vo.getColumnName());
-			if (LogManager.isLevelFinest())
+			if (log.isTraceEnabled())
 				log.trace("Backup " + m_vo.WindowNo + "|" + m_vo.getColumnName() + "=" + m_backupValue);
 			m_isBackupValue = true;
 		}
@@ -2146,15 +2147,6 @@ public class GridField
 		}
 		
 		return gridTab.getCalloutExecutor();
-	}
-
-	@Override
-	public <T> T getModel(final Class<T> modelClass)
-	{
-		final ICalloutRecord calloutRecord = getCalloutRecord();
-		final T model = calloutRecord.getModel(modelClass);
-		Check.assumeNotNull(model, "model not null");
-		return model;
 	}
 
 	@Override

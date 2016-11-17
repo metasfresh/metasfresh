@@ -66,8 +66,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Session;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
-import de.metas.document.archive.api.IArchiveDAO;
-import de.metas.document.archive.api.impl.PlainArchiveDAO;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.api.impl.PlainDocOutboundDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.impl.PlainDocActionBL;
 import de.metas.lock.api.ILockManager;
@@ -156,7 +156,7 @@ public class Helper
 		AdempiereTestHelper.get().staticInit();
 
 		// de.metas.document.archive
-		Services.registerService(IArchiveDAO.class, new PlainArchiveDAO());
+		Services.registerService(IDocOutboundDAO.class, new PlainDocOutboundDAO());
 
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);

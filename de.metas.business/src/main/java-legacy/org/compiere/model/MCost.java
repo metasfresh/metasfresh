@@ -32,7 +32,7 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.api.LogTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -668,7 +668,7 @@ public class MCost extends X_M_Cost
 		Services.get(ITrxItemProcessorExecutorService.class)
 				.<I_M_Product, Void> createExecutor()
 				.setContext(ctx, ITrx.TRXNAME_None)
-				.setExceptionHandler(LogTrxItemExceptionHandler.instance)
+				.setExceptionHandler(LoggerTrxItemExceptionHandler.instance)
 				.setProcessor(new TrxItemProcessorAdapter<I_M_Product, Void>()
 				{
 					@Override

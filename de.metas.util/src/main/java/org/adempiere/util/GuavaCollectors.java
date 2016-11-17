@@ -223,6 +223,14 @@ public final class GuavaCollectors
 	}
 
 
+	/**
+	 * Collects to {@link ImmutableMap}.
+	 * 
+	 * If duplicate key was found, the last provided item will be used.
+	 * 
+	 * @param keyMapper
+	 * @return immutable map collector
+	 */
 	public static <K, V> Collector<V, ?, ImmutableMap<K, V>> toImmutableMapByKey(final Function<? super V, ? extends K> keyMapper)
 	{
 		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;

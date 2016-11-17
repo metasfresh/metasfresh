@@ -3,21 +3,18 @@ package de.metas.fresh.mrp_productinfo.async.spi.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.DB;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 
@@ -91,71 +88,17 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 			final I_C_Queue_WorkPackage workpackage,
 			final String localTrxName)
 	{
+
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
-
+		final IMRPProductInfoBL mrpProductInfoBL = Services.get(IMRPProductInfoBL.class);
 		final IParams params = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
 
-		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
-
 		final List<Object> items = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
-		// we need a fixed ordering to make sure that the items are always updated in the same order, in case we go multi-threaded.
-		final SortedSet<IMRPProductInfoSelector> orderedSelectors = new TreeSet<IMRPProductInfoSelector>();
-
-		for (final Object item : items)
-		{
-			final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNull(item, params);
-			if (selector == null)
-			{
-				continue;
-			}
-			orderedSelectors.add(selector);
-		}
-
-		for (final IMRPProductInfoSelector selector : orderedSelectors)
-		{
-			final StringBuilder logMsg = new StringBuilder();
-			try
-			{
-				logMsg.append(selector.toStringForRegularLogging());
-
-				// always update the X_MRP_ProductInfo_Detail_MV rows of the date, product and ASI
-				{
-					final String functionCall = "\"de.metas.fresh\".X_MRP_ProductInfo_Detail_MV_Refresh";
-					logMsg.append("\nCalling " + functionCall);
-
-					doDBFunctionCall(functionCall, selector);
-				}
-
-				// If the selector originates from a C_OrderLine, the also update the poor man's MRP records of the BOM-products which
-				// the given order line's product is made of.
-				// This needs to happen after having refreshed X_MRP_ProductInfo_Detail_MV, because it uses QtyOrdered_Sale_OnDate
-				if (InterfaceWrapperHelper.isInstanceOf(selector.getModel(), I_C_OrderLine.class))
-				{
-					final String functionCall = "\"de.metas.fresh\".x_mrp_productinfo_detail_update_poor_mans_mrp";
-					logMsg.append("\nCalling " + functionCall);
-
-					doDBFunctionCall(functionCall, selector);
-				}
-			}
-			finally
-			{
-				// note: just make sure we log what we got. Assume that any error/exception logging is done by the framework
-				ILoggable.THREADLOCAL.getLoggable().addLog(logMsg.toString());
-			}
-		}
+		mrpProductInfoBL.updateItems(new PlainContextAware(ctx, localTrxName), items, params);
 
 		return Result.SUCCESS;
-	}
-
-	private void doDBFunctionCall(final String functionCall,
-			final IMRPProductInfoSelector selector)
-	{
-		DB.executeFunctionCallEx("select " + functionCall + "(?,?,?)",
-				new Object[] {
-						selector.getDate(),
-						selector.getM_Product_ID(),
-						selector.getM_AttributeSetInstance_ID() });
 	}
 }

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-09-21T16:52:55 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -114,21 +116,21 @@ ORDER BY
 		<groupFooter>
 			<band height="27">
 				<textField isBlankWhenNull="true">
-					<reportElement uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe" key="textField-3" x="64" y="15" width="308" height="10"/>
+					<reportElement key="textField-3" x="64" y="15" width="308" height="10" uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe"/>
 					<textElement markup="none">
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Total Zahlung"]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="517" y="15" width="60" height="10"/>
+					<reportElement key="textField-3" x="517" y="15" width="60" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TotalPayAmt}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="465" y="15" width="52" height="10"/>
+					<reportElement key="textField-3" x="465" y="15" width="52" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -144,21 +146,21 @@ ORDER BY
 			<band height="37">
 				<printWhenExpression><![CDATA[new Boolean ($V{BPartner_COUNT}.intValue() > 1)]]></printWhenExpression>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="517" y="0" width="60" height="10"/>
+					<reportElement key="textField-3" x="517" y="0" width="60" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PayAmt}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="465" y="0" width="52" height="10"/>
+					<reportElement key="textField-3" x="465" y="0" width="52" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 					<textElement textAlignment="Right" markup="none">
 						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe" key="textField-3" x="64" y="0" width="308" height="10"/>
+					<reportElement key="textField-3" x="64" y="0" width="308" height="10" uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe"/>
 					<textElement markup="none">
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -170,7 +172,7 @@ ORDER BY
 	<background>
 		<band height="300">
 			<staticText>
-				<reportElement uuid="5b0a0c82-c68d-4be4-8553-6da79621e330" key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC">
+				<reportElement key="textField-61" x="34" y="209" width="518" height="63" forecolor="#CCCCCC" uuid="5b0a0c82-c68d-4be4-8553-6da79621e330">
 					<printWhenExpression><![CDATA[$F{isdraft}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" markup="none">
@@ -186,35 +188,35 @@ ORDER BY
 	<pageHeader>
 		<band height="90" splitType="Stretch">
 			<staticText>
-				<reportElement uuid="2bb17277-322a-4bb1-9dae-725831708b54" key="textField-3" x="37" y="75" width="145" height="10"/>
+				<reportElement key="textField-3" x="37" y="75" width="145" height="10" uuid="2bb17277-322a-4bb1-9dae-725831708b54"/>
 				<textElement markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Kreditor]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9" key="textField-3" x="182" y="75" width="42" height="10"/>
+				<reportElement key="textField-3" x="182" y="75" width="42" height="10" uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9"/>
 				<textElement markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Rg. Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9" key="textField-3" x="437" y="75" width="45" height="10"/>
+				<reportElement key="textField-3" x="437" y="75" width="45" height="10" uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[vor Zlg.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="d8807b04-b3cd-4a19-9c2d-62705212d504" key="textField-3" x="527" y="66" width="50" height="10"/>
+				<reportElement key="textField-3" x="527" y="66" width="50" height="10" uuid="d8807b04-b3cd-4a19-9c2d-62705212d504"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Zahlung]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9" key="textField-3" x="223" y="66" width="40" height="10"/>
+				<reportElement key="textField-3" x="223" y="66" width="40" height="10" uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9"/>
 				<box>
 					<leftPen lineWidth="0.0"/>
 				</box>
@@ -224,7 +226,7 @@ ORDER BY
 				<text><![CDATA[Fällig]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95" key="textField-3" x="296" y="66" width="56" height="10"/>
+				<reportElement key="textField-3" x="296" y="66" width="56" height="10" uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95"/>
 				<box>
 					<leftPen lineWidth="0.0"/>
 				</box>
@@ -234,21 +236,21 @@ ORDER BY
 				<text><![CDATA[Skonto]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9" key="textField-3" x="-262" y="10" width="45" height="11"/>
+				<reportElement key="textField-3" x="-262" y="10" width="45" height="11" uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[am]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9" key="textField-3" x="264" y="75" width="32" height="10"/>
+				<reportElement key="textField-3" x="264" y="75" width="32" height="10" uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9"/>
 				<textElement markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[-Seit]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95" key="textField-3" x="296" y="75" width="24" height="10"/>
+				<reportElement key="textField-3" x="296" y="75" width="24" height="10" uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95"/>
 				<box>
 					<leftPen lineWidth="0.0"/>
 				</box>
@@ -258,14 +260,14 @@ ORDER BY
 				<text><![CDATA[-Tage]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95" key="textField-3" x="319" y="75" width="33" height="10"/>
+				<reportElement key="textField-3" x="319" y="75" width="33" height="10" uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[-Mögl.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="520131dd-29fa-4625-9f31-cbe94ebe1052" x="223" y="75" width="40" height="10"/>
+				<reportElement x="223" y="75" width="40" height="10" uuid="520131dd-29fa-4625-9f31-cbe94ebe1052"/>
 				<box>
 					<leftPen lineWidth="0.0"/>
 				</box>
@@ -275,56 +277,56 @@ ORDER BY
 				<text><![CDATA[-Am]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95" key="textField-3" x="353" y="75" width="32" height="10"/>
+				<reportElement key="textField-3" x="353" y="75" width="32" height="10" uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[-Abz.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="e9ab42f6-24e6-411e-982c-4a20cdcce84d" key="textField-3" x="386" y="75" width="50" height="10"/>
+				<reportElement key="textField-3" x="386" y="75" width="50" height="10" uuid="e9ab42f6-24e6-411e-982c-4a20cdcce84d"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Rg.-Nr]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9" key="textField-3" x="482" y="75" width="45" height="10"/>
+				<reportElement key="textField-3" x="482" y="75" width="45" height="10" uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[nach Zlg.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="e9ab42f6-24e6-411e-982c-4a20cdcce84d" key="textField-3" x="437" y="66" width="90" height="10"/>
+				<reportElement key="textField-3" x="437" y="66" width="90" height="10" uuid="e9ab42f6-24e6-411e-982c-4a20cdcce84d"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[OP Restbetrag]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="d3d13d95-6bf7-4023-b544-e21085021713" key="textField-3" x="37" y="30" width="145" height="10"/>
+				<reportElement key="textField-3" x="37" y="30" width="145" height="10" uuid="d3d13d95-6bf7-4023-b544-e21085021713"/>
 				<textElement markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Zahlungsjournal]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ab7e263a-1e7b-41d6-82d7-2429cee962e0" key="textField-3" x="37" y="40" width="145" height="10"/>
+				<reportElement key="textField-3" x="37" y="40" width="145" height="10" uuid="ab7e263a-1e7b-41d6-82d7-2429cee962e0"/>
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd. MMMMM yyyy">
-				<reportElement uuid="f8fafb00-bbd0-468f-8375-3ad320176c18" key="textField-3" x="415" y="30" width="145" height="10"/>
+				<reportElement key="textField-3" x="415" y="30" width="145" height="10" uuid="f8fafb00-bbd0-468f-8375-3ad320176c18"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paydate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="b8c6c7c4-819f-4a5e-a9c7-87ca22b20655" key="textField-63" x="461" y="40" width="63" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-63" x="461" y="40" width="63" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="b8c6c7c4-819f-4a5e-a9c7-87ca22b20655"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -334,10 +336,10 @@ ORDER BY
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53" key="textField-62" x="524" y="40" width="21" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-62" x="524" y="40" width="21" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -350,7 +352,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01" key="textField-64" x="545" y="40" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-64" x="545" y="40" width="15" height="10" forecolor="#000000" backcolor="#FFFFFF" uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -367,28 +369,28 @@ ORDER BY
 	<detail>
 		<band height="14" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="31b2f7be-9dbf-440a-bbf9-937b5477de9a" key="textField-3" x="386" y="0" width="50" height="10"/>
+				<reportElement key="textField-3" x="386" y="0" width="50" height="10" uuid="31b2f7be-9dbf-440a-bbf9-937b5477de9a"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{u_docno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="527" y="0" width="50" height="10"/>
+				<reportElement key="textField-3" x="527" y="0" width="50" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{payamt}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe" key="textField-3" x="37" y="0" width="160" height="10"/>
+				<reportElement key="textField-3" x="37" y="0" width="160" height="10" uuid="fbca41d3-535f-46dd-8c0b-59cfbd5e5cbe"/>
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="2154a583-2eef-423e-9e34-b14e2ea0702d" key="textField-3" x="353" y="0" width="32" height="10">
+				<reportElement key="textField-3" x="353" y="0" width="32" height="10" uuid="2154a583-2eef-423e-9e34-b14e2ea0702d">
 					<printWhenExpression><![CDATA[new Boolean($F{discountamt}.floatValue() != 0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -397,14 +399,14 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{actualdiscountamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="787dbba3-a675-4489-a879-37738f32b227" key="textField-3" x="182" y="0" width="42" height="10"/>
+				<reportElement key="textField-3" x="182" y="0" width="42" height="10" uuid="787dbba3-a675-4489-a879-37738f32b227"/>
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="2b833a5a-b32e-4388-9f51-9dcbacde8821" key="textField-3" x="296" y="0" width="24" height="10">
+				<reportElement key="textField-3" x="296" y="0" width="24" height="10" uuid="2b833a5a-b32e-4388-9f51-9dcbacde8821">
 					<printWhenExpression><![CDATA[new Boolean($F{discountamt}.floatValue() != 0)]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
@@ -413,21 +415,21 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{discountdays}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="787dbba3-a675-4489-a879-37738f32b227" key="textField-3" x="223" y="0" width="40" height="10"/>
+				<reportElement key="textField-3" x="223" y="0" width="40" height="10" uuid="787dbba3-a675-4489-a879-37738f32b227"/>
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{duedate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="787dbba3-a675-4489-a879-37738f32b227" key="textField-3" x="264" y="0" width="32" height="10"/>
+				<reportElement key="textField-3" x="264" y="0" width="32" height="10" uuid="787dbba3-a675-4489-a879-37738f32b227"/>
 				<textElement markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{daysdue}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="2b833a5a-b32e-4388-9f51-9dcbacde8821" key="textField-3" x="319" y="0" width="33" height="10">
+				<reportElement key="textField-3" x="319" y="0" width="33" height="10" uuid="2b833a5a-b32e-4388-9f51-9dcbacde8821">
 					<printWhenExpression><![CDATA[new Boolean($F{discountamt}.floatValue() != 0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -436,7 +438,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{discountamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="482" y="0" width="45" height="10">
+				<reportElement key="textField-3" x="482" y="0" width="45" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6">
 					<printWhenExpression><![CDATA[new Boolean ( $F{afterpay}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -445,7 +447,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{afterpay}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="437" y="0" width="45" height="10"/>
+				<reportElement key="textField-3" x="437" y="0" width="45" height="10" uuid="d500a2d5-1221-44b7-a60f-194de06df2c6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7" isBold="false"/>
 				</textElement>

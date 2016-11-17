@@ -25,6 +25,7 @@ package org.adempiere.ad.trx.processor.api;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 
 /**
@@ -125,6 +126,13 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 
 	/**
 	 * Sets if the executor shall use transaction savepoints on individual chunks internally.
+	 * This setting is only relevant, if the executor's parent-trx is null (see {@link #setContext(Properties, String)}).
+	 * <p>
+	 * If <code>true</code> and the executor has an external not-null transaction,
+	 * then the executor will create a {@link ITrxSavepoint} when starting a new chunk.
+	 * If a chunk fails and is canceled, the executor will roll back to the savepoint.
+	 * Without a savepoint, the executor will not roll back.
+	 *
 	 *
 	 * @param useTrxSavepoints
 	 * @see ITrxItemProcessorExecutor#setUseTrxSavepoints(boolean)

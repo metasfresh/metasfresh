@@ -29,13 +29,14 @@ import java.beans.PropertyChangeListener;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * Abstract {@link ITerminalKey} implementation.
@@ -45,6 +46,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
  */
 public abstract class TerminalKey implements ITerminalKey, IDisposable
 {
+	private static final transient Logger logger = LogManager.getLogger(TerminalKey.class);
+
 	private final ITerminalContext terminalContext;
 	protected final transient WeakPropertyChangeSupport listeners;
 
@@ -65,8 +68,6 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	 */
 	public TerminalKey(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
@@ -76,23 +77,14 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	}
 
 	@Override
-	protected void finalize() throws Throwable
-	{
-		if (!isDisposed())
-		{
-			dispose(); // dispose it now
-			final String message = StringUtils.formatMessage("{} was not explicitly disposed. Constructor's stacktrace:\n{}", this, constructorStackTrace != null ? Util.dumpStackTraceToString(constructorStackTrace) : "\t<not avaliable>");
-			System.err.println(message);
-			throw new AdempiereException(message); // the exception is actually ignored by the finalizer thread. Still, a debugger will stop here, if we have a breakpoint on AdempiereException
-		}
-	}
-
-	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
 		disposed = true;
 		disposeStackTrace = new Exception("TerminalKey disposed() stacktrace");
+
+		logger.debug("dispose(): this-ID={}: dispose called; this={}",
+				System.identityHashCode(this), this);
 	}
 
 	@Override
@@ -235,10 +227,7 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "["
-				+ "name=" + getName()
-				+ ", id=" + getId()
-				+ "]";
+		return getClass().getSimpleName() + "[" + "name=" + getName() + ", id=" + getId() + "]";
 	}
 
 	@Override

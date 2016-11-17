@@ -103,7 +103,7 @@ import de.metas.product.IStoragePA;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Picking First Window Panel
+ * Picking First Window Panel, which is embedded in {@link SwingPickingTerminalPanel}.
  *
  * @author cg
  *
@@ -235,7 +235,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			}
 
 			String value = "";
-			BigDecimal qtyToDeliver = Env.ZERO;
+			BigDecimal qtyToDeliver = BigDecimal.ZERO;
 			int warehouseDestId = 0;
 
 			// restrict the searching;
@@ -431,7 +431,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			containers.add(bin);
 		}
 
-		BigDecimal unpackedQty = Env.ZERO;
+		BigDecimal unpackedQty = BigDecimal.ZERO;
 		for (final IPackingItem item : unallocatedLines)
 		{
 			unpackedQty = unpackedQty.add(item.getQtySum());
@@ -774,7 +774,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void configureMiniTable(IMiniTable miniTable)
+	public void configureMiniTable(final IMiniTable miniTable)
 	{
 		columnName2index.clear();
 		miniTable.setMultiSelection(false);

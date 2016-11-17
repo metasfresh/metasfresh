@@ -54,7 +54,6 @@ import org.compiere.process.ProcessInfo;
 import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -122,7 +121,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		purchaseOrderKeyLayout.addTerminalKeyListener(new TerminalKeyListenerAdapter()
 		{
-
 			@Override
 			public void keyReturned(final ITerminalKey key)
 			{
@@ -166,12 +164,15 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return purchaseOrderKey.getC_Order_ID();
 	}
 
+	/**
+	 * Loads purchase order keys from the given <code>line</code>.
+	 */
 	@Override
 	protected void loadKeysFromLines(final List<IPOSTableRow> lines)
 	{
 		final IPOSFiltering service = getService();
 		final List<I_C_Order> purchaseOrders = service.getOrders(lines);
-		purchaseOrderKeyLayout.setKeysFromOrders(purchaseOrders);
+		purchaseOrderKeyLayout.createAndSetKeysFromOrders(purchaseOrders);
 	}
 
 	@Override
@@ -277,7 +278,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
 						//
-						// Ask user to edit the configuration
+						// Ask user to edit the configuration in another dialog
 						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
 						{
 							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
@@ -340,50 +341,58 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final ITerminalContext terminalContext = getTerminalContext();
 		final ReceiptScheduleFiltering service = getService();
 
-		//
-		// Create LU/TU configuration panel
-		// NOTE: we will create one CU Key for each receipt schedule
-		final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
-		lutuConfigurationEditingModel.setQtyCUReadonly(false);
-		final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
-		Integer bpartnerId = null;
-		for (final IPOSTableRow row : rows)
-		{
-			final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+		final List<I_M_HU> hus = new ArrayList<>(); // this will hold the LUTU-Editor's result
 
-			// Make sure all receipt schedules are about same BPartner
-			final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
-			if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+		try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+		{
+			//
+			// Create LU/TU configuration panel
+			// NOTE: we will create one CU Key for each receipt schedule
+			final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
+			lutuConfigurationEditingModel.setQtyCUReadonly(false);
+			final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
+			Integer bpartnerId = null;
+			for (final IPOSTableRow row : rows)
 			{
-				throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+
+				// Make sure all receipt schedules are about same BPartner
+				final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
+				if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+				{
+					throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				}
+				bpartnerId = receiptScheduleBPartnerId;
+
+				// Create CUKey for receipt schedule
+				final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
+				cuKeys.add(cuKey);
 			}
-			bpartnerId = receiptScheduleBPartnerId;
+			lutuConfigurationEditingModel.setCUKeys(cuKeys);
 
-			// Create CUKey for receipt schedule
-			final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
-			cuKeys.add(cuKey);
-		}
-		lutuConfigurationEditingModel.setCUKeys(cuKeys);
-
-		//
-		// Ask the user to customize it
-		final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
-		if (!edited)
-		{
-			// User cancelled => do nothing
-			return null;
-		}
-
-		//
-		// Create one VHU for each CU Key were user entered some quantity
-		final List<I_M_HU> hus = new ArrayList<>();
-		for (final ReceiptScheduleCUKey cuKey : cuKeys)
-		{
-			final I_M_HU vhu = cuKey.createVHU();
-			if (vhu != null)
+			//
+			// Ask the user to customize it
+			final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
+			if (!edited)
 			{
-				hus.add(vhu);
+				// User cancelled => do nothing
+				return null;
 			}
+
+			//
+			// Create one VHU for each CU Key were user entered some quantity
+			for (final ReceiptScheduleCUKey cuKey : cuKeys)
+			{
+				final I_M_HU vhu = cuKey.createVHU();
+				if (vhu != null)
+				{
+					hus.add(vhu);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		//
@@ -528,9 +537,9 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 			{
 				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
 				ProcessCtl.process(
-						null,     // ASyncProcess parent
+						null,      // ASyncProcess parent
 						terminalContext.getWindowNo(),
-						null,     // IProcessParameter
+						null,      // IProcessParameter
 						pi,
 						localTrx);
 			}
@@ -571,13 +580,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		lutuConfigurationEditingModel.load(lutuConfiguration, altConfigurations);
 
 		return lutuConfigurationEditingModel;
-	}
-
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-		DisposableHelper.disposeAll(purchaseOrderKeyLayout);
 	}
 
 	@Override

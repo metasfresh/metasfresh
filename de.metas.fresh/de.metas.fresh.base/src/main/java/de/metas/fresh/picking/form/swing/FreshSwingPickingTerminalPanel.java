@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.picking.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.fresh.picking.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,9 +69,9 @@ import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
 
 /**
  * Picking First Window Panel.
- * 
+ *
  * @author cg
- * 
+ *
  */
 public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 {
@@ -209,7 +209,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 					barcodeSearchField, // component
 					"growx, wrap, width 300px" // constraints
 			);
-			
+
 			//
 			// Enable programatically Tab Key handling because there is NO other focusable component, so focus lost will not be triggered on TAB presses.
 			// NOTE: this is a workaround introduced in task: http://dewiki908/mediawiki/index.php/08766_Kommissionierung_Barcode_TAB_%28108885949537%29
@@ -247,14 +247,14 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		// Update BPartner Keys
 		{
 			final Set<KeyNamePair> bpartners = pickingOKPanel.getSelectedBPartners();
-			bpartnerKeyLayout.setKeysFromBPartnerKNPs(bpartners);
+			bpartnerKeyLayout.createAndSetKeysFromBPartnerKNPs(bpartners);
 		}
 
 		//
 		// Update DeliveryDate Keys
 		{
 			final Set<Date> deliveryDates = pickingOKPanel.getSelectedDeliveryDates();
-			deliveryDateKeyLayout.setKeysFromDates(deliveryDates);
+			deliveryDateKeyLayout.createAndSetKeysFromDates(deliveryDates);
 		}
 	}
 
@@ -321,7 +321,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		deliveryDateKeyLayout.getKeyLayoutSelectionModel().onKeySelected(null);
 		// FIXME: for some reason DeliveryDate is not set in model
 		packingMd.setDeliveryDate(null);
-		
+
 		//
 		// Reset table rows matcher (fresh_06821)
 		packingMd.setTableRowSearchSelectionMatcher(NullTableRowSearchSelectionMatcher.instance);
@@ -430,7 +430,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		// Pick the first matcher
 		for (final ITableRowSearchSelectionMatcher matcher : matchers)
 		{
-			// Skip if matcher is valid
+			// Skip if matcher is invalid
 			if (!matcher.isValid())
 			{
 				continue;

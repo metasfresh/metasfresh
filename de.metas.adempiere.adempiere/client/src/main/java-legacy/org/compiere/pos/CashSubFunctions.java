@@ -36,16 +36,18 @@ import org.compiere.model.MCashBook;
 import org.compiere.model.MCashLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  @author Comunidad de Desarrollo OpenXpertya 
@@ -110,6 +112,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	/**
 	 * 	Set up Panel 
 	 */
+	@Override
 	protected void init()
 	{
 		CPanel main = new CPanel();
@@ -320,6 +323,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		removeAll();
@@ -332,6 +336,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	 * 	Action Listener
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		String action = e.getActionCommand();		
@@ -352,7 +357,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 			MCash cash = MCash.get(p_pos.getCtx(), /*p_pos.getAD_Org_ID(),*/ p_pos.getC_CashBook_ID(), today, null); 
 
 			MQuery query = new MQuery(MCash.Table_Name);
-			query.addRestriction("C_Cash_ID", MQuery.EQUAL, cash.getC_Cash_ID());
+			query.addRestriction("C_Cash_ID", Operator.EQUAL, cash.getC_Cash_ID());
 			AEnv.zoom(query);
 		}
 		//	to open window with inputs and outputs of cash
@@ -367,7 +372,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 		else if (action.equals("Tickets"))
 		{
 			MQuery query = new MQuery(MOrder.Table_Name);
-			query.addRestriction("C_DocTypeTarget_ID", MQuery.EQUAL, p_pos.getC_DocType_ID());
+			query.addRestriction("C_DocTypeTarget_ID", Operator.EQUAL, p_pos.getC_DocType_ID());
 			AEnv.zoom(query);
 		}
 		//	Cash (Payment)
@@ -531,6 +536,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	/**
 	 * calculate difference in cash scrutiny every time the cursor moves
 	 */
+	@Override
 	public void caretPositionChanged(InputMethodEvent event) 
 	{
 		cmd_calculateDifference();
@@ -540,6 +546,7 @@ public class CashSubFunctions extends PosQuery implements ActionListener, InputM
 	/**
 	 * calculate difference between cash scrutiniy each time the actual balance text changes
 	 */
+	@Override
 	public void inputMethodTextChanged(InputMethodEvent event) 
 	{
 		cmd_calculateDifference();

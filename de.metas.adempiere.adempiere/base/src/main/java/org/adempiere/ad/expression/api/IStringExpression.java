@@ -33,6 +33,33 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public interface IStringExpression extends IExpression<String>
 {
 	/**
+	 * Compiles given expression.
+	 * 
+	 * @param expressionStr
+	 * @return compiled expression
+	 */
+	public static IStringExpression compile(final String expressionStr)
+	{
+		return StringExpressionCompiler.instance.compile(expressionStr);
+	}
+	
+	/**
+	 * Compiles given string expression
+	 * 
+	 * If the expression cannot be evaluated, returns the given default expression.
+	 * 
+	 * This method does not throw any exception, but in case of error that error will be logged.
+	 * 
+	 * @param expressionStr The expression to be compiled
+	 * @return compiled expression or <code>defaultExpression</code>
+	 */
+	public static IStringExpression compileOrDefault(final String expressionStr, IStringExpression defaultExpression)
+	{
+		return StringExpressionCompiler.instance.compileOrDefault(expressionStr, defaultExpression);
+	}
+
+
+	/**
 	 * Gets a new composite string expression builder.
 	 * 
 	 * @return composer

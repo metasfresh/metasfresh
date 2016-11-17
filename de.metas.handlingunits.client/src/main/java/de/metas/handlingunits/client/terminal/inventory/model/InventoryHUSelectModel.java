@@ -166,7 +166,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 	protected void onWarehouseKeyPressed(final WarehouseKey key)
 	{
 		getVendorKeyLayout().getKeyLayoutSelectionModel().onKeySelected(null);
-		getBPartnerLocationKeyLayout().setKeysFromBPartnerLocations(null); // make sure BParter Location Keys are cleared
+		getBPartnerLocationKeyLayout().createAndSetKeysFromBPartnerLocations(null); // make sure BParter Location Keys are cleared
 		refreshBPartnerKeysIfNeeded(true, null); // no extra filter needed
 	}
 
@@ -326,7 +326,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		// the vendor lines are refreshed only if they are displayed
 		if (!isDisplayVendorKeys())
 		{
-			bpartnerKeyLayout.setKeysFromBPartners(null);
+			bpartnerKeyLayout.createAndSetKeysFromBPartners(null);
 			return;
 		}
 
@@ -351,7 +351,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		}
 
 		final List<I_C_BPartner> bPartners = huQueryBuilder.collect(I_M_HU.COLUMN_C_BPartner_ID);
-		bpartnerKeyLayout.setKeysFromBPartners(bPartners);
+		bpartnerKeyLayout.createAndSetKeysFromBPartners(bPartners);
 
 		//
 		// Refresh current BPartnerLocationKeys, if any
@@ -365,7 +365,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 
 		if (!isDisplayVendorKeys())
 		{
-			bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(null);
+			bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(null);
 			return;
 		}
 
@@ -375,7 +375,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		final int bpartnerId = getC_BPartner_ID();
 		if (bpartnerId <= 0)
 		{
-			bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(null);
+			bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(null);
 			return;
 		}
 
@@ -401,7 +401,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		final List<I_C_BPartner_Location> bpartnerLocations = bpLocationsAggregate.aggregate();
 
 		// Set loaded BPartner Locations to our BPartner Location Key Layout
-		bpartnerLocationsKeyLayout.setKeysFromBPartnerLocations(bpartnerLocations);
+		bpartnerLocationsKeyLayout.createAndSetKeysFromBPartnerLocations(bpartnerLocations);
 	}
 
 	public final BPartnerLocationKeyLayout getBPartnerLocationKeyLayout()

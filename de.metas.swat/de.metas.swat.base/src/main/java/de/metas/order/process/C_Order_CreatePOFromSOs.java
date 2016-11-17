@@ -5,12 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.GridTab;
 import org.compiere.process.DocAction;
 import org.compiere.process.SvrProcess;
 
@@ -133,14 +131,14 @@ public class C_Order_CreatePOFromSOs
 	 * @return <code>true</code> if the given gridTab is a completed sales order.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
-		if (!I_C_Order.Table_Name.equals(gridTab.getTableName()))
+		if (!I_C_Order.Table_Name.equals(context.getTableName()))
 		{
 			return false;
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
+		final I_C_Order order = context.getModel(I_C_Order.class);
 		return order.isSOTrx()
 				&& DocAction.STATUS_Completed.equals(order.getDocStatus());
 	}

@@ -10,7 +10,7 @@ BEGIN
 END; $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION M_HU_Value_Set_FT() OWNER TO adempiere;
+
 COMMENT ON FUNCTION M_HU_Value_Set_FT() IS 'Sets M_HU.Value=M_HU_ID';
 
 
