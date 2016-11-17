@@ -51,6 +51,6 @@ public class FinReportJasper extends FinReport
 				.addParameter("T_Report_AD_PInstance_ID", getAD_PInstance_ID())
 				//
 				.buildAndPrepareExecution()
-				.execute();
+				.executeASync();
 	}
 }	// FinReport

@@ -10,7 +10,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
 
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ public final class ProcessDialogBuilder
 	private int Record_ID;
 
 	private boolean skipResultsPanel = false;
-	private ASyncProcess asyncParent;
+	private IProcessExecutionListener processExecutionListener;
 	private boolean printPreview;
 	/**
 	 * @see X_AD_Process#SHOWHELP_AD_Reference_ID
@@ -114,12 +114,12 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public int getWindowNo()
+	int getWindowNo()
 	{
 		return windowNo;
 	}
 
-	public int getTabNo()
+	int getTabNo()
 	{
 		return tabNo;
 	}
@@ -130,7 +130,7 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public int getAD_Process_ID()
+	int getAD_Process_ID()
 	{
 		return AD_Process_ID;
 	}
@@ -141,7 +141,7 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public boolean isSOTrx()
+	boolean isSOTrx()
 	{
 		return isSOTrx;
 	}
@@ -152,7 +152,7 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public String getWhereClause()
+	String getWhereClause()
 	{
 		return whereClause;
 	}
@@ -164,12 +164,12 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public int getAD_Table_ID()
+	int getAD_Table_ID()
 	{
 		return AD_Table_ID;
 	}
 
-	public int getRecord_ID()
+	int getRecord_ID()
 	{
 		return Record_ID;
 	}
@@ -195,7 +195,7 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public boolean isSkipResultsPanel()
+	boolean isSkipResultsPanel()
 	{
 		return skipResultsPanel;
 	}
@@ -225,15 +225,15 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public ProcessDialogBuilder setASyncParent(ASyncProcess asyncParent)
+	public ProcessDialogBuilder setProcessExecutionListener(final IProcessExecutionListener processExecutionListener)
 	{
-		this.asyncParent = asyncParent;
+		this.processExecutionListener = processExecutionListener;
 		return this;
 	}
 
-	public ASyncProcess getAsyncParent()
+	IProcessExecutionListener getProcessExecutionListener()
 	{
-		return asyncParent;
+		return processExecutionListener;
 	}
 
 	public ProcessDialogBuilder setPrintPreview(final boolean printPreview)
@@ -242,7 +242,7 @@ public final class ProcessDialogBuilder
 		return this;
 	}
 
-	public boolean isPrintPreview()
+	boolean isPrintPreview()
 	{
 		return printPreview;
 	}

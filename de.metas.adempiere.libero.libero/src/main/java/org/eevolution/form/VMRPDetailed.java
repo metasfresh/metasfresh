@@ -153,7 +153,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 
 /**
@@ -166,7 +166,7 @@ import de.metas.logging.LogManager;
  */
 public class VMRPDetailed
 		extends CPanel
-		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, ASyncProcess
+		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	// Services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);

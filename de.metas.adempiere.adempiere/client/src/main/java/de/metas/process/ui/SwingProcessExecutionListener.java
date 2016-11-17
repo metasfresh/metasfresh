@@ -4,7 +4,7 @@ import javax.swing.SwingUtilities;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessInfo;
 
 /*
@@ -29,20 +29,26 @@ import de.metas.process.ProcessInfo;
  * #L%
  */
 
-/*package*/final class SwingASyncProcess implements ASyncProcess
+/**
+ * Wraps a given {@link IProcessExecutionListener} delegate and executes all the calls in Swing's Event Dispatcher Thread.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */final class SwingProcessExecutionListener implements IProcessExecutionListener
 {
-	public static final ASyncProcess of(final ASyncProcess delegate)
+	public static final IProcessExecutionListener of(final IProcessExecutionListener delegate)
 	{
-		if (delegate instanceof SwingASyncProcess)
+		if (delegate instanceof SwingProcessExecutionListener)
 		{
 			return delegate;
 		}
-		return new SwingASyncProcess(delegate);
+		return new SwingProcessExecutionListener(delegate);
 	}
 
-	private final ASyncProcess delegate;
+	private final IProcessExecutionListener delegate;
 
-	private SwingASyncProcess(final ASyncProcess delegate)
+	private SwingProcessExecutionListener(final IProcessExecutionListener delegate)
 	{
 		super();
 		this.delegate = delegate;

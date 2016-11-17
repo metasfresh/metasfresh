@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -60,7 +60,7 @@ import de.metas.process.ProcessInfo;
  * #L%
  */
 
-class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
+class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionListener
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ProcessPanel.class);
@@ -76,7 +76,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 	private final int recordId;
 	private final boolean m_IsReport;
 	private final boolean printPreview;
-	private final ASyncProcess asyncParent;
+	private final IProcessExecutionListener processExecutionListener;
 
 	/** Determine if a Help Process Window is shown */
 	private final String m_ShowHelp;
@@ -121,7 +121,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 
 		skipResultsPanel = builder.isSkipResultsPanel();
 		printPreview = builder.isPrintPreview();
-		asyncParent = builder.getAsyncParent();
+		processExecutionListener = builder.getProcessExecutionListener();
 
 		//
 		// Load process definition from database
@@ -474,8 +474,8 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 			{
 				final ProcessInfo pi = createProcessInfo();
 				ProcessExecutor.builder(pi)
-						.setAsyncParent(SwingASyncProcess.of(this))
-						.execute();
+						.setListener(SwingProcessExecutionListener.of(this))
+						.executeASync();
 
 				if (skipResultsPanel && !_allowProcessReRun)
 				{
@@ -509,9 +509,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 		window.setEnabled(false);
 		m_isLocked = true;
 
-		if (asyncParent != null)
+		if (processExecutionListener != null)
 		{
-			asyncParent.lockUI(pi);
+			processExecutionListener.lockUI(pi);
 		}
 	}   // lockUI
 
@@ -557,9 +557,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 			loadResultsAndShow(pi.getResult());
 		}
 
-		if (asyncParent != null)
+		if (processExecutionListener != null)
 		{
-			asyncParent.unlockUI(pi);
+			processExecutionListener.unlockUI(pi);
 		}
 	}   // unlockUI
 

@@ -43,14 +43,14 @@ import org.compiere.minigrid.IMiniTable;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessInfo;
 
 /**
  * Custom form controller base class
  * 
  */
-public abstract class MvcGenForm implements ASyncProcess {
+public abstract class MvcGenForm implements IProcessExecutionListener {
 
 	public static final String PROP_UI_LOCKED = "uiLocked";
 

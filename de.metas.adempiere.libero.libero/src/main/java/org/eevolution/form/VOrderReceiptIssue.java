@@ -128,7 +128,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -141,7 +141,7 @@ import de.metas.product.IProductBL;
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class VOrderReceiptIssue extends CPanel implements FormPanel,
 		ActionListener, VetoableChangeListener, ChangeListener,
-		ListSelectionListener, TableModelListener, ASyncProcess
+		ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	private static final long serialVersionUID = 1L;
 

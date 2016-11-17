@@ -133,7 +133,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -180,7 +180,7 @@ import de.metas.process.ui.ProcessDialog;
  */
 // metas: removed final modifier
 public class APanel extends CPanel
-		implements DataStatusListener, ChangeListener, ActionListener, ASyncProcess, IProcessEventListener // metas
+		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener, IProcessEventListener // metas
 {
 	/**
 	 * 
@@ -2579,7 +2579,7 @@ public class APanel extends CPanel
 				.setAD_Process_ID(AD_Process_ID)
 				.setFromGridTab(m_curTab)
 				.setPrintPreview(printPreview)
-				.setASyncParent(this)
+				.setProcessExecutionListener(this)
 				.showModal(getCurrentFrame());
 	}
 
@@ -3134,7 +3134,7 @@ public class APanel extends CPanel
 		{
 			ProcessDialog.builder()
 					.setFromGridTab(m_curTab)
-					.setASyncParent(this)
+					.setProcessExecutionListener(this)
 					.setAD_Process_ID(vButton.getProcess_ID())
 					.setShowHelp(startWOasking ? X_AD_Process.SHOWHELP_RunSilently_TakeDefaults : null)
 					.setAllowProcessReRun(startWOasking ? Boolean.FALSE : null)

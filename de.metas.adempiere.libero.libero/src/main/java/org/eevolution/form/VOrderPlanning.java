@@ -88,7 +88,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 
 /**
@@ -98,7 +98,7 @@ import de.metas.logging.LogManager;
 @SuppressWarnings("all")
 // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class VOrderPlanning extends CPanel
-		implements FormPanel, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, ASyncProcess
+		implements FormPanel, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	/** Creates new form VOrderPlanning */
 	public VOrderPlanning()

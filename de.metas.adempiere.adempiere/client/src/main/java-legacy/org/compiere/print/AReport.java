@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ASyncProcess;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ui.ProcessDialog;
 import de.metas.logging.LogManager;
 
@@ -75,7 +75,7 @@ public class AReport implements ActionListener
 	 *  @param WindowNo The invoking parent window number
 	 *  @param tabNo the invoking parent tab number
 	 */
-	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, ASyncProcess parent, int WindowNo, int tabNo)
+	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, IProcessExecutionListener parent, int WindowNo, int tabNo)
 	{
 		this(AD_Table_ID, invoker, query, parent, WindowNo, tabNo, null);
 	}	//	AReport
@@ -91,7 +91,7 @@ public class AReport implements ActionListener
 	 *  @param WindowNo The invoking parent window number
 	 *  @param tabNo the invoking parent tab number
 	 */
-	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, ASyncProcess parent, int WindowNo, int tabNo, String whereExtended)
+	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, IProcessExecutionListener parent, int WindowNo, int tabNo, String whereExtended)
 	{
 		super();
 		
@@ -125,7 +125,7 @@ public class AReport implements ActionListener
 	/**	Logger			*/
 	private static Logger log = LogManager.getLogger(AReport.class);
 	/** The parent window for locking/unlocking during process execution */
-	private final ASyncProcess parent;
+	private final IProcessExecutionListener parent;
 	/** The filter to apply to this report */
 	private final String m_whereExtended;
 	/** The parent window number */
@@ -228,7 +228,7 @@ public class AReport implements ActionListener
 					.setTableAndRecord(pf.getAD_Table_ID(), Record_ID)
 					.setWindowAndTabNo(WindowNo, tabNo)
 					.setWhereClause(m_whereExtended)
-					.setASyncParent(parent)
+					.setProcessExecutionListener(parent)
 					.show();
 		}
 		// It's a default report using the standard printing engine

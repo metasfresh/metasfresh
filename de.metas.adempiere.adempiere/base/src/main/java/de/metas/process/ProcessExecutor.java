@@ -83,7 +83,7 @@ public final class ProcessExecutor
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-	private final ASyncProcess parent;
+	private final IProcessExecutionListener listener;
 	private final ProcessInfo pi;
 	private final boolean switchContextWhenRunning;
 	private final boolean onErrorThrowException;
@@ -94,29 +94,9 @@ public final class ProcessExecutor
 	{
 		super();
 		pi = builder.getProcessInfo();
-		parent = builder.getASyncParent();
+		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
-	}
-
-	/**
-	 * Execute synchronously/asynchronously.
-	 *
-	 * @return this
-	 */
-	private ProcessExecutor execute()
-	{
-		if (parent != null)
-		{
-			executeAsync();
-		}
-		else
-		{
-			// synchrous
-			executeSync();
-		}
-
-		return this;
 	}
 
 	/**
@@ -127,7 +107,6 @@ public final class ProcessExecutor
 		Check.assumeNull(m_thread, "not already started");
 
 		final Thread thread = new Thread(() -> executeSync());
-		// Set thread name - teo_sarca FR [ 1807922 ]
 		if (pi != null)
 		{
 			thread.setName(pi.getTitle() + "-" + pi.getAD_PInstance_ID());
@@ -340,9 +319,9 @@ public final class ProcessExecutor
 
 		//
 		// Notify parent
-		if (parent != null)
+		if (listener != null)
 		{
-			parent.lockUI(pi);
+			listener.lockUI(pi);
 		}
 	}
 
@@ -371,14 +350,14 @@ public final class ProcessExecutor
 		// Notify parent
 		try
 		{
-			if (parent != null)
+			if (listener != null)
 			{
-				parent.unlockUI(pi);
+				listener.unlockUI(pi);
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed notifying the parent {} to unlock {}", parent, pi, ex);
+			logger.warn("Failed notifying the listener {} to unlock {}", listener, pi, ex);
 		}
 
 		//
@@ -598,7 +577,7 @@ public final class ProcessExecutor
 		private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 		private final ProcessInfo processInfo;
-		private ASyncProcess asyncParent = null;
+		private IProcessExecutionListener listener = null;
 		private boolean switchContextWhenRunning = false;
 		private boolean onErrorThrowException = false;
 		private Consumer<ProcessInfo> beforeCallback = null;
@@ -611,10 +590,10 @@ public final class ProcessExecutor
 			this.processInfo = processInfo;
 		}
 
-		public void execute()
+		public void executeASync()
 		{
 			final ProcessExecutor worker = build();
-			worker.execute();
+			worker.executeAsync();
 		}
 
 		public ProcessExecutor executeSync()
@@ -635,9 +614,9 @@ public final class ProcessExecutor
 				final ProcessExecutionResult result = processInfo.getResult();
 				result.markAsError(e);
 
-				if (asyncParent != null)
+				if (listener != null)
 				{
-					asyncParent.onProcessInitError(processInfo);
+					listener.onProcessInitError(processInfo);
 				}
 				else
 				{
@@ -675,15 +654,15 @@ public final class ProcessExecutor
 			return processInfo;
 		}
 
-		public Builder setAsyncParent(final ASyncProcess asyncParent)
+		public Builder setListener(final IProcessExecutionListener listener)
 		{
-			this.asyncParent = asyncParent;
+			this.listener = listener;
 			return this;
 		}
 
-		private ASyncProcess getASyncParent()
+		private IProcessExecutionListener getListener()
 		{
-			return asyncParent;
+			return listener;
 		}
 
 		/**

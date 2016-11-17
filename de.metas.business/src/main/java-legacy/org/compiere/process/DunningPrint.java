@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.io.File;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -38,9 +37,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.process.ASyncProcess;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Dunning Letter Print
@@ -230,30 +228,8 @@ public class DunningPrint extends JavaProcess
 					&& re.getPrintFormat().getJasperProcess_ID() > 0)
 				{
 					// ReportCtl.startDocumentPrint(ReportEngine.DUNNING, entry.get_ID(), null, -1, true);
-					try
-					{
-						// TODO: workaround - solution would be to refactor ReportCtl, ServerReportCtl, ProcessCtl, ServerProcessCtl and provide interfaces
-						ClassLoader loader = Thread.currentThread().getContextClassLoader();
-						if (loader == null)
-							loader = getClass().getClassLoader();
-						loader.loadClass("org.compiere.print.ReportCtl")
-								.getMethod("startDocumentPrint",
-										Integer.TYPE, // int type
-										Integer.TYPE, // int Record_ID,
-										ASyncProcess.class, // ASyncProcess parent,
-										Integer.TYPE, // int WindowNo,
-										Boolean.TYPE) // boolean IsDirectPrint
-								.invoke(null,
-										ReportEngine.DUNNING, // type
-										entry.get_ID(), // Record_ID
-										null, // parent
-										-1, // WindowNo
-										true); // IsDirectPrint
-					}
-					catch (Exception e)
-					{
-						throw new AdempiereException(e);
-					}
+					// TODO: implement if needed
+					throw new UnsupportedOperationException();
 				}
 				else
 				{
