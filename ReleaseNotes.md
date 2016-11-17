@@ -17,6 +17,7 @@ Here come the actual release notes:
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
   * #563 Report Statistics qty per Week
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+  * #597 Empties mask and functionality with autom. set the selected bpartner
 
 ## Fixes
 * metasfresh
