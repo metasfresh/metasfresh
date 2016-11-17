@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
 		</dependency>
 		
 		<dependency>

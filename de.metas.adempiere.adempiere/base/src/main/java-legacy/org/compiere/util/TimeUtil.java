@@ -436,6 +436,20 @@ public class TimeUtil
 	}	// isAllDay
 
 	/**
+	 * Calculate the number of hours between start and end.
+	 * 
+	 * @param start start date
+	 * @param end end date
+	 * @return number of hours (0 = same)
+	 */
+	public static long getHoursBetween(Date date1, Date date2)
+	{
+
+		final int MILLI_TO_HOUR = 1000 * 60 * 60;
+		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
+	}
+	
+	/**
 	 * Calculate the number of days between start and end.
 	 * 
 	 * @param start start date
