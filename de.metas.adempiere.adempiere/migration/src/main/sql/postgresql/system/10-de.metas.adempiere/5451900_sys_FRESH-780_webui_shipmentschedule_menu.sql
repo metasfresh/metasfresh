@@ -1,6 +1,6 @@
 -- 18.10.2016 16:04
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540728,0,500221,TO_TIMESTAMP('2016-10-18 16:04:40','YYYY-MM-DD HH24:MI:SS'),100,'Zeigt alle zu Auslieferung anstehenden Auftragspositionen an und erlaubt änderungen bzgl. Priorität und Stückzahl.','de.metas.inoutcandidate','_Lieferdisposition1','Y','N','N','Y','N','Lieferdisposition',TO_TIMESTAMP('2016-10-18 16:04:40','YYYY-MM-DD HH24:MI:SS'),100,'Lieferdisposition')
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540728,0,500221,TO_TIMESTAMP('2016-10-18 16:04:40','YYYY-MM-DD HH24:MI:SS'),100,'Zeigt alle zu Auslieferung anstehenden Auftragspositionen an und erlaubt Ã¤nderungen bzgl. PrioritÃ¤t und StÃ¼ckzahl.','de.metas.inoutcandidate','_Lieferdisposition1','Y','N','N','Y','N','Lieferdisposition',TO_TIMESTAMP('2016-10-18 16:04:40','YYYY-MM-DD HH24:MI:SS'),100,'Lieferdisposition')
 ;
 
 -- 18.10.2016 16:04
