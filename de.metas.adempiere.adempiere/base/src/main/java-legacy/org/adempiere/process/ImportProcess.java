@@ -42,7 +42,7 @@ public interface ImportProcess
 	/**
 	 * Get Process Info
 	 * @return Process Info
-	 * @see de.metas.process.SvrProcess#getProcessInfo()
+	 * @see de.metas.process.JavaProcess#getProcessInfo()
 	 */
 	public ProcessInfo getProcessInfo();
 }

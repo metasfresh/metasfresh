@@ -9,11 +9,11 @@ import org.compiere.process.DocAction;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class C_BankStatementLine_CreateFrom_C_PaySelection extends SvrProcess implements ISvrProcessPrecondition
+public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess implements IProcessPrecondition
 {
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 

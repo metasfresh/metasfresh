@@ -26,7 +26,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  *  
  */
 
-public class CopyRole extends SvrProcess
+public class CopyRole extends JavaProcess
 {
 	private int m_AD_Role_ID_From = 0;
 	private int m_AD_Role_ID_To = 0;

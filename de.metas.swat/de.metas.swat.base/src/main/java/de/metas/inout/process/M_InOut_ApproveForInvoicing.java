@@ -7,11 +7,11 @@ import org.compiere.process.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class M_InOut_ApproveForInvoicing extends SvrProcess implements ISvrProcessPrecondition
+public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcessPrecondition
 {
 
 	private int p_M_InOut_ID = 0;

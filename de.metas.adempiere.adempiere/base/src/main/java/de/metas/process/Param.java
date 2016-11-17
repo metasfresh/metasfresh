@@ -34,12 +34,12 @@ import de.metas.process.processtools.AD_Process_Para_UpdateFromAnnotations;
  */
 
 /**
- * Annotate a class field in order to be automatically loaded right before {@link SvrProcess#prepare()} method is called.
+ * Annotate a class field in order to be automatically loaded right before {@link JavaProcess#prepare()} method is called.
  * The annotated field may be <code>private</code>, but not <code>final</code>.<br>
  * Note that we still need <code>AD_Process_Param</code> records in the database.
  * <p>
- * The annotation can be used to avoid having to implement {@link SvrProcess#prepare()}, but it's also OK to have both,
- * e.g. if there are additional things to be done prior to the {@link SvrProcess#doIt()}.
+ * The annotation can be used to avoid having to implement {@link JavaProcess#prepare()}, but it's also OK to have both,
+ * e.g. if there are additional things to be done prior to the {@link JavaProcess#doIt()}.
  *
  * @see AD_Process_Para_UpdateFromAnnotations
  */

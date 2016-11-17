@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 
 /**
  * @author tsa
@@ -204,16 +204,16 @@ public class AProcessModel
 			return false;
 		}
 
-		if (!ISvrProcessPrecondition.class.isAssignableFrom(processClass))
+		if (!IProcessPrecondition.class.isAssignableFrom(processClass))
 		{
 			return true;
 		}
 
-		final ISvrProcessPrecondition svrProcessPrecondit;
+		final IProcessPrecondition processPrecondition;
 		try
 		{
-			svrProcessPrecondit = processClass.asSubclass(ISvrProcessPrecondition.class).newInstance();
-			return svrProcessPrecondit.isPreconditionApplicable(gridTab);
+			processPrecondition = processClass.asSubclass(IProcessPrecondition.class).newInstance();
+			return processPrecondition.isPreconditionApplicable(gridTab);
 		}
 		catch (Exception e)
 		{

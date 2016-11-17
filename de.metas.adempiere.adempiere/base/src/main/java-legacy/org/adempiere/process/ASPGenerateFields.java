@@ -45,14 +45,14 @@ import org.compiere.wf.MWorkflow;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Generate ASP fields for a window
  *	
  *  @author Carlos Ruiz
  */
-public class ASPGenerateFields extends SvrProcess
+public class ASPGenerateFields extends JavaProcess
 {
 	private String  p_ASP_Status;
 	private int p_ASP_Level_ID;	

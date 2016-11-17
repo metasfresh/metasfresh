@@ -20,7 +20,7 @@ package org.compiere.process;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -36,7 +36,7 @@ import org.compiere.util.Env;
  *	@author Jorg Janke
  *	@version $Id: ProjectPhaseGenOrder.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ProjectPhaseGenOrder  extends SvrProcess
+public class ProjectPhaseGenOrder  extends JavaProcess
 {
 	private int		m_C_ProjectPhase_ID = 0;
 

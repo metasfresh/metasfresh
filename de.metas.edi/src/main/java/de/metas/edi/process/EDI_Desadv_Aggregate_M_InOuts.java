@@ -44,7 +44,7 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.ProcessInfo;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Aggregates edi-enabled inOuts into desadv records.
@@ -52,7 +52,7 @@ import de.metas.process.SvrProcess;
  * @author ts
  *
  */
-public class EDI_Desadv_Aggregate_M_InOuts extends SvrProcess
+public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

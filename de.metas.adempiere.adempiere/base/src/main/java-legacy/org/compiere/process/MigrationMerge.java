@@ -22,9 +22,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class MigrationMerge extends SvrProcess {
+public class MigrationMerge extends JavaProcess {
 
 	private I_AD_Migration migrationFrom;
 	private I_AD_Migration migrationTo;

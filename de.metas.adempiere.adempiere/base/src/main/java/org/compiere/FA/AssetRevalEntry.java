@@ -48,7 +48,7 @@ import org.compiere.model.X_C_Period;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -57,7 +57,7 @@ import de.metas.process.SvrProcess;
  *  @author Rob Klein
  *  @version $Id: AssetRevalEntry.java,v 1.0$
  */
-public class AssetRevalEntry extends SvrProcess
+public class AssetRevalEntry extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Asset_Reval_Entry_ID = 0;

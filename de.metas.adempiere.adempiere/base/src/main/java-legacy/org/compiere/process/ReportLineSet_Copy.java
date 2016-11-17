@@ -22,7 +22,7 @@ import org.compiere.report.MReportLineSet;
 import org.compiere.report.MReportSource;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Copy Line Set at the end of the Line Set
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: ReportLineSet_Copy.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ReportLineSet_Copy extends SvrProcess
+public class ReportLineSet_Copy extends JavaProcess
 {
 	/**
 	 * 	Constructor

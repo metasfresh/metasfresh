@@ -52,7 +52,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.MPPProductPlanning;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * CreateProductPlanning
@@ -62,7 +62,7 @@ import de.metas.process.SvrProcess;
  * 
  * @author Teo Sarca, http://www.arhipac.ro
  */
-public class CreateProductPlanning extends SvrProcess
+public class CreateProductPlanning extends JavaProcess
 {
 	/** Process Parameters */;
 	private int             p_M_Product_Category_ID = 0;

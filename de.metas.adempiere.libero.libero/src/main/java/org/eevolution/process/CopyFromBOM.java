@@ -46,7 +46,7 @@ import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	CopyFromBOM Process
@@ -56,7 +56,7 @@ import de.metas.process.SvrProcess;
  *  @author Tony Snook 
  *  @version $Id: CopyFromBOM.java,v 1.0 2008/07/04 05:24:03 tspc Exp $
  */
-public class CopyFromBOM extends SvrProcess {
+public class CopyFromBOM extends JavaProcess {
 	/**					*/
 	private int	p_Record_ID = 0;
 	private int p_PP_Product_BOM_ID = 0;

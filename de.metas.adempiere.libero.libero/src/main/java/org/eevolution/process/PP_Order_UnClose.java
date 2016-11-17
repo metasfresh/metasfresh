@@ -44,8 +44,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.engine.IDocActionBL;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /**
  * Unclose a manufacturing order.
@@ -53,7 +53,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task 08731
  */
-public class PP_Order_UnClose extends SvrProcess implements ISvrProcessPrecondition
+public class PP_Order_UnClose extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);

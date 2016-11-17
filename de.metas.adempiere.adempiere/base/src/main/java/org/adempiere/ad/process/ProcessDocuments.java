@@ -40,14 +40,14 @@ import org.compiere.util.TrxRunnable2;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Select all records from AD_Table_ID, with given optional WhereClause for each record, call processIt with given DocAction
  * 
  * @task 05502, copied over from uat
  */
-public class ProcessDocuments extends SvrProcess
+public class ProcessDocuments extends JavaProcess
 {
 	//
 	// services

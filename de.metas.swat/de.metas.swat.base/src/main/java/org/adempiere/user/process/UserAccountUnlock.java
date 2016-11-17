@@ -5,9 +5,9 @@ import org.compiere.model.MUser;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class UserAccountUnlock extends SvrProcess
+public class UserAccountUnlock extends JavaProcess
 {
 
 	@Override

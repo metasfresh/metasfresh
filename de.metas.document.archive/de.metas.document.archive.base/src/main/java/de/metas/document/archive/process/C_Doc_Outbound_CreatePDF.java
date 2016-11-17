@@ -33,14 +33,14 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process all queue work packages for our {@link DocOutboundWorkpackageProcessor}.
  *
  * @author tsa
  */
-public class C_Doc_Outbound_CreatePDF extends SvrProcess
+public class C_Doc_Outbound_CreatePDF extends JavaProcess
 {
 	@Override
 	protected void prepare()

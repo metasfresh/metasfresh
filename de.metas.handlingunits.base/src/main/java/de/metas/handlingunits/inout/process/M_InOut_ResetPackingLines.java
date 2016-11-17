@@ -5,14 +5,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /**
  * Deletes and Recreates an inout's packing material lines. Supposed to be called via gear.
  *
  */
-public class M_InOut_ResetPackingLines extends SvrProcess implements ISvrProcessPrecondition
+public class M_InOut_ResetPackingLines extends JavaProcess implements IProcessPrecondition
 {
 
 	@Override

@@ -2,8 +2,8 @@ package de.metas.rfq.process;
 
 import org.adempiere.util.Services;
 
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfqBL;
@@ -39,7 +39,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQResponse_Publish extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQResponse_Publish extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);

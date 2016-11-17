@@ -31,7 +31,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.PO;
@@ -42,7 +42,7 @@ import de.metas.commission.model.MCAdvComRelevantPOType;
 import de.metas.commission.model.MCAdvCommissionFactCand;
 import de.metas.commission.model.MCAdvCommissionRelevantPO;
 
-public class BuildRelevantPOQueue extends SvrProcess
+public class BuildRelevantPOQueue extends JavaProcess
 {
 
 	private int orgId;

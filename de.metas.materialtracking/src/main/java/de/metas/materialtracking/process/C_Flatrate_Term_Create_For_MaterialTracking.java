@@ -15,7 +15,7 @@ import de.metas.flatrate.process.C_Flatrate_Term_Create;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.process.ISvrProcessPrecondition;
  */
 
 public class C_Flatrate_Term_Create_For_MaterialTracking extends C_Flatrate_Term_Create
-		implements ISvrProcessPrecondition
+		implements IProcessPrecondition
 {
 
 	private int p_flatrateconditionsID;

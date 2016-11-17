@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 
 import de.metas.document.IDocumentPA;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 /**
@@ -73,7 +73,7 @@ public class MigrationHelper
 	private final String trxName;
 	private boolean isTest;
 
-	private SvrProcess logger;
+	private JavaProcess logger;
 
 	public MigrationHelper(final Properties ctx, final String trxName)
 	{
@@ -91,7 +91,7 @@ public class MigrationHelper
 		return isTest;
 	}
 
-	public void setLogger(final SvrProcess logger)
+	public void setLogger(final JavaProcess logger)
 	{
 		this.logger = logger;
 	}

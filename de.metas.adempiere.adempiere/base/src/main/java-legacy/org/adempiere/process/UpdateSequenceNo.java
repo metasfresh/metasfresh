@@ -18,7 +18,7 @@ import java.sql.PreparedStatement;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into
@@ -27,7 +27,7 @@ import de.metas.process.SvrProcess;
  * @author Elaine
  * 
  */
-public class UpdateSequenceNo extends SvrProcess {
+public class UpdateSequenceNo extends JavaProcess {
 
 	private String year;
 

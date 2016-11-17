@@ -34,7 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_Tour;
@@ -42,7 +42,7 @@ import de.metas.tourplanning.model.I_M_Tour;
 /**
  * @author cg
  */
-public class GenerateDeliveryDays extends SvrProcess
+public class GenerateDeliveryDays extends JavaProcess
 {
 	//
 	// Services

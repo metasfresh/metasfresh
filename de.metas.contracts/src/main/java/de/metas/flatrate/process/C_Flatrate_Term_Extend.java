@@ -37,10 +37,10 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 public class C_Flatrate_Term_Extend
-		extends SvrProcess
+		extends JavaProcess
 {
 	@Param(parameterName = I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, mandatory = true)
 	private boolean p_forceComplete;

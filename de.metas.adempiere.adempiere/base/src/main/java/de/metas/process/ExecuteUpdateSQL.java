@@ -6,7 +6,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class ExecuteUpdateSQL extends SvrProcess
+public class ExecuteUpdateSQL extends JavaProcess
 {
 	private String sql;
 

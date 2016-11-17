@@ -56,7 +56,7 @@ import org.compiere.util.TrxRunnable2;
 
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 /**
@@ -67,7 +67,7 @@ import de.metas.logging.LogManager;
  *
  * @version $Id: FinReport.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class FinReport extends SvrProcess
+public class FinReport extends JavaProcess
 {
 	// Services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);

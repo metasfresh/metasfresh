@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAllocationHdr;
 import org.compiere.util.DB;
@@ -35,7 +35,7 @@ import org.compiere.util.Trx;
  *  @author Jorg Janke
  *  @version $Id: AllocationReset.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class AllocationReset extends SvrProcess
+public class AllocationReset extends JavaProcess
 {
 	/** BP Group				*/
 	private int			p_C_BP_Group_ID = 0;

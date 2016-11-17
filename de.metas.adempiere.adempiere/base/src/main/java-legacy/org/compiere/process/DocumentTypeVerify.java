@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriodControl;
@@ -36,7 +36,7 @@ import org.compiere.util.DB;
  *  @author Jorg Janke
  *  @version $Id: DocumentTypeVerify.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class DocumentTypeVerify extends SvrProcess
+public class DocumentTypeVerify extends JavaProcess
 {
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(DocumentTypeVerify.class);
@@ -72,7 +72,7 @@ public class DocumentTypeVerify extends SvrProcess
 	 *	@param trxName transaction
 	 */
 	public static void createDocumentTypes(Properties ctx, int AD_Client_ID, 
-		SvrProcess sp, String trxName)
+		JavaProcess sp, String trxName)
 	{
 		s_log.info("AD_Client_ID=" + AD_Client_ID);
 		String sql = "SELECT rl.Value, rl.Name "
@@ -135,7 +135,7 @@ public class DocumentTypeVerify extends SvrProcess
 	 * 	@param sp server process
 	 *	@param trxName transaction
 	 */
-	public static void createPeriodControls(Properties ctx, int AD_Client_ID, SvrProcess sp, String trxName)
+	public static void createPeriodControls(Properties ctx, int AD_Client_ID, JavaProcess sp, String trxName)
 	{
 		s_log.info("AD_Client_ID=" + AD_Client_ID);
 

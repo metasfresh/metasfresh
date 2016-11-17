@@ -530,7 +530,7 @@ public final class ProcessExecutor
 		if (classLoader == null)
 			classLoader = getClass().getClassLoader();
 
-		final ProcessCall process = (ProcessCall)classLoader.loadClass(className).newInstance();
+		final IProcess process = (IProcess)classLoader.loadClass(className).newInstance();
 
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		process.startProcess(pi, trx);

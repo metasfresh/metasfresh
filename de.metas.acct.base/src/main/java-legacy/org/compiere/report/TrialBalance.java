@@ -25,7 +25,7 @@ import java.util.GregorianCalendar;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
@@ -44,7 +44,7 @@ import org.compiere.util.Language;
  *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
  *  @version $Id: TrialBalance.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class TrialBalance extends SvrProcess
+public class TrialBalance extends JavaProcess
 {
 	/** AcctSchame Parameter			*/
 	private int					p_C_AcctSchema_ID = 0;

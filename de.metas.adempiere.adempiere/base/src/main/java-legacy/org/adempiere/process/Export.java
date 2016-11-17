@@ -53,7 +53,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -61,7 +61,7 @@ import de.metas.process.SvrProcess;
  *  @author Trifon Trifonov
  *  @version $Id: $
  */
-public class Export extends SvrProcess
+public class Export extends JavaProcess
 {
 	private static final String TOTAL_SEGMENTS = "${totalSegments}";
 

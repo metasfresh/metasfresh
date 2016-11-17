@@ -36,7 +36,7 @@ import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -46,7 +46,7 @@ import de.metas.process.SvrProcess;
  * @see  http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1963487&group_id=176962
  * @version $Id:$
  */
-public class ModelImporter extends SvrProcess {
+public class ModelImporter extends JavaProcess {
 
 	/** Client Parameter */
 	protected int p_AD_Client_ID = 0;

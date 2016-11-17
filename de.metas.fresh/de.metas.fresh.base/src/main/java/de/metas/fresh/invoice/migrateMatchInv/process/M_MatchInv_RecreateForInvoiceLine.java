@@ -48,9 +48,9 @@ import org.compiere.process.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class M_MatchInv_RecreateForInvoiceLine extends SvrProcess
+public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);

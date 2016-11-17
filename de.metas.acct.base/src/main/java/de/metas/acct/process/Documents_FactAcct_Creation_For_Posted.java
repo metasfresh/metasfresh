@@ -14,7 +14,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IDocumentBL;
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class Documents_FactAcct_Creation_For_Posted extends SvrProcess
+public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 {
 	@Param(parameterName = "DateStart")
 	private Date p_Date;

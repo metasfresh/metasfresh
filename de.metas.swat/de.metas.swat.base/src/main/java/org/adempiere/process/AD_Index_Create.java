@@ -36,13 +36,13 @@ import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
  * 
  */
-public class AD_Index_Create extends SvrProcess {
+public class AD_Index_Create extends JavaProcess {
 	private int p_AD_Index_Table_ID = -1;
 
 	@Override

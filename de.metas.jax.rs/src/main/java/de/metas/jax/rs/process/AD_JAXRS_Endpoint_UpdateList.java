@@ -5,7 +5,7 @@ import org.adempiere.util.Services;
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.process.Param;
 import de.metas.process.Process;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  *
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class AD_JAXRS_Endpoint_UpdateList extends SvrProcess
+public class AD_JAXRS_Endpoint_UpdateList extends JavaProcess
 {
 
 	@Param(parameterName = "p_alsoSyncClasses", mandatory = true)

@@ -30,7 +30,7 @@ import org.eevolution.model.MPPOrder;
 
 import de.metas.process.Process;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Complete & Print Manufacturing Order
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca, www.arhipac.ro
  */
 @Process(clientOnly = true)
-public class CompletePrintOrder extends SvrProcess
+public class CompletePrintOrder extends JavaProcess
 {
 	/** The Order */
 	private int p_PP_Order_ID = 0;

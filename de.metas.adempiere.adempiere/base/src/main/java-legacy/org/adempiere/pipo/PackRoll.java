@@ -28,7 +28,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Reverse Package Install.
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  * @author Robert Klein
  * 
  */
-public class PackRoll extends SvrProcess {
+public class PackRoll extends JavaProcess {
 	/** Package from Record */
 	private int m_AD_Package_Imp_ID = 0;
 	private String m_Processing = null;

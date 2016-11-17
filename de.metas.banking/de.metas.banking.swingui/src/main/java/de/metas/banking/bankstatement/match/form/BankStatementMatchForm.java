@@ -9,7 +9,7 @@ import org.compiere.model.I_C_BankStatement;
 
 import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfo;
 
 /*
@@ -41,7 +41,7 @@ import de.metas.process.ProcessInfo;
  */
 public class BankStatementMatchForm
 		implements FormPanel
-		, ISvrProcessPrecondition
+		, IProcessPrecondition
 {
 	@Override
 	public void init(final int WindowNo, final FormFrame frame) throws Exception

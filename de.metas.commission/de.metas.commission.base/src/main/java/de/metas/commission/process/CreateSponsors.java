@@ -32,13 +32,13 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorDAO;
 
-public class CreateSponsors extends SvrProcess
+public class CreateSponsors extends JavaProcess
 {
 	private static final Logger logger = LogManager.getLogger(CreateSponsors.class);
 

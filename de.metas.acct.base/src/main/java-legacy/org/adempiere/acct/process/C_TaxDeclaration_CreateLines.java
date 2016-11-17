@@ -19,7 +19,7 @@ package org.adempiere.acct.process;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.impl.TaxDeclarationLinesBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -31,7 +31,7 @@ import org.compiere.model.I_C_TaxDeclaration;
 /**
  * Create Tax Declaration
  */
-public class C_TaxDeclaration_CreateLines extends SvrProcess
+public class C_TaxDeclaration_CreateLines extends JavaProcess
 {
 	/** Delete Old Lines */
 	private boolean p_DeleteOld = true;

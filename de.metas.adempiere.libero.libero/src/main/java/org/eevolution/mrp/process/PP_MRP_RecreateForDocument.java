@@ -32,8 +32,8 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /**
  * Recreates {@link I_PP_MRP} records for selected document/record
@@ -41,7 +41,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  *
  */
-public class PP_MRP_RecreateForDocument extends SvrProcess implements ISvrProcessPrecondition
+public class PP_MRP_RecreateForDocument extends JavaProcess implements IProcessPrecondition
 {
 	/** Standard AD_Process.Value */
 	public static final transient String PROCESSVALUE = "PP_MRP_RecreateForDocument";

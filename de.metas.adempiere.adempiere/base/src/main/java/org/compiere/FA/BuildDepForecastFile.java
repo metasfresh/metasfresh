@@ -52,7 +52,7 @@ import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Build Depreciation Forecast File
@@ -61,7 +61,7 @@ import de.metas.process.SvrProcess;
  *  @version $Id: BuildDepForecastFile.java,v 1.0 $
  */
 
-public class BuildDepForecastFile extends SvrProcess
+public class BuildDepForecastFile extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Depreciation_Build_ID = 0;

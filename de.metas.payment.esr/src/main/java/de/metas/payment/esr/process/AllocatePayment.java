@@ -40,7 +40,7 @@ import de.metas.process.ProcessInfoParameter;
  * @author cg
  *
  */
-public class AllocatePayment extends de.metas.process.SvrProcess
+public class AllocatePayment extends de.metas.process.JavaProcess
 {
 
 	private int p_C_Payment_ID;

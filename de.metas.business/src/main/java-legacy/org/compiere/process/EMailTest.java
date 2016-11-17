@@ -23,7 +23,7 @@ import org.compiere.model.MStore;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Client EMail Test
@@ -31,7 +31,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: EMailTest.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class EMailTest extends SvrProcess
+public class EMailTest extends JavaProcess
 {
 	/** Client Parameter			*/
 	protected int	p_AD_Client_ID = 0;

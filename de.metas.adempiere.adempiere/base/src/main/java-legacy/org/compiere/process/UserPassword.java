@@ -26,7 +26,7 @@ import org.compiere.model.MUser;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Reset Password
@@ -34,7 +34,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: UserPassword.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class UserPassword extends SvrProcess
+public class UserPassword extends JavaProcess
 {
 	private int			p_AD_User_ID = -1;
 	private String 		p_OldPassword = null;

@@ -53,7 +53,7 @@ import org.eevolution.exceptions.LiberoException;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * CopyPriceToStandard
@@ -61,7 +61,7 @@ import de.metas.process.SvrProcess;
  * @author Victor Perez, e-Evolution, S.C.
  * @version $Id: CopyPriceToStandard.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
  */
-public class CopyPriceToStandard extends SvrProcess
+public class CopyPriceToStandard extends JavaProcess
 {
 	// services
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);

@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 public interface ISweepTableBL extends ISingletonService
 {
@@ -44,12 +44,12 @@ public interface ISweepTableBL extends ISingletonService
 	 *            if the given number is <=0, the method tried to delete the records. If the value is >0, the method
 	 *            updated all records' AD_Client_ID to the given value.
 	 * @param process
-	 *            may be null. If a process is given, it's {@link SvrProcess#addLog(String)} method is used to log
+	 *            may be null. If a process is given, it's {@link JavaProcess#addLog(String)} method is used to log
 	 *            important messages.
 	 * @param trxName
 	 * @return
 	 */
-	boolean sweepTable(Properties ctx, String tableName, int targetClientId, SvrProcess process, String trxName);
+	boolean sweepTable(Properties ctx, String tableName, int targetClientId, JavaProcess process, String trxName);
 
 	/**
 	 * Method attempts to remove all records of the given table, that have the AD_Client_ID of <code>ctx</code> and
@@ -65,12 +65,12 @@ public interface ISweepTableBL extends ISingletonService
 	 *            if the given number is <=0, the method tried to delete the records. If the value is >0, the method
 	 *            updated all records' AD_Client_ID to the given value.
 	 * @param process
-	 *            may be null. If a process is given, it's {@link SvrProcess#addLog(String)} method is used to log
+	 *            may be null. If a process is given, it's {@link JavaProcess#addLog(String)} method is used to log
 	 *            important messages.
 	 * @param trxName
 	 * @return
 	 */
-	boolean sweepTable(Properties ctx, String tableName, String whereClause, int targetClientId, SvrProcess process, String trxName);
+	boolean sweepTable(Properties ctx, String tableName, String whereClause, int targetClientId, JavaProcess process, String trxName);
 
 	/**
 	 * Method attempts to remove all records of the given table, that have the AD_Client_ID of <code>ctx</code> and
@@ -85,11 +85,11 @@ public interface ISweepTableBL extends ISingletonService
 	 *            if the given number is <=0, the method tried to delete the records. If the value is >0, the method
 	 *            updated all records' AD_Client_ID to the given value.
 	 * @param process
-	 *            may be null. If a process is given, it's {@link SvrProcess#addLog(String)} method is used to log
+	 *            may be null. If a process is given, it's {@link JavaProcess#addLog(String)} method is used to log
 	 *            important messages.
 	 * @param trxName
 	 * @return
 	 */
-	boolean sweepTable(Properties ctx, String tableName, Collection<Integer> initalIds, int targetClientId, SvrProcess process, String trxName);
+	boolean sweepTable(Properties ctx, String tableName, Collection<Integer> initalIds, int targetClientId, JavaProcess process, String trxName);
 
 }

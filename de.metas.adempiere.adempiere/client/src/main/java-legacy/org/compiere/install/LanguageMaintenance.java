@@ -21,7 +21,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.MLanguage;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: LanguageMaintenance.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
  */
-public class LanguageMaintenance extends SvrProcess
+public class LanguageMaintenance extends JavaProcess
 {
 	// services
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);

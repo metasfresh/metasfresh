@@ -39,9 +39,9 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class AD_User_ResetPassword_EnqueueForSelection extends SvrProcess
+public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 {
 	private IWorkPackageQueue queue;
 	private I_C_Queue_Block queueBlock = null;

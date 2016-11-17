@@ -35,9 +35,9 @@ import de.metas.flatrate.model.I_C_Contract_Change;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class C_Flatrate_Term_Change extends SvrProcess
+public class C_Flatrate_Term_Change extends JavaProcess
 {
 
 	public static final String ChangeTerm_ACTION_SwitchContract = "SC";

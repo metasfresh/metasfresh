@@ -64,7 +64,7 @@ import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	RollUp of Cost Manufacturing Workflow
@@ -75,7 +75,7 @@ import de.metas.process.SvrProcess;
  *  @author Bogdan Ioan, www.arhipac.ro
  *  		<li>BF [ 2093001 ] Error in Cost Workflow & Process Details
  */
-public class RollupWorkflow extends SvrProcess
+public class RollupWorkflow extends JavaProcess
 {
 
 	/* Organization     */

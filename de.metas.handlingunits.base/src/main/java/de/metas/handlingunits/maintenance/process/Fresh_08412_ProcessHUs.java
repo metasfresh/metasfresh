@@ -69,14 +69,14 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/fresh_08412_Auslagerung_manuelle_DD_Orders_Karotten_April_%28108521976654%29
  */
-public class Fresh_08412_ProcessHUs extends SvrProcess
+public class Fresh_08412_ProcessHUs extends JavaProcess
 {
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);

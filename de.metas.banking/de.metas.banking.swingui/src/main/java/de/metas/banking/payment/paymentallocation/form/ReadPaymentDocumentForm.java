@@ -38,7 +38,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.payment.model.I_C_Payment_Request;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfo;
 
 /**
@@ -49,7 +49,7 @@ import de.metas.process.ProcessInfo;
  * @author al
  * @task 08762
  */
-public class ReadPaymentDocumentForm implements FormPanel, ISvrProcessPrecondition
+public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 {
 	private static final String MSG_PREFIX = PaymentAllocationForm.MSG_PREFIX;
 

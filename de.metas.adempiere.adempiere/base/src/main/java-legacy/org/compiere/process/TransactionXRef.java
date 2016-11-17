@@ -20,7 +20,7 @@ import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -29,7 +29,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TransactionXRef.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class TransactionXRef extends SvrProcess
+public class TransactionXRef extends JavaProcess
 {
 	private int		p_Search_InOut_ID = 0;
 	private int 	p_Search_Order_ID = 0;

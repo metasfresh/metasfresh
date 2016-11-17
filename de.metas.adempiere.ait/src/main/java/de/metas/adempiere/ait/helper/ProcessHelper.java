@@ -22,27 +22,27 @@ import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
 
 @SuppressWarnings("unused")
 public class ProcessHelper
 {
 	private final IHelper helper;
 	private int processId;
-	private Class<? extends SvrProcess> clazz;
+	private Class<? extends JavaProcess> clazz;
 	private int tableId = -1;
 	private int recordId = 0;
 	private final Map<String, Object> parameters = new Hashtable<String, Object>();
 	private ProcessInfo pi;
-	private SvrProcess svrProcess;
+	private JavaProcess javaProcess;
 	private boolean result;
 	private String resultMsg = null;
 	private List<Integer> selection;
 
 	private int expectedProcessId;
-	private Class<? extends SvrProcess> expectedClass;
+	private Class<? extends JavaProcess> expectedClass;
 	
 	public static final String DEFAULT_ExpectedWFState = StateEngine.STATE_Completed;
 	private String expectedWFState = DEFAULT_ExpectedWFState;
@@ -62,14 +62,14 @@ public class ProcessHelper
 		this.trxName = helper.getTrxName();
 	}
 
-	public void quickRun(Class<? extends SvrProcess> clazz, Object record)
+	public void quickRun(Class<? extends JavaProcess> clazz, Object record)
 	{
 		setProcessClass(clazz)
 				.setPO(record)
 				.run();
 	}
 	
-	public ProcessHelper setProcessClass(Class<? extends SvrProcess> clazz)
+	public ProcessHelper setProcessClass(Class<? extends JavaProcess> clazz)
 	{
 		this.clazz = clazz;
 		return this;
@@ -165,7 +165,7 @@ public class ProcessHelper
 		
 		// TODO: check/re-implemented if needed.
 //		
-//		assertNull("This helper was already run", svrProcess);
+//		assertNull("This helper was already run", javaProcess);
 //		
 //		// Call beforeRun listeners
 //		for (IProcessHelperListener listener : listeners)
@@ -259,12 +259,12 @@ public class ProcessHelper
 //		}
 //		if (expectedException == null)
 //		{
-//			assertTrue("Process " + svrProcess + " returned 'false' with message: " + pi.getSummary(), result);
+//			assertTrue("Process " + javaProcess + " returned 'false' with message: " + pi.getSummary(), result);
 //		}
 //		else
 //		{
-//			assertFalse("Process " + svrProcess + " was expected to fail, but it suceeded with message: " + pi.getSummary(), result);
-//			assertThat("Process " + svrProcess + " was expected to fail with an exception", 
+//			assertFalse("Process " + javaProcess + " was expected to fail, but it suceeded with message: " + pi.getSummary(), result);
+//			assertThat("Process " + javaProcess + " was expected to fail with an exception", 
 //					pi.getThrowable(), instanceOf(expectedException));
 //		}
 //		
@@ -313,11 +313,6 @@ public class ProcessHelper
 		}
 	}
 
-	public SvrProcess getSvrProcess()
-	{
-		return svrProcess;
-	}
-
 	public ProcessInfo getProcessInfo()
 	{
 		return pi;
@@ -340,7 +335,7 @@ public class ProcessHelper
 		return this;
 	}
 
-	public ProcessHelper setExpectedClass(Class<? extends SvrProcess> clazz)
+	public ProcessHelper setExpectedClass(Class<? extends JavaProcess> clazz)
 	{
 		this.expectedClass = clazz;
 		return this;

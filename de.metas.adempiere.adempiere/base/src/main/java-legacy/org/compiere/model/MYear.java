@@ -29,7 +29,7 @@ import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -173,7 +173,7 @@ public class MYear extends X_C_Year
 		/**
 	 * 	Create 12 Standard (Jan-Dec) Periods.
 	 * 	Creates also Period Control from DocType.
-	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, SvrProcess, String)
+	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
 	 * 	@param locale locale 
 	 *	@return true if created
 	 */
@@ -186,7 +186,7 @@ public class MYear extends X_C_Year
 	/**
 	 * 	Create 12 Standard Periods from the specified start date.
 	 * 	Creates also Period Control from DocType.
-	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, SvrProcess, String)
+	 * 	@see DocumentTypeVerify#createPeriodControls(Properties, int, JavaProcess, String)
 	 * 	@param locale locale
 	 *	@param startDate first day of the calendar year
      *  @param dateFormat SimpleDateFormat pattern for generating the period names.

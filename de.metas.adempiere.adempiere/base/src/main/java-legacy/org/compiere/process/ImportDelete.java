@@ -22,7 +22,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Delete Data in Import Table
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: ImportDelete.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportDelete extends SvrProcess
+public class ImportDelete extends JavaProcess
 {
 	/**	Table be deleted		*/
 	private int				p_AD_Table_ID = 0;

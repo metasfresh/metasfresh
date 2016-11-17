@@ -30,7 +30,7 @@ import org.compiere.model.I_AD_Role;
 import org.compiere.util.CacheMgt;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Update Role Access
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: RoleAccessUpdate.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class RoleAccessUpdate extends SvrProcess
+public class RoleAccessUpdate extends JavaProcess
 {
 	/** Update Role */
 	private int p_AD_Role_ID = 0;

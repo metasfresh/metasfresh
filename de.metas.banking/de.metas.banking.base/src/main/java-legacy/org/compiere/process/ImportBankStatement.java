@@ -30,7 +30,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Import Bank Statement from I_BankStatement
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  *	author Eldir Tomassen
  *	@version $Id: ImportBankStatement.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportBankStatement extends SvrProcess
+public class ImportBankStatement extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				p_AD_Client_ID = 0;

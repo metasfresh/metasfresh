@@ -29,7 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -39,7 +39,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationStepApply extends SvrProcess
+public class MigrationStepApply extends JavaProcess
 {
 
 	private I_AD_MigrationStep migrationStep;

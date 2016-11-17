@@ -36,9 +36,9 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class UserAccountExpireLocks extends SvrProcess
+public class UserAccountExpireLocks extends JavaProcess
 {
 	@Override
 	protected void prepare()

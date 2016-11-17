@@ -21,7 +21,7 @@ import org.compiere.model.MTab;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TabCopy.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class TabCopy extends SvrProcess
+public class TabCopy extends JavaProcess
 {
 	/**	Tab	To					*/
 	private int			p_AD_TabTo_ID = 0;

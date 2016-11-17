@@ -47,7 +47,7 @@ import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -56,7 +56,7 @@ import de.metas.process.SvrProcess;
  *  @author Rob klein
  *  @version $Id: AssetDisposed.java,v 1.0$
  */
-public class AssetDisposed extends SvrProcess
+public class AssetDisposed extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Asset_Disposed_ID = 0;

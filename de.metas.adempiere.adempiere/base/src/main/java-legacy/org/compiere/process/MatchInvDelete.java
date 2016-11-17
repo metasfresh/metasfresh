@@ -19,7 +19,7 @@ package org.compiere.process;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_MatchInv;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: MatchInvDelete.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class MatchInvDelete extends SvrProcess
+public class MatchInvDelete extends JavaProcess
 {
 	
 	@Override

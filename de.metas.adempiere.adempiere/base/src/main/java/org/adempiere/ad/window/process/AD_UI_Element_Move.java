@@ -8,7 +8,7 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementGroup;
 
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AD_UI_Element_Move extends SvrProcess
+public class AD_UI_Element_Move extends JavaProcess
 {
 	@Param(parameterName = I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_ElementGroup_ID, mandatory = true)
 	private int p_AD_UI_ElementGroup_ID;

@@ -41,7 +41,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Takes {@link I_M_ReceiptSchedule}s from user's window selection and produces {@link I_M_InOut} receipts.
@@ -49,7 +49,7 @@ import de.metas.process.SvrProcess;
  * @author lc
  * 
  */
-public class M_ReceiptSchedule_GenerateInOutFromSelection extends SvrProcess
+public class M_ReceiptSchedule_GenerateInOutFromSelection extends JavaProcess
 {
 
 	public static final String MSG_NO_RECEIPT_SCHEDULES_SELECTED = "ReceiptScheduleNotSelected";

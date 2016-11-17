@@ -33,7 +33,7 @@ import org.adempiere.util.Services;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process to invoke {@link IDunningBL#processDunningDoc(IDunningContext, I_C_DunningDoc)} on a given {@link I_C_DunningDoc}.
@@ -43,7 +43,7 @@ import de.metas.process.SvrProcess;
  * @author ad
  * 
  */
-public class C_DunningDoc_Process extends SvrProcess
+public class C_DunningDoc_Process extends JavaProcess
 {
 	private int p_C_DunningDoc_ID = -1;
 	@Override

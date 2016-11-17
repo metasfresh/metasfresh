@@ -35,7 +35,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
@@ -57,7 +57,7 @@ import org.compiere.util.Env;
  *
  * @author Daniel Tamm
  */
-public class ExpenseTypesFromAccounts extends SvrProcess {
+public class ExpenseTypesFromAccounts extends JavaProcess {
 
     private int m_clientId;
     private int m_acctSchemaId;

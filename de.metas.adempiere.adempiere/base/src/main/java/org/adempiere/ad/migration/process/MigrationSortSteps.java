@@ -30,7 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Sort migration steps by Created
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationSortSteps extends SvrProcess
+public class MigrationSortSteps extends JavaProcess
 {
 	private I_AD_Migration migration;
 

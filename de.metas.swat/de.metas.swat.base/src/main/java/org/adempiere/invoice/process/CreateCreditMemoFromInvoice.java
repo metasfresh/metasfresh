@@ -34,9 +34,9 @@ import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class CreateCreditMemoFromInvoice extends SvrProcess
+public class CreateCreditMemoFromInvoice extends JavaProcess
 {
 	private static final String PARA_C_DocType_ID = "C_DocType_ID";
 	private int C_DocType_ID = -1;

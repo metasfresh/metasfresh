@@ -26,7 +26,7 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Copy columns from one table to other
@@ -34,7 +34,7 @@ import de.metas.process.SvrProcess;
  * @author Carlos Ruiz - globalqss
  * @version $Id: CopyColumnsFromTable
  */
-public class CopyColumnsFromTable extends SvrProcess
+public class CopyColumnsFromTable extends JavaProcess
 {
 	/** Target Table */
 	private int p_target_AD_Table_ID = 0;

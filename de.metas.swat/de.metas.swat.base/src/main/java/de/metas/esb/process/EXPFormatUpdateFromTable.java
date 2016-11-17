@@ -39,13 +39,13 @@ import org.compiere.util.DisplayType;
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.interfaces.I_EXP_FormatLine;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  * 
  */
-public class EXPFormatUpdateFromTable extends SvrProcess
+public class EXPFormatUpdateFromTable extends JavaProcess
 {
 	private int p_EXP_Format_ID = -1;
 

@@ -21,7 +21,7 @@ import org.compiere.report.MReportColumn;
 import org.compiere.report.MReportColumnSet;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *  Copy Column Set at the end of the Column Set
@@ -29,7 +29,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: ReportColumnSet_Copy.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ReportColumnSet_Copy extends SvrProcess
+public class ReportColumnSet_Copy extends JavaProcess
 {
 	/**
 	 * 	Constructor

@@ -34,9 +34,9 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class C_Print_Job_Instructions_Create extends SvrProcess
+public class C_Print_Job_Instructions_Create extends JavaProcess
 {
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);

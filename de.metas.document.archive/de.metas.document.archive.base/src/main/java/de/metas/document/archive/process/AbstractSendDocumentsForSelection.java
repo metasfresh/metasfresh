@@ -53,14 +53,14 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.
  *
  * @author al
  */
-public abstract class AbstractSendDocumentsForSelection extends SvrProcess
+public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 

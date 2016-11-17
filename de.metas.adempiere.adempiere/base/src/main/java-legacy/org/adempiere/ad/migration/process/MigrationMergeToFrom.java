@@ -23,7 +23,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -33,7 +33,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationMergeToFrom extends SvrProcess
+public class MigrationMergeToFrom extends JavaProcess
 {
 	private I_AD_Migration migrationFrom;
 	private I_AD_Migration migrationTo;

@@ -27,7 +27,7 @@ import org.compiere.model.X_I_Conversion_Rate;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Import Currency Conversion Rates 
@@ -35,7 +35,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: ImportConversionRate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportConversionRate extends SvrProcess
+public class ImportConversionRate extends JavaProcess
 {
 	
 	/**	Client to be imported to			*/

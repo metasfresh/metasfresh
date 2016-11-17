@@ -36,7 +36,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Copy selected columns to given table.
@@ -44,7 +44,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  *
  */
-public class AD_Column_CopySelectedToTable extends SvrProcess
+public class AD_Column_CopySelectedToTable extends JavaProcess
 {
 	private int p_AD_Table_ID = -1;
 	private String p_EntityType = null;

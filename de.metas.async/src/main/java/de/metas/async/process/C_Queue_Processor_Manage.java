@@ -35,7 +35,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Start/Stop/Restart an {@link IQueueProcessor}
@@ -43,7 +43,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * 
  */
-public class C_Queue_Processor_Manage extends SvrProcess
+public class C_Queue_Processor_Manage extends JavaProcess
 {
 	private static final String PARAM_Action = "Action";
 

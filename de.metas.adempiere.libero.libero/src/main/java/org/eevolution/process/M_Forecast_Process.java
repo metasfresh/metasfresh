@@ -29,9 +29,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class M_Forecast_Process extends SvrProcess
+public class M_Forecast_Process extends JavaProcess
 {
 
 	@Override

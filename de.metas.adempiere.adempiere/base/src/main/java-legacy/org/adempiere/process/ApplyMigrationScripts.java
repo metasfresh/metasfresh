@@ -38,11 +38,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.util.DB;
 
-public class ApplyMigrationScripts extends SvrProcess {
+public class ApplyMigrationScripts extends JavaProcess {
 
 	/** Logger */
 	private static Logger log = LogManager.getLogger(ApplyMigrationScripts.class);

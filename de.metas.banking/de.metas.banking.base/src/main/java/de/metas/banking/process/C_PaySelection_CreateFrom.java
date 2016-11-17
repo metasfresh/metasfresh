@@ -31,7 +31,7 @@ import org.compiere.model.I_C_PaySelection;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Payment Selection Lines from AP Invoices
@@ -39,7 +39,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task 08972
  */
-public class C_PaySelection_CreateFrom extends SvrProcess
+public class C_PaySelection_CreateFrom extends JavaProcess
 {
 	// services
 	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);

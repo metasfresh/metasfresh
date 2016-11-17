@@ -34,9 +34,9 @@ import org.compiere.util.Trx;
 
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class SweepTable extends SvrProcess
+public class SweepTable extends JavaProcess
 {
 	private String p_TableName = null;
 	private String p_WhereClause = "1=1";

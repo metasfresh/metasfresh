@@ -58,7 +58,7 @@ import org.compiere.model.MCost;
 import org.compiere.model.X_C_AcctSchema;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Cost Element
@@ -68,7 +68,7 @@ import de.metas.process.SvrProcess;
  * 
  * @author Teo Sarca, www.arhipac.ro
  */
-public class CreateCostElement extends SvrProcess
+public class CreateCostElement extends JavaProcess
 {
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;

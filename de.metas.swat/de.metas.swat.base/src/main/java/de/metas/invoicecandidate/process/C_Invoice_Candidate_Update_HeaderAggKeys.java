@@ -40,13 +40,13 @@ import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author ts
  *
  */
-public class C_Invoice_Candidate_Update_HeaderAggKeys extends SvrProcess
+public class C_Invoice_Candidate_Update_HeaderAggKeys extends JavaProcess
 {
 	final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);

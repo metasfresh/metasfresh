@@ -36,7 +36,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.util.Env;
 
@@ -45,7 +45,7 @@ import de.metas.banking.misc.ImportBankstatementCtrl;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.Parser;
 
-public class MT940ImportProcess extends SvrProcess {
+public class MT940ImportProcess extends JavaProcess {
 
 	private static Logger log = LogManager.getLogger(MT940ImportProcess.class);
 

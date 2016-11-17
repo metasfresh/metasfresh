@@ -32,9 +32,9 @@ import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class CreateAdjustmentChargeFromInvoice extends SvrProcess
+public class CreateAdjustmentChargeFromInvoice extends JavaProcess
 {
 	private static final String PARA_DocSubType = "DocSubType";
 	private int AD_Table_ID = 0;

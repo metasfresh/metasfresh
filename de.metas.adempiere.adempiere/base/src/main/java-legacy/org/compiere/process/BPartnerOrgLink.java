@@ -27,7 +27,7 @@ import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Link Business Partner to Organization.
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: BPartnerOrgLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class BPartnerOrgLink extends SvrProcess
+public class BPartnerOrgLink extends JavaProcess
 {
 	/**	Existing Org			*/
 	private int			p_AD_Org_ID;

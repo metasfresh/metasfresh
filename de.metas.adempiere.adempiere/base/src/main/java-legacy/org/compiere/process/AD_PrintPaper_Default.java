@@ -20,7 +20,7 @@ package org.compiere.process;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Title:	Set Current Format as Default
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Carlos Ruiz (globalqss)
  *  @version $Id: AD_PrintPaper_Default.java,v 1.0 2005/09/14 22:29:00 globalqss Exp $
  */
-public class AD_PrintPaper_Default extends SvrProcess
+public class AD_PrintPaper_Default extends JavaProcess
 {
 
 	/** The Client						*/

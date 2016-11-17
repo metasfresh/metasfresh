@@ -23,7 +23,7 @@ import org.compiere.model.MWindow;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Copy all Tabs of a Window
@@ -31,7 +31,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: WindowCopy.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class WindowCopy extends SvrProcess
+public class WindowCopy extends JavaProcess
 {
 	/**	Window To					*/
 	private int			p_AD_WindowTo_ID = 0;

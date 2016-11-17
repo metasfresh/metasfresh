@@ -25,9 +25,9 @@ import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
 import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class MigrationApply extends SvrProcess
+public class MigrationApply extends JavaProcess
 {
 	private int p_AD_Migration_ID = -1;
 	

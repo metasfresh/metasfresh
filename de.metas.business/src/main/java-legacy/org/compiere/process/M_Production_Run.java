@@ -41,7 +41,7 @@ import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductBL;
 
 /**
@@ -52,7 +52,7 @@ import de.metas.product.IProductBL;
  * @author victor.perez@e-evolution.com
  * @contributor: Carlos Ruiz (globalqss) - review backward compatibility - implement mustBeStocked properly
  */
-public class M_Production_Run extends SvrProcess {
+public class M_Production_Run extends JavaProcess {
 
 	/** The Record */
 	private int p_Record_ID = 0;

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
@@ -39,7 +39,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: StorageCleanup.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class StorageCleanup extends SvrProcess
+public class StorageCleanup extends JavaProcess
 {
 	/** Movement Document Type	*/
 	private int	p_C_DocType_ID = 0;

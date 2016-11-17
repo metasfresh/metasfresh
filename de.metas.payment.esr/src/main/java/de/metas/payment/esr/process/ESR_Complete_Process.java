@@ -37,9 +37,9 @@ import org.adempiere.util.api.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ESR_Complete_Process extends SvrProcess
+public class ESR_Complete_Process extends JavaProcess
 {
 
 	private int p_ESR_Import_ID;

@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfQResponseProducer;
 import de.metas.rfq.IRfqBL;
@@ -41,7 +41,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_CreateResponses extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_CreateResponses extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);

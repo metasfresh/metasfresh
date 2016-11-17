@@ -19,7 +19,7 @@ import com.google.common.base.Function;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessClassParamInfo;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -51,7 +51,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AD_Process_Para_UpdateFromAnnotations extends SvrProcess
+public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 {
 
 	@Override

@@ -21,7 +21,7 @@ import org.adempiere.acct.api.IGLDistributionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Verify GL Distribution
@@ -29,7 +29,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: DistributionVerify.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class DistributionVerify extends SvrProcess
+public class DistributionVerify extends JavaProcess
 {
 	private final transient IGLDistributionBL glDistributionBL = Services.get(IGLDistributionBL.class);
 

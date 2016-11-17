@@ -39,9 +39,9 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class PauseSubscription extends SvrProcess {
+public class PauseSubscription extends JavaProcess {
 
 	static final String DATE_TO = "DateTo";
 

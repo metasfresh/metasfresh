@@ -6,7 +6,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductConstants;
 import de.metas.product.model.I_M_Product;
@@ -42,7 +42,7 @@ import de.metas.product.model.I_M_Product_Mapping;
  *         In case the current product has a different mapping than the target, it will be set for the target product and all the other products with the same mapping.
  *
  */
-public class M_Product_Create_Mappings_Process extends SvrProcess
+public class M_Product_Create_Mappings_Process extends JavaProcess
 {
 
 	@Param(parameterName = ProductConstants.TARGET_PRODUCT_ID)

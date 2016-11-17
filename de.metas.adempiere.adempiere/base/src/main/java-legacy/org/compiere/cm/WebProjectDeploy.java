@@ -31,7 +31,7 @@ import org.compiere.model.MWebProject;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Deploy Web Project
@@ -39,7 +39,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: WebProjectDeploy.java,v 1.10 2006/09/04 21:21:31 comdivision Exp $
  */
-public class WebProjectDeploy extends SvrProcess
+public class WebProjectDeploy extends JavaProcess
 {
 	/**	WebProject					*/
 	private int		p_CM_WebProject_ID = 0;

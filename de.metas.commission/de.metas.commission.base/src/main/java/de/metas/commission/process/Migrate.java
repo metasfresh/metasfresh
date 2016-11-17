@@ -3,15 +3,17 @@
  */
 package de.metas.commission.process;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.commission.util.MigrationHelper;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  * 
  */
-public class Migrate extends SvrProcess
+public class Migrate extends JavaProcess
 {
 	private boolean p_IsTest = true;
 
@@ -41,8 +43,7 @@ public class Migrate extends SvrProcess
 		migration.migrate();
 		if (p_IsTest)
 		{
-			addLog("This was just a test. Rolling back");
-			rollback();
+			throw new AdempiereException("This was just a test. Rolling back");
 		}
 		return "Migrated to version " + migration.getVersion();
 	}

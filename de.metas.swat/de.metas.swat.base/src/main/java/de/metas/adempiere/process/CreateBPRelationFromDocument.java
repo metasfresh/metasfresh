@@ -33,7 +33,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create BP relation from document.
@@ -44,7 +44,7 @@ import de.metas.process.SvrProcess;
  *      %282010122110000025%29
  *
  */
-public class CreateBPRelationFromDocument extends SvrProcess
+public class CreateBPRelationFromDocument extends JavaProcess
 {
 	public static String PARAM_C_BPartner_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_ID;
 	public static String PARAM_C_BPartner_Location_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID;

@@ -59,14 +59,14 @@ import org.compiere.wf.MWorkflow;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Generate ASP entries for a level
  *	
  *  @author Carlos Ruiz
  */
-public class ASPGenerateLevel extends SvrProcess
+public class ASPGenerateLevel extends JavaProcess
 {
 	private String  p_ASP_Status;
 	private int p_AD_Menu_ID;

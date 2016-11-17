@@ -35,13 +35,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class C_Invoice_Candidate_Update extends SvrProcess
+public class C_Invoice_Candidate_Update extends JavaProcess
 {
 	// services
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);

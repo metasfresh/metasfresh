@@ -12,11 +12,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_Form;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 
 public class AProcessModelTest
 {
-	public static class SvrProcessPreconditionReturnTrue implements ISvrProcessPrecondition
+	public static class ProcessPreconditionReturnTrue implements IProcessPrecondition
 	{
 
 		@Override
@@ -26,7 +26,7 @@ public class AProcessModelTest
 		}
 	}
 
-	public static class SvrProcessPreconditionReturnFalse implements ISvrProcessPrecondition
+	public static class ProcessPreconditionReturnFalse implements IProcessPrecondition
 	{
 
 		@Override
@@ -36,7 +36,7 @@ public class AProcessModelTest
 		}
 	}
 
-	public static class SvrProcessPreconditionThrowsException implements ISvrProcessPrecondition
+	public static class ProcessPreconditionThrowsException implements IProcessPrecondition
 	{
 
 		@Override
@@ -90,15 +90,15 @@ public class AProcessModelTest
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsFalse()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionReturnFalse.class, false);
+		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, false);
 		Assert.assertEquals(false, model.isPreconditionApplicable(process, gridTab));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsFalse_But_FormClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionReturnTrue.class, true);
-		process.setClassname(SvrProcessPreconditionReturnFalse.class.getName());
+		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, true);
+		process.setClassname(ProcessPreconditionReturnFalse.class.getName());
 		Assert.assertEquals(
 				"If there is a process class defined we shall not look for form class",
 				false, model.isPreconditionApplicable(process, gridTab));
@@ -107,14 +107,14 @@ public class AProcessModelTest
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionReturnTrue.class, false);
+		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, false);
 		Assert.assertEquals(true, model.isPreconditionApplicable(process, gridTab));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassThrowsException()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionThrowsException.class, false);
+		final I_AD_Process process = createProcess(ProcessPreconditionThrowsException.class, false);
 		Assert.assertEquals(
 				"In case preconditions are throwing exceptions we shall not include the process",
 				false, model.isPreconditionApplicable(process, gridTab));
@@ -123,14 +123,14 @@ public class AProcessModelTest
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsFalse()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionReturnFalse.class, true);
+		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, true);
 		Assert.assertEquals(false, model.isPreconditionApplicable(process, gridTab));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(SvrProcessPreconditionReturnTrue.class, true);
+		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, true);
 		Assert.assertEquals(true, model.isPreconditionApplicable(process, gridTab));
 	}
 

@@ -26,7 +26,7 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MInventory;
@@ -42,7 +42,7 @@ import org.compiere.util.Env;
  * @author Jorg Janke
  * @version $Id: InventoryCountCreate.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class InventoryCountCreate extends SvrProcess
+public class InventoryCountCreate extends JavaProcess
 {
 
 	/** Physical Inventory Parameter */

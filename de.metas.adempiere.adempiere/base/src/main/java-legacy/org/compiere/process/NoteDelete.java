@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Delete Notes (Notice)
@@ -32,7 +32,7 @@ import de.metas.process.SvrProcess;
  *  [ 1639204 ] Delete Old Notes is deleting all notes
  *  Add parameter KeepLogDays
  */
-public class NoteDelete extends SvrProcess
+public class NoteDelete extends JavaProcess
 {
 	private int		p_AD_User_ID = -1;
 	

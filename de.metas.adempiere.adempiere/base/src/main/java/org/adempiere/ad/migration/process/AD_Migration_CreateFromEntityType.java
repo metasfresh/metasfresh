@@ -51,9 +51,9 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class AD_Migration_CreateFromEntityType extends SvrProcess
+public class AD_Migration_CreateFromEntityType extends JavaProcess
 {
 	private I_AD_Migration migration;
 	private String entityType;

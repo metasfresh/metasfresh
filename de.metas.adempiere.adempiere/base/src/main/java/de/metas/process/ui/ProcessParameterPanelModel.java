@@ -26,7 +26,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ISvrProcessDefaultParametersProvider;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
@@ -52,9 +52,9 @@ public class ProcessParameterPanelModel
 	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
 
-	private static final ISvrProcessDefaultParametersProvider NULL_DefaultPrametersProvider = (parameterName) -> null;
+	private static final IProcessDefaultParametersProvider NULL_DefaultPrametersProvider = (parameterName) -> null;
 	/** Default values provider (never null) */
-	private final ISvrProcessDefaultParametersProvider defaultsProvider;
+	private final IProcessDefaultParametersProvider defaultsProvider;
 	
 	/** Display values provider (never null) */
 	private IDisplayValueProvider displayValueProvider = (gridField) -> null;
@@ -77,13 +77,13 @@ public class ProcessParameterPanelModel
 		this.tabNo = pi.getTabNo();
 		this.processId = pi.getAD_Process_ID();
 
-		this.defaultsProvider = createSvrProcessDefaultParametersProvider(pi.getClassName());
+		this.defaultsProvider = createProcessDefaultParametersProvider(pi.getClassName());
 		this.processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
 	}
 
-	private static final ISvrProcessDefaultParametersProvider createSvrProcessDefaultParametersProvider(final String classname)
+	private static final IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final String classname)
 	{
 		if (Check.isEmpty(classname, true))
 		{
@@ -99,12 +99,12 @@ public class ProcessParameterPanelModel
 			}
 
 			final Class<?> processClass = classLoader.loadClass(classname);
-			if (!ISvrProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
+			if (!IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
 			{
 				return NULL_DefaultPrametersProvider;
 			}
 
-			final ISvrProcessDefaultParametersProvider defaultsProvider = (ISvrProcessDefaultParametersProvider)processClass.newInstance();
+			final IProcessDefaultParametersProvider defaultsProvider = (IProcessDefaultParametersProvider)processClass.newInstance();
 			return defaultsProvider;
 
 		}
@@ -496,7 +496,7 @@ public class ProcessParameterPanelModel
 		}
 		
 		//
-		// FIXME: legacy: convert Boolean to String because some of the SvrProcess implementations are checking boolean parametes as:
+		// FIXME: legacy: convert Boolean to String because some of the JavaProcess implementations are checking boolean parametes as:
 		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
 		if(value instanceof Boolean)
 		{

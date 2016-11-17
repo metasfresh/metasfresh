@@ -55,9 +55,9 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).
@@ -65,7 +65,7 @@ import de.metas.process.SvrProcess;
  * Create Payment from Bank Statement Info
  * 
  */
-public class C_Payment_CreateFrom_BankStatement extends SvrProcess implements ISvrProcessPrecondition
+public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements IProcessPrecondition
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 

@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 
@@ -69,7 +69,7 @@ import de.metas.logging.LogManager;
  *        @version $Id: FixPaymentCashLine.java,v 1.2 2005/04/19 12:54:30 srama Exp $
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
-public class FixPaymentCashLine extends SvrProcess {
+public class FixPaymentCashLine extends JavaProcess {
 	
 	
     private static final Properties ctx = Env.getCtx();

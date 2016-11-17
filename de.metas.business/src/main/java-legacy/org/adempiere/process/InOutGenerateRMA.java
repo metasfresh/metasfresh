@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -46,7 +46,7 @@ import org.compiere.util.Env;
  * 			<li>BF [ 2818523 ] Invoice and Shipment are not matched in case of RMA
  * 				https://sourceforge.net/tracker/?func=detail&aid=2818523&group_id=176962&atid=879332
  */
-public class InOutGenerateRMA extends SvrProcess
+public class InOutGenerateRMA extends JavaProcess
 {
     /** Manual Selection        */
     private boolean     p_Selection = false;

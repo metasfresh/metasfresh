@@ -32,13 +32,13 @@ import org.compiere.model.MScheduler;
 import org.compiere.server.Scheduler;
 
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class SchedulerRunNow extends SvrProcess
+public class SchedulerRunNow extends JavaProcess
 {
 	private int p_AD_Scheduler_ID = -1;
 

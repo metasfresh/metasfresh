@@ -29,9 +29,9 @@ import org.adempiere.ad.migration.xml.XMLLoader;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class MigrationFromXML extends SvrProcess
+public class MigrationFromXML extends JavaProcess
 {
 
 	private String fileName;

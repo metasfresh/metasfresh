@@ -22,7 +22,7 @@ import org.compiere.model.MNewsChannel;
 import org.compiere.model.MNewsItem;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Reindex all Content
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  *  @author Yves Sandfort
  *  @version $Id$
  */
-public class KIndexRerun extends SvrProcess
+public class KIndexRerun extends JavaProcess
 {
 	/**	WebProject Parameter		*/
 	private int		p_CM_WebProject_ID = 0;

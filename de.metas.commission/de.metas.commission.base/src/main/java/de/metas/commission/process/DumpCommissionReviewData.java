@@ -53,9 +53,9 @@ import de.metas.commission.model.MCAdvCommissionPayrollLine;
 import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.IHierarchyBL;
 import de.metas.commission.service.ISponsorDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class DumpCommissionReviewData extends SvrProcess
+public class DumpCommissionReviewData extends JavaProcess
 {
 	private final static String EOL = System.getProperty("line.separator");
 

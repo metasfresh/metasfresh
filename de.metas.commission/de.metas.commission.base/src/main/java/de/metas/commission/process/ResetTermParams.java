@@ -30,7 +30,7 @@ import org.compiere.model.MTable;
 
 import de.metas.commission.model.I_C_AdvCommissionTerm;
 import de.metas.commission.service.ICommissionTermDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Resets the params for a given C_AdvCommissionTerm by deleting and recreating them with default values. Use this process if an term's business logic has changed and there is a different set of
@@ -40,7 +40,7 @@ import de.metas.process.SvrProcess;
  * @see de.metas.commission.custom.type.ICommissionType#getSponsorParams(java.util.Properties, de.metas.commission.model.I_C_AdvCommissionCondition, String)
  * 
  */
-public class ResetTermParams extends SvrProcess
+public class ResetTermParams extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception

@@ -19,7 +19,7 @@ package org.compiere.process;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
@@ -32,7 +32,7 @@ import org.compiere.model.MPackage;
  *  @author Jorg Janke
  *  @version $Id: PackageCreate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class PackageCreate extends SvrProcess
+public class PackageCreate extends JavaProcess
 {
 	/**	Shipper				*/
 	private int		p_M_Shipper_ID = 0;

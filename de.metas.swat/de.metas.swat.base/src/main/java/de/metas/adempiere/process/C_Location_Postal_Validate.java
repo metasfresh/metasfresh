@@ -31,9 +31,9 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
 
 import de.metas.adempiere.service.ILocationBL;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class C_Location_Postal_Validate extends SvrProcess
+public class C_Location_Postal_Validate extends JavaProcess
 {
 	private int cnt_all = 0;
 	private int cnt_ok = 0;

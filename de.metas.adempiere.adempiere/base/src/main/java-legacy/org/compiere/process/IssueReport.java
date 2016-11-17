@@ -20,7 +20,7 @@ import org.compiere.model.MIssue;
 import org.compiere.model.MSystem;
 import org.compiere.util.AdempiereSystemError;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Report System Issue
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: IssueReport.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  */
-public class IssueReport extends SvrProcess
+public class IssueReport extends JavaProcess
 {
 	/**	Issue to report			*/
 	private int	m_AD_Issue_ID = 0;

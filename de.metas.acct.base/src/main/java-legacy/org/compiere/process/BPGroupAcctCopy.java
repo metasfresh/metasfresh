@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.AdempiereSystemError;
@@ -33,7 +33,7 @@ import org.compiere.util.DB;
  *  @author Jorg Janke
  *  @version $Id: BPGroupAcctCopy.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class BPGroupAcctCopy extends SvrProcess
+public class BPGroupAcctCopy extends JavaProcess
 {
 	/** BP Group					*/
 	private int			p_C_BP_Group_ID = 0;

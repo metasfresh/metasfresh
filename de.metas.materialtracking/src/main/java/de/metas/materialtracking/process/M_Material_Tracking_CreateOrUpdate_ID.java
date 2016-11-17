@@ -47,8 +47,8 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>
@@ -62,8 +62,8 @@ import de.metas.process.SvrProcess;
  * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
  */
 public class M_Material_Tracking_CreateOrUpdate_ID
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	// Services
 

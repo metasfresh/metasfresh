@@ -48,9 +48,9 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ConcatenatePdfs extends SvrProcess
+public class ConcatenatePdfs extends JavaProcess
 {
 
 	private int printJobID;

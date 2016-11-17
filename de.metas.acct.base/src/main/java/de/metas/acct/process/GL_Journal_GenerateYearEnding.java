@@ -28,7 +28,7 @@ import org.compiere.model.X_Fact_Acct;
 import org.compiere.model.X_GL_JournalBatch;
 import org.compiere.util.TimeUtil;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class GL_Journal_GenerateYearEnding extends SvrProcess
+public class GL_Journal_GenerateYearEnding extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);

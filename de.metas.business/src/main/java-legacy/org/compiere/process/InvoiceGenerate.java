@@ -24,7 +24,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -61,7 +61,7 @@ import de.metas.interfaces.I_C_OrderLine;
  * @author t.schoeneberg@metas.de: invoices are never consolidated if {@link CustomColNames#C_BPartner_ALLOW_CONSOLIDATE_INVOICE} is 'N'
  */
 // metas: synched with rev. 9749
-public class InvoiceGenerate extends SvrProcess
+public class InvoiceGenerate extends JavaProcess
 {
 
 	final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);

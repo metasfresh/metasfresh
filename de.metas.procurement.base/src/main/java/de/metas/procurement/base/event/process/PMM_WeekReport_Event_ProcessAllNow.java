@@ -1,6 +1,6 @@
 package de.metas.procurement.base.event.process;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.event.impl.PMMWeekReportEventsProcessor;
 
 /*
@@ -25,7 +25,7 @@ import de.metas.procurement.base.event.impl.PMMWeekReportEventsProcessor;
  * #L%
  */
 
-public class PMM_WeekReport_Event_ProcessAllNow extends SvrProcess
+public class PMM_WeekReport_Event_ProcessAllNow extends JavaProcess
 {
 
 	@Override

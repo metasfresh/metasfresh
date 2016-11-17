@@ -47,7 +47,7 @@ import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.model.I_C_AdvCommissionPayrollLine;
 import de.metas.commission.model.MCAdvCommissionFact;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Helper process that supports regression tests by deleting all commission data that was created after a given date
@@ -55,7 +55,7 @@ import de.metas.process.SvrProcess;
  * @author ts
  * 
  */
-public class DeleteCommissionData extends SvrProcess
+public class DeleteCommissionData extends JavaProcess
 {
 
 	private MPeriod period;

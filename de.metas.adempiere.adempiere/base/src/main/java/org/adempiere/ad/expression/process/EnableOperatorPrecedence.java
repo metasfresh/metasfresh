@@ -40,14 +40,14 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * @author ad
  * @task http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29
  */
-public class EnableOperatorPrecedence extends SvrProcess
+public class EnableOperatorPrecedence extends JavaProcess
 {
 	private boolean p_IsTest = true;
 

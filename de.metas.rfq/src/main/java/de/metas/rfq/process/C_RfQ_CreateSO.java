@@ -11,7 +11,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.util.Env;
 
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
@@ -50,7 +50,7 @@ import de.metas.rfq.model.I_C_RfQLineQty;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_CreateSO extends SvrProcess
+public class C_RfQ_CreateSO extends JavaProcess
 {
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);

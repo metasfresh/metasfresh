@@ -37,18 +37,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.process.SvrProcess.ProcessCanceledException;
+import de.metas.process.JavaProcess.ProcessCanceledException;
 import de.metas.process.impl.ADPInstanceDAO;
 
 /**
- * Tests {@link SvrProcess} life-cycle management.
+ * Tests {@link JavaProcess} life-cycle management.
  *
  * @author tsa
  *
  */
-public class SvrProcessTests
+public class JavaProcessTests
 {
-	public static class MockedSvrProcess extends SvrProcess
+	public static class MockedJavaProcess extends JavaProcess
 	{
 		public final boolean expectPrepareOutOfTrx;
 		public RuntimeException onPrepareThrowException = null;
@@ -66,12 +66,12 @@ public class SvrProcessTests
 		// TODO: we need to validate AD_PInstance values only when running from ProcessCtl
 		public boolean validateAD_PInstance_Values = false;
 
-		protected MockedSvrProcess()
+		protected MockedJavaProcess()
 		{
 			this(false, false); // expectPrepareOutOfTrx=false, expectDoItOutOfTrx=false
 		}
 
-		protected MockedSvrProcess(final boolean expectPrepareOutOfTrx, final boolean expectDoItOutOfTrx)
+		protected MockedJavaProcess(final boolean expectPrepareOutOfTrx, final boolean expectDoItOutOfTrx)
 		{
 			super();
 			this.expectPrepareOutOfTrx = expectPrepareOutOfTrx;
@@ -199,9 +199,9 @@ public class SvrProcessTests
 
 	}
 
-	public static class MockedSvrProcess_PrepareOutOfTrx extends MockedSvrProcess
+	public static class MockedJavaProcess_PrepareOutOfTrx extends MockedJavaProcess
 	{
-		public MockedSvrProcess_PrepareOutOfTrx()
+		public MockedJavaProcess_PrepareOutOfTrx()
 		{
 			super(true, false); // expectPrepareOutOfTrx=true, expectDoItOutOfTrx=false
 		}
@@ -214,9 +214,9 @@ public class SvrProcessTests
 		}
 	}
 
-	public static class MockedSvrProcess_DoItOutOfTrx extends MockedSvrProcess
+	public static class MockedJavaProcess_DoItOutOfTrx extends MockedJavaProcess
 	{
-		public MockedSvrProcess_DoItOutOfTrx()
+		public MockedJavaProcess_DoItOutOfTrx()
 		{
 			super(true, true); // expectPrepareOutOfTrx=true, expectDoItOutOfTrx=true
 			// NOTE: in case doIt is out of transaction then prepare is automatically set to be out of transaction
@@ -252,7 +252,7 @@ public class SvrProcessTests
 		trxManager.assertTrxNameNull(trxManager.getThreadInheritedTrxName());
 	}
 
-	private ProcessInfo createProcessInfo(final SvrProcess processInstance)
+	private ProcessInfo createProcessInfo(final JavaProcess processInstance)
 	{
 		final Properties ctx = Env.getCtx();
 		
@@ -273,7 +273,7 @@ public class SvrProcessTests
 		return pi;
 	}
 	
-	private Exception startProcessAndExpectToFail(final SvrProcess process, final ProcessInfo pi, final ITrx trx)
+	private Exception startProcessAndExpectToFail(final JavaProcess process, final ProcessInfo pi, final ITrx trx)
 	{
 		try
 		{
@@ -295,7 +295,7 @@ public class SvrProcessTests
 	@Test
 	public void test_RunAndReturnMessage()
 	{
-		final MockedSvrProcess process = new MockedSvrProcess();
+		final MockedJavaProcess process = new MockedJavaProcess();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -313,7 +313,7 @@ public class SvrProcessTests
 	@Test
 	public void test_RunAndFailOnDoIt()
 	{
-		final MockedSvrProcess process = new MockedSvrProcess();
+		final MockedJavaProcess process = new MockedJavaProcess();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -334,7 +334,7 @@ public class SvrProcessTests
 	@Test
 	public void test_RunAndFailOnPrepare()
 	{
-		final MockedSvrProcess process = new MockedSvrProcess();
+		final MockedJavaProcess process = new MockedJavaProcess();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -355,7 +355,7 @@ public class SvrProcessTests
 	@Test
 	public void test_PrepareOutOfTrx_doItReturnMessage()
 	{
-		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
+		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -373,7 +373,7 @@ public class SvrProcessTests
 	@Test
 	public void test_PrepareOutOfTrxButFail()
 	{
-		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
+		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -394,7 +394,7 @@ public class SvrProcessTests
 	@Test
 	public void test_PrepareOutOfTrxButCancel()
 	{
-		final MockedSvrProcess_PrepareOutOfTrx process = new MockedSvrProcess_PrepareOutOfTrx();
+		final MockedJavaProcess_PrepareOutOfTrx process = new MockedJavaProcess_PrepareOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -412,7 +412,7 @@ public class SvrProcessTests
 	@Test
 	public void test_doItOutOfTrx_doItReturnMessage()
 	{
-		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
+		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -431,7 +431,7 @@ public class SvrProcessTests
 	@Test
 	public void test_doItOutOfTrxButFail()
 	{
-		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
+		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -452,7 +452,7 @@ public class SvrProcessTests
 	@Test
 	public void test_DoItOutOfTrxButCancel()
 	{
-		final MockedSvrProcess_DoItOutOfTrx process = new MockedSvrProcess_DoItOutOfTrx();
+		final MockedJavaProcess_DoItOutOfTrx process = new MockedJavaProcess_DoItOutOfTrx();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 
@@ -469,7 +469,7 @@ public class SvrProcessTests
 	}
 
 	/**
-	 * Test the behavior when {@link SvrProcess#postProcess(boolean)} fails.
+	 * Test the behavior when {@link JavaProcess#postProcess(boolean)} fails.
 	 *
 	 * NOTE: this is subject to change, but at the moment, if postProcess fails, an exception is thrown right away and it's assumed that it's the job of caller to handle it and update the ProcessInfo.
 	 * I know it's not OK, but it is as it is for now.
@@ -477,7 +477,7 @@ public class SvrProcessTests
 	@Test
 	public void test_RunAndFailOnPostProcess()
 	{
-		final MockedSvrProcess process = new MockedSvrProcess();
+		final MockedJavaProcess process = new MockedJavaProcess();
 		final ITrx trx = ITrx.TRX_None;
 		final ProcessInfo pi = createProcessInfo(process);
 

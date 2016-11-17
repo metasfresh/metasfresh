@@ -10,10 +10,10 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.process.ISvrProcessDefaultParametersProvider;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.Process;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -48,8 +48,8 @@ import de.metas.procurement.base.model.I_PMM_Product;
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class C_Flatrate_Term_Create_ProcurementContract
-		extends SvrProcess
-		implements ISvrProcessDefaultParametersProvider
+		extends JavaProcess
+		implements IProcessDefaultParametersProvider
 {
 	// services
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);

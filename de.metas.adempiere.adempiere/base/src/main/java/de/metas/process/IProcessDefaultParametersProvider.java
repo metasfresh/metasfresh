@@ -31,7 +31,7 @@ import org.compiere.model.Null;
  *
  */
 @FunctionalInterface
-public interface ISvrProcessDefaultParametersProvider
+public interface IProcessDefaultParametersProvider
 {
 	Object DEFAULT_VALUE_NOTAVAILABLE = null;
 

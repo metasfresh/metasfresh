@@ -33,7 +33,7 @@ import org.compiere.util.Language;
 import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *  Statement of Account
@@ -51,7 +51,7 @@ import de.metas.process.SvrProcess;
  *			<li>FR [2857076] User Element 1 and 2 completion - https://sourceforge.net/tracker/?func=detail&aid=2857076&group_id=176962&atid=879335
  *   
  */
-public class FinStatement extends SvrProcess
+public class FinStatement extends JavaProcess
 {
 	/** AcctSchame Parameter			*/
 	private int					p_C_AcctSchema_ID = 0;

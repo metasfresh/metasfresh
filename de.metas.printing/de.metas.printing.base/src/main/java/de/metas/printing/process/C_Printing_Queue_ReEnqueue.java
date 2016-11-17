@@ -41,7 +41,7 @@ import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
@@ -49,7 +49,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/04468_Belege_erneut_in_Druckerwarteschlange_%282013062710000119%29
  */
-public class C_Printing_Queue_ReEnqueue extends SvrProcess
+public class C_Printing_Queue_ReEnqueue extends JavaProcess
 {
 	public static final String PARAM_IsSelected = "IsSelected";
 	private boolean p_IsSelected = false;

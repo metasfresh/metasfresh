@@ -19,7 +19,7 @@ package org.compiere.process;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
@@ -36,7 +36,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: SequenceCheck.java,v 1.3 2006/07/30 00:54:44 jjanke Exp $
  */
-public class SequenceCheck extends SvrProcess
+public class SequenceCheck extends JavaProcess
 {
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(SequenceCheck.class);
@@ -84,7 +84,7 @@ public class SequenceCheck extends SvrProcess
 	{
 		try
 		{
-			final SvrProcess process = null;
+			final JavaProcess process = null;
 			checkSequences(ctx, process);
 		}
 		catch (Exception e)

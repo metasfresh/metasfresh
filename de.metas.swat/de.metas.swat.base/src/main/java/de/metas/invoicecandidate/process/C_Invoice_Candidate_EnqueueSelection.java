@@ -47,14 +47,14 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
  * @author cg
  *
  */
-public class C_Invoice_Candidate_EnqueueSelection extends SvrProcess
+public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//

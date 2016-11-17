@@ -47,7 +47,7 @@ import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Asset Transfer
@@ -55,7 +55,7 @@ import de.metas.process.SvrProcess;
  *  @author Rob Klein
  *  @version $Id: AssetTransfer.java,v 1.0 $
  */
-public class AssetTransfer extends SvrProcess
+public class AssetTransfer extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Asset_Transfer_ID = 0;

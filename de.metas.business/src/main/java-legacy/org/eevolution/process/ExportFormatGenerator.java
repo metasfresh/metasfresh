@@ -19,7 +19,7 @@ import java.util.Hashtable;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
@@ -39,7 +39,7 @@ import org.compiere.util.DisplayType;
  *  @author Victor Perez www.e-evolution.com
  *  @version $Id: ExportFormatGenerator.java,v 1.0 
  */
-public class ExportFormatGenerator extends SvrProcess
+public class ExportFormatGenerator extends JavaProcess
 {
 
 	private int			p_AD_Window_ID = 0;

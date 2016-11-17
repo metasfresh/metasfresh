@@ -35,7 +35,7 @@ import java.sql.ResultSet;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -54,7 +54,7 @@ import org.compiere.util.Trx;
  *
  * @author Carlos Ruiz
  */
-public class ClientAcctProcessor extends SvrProcess
+public class ClientAcctProcessor extends JavaProcess
 {
 	// services
 	private final transient IPostingService postingService = Services.get(IPostingService.class);

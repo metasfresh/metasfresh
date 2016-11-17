@@ -42,7 +42,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -50,7 +50,7 @@ import de.metas.process.SvrProcess;
  * warehouse. If one of the three is not specified, all products that are sold and purchased, all resources that are plants and all warehouses are iterated in all combination.
  *
  */
-public class MRPFindLoops extends SvrProcess
+public class MRPFindLoops extends JavaProcess
 {
 	// Services
 	private final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);

@@ -31,7 +31,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process used to test the distributed event bus by sending events to a given topic.
@@ -39,7 +39,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  *
  */
-public class EventBus_SendTestEvent extends SvrProcess
+public class EventBus_SendTestEvent extends JavaProcess
 {
 
 	private String p_TopicName;

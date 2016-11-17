@@ -23,7 +23,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -42,7 +42,7 @@ import org.compiere.util.Env;
  *  Contributor(s):
  *    Carlos Ruiz - globalqss - FR [ 1992542 ] Import Payment doesn't have DocAction parameter
  */
-public class ImportPayment extends SvrProcess
+public class ImportPayment extends JavaProcess
 {
 	/**	Organization to be imported to	*/
 	private int				p_AD_Org_ID = 0;

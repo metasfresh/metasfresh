@@ -35,7 +35,7 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Deliver Assets Electronically
@@ -44,7 +44,7 @@ import de.metas.process.SvrProcess;
  * 	@version 	$Id: AssetDelivery.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  * 	@author 	Michael Judd BF [ 2736995 ] - toURL() in java.io.File has been deprecated
  */
-public class AssetDelivery extends SvrProcess
+public class AssetDelivery extends JavaProcess
 {
 	private MClient		m_client = null;
 

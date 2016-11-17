@@ -15,7 +15,7 @@ import org.compiere.util.Env;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -49,7 +49,7 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://metasfresh.atlassian.net/browse/FRESH-202
  */
-public class PMM_Purchase_Candidate_UpdatePricing extends SvrProcess
+public class PMM_Purchase_Candidate_UpdatePricing extends JavaProcess
 {
 	// services
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);

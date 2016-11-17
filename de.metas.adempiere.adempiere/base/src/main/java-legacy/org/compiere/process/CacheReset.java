@@ -19,7 +19,7 @@ package org.compiere.process;
 import org.compiere.util.Env;
 
 import de.metas.process.Process;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Reset Cache
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  * @version $Id: CacheReset.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 @Process(clientOnly = true)
-public class CacheReset extends SvrProcess
+public class CacheReset extends JavaProcess
 {
 	@Override
 	protected String doIt()

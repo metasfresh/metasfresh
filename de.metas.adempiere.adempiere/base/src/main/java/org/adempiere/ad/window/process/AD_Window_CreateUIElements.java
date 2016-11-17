@@ -26,7 +26,7 @@ import org.compiere.model.I_AD_Window;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ import de.metas.process.SvrProcess;
  * #L%
  */
 
-public class AD_Window_CreateUIElements extends SvrProcess
+public class AD_Window_CreateUIElements extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception

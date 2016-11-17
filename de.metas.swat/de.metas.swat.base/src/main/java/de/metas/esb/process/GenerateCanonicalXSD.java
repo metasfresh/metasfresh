@@ -67,13 +67,13 @@ import de.metas.esb.util.CanonicalXSDGenerator;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  * 
  */
-public class GenerateCanonicalXSD extends SvrProcess
+public class GenerateCanonicalXSD extends JavaProcess
 {
 	private static final String PARAM_Target_Directory = "Target_Directory";
 	private String p_Target_Directory = null;

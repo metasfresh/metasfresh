@@ -30,9 +30,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class AD_Printer_CheckSuggest extends SvrProcess
+public class AD_Printer_CheckSuggest extends JavaProcess
 {
 	@Override
 	protected void prepare()

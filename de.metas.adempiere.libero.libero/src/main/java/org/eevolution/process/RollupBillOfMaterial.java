@@ -64,7 +64,7 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Roll-UP Bill of Material
@@ -75,7 +75,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
-public class RollupBillOfMaterial extends SvrProcess
+public class RollupBillOfMaterial extends JavaProcess
 {
 	/* Organization 		*/
 	private int		 		p_AD_Org_ID = 0;

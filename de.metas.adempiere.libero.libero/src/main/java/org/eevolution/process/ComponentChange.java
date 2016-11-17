@@ -52,7 +52,7 @@ import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -63,7 +63,7 @@ import de.metas.process.SvrProcess;
  *  
  *  @author Teo Sarca, www.arhipac.ro
  */
-public class ComponentChange extends SvrProcess
+public class ComponentChange extends JavaProcess
 {
 	private static final int	ACTION_AD_Reference_ID	= 53227;
 	private static final String ACTION_Add				= "A";

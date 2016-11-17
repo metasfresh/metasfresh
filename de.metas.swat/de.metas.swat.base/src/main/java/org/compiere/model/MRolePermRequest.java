@@ -41,7 +41,7 @@ import org.compiere.wf.MWorkflow;
 import org.compiere.wf.MWorkflowAccess;
 
 import de.metas.process.IADProcessDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
@@ -73,8 +73,8 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		super(ctx, rs, trxName);
 	}
 	
-	private SvrProcess m_caller = null;
-	public void setCaller(SvrProcess process)
+	private JavaProcess m_caller = null;
+	public void setCaller(JavaProcess process)
 	{
 		m_caller = process;
 	}

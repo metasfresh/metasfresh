@@ -22,7 +22,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
@@ -48,7 +48,7 @@ import org.compiere.util.Msg;
  *  @version $Id: InvoiceNGL.java,v 1.3 2006/08/04 03:53:59 jjanke Exp $
  *  FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
  */
-public class InvoiceNGL extends SvrProcess
+public class InvoiceNGL extends JavaProcess
 {
 	/**	Mandatory Acct Schema			*/
 	private int				p_C_AcctSchema_ID = 0;

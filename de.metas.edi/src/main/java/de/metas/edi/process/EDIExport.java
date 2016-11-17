@@ -32,7 +32,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * EDI-Exports a single document.
@@ -40,7 +40,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class EDIExport extends SvrProcess
+public class EDIExport extends JavaProcess
 {
 	private int recordId = -1;
 

@@ -26,10 +26,10 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
-public class PosKeyGenerate extends SvrProcess {
+public class PosKeyGenerate extends JavaProcess {
 
 	private int posKeyLayoutId = 0;
 	private int productCategoryId = 0;

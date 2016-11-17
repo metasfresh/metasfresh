@@ -41,9 +41,9 @@ import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ConvertBPartnerMemo extends SvrProcess {
+public class ConvertBPartnerMemo extends JavaProcess {
 
 	@Override
 	protected String doIt() throws Exception {

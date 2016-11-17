@@ -72,7 +72,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -91,7 +91,7 @@ import de.metas.process.SvrProcess;
  * 				https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2847727&group_id=176962
  */
 
-public class PackOut extends SvrProcess
+public class PackOut extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_PackOut_ID = 0;

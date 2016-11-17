@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -59,7 +59,7 @@ import org.compiere.util.Env;
  *	@author Alejandro Falcone
  *	
  **/
-public class ImmediateBankTransfer extends SvrProcess
+public class ImmediateBankTransfer extends JavaProcess
 {
 	 /** DocAction          */
     private String      p_docAction = DocAction.ACTION_Complete;

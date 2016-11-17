@@ -22,7 +22,7 @@ import org.compiere.model.MSLAGoal;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -32,7 +32,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: SLAGoalProcess.java,v 1.2 2006/07/30 00:51:06 jjanke Exp $
  */
-public class SLAGoalProcess extends SvrProcess
+public class SLAGoalProcess extends JavaProcess
 {
 	/** Goal					*/
 	private int			p_PA_SLA_Goal_ID;

@@ -20,7 +20,7 @@ import org.adempiere.ad.migration.xml.XMLWriter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -30,7 +30,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca
  * 
  */
-public class MigrationToXML extends SvrProcess
+public class MigrationToXML extends JavaProcess
 {
 
 	private int migrationId = 0;

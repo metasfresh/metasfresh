@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MAccount;
@@ -38,7 +38,7 @@ import org.compiere.util.KeyNamePair;
  *  @author Jorg Janke
  *  @version $Id: AcctSchemaCopyAcct.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class AcctSchemaCopyAcct extends SvrProcess
+public class AcctSchemaCopyAcct extends JavaProcess
 {
 	private int		p_SourceAcctSchema_ID = 0;
 	private int		p_TargetAcctSchema_ID = 0;

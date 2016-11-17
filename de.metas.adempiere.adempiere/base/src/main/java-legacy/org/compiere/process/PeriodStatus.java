@@ -28,7 +28,7 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.service.IPeriodBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Open/Close all Period (Control)
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: PeriodStatus.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class PeriodStatus extends SvrProcess
+public class PeriodStatus extends JavaProcess
 {
 	/** Action */
 	private String p_PeriodAction = null;

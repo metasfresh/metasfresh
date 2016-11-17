@@ -26,7 +26,7 @@ import org.compiere.model.MWarehouse;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  *  @author 	Michael Judd (mjudd) Akuna Ltd - BF [ 2685127 ]
  *  
  */
-public class InventoryValue extends SvrProcess
+public class InventoryValue extends JavaProcess
 {
 	/** Price List Used         */
 	private int         p_M_PriceList_Version_ID;

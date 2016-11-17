@@ -19,7 +19,7 @@ package org.compiere.cm;
 import org.compiere.model.MTemplate;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 	CM Template Validation Process
@@ -27,7 +27,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TemplateValidate.java,v 1.3 2006/08/08 13:29:49 comdivision Exp $
  */
-public class TemplateValidate extends SvrProcess
+public class TemplateValidate extends JavaProcess
 {
 	@Override
 	protected void prepare ()

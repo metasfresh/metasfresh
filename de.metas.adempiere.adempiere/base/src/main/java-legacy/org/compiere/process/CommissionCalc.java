@@ -37,7 +37,7 @@ import org.compiere.util.Language;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Commission Calculation	
@@ -45,7 +45,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: CommissionCalc.java,v 1.3 2006/09/25 00:59:41 jjanke Exp $
  */
-public class CommissionCalc extends SvrProcess
+public class CommissionCalc extends JavaProcess
 {
 	private Timestamp		p_StartDate;
 	//

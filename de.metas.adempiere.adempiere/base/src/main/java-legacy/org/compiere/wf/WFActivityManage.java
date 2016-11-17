@@ -20,7 +20,7 @@ import org.compiere.model.MUser;
 import org.compiere.process.StateEngine;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Manage Workflow Activity
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: WFActivityManage.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class WFActivityManage extends SvrProcess
+public class WFActivityManage extends JavaProcess
 {
 	/**	Abort It				*/	
 	private boolean		p_IsAbort = false;

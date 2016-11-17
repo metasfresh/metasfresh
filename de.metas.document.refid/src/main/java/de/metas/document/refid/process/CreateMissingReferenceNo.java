@@ -43,7 +43,7 @@ import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create missing reference numbers
@@ -51,7 +51,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/03779_Create_Reference_numbers_for_existing_invoices_%282013011110000032 %29
  */
-public class CreateMissingReferenceNo extends SvrProcess
+public class CreateMissingReferenceNo extends JavaProcess
 {
 	private boolean p_IsTest = true;
 
@@ -215,7 +215,7 @@ public class CreateMissingReferenceNo extends SvrProcess
 		return false;
 	}
 
-	private Map<Integer, List<IReferenceNoGeneratorInstance>> groupByTableId(final List<IReferenceNoGeneratorInstance> generatorInstances)
+	private static Map<Integer, List<IReferenceNoGeneratorInstance>> groupByTableId(final List<IReferenceNoGeneratorInstance> generatorInstances)
 	{
 		final Map<Integer, List<IReferenceNoGeneratorInstance>> map = new HashMap<Integer, List<IReferenceNoGeneratorInstance>>();
 

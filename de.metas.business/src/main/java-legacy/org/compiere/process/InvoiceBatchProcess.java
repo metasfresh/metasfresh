@@ -23,7 +23,7 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -32,7 +32,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: InvoiceBatchProcess.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class InvoiceBatchProcess extends SvrProcess
+public class InvoiceBatchProcess extends JavaProcess
 {
 	/**	Batch to process		*/
 	private int		p_C_InvoiceBatch_ID = 0;

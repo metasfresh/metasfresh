@@ -27,7 +27,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TranslationDocSync.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class TranslationDocSync extends SvrProcess
+public class TranslationDocSync extends JavaProcess
 {
 	/**
 	 *  Prepare - e.g., get Parameters.

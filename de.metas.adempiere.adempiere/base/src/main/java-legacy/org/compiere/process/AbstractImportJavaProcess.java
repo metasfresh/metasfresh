@@ -6,21 +6,21 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
- * {@link IImportProcess} to {@link SvrProcess} adapter.
+ * {@link IImportProcess} to {@link JavaProcess} adapter.
  * 
  * @author tsa
  *
  * @param <ImportRecordType>
  */
-public abstract class ImportSvrProcess<ImportRecordType> extends SvrProcess
+public abstract class AbstractImportJavaProcess<ImportRecordType> extends JavaProcess
 {
 	private final Class<ImportRecordType> importRecordClass;
 	private IImportProcess<ImportRecordType> importProcess;
 
-	public ImportSvrProcess(Class<ImportRecordType> importRecordClass)
+	public AbstractImportJavaProcess(Class<ImportRecordType> importRecordClass)
 	{
 		super();
 

@@ -48,14 +48,14 @@ import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToGroup extends SvrProcess
+public class AD_BoilderPlate_SendToGroup extends JavaProcess
 {
 	public static final String CCM_NotificationType_EMail = "E"; 
 	public static final String CCM_NotificationType_Letter = "L";

@@ -60,7 +60,7 @@ import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Cost Multi-Level BOM & Formula Review
@@ -69,7 +69,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca, www.arhipac.ro
  *
  */
-public class CostBillOfMaterial extends SvrProcess
+public class CostBillOfMaterial extends JavaProcess
 {
 	private static final String LEVELS = "....................";
 	//

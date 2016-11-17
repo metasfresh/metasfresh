@@ -6,8 +6,8 @@ import org.compiere.model.I_C_PaySelection;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates an links {@link I_C_Payment}s to {@link I_C_PaySelectionLine}s.
@@ -15,7 +15,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  *
  */
-public class C_PaySelection_CreatePayments extends SvrProcess implements ISvrProcessPrecondition
+public class C_PaySelection_CreatePayments extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);

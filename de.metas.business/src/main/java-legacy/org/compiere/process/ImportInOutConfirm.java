@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MInOutLineConfirm;
 import org.compiere.model.X_I_InOutLineConfirm;
@@ -35,7 +35,7 @@ import org.compiere.util.DB;
  *  @author Jorg Janke
  *  @version $Id: ImportInOutConfirm.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ImportInOutConfirm extends SvrProcess
+public class ImportInOutConfirm extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int 			p_AD_Client_ID = 0;

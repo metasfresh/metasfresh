@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.process;
 
 import java.math.BigDecimal;
@@ -39,7 +23,6 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -50,32 +33,22 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
- * Server Process base class.
+ * Java Process base class.
  *
  * Also see
  * <ul>
- * <li> {@link ISvrProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
- * <li> {@link ISvrProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
+ * <li> {@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
+ * <li> {@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
  * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li> {@link Process} annotation if you add more info about how the process shall be executed
  * <li> {@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
  * </ul>
  *
  *
- * @author Jorg Janke
- *
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <ul>
- *         <li>FR [ 1646891 ] SvrProcess - post process support
- *         <li>BF [ 1877935 ] SvrProcess.process should catch all throwables
- *         <li>FR [ 1877937 ] SvrProcess: added commitEx method
- *         <li>BF [ 1878743 ] SvrProcess.getAD_User_ID
- *         <li>BF [ 1935093 ] SvrProcess.unlock() is setting invalid result
- *         <li>FR [ 2788006 ] SvrProcess: change access to some methods https://sourceforge.net/tracker/?func=detail&aid=2788006&group_id=176962&atid=879335
- *         </ul>
- *
+ * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
+ * @author metas-dev <dev@metasfresh.com>
  */
-public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAware
+public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 {
 	// services
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -84,22 +57,16 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	/**
 	 * Server Process. Note that the class is initiated by startProcess.
 	 */
-	protected SvrProcess()
+	protected JavaProcess()
 	{
 		super();
-	}   // SvrProcess
+	}
 
 	private Properties m_ctx;
 	private ProcessInfo m_pi;
 
 	/** Logger */
 	protected final Logger log = LogManager.getLogger(getClass());
-	static final transient Logger s_log = LogManager.getLogger(SvrProcess.class);
-
-	/** Is the Object locked */
-	private boolean m_locked = false;
-	/** Loacked Object */
-	private PO m_lockedObject = null;
 
 	//
 	// Transaction management
@@ -107,14 +74,14 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
 	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
-	private boolean m_dbContraintsChanged = false;
+	private boolean m_dbConstraintsChanged = false;
 	/** Transaction name prefix (in case of local transaction) */
-	private static final String TRXNAME_Prefix = "SvrProcess";
+	private static final String TRXNAME_Prefix = "JavaProcess";
 
 	// Common Return Messages
-	protected static String MSG_SaveErrorRowNotFound = "@SaveErrorRowNotFound@";
-	protected static String MSG_InvalidArguments = "@InvalidArguments@";
-	protected static String MSG_OK = "OK";
+	protected static final String MSG_SaveErrorRowNotFound = "@SaveErrorRowNotFound@";
+	protected static final String MSG_InvalidArguments = "@InvalidArguments@";
+	protected static final String MSG_OK = "OK";
 	/**
 	 * Process failed error message. To be returned from {@link #doIt()}.
 	 *
@@ -125,14 +92,8 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	/**
 	 * Start the process.
 	 *
-	 * It should only return false, if the function could not be performed as this causes the process to abort.
-	 *
-	 * @param ctx Context
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
-	 * @return <code>true</code> if process was executed successfully
-	 *
-	 * @see de.metas.process.ProcessCall#startProcess(Properties, ProcessInfo, ITrx)
 	 */
 	@Override
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
@@ -289,7 +250,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 					.setMaxTrx(1)
 					.setMaxSavepoints(1)
 					.setAllowTrxAfterThreadEnd(false);
-			this.m_dbContraintsChanged = true;
+			this.m_dbConstraintsChanged = true;
 		}
 
 		//
@@ -322,10 +283,10 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 
 		//
 		// Changing the constraints back to their default (02355)
-		if (m_dbContraintsChanged)
+		if (m_dbConstraintsChanged)
 		{
 			DB.restoreConstraints();
-			m_dbContraintsChanged = false;
+			m_dbConstraintsChanged = false;
 		}
 
 		//
@@ -514,63 +475,15 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	{
 		if (m_trx != null)
 			m_trx.rollback();
-	}	// rollback
-
-	/**************************************************************************
-	 * Lock Object. Needs to be explicitly called. Unlock is automatic.
-	 *
-	 * @param po object
-	 * @return true if locked
-	 */
-	protected final boolean lockObject(PO po)
-	{
-		// Unlock existing
-		if (m_locked || m_lockedObject != null)
-			unlockObject();
-		// Nothing to lock
-		if (po == null)
-			return false;
-		m_lockedObject = po;
-		m_locked = m_lockedObject.lock();
-		return m_locked;
-	}	// lockObject
+	}
 
 	/**
-	 * Is an object Locked?
-	 *
-	 * @return true if object locked
-	 */
-	protected final boolean isLocked()
-	{
-		return m_locked;
-	}	// isLocked
-
-	/**
-	 * Unlock Object. Is automatically called at the end of process.
-	 *
-	 * @return true if unlocked or if there was nothing to unlock
-	 */
-	protected final boolean unlockObject()
-	{
-		boolean success = true;
-		if (m_locked || m_lockedObject != null)
-		{
-			success = m_lockedObject.unlock(null);
-		}
-		m_locked = false;
-		m_lockedObject = null;
-		return success;
-	}	// unlock
-
-	/**************************************************************************
-	 * Get Process Info
-	 *
 	 * @return Process Info
 	 */
-	public final ProcessInfo getProcessInfo()
+	protected final ProcessInfo getProcessInfo()
 	{
 		return m_pi;
-	}   // getProcessInfo
+	}
 	
 	protected final ProcessExecutionResult getResult()
 	{
@@ -578,15 +491,13 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**
-	 * Get Properties
-	 *
 	 * @return context; never returns <code>null</code>
 	 */
 	@Override
 	public final Properties getCtx()
 	{
 		return Env.coalesce(m_ctx);
-	}   // getCtx
+	}
 
 	/**
 	 * Get Name/Title
@@ -603,7 +514,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 *
 	 * @return Process Instance
 	 */
-	protected final int getAD_PInstance_ID()
+	public final int getAD_PInstance_ID()
 	{
 		return m_pi.getAD_PInstance_ID();
 	}   // getAD_PInstance_ID
@@ -635,7 +546,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
-	public final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
+	protected final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		String trxName = getTrxName();
 
@@ -651,24 +562,20 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**
-	 * Get AD_User_ID
-	 *
-	 * @return AD_User_ID of Process owner or -1 if not found
+	 * @return AD_User_ID of Process owner
 	 */
 	protected final int getAD_User_ID()
 	{
 		return m_pi.getAD_User_ID();
-	}   // getAD_User_ID
+	}
 
 	/**
-	 * Get AD_User_ID
-	 *
-	 * @return AD_User_ID of Process owner
+	 * @return AD_Client_ID of Process owner
 	 */
 	protected final int getAD_Client_ID()
 	{
 		return m_pi.getAD_Client_ID();
-	}	// getAD_Client_ID
+	}
 
 	/**
 	 * Gets parameters.
@@ -712,28 +619,16 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 	}
 
 	/**************************************************************************
-	 * Add Log Entry, if our internal {@link ProcessInfo} reference is not <code>null</code>
+	 * Add Log Entry
 	 *
-	 * @param date date or null
 	 * @param id record id or 0
+	 * @param date date or null
 	 * @param number number or null
 	 * @param msg message or null
 	 */
-	public final void addLog(int id, Timestamp date, BigDecimal number, String msg)
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
 		getResult().addLog(id, date, number, msg);
-
-		if (log.isDebugEnabled())
-		{
-			if (id == 0 && date == null && number == null)
-			{
-				log.debug("Log: {} - {} - {} - {}", id, date, number, msg);
-			}
-			else
-			{
-				log.debug("Log: {}", msg);
-			}
-		}
 	}	// addLog
 
 	/**
@@ -786,8 +681,7 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 		return get_TrxName();
 	}
 
-	// metas: begin
-	public final String getTableName()
+	protected final String getTableName()
 	{
 		return m_pi.getTableNameOrNull();
 	}
@@ -843,4 +737,5 @@ public abstract class SvrProcess implements ProcessCall, ILoggable, IContextAwar
 			super("@" + MSG_Canceled + "@");
 		}
 	}
-}   // SvrProcess
+	
+}

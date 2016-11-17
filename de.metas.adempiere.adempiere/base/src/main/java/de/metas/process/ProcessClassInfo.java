@@ -204,7 +204,7 @@ public final class ProcessClassInfo
 		final Set<Method> methods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withName(methodName), ReflectionUtils.withParameters(), ReflectionUtils.withReturnType(returnType));
 
 		// No methods of given format were found.
-		// This could be OK in case our process is NOT extending SvrProcess but the ProcessCall interface.
+		// This could be OK in case our process is NOT extending JavaProcess but the IProcess interface.
 		if (methods.isEmpty())
 		{
 			logger.info("Method {} with return type {} was not found in {} or in its inerited types. Ignored.", methodName, returnType, processClass);
@@ -291,7 +291,7 @@ public final class ProcessClassInfo
 	}
 
 	/**
-	 * @return <code>true</code> if we shall run {@link SvrProcess#prepare()} method out of transaction
+	 * @return <code>true</code> if we shall run {@link JavaProcess#prepare()} method out of transaction
 	 */
 	public boolean isRunPrepareOutOfTransaction()
 	{
@@ -299,7 +299,7 @@ public final class ProcessClassInfo
 	}
 
 	/**
-	 * @return <code>true</code> if we shall run {@link SvrProcess#doIt()} method out of transaction
+	 * @return <code>true</code> if we shall run {@link JavaProcess#doIt()} method out of transaction
 	 */
 	public boolean isRunDoItOutOfTransaction()
 	{

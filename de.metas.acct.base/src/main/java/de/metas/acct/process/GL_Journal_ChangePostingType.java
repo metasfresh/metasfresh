@@ -11,7 +11,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class GL_Journal_ChangePostingType extends SvrProcess
+public class GL_Journal_ChangePostingType extends JavaProcess
 {
 	// services
 	private final transient IGLJournalDAO glJournalDAO = Services.get(IGLJournalDAO.class);

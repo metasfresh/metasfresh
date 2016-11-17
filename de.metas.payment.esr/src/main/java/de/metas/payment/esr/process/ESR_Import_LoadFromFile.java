@@ -42,7 +42,7 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates ESR import lines for the given V11 file and matches them against system invoices and bPartners.
@@ -50,7 +50,7 @@ import de.metas.process.SvrProcess;
  * @author ts
  * 
  */
-public class ESR_Import_LoadFromFile extends SvrProcess
+public class ESR_Import_LoadFromFile extends JavaProcess
 {
 	// services
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);

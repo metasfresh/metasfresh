@@ -14,8 +14,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -47,8 +47,8 @@ import de.metas.process.SvrProcess;
  * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
 public class C_Order_CreatePOFromSOs
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 
 	private Timestamp p_DatePromised_From;

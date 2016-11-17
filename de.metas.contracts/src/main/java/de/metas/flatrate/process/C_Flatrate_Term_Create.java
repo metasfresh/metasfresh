@@ -16,7 +16,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.process.SvrProcess;
  * #L%
  */
 
-public abstract class C_Flatrate_Term_Create extends SvrProcess
+public abstract class C_Flatrate_Term_Create extends JavaProcess
 {
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

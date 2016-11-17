@@ -58,7 +58,7 @@ import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.reasoner.CRPReasoner;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Capacity Requirement Planning
@@ -69,7 +69,7 @@ import de.metas.process.SvrProcess;
  * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
-public class CRP extends SvrProcess
+public class CRP extends JavaProcess
 {
 	public static final String FORWARD_SCHEDULING = "F";
 	public static final String BACKWARD_SCHEDULING = "B";

@@ -26,7 +26,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Re-calculate Invoice Tax (and unpost the document)
@@ -36,7 +36,7 @@ import de.metas.process.SvrProcess;
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Teo Sarca, www.arhipac.ro
  */
-public class InvoiceCalculateTax extends SvrProcess
+public class InvoiceCalculateTax extends JavaProcess
 {
 	public static final String PARAM_C_Invoice_ID = "C_Invoice_ID";
 

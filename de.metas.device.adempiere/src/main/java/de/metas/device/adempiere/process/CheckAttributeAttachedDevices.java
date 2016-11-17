@@ -27,7 +27,7 @@ import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CheckAttributeAttachedDevices extends SvrProcess
+public class CheckAttributeAttachedDevices extends JavaProcess
 {
 	// services
 	private final transient IDeviceBL deviceBL = Services.get(IDeviceBL.class);

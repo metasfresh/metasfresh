@@ -23,14 +23,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_I_GLJournal;
 
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
  * 
  * @author cg
  */
-public class ImportGLJournal extends SvrProcess
+public class ImportGLJournal extends JavaProcess
 {
 	private IImportProcess<I_I_GLJournal> importProcess;
 

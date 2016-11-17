@@ -60,13 +60,13 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import test.integration.swat.sales.SalesTestDriver;
 
 @RunWith(IntegrationTestRunner.class)
 public class PaymentTestDriver extends AIntegrationTestDriver
 {
-	private static final Class<? extends SvrProcess> ProcessClass_BankStatementPayment = de.metas.banking.payment.process.C_Payment_CreateFrom_BankStatement.class;
+	private static final Class<? extends JavaProcess> ProcessClass_BankStatementPayment = de.metas.banking.payment.process.C_Payment_CreateFrom_BankStatement.class;
 	private static final int ProcessIdBankStatementPayment = 257;
 
 	@Override

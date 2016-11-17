@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MPayment;
@@ -37,7 +37,7 @@ import org.compiere.util.Env;
  *	@author victor.perez@e-evoltuion.com
  *	
  **/
-public class BankTransfer extends SvrProcess
+public class BankTransfer extends JavaProcess
 {
 	private String 		p_DocumentNo= "";				// Document No
 	private String 		p_Description= "";				// Description

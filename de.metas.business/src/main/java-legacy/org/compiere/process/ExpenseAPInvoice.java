@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
@@ -41,7 +41,7 @@ import org.compiere.util.Msg;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ExpenseAPInvoice.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ExpenseAPInvoice extends SvrProcess
+public class ExpenseAPInvoice extends JavaProcess
 {
 	private int			m_C_BPartner_ID = 0;
 	private Timestamp	m_DateFrom = null;

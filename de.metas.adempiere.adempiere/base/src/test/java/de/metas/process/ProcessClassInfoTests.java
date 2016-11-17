@@ -31,7 +31,7 @@ import org.junit.Test;
 
 public class ProcessClassInfoTests
 {
-	public static class ProcessCallImpl implements ProcessCall
+	public static class ProcessImpl implements IProcess
 	{
 		@Override
 		public void startProcess(final ProcessInfo pi, final ITrx trx)
@@ -47,19 +47,19 @@ public class ProcessClassInfoTests
 	}
 
 	@Test
-	public void test_ProcessCallImpl()
+	public void test_ProcessImpl()
 	{
-		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessCallImpl.class);
+		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(ProcessImpl.class);
 		Assert.assertNotSame("A new instance shall be created, and not the default one", ProcessClassInfo.NULL, processClassInfo);
 		Assert.assertEquals("RunPrepareOutOfTransaction: " + processClassInfo, false, processClassInfo.isRunPrepareOutOfTransaction());
 		Assert.assertEquals("RunDoItOutOfTransaction: " + processClassInfo, false, processClassInfo.isRunDoItOutOfTransaction());
 	}
 
 	@Test
-	public void test_SvrProcess()
+	public void test_JavaProcess()
 	{
-		// just to notify that we are not going to test the SvrProcess here...
-		Assume.assumeTrue("Other SvrProcess tests are already tested by " + SvrProcessTests.class, false);
+		// just to notify that we are not going to test the JavaProcess here...
+		Assume.assumeTrue("Other JavaProcess tests are already tested by " + JavaProcessTests.class, false);
 	}
 
 }

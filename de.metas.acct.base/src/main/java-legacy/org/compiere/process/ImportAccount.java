@@ -24,7 +24,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -38,7 +38,7 @@ import org.compiere.util.DB;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ImportAccount.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ImportAccount extends SvrProcess
+public class ImportAccount extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;

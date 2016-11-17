@@ -50,14 +50,14 @@ import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Send BoilerPlate to selected contacts
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToUsers extends SvrProcess
+public class AD_BoilderPlate_SendToUsers extends JavaProcess
 {
 	public static final String AD_Message_UserNotifyError = "de.metas.letters.UserNotifyError";
 	

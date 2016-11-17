@@ -22,7 +22,7 @@ import org.compiere.model.I_AD_Process;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *
@@ -32,7 +32,7 @@ import de.metas.process.SvrProcess;
  *         overwrites existing data (including translations)
  *
  */
-public class AD_Process_Copy extends SvrProcess
+public class AD_Process_Copy extends JavaProcess
 {
 	private int p_sourceProcessId = 0;
 	private int p_targetProcessId = 0;

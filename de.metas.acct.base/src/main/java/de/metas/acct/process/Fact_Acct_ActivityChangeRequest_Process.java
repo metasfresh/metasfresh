@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -51,7 +51,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */
-public class Fact_Acct_ActivityChangeRequest_Process extends SvrProcess
+public class Fact_Acct_ActivityChangeRequest_Process extends JavaProcess
 {
 	// services
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);

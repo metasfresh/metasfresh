@@ -19,7 +19,7 @@ package org.compiere.impexp;
 import java.math.BigDecimal;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: CopyImportFormat.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class CopyImportFormat extends SvrProcess
+public class CopyImportFormat extends JavaProcess
 {
 	private int from_AD_ImpFormat_ID = 0;
 	private int to_AD_ImpFormat_ID = 0;

@@ -31,9 +31,9 @@ import java.lang.annotation.Target;
 
 
 /**
- * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
+ * Used to annotate that {@link JavaProcess#prepare()} or {@link JavaProcess#doIt()} shall be executed out of transaction.
  *
- * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
+ * If {@link JavaProcess#doIt()} is annotated then {@link JavaProcess#prepare()} will be executed out of transaction too.
  */
 @Inherited
 @Documented

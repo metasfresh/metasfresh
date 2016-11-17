@@ -20,7 +20,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_Queue_WorkPackage_ProcessSelection extends SvrProcess
+public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 {
 
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);

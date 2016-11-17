@@ -48,13 +48,13 @@ import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author cg
  * 
  */
-public class UpdateAddresses extends SvrProcess
+public class UpdateAddresses extends JavaProcess
 {
 
 	private int p_AD_Table_ID = -1;

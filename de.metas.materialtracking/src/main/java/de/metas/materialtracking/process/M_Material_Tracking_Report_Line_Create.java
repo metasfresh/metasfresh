@@ -30,8 +30,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -56,8 +56,8 @@ import de.metas.process.SvrProcess;
  */
 
 public class M_Material_Tracking_Report_Line_Create
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	@Override
 	protected String doIt() throws Exception

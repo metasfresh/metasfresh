@@ -24,7 +24,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -42,7 +42,7 @@ import org.compiere.util.Env;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ImportInvoice.java,v 1.1 2007/09/05 09:27:31 cruiz Exp $
  */
-public class ImportInvoice extends SvrProcess
+public class ImportInvoice extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;

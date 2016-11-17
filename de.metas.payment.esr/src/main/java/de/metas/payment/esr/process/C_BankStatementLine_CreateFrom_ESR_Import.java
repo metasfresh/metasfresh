@@ -51,9 +51,9 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create {@link I_C_BankStatementLine}/{@link I_C_BankStatementLine_Ref} from {@link I_ESR_ImportLine}s.
@@ -61,7 +61,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  *
  */
-public class C_BankStatementLine_CreateFrom_ESR_Import extends SvrProcess implements ISvrProcessPrecondition
+public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);

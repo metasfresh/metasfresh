@@ -34,9 +34,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.Query;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class IMP_ProcessorLog_ResubmitXML extends SvrProcess
+public class IMP_ProcessorLog_ResubmitXML extends JavaProcess
 {
 	@Override
 	protected void prepare()

@@ -34,7 +34,7 @@ import org.compiere.model.Query;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Update {@link I_C_Dunning_Candidate#COLUMNNAME_DunningDate} field for selected records.
@@ -42,7 +42,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * 
  */
-public class C_Dunning_Candidate_SetDunningGrace extends SvrProcess
+public class C_Dunning_Candidate_SetDunningGrace extends JavaProcess
 {
 	private static final String PARAM_DunningGrace = I_C_Dunning_Candidate.COLUMNNAME_DunningGrace;
 	private Timestamp p_DunningGrace = null;

@@ -35,9 +35,9 @@ import org.adempiere.util.api.IParams;
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class OLCandSetOverrideValues extends SvrProcess
+public class OLCandSetOverrideValues extends JavaProcess
 {
 	private IParams params = null;
 

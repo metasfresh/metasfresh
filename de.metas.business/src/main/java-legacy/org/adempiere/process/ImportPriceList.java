@@ -32,7 +32,7 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
@@ -47,7 +47,7 @@ import org.compiere.util.DB;
  *
  * 	@author 	Carlos Ruiz
  */
-public class ImportPriceList extends SvrProcess
+public class ImportPriceList extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;

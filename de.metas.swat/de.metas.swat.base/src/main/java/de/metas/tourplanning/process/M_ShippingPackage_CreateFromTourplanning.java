@@ -39,9 +39,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Shipper;
 
 import de.metas.adempiere.service.IOrderDAO;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -50,7 +50,7 @@ import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
 
-public class M_ShippingPackage_CreateFromTourplanning extends SvrProcess implements ISvrProcessPrecondition
+public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implements IProcessPrecondition
 {
 	//
 	// Services

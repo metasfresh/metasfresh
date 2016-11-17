@@ -23,7 +23,7 @@ import org.compiere.model.MBankStatementLoader;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -32,7 +32,7 @@ import de.metas.process.SvrProcess;
  *	@author Maarten Klinker, Eldir Tomassen
  *	@version $Id: LoadBankStatement.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class LoadBankStatement extends SvrProcess
+public class LoadBankStatement extends JavaProcess
 {
 	public LoadBankStatement()
 	{

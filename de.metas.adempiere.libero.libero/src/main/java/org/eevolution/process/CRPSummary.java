@@ -60,7 +60,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.X_T_MRP_CRP;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Re-Open Order Process (from Closed to Completed)
@@ -69,7 +69,7 @@ import de.metas.process.SvrProcess;
  *  @version $Id: CreateCost.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
-public class CRPSummary extends SvrProcess
+public class CRPSummary extends JavaProcess
 {
 	/**					*/
 

@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MInvoice;
 
@@ -30,7 +30,7 @@ import org.compiere.model.MInvoice;
  *	@author Jorg Janke
  *	@version $Id: CopyFromInvoice.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class CopyFromInvoice extends SvrProcess
+public class CopyFromInvoice extends JavaProcess
 {
 	private int		m_C_Invoice_ID = 0;
 

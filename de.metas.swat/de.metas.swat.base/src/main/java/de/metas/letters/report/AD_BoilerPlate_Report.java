@@ -12,13 +12,13 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
  *
  */
-public class AD_BoilerPlate_Report extends SvrProcess
+public class AD_BoilerPlate_Report extends JavaProcess
 {
 	private String p_MsgText = null;
 	private int p_AD_PrintFormat_ID = -1;

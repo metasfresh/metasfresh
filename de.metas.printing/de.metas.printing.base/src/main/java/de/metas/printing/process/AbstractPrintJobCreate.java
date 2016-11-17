@@ -40,7 +40,7 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintJobMonitor;
 import de.metas.printing.spi.impl.UserConfirmationPrintJobMonitor;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process all {@link I_C_Printing_Queue} items from selection (see {@link #createSelection()}) and creates corresponding {@link I_C_Print_Job}s.
@@ -48,7 +48,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * 
  */
-public abstract class AbstractPrintJobCreate extends SvrProcess
+public abstract class AbstractPrintJobCreate extends JavaProcess
 {
 	private final static String MSG_INVOICE_GENERATE_NO_PRINTING_QUEUE_0P = "CreatePrintJobs_No_Printing_Queue_Selected";
 

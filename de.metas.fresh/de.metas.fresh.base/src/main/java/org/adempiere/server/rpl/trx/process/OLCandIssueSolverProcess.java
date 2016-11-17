@@ -47,7 +47,7 @@ import org.apache.commons.collections4.IteratorUtils;
 
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
@@ -55,7 +55,7 @@ import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
-public class OLCandIssueSolverProcess extends SvrProcess
+public class OLCandIssueSolverProcess extends JavaProcess
 {
 
 	private int p_EXP_ReplicationTrx_ID;

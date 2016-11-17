@@ -38,13 +38,13 @@ import org.compiere.model.MUser;
 import org.compiere.model.Query;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
  *
  */
-public class UserPasswordGenerate extends SvrProcess
+public class UserPasswordGenerate extends JavaProcess
 {
 	private int p_AD_Org_ID = -1;
 	private int p_AD_User_ID = -1;

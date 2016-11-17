@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 public class ProcessingService implements IProcessingService
 {
@@ -150,7 +150,7 @@ public class ProcessingService implements IProcessingService
 	}
 
 	@Override
-	public void process(final MADProcessablePO processablePOPointer, final SvrProcess parent)
+	public void process(final MADProcessablePO processablePOPointer, final JavaProcess parent)
 	{
 		final int adPInstanceId;
 		if (parent == null)
@@ -159,7 +159,7 @@ public class ProcessingService implements IProcessingService
 		}
 		else
 		{
-			adPInstanceId = parent.getProcessInfo().getAD_PInstance_ID();
+			adPInstanceId = parent.getAD_PInstance_ID();
 		}
 
 		try
@@ -224,7 +224,7 @@ public class ProcessingService implements IProcessingService
 		}
 	}
 
-	private void handleError(final MADProcessablePO processablePOPointer, final SvrProcess parent, final String summary, final ProcessingException pe)
+	private void handleError(final MADProcessablePO processablePOPointer, final JavaProcess parent, final String summary, final ProcessingException pe)
 	{
 		handleProcessingException(
 				processablePOPointer.getCtx(),

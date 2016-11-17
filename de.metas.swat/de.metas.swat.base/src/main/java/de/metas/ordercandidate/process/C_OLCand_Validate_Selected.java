@@ -35,9 +35,9 @@ import org.apache.commons.collections4.IteratorUtils;
 
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class C_OLCand_Validate_Selected extends SvrProcess
+public class C_OLCand_Validate_Selected extends JavaProcess
 {
 
 	//

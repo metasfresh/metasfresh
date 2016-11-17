@@ -41,9 +41,9 @@ import org.compiere.model.X_M_Package;
 import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class PackageLabel extends SvrProcess
+public class PackageLabel extends JavaProcess
 {
 
 	private static final String PARAM_SERVICE_CODE_OVERRIDE = "ServiceCode";

@@ -55,7 +55,7 @@ import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
-import de.metas.process.ProcessCall;
+import de.metas.process.IProcess;
 import de.metas.process.ProcessInfo;
 
 /**
@@ -95,7 +95,7 @@ import de.metas.process.ProcessInfo;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  */
 public final class MPayment extends X_C_Payment
-		implements DocAction, ProcessCall
+		implements DocAction, IProcess
 {
 
 	/**
@@ -506,7 +506,7 @@ public final class MPayment extends X_C_Payment
 	}   // processOnline
 
 	/**
-	 * Process Online Payment. implements ProcessCall after standard constructor Called when pressing the Process_Online button in C_Payment
+	 * Process Online Payment. implements {@link IProcess} after standard constructor Called when pressing the Process_Online button in C_Payment
 	 *
 	 * @param ctx Context
 	 * @param pi Process Info

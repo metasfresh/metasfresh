@@ -36,13 +36,13 @@ import org.compiere.model.MUser;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author cg
  * 
  */
-public class AD_User_CopyFavoritesPanel extends SvrProcess
+public class AD_User_CopyFavoritesPanel extends JavaProcess
 {
 
 	private int p_AD_User_ID = -1;

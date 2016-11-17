@@ -19,7 +19,7 @@ package org.compiere.process;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutConfirm;
@@ -30,7 +30,7 @@ import org.compiere.model.MInOutConfirm;
  *  @author Jorg Janke
  *  @version $Id: InOutCreateConfirm.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class InOutCreateConfirm extends SvrProcess
+public class InOutCreateConfirm extends JavaProcess
 {
 	/**	Shipment				*/
 	private int 	p_M_InOut_ID = 0;

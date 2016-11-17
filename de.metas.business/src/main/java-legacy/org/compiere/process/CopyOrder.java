@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
@@ -32,7 +32,7 @@ import org.compiere.model.MOrder;
  *  @author Jorg Janke
  *  @version $Id: CopyOrder.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class CopyOrder extends SvrProcess
+public class CopyOrder extends JavaProcess
 {
 	/** Order to Copy				*/
 	private int 		p_C_Order_ID = 0;

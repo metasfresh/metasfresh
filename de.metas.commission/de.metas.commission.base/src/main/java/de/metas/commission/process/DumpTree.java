@@ -42,7 +42,7 @@ import org.compiere.model.Query;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.commission.interfaces.I_C_BPartner;
 import de.metas.commission.model.I_C_AdvCommissionSalaryGroup;
 import de.metas.commission.model.I_C_Sponsor;
@@ -53,7 +53,7 @@ import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 
-public class DumpTree extends SvrProcess
+public class DumpTree extends JavaProcess
 {
 	private final static String EOL = System.getProperty("line.separator");
 

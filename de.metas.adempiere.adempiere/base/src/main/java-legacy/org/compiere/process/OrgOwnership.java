@@ -21,7 +21,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Org Ownership Process
@@ -29,7 +29,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: OrgOwnership.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class OrgOwnership extends SvrProcess
+public class OrgOwnership extends JavaProcess
 {
 	/**	Organization Parameter		*/
 	private int		p_AD_Org_ID = -1;

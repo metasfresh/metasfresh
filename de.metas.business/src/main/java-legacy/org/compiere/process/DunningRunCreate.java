@@ -33,7 +33,7 @@ import org.compiere.util.Env;
 
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -44,7 +44,7 @@ import de.metas.process.SvrProcess;
  *  
  *  FR 2872010 - Dunning Run for a complete Dunning (not just level) - Developer: Carlos Ruiz - globalqss - Sponsor: Metas
  */
-public class DunningRunCreate extends SvrProcess
+public class DunningRunCreate extends JavaProcess
 {
 	private boolean 	p_IncludeInDispute = false;
 	private boolean		p_OnlySOTrx = false;

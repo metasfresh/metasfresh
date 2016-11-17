@@ -60,7 +60,7 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MPPOrder;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	MRPUpdate
@@ -70,7 +70,7 @@ import de.metas.process.SvrProcess;
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 @Deprecated
-public class MRPUpdate extends SvrProcess
+public class MRPUpdate extends JavaProcess
 {
 	private int     m_AD_Client_ID  = 0;		
 	private int     p_AD_Org_ID     = 0;

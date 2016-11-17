@@ -5,9 +5,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.eevolution.model.MHRProcess;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class PayrollProcessing extends SvrProcess
+public class PayrollProcessing extends JavaProcess
 {
 	public static final String PARAM_HR_Process_ID = "HR_Process_ID";
 

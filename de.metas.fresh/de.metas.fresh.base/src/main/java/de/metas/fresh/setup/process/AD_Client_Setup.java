@@ -5,9 +5,9 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.process.ISvrProcessDefaultParametersProvider;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process used to quick setup the metas Fresh installation.
@@ -15,7 +15,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task 09250
  */
-public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultParametersProvider
+public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParametersProvider
 {
 	private static final String PARAM_CompanyName = I_C_BPartner.COLUMNNAME_CompanyName;
 	private static final String PARAM_VATaxID = I_C_BPartner.COLUMNNAME_VATaxID;

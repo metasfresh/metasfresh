@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -54,7 +54,7 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 /**
  * @task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)
  */
-public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends SvrProcess
+public class Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref extends JavaProcess
 {
 
 	private static final transient Logger logger = LogManager.getLogger(Fresh_QtyOnHand_UpdateSeqNo_And_Export_SortPref.class);

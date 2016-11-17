@@ -60,7 +60,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Column Encryption Test
@@ -68,7 +68,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: ColumnEncryption.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ColumnEncryption extends SvrProcess {
+public class ColumnEncryption extends JavaProcess {
 	/** Enable/Disable Encryption */
 	private boolean p_IsEncrypted = false;
 

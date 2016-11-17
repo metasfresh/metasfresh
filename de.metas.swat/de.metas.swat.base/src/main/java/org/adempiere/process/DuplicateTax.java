@@ -44,7 +44,7 @@ import org.compiere.model.MTax;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates duplicates of the tax identified by the given C_Tax_ID for all
@@ -55,7 +55,7 @@ import de.metas.process.SvrProcess;
  * @author Karsten Thiemann, kt@schaeffer-ag.de 
  * 
  */
-public class DuplicateTax extends SvrProcess {
+public class DuplicateTax extends JavaProcess {
 
 	/** id of the C_Tax */
 	private int taxId;
@@ -63,11 +63,6 @@ public class DuplicateTax extends SvrProcess {
 	/** countries to create a tax for */
 	private MCountry[] countries = null;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.compiere.process.SvrProcess#prepare()
-	 */
 	@Override
 	protected void prepare() {
 		taxId = getRecord_ID();
@@ -145,11 +140,6 @@ public class DuplicateTax extends SvrProcess {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.compiere.process.SvrProcess#doIt()
-	 */
 	@Override
 	protected String doIt() throws Exception {
 		if (countries == null) {

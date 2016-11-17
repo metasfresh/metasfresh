@@ -47,13 +47,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class AD_Window_Sync extends SvrProcess
+public class AD_Window_Sync extends JavaProcess
 {
 	private int p_AD_Window_ID = -1;
 	private int p_AD_WindowTo_ID = -1;

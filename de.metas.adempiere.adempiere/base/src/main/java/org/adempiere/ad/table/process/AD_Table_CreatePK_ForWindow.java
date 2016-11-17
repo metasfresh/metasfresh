@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import de.metas.process.SvrProcess;
  * #L%
  */
 
-public class AD_Table_CreatePK_ForWindow extends SvrProcess
+public class AD_Table_CreatePK_ForWindow extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);

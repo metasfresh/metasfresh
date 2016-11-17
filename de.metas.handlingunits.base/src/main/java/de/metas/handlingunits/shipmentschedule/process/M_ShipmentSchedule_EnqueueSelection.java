@@ -33,7 +33,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
@@ -42,7 +42,7 @@ import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
  */
-public class M_ShipmentSchedule_EnqueueSelection extends SvrProcess
+public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 {
 	public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
 	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";

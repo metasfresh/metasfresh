@@ -30,9 +30,9 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ProcessPendingPOs extends SvrProcess
+public class ProcessPendingPOs extends JavaProcess
 {
 
 	private int adTableId;

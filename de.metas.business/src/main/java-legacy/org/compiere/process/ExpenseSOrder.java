@@ -23,7 +23,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
@@ -43,7 +43,7 @@ import de.metas.currency.ICurrencyBL;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ExpenseSOrder.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ExpenseSOrder extends SvrProcess
+public class ExpenseSOrder extends JavaProcess
 {
 	/**	 BPartner				*/
 	private int			p_C_BPartner_ID = 0;

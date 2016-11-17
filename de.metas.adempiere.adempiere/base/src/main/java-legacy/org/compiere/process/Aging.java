@@ -29,7 +29,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Invoice Aging Report.
@@ -41,7 +41,7 @@ import de.metas.process.SvrProcess;
  *  @see https://sourceforge.net/tracker2/?func=detail&aid=2655587&group_id=176962&atid=879332 
  *  @version $Id: Aging.java,v 1.5 2006/10/07 00:58:44 jjanke Exp $
  */
-public class Aging extends SvrProcess
+public class Aging extends JavaProcess
 {
 	/** The date to calculate the days due from			*/
 	private Timestamp	p_StatementDate = null;

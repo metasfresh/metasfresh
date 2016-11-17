@@ -27,7 +27,7 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Title:	Create the (new) costing information
@@ -39,7 +39,7 @@ import de.metas.process.SvrProcess;
  *  @author Carlos Ruiz (globalqss)
  *  @version $Id: M_Product_CostingUpdate.java,v 1.0 2005/09/26 22:28:00 globalqss Exp $
  */
-public class M_Product_CostingUpdate extends SvrProcess
+public class M_Product_CostingUpdate extends JavaProcess
 {
 
 	/** The Record						*/

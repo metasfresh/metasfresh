@@ -35,7 +35,7 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -43,7 +43,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: SendMailText.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class SendMailText extends SvrProcess
+public class SendMailText extends JavaProcess
 {
 	/** What to send			*/
 	private int				m_R_MailText_ID = -1;

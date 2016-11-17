@@ -33,12 +33,12 @@ import org.compiere.model.Query;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
 
-public class ValidateSponsors extends SvrProcess
+public class ValidateSponsors extends JavaProcess
 {
 
 	final static Logger logger = LogManager.getLogger(ValidateSponsors.class);

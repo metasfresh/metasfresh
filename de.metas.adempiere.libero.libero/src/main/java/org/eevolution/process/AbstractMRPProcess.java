@@ -42,9 +42,9 @@ import org.eevolution.mrp.api.IMRPResult;
 import org.eevolution.mrp.api.IMutableMRPContext;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public abstract class AbstractMRPSvrProcess extends SvrProcess
+public abstract class AbstractMRPProcess extends JavaProcess
 {
 	// Services
 	private final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);

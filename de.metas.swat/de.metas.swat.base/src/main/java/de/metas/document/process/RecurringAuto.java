@@ -30,9 +30,9 @@ import org.compiere.model.I_C_Recurring;
 
 import de.metas.document.IRecurringBL;
 import de.metas.document.IRecurringPA;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class RecurringAuto extends SvrProcess {
+public class RecurringAuto extends JavaProcess {
 
 	@Override
 	protected String doIt() throws Exception {

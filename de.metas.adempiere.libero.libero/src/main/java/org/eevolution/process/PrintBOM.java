@@ -60,7 +60,7 @@ import org.eevolution.model.X_T_BOMLine;
 
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Multi-Level BOM & Formula Detail
@@ -69,7 +69,7 @@ import de.metas.process.SvrProcess;
  * @version $Id: PrintBOM.java,v 1.2 2005/04/19 12:54:30 srama Exp $
  * 
  */
-public class PrintBOM extends SvrProcess
+public class PrintBOM extends JavaProcess
 {
 	private static final Properties ctx = Env.getCtx();
 	private int p_M_Product_ID = 0;

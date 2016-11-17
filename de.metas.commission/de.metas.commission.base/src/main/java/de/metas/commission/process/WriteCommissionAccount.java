@@ -56,14 +56,14 @@ import de.metas.commission.service.ICommissionFactCandDAO;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Provisionsberechnung_%282009_0023_G106%29'>(2009 0023 G106)</a>"
  */
-public class WriteCommissionAccount extends SvrProcess
+public class WriteCommissionAccount extends JavaProcess
 {
 	private static final String ALSO_HANDLE_PROCESS_IMMEDIATELY = "AlsoHandleTypesWithProcessNow";
 

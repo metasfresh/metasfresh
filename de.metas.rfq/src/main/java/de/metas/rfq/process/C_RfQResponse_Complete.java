@@ -2,7 +2,7 @@ package de.metas.rfq.process;
 
 import org.adempiere.util.Services;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponse;
 
@@ -33,7 +33,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-public class C_RfQResponse_Complete extends SvrProcess
+public class C_RfQResponse_Complete extends JavaProcess
 {
 	@Override
 	protected String doIt()

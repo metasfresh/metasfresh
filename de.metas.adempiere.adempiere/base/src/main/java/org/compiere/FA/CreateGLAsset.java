@@ -51,7 +51,7 @@ import org.compiere.model.X_GL_JournalLine;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Asset from FA GL Process
@@ -59,7 +59,7 @@ import de.metas.process.SvrProcess;
  *  @author Rob Klein
  *  @version  $Id: CreateGLAsset.java,v 1.0 $
  */
-public class CreateGLAsset extends SvrProcess
+public class CreateGLAsset extends JavaProcess
 {
 
 	private int p_client = 0;	

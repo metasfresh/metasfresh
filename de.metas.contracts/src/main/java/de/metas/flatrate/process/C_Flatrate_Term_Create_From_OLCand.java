@@ -12,11 +12,11 @@ import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
-import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
 
-public class C_Flatrate_Term_Create_From_OLCand extends SvrProcess implements ISvrProcessPrecondition
+public class C_Flatrate_Term_Create_From_OLCand extends JavaProcess implements IProcessPrecondition
 {
 
 	@Override

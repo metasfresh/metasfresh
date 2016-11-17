@@ -33,7 +33,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -53,7 +53,7 @@ import de.metas.currency.ICurrencyDAO;
  *  @author Carlos Ruiz
  *    [ 2598506 ] FR - Implement Initial Client Setup
  */
-public class InitialClientSetup extends SvrProcess
+public class InitialClientSetup extends JavaProcess
 {
 	
 	// Process Parameters

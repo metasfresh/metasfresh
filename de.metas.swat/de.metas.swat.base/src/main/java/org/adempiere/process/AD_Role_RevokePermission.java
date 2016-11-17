@@ -32,14 +32,14 @@ import org.compiere.model.MRolePermRequest;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Revoke Permission
  * @author Teo Sarca, teo.sarca@gmail.com
  *
  */
-public class AD_Role_RevokePermission extends SvrProcess
+public class AD_Role_RevokePermission extends JavaProcess
 {
 	private int p_AD_Role_PermRequest_ID = -1;
 	@Override

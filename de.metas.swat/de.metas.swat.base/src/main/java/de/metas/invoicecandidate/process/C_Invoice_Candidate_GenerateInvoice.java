@@ -35,13 +35,13 @@ import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class C_Invoice_Candidate_GenerateInvoice extends SvrProcess
+public class C_Invoice_Candidate_GenerateInvoice extends JavaProcess
 {
 	private boolean p_Selection = true;
 

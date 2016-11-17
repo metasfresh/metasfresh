@@ -29,7 +29,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -43,7 +43,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TableCreateColumns.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class TableCreateColumns extends SvrProcess
+public class TableCreateColumns extends JavaProcess
 {
 	/** Entity Type			*/
 	private String	p_EntityType = "C";	//	ENTITYTYPE_Customization

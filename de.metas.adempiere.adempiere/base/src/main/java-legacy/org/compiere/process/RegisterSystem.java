@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * System Registration
@@ -27,7 +27,7 @@ import de.metas.process.SvrProcess;
  * @deprecated To be deleted
  */
 @Deprecated
-public class RegisterSystem extends SvrProcess
+public class RegisterSystem extends JavaProcess
 {
 	@Override
 	protected void prepare()

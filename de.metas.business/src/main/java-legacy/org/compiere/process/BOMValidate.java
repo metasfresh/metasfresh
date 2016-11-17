@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MBOM;
 import org.compiere.model.MBOMProduct;
@@ -37,7 +37,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: BOMValidate.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class BOMValidate extends SvrProcess
+public class BOMValidate extends JavaProcess
 {
 	/**	The Product			*/
 	private int		p_M_Product_ID = 0;

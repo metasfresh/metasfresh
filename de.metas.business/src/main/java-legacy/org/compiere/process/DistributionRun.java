@@ -24,7 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
@@ -56,7 +56,7 @@ import org.eevolution.model.MDDOrderLine;
  * 	@see 	http://sourceforge.net/tracker/index.php?func=detail&aid=2030865&group_id=176962&atid=879335		
  *  @version $Id: DistributionRun.java,v 1.4 2006/07/30 00:51:02 jjanke Exp $
  */
-public class DistributionRun extends SvrProcess
+public class DistributionRun extends JavaProcess
 {
 	/**	The Run to execute		*/
 	private int					p_M_DistributionRun_ID = 0;

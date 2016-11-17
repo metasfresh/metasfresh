@@ -61,7 +61,7 @@ import org.compiere.util.Env;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Generate Shipments. Manual or Automatic
@@ -79,7 +79,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @author t.schoeneberg@metas.de
  */
-public final class InOutGenerate extends SvrProcess
+public final class InOutGenerate extends JavaProcess
 {
 	public static final String PARAM_Selection = "Selection";
 	public static final String PARAM_M_Warehouse_ID = "M_Warehouse_ID";

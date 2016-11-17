@@ -30,9 +30,9 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class MigrationCreate extends SvrProcess
+public class MigrationCreate extends JavaProcess
 {
 
 	private I_AD_Migration migrationFrom;

@@ -37,14 +37,14 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class EMailConfigTest extends SvrProcess
+public class EMailConfigTest extends JavaProcess
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMailBL mailBL = Services.get(IMailBL.class);

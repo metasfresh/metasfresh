@@ -30,9 +30,9 @@ import org.adempiere.util.Services;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public final class UpdateShipmentScheds extends SvrProcess
+public final class UpdateShipmentScheds extends JavaProcess
 {
 	public static final String PARAM_IsFullUpdate = "IsFullUpdate";
 	private boolean p_IsFullUpdate = false;

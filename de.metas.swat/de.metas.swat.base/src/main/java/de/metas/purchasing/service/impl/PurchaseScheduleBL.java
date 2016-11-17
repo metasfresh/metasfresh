@@ -63,7 +63,7 @@ import org.slf4j.Logger;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductPA;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
@@ -173,7 +173,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 	}
 
 	@Override
-	public List<String> createPOs(final Properties ctx, final SvrProcess processLog, final String trxName)
+	public List<String> createPOs(final Properties ctx, final JavaProcess processLog, final String trxName)
 	{
 
 		final Map<ArrayKey, MOrder> key2PurchaseOrder = new HashMap<ArrayKey, MOrder>();
@@ -384,7 +384,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 		return removedSOLines;
 	}
 
-	private MOrder mkPurchaseOrder(final MMPurchaseSchedule purchaseSchedule, final SvrProcess processLog)
+	private MOrder mkPurchaseOrder(final MMPurchaseSchedule purchaseSchedule, final JavaProcess processLog)
 	{
 		// only need to check for warehouse and bPartner if we have no order yet
 		if (purchaseSchedule.getC_BPartner_ID() == 0)
@@ -436,7 +436,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 		return purchaseOrder;
 	}
 
-	private static final void log(final String msg, final SvrProcess processLog)
+	private static final void log(final String msg, final JavaProcess processLog)
 	{
 		if (processLog != null)
 		{

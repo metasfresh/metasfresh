@@ -19,7 +19,7 @@ package org.compiere.process;
 import org.compiere.model.MTree;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Tree Maintenance	
@@ -27,7 +27,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: TreeMaintenance.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class TreeMaintenance extends SvrProcess
+public class TreeMaintenance extends JavaProcess
 {
 	/**	Tree				*/
 	private int		m_AD_Tree_ID;

@@ -66,7 +66,7 @@ import org.compiere.util.Env;
 
 import de.metas.document.IDocumentPA;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Contains assertions relating to the ADempeire application dictionary
@@ -426,7 +426,7 @@ public class ADAssert
 	public static void assertProcessExists(
 			final Properties ctx,
 			final String value,
-			final Class<? extends SvrProcess> processClass,
+			final Class<? extends JavaProcess> processClass,
 			final String trxName)
 	{
 		final I_AD_Process process = Services.get(IADProcessDAO.class).retriveProcessByValue(ctx, value);
@@ -446,7 +446,7 @@ public class ADAssert
 	 * @param trxName
 	 */
 	public static void assertProcessExists(
-			final Class<? extends SvrProcess> processClass, final String trxName)
+			final Class<? extends JavaProcess> processClass, final String trxName)
 	{
 		if (Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(Env.getCtx(), processClass) <= 0)
 		{

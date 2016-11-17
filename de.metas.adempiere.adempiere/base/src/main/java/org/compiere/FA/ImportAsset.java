@@ -45,7 +45,7 @@ import java.sql.Timestamp;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Import Assets
@@ -53,7 +53,7 @@ import de.metas.process.SvrProcess;
  * 	@author 	Rob Klein
  * 	@version 	$Id: ImportAsset.java,v 1.0 $
  */
-public class ImportAsset extends SvrProcess 
+public class ImportAsset extends JavaProcess 
 {
 	/**
 	 * 	Import Asset

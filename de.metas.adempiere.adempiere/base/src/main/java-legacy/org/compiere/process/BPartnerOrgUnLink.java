@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import org.compiere.model.MBPartner;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	UnLink Business Partner from Organization 
@@ -28,7 +28,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: BPartnerOrgUnLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class BPartnerOrgUnLink extends SvrProcess
+public class BPartnerOrgUnLink extends JavaProcess
 {
 	/** Business Partner		*/
 	private int			p_C_BPartner_ID;

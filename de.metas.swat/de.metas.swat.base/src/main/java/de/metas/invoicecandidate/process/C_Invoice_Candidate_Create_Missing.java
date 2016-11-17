@@ -38,7 +38,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates missing invoice candidates. Note that the method {@link #retrieveHandlers()} can be overridden.
@@ -46,7 +46,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_Invoice_Candidate_Create_Missing extends SvrProcess
+public class C_Invoice_Candidate_Create_Missing extends JavaProcess
 {
 	// services
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);

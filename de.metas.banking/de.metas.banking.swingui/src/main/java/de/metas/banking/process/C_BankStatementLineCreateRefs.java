@@ -63,7 +63,7 @@ import org.compiere.util.Env;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -71,7 +71,7 @@ import de.metas.process.SvrProcess;
  *
  */
 @Deprecated
-public class C_BankStatementLineCreateRefs extends SvrProcess implements ActionListener
+public class C_BankStatementLineCreateRefs extends JavaProcess implements ActionListener
 {
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);

@@ -46,9 +46,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.shipping.api.IShipperDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -61,7 +61,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
  *
  * @task 08743.
  */
-public class M_ShippingPackage_CreateFromPickingSlots extends SvrProcess implements ISvrProcessPrecondition
+public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implements IProcessPrecondition
 {
 	private static final transient Logger logger = LogManager.getLogger(M_ShippingPackage_CreateFromPickingSlots.class);
 

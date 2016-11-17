@@ -44,12 +44,12 @@ import org.compiere.util.TrxRunnableAdapter;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.RunOutOfTrx;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * task 09373
  */
-public class C_Payment_DiscountAllocation_Process extends SvrProcess
+public class C_Payment_DiscountAllocation_Process extends JavaProcess
 {
 	public static final String MSG_AllocationCreated = "MSG_AllocationCreated";
 

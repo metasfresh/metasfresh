@@ -37,7 +37,7 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process responsible for generating dunning candidates for all configured {@link IDunnableSource}s
@@ -45,7 +45,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * 
  */
-public class C_Dunning_Candidate_Create extends SvrProcess
+public class C_Dunning_Candidate_Create extends JavaProcess
 {
 	private static final String PARAM_DunningDate = "DunningDate";
 	private Timestamp p_DunningDate = null;

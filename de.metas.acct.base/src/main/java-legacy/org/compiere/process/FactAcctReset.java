@@ -49,7 +49,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Accounting Fact Reset
@@ -57,7 +57,7 @@ import de.metas.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: FactAcctReset.java,v 1.5 2006/09/21 21:05:02 jjanke Exp $
  */
-public class FactAcctReset extends SvrProcess
+public class FactAcctReset extends JavaProcess
 {
 	/**	Client Parameter		*/
 	private int		p_AD_Client_ID = 0;

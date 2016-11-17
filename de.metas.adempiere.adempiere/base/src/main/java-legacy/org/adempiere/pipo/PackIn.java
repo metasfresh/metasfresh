@@ -24,7 +24,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -37,7 +37,7 @@ import org.compiere.model.X_AD_Package_Imp_Proc;
  * 
  * @author: Robert KLEIN. robeklein@hotmail.com
  */
-public class PackIn extends SvrProcess {
+public class PackIn extends JavaProcess {
 
 	/** Logger */
 	private Logger log = LogManager.getLogger("PackIn");

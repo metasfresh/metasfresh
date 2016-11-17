@@ -29,9 +29,9 @@ import org.compiere.model.MRoleMenu;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class UpdateRoleMenu extends SvrProcess
+public class UpdateRoleMenu extends JavaProcess
 {
 	private int p_role_id = 0;
 	

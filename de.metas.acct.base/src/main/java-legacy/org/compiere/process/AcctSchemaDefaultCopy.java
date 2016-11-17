@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaDefault;
@@ -33,7 +33,7 @@ import org.compiere.util.DB;
  *  @author Jorg Janke
  *  @version $Id: AcctSchemaDefaultCopy.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class AcctSchemaDefaultCopy extends SvrProcess
+public class AcctSchemaDefaultCopy extends JavaProcess
 {
 	/**	Acct Schema					*/
 	private int			p_C_AcctSchema_ID = 0;

@@ -72,9 +72,9 @@ import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class CalculateCommission extends SvrProcess
+public class CalculateCommission extends JavaProcess
 {
 	public static final String MSG_CALC_ERROR_UNPROCESSED_CANDIDATES_1P = "CalcErrorUnprocessedCandidates_1P";
 

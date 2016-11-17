@@ -23,7 +23,7 @@ import java.sql.Timestamp;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
@@ -39,7 +39,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: InvoiceWriteOff.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class InvoiceWriteOff extends SvrProcess
+public class InvoiceWriteOff extends JavaProcess
 {
 	/**	BPartner				*/
 	private int			p_C_BPartner_ID = 0;

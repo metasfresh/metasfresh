@@ -29,7 +29,7 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Title:	Check BOM Structure (free of cycles)
@@ -41,7 +41,7 @@ import de.metas.process.SvrProcess;
  * @author Carlos Ruiz (globalqss)
  *         Make T_Selection tables permanent         
  */
-public class M_Product_BOM_Check extends SvrProcess
+public class M_Product_BOM_Check extends JavaProcess
 {
 
 	/** The Record						*/

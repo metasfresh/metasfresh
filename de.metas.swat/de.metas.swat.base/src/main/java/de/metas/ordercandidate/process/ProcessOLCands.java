@@ -12,7 +12,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
@@ -22,7 +22,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ProcessOLCands extends SvrProcess
+public class ProcessOLCands extends JavaProcess
 {
 	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)

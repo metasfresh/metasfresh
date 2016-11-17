@@ -27,7 +27,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Checks from Payment Selection Line
@@ -35,7 +35,7 @@ import de.metas.process.SvrProcess;
  * @author Jorg Janke
  * @version $Id: PaySelectionCreateCheck.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class PaySelectionCreateCheck extends SvrProcess
+public class PaySelectionCreateCheck extends JavaProcess
 {
 	/** Target Payment Rule */
 	private String p_PaymentRule = null;

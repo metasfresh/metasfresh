@@ -24,14 +24,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Enable Native Sequence
  * 
  * @author Victor Perez, e-Evolution, S.C.
  */
-public class EnableNativeSequence extends SvrProcess
+public class EnableNativeSequence extends JavaProcess
 {
 	@Override
 	protected void prepare()

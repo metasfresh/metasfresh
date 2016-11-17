@@ -34,9 +34,9 @@ import org.adempiere.util.Services;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class M_ShipmentSchedule_ChangeDeliveryDate extends SvrProcess
+public class M_ShipmentSchedule_ChangeDeliveryDate extends JavaProcess
 {
 
 	public static final String PARAM_DeliveryDate = "DeliveryDate";

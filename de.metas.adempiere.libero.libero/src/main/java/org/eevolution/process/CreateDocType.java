@@ -5,7 +5,7 @@ import org.compiere.model.MGLCategory;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -14,7 +14,7 @@ import de.metas.process.SvrProcess;
  *	@author Tim Heath
  *	@version $Id: AddLiberoRecords.java,v 1 xp_prg Exp $
  */
-public class CreateDocType extends SvrProcess
+public class CreateDocType extends JavaProcess
 {
 	/**					*/
         

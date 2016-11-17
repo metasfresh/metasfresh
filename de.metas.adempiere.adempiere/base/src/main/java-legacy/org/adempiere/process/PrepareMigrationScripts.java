@@ -43,9 +43,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class PrepareMigrationScripts extends SvrProcess {
+public class PrepareMigrationScripts extends JavaProcess {
 
 	String path;
 

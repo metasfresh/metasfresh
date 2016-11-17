@@ -66,7 +66,7 @@ import org.eevolution.model.MDDOrderLine;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductBL;
 
 
@@ -80,7 +80,7 @@ import de.metas.product.IProductBL;
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 @Deprecated // please review before considering to re-use
-public class MovementGenerate extends SvrProcess
+public class MovementGenerate extends JavaProcess
 {
 	/**	Manual Selection		*/
 	private boolean 	p_Selection = false;

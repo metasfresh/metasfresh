@@ -49,9 +49,9 @@ import de.metas.impex.model.I_ImpEx_Connector;
 import de.metas.impex.model.MImpExConnector;
 import de.metas.impex.spi.IImportConnector;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ImportStatusData extends SvrProcess
+public class ImportStatusData extends JavaProcess
 {
 
 	private static final String DATE_FMT = "yyyyMMddhhmmss";

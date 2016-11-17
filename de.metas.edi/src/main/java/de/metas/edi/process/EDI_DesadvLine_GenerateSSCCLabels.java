@@ -30,7 +30,7 @@ import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Creates as many {@link I_EDI_DesadvLine_SSCC} records as asked and then print them
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * @task 08910
  */
-public class EDI_DesadvLine_GenerateSSCCLabels extends SvrProcess
+public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 {
 	//
 	// Parameters

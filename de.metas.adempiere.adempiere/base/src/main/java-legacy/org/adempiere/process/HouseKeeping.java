@@ -44,14 +44,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	House Keeping
  *	
  *  @author Diego Ruiz - globalqss
  */
-public class HouseKeeping extends SvrProcess{
+public class HouseKeeping extends JavaProcess{
 	
 	private int		p_AD_HouseKeeping_ID = 0;
 	

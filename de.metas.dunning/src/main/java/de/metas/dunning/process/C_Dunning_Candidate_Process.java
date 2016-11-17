@@ -34,7 +34,7 @@ import de.metas.dunning.api.IDunningProducer;
 import de.metas.dunning.api.impl.AbstractDunningCandidateSource;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates
@@ -42,7 +42,7 @@ import de.metas.process.SvrProcess;
  * @author tsa
  * 
  */
-public class C_Dunning_Candidate_Process extends SvrProcess
+public class C_Dunning_Candidate_Process extends JavaProcess
 {
 	public static final String PARAM_IsAutoProcess = "IsComplete";
 	private boolean p_isAutoProcess = true;

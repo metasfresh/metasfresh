@@ -2,8 +2,8 @@ package de.metas.procurement.base.order.process;
 
 import org.adempiere.util.Services;
 
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.rfq.IRfQConfiguration;
@@ -36,7 +36,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
  * #L%
  */
 
-public class C_RfQ_PublishResults extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_PublishResults extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);

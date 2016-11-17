@@ -8,7 +8,7 @@ import org.compiere.model.I_R_MailText;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.Param;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class R_MailText_Test extends SvrProcess
+public class R_MailText_Test extends JavaProcess
 {
 	// services
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);

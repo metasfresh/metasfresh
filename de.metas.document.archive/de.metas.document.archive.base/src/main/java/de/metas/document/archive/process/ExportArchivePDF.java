@@ -8,10 +8,10 @@ import org.adempiere.util.Services;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.archive.model.IArchiveAware;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.SvrProcess;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
-public class ExportArchivePDF extends SvrProcess implements ISvrProcessPrecondition
+public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition
 {
 	@Override
 	public boolean isPreconditionApplicable(final PreconditionsContext context)

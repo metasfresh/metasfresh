@@ -25,7 +25,7 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Import ReportLines from I_ReportLine
@@ -33,7 +33,7 @@ import de.metas.process.SvrProcess;
  * 	@author 	Jorg Janke
  * 	@version 	$Id: ImportReportLine.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportReportLine extends SvrProcess
+public class ImportReportLine extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;

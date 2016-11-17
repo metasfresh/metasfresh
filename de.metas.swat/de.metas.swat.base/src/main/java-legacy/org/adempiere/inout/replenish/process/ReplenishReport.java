@@ -70,7 +70,7 @@ import org.compiere.util.ReplenishInterface;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 
@@ -83,7 +83,7 @@ import de.metas.process.SvrProcess;
  *  Carlos Ruiz globalqss - integrate bug fixing from Chris Farley
  *    [ 1619517 ] Replenish report fails when no records in m_storage
  */
-public class ReplenishReport extends SvrProcess
+public class ReplenishReport extends JavaProcess
 {
 	/** Warehouse				*/
 	private int		p_M_Warehouse_ID = 0;

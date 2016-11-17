@@ -30,7 +30,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -42,7 +42,7 @@ import de.metas.process.SvrProcess;
  *  @deprecated We are planning to drop this because we are not using it anymore.
  */
 @Deprecated
-public class ChangeLogProcess extends SvrProcess
+public class ChangeLogProcess extends JavaProcess
 {
 	/** The Change Log (when applied directly)		*/
 	private int				p_AD_ChangeLog_ID = 0;

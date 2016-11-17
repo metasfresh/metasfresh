@@ -40,7 +40,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.ASyncProcess;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 /**
  *	Dunning Letter Print
@@ -53,7 +53,7 @@ import de.metas.process.SvrProcess;
  *  @deprecated This class is not working anymore, not used and we consider to drop it
  */
 @Deprecated
-public class DunningPrint extends SvrProcess
+public class DunningPrint extends JavaProcess
 {
 	/**	Mail PDF				*/
 	private boolean		p_EMailPDF = false;

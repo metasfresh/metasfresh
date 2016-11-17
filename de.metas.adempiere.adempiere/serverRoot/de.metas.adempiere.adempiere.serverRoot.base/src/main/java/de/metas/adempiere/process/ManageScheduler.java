@@ -30,9 +30,9 @@ import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
-public class ManageScheduler extends SvrProcess
+public class ManageScheduler extends JavaProcess
 {
 	private static final String PARAM_ACTION = "Action";
 

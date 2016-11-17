@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.process.SvrProcess;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
@@ -40,7 +40,7 @@ import de.metas.currency.ICurrencyBL;
  *	@author Jorg Janke
  *	@version $Id: ProjectGenPO.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ProjectGenPO extends SvrProcess
+public class ProjectGenPO extends JavaProcess
 {
 	/** Project Parameter			*/
 	private int 		m_C_Project_ID = 0;
