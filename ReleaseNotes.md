@@ -15,6 +15,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+  * #563 Report Statistics qty per Week
 
 ## Fixes
 * metasfresh
