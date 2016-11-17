@@ -440,6 +440,8 @@ public class WindowRestController implements IWindowRestController
 				.setJRDesiredOutputType(OutputType.PDF)
 				//
 				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.switchContextWhenRunning()
 				.executeSync()
 				.getResult();
 
