@@ -8,26 +8,70 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-
 Here come the actual release notes:
 
-# metasfresh 4.42.40 (2016-44)
+# metasfresh 4.44.44 (2016-47)
 
-upcoming
+## Fixes
+* metasfresh
+  * #589 console error when doing bpartner setup
+
+# metasfresh 4.44.43 (2016-46)
+
+## Features
+* metasfresh
+  * #553 Report Account Info adjustments. Add parms date range.
+  * #557 Report Saldenbilanz & Account Info native Excel Export
+  * #558 Marginal return calculation - Accountings without c_activity_id
+  * #568 Change on Report "Lieferschein" for one specific Customer
+  * #555 Businesspartner Location isEDI shall not be ticked by default
+  * #548 keep M_QualityNote and M_AttributeValue in sync
+  * #577 Button Request shows too many results
+  * #565 Report Revenue per Week and BPartner also show qty
+  * #416 Extended async notification features
+ 
+## Fixes
+* metasfresh
+  * #578 Request Window Attachment Image too large in viewer
+
+# metasfresh 4.43.42 (2016-45)
+
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+    * Added a new filter in saldobilanz report to exclude the year end accountings (profit & loss) from report.
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
+    * Added a new REST-API endpoint for WebUI KPI widgets.
+
+## Fixes
+* metasfresh
+  * #552 division by 0 in costprice report
+    * Fixed a division by 0 Bug in costprice report.
+
+* metasfresh-webui
+  * #40 Account fields are not working
+    * Fix in new WebUI Implementation. An exception occured because of Field Type account.
+  
+# metasfresh 4.42.41 (2016-44)
 
 ## Features
 * metasfresh
  * #500 Migration: Create Requests for all inout lines with quality issues
+   * SQL Migration Path for all Material Receipts with Quality Issues. Reclamation requests are created.
  * #514 Reclamations report: group the inouts with ff.
+   * Create a new Report to analyze the Performance Issues in Vendor receipts/ customer deliveries. The report shows all details to performance issues (Quanitity-, Quality-, Delivery-, Receipt-Performance).
 
 ## Fixes
 * metasfresh
+ * FRESH-823:#536 Context bug in MLookup
+   * Fixed a minor context Bug in MLookup Fields.
  * #540 Table and Columns - IsLazyLoading flag is not displayed
+   * Fixed a Bug that occured in Table and Columns Definition, preventing isLazyLoading to be shown.
 
 
 # metasfresh 4.41.40 (2016-43)
-
-this week's RC
 
 ## Features
 * metasfresh
@@ -42,11 +86,17 @@ this week's RC
   
 * metasfresh-webui
  * #27 Support for custom order bys in browseView
+   * Added new Support for a custom order by criteria in grid-/ browse view.
  * #29 Adapt Invoice candidates window to webui
+   * Adapted the Invoice Candidates window to WebUI.
  * #31 Implement document actions
+   * Implemented the Document Action for the Web User Interface.
  * #32 Implement document references
+   * Provided the Document References to embed these in navigation contex of each document.
  * #33 Implement document filters from AD_UserQuery
+   * New and much easier Filtering criteria for data selections in metasfresh nextgen.
  * #20 Cache lookups
+   * Optimize lookups content loading with cache functionality.
 
 ## Fixes
 * metasfresh

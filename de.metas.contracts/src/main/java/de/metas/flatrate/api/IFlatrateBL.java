@@ -92,14 +92,15 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Create a new flatrate term using the given term as template. The new term's C_Year will be the year after the given term's C_Year.
 	 *
-	 * <b>IMPORTANT:</b> method might set the given term's C_FlatrateTerm_Next_ID, but won't save it!
+	 * <b>IMPORTANT:</b> the method might set the given term's C_FlatrateTerm_Next_ID, but won't save it!
 	 *
 	 * @param term
 	 * @param forceExtend will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
-	 * @param forceComplete will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
+	 * @param forceComplete optional, may be <code>null</code>. If not <code>null</code>, then this value will decide if the new term is completed.
+	 *            If <code>null</code>, then {@link I_C_Flatrate_Transition#isAutoCompleteNewTerm()} of the given <code>term</code> transition will decide.
 	 * @param ol if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, boolean forceComplete, I_C_OrderLine ol);
+	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, Boolean forceComplete, final Timestamp nextTermStartDate, I_C_OrderLine ol);
 
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
@@ -177,14 +178,14 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Complete given contract.
-	 * 
+	 *
 	 * @param term the contract
 	 */
 	void complete(I_C_Flatrate_Term term);
 
 	/**
 	 * Void given contract
-	 * 
+	 *
 	 * @param term
 	 */
 	void voidIt(I_C_Flatrate_Term term);

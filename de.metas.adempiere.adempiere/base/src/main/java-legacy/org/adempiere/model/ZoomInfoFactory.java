@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -220,20 +221,23 @@ public class ZoomInfoFactory implements IZoomProvider
 	 * @author ts
 	 * 
 	 */
-	public static final class ZoomInfo
+	@SuppressWarnings("serial")
+	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(int windowId, MQuery query, String destinationDisplay)
+		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
-			return new ZoomInfo(windowId, query, destinationDisplay);
+			return new ZoomInfo(zoomInfoId, windowId, query, destinationDisplay);
 		}
 
+		private final String _zoomInfoId;
 		private final String _destinationDisplay;
 		private final MQuery _query;
 		private final int _windowId;
 
-		private ZoomInfo(int windowId, MQuery query, String destinationDisplay)
+		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
 			super();
+			this._zoomInfoId = zoomInfoId;
 			this._windowId = windowId;
 			this._query = query;
 			this._destinationDisplay = destinationDisplay;
@@ -243,20 +247,21 @@ public class ZoomInfoFactory implements IZoomProvider
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.add("zoomInfoId", _zoomInfoId)
 					.add("display", _destinationDisplay)
 					.add("AD_Window_ID", _windowId)
 					.add("RecordCount", _query == null ? "<no query>" : _query.getRecordCount())
 					.toString();
 		}
 
+		public String getId()
+		{
+			return _zoomInfoId;
+		}
+
 		public String getLabel()
 		{
 			return _destinationDisplay + " (#" + getRecordCount() + ")";
-		}
-
-		public String getId()
-		{
-			return _destinationDisplay;
 		}
 
 		public int getRecordCount()

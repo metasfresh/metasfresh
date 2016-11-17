@@ -32,7 +32,7 @@ public interface IUserQueryRestriction
 	{
 		return new UserQueryRestriction();
 	}
-	
+
 	public static enum Join
 	{
 		AND("AND"), OR("OR");
@@ -85,4 +85,9 @@ public interface IUserQueryRestriction
 	Object getValueTo();
 	void setValueTo(Object valueTo);
 	//@formatter:on
+
+	/**
+	 * @return true if restriction is empty (i.e. has nothing set)
+	 */
+	boolean isEmpty();
 }

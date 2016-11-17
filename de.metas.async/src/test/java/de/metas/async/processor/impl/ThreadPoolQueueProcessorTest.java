@@ -241,7 +241,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		final I_C_Queue_WorkPackage workpackage0 = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false).get(0); // count=1, readyForProcessing=false
 
 		//
-		// Mark ready for processing after transaction is commited
+		// Mark ready for processing after transaction is committed
 		final Future<IWorkpackageProcessorExecutionResult> futureResult = workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage0, trx.getTrxName());
 		Assert.assertFalse("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet", workpackage0.isReadyForProcessing());
 		Assert.assertFalse("Workpackage " + workpackage0 + " shall NOT be processed", workpackage0.isProcessed());

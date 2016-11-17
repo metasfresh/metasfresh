@@ -357,6 +357,14 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>de.metas.ui.web.base</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -596,6 +604,7 @@ note: when adding new records, please roughly order them by alphabet.
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>package-dist</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -603,6 +612,18 @@ note: when adding new records, please roughly order them by alphabet.
 						<configuration>
 							<descriptors>
 								<descriptor>src/main/assembly/dist.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-sql-only</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/sql-only.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

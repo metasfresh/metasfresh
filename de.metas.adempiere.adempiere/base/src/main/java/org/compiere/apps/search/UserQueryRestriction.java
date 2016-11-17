@@ -107,4 +107,13 @@ final class UserQueryRestriction implements IUserQueryRestriction
 		this.valueTo = valueTo;
 	}
 
+	@Override
+	public boolean isEmpty()
+	{
+		// NOTE: don't check if getJoin() == null because that's always set
+		// NOTE: don't check if getOperator() == null because that's always set
+		return getSearchField() == null
+				&& getValue() == null
+				&& getValueTo() == null;
+	}
 }
