@@ -21,13 +21,13 @@ BEGIN
 		RAISE NOTICE 'remove_table_from_dlm - %: Retained columns DLM_Level and DLM_Partition_ID of table %', p_table_name, p_table_name;
 	END IF;
 	
-	EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl RENAME TO ' || p_table_name || ';';
-	RAISE NOTICE 'remove_table_from_dlm - %: Renamed table % back to % ', p_table_name, p_table_name||'_Tbl', p_table_name;
+--	EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl RENAME TO ' || p_table_name || ';';
+--	RAISE NOTICE 'remove_table_from_dlm - %: Renamed table % back to % ', p_table_name, p_table_name||'_Tbl', p_table_name;
  END;
 $BODY$
   LANGUAGE plpgsql VOLATILE;
 COMMENT ON FUNCTION dlm.remove_table_from_dlm(text, boolean) IS 'gh #235, #489: Un-DLMs the given table:
-* drops the view and removes the "_tbl" suffix from the table name
+* drops the view for the given table name
 * drops partial indices
 * invokes dlm.drop_dlm_triggers with the given table name.
 * optionally drops the DLM_Level and DLM_Partition_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
