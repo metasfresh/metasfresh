@@ -52,24 +52,27 @@
 
 	</dependencies>
 
-	<plugin>
-		<artifactId>maven-enforcer-plugin</artifactId>
-
-		<configuration>
-			<rules>
-				<banDuplicateClasses>
-					<dependencies>
-						<!-- explanation of the error we want to avoid -->
-						<dependency>
-							<groupId>org.elasticsearch</groupId>
-							<artifactId>elasticsearch</artifactId>
-							<ignoreClasses>
-								<ignoreClass>org.joda.*</ignoreClass>
-							</ignoreClasses>
-						</dependency>
-					</dependencies>
-				</banDuplicateClasses>
-			</rules>
-		</configuration>
-	</plugin>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
+								<dependency>
+									<groupId>org.elasticsearch</groupId>
+									<artifactId>elasticsearch</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.joda.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+							</dependencies>
+						</banDuplicateClasses>
+					</rules>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
