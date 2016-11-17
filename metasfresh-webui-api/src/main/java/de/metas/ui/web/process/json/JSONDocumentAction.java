@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.process.ISvrProcessPrecondition;
+import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -57,7 +57,7 @@ public class JSONDocumentAction
 		{
 			final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
 
-			final Class<? extends ISvrProcessPrecondition> preconditionsClass = processDescriptor.getPreconditionsClass();
+			final Class<? extends IProcessPrecondition> preconditionsClass = processDescriptor.getPreconditionsClass();
 			if (preconditionsClass != null)
 			{
 				debugProperties.put("debug-classname", preconditionsClass.getName());

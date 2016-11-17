@@ -4,7 +4,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.model.Document;
 
 /*

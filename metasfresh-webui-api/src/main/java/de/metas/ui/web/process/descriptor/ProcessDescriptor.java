@@ -7,8 +7,8 @@ import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ISvrProcessPrecondition;
-import de.metas.process.ISvrProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -49,7 +49,7 @@ public final class ProcessDescriptor
 
 	private final int adProcessId;
 	private final ProcessDescriptorType type;
-	private final Class<? extends ISvrProcessPrecondition> preconditionsClass;
+	private final Class<? extends IProcessPrecondition> preconditionsClass;
 	private final String processClassname;
 
 	private final DocumentEntityDescriptor parametersDescriptor;
@@ -101,7 +101,7 @@ public final class ProcessDescriptor
 		return processClassname;
 	}
 
-	public Class<? extends ISvrProcessPrecondition> getPreconditionsClass()
+	public Class<? extends IProcessPrecondition> getPreconditionsClass()
 	{
 		return preconditionsClass;
 	}
@@ -134,7 +134,7 @@ public final class ProcessDescriptor
 
 		try
 		{
-			final ISvrProcessPrecondition preconditions = preconditionsClass.newInstance();
+			final IProcessPrecondition preconditions = preconditionsClass.newInstance();
 			return preconditions.isPreconditionApplicable(context);
 		}
 		catch (final Exception ex)
@@ -236,17 +236,17 @@ public final class ProcessDescriptor
 			}
 		}
 
-		private Class<? extends ISvrProcessPrecondition> getPreconditionsClass()
+		private Class<? extends IProcessPrecondition> getPreconditionsClass()
 		{
 			final Class<?> processClass = getProcessClassOrNull();
-			if (processClass == null || !ISvrProcessPrecondition.class.isAssignableFrom(processClass))
+			if (processClass == null || !IProcessPrecondition.class.isAssignableFrom(processClass))
 			{
 				return null;
 			}
 
 			try
 			{
-				return processClass.asSubclass(ISvrProcessPrecondition.class);
+				return processClass.asSubclass(IProcessPrecondition.class);
 			}
 			catch (final Exception e)
 			{
