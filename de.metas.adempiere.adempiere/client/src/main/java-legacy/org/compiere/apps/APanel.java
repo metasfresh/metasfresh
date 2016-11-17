@@ -2631,19 +2631,37 @@ public class APanel extends CPanel
 	private void cmd_attachment()
 	{
 		int record_ID = m_curTab.getRecord_ID();
-		log.info("Record_ID=" + record_ID);
+		log.info("Record_ID={}", record_ID);
 		if (record_ID == -1)  	// No Key
 		{
 			aAttachment.setEnabled(false);
 			return;
 		}
 
-		// Attachment va =
-		new Attachment(getCurrentFrame(), m_curWindowNo,
-				m_curTab.getAD_AttachmentID(), m_curTab.getAD_Table_ID(), record_ID, null);
-		//
-		m_curTab.loadAttachments();				// reload
-		aAttachment.setPressed(m_curTab.hasAttachment());
+		final Attachment va = new Attachment(
+				getCurrentFrame() //
+				, m_curWindowNo //
+				, m_curTab.getAD_AttachmentID() //
+				, m_curTab.getAD_Table_ID(), record_ID //
+		);
+		va.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowOpened(WindowEvent e)
+			{
+				va.requestFocus();
+			}
+			
+			@Override
+			public void windowClosed(final WindowEvent e)
+			{
+				m_curTab.loadAttachments();				// reload
+				
+				aAttachment.setPressed(m_curTab.hasAttachment());
+			}
+		});
+		
+		AEnv.showCenterScreen(va);
 	}	// attachment
 
 	/**

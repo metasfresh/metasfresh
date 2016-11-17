@@ -105,6 +105,7 @@ import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
+import de.metas.inout.model.validator.M_QualityNote;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
@@ -177,7 +178,7 @@ public class SwatValidator implements ModelValidator
 
 		// task FRESH-152: BPartner Stats Updater
 		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
-		
+
 		// task FRESH-636: Request Creator
 		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
 
@@ -235,8 +236,11 @@ public class SwatValidator implements ModelValidator
 			Services.get(IPriceListBL.class).addPlvCreationListener(new AttributePlvCreationListener());
 		}
 
-		// FRESH-636: Request
+		// #361: Request
 		engine.addModelValidator(new R_Request(), client);
+
+		// #548: QualityNote
+		engine.addModelValidator(new M_QualityNote(), client);
 
 		// AD_Tree UI support
 		{

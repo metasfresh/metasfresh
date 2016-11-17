@@ -187,6 +187,29 @@ public interface I_C_Async_Batch
     public static final String COLUMNNAME_CountEnqueued = "CountEnqueued";
 
 	/**
+	 * Set Expected.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCountExpected (int CountExpected);
+
+	/**
+	 * Get Expected.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCountExpected();
+
+    /** Column definition for CountExpected */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_CountExpected = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "CountExpected", null);
+    /** Column name CountExpected */
+    public static final String COLUMNNAME_CountExpected = "CountExpected";
+
+	/**
 	 * Set Verarbeitet.
 	 *
 	 * <br>Type: Integer
@@ -357,6 +380,33 @@ public interface I_C_Async_Batch
     public static final String COLUMNNAME_LastProcessed = "LastProcessed";
 
 	/**
+	 * Set LastProcessed WorkPackage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastProcessed_WorkPackage_ID (int LastProcessed_WorkPackage_ID);
+
+	/**
+	 * Get LastProcessed WorkPackage.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLastProcessed_WorkPackage_ID();
+
+	public de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage();
+
+	public void setLastProcessed_WorkPackage(de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage);
+
+    /** Column definition for LastProcessed_WorkPackage_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Queue_WorkPackage> COLUMN_LastProcessed_WorkPackage_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Queue_WorkPackage>(I_C_Async_Batch.class, "LastProcessed_WorkPackage_ID", de.metas.async.model.I_C_Queue_WorkPackage.class);
+    /** Column name LastProcessed_WorkPackage_ID */
+    public static final String COLUMNNAME_LastProcessed_WorkPackage_ID = "LastProcessed_WorkPackage_ID";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -380,6 +430,33 @@ public interface I_C_Async_Batch
     public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Parent_Async_Batch_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setParent_Async_Batch_ID (int Parent_Async_Batch_ID);
+
+	/**
+	 * Get Parent_Async_Batch_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getParent_Async_Batch_ID();
+
+	public de.metas.async.model.I_C_Async_Batch getParent_Async_Batch();
+
+	public void setParent_Async_Batch(de.metas.async.model.I_C_Async_Batch Parent_Async_Batch);
+
+    /** Column definition for Parent_Async_Batch_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch> COLUMN_Parent_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch>(I_C_Async_Batch.class, "Parent_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
+    /** Column name Parent_Async_Batch_ID */
+    public static final String COLUMNNAME_Parent_Async_Batch_ID = "Parent_Async_Batch_ID";
 
 	/**
 	 * Set Verarbeitet.

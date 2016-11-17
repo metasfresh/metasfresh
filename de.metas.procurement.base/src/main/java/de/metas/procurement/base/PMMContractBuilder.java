@@ -2,10 +2,12 @@ package de.metas.procurement.base;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,9 +74,30 @@ import de.metas.procurement.base.model.I_PMM_Product;
  */
 public class PMMContractBuilder
 {
-	public static final PMMContractBuilder newBuilder()
+	/**
+	 * Create a new builder in order to create a new flatrate term and data entries.
+	 *
+	 * @return
+	 */
+	public static PMMContractBuilder newBuilder()
 	{
-		return new PMMContractBuilder();
+		return new PMMContractBuilder(null);
+	}
+
+	/**
+	 * Creates a new builder with an existing term.
+	 * Use this method if you already have a term and only need the builder to create {@link I_C_Flatrate_DataEntry}s and maybe complete the term.
+	 *
+	 * If a builder is created this way, then the {@link #build()} method will only create the term's data entries and not change any property of the given <code>term</code>.
+	 * Depending on {@link #setComplete(boolean)}, it might however complete the given <code>term</code>.
+	 *
+	 * @param term
+	 * @return
+	 */
+	public static PMMContractBuilder newBuilder(final I_C_Flatrate_Term term)
+	{
+		return new PMMContractBuilder(term);
+
 	}
 
 	// services
@@ -86,7 +109,7 @@ public class PMMContractBuilder
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
-	// Parameters
+	// Parameters for the term
 	private IContextAware _context;
 	private I_C_Flatrate_Conditions _flatrateConditions;
 	private I_C_BPartner _bpartner;
@@ -98,54 +121,68 @@ public class PMMContractBuilder
 	private I_C_Currency _currency;
 	private boolean _failIfNotCreated = true;
 	private boolean _complete = false;
+
 	//
+	// Parameters for the dataEntries
 	private BigDecimal _flatrateAmtPerUOM;
+	private final Map<Date, BigDecimal> _flatrateAmtPerUOMByDay = new HashMap<>();
+
 	private final Map<Date, DailyFlatrateDataEntry> _flatrateDataEntriesByDay = new HashMap<>();
 
 	//
 	// Status
 	private final AtomicBoolean _processed = new AtomicBoolean(false);
 
-	private PMMContractBuilder()
+	private final AtomicReference<I_C_Flatrate_Term> _flatrateTermRef = new AtomicReference<>(null);
+
+	private PMMContractBuilder(final I_C_Flatrate_Term term)
 	{
-		super();
+		_flatrateTermRef.set(term);
 	}
 
+	/**
+	 *
+	 * @return the term that was created (if this instance was created with {@link #newBuilder()} or the pre-existing term (if this instance was created with {@link #newBuilder(I_C_Flatrate_Term)}).
+	 */
 	public I_C_Flatrate_Term build()
 	{
 		//
 		// Mark builder as processed
 		final boolean alreadyProcessed = _processed.getAndSet(true);
 		Check.assume(!alreadyProcessed, "Not already processed");
-		if (alreadyProcessed)
-		{
-			return null;
-		}
 
-		final AtomicReference<I_C_Flatrate_Term> flatrateTermRef = new AtomicReference<>(null);
 		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
 			{
 				final I_C_Flatrate_Term flatrateTerm = buildInTrx();
-				flatrateTermRef.set(flatrateTerm);
+				_flatrateTermRef.set(flatrateTerm);
 			}
 		});
 
-		return flatrateTermRef.get();
+		return _flatrateTermRef.get();
 	}
 
 	private I_C_Flatrate_Term buildInTrx()
 	{
-		//
-		// Create the contract header
-		final I_C_Flatrate_Term contract = createContractHeader();
-		if (contract == null)
+		// gh #489 only create a new term if none was given to this builder when it was created.
+		final I_C_Flatrate_Term contract;
+		if (_flatrateTermRef.get() == null)
 		{
-			// NOTE: we are not throwing an exception here
-			// because, if configured, an exception was already thrown in the method who created the contract
-			return null;
+			//
+			// Create the contract header
+			contract = createContractHeader();
+			if (contract == null)
+			{
+				// NOTE: we are not throwing an exception here
+				// because, if configured, an exception was already thrown in the method who created the contract
+				return null;
+			}
+		}
+		else
+		{
+			contract = _flatrateTermRef.get();
 		}
 
 		//
@@ -179,13 +216,13 @@ public class PMMContractBuilder
 		final I_AD_User userInCharge = getAD_User_InCharge();
 
 		final I_C_Flatrate_Term contract;
-		
+
 		try
 		{
 			contract = InterfaceWrapperHelper.create(flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, product, completeItOnCreate), I_C_Flatrate_Term.class);
 			Check.assumeNotNull(contract, "contract not null"); // shall not happen
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			// NOTE: an error about why the contract was not created was already logged
 			if (isFailIfNotCreated())
@@ -194,7 +231,7 @@ public class PMMContractBuilder
 			}
 
 			return null;
-			
+
 		}
 
 		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);
@@ -224,17 +261,37 @@ public class PMMContractBuilder
 	{
 		final IContextAware context = getContext();
 		final I_C_Flatrate_DataEntry newDataEntry = InterfaceWrapperHelper.newInstance(I_C_Flatrate_DataEntry.class, context);
+		
+		newDataEntry.setAD_Org_ID(term.getAD_Org_ID());
+		newDataEntry.setC_Flatrate_Term(term);
 		newDataEntry.setC_Period(period);
 		newDataEntry.setM_Product_DataEntry(term.getM_Product());
 		newDataEntry.setC_Currency(term.getC_Currency());
-		newDataEntry.setC_Flatrate_Term(term);
 		newDataEntry.setC_UOM(term.getC_UOM());
 		newDataEntry.setType(I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased);
 
-		final BigDecimal flatrateAmtPerUOM = getFlatrateAmtPerUOM_OrNull();
-		if (flatrateAmtPerUOM != null)
+		// gh #549 if there are _flatrateAmtPerUOMByDay entries for 'period' then use the first one
+		final java.util.Optional<Entry<Date, BigDecimal>> flatrateAmtPerUOMForMinDate = _flatrateAmtPerUOMByDay
+				.entrySet().stream()
+				.filter(e -> {
+					final Date date = e.getKey();
+					final boolean afterStart = date.equals(period.getStartDate()) || date.after(period.getStartDate());
+					final boolean beforeEnd = date.equals(period.getEndDate()) || date.before(period.getEndDate());
+					return afterStart && beforeEnd;
+				})
+				.min(Comparator.comparing(Entry::getKey));
+
+		if (flatrateAmtPerUOMForMinDate.isPresent())
 		{
-			newDataEntry.setFlatrateAmtPerUOM(flatrateAmtPerUOM);
+			newDataEntry.setFlatrateAmtPerUOM(flatrateAmtPerUOMForMinDate.get().getValue());
+		}
+		else
+		{
+			final BigDecimal flatrateAmtPerUOM = getFlatrateAmtPerUOM_OrNull();
+			if (flatrateAmtPerUOM != null)
+			{
+				newDataEntry.setFlatrateAmtPerUOM(flatrateAmtPerUOM);
+			}
 		}
 
 		final BigDecimal qtyPlanned = allocateQtyPlannedForPeriod(period);
@@ -252,6 +309,14 @@ public class PMMContractBuilder
 		Check.assume(!_processed.get(), "Not already processed");
 	}
 
+	/**
+	 * Sets the context to be used within the {@link #build()} method. Giving a ctx to this builder is mandatory, 
+	 * unless the builder was created with {@link #newBuilder(I_C_Flatrate_Term)}.
+	 * If that case, if this method was omitted, then the given <code>term</code>'s ctx is used instead.
+	 *
+	 * @param ctx
+	 * @return
+	 */
 	public PMMContractBuilder setCtx(final Properties ctx)
 	{
 		assertNotProcessed();
@@ -261,6 +326,12 @@ public class PMMContractBuilder
 
 	private IContextAware getContext()
 	{
+		if (_context == null && _flatrateTermRef.get() != null)
+		{
+			// see javadoc of setCtx method
+			return InterfaceWrapperHelper.getContextAware(_flatrateTermRef.get());
+		}
+
 		Check.assumeNotNull(_context, "context not null");
 		return _context;
 	}
@@ -387,7 +458,10 @@ public class PMMContractBuilder
 		return _failIfNotCreated;
 	}
 
-	/** Sets if we shall complete the contract after creating it */
+	/**
+	 * Sets if we shall complete the contract. 
+	 * This method is relevant also if this builder was created with {@link #newBuilder(I_C_Flatrate_Term)}.
+	 */
 	public PMMContractBuilder setComplete(final boolean complete)
 	{
 		_complete = complete;
@@ -399,10 +473,31 @@ public class PMMContractBuilder
 		return _complete;
 	}
 
+	/**
+	 * Set one price that will be applied to all {@link I_C_Flatrate_DataEntry} that this builder shall create.
+	 *
+	 * @param flatrateAmtPerUOM
+	 * @return
+	 */
 	public final PMMContractBuilder setFlatrateAmtPerUOM(final BigDecimal flatrateAmtPerUOM)
 	{
 		assertNotProcessed();
 		_flatrateAmtPerUOM = flatrateAmtPerUOM;
+		return this;
+	}
+
+	/**
+	 * Set a price for the given date. When the {@link I_C_Flatrate_DataEntry}s are created according to the term's calendar's {@link I_C_Period}s, then for each period,
+	 * the <code>flatrateAmtPerUOM</code> that was set for the earliest date (of course within the period's <code>StartDate</code> and <code>EndDate</code> will be used).
+	 * If no such date was added, then the value set via {@link #setFlatrateAmtPerUOM(BigDecimal)} will be used.
+	 *
+	 * @param date
+	 * @param flatrateAmtPerUOM
+	 * @return
+	 */
+	public PMMContractBuilder setFlatrateAmtPerUOM(final Date date, final BigDecimal flatrateAmtPerUOM)
+	{
+		_flatrateAmtPerUOMByDay.put(date, flatrateAmtPerUOM);
 		return this;
 	}
 

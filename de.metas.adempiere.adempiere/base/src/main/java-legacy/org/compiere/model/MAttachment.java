@@ -506,7 +506,7 @@ public class MAttachment extends X_AD_Attachment
 		ZipOutputStream zip = new ZipOutputStream(out);
 		zip.setMethod(ZipOutputStream.DEFLATED);
 		zip.setLevel(Deflater.BEST_COMPRESSION);
-		zip.setComment("adempiere");
+		zip.setComment("metasfresh");
 		//
 		try
 		{

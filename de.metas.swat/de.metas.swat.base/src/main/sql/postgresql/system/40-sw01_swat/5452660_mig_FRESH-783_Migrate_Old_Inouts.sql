@@ -105,7 +105,7 @@ AD_Client_ID,
 		100 :: integer as UpdatedBy ,
 		
 		nextval('r_request_seq') :: bigint as R_Request_ID,
-		create_request_document_number() :: character varying as DocumentNo,
+		tmp_create_request_document_number() :: character varying as DocumentNo,
 		
 		io.M_InOut_ID :: numeric(10,0) as M_InOut_ID,
 		iol.M_Product_ID :: numeric(10,0) as M_Product_ID,
