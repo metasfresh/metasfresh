@@ -5,13 +5,14 @@ const initialState = {
     connectionError: false,
     modal: {
         visible: false,
-        type: 0,
+        type: "",
         tabId: null,
         rowId: null,
         layout: {},
         data: [],
         rowData: {},
-        modalTitle: ""
+        modalTitle: "",
+        modalType: ""
     },
     master: {
         layout: {},
@@ -36,7 +37,8 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     tabId: action.tabId,
                     rowId: action.rowId,
-                    title: action.title
+                    title: action.title,
+                    modalType: action.modalType
                 })
         })
 

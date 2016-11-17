@@ -52,7 +52,7 @@ class Widget extends Component {
     handlePatch = (property, value) => {
         const {
             isModal, widgetType, widgetData, dataId, windowType, dispatch,
-            rowId, tabId, onChange, relativeDocId, isAdvanced = false
+            rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
         const {cachedValue} = this.state;
@@ -79,7 +79,7 @@ class Widget extends Component {
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
+            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal, entity));
         }
 
         this.setState(Object.assign({}, this.state, {

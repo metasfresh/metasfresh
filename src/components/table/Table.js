@@ -327,7 +327,7 @@ class Table extends Component {
 
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
-        dispatch(openModal("Add new", windowType, tabId, rowId));
+        dispatch(openModal("Add new", windowType, "window", tabId, rowId));
     }
 
     renderTableBody = () => {

@@ -29,7 +29,7 @@ class TableContextMenu extends Component {
     handleAdvancedEdit = () => {
         const {dispatch, tabId, type, selected} = this.props;
 
-        dispatch(openModal("Advanced edit", type + "&advanced=true", tabId, selected[0]));
+        dispatch(openModal("Advanced edit", type + "&advanced=true", "window", tabId, selected[0]));
     }
 
     handleDelete = () => {
