@@ -29,7 +29,6 @@ import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.MTask;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -40,7 +39,6 @@ import com.google.common.base.MoreObjects;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.session.jaxrs.IServerService;
@@ -124,21 +122,16 @@ public class ServerBase implements IServerService
 	{
 		m_processCount.incrementAndGet();
 
-		final ProcessInfo processInfo = ProcessInfo.builder()
+		final ProcessExecutionResult result = ProcessInfo.builder()
 				.setAD_PInstance_ID(adPInstanceId)
 				.setCreateTemporaryCtx()
-				.build();
-
-		final Properties processCtx = processInfo.getCtx(); 
-		try (final IAutoCloseable contextRestorer = Env.switchContext(processCtx))
-		{
-			final ProcessExecutionResult result = ProcessExecutor.builder()
-					.setProcessInfo(processInfo)
-					.executeSync()
-					.getResult();
-
-			return result;
-		}
+				//
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult();
+		
+		return result;
 	}	// process
 
 	@Override

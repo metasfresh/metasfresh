@@ -46,6 +46,7 @@ import javax.activation.DataSource;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -86,8 +87,6 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
@@ -140,23 +139,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(String html, Map<String, Object> attrs)
+	public static ReportEngine getReportEngine(final String html, final Map<String, Object> attrs)
 	{
 		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, attrs, null);
+		String text = parseText(ctx, html, false, attrs, ITrx.TRXNAME_None);
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-		//
-		// Get Process
-		final String processClassname = "de.metas.letters.report.AD_BoilerPlate_Report";
-		final int processId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(Env.getCtx(), processClassname);
 		
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_Process_ID(processId)
+				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
 				.addParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
-				.build();
+				//
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getProcessInfo();
 		
-		ProcessExecutor.builder().setProcessInfo(pi).executeSync();
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}

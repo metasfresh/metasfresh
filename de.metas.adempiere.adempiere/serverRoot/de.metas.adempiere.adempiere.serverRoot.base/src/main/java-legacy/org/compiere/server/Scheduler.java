@@ -361,8 +361,8 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// Process
-		final ProcessExecutionResult result = ProcessExecutor.builder()
-				.setProcessInfo(pi)
+		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
+				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
 				.executeSync()
 				.getResult();
 		if (result.isError())
@@ -412,8 +412,8 @@ public class Scheduler extends AdempiereServer
 	{
 		log.debug("Run process: {}", pi);
 
-		final ProcessExecutionResult result = ProcessExecutor.builder()
-				.setProcessInfo(pi)
+		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
+				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
 				.executeSync()
 				.getResult();
 		final boolean ok = !result.isError();

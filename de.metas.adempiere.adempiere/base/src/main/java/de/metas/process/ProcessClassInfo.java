@@ -78,33 +78,36 @@ public final class ProcessClassInfo
 		{
 			// shall never happen
 			logger.error("Failed fetching ProcessClassInfo from cache for {}", processClass, e);
+			return ProcessClassInfo.NULL;
 		}
-		return ProcessClassInfo.NULL;
 	}
 
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
-	public static final ProcessClassInfo ofClassname(final String classname)
+	public static final ProcessClassInfo ofClassname(@Nullable final String classname)
 	{
-		Class<?> processClass = null;
-		if (!Check.isEmpty(classname))
+		if (Check.isEmpty(classname, true))
 		{
-			try
-			{
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				if (classLoader == null)
-				{
-					classLoader = ProcessClassInfo.class.getClassLoader();
-				}
-				processClass = classLoader.loadClass(classname);
-			}
-			catch (ClassNotFoundException e)
-			{
-				// nothing
-			}
+			return ProcessClassInfo.NULL;
 		}
-		return of(processClass);
+
+		try
+		{
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			if (classLoader == null)
+			{
+				classLoader = ProcessClassInfo.class.getClassLoader();
+			}
+			final Class<?> processClass = classLoader.loadClass(classname);
+			return of(processClass);
+		}
+		catch (final ClassNotFoundException ex)
+		{
+			// nothing
+			logger.warn("No class found for {}", classname);
+			return ProcessClassInfo.NULL;
+		}
 	}
 
 	/** Reset {@link ProcessClassInfo} cache */

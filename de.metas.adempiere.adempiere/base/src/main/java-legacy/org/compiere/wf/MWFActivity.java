@@ -69,7 +69,6 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
@@ -1036,7 +1035,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		else if (MWFNode.ACTION_AppsProcess.equals(action))
 		{
 			log.debug("Process: AD_Process_ID={}", m_node.getAD_Process_ID());
-			final ProcessInfo pi = ProcessInfo.builder()
+			ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setAD_Client_ID(getAD_Client_ID())
 					.setAD_User_ID(getAD_User_ID())
@@ -1044,10 +1043,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					.setTitle(m_node.getName(true))
 					.setRecord(getAD_Table_ID(), getRecord_ID())
 					.addParameters(createProcessInfoParameters(getPO(trx)))
-					.build();
-			
-			ProcessExecutor.builder()
-					.setProcessInfo(pi)
+					//
+					.buildAndPrepareExecution()
+					.onErrorThrowException()
 					.executeSync();
 			return true;
 		}

@@ -34,8 +34,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.process.ASyncProcess;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 
 /*
@@ -473,10 +473,8 @@ class ProcessPanel implements ProcessDialog, ActionListener, ASyncProcess
 			if (CARDNAME_ProcessParameters.equals(currentCardName))
 			{
 				final ProcessInfo pi = createProcessInfo();
-
-				ProcessExecutor.builder()
+				ProcessExecutor.builder(pi)
 						.setAsyncParent(SwingASyncProcess.of(this))
-						.setProcessInfo(pi)
 						.execute();
 
 				if (skipResultsPanel && !_allowProcessReRun)

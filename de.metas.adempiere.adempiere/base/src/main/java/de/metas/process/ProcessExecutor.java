@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.process;
 
 import java.math.BigDecimal;
@@ -37,6 +21,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.MRule;
 import org.compiere.print.ReportCtl;
 import org.compiere.util.DB;
@@ -54,15 +40,16 @@ import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
- * Process executor
+ * Process executor: executes a process (sync or async) which was defined by given {@link ProcessInfo}.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, Low Heng Sin, Teo Sarca
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class ProcessExecutor
 {
-	public static final Builder builder()
+	public static final Builder builder(final ProcessInfo processInfo)
 	{
-		return new Builder();
+		return new Builder(processInfo);
 	}
 
 	public static int getCurrentOrgId()
@@ -98,6 +85,7 @@ public final class ProcessExecutor
 
 	private final ASyncProcess parent;
 	private final ProcessInfo pi;
+	private final boolean switchContextWhenRunning;
 	private final boolean onErrorThrowException;
 
 	private Thread m_thread; // metas
@@ -107,6 +95,7 @@ public final class ProcessExecutor
 		super();
 		pi = builder.getProcessInfo();
 		parent = builder.getASyncParent();
+		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
 	}
 
@@ -251,7 +240,7 @@ public final class ProcessExecutor
 		final Integer previousProcessId = s_currentProcess_ID.get();
 		final Integer previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
-		try
+		try (final IAutoCloseable contextRestorer = switchContextIfNeeded())
 		{
 			s_currentProcess_ID.set(pi.getAD_Process_ID());
 			s_currentOrg_ID.set(pi.getAD_Org_ID());
@@ -300,6 +289,18 @@ public final class ProcessExecutor
 		if (onErrorThrowException)
 		{
 			pi.getResult().propagateErrorIfAny();
+		}
+	}
+
+	private IAutoCloseable switchContextIfNeeded()
+	{
+		if (switchContextWhenRunning)
+		{
+			return Env.switchContext(pi.getCtx());
+		}
+		else
+		{
+			return NullAutoCloseable.instance;
 		}
 	}
 
@@ -582,6 +583,11 @@ public final class ProcessExecutor
 		}
 	}
 
+	public ProcessInfo getProcessInfo()
+	{
+		return pi;
+	}
+
 	public ProcessExecutionResult getResult()
 	{
 		return pi.getResult();
@@ -591,14 +597,18 @@ public final class ProcessExecutor
 	{
 		private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-		private ProcessInfo pi;
+		private final ProcessInfo processInfo;
 		private ASyncProcess asyncParent = null;
+		private boolean switchContextWhenRunning = false;
 		private boolean onErrorThrowException = false;
 		private Consumer<ProcessInfo> beforeCallback = null;
 
-		private Builder()
+		private Builder(final ProcessInfo processInfo)
 		{
 			super();
+
+			Check.assumeNotNull(processInfo, "Parameter processInfo is not null");
+			this.processInfo = processInfo;
 		}
 
 		public void execute()
@@ -616,20 +626,18 @@ public final class ProcessExecutor
 
 		private ProcessExecutor build()
 		{
-			Check.assumeNotNull(pi, "Parameter pi is not null");
-
 			try
 			{
-				prepareAD_PInstance(pi);
+				prepareAD_PInstance(processInfo);
 			}
 			catch (final Throwable e)
 			{
-				final ProcessExecutionResult result = pi.getResult();
+				final ProcessExecutionResult result = processInfo.getResult();
 				result.markAsError(e);
 
 				if (asyncParent != null)
 				{
-					asyncParent.onProcessInitError(pi);
+					asyncParent.onProcessInitError(processInfo);
 				}
 				else
 				{
@@ -662,15 +670,9 @@ public final class ProcessExecutor
 			}
 		}
 
-		public Builder setProcessInfo(final ProcessInfo pi)
-		{
-			this.pi = pi;
-			return this;
-		}
-
 		private ProcessInfo getProcessInfo()
 		{
-			return pi;
+			return processInfo;
 		}
 
 		public Builder setAsyncParent(final ASyncProcess asyncParent)
@@ -690,6 +692,18 @@ public final class ProcessExecutor
 		public Builder onErrorThrowException()
 		{
 			this.onErrorThrowException = true;
+			return this;
+		}
+
+		/**
+		 * Advice the executor to switch current context with process info's context.
+		 * 
+		 * @see ProcessInfo#getCtx()
+		 * @see Env#switchContext(Properties)
+		 */
+		public Builder switchContextWhenRunning()
+		{
+			this.switchContextWhenRunning = true;
 			return this;
 		}
 

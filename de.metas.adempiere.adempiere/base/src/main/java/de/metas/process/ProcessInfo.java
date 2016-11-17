@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package de.metas.process;
 
 import java.io.Serializable;
@@ -56,10 +40,8 @@ import de.metas.adempiere.report.jasper.OutputType;
 /**
  * Process Information (Value Object)
  *
- * @author Jorg Janke
- * @version $Id: ProcessInfo.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
- * @author victor.perez@e-evolution.com
- * @see FR 1906632 http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1906632&group_id=176962
+ * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
+ * @author metas-dev <dev@metasfresh.com>
  */
 @SuppressWarnings("serial")
 public final class ProcessInfo implements Serializable
@@ -131,6 +113,7 @@ public final class ProcessInfo implements Serializable
 	private final int tabNo;
 	/** Class Name */
 	private final Optional<String> className;
+	private transient ProcessClassInfo processClassInfo = null; // lazy
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
 	private final int adWorkflowId;
@@ -532,25 +515,11 @@ public final class ProcessInfo implements Serializable
 	 */
 	public ProcessClassInfo getProcessClassInfo()
 	{
-		Class<?> processClass = null;
-		final String classname = getClassName();
-		if (!Check.isEmpty(classname))
+		if(processClassInfo == null)
 		{
-			try
-			{
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				if (classLoader == null)
-				{
-					classLoader = getClass().getClassLoader();
-				}
-				processClass = classLoader.loadClass(classname);
-			}
-			catch (ClassNotFoundException e)
-			{
-				// nothing
-			}
+			processClassInfo = ProcessClassInfo.ofClassname(getClassName());
 		}
-		return ProcessClassInfo.of(processClass);
+		return processClassInfo;
 	}
 
 	public static final class ProcessInfoBuilder
@@ -602,9 +571,7 @@ public final class ProcessInfo implements Serializable
 		public ProcessExecutor.Builder buildAndPrepareExecution()
 		{
 			final ProcessInfo processInfo = build();
-			return ProcessExecutor.builder()
-					.setProcessInfo(processInfo);
-
+			return ProcessExecutor.builder(processInfo);
 		}
 
 		public ProcessInfoBuilder setCtx(final Properties ctx)
@@ -836,6 +803,18 @@ public final class ProcessInfo implements Serializable
 		{
 			final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retriveProcessByValue(getCtx(), processValue);
 			setAD_Process(adProcess);
+			return this;
+		}
+
+		public ProcessInfoBuilder setAD_ProcessByClassname(final String processClassname)
+		{
+			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(getCtx(), processClassname);
+			if(adProcessId <= 0)
+			{
+				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");
+			}
+			
+			setAD_Process_ID(adProcessId);
 			return this;
 		}
 
@@ -1229,6 +1208,7 @@ public final class ProcessInfo implements Serializable
 
 			return this;
 		}
-
-	}
+	
+	} // ProcessInfoBuilder
+	
 }   // ProcessInfo
