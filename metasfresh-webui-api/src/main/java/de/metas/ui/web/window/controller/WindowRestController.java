@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
@@ -433,18 +432,17 @@ public class WindowRestController implements IWindowRestController
 		final Document document = documentCollection.getDocument(documentPath);
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
-		final ProcessInfo pi = ProcessInfo.builder()
+		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setAD_Process_ID(entityDescriptor.getPrintProcessId())
 				.setRecord(entityDescriptor.getTableName(), document.getDocumentIdAsInt())
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
-				.build();
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
-				.executeSync();
+				//
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 
-		final ProcessExecutionResult processExecutionResult = pi.getResult();
 		final byte[] reportData = processExecutionResult.getReportData();
 		// final String reportFilename = processExecutionResult.getReportFilename();
 		final String reportContentType = processExecutionResult.getReportContentType();

@@ -2,13 +2,9 @@ package de.metas.ui.web.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -108,18 +104,26 @@ public class ProcessInstance
 
 		//
 		// Process info
-		final ProcessInfo pi = createProcessInfo();
-
-		//
-		// Execute the process/report
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
-				.executeSync();
+		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
+		final ProcessDescriptor processDescriptor = getDescriptor();
+		final String adLanguage = Env.getAD_Language(ctx);
+		final String name = processDescriptor.getCaption(adLanguage);
+		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setCreateTemporaryCtx()
+				.setAD_PInstance_ID(getAD_PInstance_ID())
+				.setTitle(name)
+				.setPrintPreview(true)
+				.setJRDesiredOutputType(OutputType.PDF)
+				//
+				// Execute the process/report
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 
 		//
 		// Build and return the execution result
 		{
-			final ProcessExecutionResult processExecutionResult = pi.getResult();
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
 					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
 					.setSummary(processExecutionResult.getSummary())
@@ -134,28 +138,6 @@ public class ProcessInstance
 
 			return resultBuilder.build();
 		}
-	}
-
-	private final ProcessInfo createProcessInfo()
-	{
-		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
-
-		final int adPInstanceId = getAD_PInstance_ID();
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, adPInstanceId);
-
-		final ProcessDescriptor processDescriptor = getDescriptor();
-		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = processDescriptor.getCaption(adLanguage);
-		final ProcessInfo pi = ProcessInfo.builder()
-				.setCtx(ctx)
-				.setCreateTemporaryCtx()
-				.setAD_PInstance(adPInstance)
-				.setTitle(name)
-				.setPrintPreview(true)
-				.setJRDesiredOutputType(OutputType.PDF)
-				.build();
-
-		return pi;
 	}
 
 	/**
