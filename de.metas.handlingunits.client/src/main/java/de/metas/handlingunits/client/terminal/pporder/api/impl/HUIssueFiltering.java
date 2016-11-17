@@ -16,11 +16,11 @@ package de.metas.handlingunits.client.terminal.pporder.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -64,7 +64,7 @@ import de.metas.materialtracking.model.IMaterialTrackingAware;
 public class HUIssueFiltering implements IHUIssueFiltering
 {
 	private static final String SYSCONFIG_FilterHUsByQualityInspection = "de.metas.handlingunits.client.terminal.pporder.api.impl.HUIssueFiltering.FilterHUsByQualityInspection";
-	
+
 	@Override
 	public List<I_M_Warehouse> retrieveWarehouse(final Properties ctx)
 	{
@@ -148,10 +148,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 
 			huQueryBuilder.addOnlyWithAttribute(
 					materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx),
-					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID())
-					);
+					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID()));
 		}
-		
+
 		//
 		// Filter HUs by QualityInspection
 		if (Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_FilterHUsByQualityInspection, true))
@@ -159,7 +158,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 			final boolean qualityInspectionOrder = Services.get(IMaterialTrackingPPOrderBL.class).isQualityInspection(ppOrder);
 			if (qualityInspectionOrder)
 			{
-				huQueryBuilder.addOnlyWithAttributeNotNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+				// #579 Disable this condition.
+				// From now on, the qualityInspection production orders will also allow HUs with no QualityInspection attributes set
+				// huQueryBuilder.addOnlyWithAttributeNotNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
 			}
 			else
 			{
