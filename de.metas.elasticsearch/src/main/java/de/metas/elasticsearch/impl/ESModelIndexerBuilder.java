@@ -57,7 +57,6 @@ public final class ESModelIndexerBuilder<ModelType> implements IESModelIndexerBu
 		this.esModelIndexingService = esModelIndexingService;
 		
 		Check.assumeNotNull(modelClass, "Parameter modelClass is not null");
-		// this.modelClass = modelClass;
 		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		this.modelDenormalizer = Services.get(IESDenormalizerFactory.class).getModelDenormalizer(modelClass);
 	}
@@ -70,7 +69,7 @@ public final class ESModelIndexerBuilder<ModelType> implements IESModelIndexerBu
 		return indexer;
 	}
 
-	/* package */IESModelIndexer build()
+	private IESModelIndexer build()
 	{
 		return new ESModelIndexer(this);
 	}

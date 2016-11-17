@@ -2,8 +2,6 @@ package de.metas.elasticsearch.denormalizers;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.elasticsearch.denormalizers.impl.ESModelDenormalizer;
-
 /*
  * #%L
  * de.metas.business
@@ -29,8 +27,6 @@ import de.metas.elasticsearch.denormalizers.impl.ESModelDenormalizer;
 public interface IESDenormalizerFactory extends ISingletonService
 {
 	IESModelDenormalizer getModelDenormalizer(Class<?> modelClass);
-
-	ESModelDenormalizer.Builder newModelDenormalizerBuilder(Class<?> modelClass);
 
 	IESModelDenormalizer getModelValueDenormalizer(String tableName);
 }

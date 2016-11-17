@@ -202,7 +202,6 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		valueModelDenormalizers.put(tableName, valueModelDenormalizer);
 	}
 
-	@Override
 	public ESModelDenormalizer.Builder newModelDenormalizerBuilder(final Class<?> modelClass)
 	{
 		return ESModelDenormalizer.builder(this, modelClass);
