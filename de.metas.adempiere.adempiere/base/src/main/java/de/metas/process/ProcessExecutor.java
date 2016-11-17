@@ -693,6 +693,11 @@ public final class ProcessExecutor
 			return this;
 		}
 
+		/**
+		 * Sets the callback to be executed after AD_PInstance is created but before the actual process is started.
+		 * 
+		 * @param beforeCallback
+		 */
 		public Builder callBefore(final Consumer<ProcessInfo> beforeCallback)
 		{
 			this.beforeCallback = beforeCallback;

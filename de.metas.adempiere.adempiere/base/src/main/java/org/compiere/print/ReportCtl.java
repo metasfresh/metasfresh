@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 
@@ -272,7 +271,7 @@ public final class ReportCtl
 
 		if (printFormat.getJasperProcess_ID() > 0)
 		{
-			final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+			final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
 					//
 					.setCtx(processInfo.getCtx())
 					.setCreateTemporaryCtx()
@@ -288,16 +287,13 @@ public final class ReportCtl
 					.setRecord(adTableId, recordId)
 					.setReportLanguage(printFormat.getLanguage())
 					//
-					.build();
-
-			// Execute Process
-			ProcessExecutor.builder()
-					.setProcessInfo(jasperProcessInfo)
-					.executeSync();
+					// Execute Process
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
 
 			//
 			// Throw exception in case of failure
-			final ProcessExecutionResult jasperProcessResult = jasperProcessInfo.getResult();
 			jasperProcessResult.propagateErrorIfAny();
 			
 			//

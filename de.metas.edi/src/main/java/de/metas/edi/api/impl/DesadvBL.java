@@ -424,7 +424,7 @@ public class DesadvBL implements IDesadvBL
 				.onErrorThrowException()
 				// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
 				// The report will fetch it from selection.
-				.callBefore(pi -> DB.createT_Selection(pi.getAD_PInstance_ID(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_None))
+				.callBefore(pi -> DB.createT_Selection(pi.getAD_PInstance_ID(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 	}
 

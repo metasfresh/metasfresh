@@ -10,7 +10,6 @@ import org.compiere.print.MPrintFormat;
 import de.metas.letters.model.I_T_BoilerPlate_Spool;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.X_T_BoilerPlate_Spool;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SvrProcess;
@@ -85,17 +84,15 @@ public class AD_BoilerPlate_Report extends SvrProcess
 
 	private void startJasper() throws Exception
 	{
-		final ProcessInfo pi = ProcessInfo.builder()
+		ProcessInfo.builder()
 				.setCtx(getCtx())
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setAD_PInstance_ID(getAD_PInstance_ID())
 				.setAD_Process_ID(0)
 				.setTableName(I_T_BoilerPlate_Spool.Table_Name)
-				.build();
-
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
+				//
+				.buildAndPrepareExecution()
 				.onErrorThrowException()
 				.executeSync();
 	}

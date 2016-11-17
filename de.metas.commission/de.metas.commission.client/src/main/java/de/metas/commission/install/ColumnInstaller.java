@@ -43,7 +43,6 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 
 public final class ColumnInstaller extends Installer {
@@ -171,15 +170,12 @@ public final class ColumnInstaller extends Installer {
 		checkSaved();
 
 		final String processValue = "AD_Column Sync";
-		final ProcessInfo pi = ProcessInfo.builder()
+		ProcessInfo.builder()
 				.setAD_ProcessByValue(processValue)
 				.setRecord(I_AD_Column.Table_Name, column.getAD_Column_ID())
-				.build();
-
-		// final Trx trx = Trx.get(trxName, false);
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
-				.execute();
+				//
+				.buildAndPrepareExecution()
+				.executeSync();
 
 		return this;
 	}

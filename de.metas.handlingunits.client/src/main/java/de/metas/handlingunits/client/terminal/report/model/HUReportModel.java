@@ -25,7 +25,6 @@ package de.metas.handlingunits.client.terminal.report.model;
  * #L%
  */
 
-
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -63,7 +62,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.IMHUProcessBL;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 
 /**
@@ -406,11 +404,11 @@ public class HUReportModel implements IDisposable
 
 		final Properties ctx = getCtx();
 		final String barcodeServlet = Services.get(ISysConfigBL.class).getValue(HUReportModel.SYSCONFIG_BarcodeServlet,
-				null, // defaultValue,
+				null,  // defaultValue,
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
-		
-		final ProcessInfo pi = ProcessInfo.builder()
+
+		ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process(process)
 				.setWindowNo(getTerminalContext().getWindowNo())
@@ -418,13 +416,9 @@ public class HUReportModel implements IDisposable
 				.setReportLanguage(reportLanguage)
 				.addParameter(HUReportModel.PARA_BarcodeURL, barcodeServlet)
 				.addParameter(IJasperService.PARAM_PrintCopies, printCopies)
-				.build();
-
-
-		//
-		// Execute report in a new transaction
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
+				//
+				// Execute report in a new transaction
+				.buildAndPrepareExecution()
 				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 	}

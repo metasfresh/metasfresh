@@ -19,7 +19,6 @@ package org.compiere.report;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_PA_Report;
 
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 
 /**
@@ -44,16 +43,14 @@ public class FinReportJasper extends FinReport
 		final I_PA_Report paReport = getPA_Report();
 		final I_AD_Process proc = paReport.getJasperProcess();
 
-		final ProcessInfo pi = ProcessInfo.builder()
+		ProcessInfo.builder()
 				.setAD_Process(proc)
 				.setRecord(getTable_ID(), getRecord_ID())
 				.setWhereClause(getProcessInfo().getWhereClause())
 				.addParameters(getParameters()) // Copy the list of parameters from the financial report
 				.addParameter("T_Report_AD_PInstance_ID", getAD_PInstance_ID())
-				.build();
-
-		ProcessExecutor.builder()
-				.setProcessInfo(pi)
+				//
+				.buildAndPrepareExecution()
 				.execute();
 	}
 }	// FinReport
