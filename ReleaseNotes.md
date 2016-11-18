@@ -38,11 +38,17 @@ Here come the actual release notes:
   * #558 Marginal return calculation - Accountings without c_activity_id
     * Marginal Return now considers specific records without activity to be calculated on account specific one.
   * #568 Change on Report "Lieferschein" for one specific Customer
+    * Add properties File for Shipment Report.
   * #555 Businesspartner Location isEDI shall not be ticked by default
+    * Don't set the Flag isEDI per default when recording new Businesspartner Loactions.
   * #548 keep M_QualityNote and M_AttributeValue in sync
+    * New Functionality to sync the M_QualityNote and M_AttributeValue for R_Request complaints usage.
   * #577 Button Request shows too many results
+    * Adjust the Filtering of Request Button in main menue and show Role Based counter.
   * #565 Report Revenue per Week and BPartner also show qty
+    * Add a new Quantity value in reports Revenue per week and week Businesspartner.
   * #416 Extended async notification features
+    * Prepare the notification features for WebUI exposure in metasfresh nextGen.
  
 ## Fixes
 * metasfresh
