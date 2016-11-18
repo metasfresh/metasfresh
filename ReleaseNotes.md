@@ -20,6 +20,7 @@ Here come the actual release notes:
   * #597 Empties mask and functionality with autom. set the selected bpartner
 * webui
   * #567 WebUI - Material Receipt Schedule
+  * #497 WebUI - ShipmentSchedule Window
 
 ## Fixes
 * metasfresh
