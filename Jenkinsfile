@@ -61,18 +61,26 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 properties([
 	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
+	
 		string(defaultValue: '', 
-			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
+			description: '''<p>
+If this job is invoked by an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+This build will then attempt to use maven dependencies from that branch (but fall back to master), and it will set its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
-		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
+			
+		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration scripts to that DB-copy.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
+			
+		string(defaultValue: '10', description: '''Timout in minutes for the "Test SQL-Migration" stage. Leave empty to have no Timeout, but please remember that we sometime have very limited time windows for rollouts into production.''', 
+			name: 'MF_SQL_MIGRATION_TEST_TIMEOUT'),
+		
 		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
 Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
 			name: 'MF_SKIP_DEPLOYMENT'),
+			
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
@@ -287,29 +295,35 @@ else
 	{
 		node('master')
 		{
-			final distArtifactId='de.metas.endcustomer.mf15.dist';
-			final packaging='tar.gz';
-			final sshTargetHost='mf15cloudit';
-			final sshTargetUser='metasfresh'
-
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
-
-			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+			final timeoutToUse ?= params.MF_SQL_MIGRATION_TEST_TIMEOUT:999999999
+			echo "params.MF_SQL_MIGRATION_TEST_TIMEOUT=${params.MF_SQL_MIGRATION_TEST_TIMEOUT} => timeoutToUse=${timeoutToUse}"
 			
-			// Look Ma, I'm currying!!
-			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+			timeout(timeoutToUse) 
+			{
+				final distArtifactId='de.metas.endcustomer.mf15.dist';
+				final packaging='tar.gz';
+				final sshTargetHost='mf15cloudit';
+				final sshTargetUser='metasfresh'
 
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
-			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
-			        .replaceAll('-', '_') // postgresql is allergic to '-' in DB names
-					.toLowerCase(); // also, DB names are generally in lowercase
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
 
-			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
-			
-			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
+				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				
+				// Look Ma, I'm currying!!
+				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+
+				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
+				final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
+						.replaceAll('-', '_') // postgresql is allergic to '-' in DB names
+						.toLowerCase(); // also, DB names are generally in lowercase
+
+				invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
+				
+				invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
+			}
 		}
 	}
 }
