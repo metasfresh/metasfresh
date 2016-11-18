@@ -19,6 +19,7 @@ Here come the actual release notes:
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
   * #597 Empties mask and functionality with autom. set the selected bpartner
   * #576 Report Reclamation result, quality note and minor changes
+  * #539 Add missing FK constraints
 * webui
   * #567 WebUI - Material Receipt Schedule
   * #497 WebUI - ShipmentSchedule Window
