@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T17:27:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/taxregistration/report" uuid="e3d3e532-62f5-4c94-a4fe-334149c79e44">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.4522712143931047"/>
 	<property name="ireport.x" value="1123"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<parameter name="details" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	c_taxdeclaration_id,
@@ -28,7 +33,7 @@
 FROM
 	report.RV_TaxDeclarationLine
 WHERE
-	c_taxdeclaration_id = $P{RECORD_ID}
+	c_taxdeclaration_id = $P{RECORD_ID} AND ad_org_id = $P{AD_Org_ID}
 ORDER BY
 	C_Tax_Name, Line
 ;]]>
@@ -87,17 +92,17 @@ ORDER BY
 		<groupHeader>
 			<band height="11" splitType="Stretch">
 				<rectangle>
-					<reportElement uuid="daa26c76-7adc-4084-ac8a-ef235426778c" key="rectangle-3" x="0" y="1" width="782" height="9" forecolor="#FFFFCC" backcolor="#FFFFCC">
+					<reportElement key="rectangle-3" x="0" y="1" width="782" height="9" forecolor="#FFFFCC" backcolor="#FFFFCC" uuid="daa26c76-7adc-4084-ac8a-ef235426778c">
 						<printWhenExpression><![CDATA[new Boolean( $V{Group_COUNT}.intValue()%2 != 0 && (!$P{details}.equals("Y")))]]></printWhenExpression>
 					</reportElement>
 				</rectangle>
 				<line>
-					<reportElement uuid="44c68586-d6cb-44df-a09f-9fa21196b0ae" key="line-1" x="2" y="10" width="776" height="1">
+					<reportElement key="line-1" x="2" y="10" width="776" height="1" uuid="44c68586-d6cb-44df-a09f-9fa21196b0ae">
 						<printWhenExpression><![CDATA[new Boolean($P{details}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 				</line>
 				<textField isBlankWhenNull="false">
-					<reportElement uuid="cfa1ceec-9b8a-4175-a92b-e86a87254cd8" key="textField-4" x="2" y="0" width="213" height="11"/>
+					<reportElement key="textField-4" x="2" y="0" width="213" height="11" uuid="cfa1ceec-9b8a-4175-a92b-e86a87254cd8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -110,7 +115,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{tax_name}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-					<reportElement uuid="73bf05f0-3c9c-4abb-9e99-5bd9196c1c76" key="textField-5" x="546" y="0" width="49" height="11"/>
+					<reportElement key="textField-5" x="546" y="0" width="49" height="11" uuid="73bf05f0-3c9c-4abb-9e99-5bd9196c1c76"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -123,7 +128,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$V{SUM_VST}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-					<reportElement uuid="4207e06f-980f-49e8-aafe-d5b284c075cb" key="textField-6" x="686" y="0" width="49" height="11"/>
+					<reportElement key="textField-6" x="686" y="0" width="49" height="11" uuid="4207e06f-980f-49e8-aafe-d5b284c075cb"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -136,7 +141,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$V{SUM_UST}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement uuid="43c73683-147a-4759-a511-193045f24047" key="textField-7" x="733" y="0" width="20" height="11"/>
+					<reportElement key="textField-7" x="733" y="0" width="20" height="11" uuid="43c73683-147a-4759-a511-193045f24047"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -149,7 +154,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement uuid="5d1c30ca-49dd-445c-80f8-f321b02012cc" key="textField-8" x="594" y="0" width="20" height="11"/>
+					<reportElement key="textField-8" x="594" y="0" width="20" height="11" uuid="5d1c30ca-49dd-445c-80f8-f321b02012cc"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -162,7 +167,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-					<reportElement uuid="2ac77f65-22dd-4920-8fa9-02c3b884577c" key="textField-6" x="617" y="0" width="49" height="11"/>
+					<reportElement key="textField-6" x="617" y="0" width="49" height="11" uuid="2ac77f65-22dd-4920-8fa9-02c3b884577c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,7 +180,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$V{SUM_UST_Basis}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement uuid="4067a85b-d739-4604-bda3-f1b60461adbf" key="textField-8" x="523" y="0" width="20" height="11"/>
+					<reportElement key="textField-8" x="523" y="0" width="20" height="11" uuid="4067a85b-d739-4604-bda3-f1b60461adbf"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,7 +193,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement uuid="f2b7e38e-eb36-41b8-8255-3496f14fde26" key="textField-7" x="664" y="0" width="20" height="11"/>
+					<reportElement key="textField-7" x="664" y="0" width="20" height="11" uuid="f2b7e38e-eb36-41b8-8255-3496f14fde26"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,7 +206,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-					<reportElement uuid="4c1bb4a4-7530-4dd7-8c83-f4b471058e5c" key="textField-5" x="475" y="0" width="49" height="11"/>
+					<reportElement key="textField-5" x="475" y="0" width="49" height="11" uuid="4c1bb4a4-7530-4dd7-8c83-f4b471058e5c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -230,12 +235,12 @@ ORDER BY
 	<pageHeader>
 		<band height="37" splitType="Stretch">
 			<rectangle>
-				<reportElement uuid="f14b6725-0c66-4fe9-ae47-4ffdbb33ff69" key="rectangle-2" x="0" y="0" width="782" height="14" forecolor="#999999" backcolor="#808080">
+				<reportElement key="rectangle-2" x="0" y="0" width="782" height="14" forecolor="#999999" backcolor="#808080" uuid="f14b6725-0c66-4fe9-ae47-4ffdbb33ff69">
 					<printWhenExpression><![CDATA[new Boolean($P{details}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4f9c1059-1002-427a-bb35-f803073cb44d" key="textField-1" x="546" y="1" width="68" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-1" x="546" y="1" width="68" height="11" forecolor="#FFFFFF" uuid="4f9c1059-1002-427a-bb35-f803073cb44d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -248,7 +253,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{VST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="cf3dab6a-a7b4-4de8-a097-439c47be89e0" key="textField-2" x="686" y="1" width="68" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-2" x="686" y="1" width="68" height="11" forecolor="#FFFFFF" uuid="cf3dab6a-a7b4-4de8-a097-439c47be89e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -261,7 +266,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{UST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="18aafbbd-a50f-4295-96de-259ef904bd13" key="textField-9" x="35" y="1" width="66" height="11" forecolor="#FFFFFF">
+				<reportElement key="textField-9" x="35" y="1" width="66" height="11" forecolor="#FFFFFF" uuid="18aafbbd-a50f-4295-96de-259ef904bd13">
 					<printWhenExpression><![CDATA[new Boolean($P{details}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="2">
@@ -276,7 +281,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{buchungsdatum}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="b95d27e0-94de-4d30-bd90-6a164ebf4750" key="textField-28" x="546" y="15" width="49" height="11">
+				<reportElement key="textField-28" x="546" y="15" width="49" height="11" uuid="b95d27e0-94de-4d30-bd90-6a164ebf4750">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -291,7 +296,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_VST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="ba78bd28-e6d0-48cd-9181-f09745a9e655" key="textField-29" x="594" y="15" width="20" height="11">
+				<reportElement key="textField-29" x="594" y="15" width="20" height="11" uuid="ba78bd28-e6d0-48cd-9181-f09745a9e655">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -306,7 +311,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="1db4773b-80bd-451c-9e9a-93895b6365e0" key="textField-30" x="686" y="15" width="49" height="11">
+				<reportElement key="textField-30" x="686" y="15" width="49" height="11" uuid="1db4773b-80bd-451c-9e9a-93895b6365e0">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -321,7 +326,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_UST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4324fe00-1fde-4c0b-b2ed-fbbe2fdfdf44" key="textField-31" x="733" y="15" width="20" height="11">
+				<reportElement key="textField-31" x="733" y="15" width="20" height="11" uuid="4324fe00-1fde-4c0b-b2ed-fbbe2fdfdf44">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -336,7 +341,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4ac6d5d7-9710-4f53-b489-79e3bbd8e29b" key="textField-32" x="369" y="15" width="106" height="11">
+				<reportElement key="textField-32" x="369" y="15" width="106" height="11" uuid="4ac6d5d7-9710-4f53-b489-79e3bbd8e29b">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -351,7 +356,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="1defe3ef-7d4e-4124-9843-f3d47273264d" key="textField-9" x="2" y="1" width="31" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-9" x="2" y="1" width="31" height="11" forecolor="#FFFFFF" uuid="1defe3ef-7d4e-4124-9843-f3d47273264d"/>
 				<box rightPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +369,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{zeile}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="a62b1e17-0ebc-4191-82fe-f97b6fe3d6e1" key="textField-9" x="108" y="1" width="161" height="11" forecolor="#FFFFFF">
+				<reportElement key="textField-9" x="108" y="1" width="161" height="11" forecolor="#FFFFFF" uuid="a62b1e17-0ebc-4191-82fe-f97b6fe3d6e1">
 					<printWhenExpression><![CDATA[new Boolean($P{details}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="2">
@@ -379,7 +384,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{beleg}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="ed584276-21a1-4eeb-8ed2-0f84eb765366" key="textField-31" x="733" y="26" width="20" height="11">
+				<reportElement key="textField-31" x="733" y="26" width="20" height="11" uuid="ed584276-21a1-4eeb-8ed2-0f84eb765366">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -394,7 +399,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="fc3ab36e-c00c-4ca4-8e7b-50c412e3ffb9" key="textField-29" x="594" y="26" width="20" height="11">
+				<reportElement key="textField-29" x="594" y="26" width="20" height="11" uuid="fc3ab36e-c00c-4ca4-8e7b-50c412e3ffb9">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -409,7 +414,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="0540fab6-4f38-47d2-ad90-90070246cccd" key="textField-28" x="546" y="26" width="49" height="11">
+				<reportElement key="textField-28" x="546" y="26" width="49" height="11" uuid="0540fab6-4f38-47d2-ad90-90070246cccd">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -424,7 +429,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{SUM_VST}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="e8adca75-b8fb-40f2-b464-4b53eca2016b" key="textField-30" x="686" y="26" width="49" height="11">
+				<reportElement key="textField-30" x="686" y="26" width="49" height="11" uuid="e8adca75-b8fb-40f2-b464-4b53eca2016b">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -439,7 +444,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{SUM_UST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="91be1d91-21f6-46a1-b228-674e6a4ad771" key="textField-32" x="227" y="26" width="248" height="11">
+				<reportElement key="textField-32" x="227" y="26" width="248" height="11" uuid="91be1d91-21f6-46a1-b228-674e6a4ad771">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -454,7 +459,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{groupcarry} + " " + $F{tax_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="23c43312-d93f-4977-bdd0-4ddea48257f9" key="textField-2" x="617" y="1" width="68" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-2" x="617" y="1" width="68" height="11" forecolor="#FFFFFF" uuid="23c43312-d93f-4977-bdd0-4ddea48257f9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -467,7 +472,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{UST_basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="e1a466d0-e198-47e1-aabf-1a9d44826d76" key="textField-1" x="475" y="1" width="68" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-1" x="475" y="1" width="68" height="11" forecolor="#FFFFFF" uuid="e1a466d0-e198-47e1-aabf-1a9d44826d76"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -480,7 +485,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{VST_basis}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="7dbe1082-47a4-4d80-a707-d20434d19943" key="textField-5" x="475" y="26" width="49" height="11">
+				<reportElement key="textField-5" x="475" y="26" width="49" height="11" uuid="7dbe1082-47a4-4d80-a707-d20434d19943">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -495,7 +500,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{SUM_VST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="feec36fe-2718-4963-a94b-ab67d415cf13" key="textField-8" x="523" y="26" width="20" height="11">
+				<reportElement key="textField-8" x="523" y="26" width="20" height="11" uuid="feec36fe-2718-4963-a94b-ab67d415cf13">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -510,7 +515,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="a1e54278-8d9b-4a51-bb6f-3b518f9d02bd" key="textField-7" x="664" y="26" width="20" height="11">
+				<reportElement key="textField-7" x="664" y="26" width="20" height="11" uuid="a1e54278-8d9b-4a51-bb6f-3b518f9d02bd">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -525,7 +530,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="6415cfdb-603a-4864-b18e-813ebdf215e7" key="textField-6" x="617" y="26" width="49" height="11">
+				<reportElement key="textField-6" x="617" y="26" width="49" height="11" uuid="6415cfdb-603a-4864-b18e-813ebdf215e7">
 					<printWhenExpression><![CDATA[new Boolean($V{SUM_VST}.intValue()!=0 || $V{SUM_UST}.intValue()!=0 || $V{SUM_VST_Basis}.intValue()!=0 || $V{SUM_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -540,7 +545,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{SUM_UST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="f4fb1f45-ab1c-4b8c-aa98-eca22b3cbd28" key="textField-5" x="475" y="15" width="49" height="11">
+				<reportElement key="textField-5" x="475" y="15" width="49" height="11" uuid="f4fb1f45-ab1c-4b8c-aa98-eca22b3cbd28">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -555,7 +560,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_VST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="f0df4416-eb54-46bb-aca7-60ca10758ba1" key="textField-8" x="523" y="15" width="20" height="11">
+				<reportElement key="textField-8" x="523" y="15" width="20" height="11" uuid="f0df4416-eb54-46bb-aca7-60ca10758ba1">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -570,7 +575,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="27ae1031-c2a7-42fd-8e58-7ee8c11c105a" key="textField-7" x="664" y="15" width="20" height="11">
+				<reportElement key="textField-7" x="664" y="15" width="20" height="11" uuid="27ae1031-c2a7-42fd-8e58-7ee8c11c105a">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -585,7 +590,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="b72f2a26-2735-4132-908f-ba2c9f92358c" key="textField-6" x="617" y="15" width="49" height="11">
+				<reportElement key="textField-6" x="617" y="15" width="49" height="11" uuid="b72f2a26-2735-4132-908f-ba2c9f92358c">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -600,7 +605,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_UST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="041d773d-0632-4c3c-9ca7-a04e3d9ab80b" key="textField-1" x="290" y="1" width="84" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-1" x="290" y="1" width="84" height="11" forecolor="#FFFFFF" uuid="041d773d-0632-4c3c-9ca7-a04e3d9ab80b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -621,12 +626,12 @@ ORDER BY
 		<band height="11" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($P{details}.equals("Y"))]]></printWhenExpression>
 			<rectangle>
-				<reportElement uuid="ea02039b-ad80-4dd6-af8c-2308536a545d" key="rectangle-4" x="0" y="1" width="782" height="9" forecolor="#FFFFCC" backcolor="#FFFFCC">
+				<reportElement key="rectangle-4" x="0" y="1" width="782" height="9" forecolor="#FFFFCC" backcolor="#FFFFCC" uuid="ea02039b-ad80-4dd6-af8c-2308536a545d">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="94437a87-3f96-4a46-ac54-28300b2c063c" key="textField-11" x="35" y="0" width="66" height="11"/>
+				<reportElement key="textField-11" x="35" y="0" width="66" height="11" uuid="94437a87-3f96-4a46-ac54-28300b2c063c"/>
 				<box rightPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -639,7 +644,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="cc700c6a-61fd-42ea-a7ee-793ee7c962da" x="546" y="0" width="49" height="11">
+				<reportElement x="546" y="0" width="49" height="11" uuid="cc700c6a-61fd-42ea-a7ee-793ee7c962da">
 					<printWhenExpression><![CDATA[new Boolean($F{vst}.floatValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -648,7 +653,7 @@ ORDER BY
 				<text><![CDATA[-]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="bd707643-047d-4640-935b-746ae1f4f870" key="textField-16" x="594" y="0" width="20" height="11">
+				<reportElement key="textField-16" x="594" y="0" width="20" height="11" uuid="bd707643-047d-4640-935b-746ae1f4f870">
 					<printWhenExpression><![CDATA[new Boolean($F{vst}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -663,7 +668,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="1c51c8f1-69eb-475b-b954-4e7c3958f1f4" key="textField-14" x="546" y="0" width="49" height="11">
+				<reportElement key="textField-14" x="546" y="0" width="49" height="11" uuid="1c51c8f1-69eb-475b-b954-4e7c3958f1f4">
 					<printWhenExpression><![CDATA[new Boolean($F{vst}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -678,7 +683,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{vst}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="3b9533b1-bd33-4ddd-927c-9ac9fd6a9b1e" x="686" y="0" width="49" height="11">
+				<reportElement x="686" y="0" width="49" height="11" uuid="3b9533b1-bd33-4ddd-927c-9ac9fd6a9b1e">
 					<printWhenExpression><![CDATA[new Boolean($F{ust}.floatValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -687,7 +692,7 @@ ORDER BY
 				<text><![CDATA[-]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4785ee56-b833-4a77-b7c1-b3e66160c559" key="textField-17" x="733" y="0" width="20" height="11">
+				<reportElement key="textField-17" x="733" y="0" width="20" height="11" uuid="4785ee56-b833-4a77-b7c1-b3e66160c559">
 					<printWhenExpression><![CDATA[new Boolean($F{ust}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -702,7 +707,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="6160dabb-01fb-410c-b912-7664192c0376" key="textField-15" x="686" y="0" width="49" height="11">
+				<reportElement key="textField-15" x="686" y="0" width="49" height="11" uuid="6160dabb-01fb-410c-b912-7664192c0376">
 					<printWhenExpression><![CDATA[new Boolean($F{ust}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -717,7 +722,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{ust}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="8b203388-f37c-4018-8c3a-7d0102a1d78c" x="617" y="0" width="49" height="11">
+				<reportElement x="617" y="0" width="49" height="11" uuid="8b203388-f37c-4018-8c3a-7d0102a1d78c">
 					<printWhenExpression><![CDATA[new Boolean($F{ust_basis}.floatValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -726,7 +731,7 @@ ORDER BY
 				<text><![CDATA[-]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="0a35f9b9-1d4c-4807-8278-54eadf02881a" key="textField-17" x="664" y="0" width="20" height="11">
+				<reportElement key="textField-17" x="664" y="0" width="20" height="11" uuid="0a35f9b9-1d4c-4807-8278-54eadf02881a">
 					<printWhenExpression><![CDATA[new Boolean($F{ust_basis}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -741,7 +746,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="003de1d2-c794-4779-aa67-1bed65d159e9" key="textField-15" x="617" y="0" width="49" height="11">
+				<reportElement key="textField-15" x="617" y="0" width="49" height="11" uuid="003de1d2-c794-4779-aa67-1bed65d159e9">
 					<printWhenExpression><![CDATA[new Boolean($F{ust_basis}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -756,7 +761,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{ust_basis}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="8680d1e8-8dc1-43d5-9a43-cfec6d054284" x="475" y="0" width="49" height="11">
+				<reportElement x="475" y="0" width="49" height="11" uuid="8680d1e8-8dc1-43d5-9a43-cfec6d054284">
 					<printWhenExpression><![CDATA[new Boolean($F{vst_basis}.floatValue()==0)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -765,7 +770,7 @@ ORDER BY
 				<text><![CDATA[-]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="7e8fdfab-24a3-4f5e-b543-94be03c0a983" key="textField-16" x="523" y="0" width="20" height="11">
+				<reportElement key="textField-16" x="523" y="0" width="20" height="11" uuid="7e8fdfab-24a3-4f5e-b543-94be03c0a983">
 					<printWhenExpression><![CDATA[new Boolean($F{vst_basis}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -780,7 +785,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="0e439eee-b0d3-44e4-a5c4-36b74166944e" key="textField-14" x="475" y="0" width="49" height="11">
+				<reportElement key="textField-14" x="475" y="0" width="49" height="11" uuid="0e439eee-b0d3-44e4-a5c4-36b74166944e">
 					<printWhenExpression><![CDATA[new Boolean($F{vst_basis}.floatValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -795,7 +800,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{vst_basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="722121e0-5627-4566-8b61-865a459ef048" key="textField-12" x="2" y="0" width="31" height="11"/>
+				<reportElement key="textField-12" x="2" y="0" width="31" height="11" uuid="722121e0-5627-4566-8b61-865a459ef048"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -808,7 +813,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{line}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="43f5fc98-5534-4e7f-9b7a-936d83def25a" key="textField-13" x="108" y="0" width="180" height="11"/>
+				<reportElement key="textField-13" x="108" y="0" width="180" height="11" uuid="43f5fc98-5534-4e7f-9b7a-936d83def25a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -821,7 +826,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{dt_name} + ": " + $F{docno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="9814c48e-2416-40f1-b9fd-b0bf5752e8bb" key="textField-13" x="290" y="0" width="183" height="11"/>
+				<reportElement key="textField-13" x="290" y="0" width="183" height="11" uuid="9814c48e-2416-40f1-b9fd-b0bf5752e8bb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -841,7 +846,7 @@ ORDER BY
 	<pageFooter>
 		<band height="11" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="a3f3b122-0633-4f24-b289-9d376ee8e051" key="textField-31" x="733" y="0" width="20" height="11">
+				<reportElement key="textField-31" x="733" y="0" width="20" height="11" uuid="a3f3b122-0633-4f24-b289-9d376ee8e051">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -856,7 +861,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="148a39cd-e16e-4bd6-9034-90c6d0e050e5" key="textField-29" x="594" y="0" width="20" height="11">
+				<reportElement key="textField-29" x="594" y="0" width="20" height="11" uuid="148a39cd-e16e-4bd6-9034-90c6d0e050e5">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -871,7 +876,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="6cdb1503-4936-405b-84c3-8cc10a25e90b" key="textField-30" x="686" y="0" width="49" height="11">
+				<reportElement key="textField-30" x="686" y="0" width="49" height="11" uuid="6cdb1503-4936-405b-84c3-8cc10a25e90b">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -886,7 +891,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_UST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="7cc1516d-bafe-494a-a926-1bfb46684acf" key="textField-7" x="664" y="0" width="20" height="11">
+				<reportElement key="textField-7" x="664" y="0" width="20" height="11" uuid="7cc1516d-bafe-494a-a926-1bfb46684acf">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -901,7 +906,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="b99a0e4a-4dca-4c7e-9d57-12df508c647c" key="textField-8" x="523" y="0" width="20" height="11">
+				<reportElement key="textField-8" x="523" y="0" width="20" height="11" uuid="b99a0e4a-4dca-4c7e-9d57-12df508c647c">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -916,7 +921,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="9b0797a8-5761-4951-bf8d-ec8bd7589df1" key="textField-5" x="475" y="0" width="49" height="11">
+				<reportElement key="textField-5" x="475" y="0" width="49" height="11" uuid="9b0797a8-5761-4951-bf8d-ec8bd7589df1">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -931,7 +936,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_VST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="27a3eea8-6b83-4153-a6b0-05e9f0417d07" key="textField-6" x="616" y="0" width="49" height="11">
+				<reportElement key="textField-6" x="616" y="0" width="49" height="11" uuid="27a3eea8-6b83-4153-a6b0-05e9f0417d07">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -946,7 +951,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_UST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="5becf72f-1c02-4581-b2b4-ab9f29d01e46" key="textField-28" x="546" y="0" width="49" height="11">
+				<reportElement key="textField-28" x="546" y="0" width="49" height="11" uuid="5becf72f-1c02-4581-b2b4-ab9f29d01e46">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -961,7 +966,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{totalsum_VST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="00fd8726-cdbc-4272-8894-b32bc8f680d2" key="textField-33" x="369" y="0" width="106" height="11">
+				<reportElement key="textField-33" x="369" y="0" width="106" height="11" uuid="00fd8726-cdbc-4272-8894-b32bc8f680d2">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -980,7 +985,7 @@ ORDER BY
 	<lastPageFooter>
 		<band height="23" splitType="Stretch">
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="845c812e-6839-4600-a996-3608c2afc328" key="textField-20" x="546" y="1" width="49" height="11">
+				<reportElement key="textField-20" x="546" y="1" width="49" height="11" uuid="845c812e-6839-4600-a996-3608c2afc328">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -990,12 +995,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_VST}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="c74b1ddc-ac59-474f-b66c-9c06cf9cb3eb" key="textField-21" x="686" y="1" width="49" height="11">
+				<reportElement key="textField-21" x="686" y="1" width="49" height="11" uuid="c74b1ddc-ac59-474f-b66c-9c06cf9cb3eb">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1005,12 +1010,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_UST}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="4f61a55c-4d30-4391-a232-b2418b21ab3d" key="textField-22" x="733" y="1" width="20" height="11">
+				<reportElement key="textField-22" x="733" y="1" width="20" height="11" uuid="4f61a55c-4d30-4391-a232-b2418b21ab3d">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1020,12 +1025,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="8d395209-8bd8-49ce-8c46-1a71f494ca10" key="textField-23" x="594" y="1" width="20" height="11">
+				<reportElement key="textField-23" x="594" y="1" width="20" height="11" uuid="8d395209-8bd8-49ce-8c46-1a71f494ca10">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1035,12 +1040,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="32328e58-a9e2-4fa9-9431-481ff3a9b940" key="textField-34" x="370" y="1" width="106" height="11">
+				<reportElement key="textField-34" x="370" y="1" width="106" height="11" uuid="32328e58-a9e2-4fa9-9431-481ff3a9b940">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1050,15 +1055,15 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="3b06501e-f992-4f18-ad06-04699dbe6cd3" key="line-2" x="2" y="1" width="776" height="1"/>
+				<reportElement key="line-2" x="2" y="1" width="776" height="1" uuid="3b06501e-f992-4f18-ad06-04699dbe6cd3"/>
 			</line>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="9ac5b3ba-7d80-49dd-8833-a1b1415d4207" key="textField-6" x="616" y="1" width="49" height="11">
+				<reportElement key="textField-6" x="616" y="1" width="49" height="11" uuid="9ac5b3ba-7d80-49dd-8833-a1b1415d4207">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1068,12 +1073,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_UST_Basis}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="47eef624-e23a-42a1-96ec-165906e0c117" key="textField-7" x="664" y="1" width="20" height="11">
+				<reportElement key="textField-7" x="664" y="1" width="20" height="11" uuid="47eef624-e23a-42a1-96ec-165906e0c117">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1083,12 +1088,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="8e373bf4-d3e4-4c58-9d82-140eb7e7369f" key="textField-8" x="523" y="1" width="20" height="11">
+				<reportElement key="textField-8" x="523" y="1" width="20" height="11" uuid="8e373bf4-d3e4-4c58-9d82-140eb7e7369f">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1098,12 +1103,12 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Group" evaluationGroup="steuer" pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="f1f22d6d-957b-463b-adae-77bfe88ec89e" key="textField-5" x="475" y="1" width="49" height="11">
+				<reportElement key="textField-5" x="475" y="1" width="49" height="11" uuid="f1f22d6d-957b-463b-adae-77bfe88ec89e">
 					<printWhenExpression><![CDATA[new Boolean($V{totalsum_VST}.intValue()!=0 || $V{totalsum_UST}.intValue()!=0 || $V{totalsum_VST_Basis}.intValue()!=0 || $V{totalsum_UST_Basis}.intValue()!=0)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -1113,7 +1118,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_VST_Basis}]]></textFieldExpression>
 			</textField>
