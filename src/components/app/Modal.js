@@ -91,7 +91,8 @@ class Modal extends Component {
     }
 
     render() {
-        const {data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType} = this.props;
+
+        const {data, layout, modalTitle, tabId, rowId, dataId, modalType} = this.props;
         const {isAdvanced, scrolled} = this.state
         return (
             data.length > 0 && <div className="screen-freeze">
@@ -124,7 +125,6 @@ class Modal extends Component {
                                 type={windowType}
                             />
                         }
-
                     </div>
                 </div>
             </div>
