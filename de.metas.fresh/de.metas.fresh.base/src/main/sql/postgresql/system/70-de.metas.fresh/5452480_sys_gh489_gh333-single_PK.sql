@@ -319,6 +319,7 @@ ALTER TABLE PP_MRP_Alloc ADD COLUMN PP_MRP_Alloc_ID numeric(10,0) NOT NULL DEFAU
 -- URL zum Konzept
 ALTER TABLE PP_MRP_Alloc DROP CONSTRAINT IF EXISTS pp_mrp_alloc_pkey
 ;
+ALTER TABLE pp_mrp_alloc DROP CONSTRAINT IF EXISTS pp_mrp_alloc_key;
 
 -- 03.11.2016 07:26
 -- URL zum Konzept

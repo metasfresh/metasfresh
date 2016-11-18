@@ -158,7 +158,7 @@ COMMENT ON FUNCTION dlm.create_dlm_triggers(text) IS
 'Uses the view dlm.triggers to iterate "incoming" FK constraints for the table and creates a trigger&triggerfunction to avoid "dangling" references in case a record''s DLM_Level is increased. See the view dlm.triggers for more details.
 See gh #489.';
 
-﻿CREATE OR REPLACE FUNCTION dlm.drop_dlm_triggers(p_table_name text)
+CREATE OR REPLACE FUNCTION dlm.drop_dlm_triggers(p_table_name text)
   RETURNS void AS
 $BODY$
 DECLARE
@@ -232,7 +232,7 @@ COMMENT ON FUNCTION dlm.remove_table_from_dlm(text, boolean) IS 'gh #235, #489: 
 * optionally drops the DLM_Level and DLM_Partition_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
 
 
-﻿CREATE OR REPLACE FUNCTION dlm.add_table_to_dlm(p_table_name text)
+CREATE OR REPLACE FUNCTION dlm.add_table_to_dlm(p_table_name text)
   RETURNS void AS
 $BODY$
 DECLARE

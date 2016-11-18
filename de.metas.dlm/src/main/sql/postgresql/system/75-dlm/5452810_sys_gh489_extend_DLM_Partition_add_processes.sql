@@ -1,4 +1,4 @@
---
+ï»¿--
 -- DDL to add the columns Target_DLM_Level, Current_DLM_LEvel and DateNextInspection to the table DLM_Partition
 --
 -- 31.10.2016 07:21
@@ -124,7 +124,7 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2016-10-31 07:23:06','Y
 
 -- 31.10.2016 08:14
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543222,0,'DateNextInspection',TO_TIMESTAMP('2016-10-31 08:14:18','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','Nächte Prüfung der DLM-Levels','Nächte Prüfung der DLM-Levels',TO_TIMESTAMP('2016-10-31 08:14:18','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543222,0,'DateNextInspection',TO_TIMESTAMP('2016-10-31 08:14:18','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','NÃ¤chte PrÃ¼fung der DLM-Levels','NÃ¤chte PrÃ¼fung der DLM-Levels',TO_TIMESTAMP('2016-10-31 08:14:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 31.10.2016 08:14
@@ -134,7 +134,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 31.10.2016 08:14
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555368,543222,0,16,540788,'N','DateNextInspection',TO_TIMESTAMP('2016-10-31 08:14:41','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.dlm',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Nächte Prüfung der DLM-Levels',0,TO_TIMESTAMP('2016-10-31 08:14:41','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555368,543222,0,16,540788,'N','DateNextInspection',TO_TIMESTAMP('2016-10-31 08:14:41','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.dlm',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','NÃ¤chte PrÃ¼fung der DLM-Levels',0,TO_TIMESTAMP('2016-10-31 08:14:41','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 31.10.2016 08:14
@@ -150,7 +150,7 @@ UPDATE AD_Field SET IsSameLine='Y', SeqNo=90, SeqNoGrid=90,Updated=TO_TIMESTAMP(
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555368,557388,0,540765,0,TO_TIMESTAMP('2016-10-31 08:16:13','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','Y','N','Nächte Prüfung der DLM-Levels',80,80,0,1,1,TO_TIMESTAMP('2016-10-31 08:16:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555368,557388,0,540765,0,TO_TIMESTAMP('2016-10-31 08:16:13','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','Y','N','NÃ¤chte PrÃ¼fung der DLM-Levels',80,80,0,1,1,TO_TIMESTAMP('2016-10-31 08:16:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 31.10.2016 08:16
@@ -160,7 +160,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_Element SET Name='Nächte Prüfung des DLM-Levels', PrintName='Nächte Prüfung des DLM-Levels',Updated=TO_TIMESTAMP('2016-10-31 08:16:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543222
+UPDATE AD_Element SET Name='NÃ¤chte PrÃ¼fung des DLM-Levels', PrintName='NÃ¤chte PrÃ¼fung des DLM-Levels',Updated=TO_TIMESTAMP('2016-10-31 08:16:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543222
 ;
 
 -- 31.10.2016 08:16
@@ -170,27 +170,27 @@ UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=543222
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='DateNextInspection', Name='Nächte Prüfung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Element_ID=543222
+UPDATE AD_Column SET ColumnName='DateNextInspection', Name='NÃ¤chte PrÃ¼fung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Element_ID=543222
 ;
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DateNextInspection', Name='Nächte Prüfung des DLM-Levels', Description=NULL, Help=NULL, AD_Element_ID=543222 WHERE UPPER(ColumnName)='DATENEXTINSPECTION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='DateNextInspection', Name='NÃ¤chte PrÃ¼fung des DLM-Levels', Description=NULL, Help=NULL, AD_Element_ID=543222 WHERE UPPER(ColumnName)='DATENEXTINSPECTION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='DateNextInspection', Name='Nächte Prüfung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Element_ID=543222 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='DateNextInspection', Name='NÃ¤chte PrÃ¼fung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Element_ID=543222 AND IsCentrallyMaintained='Y'
 ;
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Nächte Prüfung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543222) AND IsCentrallyMaintained='Y'
+UPDATE AD_Field SET Name='NÃ¤chte PrÃ¼fung des DLM-Levels', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543222) AND IsCentrallyMaintained='Y'
 ;
 
 -- 31.10.2016 08:16
 -- URL zum Konzept
-UPDATE AD_PrintFormatItem pi SET PrintName='Nächte Prüfung des DLM-Levels', Name='Nächte Prüfung des DLM-Levels' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543222)
+UPDATE AD_PrintFormatItem pi SET PrintName='NÃ¤chte PrÃ¼fung des DLM-Levels', Name='NÃ¤chte PrÃ¼fung des DLM-Levels' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543222)
 ;
 
 --
@@ -200,7 +200,7 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Nächte Prüfung des DLM-Levels', Name
 
 -- 31.10.2016 13:51
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540734,'Y','de.metas.dlm.coordinator.process.DLM_Partition_Inspect','N',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Ziel-DLM-Level der Partition überprüfen','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Inspect')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540734,'Y','de.metas.dlm.coordinator.process.DLM_Partition_Inspect','N',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Ziel-DLM-Level der Partition Ã¼berprÃ¼fen','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Inspect')
 ;
 
 -- 31.10.2016 13:51
@@ -210,7 +210,7 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 
 -- 31.10.2016 13:53
 -- URL zum Konzept
-UPDATE AD_Process SET Description='Überprüpft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet) oder alle Partitionen und legt ihre jeweiligen SOLL DLM-Level fest',Updated=TO_TIMESTAMP('2016-10-31 13:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
+UPDATE AD_Process SET Description='ÃœberprÃ¼pft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet) oder alle Partitionen und legt ihre jeweiligen SOLL DLM-Level fest',Updated=TO_TIMESTAMP('2016-10-31 13:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
 ;
 
 -- 31.10.2016 13:53
@@ -220,7 +220,7 @@ UPDATE AD_Process_Trl SET IsTranslated='N' WHERE AD_Process_ID=540734
 
 -- 31.10.2016 13:53
 -- URL zum Konzept
-UPDATE AD_Process SET Description='Überprüpft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet) oder alle Partitionen und legt ihre jeweiligen SOLL DLM-Level sowie ggf. den Zeitpunkt der der nächsten Überprüfung fest',Updated=TO_TIMESTAMP('2016-10-31 13:53:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
+UPDATE AD_Process SET Description='ÃœberprÃ¼pft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet) oder alle Partitionen und legt ihre jeweiligen SOLL DLM-Level sowie ggf. den Zeitpunkt der der nÃ¤chsten ÃœberprÃ¼fung fest',Updated=TO_TIMESTAMP('2016-10-31 13:53:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
 ;
 
 -- 31.10.2016 13:53

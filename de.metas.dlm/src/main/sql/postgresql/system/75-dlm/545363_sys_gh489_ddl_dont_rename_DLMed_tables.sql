@@ -33,7 +33,7 @@ COMMENT ON FUNCTION dlm.remove_table_from_dlm(text, boolean) IS 'gh #235, #489: 
 * invokes dlm.drop_dlm_triggers with the given table name.
 * optionally drops the DLM_Level and DLM_Partition_ID column, if told so explicitly with the p_retain_dlm_column parameter set to false.';
 
-?CREATE OR REPLACE FUNCTION dlm.add_table_to_dlm(p_table_name text)
+CREATE OR REPLACE FUNCTION dlm.add_table_to_dlm(p_table_name text)
   RETURNS void AS
 $BODY$
 DECLARE

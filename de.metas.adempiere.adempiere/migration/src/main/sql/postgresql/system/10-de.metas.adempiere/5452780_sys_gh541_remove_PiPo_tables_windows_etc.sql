@@ -6,7 +6,7 @@
 -- DDL
 -- 
 
-DROP TABLE AD_Package_Exp_Detail_ID;
+DROP TABLE AD_Package_Exp_Detail;
 DROP TABLE AD_Package_Exp;
 DROP TABLE AD_Package_Exp_Common;
 DROP TABLE AD_Package_Imp_Proc;
