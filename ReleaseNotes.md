@@ -44,6 +44,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * #578 Request Window Attachment Image too large in viewer
+    * Fixes a Bug that scales window too large after uplaoding a large image.
 
 # metasfresh 4.43.42 (2016-45)
 
