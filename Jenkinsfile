@@ -295,7 +295,7 @@ else
 	{
 		node('master')
 		{
-			final timeoutToUse ?: params.MF_SQL_MIGRATION_TEST_TIMEOUT:999999999
+			final timeoutToUse = params.MF_SQL_MIGRATION_TEST_TIMEOUT ?: 999999999
 			echo "params.MF_SQL_MIGRATION_TEST_TIMEOUT=${params.MF_SQL_MIGRATION_TEST_TIMEOUT} => timeoutToUse=${timeoutToUse}"
 			
 			timeout(timeoutToUse) 
