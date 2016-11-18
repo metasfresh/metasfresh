@@ -32,8 +32,11 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * #553 Report Account Info adjustments. Add parms date range.
+    * Enhancing the Filter parms to allow variable daterange for selection.
   * #557 Report Saldenbilanz & Account Info native Excel Export
+    * Now Allowing an Excel Export though Report viewer process.
   * #558 Marginal return calculation - Accountings without c_activity_id
+    * Marginal Return now considers specific records without activity to be calculated on account specific one.
   * #568 Change on Report "Lieferschein" for one specific Customer
   * #555 Businesspartner Location isEDI shall not be ticked by default
   * #548 keep M_QualityNote and M_AttributeValue in sync
