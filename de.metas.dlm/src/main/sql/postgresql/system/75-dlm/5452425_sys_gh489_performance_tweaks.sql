@@ -48,7 +48,7 @@ CREATE INDEX IF NOT EXISTS pp_mrp_c_orderlineso_id
 -- i think C_Order.Updated is not changed that often, so i don'T expect a big punishment from loosing the HOT advantage
 --
 CREATE INDEX IF NOT EXISTS c_order_updated
-  ON public.c_order_tbl (updated);
+  ON public.c_order (updated);
   
 COMMIT;
 
