@@ -36,6 +36,7 @@ import org.adempiere.util.api.IParams;
 import com.google.common.base.Optional;
 
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.lock.api.ILock;
@@ -131,8 +132,13 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		return NullLatchStrategy.INSTANCE;
 	}
 	
-	public <T> List<T> retrieveItems(final Class<T> modelType)
+	public final <T> List<T> retrieveItems(final Class<T> modelType)
 	{
 		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	public final List<I_C_Queue_Element> retrieveQueueElements(final boolean skipAlreadyScheduledItems)
+	{
+		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);		
 	}
 }
