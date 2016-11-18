@@ -4,9 +4,13 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.exceptions.IExceptionWrapper;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
@@ -54,12 +58,14 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 	/**
 	 * metasfresh-custom error code.
 	 */
-	private static final String PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level = "235D3";
+	@VisibleForTesting
+	static final String PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level = "235D3";
 
 	/**
 	 * metasfresh-custom error code.
 	 */
-	private static final String PG_SQLSTATE_Referencing_Table_Has_No_DLM_LEvel = "235N3";
+	@VisibleForTesting
+	static final String PG_SQLSTATE_Referencing_Table_Has_No_DLM_LEvel = "235N3";
 
 	/**
 	 * This pattern is used to parse the postgresql error message. some notes:
@@ -95,6 +101,8 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 			return null;
 		}
 
+		//
+		// parse the exception detail and extract the infos
 		final SQLException sqlException = DBException.extractSQLExceptionOrNull(t);
 		Check.errorUnless(sqlException instanceof PSQLException, "exception={} needs to be a PSQLExcetion", sqlException);
 
@@ -107,7 +115,26 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 
 		final String[] infos = extractInfos(detail);
 
-		return new DLMReferenceException(t, TableReferenceDescriptor.of(infos[2], infos[3], infos[0], Integer.parseInt(infos[1])), referencingTableHasDLMLevel);
+		//
+		// the the "real" tables and column from the extracted lowercase infos
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+		final I_AD_Table referencedTable = adTableDAO.retrieveTable(infos[0]);
+		Check.errorIf(referencedTable == null, "Unable to retrieve an AD_Table for referencedTable name={}", infos[0]);
+
+		final I_AD_Table referencingTable = adTableDAO.retrieveTable(infos[2]);
+		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Table for referencingTable name={}", infos[2]);
+
+		final I_AD_Column referencingColumn = adTableDAO.retrieveColumn(referencingTable.getTableName(), infos[3]);
+		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
+
+		return new DLMReferenceException(t,
+				TableReferenceDescriptor.of(
+						referencingTable.getTableName(),
+						referencingColumn.getColumnName(),
+						referencedTable.getTableName(),
+						Integer.parseInt(infos[1])),
+				referencingTableHasDLMLevel);
 	}
 
 	@VisibleForTesting

@@ -152,7 +152,7 @@ public class PartitionerService implements IPartitionerService
 		// make sure the tables of which we might add records are all ready for DLM
 		checkIfAllTablesAreDLM(lines, request.getOnNotDLMTable());
 
-		final List<Partition> partitions = new ArrayList<>();
+		final Map<Integer, Partition> id2Partition = new HashMap<>();
 		final PlainContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx(Env.getCtx());
 
 		if (request.getRecordToAttach() != null)
@@ -166,7 +166,7 @@ public class PartitionerService implements IPartitionerService
 						new IterateResult(
 								Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
 								ctxAware));
-				partitions.add(partition);
+				id2Partition.put(partition.getDLM_Partition_ID(), partition);
 			}
 		}
 
@@ -181,7 +181,7 @@ public class PartitionerService implements IPartitionerService
 					new IterateResult(
 							queue,
 							ctxAware));
-			partitions.add(partition);
+			id2Partition.put(partition.getDLM_Partition_ID(), partition);
 		}
 
 		if (request.getRecordToAttach() == null && request.getPartitionToComplete() == null)
@@ -196,7 +196,7 @@ public class PartitionerService implements IPartitionerService
 						new IterateResult(
 								incompletePartitionQueue,
 								ctxAware));
-				partitions.add(partition);
+				id2Partition.put(partition.getDLM_Partition_ID(), partition);
 			}
 			else
 			{
@@ -213,11 +213,11 @@ public class PartitionerService implements IPartitionerService
 							new IterateResult(
 									Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
 									ctxAware));
-					partitions.add(partition);
+					id2Partition.put(partition.getDLM_Partition_ID(), partition);
 				}
 			}
 		}
-		return partitions;
+		return new ArrayList<>(id2Partition.values());
 	}
 
 	private Iterator<WorkQueue> retrieveIncompletePartitionOrNull(final PlainContextAware ctxAware)
@@ -436,7 +436,7 @@ public class PartitionerService implements IPartitionerService
 				for (final PartitionerConfigReference forwardRef : forwardRefs)
 				{
 					// the table name for the foreign record which has 'foreignKey' as its ID
-					final String forwardTableName = forwardRef.getReferencedTableName().toLowerCase(); // toLowerCase to avoid trouble if a config was just augmented from a DLMException.
+					final String forwardTableName = forwardRef.getReferencedTableName();
 					final String forwardColumnName = forwardRef.getReferencingColumnName();
 
 					// first check if this is all about a Record_ID/AD_Table_ID reference.
@@ -454,7 +454,7 @@ public class PartitionerService implements IPartitionerService
 						}
 
 						final String tableName = adTableDAO.retrieveTableName(tableId);
-						if (!tableName.equalsIgnoreCase(forwardTableName))
+						if (!tableName.equals(forwardTableName))
 						{
 							logger.trace("{}[{}] forward: the column={} does not reference a {}-record, but a {}-record; skipping", currentTableName, currentRecordId, forwardColumnName, forwardTableName, tableName);
 							continue;
@@ -510,7 +510,7 @@ public class PartitionerService implements IPartitionerService
 			for (final PartitionerConfigReference backwardRef : backwardRefs)
 			{
 				final PartitionerConfigLine backwardLine = backwardRef.getParent();
-				final String backwardTableName = backwardLine.getTableName().toLowerCase(); // toLowerCase to avoid trouble if a config was just augmented from a DLMException.
+				final String backwardTableName = backwardLine.getTableName();
 				final String backwardColumnName = backwardRef.getReferencingColumnName();
 
 				// load all records which reference foreignRecord
@@ -983,8 +983,8 @@ public class PartitionerService implements IPartitionerService
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				storeIterateResult0(config, 
-						result, 
+				storeIterateResult0(config,
+						result,
 						PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName));
 			}
 		});

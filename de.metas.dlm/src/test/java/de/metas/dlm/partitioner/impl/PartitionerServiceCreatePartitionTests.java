@@ -10,6 +10,7 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -19,6 +20,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_R_Request;
+import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -268,8 +270,20 @@ public class PartitionerServiceCreatePartitionTests
 		final Partition partition = testCircularReferences_within_same_table0();
 		partitionerService.storePartition(partition, false);
 
-		final List<Partition> secondPartitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(partition.getConfig()).build());
+		// make sure the DLM_Partition_ID was updated within the records that we found
+		partitionerService.loadWithAllRecords(partition).getRecordsFlat().stream().forEach(r -> {
 
+			final IDLMAware dlmAware = r.getModel(PlainContextAware.newOutOfTrx(Env.getCtx()), IDLMAware.class);
+			assertThat(dlmAware.getDLM_Partition_ID(), is(partition.getDLM_Partition_ID()));
+		});
+
+		final CreatePartitionRequest secondConfig = PartitionRequestFactory.builder().setConfig(partition.getConfig()).build();
+		final List<Partition> secondPartitions = partitionerService.createPartition0(secondConfig);
+
+		/*
+		 * partitionerService.loadWithAllRecords(partition).getRecords();
+		 * partitionerService.loadWithAllRecords(secondPartitions.get(0)).getRecords();
+		 */
 		assertThat(secondPartitions.isEmpty(), is(true)); // we create add additional records, the partitioner shall *not* return the already partitioned ones.
 	}
 
@@ -391,9 +405,11 @@ public class PartitionerServiceCreatePartitionTests
 
 		//
 		// invoke the testee
-		final CreatePartitionRequest otherConfig = PartitionRequestFactory.builder().setConfig(config).build();
+		final CreatePartitionRequest otherConfig = PartitionRequestFactory
+				.builder()
+				.setConfig(config)
+				.build();
 		final List<Partition> partitions = partitionerService.createPartition0(otherConfig);
-		assertThat(partitions.size(), is(1)); // guard
 		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.get(0));
 
 		//
@@ -423,11 +439,10 @@ public class PartitionerServiceCreatePartitionTests
 				final boolean partitionHasOrder = recordsFlat.stream().anyMatch(r -> I_C_Order.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(r)));
 				if (partitionHasOrder && !partitionHasInvoice)
 				{
-					// note that we use the lower-case table and column name, because that's what we would also get from the DB
 					throw new DLMReferenceException(null,
-							TableReferenceDescriptor.of(I_C_Invoice.Table_Name.toLowerCase(),
-									I_C_Invoice.COLUMNNAME_C_Order_ID.toLowerCase(),
-									I_C_Order.Table_Name.toLowerCase(),
+							TableReferenceDescriptor.of(I_C_Invoice.Table_Name,
+									I_C_Invoice.COLUMNNAME_C_Order_ID,
+									I_C_Order.Table_Name,
 									123),
 							true);
 				}
@@ -533,8 +548,6 @@ public class PartitionerServiceCreatePartitionTests
 	 * <li>C_Invoice references C_Order
 	 * <li>R_Request can also reference C_Order via AD_Table_ID/Record_ID
 	 *
-	 * So, if i start a partition with a C_Invoice record, then I know to also add the C_Order record that is referenced by the invoice.<br>
-	 * However, i also need to add the C_OrderLine records which also reference the C_Order
 	 */
 	@Test
 	public void testADTableID_RecordID_multiple_roots()
@@ -565,11 +578,11 @@ public class PartitionerServiceCreatePartitionTests
 		request.setRecord_ID(orderTableRecordReference.getRecord_ID());
 		InterfaceWrapperHelper.save(request);
 
-		// create another request2 that happens to have the same Record_ID value, but references not C_Order but C_Payment
+		// create another request2 that happens to have the same Record_ID value, but references not C_Order but some C_Payment we don't care for
 		final I_R_Request request2 = InterfaceWrapperHelper.newInstance(I_R_Request.class);
 		POJOWrapper.setInstanceName(request2, "request2");
 		request2.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Payment.Table_Name));
-		request2.setRecord_ID(orderTableRecordReference.getRecord_ID());
+		request2.setRecord_ID(orderTableRecordReference.getRecord_ID()); // happens to be the same ID ^^
 		InterfaceWrapperHelper.save(request2);
 
 		// create an invoice
@@ -578,14 +591,22 @@ public class PartitionerServiceCreatePartitionTests
 		invoice.setC_Order(order);
 		InterfaceWrapperHelper.save(invoice);
 
-		final List<Partition> partitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
+		final CreatePartitionRequest partitionerRequest = PartitionRequestFactory.builder().setConfig(config).build();
+		final List<Partition> partitions = partitionerService.createPartition0(partitionerRequest);
 
-		assertThat(partitions.get(0).getRecordsFlat().contains(request2), is(false));
-		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(order)), is(true));
-		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(request)), is(true));
-		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(invoice)), is(true));
+		//
+		// verify that the unrelated request2 is in one partition and the other three interconnected connected records are in the other partition
+		assertThat(partitions.get(0).getRecordsFlat().size(), is(1));
+		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(request2)), is(true));
+		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(order)), is(false));
+		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(request)), is(false));
+		assertThat(partitions.get(0).getRecordsFlat().contains(asTableRef(invoice)), is(false));
 
-		assertThat(partitions.get(0).getRecordsFlat().size(), is(3));
+		assertThat(partitions.get(1).getRecordsFlat().size(), is(3));
+		assertThat(partitions.get(1).getRecordsFlat().contains(asTableRef(request2)), is(false));
+		assertThat(partitions.get(1).getRecordsFlat().contains(asTableRef(order)), is(true));
+		assertThat(partitions.get(1).getRecordsFlat().contains(asTableRef(request)), is(true));
+		assertThat(partitions.get(1).getRecordsFlat().contains(asTableRef(invoice)), is(true));
 	}
 
 }

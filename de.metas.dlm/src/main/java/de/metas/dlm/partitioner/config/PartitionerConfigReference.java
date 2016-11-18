@@ -118,9 +118,9 @@ public class PartitionerConfigReference
 		final PartitionerConfigReference otherRef = (PartitionerConfigReference)other;
 
 		return new EqualsBuilder()
-				.append(parent.getTableName().toLowerCase(), otherRef.parent.getTableName().toLowerCase())
-				.append(referencedTableName.toLowerCase(), otherRef.referencedTableName.toLowerCase())
-				.append(referencingColumnName.toLowerCase(), otherRef.referencingColumnName.toLowerCase())
+				.append(parent.getTableName(), otherRef.parent.getTableName())
+				.append(referencedTableName, otherRef.referencedTableName)
+				.append(referencingColumnName, otherRef.referencingColumnName)
 				.isEqual();
 	}
 
@@ -206,8 +206,8 @@ public class PartitionerConfigReference
 		public int hashCode()
 		{
 			return new HashcodeBuilder()
-					.append(referencedTableName.toLowerCase())
-					.append(referencingColumnName.toLowerCase())
+					.append(referencedTableName)
+					.append(referencingColumnName)
 					.append(parentbuilder)
 					.toHashcode();
 
@@ -230,8 +230,8 @@ public class PartitionerConfigReference
 				return false;
 			}
 			return new EqualsBuilder()
-					.append(referencedTableName.toLowerCase(), other.referencedTableName.toLowerCase())
-					.append(referencingColumnName.toLowerCase(), other.referencingColumnName.toLowerCase())
+					.append(referencedTableName, other.referencedTableName)
+					.append(referencingColumnName, other.referencingColumnName)
 					.append(parentbuilder, other.parentbuilder)
 					.isEqual();
 		}

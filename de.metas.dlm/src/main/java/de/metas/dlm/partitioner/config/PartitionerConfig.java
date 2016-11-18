@@ -106,13 +106,13 @@ public class PartitionerConfig
 	/**
 	 *
 	 * @param tableName
-	 * @return a list of {@link PartitionerConfigReference}s which reference the given table name (ignoring upper/lower case).
+	 * @return a list of {@link PartitionerConfigReference}s which reference the given table name.
 	 */
 	public List<PartitionerConfigReference> getReferences(final String tableName)
 	{
 		final List<PartitionerConfigReference> references = getLines().stream()
 				.flatMap(line -> line.getReferences().stream()) // get a stream of all references
-				.filter(ref -> tableName.equalsIgnoreCase(ref.getReferencedTableName())) // filter those who refer to 'tablename'
+				.filter(ref -> tableName.equals(ref.getReferencedTableName())) // filter those who refer to 'tablename'
 				.collect(Collectors.toList());
 		return references;
 	}
@@ -132,7 +132,7 @@ public class PartitionerConfig
 	public Optional<PartitionerConfigLine> getLine(final String tableName)
 	{
 		return lines.stream()
-				.filter(l -> l.getTableName().equalsIgnoreCase(tableName))
+				.filter(l -> l.getTableName().equals(tableName))
 				.findFirst();
 	}
 
@@ -183,7 +183,7 @@ public class PartitionerConfig
 
 		final boolean referenceExists = existingLine.get().getReferences()
 				.stream()
-				.anyMatch(ref -> ref.getReferencedTableName().equalsIgnoreCase(descriptor.getReferencedTableName()) && ref.getReferencingColumnName().equalsIgnoreCase(descriptor.getReferencingColumnName()));
+				.anyMatch(ref -> ref.getReferencedTableName().equals(descriptor.getReferencedTableName()) && ref.getReferencingColumnName().equals(descriptor.getReferencingColumnName()));
 		return !referenceExists;
 	}
 
@@ -278,7 +278,7 @@ public class PartitionerConfig
 		{
 			final Optional<LineBuilder> existingLineBuilder = lineBuilders
 					.stream()
-					.filter(b -> tableName.equalsIgnoreCase(b.getTableName()))
+					.filter(b -> tableName.equals(b.getTableName()))
 					.findFirst();
 			if (existingLineBuilder.isPresent())
 			{

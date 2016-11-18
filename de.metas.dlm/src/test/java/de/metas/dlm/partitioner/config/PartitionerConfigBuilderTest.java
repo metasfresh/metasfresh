@@ -92,32 +92,6 @@ public class PartitionerConfigBuilderTest
 		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencingColumnName(), is("XYZ_columnName"));
 	}
 
-	@Test
-	public void testIgnoreCase()
-	{
-		final PartitionerConfig config = createAndCheckBuilder0();
-		assertThat(config.getLines().size(), is(2));
-
-		final PartitionerConfig extendedConfig = PartitionerConfig.builder(config)
-				.line("XYZ")
-				.ref().setReferencedTableName("123").setReferencingColumnName("XYZ_columnName").endRef()
-				.line("xyz")
-				.ref().setReferencedTableName("123").setReferencingColumnName("xyz_columnName").endRef()
-				.endLine()
-				.build();
-
-		checkConfig(extendedConfig);
-		assertThat(extendedConfig.getLines().size(), is(3));
-
-		assertThat(extendedConfig.getLines().get(2).getTableName(), is("XYZ"));
-
-		assertThat(extendedConfig.getLineNotNull("XYZ").getTableName(), is("XYZ"));
-		assertNotNull(extendedConfig.getLineNotNull("XYZ").getReferences());
-		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().size(), is(1));
-		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencedTableName(), is("123"));
-		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencingColumnName(), is("XYZ_columnName"));
-	}
-
 	private PartitionerConfig createAndCheckBuilder0()
 	{
 		final PartitionerConfig config = PartitionerConfig.builder().setDLM_Partition_Config_ID(1)

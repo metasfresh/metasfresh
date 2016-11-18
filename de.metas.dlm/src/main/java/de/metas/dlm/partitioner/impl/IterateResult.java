@@ -152,8 +152,7 @@ public class IterateResult
 
 	private String mkKey(final ITableRecordReference tableRecordReference)
 	{
-		// toLowerCase to avoid trouble if a config was just augmented from a DLMException.
-		return tableRecordReference.getTableName().toLowerCase();
+		return tableRecordReference.getTableName();
 	}
 
 	Map<Integer, Set<ITableRecordReference>> getDlmPartitionId2Record()

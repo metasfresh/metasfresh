@@ -54,7 +54,7 @@ public class ConfigTests
 				.endLine()
 				.build();
 
-		final List<PartitionerConfigReference> referencingLines = config.getReferences("mno"); // also need to work with different case
+		final List<PartitionerConfigReference> referencingLines = config.getReferences("MNO");
 
 		assertThat(referencingLines.size(), is(2));
 

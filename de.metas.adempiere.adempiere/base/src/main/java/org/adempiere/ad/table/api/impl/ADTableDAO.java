@@ -229,6 +229,8 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public I_AD_Table retrieveTable(final String tableName)
 	{
-		return MTable.get(Env.getCtx(), tableName);
+		@SuppressWarnings("deprecation")
+		final int tableID = MTable.getTable_ID(tableName);
+		return InterfaceWrapperHelper.create(Env.getCtx(), tableID, I_AD_Table.class, ITrx.TRXNAME_None);
 	}
 }

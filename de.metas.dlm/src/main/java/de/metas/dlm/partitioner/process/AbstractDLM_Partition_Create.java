@@ -30,7 +30,7 @@ public abstract class AbstractDLM_Partition_Create extends SvrProcess
 {
 	public final I_DLM_Partition getPartitionToCompleteOrNull()
 	{
-		if (getRecord_ID() > 0 && I_DLM_Partition.Table_Name.equalsIgnoreCase(getTableName()))
+		if (getRecord_ID() > 0 && I_DLM_Partition.Table_Name.equals(getTableName()))
 		{
 			final I_DLM_Partition partitionToComplete = getRecord(I_DLM_Partition.class);
 			if (partitionToComplete.isPartitionComplete())

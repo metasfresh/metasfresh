@@ -129,8 +129,8 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * REtrieves a query builder for the given parameters (case insensitive!) that can be refined further.
 	 *
-	 * @param tableName
-	 * @param columnName
+	 * @param tableName case insensitive
+	 * @param columnName case insensitive
 	 * @param trxname may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
 	 * @return
 	 */

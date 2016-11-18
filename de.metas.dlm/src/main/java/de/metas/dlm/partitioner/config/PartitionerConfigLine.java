@@ -123,7 +123,8 @@ public class PartitionerConfigLine
 
 		final PartitionerConfigLine otherLine = (PartitionerConfigLine)other;
 
-		return new EqualsBuilder().append(tablename.toLowerCase(), otherLine.tablename.toLowerCase())
+		return new EqualsBuilder()
+				.append(tablename, otherLine.tablename)
 				.append(references, otherLine.references)
 				.isEqual();
 	}

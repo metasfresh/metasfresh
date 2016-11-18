@@ -190,7 +190,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 		return new EqualsBuilder()
 				.append(adTableId, other.adTableId)
-				// .append(tableName, other.tableName) adTableId alone is sufficient, also tableName can have case differences
+				// .append(tableName, other.tableName) adTableId alone is sufficient
 				.append(recordId, other.recordId)
 				.isEqual();
 	}
@@ -202,7 +202,7 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			_hashcode = new HashcodeBuilder()
 					.append(adTableId)
-					// .append(tableName) adTableId alone is sufficient, also tableName can have case differences
+					// .append(tableName) adTableId alone is sufficient
 					.append(recordId)
 					.toHashcode();
 		}
