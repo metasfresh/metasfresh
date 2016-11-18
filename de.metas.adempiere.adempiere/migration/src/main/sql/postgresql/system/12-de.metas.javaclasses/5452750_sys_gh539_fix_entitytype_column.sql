@@ -26,12 +26,12 @@ ALTER TABLE AD_JavaClass_Type DROP COLUMN AD_EntityType_ID;
 -- URL zum Konzept
 UPDATE AD_Column SET AD_Element_ID=1682, AD_Reference_ID=18, AD_Reference_Value_ID=389, ColumnName='EntityType', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
-For customizations, copy the entity and select "User"!', Name='Entit‰ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=57959
+For customizations, copy the entity and select "User"!', Name='Entit√§ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=57959
 ;
 
 -- 28.10.2016 07:50
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Entit‰ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
+UPDATE AD_Field SET Name='Entit√§ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
 For customizations, copy the entity and select "User"!' WHERE AD_Column_ID=57959 AND IsCentrallyMaintained='Y'
 ;
@@ -40,12 +40,12 @@ For customizations, copy the entity and select "User"!' WHERE AD_Column_ID=57959
 -- URL zum Konzept
 UPDATE AD_Column SET AD_Element_ID=1682, AD_Reference_ID=18, AD_Reference_Value_ID=389, ColumnName='EntityType', Description='Dictionary Entity Type; Determines ownership and synchronization', EntityType='de.metas.javaclasses', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
-For customizations, copy the entity and select "User"!', Name='Entit‰ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549455
+For customizations, copy the entity and select "User"!', Name='Entit√§ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549455
 ;
 
 -- 28.10.2016 07:50
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Entit‰ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
+UPDATE AD_Field SET Name='Entit√§ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
 For customizations, copy the entity and select "User"!' WHERE AD_Column_ID=549455 AND IsCentrallyMaintained='Y'
 ;
@@ -54,7 +54,7 @@ For customizations, copy the entity and select "User"!' WHERE AD_Column_ID=54945
 -- URL zum Konzept
 UPDATE AD_Column SET AD_Element_ID=1682, AD_Reference_ID=18, AD_Reference_Value_ID=389, ColumnName='EntityType', Description='Dictionary Entity Type; Determines ownership and synchronization', EntityType='de.metas.javaclasses', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
-For customizations, copy the entity and select "User"!', Name='Entit‰ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549456
+For customizations, copy the entity and select "User"!', Name='Entit√§ts-Art',Updated=TO_TIMESTAMP('2016-10-28 07:50:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549456
 ;
 
 -- 28.10.2016 07:50
@@ -64,7 +64,7 @@ UPDATE AD_Column_Trl SET IsTranslated='N' WHERE AD_Column_ID=549456
 
 -- 28.10.2016 07:50
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Entit‰ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
+UPDATE AD_Field SET Name='Entit√§ts-Art', Description='Dictionary Entity Type; Determines ownership and synchronization', Help='The Entity Types "Dictionary", "Adempiere" and "Application" might be automatically synchronized and customizations deleted or overwritten.  
 
 For customizations, copy the entity and select "User"!' WHERE AD_Column_ID=549456 AND IsCentrallyMaintained='Y'
 ;

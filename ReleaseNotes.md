@@ -10,11 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.44.44 (2016-47)
+# metasfresh 4.45.44 (2016-47)
+
+## Features
+* metasfresh
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+  * #563 Report Statistics qty per Week
+  * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+  * #597 Empties mask and functionality with autom. set the selected bpartner
+* webui
+  * #567 WebUI - Material Receipt Schedule
+  * #497 WebUI - ShipmentSchedule Window
 
 ## Fixes
 * metasfresh
   * #589 console error when doing bpartner setup
+  * #553 Report Account Info adjustments. Add parms date range.
 
 # metasfresh 4.44.43 (2016-46)
 

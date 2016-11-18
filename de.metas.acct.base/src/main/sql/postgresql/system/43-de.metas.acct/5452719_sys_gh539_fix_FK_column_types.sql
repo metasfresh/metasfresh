@@ -4,7 +4,7 @@ ALTER TABLE A_Asset_Acct RENAME COLUMN a_disposal_gain TO a_disposal_gain_OLD;
 ALTER TABLE A_Asset_Acct ADD COLUMN a_disposal_gain  NUMERIC(10);
 UPDATE A_Asset_Acct SET a_disposal_gain=a_disposal_gain_OLD::NUMERIC(10);
 COMMIT;
-ALTER TABLE A_Asset_Acct DROP COLUMN a_disposal_loss_old;
+ALTER TABLE A_Asset_Acct DROP COLUMN a_disposal_gain_OLD;
 
 ALTER TABLE A_Asset_Acct RENAME COLUMN a_disposal_loss TO a_disposal_loss_OLD;
 ALTER TABLE A_Asset_Acct ADD COLUMN a_disposal_loss  NUMERIC(10);

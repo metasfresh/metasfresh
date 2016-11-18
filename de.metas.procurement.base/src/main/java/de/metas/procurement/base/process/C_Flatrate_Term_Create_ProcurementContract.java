@@ -79,6 +79,9 @@ public class C_Flatrate_Term_Create_ProcurementContract
 
 	@Param(mandatory = true, parameterName = "C_Currency_ID")
 	private I_C_Currency p_C_Currency;
+	
+	@Param (mandatory = true, parameterName = "IsComplete")
+	private boolean p_isComplete;
 
 	@Override
 	protected String doIt() throws Exception
@@ -95,6 +98,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 				.setC_UOM(p_C_UOM)
 				.setAD_User_InCharge(p_AD_User_Incharge)
 				.setC_Currency(p_C_Currency)
+				.setComplete(p_isComplete) // complete if flag on true, do not complete otherwise
 				.build();
 
 		setRecordToSelectAfterExecution(TableRecordReference.of(term));
