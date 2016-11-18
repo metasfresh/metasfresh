@@ -171,6 +171,8 @@ FROM
 			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
 		WHERE
 			fa.AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
+			-- Akontozahlung invoices are not included. See FRESH_609
+			AND i.C_DocType_ID NOT IN (SELECT C_DocType_ID FROM C_DocType WHERE docbasetype='API' AND docsubtype='DP')
 			AND p1.C_Period_ID = $1
 			AND i.IsSOtrx = $2
 			AND ( CASE WHEN $3 IS NULL THEN TRUE ELSE fa.C_Activity_ID = $3 END )

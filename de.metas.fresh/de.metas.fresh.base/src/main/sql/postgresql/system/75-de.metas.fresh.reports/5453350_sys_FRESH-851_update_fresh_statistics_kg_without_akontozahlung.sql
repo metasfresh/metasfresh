@@ -1,12 +1,4 @@
-DROP FUNCTION IF EXISTS report.fresh_statistics_kg ( 
-	IN C_Period_ID numeric, 
-	IN issotrx character varying,
-	IN C_Activity_ID numeric,
-	IN M_Product_ID numeric, 
-	IN M_Product_Category_ID numeric, 
-	IN M_AttributeSetInstance_ID numeric, 
-	IN convert_to_kg character varying
-);
+
 
 DROP FUNCTION IF EXISTS report.fresh_statistics_kg ( 
 	IN C_Period_ID numeric, 
@@ -15,8 +7,7 @@ DROP FUNCTION IF EXISTS report.fresh_statistics_kg (
 	IN M_Product_ID numeric, 
 	IN M_Product_Category_ID numeric, 
 	IN M_AttributeSetInstance_ID numeric, 
-	IN convert_to_kg character varying,
-	IN AD_Org_ID numeric
+	IN convert_to_kg character varying
 );
 
 DROP TABLE IF EXISTS report.fresh_statistics_kg;
@@ -61,8 +52,7 @@ CREATE TABLE report.fresh_statistics_kg
   param_activity character varying(60),
   param_product character varying(255),
   param_product_category character varying(60),
-  param_attributes character varying(255),
-  ad_org_id numeric
+  param_attributes character varying(255)
 )
 WITH (
   OIDS=FALSE
@@ -78,8 +68,7 @@ CREATE FUNCTION report.fresh_statistics_kg
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN convert_to_kg character varying,
-		IN AD_Org_ID numeric
+		IN convert_to_kg character varying
 	) 
   RETURNS SETOF report.fresh_statistics_kg AS
 $BODY$
@@ -97,8 +86,7 @@ SELECT
 	COALESCE ((SELECT name FROM C_Activity WHERE C_Activity_ID = $3), 'alle' ) AS param_Activity,
 	COALESCE ((SELECT name FROM M_Product WHERE M_Product_ID = $4), 'alle' ) AS param_product,
 	COALESCE ((SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $5), 'alle' ) AS param_Product_Category,
-	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $6), 'alle') AS Param_Attributes,
-	a.org_id
+	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $6), 'alle') AS Param_Attributes
 FROM
 	(
 		SELECT
@@ -129,8 +117,7 @@ FROM
 					(p1.C_Period_ID, p2.C_Period_ID, p3.C_Period_ID, p4.C_Period_ID, p5.C_Period_ID, p6.C_Period_ID, 
 					p7.C_Period_ID, p8.C_Period_ID, p9.C_Period_ID, p10.C_Period_ID, p11.C_Period_ID, p12.C_Period_ID)
 				THEN fa.AmtAcct ELSE 0 END
-			) AS TotalAmt,
-			fa.org_id
+			) AS TotalAmt
 		FROM
 			C_Period p1
 			LEFT OUTER JOIN C_Period p2 ON p2.C_Period_ID = report.fresh_Get_Predecessor_Period(p1.C_Period_ID)
@@ -156,7 +143,7 @@ FROM
 					THEN uomkg
 				ELSE fa.C_UOM_ID END AS UOMConv_ID --convert uom in KG where it's possible, only if convert_to_kg = 'Y'
 				FROM (	
-					SELECT 	fa.*, fa.ad_org_id as org_id, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct, uomconvert(fa.M_Product_ID, fa.C_UOM_ID,(SELECT C_UOM_ID as uom_conv FROM C_UOM WHERE x12de355='KGM' and IsActive='Y'),qty ) AS convQty, (SELECT C_UOM_ID as uom_conv FROM C_UOM WHERE x12de355='KGM' and IsActive='Y') AS uomkg
+					SELECT 	fa.*, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct, uomconvert(fa.M_Product_ID, fa.C_UOM_ID,(SELECT C_UOM_ID as uom_conv FROM C_UOM WHERE x12de355='KGM' and IsActive='Y'),qty ) AS convQty, (SELECT C_UOM_ID as uom_conv FROM C_UOM WHERE x12de355='KGM' and IsActive='Y') AS uomkg
 					FROM 	Fact_Acct fa 
 					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID
 					WHERE	AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))		            
@@ -208,14 +195,12 @@ FROM
 				-- ... else deactivate the filter 
 				ELSE TRUE END
 			)
-			AND fa.org_id = $8
 		GROUP BY
 			fa.M_Product_ID,
 			fa.UOMConv_ID, 
 			p1.EndDate,
 			p1.StartDate, p2.StartDate, p3.StartDate, p4.StartDate, p5.StartDate, p6.StartDate, 
-			p7.StartDate, p8.StartDate, p9.StartDate, p10.StartDate, p11.StartDate, p12.StartDate,
-			fa.org_id
+			p7.StartDate, p8.StartDate, p9.StartDate, p10.StartDate, p11.StartDate, p12.StartDate
 	) a
 	INNER JOIN C_UOM uom ON a.UOMConv_ID = uom.C_UOM_ID  
 	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID
@@ -226,3 +211,4 @@ ORDER BY
 	
 $BODY$
 LANGUAGE sql VOLATILE;
+

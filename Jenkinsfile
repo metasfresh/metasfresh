@@ -21,7 +21,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		// ...
 		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
 		
-		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/metasfresh ${upstreamBranch}"
+		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
 	}
 	if(exitCode == 0)
 	{
@@ -68,8 +68,11 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
-		booleanParam(defaultValue: true, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration''', 
-			name: 'MF_SKIP_SQL_MIGRATION_TEST'), // skipping by default until we have this covered in our infrastructure
+		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
+			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
+		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
+Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
+			name: 'MF_SKIP_DEPLOYMENT'),
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
@@ -79,19 +82,17 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
-final BRANCH_NAME
+final MF_UPSTREAM_BRANCH;
 if(params.MF_UPSTREAM_BRANCH)
 {
-	echo "Setting BRANCH_NAME from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	BRANCH_NAME=params.MF_UPSTREAM_BRANCH
+	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
+	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
 }
 else
 {
-	echo "Setting BRANCH_NAME from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	BRANCH_NAME=env.BRANCH_NAME
+	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
+	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
 }
-
-final MF_BUILD_ID
 if(params.MF_BUILD_ID)
 {
 	echo "Setting MF_BUILD_ID from params.MF_BUILD_ID=${params.MF_BUILD_ID}"
@@ -103,20 +104,16 @@ else
 	MF_BUILD_ID=env.BUILD_NUMBER
 }
 
-final MAVEN_VERSION_SUFFIX='-SNAPSHOT'
-
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_VERSION_PREFIX = BRANCH_NAME.equals('master') ? "1" : "2"
+final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
-
-final BUILD_VERSION = BUILD_VERSION_PREFIX + "-" + BRANCH_NAME + "-" + MF_BUILD_ID
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
 // the maven artifact version that will be set to the artifacts in this build
-// Thanks to https://zeroturnaround.com/rebellabs/jenkins-protip-artifact-propagation/ for the idea of incorporating the a build-number into the artifact version
 // examples: "1-master-543-SNAPSHOT", "2-FRESH-123-9842-SNAPSHOT"
-final BUILD_MAVEN_VERSION=BUILD_VERSION + MAVEN_VERSION_SUFFIX
+final BUILD_MAVEN_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
 echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 
 // the version range used when resolving depdendencies for this build
@@ -125,7 +122,7 @@ final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MA
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
-currentBuild.displayName="#" + currentBuild.number + "-" + BRANCH_NAME + "-" + MF_BUILD_ID
+currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
 timestamps 
 {
@@ -135,18 +132,27 @@ node('agent && linux')
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
-			stage('Preparation') // for display purposes
-			{	
-				// use this line in the "real" multibranch pipeline builds
-				// checkout scm
-				
-				// use this line when developing this scrip in a normal pipeline job
-				git branch: "$BRANCH_NAME", url: 'https://github.com/metasfresh/metasfresh.git'
-			}
-		
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
+				// checkout our code. 
+				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
+				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
+				checkout([
+					$class: 'GitSCM', 
+					branches: [[name: "${env.BRANCH_NAME}"]], 
+					doGenerateSubmoduleConfigurations: false, 
+					extensions: [
+						[$class: 'PathRestriction', excludedRegions: '''ReleaseNotes\\.md
+README\\.md
+CONTRIBUTING\\.md
+CODE_OF_CONDUCT\\.md''', includedRegions: ''],
+						[$class: 'CleanCheckout']
+					], 
+					submoduleCfg: [], 
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
+				])
+			
 				// deploy de.metas.parent/pom.xml as it is no (still with version "3-development-SNAPSHOT") so that other nodes can find it when they modify their own pom.xml versions
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
 				
@@ -182,21 +188,21 @@ node('agent && linux')
 // wait for the results, but don't block a node for it
 stage('Invoke downstream jobs') 
 {
-	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
-	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, BRANCH_NAME, true); // wait=true
+	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
-// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-node('linux')
-{	
-	withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
-	{
-		final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-		final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"BRANCH_NAME\":\"${BRANCH_NAME}\"}"
-		
-		sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+	node('linux')
+	{	
+		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+		{
+			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+			final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+			
+			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+		}
 	}
-}
 }
 
 	
@@ -209,6 +215,21 @@ node('agent && linux && libc6-i386')
 		{
 			stage('Build dist') 
 			{
+				// checkout our code..sparsely..we only need /de.metas.endcustomer.mf15
+				// note that we don not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
+				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
+				checkout([
+					$class: 'GitSCM', 
+					branches: [[name: "${env.BRANCH_NAME}"]], 
+					doGenerateSubmoduleConfigurations: false, 
+					extensions: [
+						[$class: 'CleanCheckout'], 
+						[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+					], 
+					submoduleCfg: [], 
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
+				])
+		
 				// *Now* set the artifact version of everything below de.metas.endcustomer.mf15/pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
@@ -256,7 +277,11 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(!params.MF_SKIP_SQL_MIGRATION_TEST)
+if(params.MF_SKIP_SQL_MIGRATION_TEST)
+{
+	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+}
+else
 {
 	stage('Test SQL-Migration')
 	{
@@ -268,70 +293,85 @@ if(!params.MF_SKIP_SQL_MIGRATION_TEST)
 			final sshTargetUser='metasfresh'
 
 			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
+
+			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 			
 			// Look Ma, I'm currying!!
 			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
 			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
-			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_cloud_it';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}";
+			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
+			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
+			        .replaceAll('-', '_') // postgresql is allergic to '-' in DB names
+					.toLowerCase(); // also, DB names are generally in lowercase
+
 			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
+			
+			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
 	}
 }
 
-stage('Deployment')
+if(params.MF_SKIP_DEPLOYMENT)
 {
-	def userInput;
-	// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
-	timeout(time:1, unit:'DAYS') 
+	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+}
+else
+{
+	stage('Deployment')
 	{
-		// use milestones to abort older builds as soon as a receent build is deployed
-		// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
-		milestone 1
-		userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
-		milestone 2
-	}
-	
-	echo "Received userInput=$userInput";
-
-	node('master')
-	{
-		final distArtifactId='de.metas.endcustomer.mf15.dist';
-		final packaging='tar.gz';
-		final sshTargetHost=userInput;
-		final sshTargetUser='metasfresh'
-
-		// main part: provide and rollout the "main" distributable
-		// get the deployable dist file to the target host
-		downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
-
-		// extract the tar.gz
-		final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
-		final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
-
-		// Look Ma, I'm currying!!
-		final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-		invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
-
-		// stop the service, perform the rollout and start the service
-		final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
-		invokeRemoteInInstallDir('./stop_service.sh');
-		invokeRemoteInInstallDir('./sql_remote.sh');
-		invokeRemoteInInstallDir('./minor_remote.sh');
-		invokeRemoteInInstallDir('./start_service.sh');
-
-		// clean up what we just rolled out
-		invokeRemoteInHomeDir("rm -r ${deployDir}")
+		def userInput;
+		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
+		timeout(time:1, unit:'DAYS') 
+		{
+			// use milestones to abort older builds as soon as a receent build is deployed
+			// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
+			milestone 1
+			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+			milestone 2
+		}
 		
-		// also provide the webui-api and procurement-webui; TODO actually deploy them
-		downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
-		downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
+		echo "Received userInput=$userInput";
 
-		// clean up the workspace, including the local maven repositories that the withMaven steps created
-		step([$class: 'WsCleanup', cleanWhenFailure: true])
-	}
-} // node
+		node('master')
+		{
+			final distArtifactId='de.metas.endcustomer.mf15.dist';
+			final packaging='tar.gz';
+			final sshTargetHost=userInput;
+			final sshTargetUser='metasfresh'
+
+			// main part: provide and rollout the "main" distributable
+			// get the deployable dist file to the target host
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
+
+			// extract the tar.gz
+			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+
+			// Look Ma, I'm currying!!
+			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+
+			// stop the service, perform the rollout and start the service
+			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
+			invokeRemoteInInstallDir('./stop_service.sh');
+			invokeRemoteInInstallDir('./sql_remote.sh');
+			invokeRemoteInInstallDir('./minor_remote.sh');
+			invokeRemoteInInstallDir('./start_service.sh');
+
+			// clean up what we just rolled out
+			invokeRemoteInHomeDir("rm -r ${deployDir}")
+			
+			// also provide the webui-api and procurement-webui; TODO actually deploy them
+			downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
+
+			// clean up the workspace, including the local maven repositories that the withMaven steps created
+			step([$class: 'WsCleanup', cleanWhenFailure: true])
+		} // node
+	} // stage
+} // if(MF_OFFER_DEPLOY)
 } // timestamps
 
