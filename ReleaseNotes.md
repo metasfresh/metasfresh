@@ -26,6 +26,7 @@ Here come the actual release notes:
 * metasfresh
   * #589 console error when doing bpartner setup
   * #553 Report Account Info adjustments. Add parms date range.
+  * #611 IBAN Error for RBS Bank
 
 # metasfresh 4.44.43 (2016-46)
 
