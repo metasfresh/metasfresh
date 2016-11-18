@@ -281,7 +281,7 @@ public class MTable extends X_AD_Table
 		{
 			final String sql = "SELECT * FROM AD_Column WHERE AD_Table_ID=? ORDER BY ColumnName";
 			final Object[] params = new Object[] { getAD_Table_ID() };
-			List<MColumn> list = new ArrayList<MColumn>();
+			List<MColumn> list = new ArrayList<>();
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -337,7 +337,7 @@ public class MTable extends X_AD_Table
 	 */
 	public String[] getKeyColumns()
 	{
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		//
 		for (final MColumn column : getColumns(false))
 		{
@@ -511,7 +511,7 @@ public class MTable extends X_AD_Table
 
 	// globalqss
 	/**
-	 * Grant independence to GenerateModel from AD_Table_ID
+	 * Grant independence to GenerateModel from AD_Table_ID. This method works <b>case insensitive</b>.
 	 *
 	 * @param String tableName
 	 * @return int retValue
@@ -549,7 +549,7 @@ public class MTable extends X_AD_Table
 		if (s_cacheTableName2Id != null)
 		{
 			// Can happen to have s_cacheTableName2Id null when for example we load I_AD_Table interface
-			retValue = s_cacheTableName2Id.get(tableName.toLowerCase());
+			retValue = s_cacheTableName2Id.get(tableName);
 		}
 		if (retValue != null && retValue > 0)
 		{
@@ -585,7 +585,7 @@ public class MTable extends X_AD_Table
 		{
 			if (s_cacheTableName2Id != null)
 			{
-				s_cacheTableName2Id.put(tableName.toLowerCase(), retValue);
+				s_cacheTableName2Id.put(tableName, retValue);
 			}
 			return retValue;
 		}
@@ -622,9 +622,9 @@ public class MTable extends X_AD_Table
 
 	//
 	// metas-ts
-	private static final Map<String, Integer> staticTableIds = new HashMap<String, Integer>();
+	private static final Map<String, Integer> staticTableIds = new HashMap<>();
 	private static int nextTableId = 0;
-	private static final CCache<String, Integer> s_cacheTableName2Id = new CCache<String, Integer>(Table_Name + "#TableName2ID", 200, 0); // metas
+	private static final CCache<String, Integer> s_cacheTableName2Id = new CCache<>(Table_Name + "#TableName2ID", 200, 0); // metas
 
 	public static void setStaticTableId(final String name, final int id)
 	{

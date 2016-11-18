@@ -283,7 +283,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private Map<String, Object> copyValues()
 	{
 		final Map<String, Object> values = getInnerValues();
-		final Map<String, Object> valuesCopy = new HashMap<String, Object>(values);
+		final Map<String, Object> valuesCopy = new HashMap<>(values);
 		for (final Iterator<Entry<String, Object>> it = valuesCopy.entrySet().iterator(); it.hasNext();)
 		{
 			final Entry<String, Object> e = it.next();
@@ -460,21 +460,21 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		idColumnName = tableName + "_ID";
 		this.lookup = lookup;
 
-		this.values = new HashMap<String, Object>();
+		this.values = new HashMap<>();
 		valuesRO = Collections.unmodifiableMap(this.values);
-		valuesOld = new HashMap<String, Object>();
+		valuesOld = new HashMap<>();
 
 		// Standard values:
-		this.values.put("IsActive".toLowerCase(), true);
+		this.values.put("IsActive", true);
 
 		if (!"AD_Client_ID".equals(idColumnName))
 		{
-			this.values.put("AD_Client_ID".toLowerCase(), Env.getAD_Client_ID(ctx));
+			this.values.put("AD_Client_ID", Env.getAD_Client_ID(ctx));
 		}
 
 		if (!"AD_Org_ID".equals(idColumnName))
 		{
-			this.values.put("AD_Org_ID".toLowerCase(), Env.getAD_Org_ID(ctx));
+			this.values.put("AD_Org_ID", Env.getAD_Org_ID(ctx));
 		}
 
 		if (values != null)
@@ -553,7 +553,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("set") && args.length == 1)
 		{
-			final String propertyNameLowerCase = methodName.substring(3).toLowerCase();
+			final String propertyNameLowerCase = methodName.substring(3);
 			final Class<?> paramType = method.getParameterTypes()[0];
 			final Object value = args[0];
 			if (isModelInterface(paramType))
@@ -574,9 +574,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("get") && (args == null || args.length == 0))
 		{
-			final String propertyNameLowerCase = methodName.substring(3).toLowerCase();
+			final String propertyNameLowerCase = methodName.substring(3);
 
-			if (propertyNameLowerCase.equals(idColumnName.toLowerCase()))
+			if (propertyNameLowerCase.equals(idColumnName))
 			{
 				return getId();
 			}
@@ -600,7 +600,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			//
 			if (method.getReturnType() == int.class)
 			{
-				if (propertyNameLowerCase.endsWith("_ID".toLowerCase()))
+				if (propertyNameLowerCase.endsWith("_ID"))
 				{
 					value = DEFAULT_VALUE_ID;
 				}
@@ -622,13 +622,13 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		else if (methodName.startsWith("is") && (args == null || args.length == 0))
 		{
 			final Map<String, Object> values = getInnerValues();
-			final String propertyNameLowerCase = methodName.substring(2).toLowerCase();
+			final String propertyNameLowerCase = methodName.substring(2);
 			final Object value;
 			if (values.containsKey(propertyNameLowerCase))
 			{
 				value = getValue(propertyNameLowerCase, method.getReturnType());
 			}
-			else if (values.containsKey("Is".toLowerCase() + propertyNameLowerCase))
+			else if (values.containsKey("Is" + propertyNameLowerCase))
 			{
 				value = getValue("Is" + propertyNameLowerCase, method.getReturnType());
 			}
@@ -665,7 +665,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	void setReferencedObject(final String propertyName, final Object value)
 	{
-		final String idPropertyName = propertyName + "_ID".toLowerCase();
+		final String idPropertyName = propertyName + "_ID";
 		if (value == null)
 		{
 			final Map<String, Object> values = getInnerValuesToSet();
@@ -713,7 +713,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			final StringBuilder sbValues = new StringBuilder();
 
-			final List<String> columnNames = new ArrayList<String>(values.keySet());
+			final List<String> columnNames = new ArrayList<>(values.keySet());
 			Collections.sort(columnNames);
 			for (final String name : columnNames)
 			{
@@ -740,7 +740,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 					}
 					else
 					{
-						final List<String> trace2 = new ArrayList<String>(trace);
+						final List<String> trace2 = new ArrayList<>(trace);
 						trace2.add(traceKey);
 						valueStr = wrapper.toString(trace2);
 					}
@@ -779,7 +779,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	Object getReferencedObject(final String columnName, final Method method)
 	{
 		String propertyName = columnName;
-		if (propertyName.toLowerCase().endsWith("_ID".toLowerCase()))
+		if (propertyName.endsWith("_ID"))
 		{
 			propertyName = propertyName.substring(0, propertyName.length() - 3);
 		}
@@ -795,7 +795,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// Get the column name which contains the ID of model that we are going to retrieve
 		// NOTE: atm we are supporting both cases (e.g. M_Product and M_Product_ID) to be backward compatible, but in future we shall support only the "M_Product_ID" like columns.
 		final String idColumnName;
-		if (propertyName.toLowerCase().endsWith("_ID".toLowerCase()))
+		if (propertyName.endsWith("_ID"))
 		{
 			idColumnName = propertyName;
 		}
@@ -917,9 +917,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final Map<String, Object> values = getInnerValues();
 
-		final String propertyNameToUse = propertyName.toLowerCase();
-
-		if (enforceStrictValues && !values.containsKey(propertyNameToUse))
+		if (enforceStrictValues && !values.containsKey(propertyName))
 		{
 			throw new IllegalStateException("No property " + propertyName + " was defined for bean " + this + "."
 					+ "\n\n You can:"
@@ -927,19 +925,17 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 					+ "\n * if it's not relevant you can turn off strict values in our test: POJOWrapper.setDefaultStrictValues(true);");
 		}
 
-		if (useOldValues && valuesOld.containsKey(propertyNameToUse))
+		if (useOldValues && valuesOld.containsKey(propertyName))
 		{
-			return valuesOld.get(propertyNameToUse);
+			return valuesOld.get(propertyName);
 		}
 
-		return values.get(propertyNameToUse);
+		return values.get(propertyName);
 	}
 
 	public void setValue(final String propertyName, final Object value)
 	{
-		final String propertyNameToUse = propertyName.toLowerCase();
-
-		if (propertyNameToUse.equalsIgnoreCase(idColumnName))
+		if (propertyName.equalsIgnoreCase(idColumnName))
 		{
 			final int idOld = getId();
 			final int id = toId(value);
@@ -955,22 +951,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		final Map<String, Object> values = getInnerValuesToSet();
-		final Object valueOld = values.put(propertyNameToUse, value);
+		final Object valueOld = values.put(propertyName, value);
 
-		if (!valuesOld.containsKey(propertyNameToUse)
+		if (!valuesOld.containsKey(propertyName)
 				&& !Check.equals(valueOld, value))
 		{
-			valuesOld.put(propertyNameToUse, valueOld);
+			valuesOld.put(propertyName, valueOld);
 		}
 
 		//
 		// Reset cached model if any and if value is "-1"
-		if (propertyNameToUse.endsWith("_ID".toLowerCase()))
+		if (propertyName.endsWith("_ID"))
 		{
 			final int id = toId(value);
 			if (id < 0)
 			{
-				final String modelPropertyName = propertyNameToUse.substring(0, propertyNameToUse.length() - 3);
+				final String modelPropertyName = propertyName.substring(0, propertyName.length() - 3);
 				values.put(modelPropertyName, null);
 			}
 		}
@@ -1021,7 +1017,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public boolean hasColumnName(final String columnName)
 	{
-		if (getInnerValues().containsKey(columnName.toLowerCase()))
+		if (getInnerValues().containsKey(columnName))
 		{
 			return true; // we have the column name and it is actually set to a value
 		}
@@ -1191,7 +1187,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		//
 		// Special case: lookup columns
-		if (columnName.toLowerCase().endsWith("_ID".toLowerCase())
+		if (columnName.endsWith("_ID")
 				&& value instanceof Integer
 				&& (Integer)value == DEFAULT_VALUE_ID)
 		{
@@ -1400,7 +1396,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		if (dynAttrs == null)
 		{
-			dynAttrs = new HashMap<String, Object>();
+			dynAttrs = new HashMap<>();
 		}
 		return dynAttrs.put(attributeName, value);
 	}
@@ -1501,8 +1497,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static boolean hasColumnName(final Class<?> modelClass, final String columnName)
 	{
-		final String columnNameLC = columnName.toLowerCase();
-
 		for (final Method method : modelClass.getMethods())
 		{
 			final String methodName = method.getName();
@@ -1514,7 +1508,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			{
 				return true;
 			}
-			else if (columnNameLC.startsWith("is") && methodName.equalsIgnoreCase(columnName))
+			else if (columnName.startsWith("is") && methodName.equalsIgnoreCase(columnName))
 			{
 				return true;
 			}

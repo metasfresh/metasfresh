@@ -13,20 +13,21 @@ package org.adempiere.ad.persistence;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -36,6 +37,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -110,7 +113,6 @@ public class TableModelClassLoader
 		this.tableName2class = CacheBuilder.newBuilder()
 				.build(new CacheLoader<String, Class<?>>()
 				{
-
 					@Override
 					public Class<?> load(final String tableName) throws Exception
 					{
@@ -173,7 +175,6 @@ public class TableModelClassLoader
 
 		return modelClass;
 	}	// getClass
-
 
 	@VisibleForTesting
 	/* package */ final Class<?> findModelClassByTableName(final String tableName)
@@ -318,10 +319,33 @@ public class TableModelClassLoader
 	 */
 	private Class<?> loadModelClassForClassname(final String className)
 	{
+		final String packageName = className.substring(0, className.lastIndexOf('.'));
+
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try
 		{
-			final Class<?> clazz = classLoader.loadClass(className);
+			// we need to find the classes in a case-insensitive fashion,
+			// because the classname's part that corresponds to the table name might be lower-case,
+			// because when doing DLM we sometimes get infos with table names directly from postgres
+			final List<String> allTypes = new Reflections(
+					packageName,
+					new SubTypesScanner(false)
+			// new FilterBuilder().include("(?i)" + className) // trying to use this filter gave me the following error:
+			// Couldn't find subtypes of Object. Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)
+			).getAllTypes().stream()
+					.filter(c -> c.equalsIgnoreCase(className)).collect(Collectors.toList());
+
+			Check.errorIf(allTypes.size() > 1, "There are multiple classes that match {}: {}", className, allTypes);
+			if (allTypes.isEmpty())
+			{
+				if (log.isDebugEnabled())
+				{
+					log.debug("No class found for " + className + " (classloader: " + classLoader + ")");
+					return null;
+				}
+			}
+
+			final Class<?> clazz = classLoader.loadClass(allTypes.iterator().next());
 
 			// Make sure that it is a PO class
 			if (!PO.class.isAssignableFrom(clazz))

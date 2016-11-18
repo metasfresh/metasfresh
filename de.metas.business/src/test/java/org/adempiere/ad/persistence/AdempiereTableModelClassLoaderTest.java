@@ -5,7 +5,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
-import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,16 +53,5 @@ public class AdempiereTableModelClassLoaderTest
 				// and now they shall contain our entity type
 				.cacheReset()
 				.assertEntityTypeExists("MyEntityType");
-	}
-
-	/**
-	 * Verifies that the correct class is also loaded if the table name is given in lower case.
-	 */
-	@Test
-	public void testTableNameIgnoreCase()
-	{
-		tester.setTableNameEntityType(I_AD_Table.Table_Name, PO.ENTITYTYPE_Dictionary)
-				.assertClass(I_AD_Table.Table_Name, MTable.class) // guard
-				.assertClass(I_AD_Table.Table_Name.toLowerCase(), MTable.class);
 	}
 }

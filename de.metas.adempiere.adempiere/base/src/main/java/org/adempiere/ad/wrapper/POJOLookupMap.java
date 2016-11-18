@@ -262,7 +262,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
+		Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 		if (tableRecords == null || tableRecords.isEmpty())
 		{
 			throw new RuntimeException("No cached object found for clazz=" + clazz + ", id=" + id);
@@ -295,7 +295,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public <T> T lookup(final String tableName, final int recordId)
 	{
-		final Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
+		final Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 		if (tableRecords == null)
 		{
 			return null;
@@ -389,12 +389,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					wrapper.setId(id);
 				}
 
-				Map<Integer, Object> tableRecords = cachedObjects.get(tableName.toLowerCase());
+				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 				if (tableRecords == null)
 				{
 					// we use LinkedHashMap to preserve the order in which the objects are saved
 					tableRecords = new LinkedHashMap<>();
-					cachedObjects.put(tableName.toLowerCase(), tableRecords);
+					cachedObjects.put(tableName, tableRecords);
 				}
 
 				putCopy(tableRecords, id, model, isNew);
@@ -503,7 +503,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		assertSameTableName(tableName, clazz);
 
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return Collections.emptyList();
@@ -533,7 +533,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public List<Object> getRawRecords(final String tableName)
 	{
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return Collections.emptyList();
@@ -607,7 +607,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
 
-		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName.toLowerCase());
+		final Map<Integer, Object> recordsMap = cachedObjects.get(tableName);
 		if (recordsMap == null || recordsMap.isEmpty())
 		{
 			return false;
@@ -671,7 +671,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		for (String tableName : tableNamesToUse)
 		{
-			final Map<Integer, Object> map = cachedObjects.get(tableName.toLowerCase());
+			final Map<Integer, Object> map = cachedObjects.get(tableName);
 			if (map == null || map.isEmpty())
 			{
 				continue;
@@ -722,7 +722,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		final String tableName = wrapper.getTableName();
 
-		final Map<Integer, Object> tableCachedObjects = cachedObjects.get(tableName.toLowerCase());
+		final Map<Integer, Object> tableCachedObjects = cachedObjects.get(tableName);
 		if (tableCachedObjects == null)
 		{
 			// not exists
