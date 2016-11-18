@@ -14,7 +14,7 @@ CREATE INDEX m_receiptschedule_alloc_vhu_id
 ALTER TABLE C_RecurrentPaymentLine ADD C_BP_BankAccount_Own_ID NUMERIC(10) NOT NULL
 ;
 
-
+COMMIT;
 
 --
 -- DML: number of fixes for known problems
@@ -42,6 +42,9 @@ DELETE FROM c_taxdeclarationacct t WHERE NOT EXISTS (select 1 from fact_acct f w
 
 UPDATE m_receiptschedule_alloc a SET vhu_id=NULL WHERE a.vhu_id IS NOT NULL AND NOT EXISTS (select 1 from m_hu hu where a.vhu_id=hu.m_hu_id);
 
+UPDATE c_async_batch_type t SET AD_BoilerPlate_ID=null WHERE AD_BoilerPlate_ID IS NOT NULL AND NOT EXISTS (select 1 from AD_BoilerPlate p where p.AD_BoilerPlate_ID=t.AD_BoilerPlate_ID);
+
+DELETE FROM c_bp_docline_sort s WHERE NOT EXISTS (select 1 from C_BPartner p where p.C_BPartner_ID=s.C_BPartner_ID);
 
 
 --
