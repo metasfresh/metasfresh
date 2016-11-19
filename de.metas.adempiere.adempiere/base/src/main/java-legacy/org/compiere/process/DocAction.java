@@ -41,6 +41,8 @@ public interface DocAction
 	public static final String ACTION_Reject = "RJ";
 	/** Post = PO */
 	public static final String ACTION_Post = "PO";
+	/** UnPost = UP */ // NOTE: this action is not in database
+	public static final String ACTION_UnPost = "UP";
 	/** Void = VO */
 	public static final String ACTION_Void = "VO";
 	/** Close = CL */
