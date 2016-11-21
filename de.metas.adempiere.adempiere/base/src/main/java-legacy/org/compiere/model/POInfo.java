@@ -841,6 +841,16 @@ public final class POInfo implements Serializable
 		return m_columns[index].DisplayType;
 	}   // getColumnDisplayType
 
+	public int getColumnDisplayType(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			throw new IllegalArgumentException("Column name " + columnName + " not found in " + this);
+		}
+		return getColumnDisplayType(columnIndex);
+	}
+
 	/**
 	 * Get Column Default Logic
 	 * 
@@ -938,60 +948,30 @@ public final class POInfo implements Serializable
 			m_columns[i].IsUpdateable = updateable;
 		}
 	}	// setUpdateable
-
-	/**
-	 * Is Lookup Column
-	 * 
-	 * @param index index
-	 * @return true if it is a lookup column
-	 */
-	public boolean isColumnLookup(int index)
+	
+	public String getReferencedTableNameOrNull(final String columnName)
 	{
-		if (index < 0 || index >= m_columns.length)
-			return false;
-		return DisplayType.isLookup(m_columns[index].DisplayType);
-	}   // isColumnLookup
+		final int columnIndex = getColumnIndex(columnName);
+		final POInfoColumn poInfoColumn = m_columns[columnIndex];
+		return poInfoColumn.getReferencedTableNameOrNull();
+	}
 
 	/**
 	 * Get Lookup
-	 * 
+	 *
+	 * @param ctx
 	 * @param columnIndex index
 	 * @return Lookup
 	 */
 	public Lookup getColumnLookup(final Properties ctx, final int columnIndex)
 	{
-		return getColumnLookup(ctx, Env.WINDOW_None, columnIndex);
+		return m_columns[columnIndex].getLookup(ctx, Env.WINDOW_None);
 	}
 
 	public Lookup getColumnLookup(final Properties ctx, final int windowNo, final int columnIndex)
 	{
-		if (!isColumnLookup(columnIndex))
-		{
-			return null;
-		}
-
-		//
-		// List, Table, TableDir
-		Lookup lookup = null;
-		try
-		{
-			lookup = MLookupFactory.get(
-					ctx,
-					windowNo,
-					m_columns[columnIndex].AD_Column_ID,
-					m_columns[columnIndex].DisplayType,
-					m_columns[columnIndex].getColumnName(),
-					m_columns[columnIndex].AD_Reference_Value_ID,
-					m_columns[columnIndex].IsParent,
-					m_columns[columnIndex].AD_Val_Rule_ID);
-		}
-		catch (Exception e)
-		{
-			lookup = null;          // cannot create Lookup
-		}
-		return lookup;
-		/** @todo other lookup types */
-	}   // getColumnLookup
+		return m_columns[columnIndex].getLookup(ctx, windowNo);
+	}
 
 	/**
 	 * Is Column Key
@@ -1033,6 +1013,12 @@ public final class POInfo implements Serializable
 			return false;
 		return m_columns[index].IsParent;
 	}   // isColumnParent
+	
+	public boolean isColumnParent(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return isColumnParent(columnIndex);
+	}
 
 	/**
 	 * Is Column Translated
