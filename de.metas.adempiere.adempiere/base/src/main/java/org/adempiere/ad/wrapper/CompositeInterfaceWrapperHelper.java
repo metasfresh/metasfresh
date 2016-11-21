@@ -253,6 +253,14 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			return null;
 		}
+		
+		// Short-circuit: model is already a PO instance
+		if (model instanceof PO)
+		{
+			@SuppressWarnings("unchecked")
+			final T po = (T)model;
+			return po;
+		}
 
 		return getHelperThatCanHandle(model)
 				.getPO(model, strict);

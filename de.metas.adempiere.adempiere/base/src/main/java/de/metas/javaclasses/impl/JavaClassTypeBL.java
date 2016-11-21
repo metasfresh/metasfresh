@@ -180,7 +180,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				final String clazzName = clazz.getName();
 
 				final I_AD_JavaClass newJavaClassRecord = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class, contextAware);
-				newJavaClassRecord.setAD_EntityType(javaClassType.getAD_EntityType());
+				newJavaClassRecord.setEntityType(javaClassType.getEntityType());
 				newJavaClassRecord.setAD_JavaClass_Type(javaClassType);
 				newJavaClassRecord.setClassname(clazzName);
 				newJavaClassRecord.setName(clazzName);

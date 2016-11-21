@@ -913,6 +913,15 @@
 									</ignoreClasses>
 								</dependency>
 
+								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
+								<dependency>
+									<groupId>org.elasticsearch</groupId>
+									<artifactId>elasticsearch</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.joda.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
 							</dependencies>
 
 							<findAllDuplicates>true</findAllDuplicates>

@@ -44,7 +44,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -54,6 +53,7 @@ import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
@@ -297,9 +297,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 				final T item = retrieveItem(e, clazz, trxName); // if the item can't be retrieved, a PackageItemNotAvailableException is thrown
 				Check.assumeNotNull(item, "Item for {} is not null", e);
 				result.add(item);
-
 			}
-			
 			catch (final PackageItemNotAvailableException pie)
 			{
 				if (skipMissingItems)
@@ -308,7 +306,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 				}
 				else
 				{
-					throw pie; // caller expected the item to be there, so thorw the exception
+					throw pie; // caller expected the item to be there, so throw the exception
 				}
 			}
 		}

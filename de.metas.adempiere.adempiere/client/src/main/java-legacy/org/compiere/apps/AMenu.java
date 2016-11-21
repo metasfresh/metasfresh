@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -60,6 +60,8 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.apps.wf.WFPanel;
 import org.compiere.grid.tree.VTreePanel;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.MSession;
@@ -120,7 +122,7 @@ public final class AMenu extends CFrame
 		splash.paint(splash.getGraphics());
 
 		//
-		if (!Adempiere.startupEnvironment(true)) // Load Environment
+		if (!Adempiere.startupEnvironment(true))  // Load Environment
 		{
 			System.exit(1);
 		}
@@ -320,7 +322,7 @@ public final class AMenu extends CFrame
 		log.trace("Login");
 
 		final ALogin login = new ALogin(splash, m_ctx);
-		if (!login.initLogin())		// no automatic login
+		if (!login.initLogin()) 		// no automatic login
 		{
 			// Center the window
 			try
@@ -337,8 +339,8 @@ public final class AMenu extends CFrame
 
 		// Check Build
 		// we already check the server version via ClientUpdateValidator and that's enough
-//		if (!DB.isBuildOK(m_ctx))
-//			AEnv.exit(1);
+		// if (!DB.isBuildOK(m_ctx))
+		// AEnv.exit(1);
 
 		// Check DB (AppsServer Version checked in Login)
 		// DB.isDatabaseOK(m_ctx); // we already check the server version via ClientUpdateValidator and that's enough
@@ -545,17 +547,17 @@ public final class AMenu extends CFrame
 		}
 		//
 		final InfoUpdater infoUpdater = this.infoUpdater;
-		if(infoUpdater != null)
+		if (infoUpdater != null)
 		{
 			infoUpdater.stop = true;
 			try
 			{
-				synchronized(infoUpdater)
+				synchronized (infoUpdater)
 				{
 					infoUpdater.notify();
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				log.warn("Failed stopping {}. Ignored.", infoUpdater, e);
 			}
@@ -628,13 +630,13 @@ public final class AMenu extends CFrame
 	{
 		final MTreeNode node = (MTreeNode)e.getNewValue();
 		// ignore if no node (shall not happen)
-		if(node == null)
+		if (node == null)
 		{
 			return;
 		}
 
 		// ignore summary items
-		if(node.isSummary())
+		if (node.isSummary())
 		{
 			return;
 		}
@@ -710,18 +712,60 @@ public final class AMenu extends CFrame
 	 */
 	private int getRequests()
 	{
+		// #577
+		// Count the requests for all users that have the same roles as the login user
+		final StringBuilder roleSql = new StringBuilder();
+		roleSql.append(" exists ")
+				.append("( ")
+				.append(" select 1 from ")
+				.append(I_AD_User.Table_Name).append(" u ")
+				.append(" where u.")
+				.append(I_AD_User.COLUMNNAME_AD_User_ID)
+				.append(" = ")
+				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_SalesRep_ID)
+				.append(" and ")
+				.append(" exists ")
+				.append("(")
+				.append(" select 1 from ")
+				.append(I_AD_User_Roles.Table_Name).append(" ur ")
+				.append(" where ")
+				.append(" u.").append(I_AD_User.COLUMNNAME_AD_User_ID)
+				.append(" = ")
+				.append("ur.").append(I_AD_User_Roles.COLUMNNAME_AD_User_ID)
+				.append(" and ")
+				.append(" exists ")
+				.append("(")
+				.append(" select 1 from ")
+				.append(I_AD_User_Roles.Table_Name).append(" ur2 ")
+				.append(" where ")
+				.append("ur.").append(I_AD_User_Roles.COLUMNNAME_AD_Role_ID)
+				.append(" = ")
+				.append("ur2. ").append(I_AD_User_Roles.COLUMNNAME_AD_Role_ID)
+				.append(" and ")
+				.append("ur2.").append(I_AD_User_Roles.COLUMNNAME_AD_User_ID)
+				.append(" = ?")
+				.append(" and ")
+				.append("ur2.").append(I_AD_User_Roles.COLUMNNAME_IsActive)
+				.append(" = 'Y'")
+				.append(" ) ")
+				.append(" ) ")
+				.append(" ) ");
+
 		if (m_requestSQL == null)
 			m_requestSQL = Env.getUserRolePermissions().addAccessSQL("SELECT COUNT(1) FROM R_Request "
-					+ "WHERE (SalesRep_ID=? OR AD_Role_ID=?) AND Processed='N'"
+					+ " WHERE ( "
+					// + //"SalesRep_ID=? OR AD_Role_ID=?"
+					+ roleSql.toString()
+					+ " ) AND Processed='N'"
 					+ " AND (DateNextAction IS NULL OR TRUNC(DateNextAction) <= TRUNC(now()))"
-					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (SELECT R_Status_ID FROM R_Status WHERE IsClosed='N'))"
+					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (select R_Status_ID from R_Status where IsClosed='N'))"
 					// #577
 					// Only count the R_Request entries that have request types used for Partner Request Window (the flag IsUseForPartnerRequestWindow is on true)
-					+ " AND ("+ I_R_Request.COLUMNNAME_R_RequestType_ID
-					+ " IN ( SELECT "+ I_R_RequestType.COLUMNNAME_R_RequestType_ID + " FROM " + I_R_RequestType.Table_Name
-					+ " WHERE " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))", 
+					+ " AND (" + I_R_Request.COLUMNNAME_R_RequestType_ID
+					+ " IN ( select " + I_R_RequestType.COLUMNNAME_R_RequestType_ID + " from " + I_R_RequestType.Table_Name
+					+ "  where " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))",
 					"R_Request", false, true);	// not qualified - RW
-		int retValue = DB.getSQLValue(null, m_requestSQL, m_AD_User_ID, m_AD_Role_ID);
+		int retValue = DB.getSQLValue(null, m_requestSQL, m_AD_User_ID);
 		return retValue;
 	}	// getRequests
 
@@ -762,8 +806,6 @@ public final class AMenu extends CFrame
 		}
 	}	// updateInfo
 
-
-
 	/*************************************************************************
 	 * Start Workflow Activity
 	 *
@@ -779,7 +821,7 @@ public final class AMenu extends CFrame
 
 		// create the frame
 		final FormFrame ff = new FormFrame();
-		ff.setTitle(Services.get(IMsgBL.class).getMsg (m_ctx, "WorkflowPanel") + " - " +Services.get(IADWorkflowBL.class).getWorkflowName(AD_Workflow_ID));
+		ff.setTitle(Services.get(IMsgBL.class).getMsg(m_ctx, "WorkflowPanel") + " - " + Services.get(IADWorkflowBL.class).getWorkflowName(AD_Workflow_ID));
 		ff.setIconImage(Images.getImage2("mWorkFlow"));
 
 		wfPanel.init(m_WindowNo, ff);
@@ -827,13 +869,13 @@ public final class AMenu extends CFrame
 		{
 			return -1;
 		}
-		
+
 		return userRolePermissions.getMenu_Tree_ID();
 	}
 
 	public FormFrame startForm(final int AD_Form_ID)
 	{
-		// metas: tsa: begin:  US831: Open one window per session per user (2010101810000044)
+		// metas: tsa: begin: US831: Open one window per session per user (2010101810000044)
 		final Properties ctx = Env.getCtx();
 		final I_AD_Form form = InterfaceWrapperHelper.create(ctx, AD_Form_ID, I_AD_Form.class, ITrx.TRXNAME_None);
 		if (form == null)
@@ -844,8 +886,8 @@ public final class AMenu extends CFrame
 
 		final WindowManager windowManager = getWindowManager();
 
-		// metas: tsa: end:  US831: Open one window per session per user (2010101810000044)
-		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly()) // metas: tsa: us831
+		// metas: tsa: end: US831: Open one window per session per user (2010101810000044)
+		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly())  // metas: tsa: us831
 		{
 			final FormFrame ffExisting = windowManager.findForm(AD_Form_ID);
 			if (ffExisting != null)

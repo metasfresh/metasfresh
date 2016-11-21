@@ -137,12 +137,18 @@ node('agent && linux')
             {
 				// checkout our code. 
 				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
-				// we use this more complicated approach because that way we can also clean the workspace ('CleanCheckout')
+				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
 				checkout([
 					$class: 'GitSCM', 
 					branches: [[name: "${env.BRANCH_NAME}"]], 
 					doGenerateSubmoduleConfigurations: false, 
-					extensions: [[$class: 'CleanCheckout']], 
+					extensions: [
+						[$class: 'PathRestriction', excludedRegions: '''ReleaseNotes\\.md
+README\\.md
+CONTRIBUTING\\.md
+CODE_OF_CONDUCT\\.md''', includedRegions: ''],
+						[$class: 'CleanCheckout']
+					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
@@ -216,7 +222,10 @@ node('agent && linux && libc6-i386')
 					$class: 'GitSCM', 
 					branches: [[name: "${env.BRANCH_NAME}"]], 
 					doGenerateSubmoduleConfigurations: false, 
-					extensions: [[$class: 'CleanCheckout'], [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]], 
+					extensions: [
+						[$class: 'CleanCheckout'], 
+						[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
