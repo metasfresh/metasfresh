@@ -129,10 +129,26 @@ echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
+final int MF_SQL_MIGRATION_TEST_TIMEOUT;
+if(params.MF_SKIP_SQL_MIGRATION_TEST)
+{
+	MF_SQL_MIGRATION_TEST_TIMEOUT=0; // this variable won't be used if params.MF_SKIP_SQL_MIGRATION_TEST is truthy
+}
+else
+{
+    // get our int value right here, so we can fail fast if the user entered something that is not an int
+    final String timeoutToUseDefault = '999999999';
+    final String timeoutToUseStr = params.MF_SQL_MIGRATION_TEST_TIMEOUT ?: timeoutToUseDefault;
+	MF_SQL_MIGRATION_TEST_TIMEOUT = timeoutToUseStr as Integer;
+    echo "params.MF_SQL_MIGRATION_TEST_TIMEOUT=${params.MF_SQL_MIGRATION_TEST_TIMEOUT} => MF_SQL_MIGRATION_TEST_TIMEOUT=${MF_SQL_MIGRATION_TEST_TIMEOUT}"
+}	
+
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
 timestamps 
+{
+withEnv(["BUILD_VERSION=${BUILD_VERSION}"]) // provide the build version we constructed, so that the maven builds can incorporate it
 {
 node('agent && linux')
 {
@@ -295,10 +311,7 @@ else
 	{
 		node('master')
 		{
-			final timeoutToUse = params.MF_SQL_MIGRATION_TEST_TIMEOUT ?: 999999999
-			echo "params.MF_SQL_MIGRATION_TEST_TIMEOUT=${params.MF_SQL_MIGRATION_TEST_TIMEOUT} => timeoutToUse=${timeoutToUse}"
-			
-			timeout(timeoutToUse) 
+			timeout(MF_SQL_MIGRATION_TEST_TIMEOUT) 
 			{
 				final distArtifactId='de.metas.endcustomer.mf15.dist';
 				final packaging='tar.gz';
@@ -386,6 +399,6 @@ else
 			step([$class: 'WsCleanup', cleanWhenFailure: true])
 		} // node
 	} // stage
-} // if(MF_OFFER_DEPLOY)
+} // if(MF_SKIP_DEPLOYMENT)
+} // withEnv
 } // timestamps
-
