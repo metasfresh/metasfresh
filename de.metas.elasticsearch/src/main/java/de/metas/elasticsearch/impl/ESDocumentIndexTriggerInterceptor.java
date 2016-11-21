@@ -97,7 +97,7 @@ import de.metas.logging.LogManager;
 		triggeringTableName = InterfaceWrapperHelper.getTableName(triggeringDocumentClass);
 		if (!Services.get(IDocActionBL.class).isDocumentTable(triggeringTableName))
 		{
-			throw new IllegalArgumentException("Table " + modelTableName + " must be a document table");
+			throw new IllegalArgumentException("Table " + triggeringTableName + " must be a document table");
 		}
 
 		triggeringKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(triggeringTableName);
