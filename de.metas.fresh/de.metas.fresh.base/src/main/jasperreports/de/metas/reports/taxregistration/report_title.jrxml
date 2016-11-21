@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-17T16:02:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/taxregistration/report" uuid="bef07a2b-c2d8-473b-83cc-024adc52f3ac">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +10,6 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="RECORD_ID" class="java.lang.Integer" isForPrompting="false"/>
 	<parameter name="details" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	name,
@@ -32,7 +29,7 @@ WHERE
 	<title>
 		<band height="59" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="0" y="4" width="240" height="19" uuid="e318cec5-810c-44b4-b68f-3b0b9932dd6d"/>
+				<reportElement uuid="e318cec5-810c-44b4-b68f-3b0b9932dd6d" key="textField-1" x="0" y="4" width="240" height="19"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -40,12 +37,12 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" isBold="true"  pdfFontName="Helvetica-Bold" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{taxdeclaration}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="90" y="22" width="240" height="12" uuid="731852db-6138-4b26-bed4-bca543951cc5"/>
+				<reportElement uuid="731852db-6138-4b26-bed4-bca543951cc5" key="textField" x="90" y="22" width="240" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -58,7 +55,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="90" y="33" width="100" height="12" uuid="25951835-df52-4839-a395-d40c06b1a16c"/>
+				<reportElement uuid="25951835-df52-4839-a395-d40c06b1a16c" key="textField" x="90" y="33" width="100" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -71,7 +68,7 @@ WHERE
 				<textFieldExpression><![CDATA[($P{details}.equals("Y") ? $R{yes}: $R{no})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-2" x="0" y="22" width="89" height="12" uuid="23503259-a283-4fb5-bfe4-c9aa4f67d5f0"/>
+				<reportElement uuid="23503259-a283-4fb5-bfe4-c9aa4f67d5f0" key="textField-2" x="0" y="22" width="89" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -84,7 +81,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-3" x="0" y="33" width="89" height="12" uuid="6889f4f7-8bb9-40c5-a37f-774f1602f894"/>
+				<reportElement uuid="6889f4f7-8bb9-40c5-a37f-774f1602f894" key="textField-3" x="0" y="33" width="89" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -97,7 +94,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{details}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-4" x="0" y="44" width="89" height="12" uuid="28a6d6d3-6be1-4d88-9f69-d1d66753e1b4"/>
+				<reportElement uuid="28a6d6d3-6be1-4d88-9f69-d1d66753e1b4" key="textField-4" x="0" y="44" width="89" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -110,7 +107,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-5" x="106" y="44" width="42" height="12" uuid="01e3e9b4-22f8-4cd9-a567-63fb0b5f69ed"/>
+				<reportElement uuid="01e3e9b4-22f8-4cd9-a567-63fb0b5f69ed" key="textField-5" x="106" y="44" width="42" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -123,7 +120,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{datefrom}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="false">
-				<reportElement key="textField-6" x="152" y="44" width="16" height="12" uuid="c1abc969-6c6e-4d63-9fd1-071dbcd84948"/>
+				<reportElement uuid="c1abc969-6c6e-4d63-9fd1-071dbcd84948" key="textField-6" x="152" y="44" width="16" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -136,7 +133,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-7" x="167" y="44" width="54" height="12" uuid="c2f2c50d-b16f-4807-8852-6a8dc4dc017a"/>
+				<reportElement uuid="c2f2c50d-b16f-4807-8852-6a8dc4dc017a" key="textField-7" x="167" y="44" width="54" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -149,7 +146,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{dateto}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="false">
-				<reportElement key="textField-8" x="90" y="44" width="16" height="12" uuid="da675944-7df6-41a8-9190-b89cddd874d3"/>
+				<reportElement uuid="da675944-7df6-41a8-9190-b89cddd874d3" key="textField-8" x="90" y="44" width="16" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
