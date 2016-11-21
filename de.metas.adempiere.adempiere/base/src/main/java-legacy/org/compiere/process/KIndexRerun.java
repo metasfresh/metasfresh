@@ -21,13 +21,16 @@ import org.compiere.model.MContainer;
 import org.compiere.model.MNewsChannel;
 import org.compiere.model.MNewsItem;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Reindex all Content
  *	
  *  @author Yves Sandfort
  *  @version $Id$
  */
-public class KIndexRerun extends SvrProcess
+public class KIndexRerun extends JavaProcess
 {
 	/**	WebProject Parameter		*/
 	private int		p_CM_WebProject_ID = 0;
@@ -37,7 +40,7 @@ public class KIndexRerun extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

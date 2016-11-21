@@ -29,11 +29,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.process.JavaProcess;
 
-public class C_Location_Postal_Validate extends SvrProcess
+public class C_Location_Postal_Validate extends JavaProcess
 {
 	private int cnt_all = 0;
 	private int cnt_ok = 0;

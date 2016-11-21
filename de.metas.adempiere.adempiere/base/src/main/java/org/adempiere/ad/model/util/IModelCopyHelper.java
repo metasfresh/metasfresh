@@ -62,4 +62,6 @@ public interface IModelCopyHelper
 	 * @param skipCalculatedColumns
 	 */
 	IModelCopyHelper setSkipCalculatedColumns(boolean skipCalculatedColumns);
+
+	IModelCopyHelper addTargetColumnNameToSkip(String columnName);
 }

@@ -34,9 +34,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -65,8 +64,7 @@ public final class Event
 	//
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 	//
-	@ToStringBuilder(skip = true)
-	private Integer _hashcode;
+	private transient Integer _hashcode;
 
 	private Event(final Builder builder)
 	{
@@ -101,7 +99,16 @@ public final class Event
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", id)
+				.add("summary", summary)
+				.add("detailPlain", detailPlain)
+				.add("detailADMessage", detailADMessage)
+				.add("senderId", senderId)
+				.add("recipientUserIds", recipientUserIds.isEmpty() ? null : recipientUserIds)
+				.add("properties", properties.isEmpty() ? null : properties)
+				.toString();
 	}
 
 	@Override

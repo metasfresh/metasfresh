@@ -24,10 +24,10 @@ package de.metas.purchasing.process;
 
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.JavaProcess;
 import de.metas.purchasing.service.IPurchaseScheduleBL;
-public final class POCreateFromPurchaseSchedule extends SvrProcess
+public final class POCreateFromPurchaseSchedule extends JavaProcess
 {
 
 	@Override

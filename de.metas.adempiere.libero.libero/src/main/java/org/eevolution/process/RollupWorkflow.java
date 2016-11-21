@@ -55,8 +55,6 @@ import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWorkflow;
@@ -64,6 +62,9 @@ import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	RollUp of Cost Manufacturing Workflow
@@ -74,7 +75,7 @@ import org.eevolution.model.RoutingServiceFactory;
  *  @author Bogdan Ioan, www.arhipac.ro
  *  		<li>BF [ 2093001 ] Error in Cost Workflow & Process Details
  */
-public class RollupWorkflow extends SvrProcess
+public class RollupWorkflow extends JavaProcess
 {
 
 	/* Organization     */
@@ -98,7 +99,7 @@ public class RollupWorkflow extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 

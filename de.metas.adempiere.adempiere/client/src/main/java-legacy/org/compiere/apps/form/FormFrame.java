@@ -43,7 +43,6 @@ import org.compiere.apps.WindowMenu;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MTreeNode;
-import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -53,6 +52,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 
 /**

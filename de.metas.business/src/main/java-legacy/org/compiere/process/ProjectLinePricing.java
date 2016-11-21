@@ -19,6 +19,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MProductPricing;
 import org.compiere.model.MProject;
@@ -31,7 +33,7 @@ import org.compiere.util.Msg;
  *	@author Jorg Janke
  *	@version $Id: ProjectLinePricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class ProjectLinePricing extends SvrProcess
+public class ProjectLinePricing extends JavaProcess
 {
 	/**	Project Line from Record			*/
 	private int 		m_C_ProjectLine_ID = 0;
@@ -41,7 +43,7 @@ public class ProjectLinePricing extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

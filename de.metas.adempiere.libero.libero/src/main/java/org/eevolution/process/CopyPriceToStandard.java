@@ -49,11 +49,11 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * CopyPriceToStandard
@@ -61,7 +61,7 @@ import de.metas.currency.ICurrencyBL;
  * @author Victor Perez, e-Evolution, S.C.
  * @version $Id: CopyPriceToStandard.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
  */
-public class CopyPriceToStandard extends SvrProcess
+public class CopyPriceToStandard extends JavaProcess
 {
 	// services
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -76,7 +76,7 @@ public class CopyPriceToStandard extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -41,6 +41,8 @@ public interface IInvoiceCandidateEnqueuer
 	String SYSCONFIG_FailOnChanges = "de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer.FailOnChanges";
 	boolean DEFAULT_FailOnChanges = true;
 
+	String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
+
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
 	 * 

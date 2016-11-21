@@ -40,6 +40,8 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_M_PriceList;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**
@@ -57,7 +59,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  *  		<li>FR [ 2844074  ] Requisition PO Create - more selection fields
  *  			https://sourceforge.net/tracker/?func=detail&aid=2844074&group_id=176962&atid=879335
  */
-public class RequisitionPOCreate extends SvrProcess
+public class RequisitionPOCreate extends JavaProcess
 {
 	/** Org					*/
 	private int			p_AD_Org_ID = 0;
@@ -100,7 +102,7 @@ public class RequisitionPOCreate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

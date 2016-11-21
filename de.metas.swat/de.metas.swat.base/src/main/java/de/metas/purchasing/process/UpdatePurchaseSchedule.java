@@ -30,10 +30,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
 import de.metas.order.IOrderPA;
+import de.metas.process.JavaProcess;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 import de.metas.purchasing.service.IPurchaseScheduleBL;
@@ -44,7 +44,7 @@ import de.metas.purchasing.service.IPurchaseScheduleBL;
  * 
  * @see "<a href='http://dewiki908/mediawiki/index.php/Bestelldisposition_durchf%C3%BChren_%282009_0019_G69%29'>(2009 0019 G69)</a>"
  */
-public class UpdatePurchaseSchedule extends SvrProcess
+public class UpdatePurchaseSchedule extends JavaProcess
 {
 
 	@Override

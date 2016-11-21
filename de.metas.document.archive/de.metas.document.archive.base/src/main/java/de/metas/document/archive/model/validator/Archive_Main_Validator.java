@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
 
-import org.adempiere.ad.service.IADProcessDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;

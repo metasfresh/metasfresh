@@ -50,4 +50,7 @@ public @interface Process
 	 * The default value is <code>true</code>, for backward compatibility.
 	 */
 	boolean requiresCurrentRecordWhenCalledFromGear() default true;
+
+	/** true if this process shall be always executed on client side */
+	boolean clientOnly() default false;
 }

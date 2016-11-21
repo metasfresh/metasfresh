@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.model.MPInstance;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.IJasperReportEngineAdapter;
 import org.compiere.print.MPrintFormat;
@@ -40,6 +39,7 @@ import org.compiere.print.ReportEngine;
 import de.metas.adempiere.report.jasper.JasperUtil;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
+import de.metas.process.ProcessInfo;
 
 public class JasperReportEngineAdapter implements IJasperReportEngineAdapter
 {
@@ -56,20 +56,17 @@ public class JasperReportEngineAdapter implements IJasperReportEngineAdapter
 		Check.assume(jasperProcessId > 0, "No jasper process found");
 
 		final PrintInfo printInfo = reportEngine.getPrintInfo();
-
-		final int adTableId = printInfo.getAD_Table_ID();
-		final int recordId = printInfo.getRecord_ID();
-		final MPInstance pinstance = new MPInstance(ctx, jasperProcessId, adTableId, recordId);
-		pinstance.saveEx();
+		
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(jasperProcessId)
+				.setRecord(printInfo.getAD_Table_ID(), printInfo.getRecord_ID())
+				.setReportLanguage(printFormat.getLanguage()) //04430 - the language will be taken from the print format, instead of the Env
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
 
 		final JRClient jrClient = JRClient.get();
-		
-		//04430 - the language will be taken from the print format, instead of the Env
-		final byte[] pdf = jrClient.report(pinstance.getAD_Process_ID(),
-				pinstance.getAD_PInstance_ID(),
-				//Env.getLanguage(ctx),
-				printFormat.getLanguage(),
-				OutputType.PDF);
+		final byte[] pdf = jrClient.report(jasperProcessInfo);
 
 		return pdf;
 	}

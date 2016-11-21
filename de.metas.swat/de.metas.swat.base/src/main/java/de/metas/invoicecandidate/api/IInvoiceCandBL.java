@@ -35,7 +35,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -123,7 +122,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, ILoggable loggable);
 
-	IInvoiceGenerateResult generateInvoicesFromQueue(I_AD_PInstance adPInstance);
+	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
