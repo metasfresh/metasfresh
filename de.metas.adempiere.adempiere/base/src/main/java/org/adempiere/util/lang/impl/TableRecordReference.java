@@ -1,5 +1,7 @@
 package org.adempiere.util.lang.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,11 +31,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -80,6 +85,32 @@ public final class TableRecordReference implements ITableRecordReference
 			return null;
 		}
 		return of(model);
+	}
+	
+	public static final ITableRecordReference of(final int adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId, recordId);
+	}
+	
+	public static final ITableRecordReference of(final String tableName, final int recordId)
+	{
+		return new TableRecordReference(tableName, recordId);
+	}
+	
+	/**
+	 * @return immutable list of {@link TableRecordReference}s
+	 */
+	public static final List<ITableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
+	{
+		if(recordIds == null || recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		return recordIds
+				.stream()
+				.map(modelId -> of(tableName, modelId))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	private final int adTableId;
