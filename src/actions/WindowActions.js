@@ -270,7 +270,6 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 function mapDataToState(data, isModal, rowId){
     return (dispatch) => {
         data.map(item1 => {
-
             item1.fields = nullToEmptyStrings(item1.fields);
 
             if(rowId === "NEW"){
@@ -327,8 +326,6 @@ export function createProcess(processType){
                 const preparedLayout = Object.assign({}, response.data, {
                     pinstanceId: pid
                 })
-
-                console.log(pid)
                 return dispatch(initLayoutSuccess(preparedLayout, "modal"))
             });
 }
@@ -342,7 +339,6 @@ function getProcessLayout(processType) {
 }
 
 // END PROCESS ACTIONS
-
 
 export function initLayout(windowType, tabId){
     return () => axios.get(
