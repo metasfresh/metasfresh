@@ -213,6 +213,16 @@ UPDATE AD_Process_Para SET EntityType='de.metas.fresh',Updated=TO_TIMESTAMP('201
 ;
 
 
+-- 21.11.2016 11:58
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541116
+;
+
+-- 21.11.2016 11:58
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541116
+;
+
 
 
 
