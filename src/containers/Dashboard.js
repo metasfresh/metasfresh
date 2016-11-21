@@ -29,7 +29,6 @@ export class Dashboard extends Component {
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper/>
                 </div>
-
             </Container>
         );
     }

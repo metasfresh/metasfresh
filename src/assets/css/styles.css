@@ -888,7 +888,7 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .breadcrumbs-shadow {
-    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
 }
 
 .prompt-shadow {
