@@ -29,9 +29,7 @@ class Modal extends Component {
                 });
                 break;
             case "process":
-                console.log(windowType)
-                dispatch(createProcess(windowType))
-                .catch(err => {
+                dispatch(createProcess(windowType)).catch(err => {
                     this.handleClose();
                 });
                 break;
@@ -105,7 +103,6 @@ class Modal extends Component {
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
                                 Done
                             </span>
-
                         </div>
                     </div>
                     <div className="panel-modal-content js-panel-modal-content container-fluid">
