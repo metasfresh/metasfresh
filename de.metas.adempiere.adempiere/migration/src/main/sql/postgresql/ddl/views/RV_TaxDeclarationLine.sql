@@ -16,8 +16,7 @@ SELECT
 	COALESCE(fa.AmtAcctDr,0) as VST,
 	COALESCE(fa.AmtAcctCr,0) as UST,
 	CASE WHEN fa.AmtAcctDr <> 0 THEN tdl.TaxBaseAmt ELSE 0 END AS VST_Basis,
-	CASE WHEN fa.AmtAcctCr <> 0 THEN tdl.TaxBaseAmt ELSE 0 END AS UST_Basis,
-	td.ad_org_id
+	CASE WHEN fa.AmtAcctCr <> 0 THEN tdl.TaxBaseAmt ELSE 0 END AS UST_Basis
 FROM
 	C_TaxDeclaration td
 	INNER JOIN c_taxdeclarationline tdl	ON (td.c_TaxDeclaration_ID = tdl.C_TaxDeclaration_ID)
