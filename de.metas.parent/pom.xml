@@ -1313,7 +1313,7 @@
 			<!-- If the environment variable BUILD_NUMBER is not set, it means that 
 				we are not building on jenkins, so we substitute the value "LOCAL-BUILD" 
 				instead. And we set BUILD_NUMBER_NUMERIC to 0, because some parts of the 
-				build (=>launch4j) requiere the build number to allways be a number. -->
+				build (=>launch4j) requiere the build number to always be a number. -->
 			<id>build-number-env-missing</id>
 			<activation>
 				<property>
@@ -1336,6 +1336,19 @@
 			</activation>
 			<properties>
 				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
+			</properties>
+		</profile>
+		
+		<!--this profile is analog to "build-number-env-missing" -->
+		<profile>
+			<id>build-versiov-env-missing</id>
+			<activation>
+				<property>
+					<name>!env.BUILD_VERSION</name>
+				</property>
+			</activation>
+			<properties>
+				<env.BUILD_VERSION>3-LOCAL-BUILD-0</env.BUILD_VERSION>
 			</properties>
 		</profile>
 
