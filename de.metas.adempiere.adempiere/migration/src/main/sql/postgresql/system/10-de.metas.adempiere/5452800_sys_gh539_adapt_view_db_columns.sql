@@ -1,3 +1,4 @@
+
 DROP VIEW IF EXISTS db_columns_fk;
 CREATE OR REPLACE VIEW db_columns_fk AS
 SELECT
