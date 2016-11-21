@@ -173,6 +173,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private boolean gridElement = false;
 		private boolean advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> fieldsBuilders = new LinkedHashMap<>();
+		private boolean excludeSpecialFields = false;
 		private boolean consumed = false;
 
 		private Builder()
@@ -225,6 +226,12 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			if (!fieldBuilder.isPublicField())
 			{
 				logger.trace("Skip adding {} to {} because it's not a public field", fieldBuilder, this);
+				return false;
+			}
+			
+			if (excludeSpecialFields && fieldBuilder.isSpecialField())
+			{
+				logger.trace("Skip adding {} to {} because it's a special field and we were asked to exclude special fields", fieldBuilder, this);
 				return false;
 			}
 
@@ -333,6 +340,12 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		public boolean hasFieldName(final String fieldName)
 		{
 			return fieldsBuilders.containsKey(fieldName);
+		}
+
+		public Builder setExcludeSpecialFields()
+		{
+			this.excludeSpecialFields = true;
+			return this;
 		}
 
 		private Builder setConsumed()

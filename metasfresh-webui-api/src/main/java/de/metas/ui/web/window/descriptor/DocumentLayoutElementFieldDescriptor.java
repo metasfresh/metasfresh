@@ -150,6 +150,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private boolean publicField = true;
 		private boolean consumed = false;
 
+		private DocumentFieldDescriptor.Builder documentFieldBuilder;
+
 		private Builder(final String fieldName)
 		{
 			super();
@@ -255,6 +257,17 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			Check.assumeNotNull(emptyText, "Parameter emptyText is not null");
 			this.emptyText = emptyText;
 			return this;
+		}
+		
+		public Builder trackField(final DocumentFieldDescriptor.Builder field)
+		{
+			documentFieldBuilder = field;
+			return this;
+		}
+		
+		public boolean isSpecialField()
+		{
+			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();
 		}
 	}
 }

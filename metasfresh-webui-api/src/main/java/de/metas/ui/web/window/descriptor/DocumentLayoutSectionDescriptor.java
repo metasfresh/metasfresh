@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -176,6 +177,19 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		private String getInvalidReason()
 		{
 			return invalidReason;
+		}
+
+		private Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
+		{
+			return columnsBuilders.stream()
+					.flatMap(columnsBuilder -> columnsBuilder.streamElementBuilders());
+		}
+
+		public Builder setExcludeSpecialFields()
+		{
+			streamElementBuilders()
+					.forEach(elementBuilder -> elementBuilder.setExcludeSpecialFields());
+			return this;
 		}
 	}
 }

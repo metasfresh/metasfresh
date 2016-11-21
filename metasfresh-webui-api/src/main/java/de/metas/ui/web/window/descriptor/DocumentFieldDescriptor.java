@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,6 +107,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocStatus //
 		, SpecialField_DocAction //
 		, SpecialField_DocumentSummary //
+		;
+		
+		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary); 
 	};
 
 	private final Set<Characteristic> characteristics;
@@ -742,7 +746,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return characteristics.contains(c);
 		}
-
+		
 		public Builder addCharacteristicIfTrue(final boolean test, final Characteristic c)
 		{
 			if (test)
@@ -751,6 +755,11 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 
 			return this;
+		}
+		
+		public boolean isSpecialField()
+		{
+			return !Collections.disjoint(this.characteristics, Characteristic.SPECIALFIELDS);
 		}
 
 		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)

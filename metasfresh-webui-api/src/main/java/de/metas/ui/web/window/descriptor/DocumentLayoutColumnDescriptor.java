@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -150,5 +151,10 @@ public class DocumentLayoutColumnDescriptor
 			return null;
 		}
 
+		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
+		{
+			return elementGroupsBuilders.stream()
+					.flatMap(elementGroupsBuilder -> elementGroupsBuilder.streamElementBuilders());
+		}
 	}
 }
