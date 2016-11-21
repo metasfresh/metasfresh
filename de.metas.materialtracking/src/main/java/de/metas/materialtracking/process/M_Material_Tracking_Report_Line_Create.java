@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,7 +18,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.SvrProcess;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -32,6 +30,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -56,8 +56,8 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
  */
 
 public class M_Material_Tracking_Report_Line_Create
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	@Override
 	protected String doIt() throws Exception

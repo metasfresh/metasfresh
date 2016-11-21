@@ -16,10 +16,11 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Move Workflow Customizations to Client
@@ -27,7 +28,7 @@ import org.compiere.util.DB;
  *  @author Jorg Janke
  *  @version $Id: WorkflowMoveToClient.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class WorkflowMoveToClient extends SvrProcess
+public class WorkflowMoveToClient extends JavaProcess
 {
 	/**	The new Client			*/
 	private int		p_AD_Client_ID = 0;
@@ -39,7 +40,7 @@ public class WorkflowMoveToClient extends SvrProcess
 	 */
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

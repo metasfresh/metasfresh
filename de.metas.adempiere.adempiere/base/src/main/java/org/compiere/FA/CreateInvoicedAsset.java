@@ -52,9 +52,10 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_InvoiceLine;
 import org.compiere.model.X_M_Product;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Asset from Invoice Process
@@ -62,7 +63,7 @@ import org.compiere.util.DB;
  *  @author Rob Klein
  *  
  */
-public class CreateInvoicedAsset extends SvrProcess
+public class CreateInvoicedAsset extends JavaProcess
 {
 
 	private int p_client = 0;	
@@ -73,7 +74,7 @@ public class CreateInvoicedAsset extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

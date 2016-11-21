@@ -25,8 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +46,8 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Create PriceList by copying purchase prices (M_Product_PO) and applying product category discounts (M_CategoryDiscount)
@@ -57,7 +57,7 @@ import de.metas.logging.MetasfreshLastError;
  * @author Carlos Ruiz (globalqss) Make T_Selection tables permanent
  * @author t.schoneberg@metas.de Extracted the actual price creation code in order to be able to hook in
  */
-public class M_PriceList_Create extends SvrProcess
+public class M_PriceList_Create extends JavaProcess
 {
 	// Services
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -79,7 +79,7 @@ public class M_PriceList_Create extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -320,7 +320,7 @@ public class M_PriceList_Create extends SvrProcess
 		totu += cntu;
 		log.debug("Updated " + cntu);
 
-		// let the commit for SvrProcess
+		// let the commit for JavaProcess
 		// DB.commit(true, get_TrxName());
 
 		//

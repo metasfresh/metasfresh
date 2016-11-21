@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T13:18:41 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="32f6af4d-4334-48e5-ac72-18636c88967a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -38,24 +40,27 @@
 	<pageHeader>
 		<band height="63" splitType="Stretch">
 			<line>
-				<reportElement uuid="9d709c03-8291-484d-a785-8c8bd5f46c4e" key="line-2" positionType="FixRelativeToBottom" x="0" y="60" width="782" height="2" forecolor="#000000"/>
+				<reportElement key="line-2" positionType="FixRelativeToBottom" x="0" y="60" width="782" height="2" forecolor="#000000" uuid="9d709c03-8291-484d-a785-8c8bd5f46c4e"/>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<subreport isUsingCache="true">
-				<reportElement uuid="bdb1c7d6-1351-43a5-94ba-5250b8ca0de4" key="subreport-1" x="321" y="0" width="461" height="60"/>
+				<reportElement key="subreport-1" x="321" y="0" width="461" height="60" uuid="bdb1c7d6-1351-43a5-94ba-5250b8ca0de4"/>
 				<subreportParameter name="M_Inventory_ID">
 					<subreportParameterExpression><![CDATA[]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="AD_Org_ID">
-					<subreportParameterExpression><![CDATA[]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/soldproducts/report_title.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement uuid="f0bcdbce-2ecb-41f7-a6ff-4a3ab46da5db" key="subreport-2" x="0" y="0" width="321" height="60"/>
+				<reportElement key="subreport-2" x="0" y="0" width="321" height="60" uuid="f0bcdbce-2ecb-41f7-a6ff-4a3ab46da5db"/>
+				<subreportParameter name="AD_Org_ID">
+					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/soldproducts/report_logo.jasper"]]></subreportExpression>
 			</subreport>
@@ -67,7 +72,7 @@
 	<detail>
 		<band height="36" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement uuid="9cafe86b-0f5e-4e12-9586-baab327e5508" key="subreport-3" x="0" y="0" width="782" height="36"/>
+				<reportElement key="subreport-3" x="0" y="0" width="782" height="36" uuid="9cafe86b-0f5e-4e12-9586-baab327e5508"/>
 				<subreportParameter name="bis_Value">
 					<subreportParameterExpression><![CDATA[$P{bis_Value}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -106,7 +111,7 @@
 	<pageFooter>
 		<band height="38" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="1b7a5a0c-a796-4e06-8ffa-280e6e48c547" key="textField-12" x="573" y="26" width="170" height="12"/>
+				<reportElement key="textField-12" x="573" y="26" width="170" height="12" uuid="1b7a5a0c-a796-4e06-8ffa-280e6e48c547"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -119,7 +124,7 @@
 				<textFieldExpression><![CDATA[$R{page}+" "+$V{PAGE_NUMBER}+" "+$R{of}+" "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement uuid="2eb5f78f-de17-490a-9fc6-081f1c69c88d" key="textField-13" x="746" y="26" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-13" x="746" y="26" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2eb5f78f-de17-490a-9fc6-081f1c69c88d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,13 +138,13 @@
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="b034da82-65e4-4aca-bcd4-3ec184611352" key="line-3" x="0" y="2" width="782" height="1" forecolor="#000000"/>
+				<reportElement key="line-3" x="0" y="2" width="782" height="1" forecolor="#000000" uuid="b034da82-65e4-4aca-bcd4-3ec184611352"/>
 				<graphicElement>
 					<pen lineWidth="2.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="82cbcf7a-a11c-49b9-bc00-47f41c646a88" key="textField-14" x="2" y="26" width="209" height="12"/>
+				<reportElement key="textField-14" x="2" y="26" width="209" height="12" uuid="82cbcf7a-a11c-49b9-bc00-47f41c646a88"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

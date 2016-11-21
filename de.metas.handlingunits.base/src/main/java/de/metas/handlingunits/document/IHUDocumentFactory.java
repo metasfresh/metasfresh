@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.process.ProcessInfo;
+import de.metas.process.ProcessInfo;
 
 public interface IHUDocumentFactory
 {

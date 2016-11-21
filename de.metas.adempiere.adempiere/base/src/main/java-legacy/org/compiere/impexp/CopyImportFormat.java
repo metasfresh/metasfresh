@@ -17,8 +17,9 @@
 package org.compiere.impexp;
 
 import java.math.BigDecimal;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -27,7 +28,7 @@ import org.compiere.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: CopyImportFormat.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class CopyImportFormat extends SvrProcess
+public class CopyImportFormat extends JavaProcess
 {
 	private int from_AD_ImpFormat_ID = 0;
 	private int to_AD_ImpFormat_ID = 0;
@@ -37,7 +38,7 @@ public class CopyImportFormat extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

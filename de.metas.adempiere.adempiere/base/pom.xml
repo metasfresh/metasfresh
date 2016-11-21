@@ -197,6 +197,17 @@
 		</dependency>
 
 		<!-- Reporting -->
+		<dependency>
+			<groupId>de.metas.report.jasper.commons</groupId>
+			<artifactId>de.metas.report.jasper.commons</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xmlParserAPIs</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>

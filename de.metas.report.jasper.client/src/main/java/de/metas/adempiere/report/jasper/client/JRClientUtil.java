@@ -24,15 +24,10 @@ package de.metas.adempiere.report.jasper.client;
 
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import de.metas.adempiere.report.jasper.JasperUtil;
-import de.metas.adempiere.report.jasper.OutputType;
 
 public final class JRClientUtil
 {
@@ -45,11 +40,11 @@ public final class JRClientUtil
 
 	public static JasperPrint toJasperPrint(final byte[] data)
 	{
-		final JasperPrint jasperPrint;
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-			jasperPrint = (JasperPrint)ois.readObject();
+			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			final JasperPrint jasperPrint = (JasperPrint)ois.readObject();
+			return jasperPrint;
 		}
 		catch (IOException e)
 		{
@@ -59,22 +54,5 @@ public final class JRClientUtil
 		{
 			throw new RuntimeException(e.getLocalizedMessage(), e);
 		}
-
-		return jasperPrint;
-	}
-
-	public static File toPdfTempFile(JasperPrint jasperPrint)
-	{
-		final File file = JasperUtil.createTempFile(OutputType.PDF, jasperPrint.getName());
-		try
-		{
-			JasperExportManager.exportReportToPdfFile(jasperPrint, file.getAbsolutePath());
-		}
-		catch (JRException e)
-		{
-			throw new RuntimeException(e.getLocalizedMessage(), e);
-		}
-
-		return file;
 	}
 }

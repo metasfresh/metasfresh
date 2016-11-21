@@ -10,7 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.46.45 (2016-48)
+
+## Features
+* webui
+  * #425 Kickstart elasticsearch integration
+
+## Fixes
+* metasfresh
+  * #583 Reports without ad_org_id show wrong results
+
 # metasfresh 4.45.44 (2016-47)
+
+This week's RC
 
 ## Features
 * metasfresh
