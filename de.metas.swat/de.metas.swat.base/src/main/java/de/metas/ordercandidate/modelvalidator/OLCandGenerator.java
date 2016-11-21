@@ -229,6 +229,12 @@ public class OLCandGenerator extends AbstractModelInterceptor
 		{
 			super();
 		}
+		
+		@Override
+		protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+		{
+			// NOTE: model change registration will be performed later by calling method.
+		}
 
 		@Override
 		public void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
