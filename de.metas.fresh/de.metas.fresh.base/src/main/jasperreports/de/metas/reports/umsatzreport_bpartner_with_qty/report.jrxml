@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-14T15:08:51 -->
+<!-- 2016-11-16T17:36:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -31,6 +31,7 @@
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_AttributeSetInstance_ID" class="java.math.BigDecimal"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_report(
 	$P{Base_Period_Start},
@@ -42,7 +43,8 @@
 	$P{C_Activity_ID},
 	$P{M_Product_ID},
 	$P{M_Product_Category_ID},
-	$P{M_AttributeSetInstance_ID}
+	$P{M_AttributeSetInstance_ID},
+	$P{AD_Org_ID}
 )]]>
 	</queryString>
 	<field name="bp_name" class="java.lang.String"/>
@@ -67,6 +69,7 @@
 	<field name="param_product_category" class="java.lang.String"/>
 	<field name="param_attributes" class="java.lang.String"/>
 	<field name="currency" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
