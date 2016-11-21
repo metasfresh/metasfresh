@@ -3,6 +3,7 @@ package de.metas.ui.web.window.controller;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
+import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -96,7 +99,10 @@ public class DocumentViewRestController
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
 
-	private JSONOptions.Builder newJSONFilteringOptions()
+	@Autowired
+	private ProcessDescriptorsFactory processDescriptorFactory;
+
+	private JSONOptions.Builder newJSONOptions()
 	{
 		return JSONOptions.builder()
 				.setUserSession(userSession);
@@ -122,7 +128,7 @@ public class DocumentViewRestController
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
 
-		final JSONOptions jsonOpts = newJSONFilteringOptions().build();
+		final JSONOptions jsonOpts = newJSONOptions().build();
 
 		switch (viewDataType)
 		{
@@ -258,4 +264,24 @@ public class DocumentViewRestController
 				.findEntities(ctx)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
+
+	@RequestMapping(value = "/{" + PARAM_ViewId + "}/actions", method = RequestMethod.GET)
+	public JSONDocumentActionsList getDocumentActions(
+			@PathVariable(PARAM_ViewId) final String viewId //
+			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
+	)
+	{
+		loginService.assertLoggedIn();
+
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+
+		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
+
+		return processDescriptorFactory.getDocumentRelatedProcesses(view.getTableName())
+				.stream()
+				.filter(processDescriptor -> processDescriptor.isExecutionGranted(permissions))
+				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
+				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
+	}
+
 }

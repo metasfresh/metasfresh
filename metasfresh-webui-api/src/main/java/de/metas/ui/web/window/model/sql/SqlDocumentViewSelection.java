@@ -77,6 +77,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	private final int adWindowId;
+	private final String tableName;
+	private final String keyColumnName;
 	private final OrderedSelection defaultSelection;
 
 	private final OrderedSelectionFactory orderedSelectionFactory;
@@ -94,6 +96,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		super();
 
 		adWindowId = builder.getAD_Window_ID();
+		tableName = builder.getTableName();
+		keyColumnName = builder.getKeyColumnName();
 
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
@@ -116,6 +120,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					.omitNullValues()
 					.add("viewId", defaultSelection.getUuid())
 					.add("AD_Window_ID", adWindowId)
+					.add("tableName", tableName)
 					.add("defaultSelection", defaultSelection)
 					.add("sql", sqlSelectPage)
 					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
@@ -134,6 +139,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	public int getAD_Window_ID()
 	{
 		return adWindowId;
+	}
+
+	@Override
+	public String getTableName()
+	{
+		return tableName;
+	}
+	
+	private String getKeyColumnName()
+	{
+		return keyColumnName;
 	}
 
 	@Override
@@ -259,6 +275,28 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		return documentViewBuilder.build();
 	}
+	
+	@Override
+	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
+	{
+		final String sqlTableName = getTableName();
+		final String sqlKeyColumnName = getKeyColumnName();
+		
+		final StringBuilder sqlWhereClause = new StringBuilder();
+		sqlWhereClause.append("exists (select 1 from " + I_T_Query_Selection.Table_Name + " sel "
+				+ " where "
+				+ " " + I_T_Query_Selection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
+				+ " and sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
+				+ ")");
+		
+		if(!Check.isEmpty(viewDocumentIds))
+		{
+			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(viewDocumentIds));
+		}
+
+		return sqlWhereClause.toString();
+	}
+
 
 	public static final class Builder
 	{
@@ -319,6 +357,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private int getAD_Window_ID()
 		{
 			return queryBuilder.getEntityDescriptor().getAD_Window_ID();
+		}
+		
+		private String getTableName()
+		{
+			return queryBuilder.getEntityDescriptor().getTableName();
+		}
+		
+		private String getKeyColumnName()
+		{
+			return queryBuilder.getEntityBinding().getKeyColumnName();
 		}
 
 		private String buildSqlSelectPage()

@@ -2,6 +2,7 @@ package de.metas.ui.web.process;
 
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
@@ -27,7 +29,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentViewSelection;
 import io.swagger.annotations.Api;
 
 /*
@@ -69,6 +73,9 @@ public class ProcessRestController
 	@Autowired
 	private DocumentCollection documentsCollection;
 
+	@Autowired
+	private DocumentViewsRepository documentViewsRepo;
+
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	private JSONOptions newJsonOpts()
@@ -90,18 +97,29 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/instance", method = RequestMethod.PUT)
+	@Deprecated
 	public JSONProcessInstance createInstance(
 			@RequestParam(name = "processId", required = true) final int adProcessId //
 			, @RequestParam(name = WebConfig.PARAM_WindowId, required = false, defaultValue = "0") final int adWindowId //
 			, @RequestParam(name = WebConfig.PARAM_DocumentId, required = false) final String idStr //
 	)
 	{
+		final JSONCreateProcessInstanceRequest request = JSONCreateProcessInstanceRequest.of(adProcessId, adWindowId, idStr);
+		return createInstanceFromRequest(request);
+	}
+
+	@RequestMapping(value = "/instance", method = RequestMethod.POST)
+	public JSONProcessInstance createInstanceFromRequest(@RequestBody final JSONCreateProcessInstanceRequest request)
+	{
 		loginService.assertLoggedIn();
 
+		final int adProcessId = request.getAD_Process_ID();
+		Check.assume(adProcessId > 0, "adProcessId > 0");
+
 		final TableRecordReference documentRef;
-		if(adWindowId > 0)
+		if(request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
 		{
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, idStr);
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
 			documentRef = documentsCollection.getTableRecordReference(documentPath);
 		}
 		else
@@ -109,17 +127,30 @@ public class ProcessRestController
 			documentRef = null;
 		}
 		
+		final String whereClause;
+		if(!Check.isEmpty(request.getViewId()))
+		{
+			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
+			whereClause = view.getSqlWhereClause(request.getViewDocumentIds());
+		}
+		else
+		{
+			whereClause = null;
+		}
+		
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
 				.setRecord(documentRef)
+				.setWhereClause(whereClause)
 				.build();
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
 			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processInfo);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
+		
 	}
 
 	@RequestMapping(value = "/instance/{pinstanceId}", method = RequestMethod.GET)
