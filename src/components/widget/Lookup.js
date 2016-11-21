@@ -31,7 +31,6 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
             oldValue: ''
-
         }
 
     }
@@ -188,7 +187,7 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId
+            filterId, parameterName, tabId, rowId, entity
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -213,7 +212,7 @@ class Lookup extends Component {
                     }));
                 })
             }else {
-                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId))
+                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId, entity))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data.values,

@@ -111,6 +111,7 @@ export function closeModal(){
         type: types.CLOSE_MODAL
     }
 }
+
 export function updateModal (rowId) {
     return {
         type: types.UPDATE_MODAL,

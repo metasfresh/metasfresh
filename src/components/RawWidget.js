@@ -34,7 +34,7 @@ class RawWidget extends Component {
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id, range
+            filterId, parameterName, setSelectedItem, selectedItem, id, range, entity
         } = this.props;
 
         const {textValue} = this.state;
@@ -133,6 +133,7 @@ class RawWidget extends Component {
             case "Lookup":
                 return (
                     <Lookup
+                        entity={entity}
                         recent={[]}
                         dataId={dataId}
                         properties={fieldsArray}
@@ -159,6 +160,7 @@ class RawWidget extends Component {
                 return (
                     <List
                         dataId={dataId}
+                        entity={entity}
                         defaultValue={widgetFields.emptyText}
                         selected={selectedField}
                         properties={fields}

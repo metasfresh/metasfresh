@@ -30,10 +30,10 @@ class Modal extends Component {
                 break;
             case "process":
                 console.log(windowType)
-                dispatch(createProcess(windowType));
-                // .catch(err => {
-                //     this.handleClose();
-                // });
+                dispatch(createProcess(windowType))
+                .catch(err => {
+                    this.handleClose();
+                });
                 break;
         }
     }
