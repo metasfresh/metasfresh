@@ -36,7 +36,7 @@ class FiltersItem extends Component {
         return (
             <div className="filter-menu filter-widget">
                 <div>Active filter:
-                    <span className="filter-active">{filterData.caption}</span>
+                    <span className="filter-active"> {filterData.caption}</span>
                     {isActive &&
                         <span
                             className="filter-clear"
