@@ -1,24 +1,21 @@
 package de.metas.elasticsearch.async;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ListMultimap;
-
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.elasticsearch.IESIndexerResult;
 import de.metas.elasticsearch.IESModelIndexingService;
 
 /*
@@ -45,41 +42,55 @@ import de.metas.elasticsearch.IESModelIndexingService;
 
 public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 {
-	public static final void enqueue(final List<ITableRecordReference> models)
+	public static final void enqueue(final String modelIndexerId, final String modelTableName, final List<Integer> modelIds)
 	{
 		final Properties ctx = Env.getCtx();
+		final List<ITableRecordReference> models = TableRecordReference.ofRecordIds(modelTableName, modelIds);
+
+		//@formatter:off
 		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, AsyncRemoveFromIndexProcessor.class)
 				.newBlock()
 				.newWorkpackage()
-				.bindToTrxName(ITrx.TRXNAME_ThreadInherited)
+				.bindToThreadInheritedTrx()
 				.addElements(models)
+				.parameters()
+					.setParameter(PARAMETERNAME_ModelIndexerId, modelIndexerId)
+					.end()
 				.build();
+		//@formatter:on
 	}
+
+	private static final String PARAMETERNAME_ModelIndexerId = "ModelIndexerId";
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final boolean skipAlreadyScheduledItems = true;
-		final ListMultimap<Integer, String> idsByTable = Services.get(IQueueDAO.class)
-				.retrieveQueueElements(workpackage, skipAlreadyScheduledItems)
-				.stream()
-				.map(qe -> GuavaCollectors.entry(qe.getAD_Table_ID(), String.valueOf(qe.getRecord_ID())))
-				.collect(GuavaCollectors.toImmutableListMultimap());
+		final String modelIndexerId = getParameters().getParameterAsString(PARAMETERNAME_ModelIndexerId);
+		Check.assumeNotEmpty(modelIndexerId, "modelIndexerId is not empty");
 
-		if (idsByTable.isEmpty())
+
+		// NOTE: we assume all queue elements are about the same table 
+		final boolean skipAlreadyScheduledItems = true;
+		final Set<String> idsToRemove = retrieveQueueElements(skipAlreadyScheduledItems)
+				.stream()
+				.map(qe -> String.valueOf(qe.getRecord_ID()))
+				.collect(GuavaCollectors.toImmutableSet());
+		if (idsToRemove.isEmpty())
 		{
 			throw new AdempiereException("No source models found");
 		}
 
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final IESModelIndexingService indexingService = Services.get(IESModelIndexingService.class);
-		for (final Entry<Integer, Collection<String>> entry : idsByTable.asMap().entrySet())
-		{
-			final int adTableId = entry.getKey();
-			final String tableName = adTableDAO.retrieveTableName(adTableId);
-			final Collection<String> ids = entry.getValue();
-			indexingService.removeFromIndexesByIds(tableName, ids);
-		}
+		final IESIndexerResult result = Services.get(IESModelIndexingService.class)
+				.getModelIndexerById(modelIndexerId)
+				.removeFromIndexByIds(idsToRemove);
+		
+		getLoggable().addLog(result.getSummary());
+
+		
+		// TODO: figure out what to do with those records which failed to be removed from indexed. Approaches:
+		// * fail the entire workpackage (like we do it now)
+		// * create another workpackage only with those?!
+		result.throwExceceptionIfAnyFailure();
 
 		return Result.SUCCESS;
 	}

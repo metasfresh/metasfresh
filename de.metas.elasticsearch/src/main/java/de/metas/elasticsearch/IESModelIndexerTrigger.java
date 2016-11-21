@@ -1,8 +1,10 @@
-package de.metas.elasticsearch.denormalizers;
+package de.metas.elasticsearch;
+
+import org.adempiere.ad.dao.IQueryFilter;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.elasticsearch
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -22,8 +24,17 @@ package de.metas.elasticsearch.denormalizers;
  * #L%
  */
 
-@FunctionalInterface
-public interface IESValueExtractor
+public interface IESModelIndexerTrigger
 {
-	Object extractValue(Object model, String columnName);
+
+	IQueryFilter<Object> getMatchingModelsFilter();
+
+	/**
+	 * Installs this trigger if not already installed.
+	 * If the trigger was already installed, this method does nothing.
+	 * 
+	 * Under the hood, usually implementations will register model interceptors or other listeners.
+	 */
+	void install();
+
 }

@@ -1,33 +1,21 @@
 package de.metas.elasticsearch.impl;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import org.adempiere.ad.modelvalidator.IModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocActionBL;
 import de.metas.elasticsearch.IESModelIndexer;
+import de.metas.elasticsearch.IESModelIndexerBuilder;
+import de.metas.elasticsearch.IESModelIndexerTrigger;
 import de.metas.elasticsearch.IESModelIndexingService;
 import de.metas.logging.LogManager;
 
@@ -57,9 +45,8 @@ public class ESModelIndexingService implements IESModelIndexingService
 {
 	private static final Logger logger = LogManager.getLogger(ESModelIndexingService.class);
 
-	private final ConcurrentHashMap<String, CopyOnWriteArrayList<IESModelIndexer>> modelTableName2indexers = new ConcurrentHashMap<>();
-
-	private final ConcurrentHashMap<String, IModelInterceptor> triggerModelInterceptors = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, IESModelIndexer> id2indexers = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> modelTableName2indexers = new ConcurrentHashMap<>();
 
 	@Autowired
 	private Client elasticsearchClient;
@@ -73,54 +60,80 @@ public class ESModelIndexingService implements IESModelIndexingService
 		Adempiere.autowire(this);
 	}
 
-	Client getElasticsearchClient()
+	/* package */Client getElasticsearchClient()
 	{
 		return elasticsearchClient;
 	}
 
-	ObjectMapper getJsonObjectMapper()
+	/* package */ObjectMapper getJsonObjectMapper()
 	{
 		return jsonObjectMapper;
 	}
 
-	public void checkIndexes()
-	{
-		modelTableName2indexers.values()
-				.stream()
-				.flatMap(tableIndexers -> tableIndexers.stream())
-				.forEach(indexer -> {
-					try
-					{
-						indexer.createUpdateIndex();
-					}
-					catch (final Exception ex)
-					{
-						logger.warn("Failed creating/updating the index: {}. Skipped.", indexer, ex);
-					}
-				});
-	}
-	
 	@Override
-	public <ModelType> ESModelIndexerBuilder<ModelType> newIndexerBuilder(final Class<ModelType> modelClass)
+	public <ModelType> IESModelIndexerBuilder newModelIndexerBuilder(final String indexName, final Class<ModelType> modelClass)
 	{
-		return new ESModelIndexerBuilder<>(this, modelClass);
+		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
+		return new ESModelIndexerBuilder(this, indexName, modelTableName);
 	}
 
-	void addIndexer(final IESModelIndexer indexer)
+	@Override
+	public Collection<IESModelIndexer> getModelIndexersByTableName(final String modelTableName)
+	{
+		final ImmutableList<IESModelIndexer> modelIndexers = modelTableName2indexers.get(modelTableName);
+		if (modelIndexers == null)
+		{
+			return ImmutableList.of();
+		}
+		return modelIndexers;
+	}
+
+	@Override
+	public IESModelIndexer getModelIndexerById(final String modelIndexerId)
+	{
+		final IESModelIndexer indexer = id2indexers.get(modelIndexerId);
+		if (indexer == null)
+		{
+			throw new IllegalArgumentException("No indexer found for modelIndexerId=" + modelIndexerId);
+		}
+		return indexer;
+	}
+
+	/* package */void addModelIndexer(final IESModelIndexer indexer)
 	{
 		//
 		// Register the indexer
-		Check.assumeNotNull(indexer, "Parameter indexer is not null");
-		final String modelTableName = indexer.getModelTableName();
-		final CopyOnWriteArrayList<IESModelIndexer> modelIndexers = modelTableName2indexers.computeIfAbsent(modelTableName, newSourceTableName -> new CopyOnWriteArrayList<>());
-		final boolean indexerAdded = modelIndexers.addIfAbsent(indexer);
-		if (!indexerAdded)
 		{
-			logger.warn("Skip registering indexer {} because it was already registered");
-			return;
-		}
+			Check.assumeNotNull(indexer, "Parameter indexer is not null");
 
-		logger.info("Registered indexer: {}", indexer);
+			final IESModelIndexer oldIndexer = id2indexers.putIfAbsent(indexer.getId(), indexer);
+			if (oldIndexer != null && !oldIndexer.equals(indexer))
+			{
+				logger.warn("Skip registering indexer {} because it was already registered");
+				return;
+			}
+
+			modelTableName2indexers.compute(indexer.getModelTableName(), (modelTableName, existingModelIndexers) -> {
+				if (existingModelIndexers == null || existingModelIndexers.isEmpty())
+				{
+					return ImmutableList.of(indexer);
+				}
+				else
+				{
+					return ImmutableList.<IESModelIndexer> builder().addAll(existingModelIndexers).add(indexer).build();
+				}
+			});
+
+			logger.info("Registered indexer: {}", indexer);
+		}
+		
+		//
+		// Install model indexer's triggers
+		for (final IESModelIndexerTrigger trigger : indexer.getTriggers())
+		{
+			trigger.install();
+			logger.info("Installed trigger: {}", trigger);
+		}
 
 		//
 		// Create/update mapping for our indexer
@@ -129,109 +142,9 @@ public class ESModelIndexingService implements IESModelIndexingService
 			indexer.createUpdateIndex();
 			logger.info("Created/Updated index mapping for {}", indexer);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed creating/updating index for {}", indexer, ex);
 		}
-
-		//
-		// Triggering
-		triggerModelInterceptors.computeIfAbsent(modelTableName, this::createAndInstallTriggerInterceptor);
 	}
-
-	private final IModelInterceptor createAndInstallTriggerInterceptor(final String modelTableName)
-	{
-		if (Services.get(IDocActionBL.class).isDocumentTable(modelTableName))
-		{
-			final ESDocumentIndexTriggerInterceptor triggerModelInterceptor = new ESDocumentIndexTriggerInterceptor(modelTableName);
-			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(triggerModelInterceptor);
-
-			logger.info("Installed index trigger model interceptor: {}", triggerModelInterceptor);
-			return triggerModelInterceptor;
-		}
-		else
-		{
-			throw new IllegalArgumentException("Trigger interceptor not supported for " + modelTableName);
-		}
-	}
-
-	@Override
-	public void addToIndexes(final Object model)
-	{
-		final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
-		final List<IESModelIndexer> modelIndexers = modelTableName2indexers.get(modelTableName);
-		if (modelIndexers == null)
-		{
-			return;
-		}
-
-		for (final IESModelIndexer indexer : modelIndexers)
-		{
-			indexer.addToIndex(model);
-		}
-	}
-
-	private Stream<IndexRequestBuilder> createIndexRequests(final Object sourceModel)
-	{
-		final String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
-		final List<IESModelIndexer> modelIndexers = modelTableName2indexers.get(sourceTableName);
-		if (modelIndexers == null)
-		{
-			return Stream.empty();
-		}
-
-		return modelIndexers.stream()
-				.flatMap(indexer -> indexer.createIndexRequests(sourceModel));
-	}
-
-	@Override
-	public ListenableActionFuture<BulkResponse> addToIndexes(final Iterator<Object> models)
-	{
-		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
-
-		asStream(models)
-				.flatMap(model -> createIndexRequests(model))
-				.forEach(bulkRequest::add);
-
-		return bulkRequest.execute();
-	}
-
-	private static final Stream<Object> asStream(final Iterator<Object> models)
-	{
-		final Spliterator<Object> spliterator = Spliterators.spliteratorUnknownSize(models, Spliterator.ORDERED);
-		final boolean parallel = false;
-		return StreamSupport.stream(spliterator, parallel);
-	}
-
-	@Override
-	public void removeFromIndexes(final Object model)
-	{
-		final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
-		final List<IESModelIndexer> modelIndexers = modelTableName2indexers.get(modelTableName);
-		if (modelIndexers == null)
-		{
-			return;
-		}
-
-		for (final IESModelIndexer indexer : modelIndexers)
-		{
-			indexer.removeFromIndex(model);
-		}
-	}
-
-	@Override
-	public void removeFromIndexesByIds(final String modelTableName, final Collection<String> ids)
-	{
-		final List<IESModelIndexer> modelIndexers = modelTableName2indexers.get(modelTableName);
-		if (modelIndexers == null || modelIndexers.isEmpty())
-		{
-			return;
-		}
-
-		for (final IESModelIndexer indexer : modelIndexers)
-		{
-			indexer.removeFromIndexByIds(ids);
-		}
-	}
-
 }

@@ -1,9 +1,8 @@
 package de.metas.elasticsearch;
 
 import java.util.Collection;
-import java.util.stream.Stream;
-
-import org.elasticsearch.action.index.IndexRequestBuilder;
+import java.util.Iterator;
+import java.util.List;
 
 /*
  * #%L
@@ -29,11 +28,15 @@ import org.elasticsearch.action.index.IndexRequestBuilder;
 
 public interface IESModelIndexer
 {
+	String getId();
+
 	String getIndexName();
 
 	String getIndexType();
 
 	String getModelTableName();
+
+	List<IESModelIndexerTrigger> getTriggers();
 
 	/**
 	 * Creates the Elasticsearch index if missing. Sets/Updates the mappings too.
@@ -41,28 +44,11 @@ public interface IESModelIndexer
 	void createUpdateIndex();
 
 	/**
-	 * Creates Elasticsearch index requests from given source model.
+	 * Add given models to ES index.
 	 *
-	 * Convenient method to be used for bulk indexing.
-	 *
-	 * @param model
-	 * @return stream of ES index requests
+	 * @param models
 	 */
-	Stream<IndexRequestBuilder> createIndexRequests(Object model);
-	
-	/**
-	 * Adds to ES index given source model.
-	 *
-	 * @param model
-	 */
-	void addToIndex(Object model);
+	IESIndexerResult addToIndex(Iterator<?> models);
 
-	/**
-	 * Removes the given source model from ES index.
-	 * 
-	 * @param model
-	 */
-	void removeFromIndex(Object model);
-
-	void removeFromIndexByIds(Collection<String> ids);
+	IESIndexerResult removeFromIndexByIds(Collection<String> ids);
 }

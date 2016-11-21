@@ -1,18 +1,27 @@
 package de.metas.elasticsearch.process;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.bulk.BulkResponse;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.elasticsearch.IESIndexerResult;
+import de.metas.elasticsearch.IESModelIndexer;
+import de.metas.elasticsearch.IESModelIndexerTrigger;
 import de.metas.elasticsearch.IESModelIndexingService;
 import de.metas.process.Param;
 
@@ -38,47 +47,121 @@ import de.metas.process.Param;
  * #L%
  */
 
+/**
+ * SysAdmin process used to completely index a given table using all registered model indexers.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ES_IndexTable extends SvrProcess
 {
+	// services
+	private final transient IESModelIndexingService modelIndexingService = Services.get(IESModelIndexingService.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private String p_ModelTableName;
+
 	@Param(parameterName = "WhereClause")
-	private final String p_WhereClause = null;
+	private String p_WhereClause = null;
 
 	@Param(parameterName = "OrderByClause")
-	private final String p_OrderByClause = null;
+	private String p_OrderByClause = null;
 
 	@Param(parameterName = "Limit")
-	private final int p_Limit = -1;
+	private int p_Limit = -1;
+
+	//
+	// Statistics
+	private int countAll = 0;
+	private int countErrors = 0;
+
+	@Override
+	protected void prepare()
+	{
+		final I_AD_Table adTable = getRecord(I_AD_Table.class);
+		p_ModelTableName = adTable.getTableName();
+		Check.assumeNotEmpty(p_ModelTableName, "p_ModelTableName is not empty");
+	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Stopwatch duration = Stopwatch.createStarted();
-
-		final BulkResponse response = Services.get(IESModelIndexingService.class)
-				.addToIndexes(retrieveRecordsToIndex())
-				.actionGet();
-
-		duration.stop();
-
-		if (response.hasFailures())
+		final String modelTableName = getModelTableName();
+		final Collection<IESModelIndexer> modelIndexers = modelIndexingService.getModelIndexersByTableName(modelTableName);
+		if (modelIndexers.isEmpty())
 		{
-			final String failureMessage = response.buildFailureMessage();
-			throw new ElasticsearchException(failureMessage);
+			throw new AdempiereException("No model indexers were defined for " + modelTableName);
 		}
 
-		return "Indexed " + response.getItems().length + " documents in " + duration;
+		final Stopwatch duration = Stopwatch.createStarted();
+
+		modelIndexers
+				.stream()
+				.forEach(modelIndexer -> indexModelsFor(modelIndexer));
+
+		return "Indexed " + countAll + " documents, " + countErrors + " errors, took " + duration;
 	}
 
-	private Iterator<Object> retrieveRecordsToIndex()
+	private final String getModelTableName()
 	{
-		final I_AD_Table adTable = getRecord(I_AD_Table.class);
-		final String tableName = adTable.getTableName();
-
-		final TypedSqlQuery<Object> query = new Query(getCtx(), tableName, p_WhereClause, ITrx.TRXNAME_None)
-				.setOrderBy(p_OrderByClause)
-				.setLimit(p_Limit);
-		final Iterator<Object> recordsIterator = query.iterate();
-		return recordsIterator;
+		return p_ModelTableName;
 	}
 
+	private void indexModelsFor(final IESModelIndexer modelIndexer)
+	{
+		// Make sure the index exists and has the right config & mappings
+		modelIndexer.createUpdateIndex();
+
+		final Iterator<Object> modelsToIndex = retrieveModelsToIndex(modelIndexer);
+
+		final IESIndexerResult result = modelIndexer.addToIndex(modelsToIndex);
+
+		countAll += result.getTotalCount();
+		countErrors += result.getFailuresCount();
+
+		addLog("{} - {}", modelIndexer, result.getSummary());
+	}
+
+	private Iterator<Object> retrieveModelsToIndex(final IESModelIndexer modelIndexer)
+	{
+		final String modelTableName = modelIndexer.getModelTableName();
+		final List<IESModelIndexerTrigger> triggers = modelIndexer.getTriggers();
+		if (triggers.isEmpty())
+		{
+			addLog("Warning: skip {} because there are no triggers defined for it", modelIndexer);
+			return Collections.emptyIterator();
+		}
+
+		final ICompositeQueryFilter<Object> triggerFilters = queryBL.createCompositeQueryFilter(modelTableName)
+				.setJoinOr();
+		for (final IESModelIndexerTrigger trigger : triggers)
+		{
+			final IQueryFilter<Object> filter = trigger.getMatchingModelsFilter();
+			triggerFilters.addFilter(filter);
+		}
+
+		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(modelTableName, this)
+				.filter(triggerFilters);
+
+		if (!Check.isEmpty(p_WhereClause, true))
+		{
+			queryBuilder.filter(new TypedSqlQueryFilter<>(p_WhereClause));
+		}
+
+		if (p_Limit > 0)
+		{
+			queryBuilder.setLimit(p_Limit);
+		}
+
+		final IQuery<Object> query = queryBuilder.create();
+
+		if (!Check.isEmpty(p_OrderByClause, true))
+		{
+			query.setOrderBy(queryBL.createSqlQueryOrderBy(p_OrderByClause));
+		}
+
+		//
+		// Execute query
+		return query.iterate(Object.class);
+	}
 }

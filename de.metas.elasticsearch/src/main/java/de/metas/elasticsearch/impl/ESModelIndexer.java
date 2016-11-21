@@ -2,12 +2,15 @@ package de.metas.elasticsearch.impl;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.elasticsearch.ElasticsearchException;
+import org.adempiere.util.collections.IteratorUtils;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -23,7 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.elasticsearch.IESIndexerResult;
 import de.metas.elasticsearch.IESModelIndexer;
+import de.metas.elasticsearch.IESModelIndexerTrigger;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
@@ -51,50 +56,36 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+@Immutable
 public final class ESModelIndexer implements IESModelIndexer
 {
-	private static final Logger logger = LogManager.getLogger(ESModelIndexer.class);
+	private static final transient Logger logger = LogManager.getLogger(ESModelIndexer.class);
 
-	private final Client elasticsearchClient;
+	private final Client _elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
 
-	private final String indexName;
-	private final String indexType;
+	private final String _id;
+	private final String _indexName;
+	private final String _indexType;
 
-	private final String modelTableName;
-	private final IESModelDenormalizer modelDenormalizer;
+	private final String _modelTableName;
+	private final IESModelDenormalizer _modelDenormalizer;
 
-	private final List<ESChildModelIndexer> childIndexers;
+	private final List<IESModelIndexerTrigger> triggers;
 
-	/* package */ <ModelType> ESModelIndexer(final ESModelIndexerBuilder<ModelType> builder)
+	/* package */ <ModelType> ESModelIndexer(final ESModelIndexerBuilder builder)
 	{
 		super();
 
-		elasticsearchClient = builder.getElasticsearchClient();
+		_elasticsearchClient = builder.getElasticsearchClient();
 		jsonObjectMapper = builder.getJsonObjectMapper();
 
-		indexName = builder.getIndexName();
-		indexType = builder.getIndexType();
-		modelTableName = builder.getModelTableName();
-		modelDenormalizer = builder.getModelDenormalizer();
-
-		//
-		// Child indexers
-		final List<ESChildModelIndexerBuilder<?, ModelType>> childIndexerBuilders = builder.getChildIndexerBuilders();
-		if (childIndexerBuilders == null || childIndexerBuilders.isEmpty())
-		{
-			childIndexers = ImmutableList.of();
-		}
-		else
-		{
-			final ImmutableList.Builder<ESChildModelIndexer> childIndexers = ImmutableList.builder();
-			for (final ESChildModelIndexerBuilder<?, ModelType> childIndexerBuilder : childIndexerBuilders)
-			{
-				final ESChildModelIndexer childIndexer = new ESChildModelIndexer(childIndexerBuilder);
-				childIndexers.add(childIndexer);
-			}
-			this.childIndexers = childIndexers.build();
-		}
+		_id = builder.getId();
+		_indexName = builder.getIndexName();
+		_indexType = builder.getIndexType();
+		_modelTableName = builder.getModelTableName();
+		_modelDenormalizer = builder.getModelDenormalizer();
+		triggers = ImmutableList.copyOf(builder.getTriggers());
 	}
 
 	@Override
@@ -102,39 +93,46 @@ public final class ESModelIndexer implements IESModelIndexer
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("indexName", indexName)
-				.add("indexType", indexType)
-				.add("denormalizer", modelDenormalizer)
-				.add("childIndexers", childIndexers.isEmpty() ? null : childIndexers)
+				.add("id", _id)
+				// .add("indexName", _indexName)
+				// .add("indexType", _indexType)
+				.add("modelTableName", _modelTableName)
+				.add("denormalizer", _modelDenormalizer)
 				.toString();
+	}
+
+	@Override
+	public String getId()
+	{
+		return _id;
 	}
 
 	@Override
 	public String getIndexName()
 	{
-		return indexName;
+		return _indexName;
 	}
 
 	@Override
 	public String getIndexType()
 	{
-		return indexType;
+		return _indexType;
 	}
 
 	@Override
 	public String getModelTableName()
 	{
-		return modelTableName;
+		return _modelTableName;
 	}
 
 	private IESModelDenormalizer getModelDenormalizer()
 	{
-		return modelDenormalizer;
+		return _modelDenormalizer;
 	}
 
 	private Client getClient()
 	{
-		return elasticsearchClient;
+		return _elasticsearchClient;
 	}
 
 	@Override
@@ -144,11 +142,17 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		//
 		// Create index if does not exist
+		final String indexName = getIndexName();
 		final boolean indexExists = indices
 				.prepareExists(indexName)
 				.get()
 				.isExists();
-		if (!indexExists)
+		if (indexExists)
+		{
+			// stop here
+			return;
+		}
+		else
 		{
 			final boolean acknowledged = indices
 					.prepareCreate(indexName)
@@ -160,27 +164,43 @@ public final class ESModelIndexer implements IESModelIndexer
 			}
 		}
 
-		XContentBuilder indexMappingBuilder = null;
+		//
+		//
+		createUpdateIndexTypeMapping();
+	}
+
+	private final void createUpdateIndexTypeMapping()
+	{
+		XContentBuilder indexTypeMappingBuilder = null;
 		String mapping = null;
 		try
 		{
-			indexMappingBuilder = XContentFactory.jsonBuilder();
-			indexMappingBuilder
-					.startObject() // ROOT
-					.startObject("mappings");
-			
-			appendIndexMapping(indexMappingBuilder);
+			indexTypeMappingBuilder = XContentFactory.jsonBuilder();
 
-			indexMappingBuilder
-					.endObject() // mappings
-					.endObject(); // ROOT
+			//@formatter:off
+			indexTypeMappingBuilder
+				.startObject();
 
-			mapping = indexMappingBuilder.string();
+					//
+					// Dynamic template
+					appendDynamicTemplatesMappings(indexTypeMappingBuilder);
+
+					//
+					// properties
+					indexTypeMappingBuilder.startObject("properties");
+					getModelDenormalizer().appendMapping(indexTypeMappingBuilder, null);
+					indexTypeMappingBuilder.endObject(); // properties
+					indexTypeMappingBuilder
+					//
+				.endObject(); // ROOT end
+			//@formatter:on
+
+			mapping = indexTypeMappingBuilder.string();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed building index mapping: " + this
-					+ "\n Mapping so far: " + toStringOrNull(indexMappingBuilder) //
+					+ "\n Mapping so far: " + toStringOrNull(indexTypeMappingBuilder) //
 					, ex);
 		}
 
@@ -188,7 +208,9 @@ public final class ESModelIndexer implements IESModelIndexer
 		// Update index type mapping
 		try
 		{
-			final PutMappingResponse putMappingResponse = indices.preparePutMapping(indexName)
+			final IndicesAdminClient indices = getClient().admin().indices();
+			final PutMappingResponse putMappingResponse = indices.preparePutMapping(getIndexName())
+					.setType(getIndexType())
 					.setSource(mapping)
 					.get();
 			if (!putMappingResponse.isAcknowledged())
@@ -204,55 +226,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			throw new AdempiereException("Failed updating index type mapping: " + this, ex);
 		}
-	}
-
-	private final void appendIndexMapping(final XContentBuilder indexMappingBuilder) throws IOException
-	{
-		appendIndexTypeMapping(indexMappingBuilder);
-
-		for (final ESChildModelIndexer childIndexer : childIndexers)
-		{
-			childIndexer.appendIndexTypeMapping(indexMappingBuilder);
-		}
-	}
-
-	private static final String toStringOrNull(final XContentBuilder builder)
-	{
-		if (builder == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			return builder.string();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	private final void appendIndexTypeMapping(final XContentBuilder indexTypeMappingBuilder) throws IOException
-	{
-		//@formatter:off
-		indexTypeMappingBuilder
-			.startObject(indexType);
-
-				//
-				// Dynamic template
-				appendDynamicTemplatesMappings(indexTypeMappingBuilder);
-
-				//
-				// properties
-				indexTypeMappingBuilder.startObject("properties");
-				getModelDenormalizer().appendMapping(indexTypeMappingBuilder, null);
-				indexTypeMappingBuilder.endObject(); // properties
-				indexTypeMappingBuilder
-				//
-			.endObject(); // ROOT end
-		//@formatter:on
 	}
 
 	/* package */static final void appendDynamicTemplatesMappings(final XContentBuilder builder) throws IOException
@@ -276,45 +249,51 @@ public final class ESModelIndexer implements IESModelIndexer
 		//@formatter:on
 	}
 
-	private String extractModelId(final Object model)
+	static final String toStringOrNull(final XContentBuilder builder)
 	{
-		final String id = modelDenormalizer.extractId(model);
-		return id;
+		if (builder == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			return builder.string();
+		}
+		catch (final IOException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 
-	@Override
-	public Stream<IndexRequestBuilder> createIndexRequests(final Object model)
+	private Stream<IndexRequestBuilder> createIndexRequests(final Object model)
 	{
 		// FIXME: for debugging purposes we are checking it each time
 		createUpdateIndex();
 
 		//
 		// model (parent) index requests
-		final Stream<IndexRequestBuilder> modelIndexRequests = Stream.of(model)
+		final Stream<IndexRequestBuilder> result = Stream.of(model)
 				.map(indexer -> createIndexRequestForModel(model));
 
-		//
-		// Child index requests (if any)
-		final String parentId = extractModelId(model);
-		final Stream<IndexRequestBuilder> childIndexRequests = childIndexers.stream()
-				.flatMap(childIndexer -> childIndexer.createIndexRequestsByParent(parentId, model));
-
-		return Stream.concat(modelIndexRequests, childIndexRequests);
+		return result;
 	}
 
 	private IndexRequestBuilder createIndexRequestForModel(final Object model)
 	{
+		final IESModelDenormalizer modelDenormalizer = getModelDenormalizer();
+
 		String esDocumentId = null;
 		Object esDocument = null;
 		String esDocumentJson = null;
 		try
 		{
 			esDocumentId = modelDenormalizer.extractId(model);
-
 			esDocument = modelDenormalizer.denormalize(model);
 			esDocumentJson = jsonObjectMapper.writeValueAsString(esDocument);
 
-			final IndexRequestBuilder indexRequestBuilder = getClient().prepareIndex(indexName, indexType, esDocumentId);
+			final IndexRequestBuilder indexRequestBuilder = getClient().prepareIndex(getIndexName(), getIndexType(), esDocumentId);
 			indexRequestBuilder.setSource(esDocumentJson);
 			return indexRequestBuilder;
 		}
@@ -329,19 +308,23 @@ public final class ESModelIndexer implements IESModelIndexer
 	}
 
 	@Override
-	public void addToIndex(final Object model)
+	public IESIndexerResult addToIndex(final Iterator<?> models)
 	{
 		try
 		{
-			final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
-			createIndexRequests(model)
+			final BulkRequestBuilder bulkRequest = getClient().prepareBulk();
+
+			IteratorUtils.stream(models)
+					.flatMap(model -> createIndexRequests(model))
 					.forEach(bulkRequest::add);
+			
+			if(bulkRequest.numberOfActions() <= 0)
+			{
+				return IESIndexerResult.NULL;
+			}
 
 			final BulkResponse response = bulkRequest.execute().actionGet();
-			if (response.hasFailures())
-			{
-				throw new ElasticsearchException(response.buildFailureMessage());
-			}
+			return ESIndexerResult.of(response);
 		}
 		catch (final AdempiereException ex)
 		{
@@ -349,21 +332,14 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 		catch (final Exception ex)
 		{
-			final String errmsg = "Failed indexing: " + model
+			final String errmsg = "Failed indexing: " + models
 					+ "\n Indexer: " + this;
 			throw new AdempiereException(errmsg, ex);
 		}
 	}
 
 	@Override
-	public void removeFromIndex(final Object sourceModel)
-	{
-		final String id = extractModelId(sourceModel);
-		removeFromIndexByIds(ImmutableList.of(id));
-	}
-
-	@Override
-	public void removeFromIndexByIds(final Collection<String> ids)
+	public IESIndexerResult removeFromIndexByIds(final Collection<String> ids)
 	{
 		final Client client = getClient();
 		final BulkRequestBuilder bulk = client.prepareBulk();
@@ -372,7 +348,9 @@ public final class ESModelIndexer implements IESModelIndexer
 				.forEach(bulk::add);
 
 		final BulkResponse response = bulk.execute().actionGet();
+
 		logger.debug("Deleted {}", response);
+		return ESIndexerResult.of(response);
 	}
 
 	private Stream<DeleteRequestBuilder> createDeleteRequests(final Collection<String> ids)
@@ -387,15 +365,18 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		//
 		// model (parent) delete requests
-		final Stream<DeleteRequestBuilder> modelDeleteRequests = Stream.of(id)
+		final Client elasticsearchClient = getClient();
+		final String indexName = getIndexName();
+		final String indexType = getIndexType();
+		final Stream<DeleteRequestBuilder> result = Stream.of(id)
 				.map(currentId -> elasticsearchClient.prepareDelete(indexName, indexType, currentId));
 
-		//
-		// Child delete requests (if any)
-		final Stream<DeleteRequestBuilder> childDeleteRequests = childIndexers.stream()
-				.map(childIndexer -> childIndexer.createDeleteRequest(id));
+		return result;
+	}
 
-		return Stream.concat(modelDeleteRequests, childDeleteRequests);
-
+	@Override
+	public List<IESModelIndexerTrigger> getTriggers()
+	{
+		return triggers;
 	}
 }

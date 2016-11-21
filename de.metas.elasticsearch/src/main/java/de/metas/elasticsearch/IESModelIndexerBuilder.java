@@ -1,6 +1,6 @@
 package de.metas.elasticsearch;
 
-import de.metas.elasticsearch.impl.ESChildModelIndexerBuilder;
+import org.adempiere.model.ModelColumn;
 
 /*
  * #%L
@@ -24,13 +24,32 @@ import de.metas.elasticsearch.impl.ESChildModelIndexerBuilder;
  * #L%
  */
 
-public interface IESModelIndexerBuilder<ModelType>
+public interface IESModelIndexerBuilder
 {
+	/**
+	 * Builds the {@link IESModelIndexer} and registers it to {@link IESModelIndexingService}.
+	 */
 	IESModelIndexer buildAndRegister();
 
-	IESModelIndexerBuilder<ModelType> setIndexName(String indexName);
+	/**
+	 * Sets the index type.
+	 * 
+	 * By default, the index type is the same as the table name.
+	 * 
+	 * @param indexType
+	 */
+	IESModelIndexerBuilder setIndexType(String indexType);
 
-	IESModelIndexerBuilder<ModelType> setIndexType(String indexType);
+	/**
+	 * Trigger indexing when the given document type changes
+	 * 
+	 * @param documentClass class of documents that we track
+	 * @param modelIdsExtractor function which returns the model IDs which are linked to a particular document
+	 */
+	<DocumentType, ModelType> IESModelIndexerBuilder triggerOnDocumentChanged(Class<DocumentType> documentClass, ModelColumn<ModelType, DocumentType> modelParentColumn);
 
-	<ChildModelType> ESChildModelIndexerBuilder<ChildModelType, ModelType> child(Class<ChildModelType> childModelClass);
+	/**
+	 * Trigger "remove document from index" when the record is deleted from database.
+	 */
+	IESModelIndexerBuilder triggerOnDelete();
 }

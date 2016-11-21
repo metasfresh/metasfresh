@@ -1,13 +1,8 @@
 package de.metas.elasticsearch;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.adempiere.util.ISingletonService;
-import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.bulk.BulkResponse;
-
-import de.metas.elasticsearch.impl.ESModelIndexerBuilder;
 
 /*
  * #%L
@@ -33,28 +28,17 @@ import de.metas.elasticsearch.impl.ESModelIndexerBuilder;
 
 public interface IESModelIndexingService extends ISingletonService
 {
-	<ModelType> ESModelIndexerBuilder<ModelType> newIndexerBuilder(final Class<ModelType> modelClass);
+	<ModelType> IESModelIndexerBuilder newModelIndexerBuilder(final String indexName, final Class<ModelType> modelClass);
 
 	/**
-	 * Bulk index given models.
-	 * 
-	 * @param models
+	 * @param modelIndexerId
+	 * @return model indexer; never returns null
 	 */
-	ListenableActionFuture<BulkResponse> addToIndexes(Iterator<Object> models);
+	IESModelIndexer getModelIndexerById(String modelIndexerId);
 
 	/**
-	 * Index given model.
-	 * 
-	 * @param model
+	 * @param modelTableName
+	 * @return all model indexers for given model table name; never returns null but empty
 	 */
-	void addToIndexes(Object model);
-
-	/**
-	 * Remove given model from index.
-	 * 
-	 * @param model
-	 */
-	void removeFromIndexes(Object model);
-
-	void removeFromIndexesByIds(String modelTableName, Collection<String> ids);
+	Collection<IESModelIndexer> getModelIndexersByTableName(String modelTableName);
 }

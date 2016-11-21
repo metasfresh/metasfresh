@@ -15,6 +15,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_M_Product_Category;
@@ -65,6 +66,7 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		// Location
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(I_C_Country.class)
 				.includeColumn(I_C_Country.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Country.COLUMNNAME_CountryCode).index(ESIndexType.NotAnalyzed)
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(I_C_Location.class)
 				.includeColumn(I_C_Location.COLUMNNAME_Address1).index(ESIndexType.Analyzed)
@@ -171,20 +173,28 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 				.includeColumn(I_C_Activity.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
 				.excludeStandardColumns()
 				.build());
+		
+		//
+		// FIXME: hardcoded C_Order model value (to be used when indexing C_OrderLines)
+		registerModelValueDenormalizer(newModelDenormalizerBuilder(I_C_Order.class)
+				.includeColumn(I_C_Order.COLUMNNAME_C_BPartner_ID)
+				.includeColumn(I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
+				.includeColumn(I_C_Order.COLUMNNAME_DateOrdered)
+				.includeColumn(I_C_Order.COLUMNNAME_C_Currency_ID)
+				.excludeStandardColumns()
+				.build());
 	}
 
 	@Override
-	public IESModelDenormalizer getModelDenormalizer(final Class<?> modelClass)
+	public IESModelDenormalizer getModelDenormalizer(final String tableName)
 	{
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		return tableDenormalizers.getOrLoad(tableName, () -> createModelDenormalizer(modelClass));
+		return tableDenormalizers.getOrLoad(tableName, () -> createDefaultModelDenormalizer(tableName));
 	}
 
-	private IESModelDenormalizer createModelDenormalizer(final Class<?> modelClass)
+	private IESModelDenormalizer createDefaultModelDenormalizer(final String tableName)
 	{
-		return newModelDenormalizerBuilder(modelClass)
+		return newModelDenormalizerBuilder(tableName)
 				.excludeStandardColumns()
-				.excludeColumn("DocAction") // FIXME: hardcoded
 				.build();
 	}
 
@@ -194,16 +204,21 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		return valueModelDenormalizers.get(tableName);
 	}
 
-	public void registerModelValueDenormalizer(final IESModelDenormalizer valueModelDenormalizer)
+	private void registerModelValueDenormalizer(final IESModelDenormalizer valueModelDenormalizer)
 	{
 		Check.assumeNotNull(valueModelDenormalizer, "Parameter valueModelDenormalizer is not null");
-		final Class<?> modelClass = valueModelDenormalizer.getModelClass();
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		final String tableName = valueModelDenormalizer.getModelTableName();
 		valueModelDenormalizers.put(tableName, valueModelDenormalizer);
 	}
 
-	public ESModelDenormalizer.Builder newModelDenormalizerBuilder(final Class<?> modelClass)
+	private ESPOModelDenormalizer.ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final Class<?> modelClass)
 	{
-		return ESModelDenormalizer.builder(this, modelClass);
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		return ESPOModelDenormalizer.builder(this, tableName);
+	}
+
+	private ESPOModelDenormalizer.ESPOModelDenormalizerBuilder newModelDenormalizerBuilder(final String tableName)
+	{
+		return ESPOModelDenormalizer.builder(this, tableName);
 	}
 }

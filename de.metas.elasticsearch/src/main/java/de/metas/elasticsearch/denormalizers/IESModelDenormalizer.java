@@ -36,9 +36,9 @@ public interface IESModelDenormalizer extends IESDenormalizer
 	void appendMapping(XContentBuilder builder, String fieldName) throws IOException;
 
 	/**
-	 * @return model interface this denormalizer supports
+	 * @return model's table name this denormalizer supports
 	 */
-	Class<?> getModelClass();
+	String getModelTableName();
 
 	/**
 	 * Extracts the Elasticsearch document ID from given model.

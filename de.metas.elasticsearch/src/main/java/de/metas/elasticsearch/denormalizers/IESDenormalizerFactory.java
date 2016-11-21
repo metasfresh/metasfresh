@@ -26,7 +26,7 @@ import org.adempiere.util.ISingletonService;
 
 public interface IESDenormalizerFactory extends ISingletonService
 {
-	IESModelDenormalizer getModelDenormalizer(Class<?> modelClass);
+	IESModelDenormalizer getModelDenormalizer(String tableName);
 
 	IESModelDenormalizer getModelValueDenormalizer(String tableName);
 }

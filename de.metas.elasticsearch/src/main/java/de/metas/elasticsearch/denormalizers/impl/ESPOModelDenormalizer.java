@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.denormalizers.IESValueExtractor;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
 
@@ -49,26 +48,31 @@ import de.metas.elasticsearch.types.ESIndexType;
  * #L%
  */
 
-public class ESModelDenormalizer implements IESModelDenormalizer
+/*package*/class ESPOModelDenormalizer implements IESModelDenormalizer
 {
-	public static final Builder builder(final IESDenormalizerFactory factory, final Class<?> modelClass)
+	public static final ESPOModelDenormalizerBuilder builder(final IESDenormalizerFactory factory, final String modelTableName)
 	{
-		return new Builder(factory, modelClass);
+		return new ESPOModelDenormalizerBuilder(factory, modelTableName);
 	}
 
-	private final Class<?> modelClass;
+	private final String modelTableName;
 	private final String keyColumnName;
 	private final ImmutableSet<String> columnNames;
 	private final Map<String, ESModelDenormalizerColumn> columnDenormalizers;
 
-	private ESModelDenormalizer(final Class<?> modelClass //
-			, final String keyColumnName //
-			, final Map<String, ESModelDenormalizerColumn> columnDenormalizers //
-			)
+	private ESPOModelDenormalizer(final String modelTableName, final String keyColumnName //
+	, final Map<String, ESModelDenormalizerColumn> columnDenormalizers //
+	)
 	{
 		super();
-		this.modelClass = modelClass;
+
+		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
+		this.modelTableName = modelTableName;
+
+		// Check.assumeNotEmpty(keyColumnName, "keyColumnName is not empty"); // null is accepted
 		this.keyColumnName = keyColumnName;
+
+		Check.assumeNotEmpty(columnDenormalizers, "columnDenormalizers is not empty");
 		this.columnDenormalizers = ImmutableMap.copyOf(columnDenormalizers);
 
 		final ImmutableSet.Builder<String> columnNames = ImmutableSet.builder();
@@ -81,9 +85,18 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 	}
 
 	@Override
-	public Class<?> getModelClass()
+	public String toString()
 	{
-		return modelClass;
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("modelTableName", modelTableName)
+				.toString();
+	}
+
+	@Override
+	public String getModelTableName()
+	{
+		return modelTableName;
 	}
 
 	public Set<String> getColumnNames()
@@ -150,6 +163,12 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 		return idObj == null ? null : idObj.toString();
 	}
 
+	@FunctionalInterface
+	private static interface IESValueExtractor
+	{
+		Object extractValue(Object model, String columnName);
+	}
+
 	private static final class PORawValueExtractor implements IESValueExtractor
 	{
 		public static final transient PORawValueExtractor instance = new PORawValueExtractor();
@@ -170,25 +189,25 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 
 	private static final class POModelValueExtractor implements IESValueExtractor
 	{
-		public static final POModelValueExtractor of(final Class<?> modelValueClass)
+		public static final POModelValueExtractor of(final String modelValueTableName)
 		{
-			return new POModelValueExtractor(modelValueClass);
+			return new POModelValueExtractor(modelValueTableName);
 		}
 
-		private final Class<?> modelValueClass;
+		private final String modelValueTableName;
 
-		private POModelValueExtractor(final Class<?> modelValueClass)
+		private POModelValueExtractor(final String modelValueTableName)
 		{
 			super();
-			Check.assumeNotNull(modelValueClass, "Parameter modelValueClass is not null");
-			this.modelValueClass = modelValueClass;
+			Check.assumeNotEmpty(modelValueTableName, "modelValueTableName is not empty");
+			this.modelValueTableName = modelValueTableName;
 		}
 
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper("extractor")
-					.addValue(modelValueClass)
+					.addValue(modelValueTableName)
 					.toString();
 		}
 
@@ -196,20 +215,19 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 		public Object extractValue(final Object model, final String columnName)
 		{
 			final PO po = InterfaceWrapperHelper.getPO(model);
-			final Object valueAsModel = po.get_ValueAsPO(columnName, modelValueClass);
+			final Object valueAsModel = po.get_ValueAsPO(columnName, modelValueTableName);
 			return valueAsModel;
 		}
 	}
 
-	public static final class Builder
+	public static final class ESPOModelDenormalizerBuilder
 	{
 		private static final List<String> COLUMNNAMES_StandardColumns = ImmutableList.of("Created", "CreatedBy", "Updated", "UpdatedBy", "IsActive");
 
 		private final IESDenormalizerFactory factory;
 
-		private final Class<?> modelClass;
 		private final POInfo poInfo;
-		private final String tableName;
+		private final String modelTableName;
 		private final String keyColumnName;
 
 		private final Set<String> columnsToAlwaysInclude = new HashSet<>();
@@ -220,22 +238,23 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 
 		private String currentColumnName;
 
-		private Builder(final IESDenormalizerFactory factory, final Class<?> modelClass)
+		private ESPOModelDenormalizerBuilder(final IESDenormalizerFactory factory, final String modelTableName)
 		{
 			super();
 			Check.assumeNotNull(factory, "Parameter factory is not null");
 			this.factory = factory;
 
-			Check.assumeNotNull(modelClass, "Parameter modelClass is not null");
-			this.modelClass = modelClass;
-			tableName = InterfaceWrapperHelper.getTableName(modelClass);
+			Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
+			this.modelTableName = modelTableName;
 
-			poInfo = POInfo.getPOInfo(tableName);
+			poInfo = POInfo.getPOInfo(modelTableName);
 			keyColumnName = poInfo.getKeyColumnName();
 			columnsToAlwaysInclude.add(keyColumnName);
+
+			excludeColumn("DocAction"); // FIXME: hardcoded
 		}
 
-		public ESModelDenormalizer build()
+		public ESPOModelDenormalizer build()
 		{
 			//
 			// Add registered denormalizers
@@ -281,14 +300,14 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 				columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
 			}
 
-			return new ESModelDenormalizer(modelClass, keyColumnName, columnDenormalizersEffective);
+			return new ESPOModelDenormalizer(modelTableName, keyColumnName, columnDenormalizersEffective);
 		}
 
 		private final ESModelDenormalizerColumn generateColumn(final String columnName)
 		{
 			final ESIndexType indexType = getIndexType(columnName);
 			final int displayType = poInfo.getColumnDisplayType(columnName);
-			
+
 			//
 			// ID column
 			if (DisplayType.ID == displayType)
@@ -298,10 +317,11 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 
 			//
 			// Parent link column
-			if(poInfo.isColumnParent(columnName))
-			{
-				return ESModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
-			}
+			// NOTE: don't skip parent columns because it might be that we have a value deserializer registered for it
+			// if (poInfo.isColumnParent(columnName))
+			// {
+			// return ESModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
+			// }
 
 			//
 			// Text
@@ -388,7 +408,7 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 			return true;
 		}
 
-		public Builder includeColumn(final String columnName, final IESValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
+		public ESPOModelDenormalizerBuilder includeColumn(final String columnName, final IESValueExtractor valueExtractor, final IESDenormalizer valueDenormalizer)
 		{
 			final ESModelDenormalizerColumn valueExtractorAndDenormalizer = ESModelDenormalizerColumn.of(valueExtractor, valueDenormalizer);
 			includeColumn(columnName);
@@ -396,7 +416,7 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 			return this;
 		}
 
-		public Builder includeColumn(final String columnName)
+		public ESPOModelDenormalizerBuilder includeColumn(final String columnName)
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
 			columnsToInclude.add(columnName);
@@ -404,19 +424,19 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 			return this;
 		}
 
-		public Builder excludeColumn(final String columnName)
+		public ESPOModelDenormalizerBuilder excludeColumn(final String columnName)
 		{
 			columnsToExclude.add(columnName);
 			return this;
 		}
 
-		public Builder excludeStandardColumns()
+		public ESPOModelDenormalizerBuilder excludeStandardColumns()
 		{
 			columnsToExclude.addAll(COLUMNNAMES_StandardColumns);
 			return this;
 		}
 
-		public Builder index(final ESIndexType esIndexType)
+		public ESPOModelDenormalizerBuilder index(final ESIndexType esIndexType)
 		{
 			Check.assumeNotEmpty(currentColumnName, "lastIncludedColumn is not empty");
 			Check.assumeNotNull(esIndexType, "Parameter esIndexType is not null");
@@ -442,8 +462,8 @@ public class ESModelDenormalizer implements IESModelDenormalizer
 
 		public static final ESModelDenormalizerColumn of(final IESModelDenormalizer valueModelDenormalizer)
 		{
-			final Class<?> valueModelClass = valueModelDenormalizer.getModelClass();
-			final IESValueExtractor valueExtractor = POModelValueExtractor.of(valueModelClass);
+			final String valueModelTableName = valueModelDenormalizer.getModelTableName();
+			final IESValueExtractor valueExtractor = POModelValueExtractor.of(valueModelTableName);
 			return new ESModelDenormalizerColumn(valueExtractor, valueModelDenormalizer);
 		}
 
