@@ -722,7 +722,7 @@ public final class AMenu extends CFrame
 				.append(" where u.")
 				.append(I_AD_User.COLUMNNAME_AD_User_ID)
 				.append(" = ")
-				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_SalesRep_ID)
+				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_AD_User_ID)
 				.append(" and ")
 				.append(" exists ")
 				.append("(")
