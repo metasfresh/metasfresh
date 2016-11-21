@@ -312,24 +312,25 @@ export function updateProperty(property, value, tabid, rowid, isModal){
 // PROCESS ACTIONS
 
 export function createProcess(processType){
-    return (dispatch) => {
-        return dispatch(getProcessData(processType)
-            ).then(response => {
+    let pid = null;
+    return (dispatch) =>
+        dispatch(getProcessData(processType)).then(response => {
                 const preparedData = nullToEmptyStrings(response.data.parameters);
-                const pinstanceId = response.data.pinstanceId;
+                pid = response.data.pinstanceId;
                 if(preparedData.length === 0){
                     throw new Error('wrong_response');
                 }
-                dispatch(initDataSuccess(preparedData, "modal"));
+                return dispatch(initDataSuccess(preparedData, "modal"));
             }).then(response =>
                 dispatch(getProcessLayout(processType))
-            ).then(response =>{
+            ).then(response => {
                 const preparedLayout = Object.assign({}, response.data, {
-                    pinstanceId: pinstanceId
+                    pinstanceId: pid
                 })
+
+                console.log(pid)
                 return dispatch(initLayoutSuccess(preparedLayout, "modal"))
             });
-    }
 }
 
 function getProcessData(processType) {

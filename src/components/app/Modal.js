@@ -29,9 +29,11 @@ class Modal extends Component {
                 });
                 break;
             case "process":
-                dispatch(createProcess(windowType)).catch(err => {
-                    this.handleClose();
-                });
+                console.log(windowType)
+                dispatch(createProcess(windowType));
+                // .catch(err => {
+                //     this.handleClose();
+                // });
                 break;
         }
     }
@@ -92,7 +94,7 @@ class Modal extends Component {
 
     render() {
 
-        const {data, layout, modalTitle, tabId, rowId, dataId, modalType} = this.props;
+        const {data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType} = this.props;
         const {isAdvanced, scrolled} = this.state
         return (
             data.length > 0 && <div className="screen-freeze">
