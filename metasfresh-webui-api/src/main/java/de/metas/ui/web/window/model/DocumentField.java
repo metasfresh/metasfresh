@@ -453,6 +453,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean hasChangesToSave()
 	{
+		if(isVirtualField())
+		{
+			return false;
+		}
+		
 		return !DataTypes.equals(_value, _initialValue);
 	}
 }
