@@ -79,9 +79,9 @@ public final class TableRecordReference implements ITableRecordReference
 	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
 	 *
 	 * @param model
-	 * @return {@link ITableRecordReference} or null
+	 * @return {@link TableRecordReference} or null
 	 */
-	public static final ITableRecordReference ofOrNull(final Object model)
+	public static final TableRecordReference ofOrNull(final Object model)
 	{
 		if (model == null)
 		{
@@ -90,12 +90,12 @@ public final class TableRecordReference implements ITableRecordReference
 		return of(model);
 	}
 	
-	public static final ITableRecordReference of(final int adTableId, final int recordId)
+	public static final TableRecordReference of(final int adTableId, final int recordId)
 	{
 		return new TableRecordReference(adTableId, recordId);
 	}
 	
-	public static final ITableRecordReference of(final String tableName, final int recordId)
+	public static final TableRecordReference of(final String tableName, final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
 	}
