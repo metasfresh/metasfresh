@@ -21,10 +21,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Printing_Queue
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent 
+public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -77,15 +77,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Archiv.
-		@param AD_Archive_ID 
+		@param AD_Archive_ID
 		Archiv fĂĽr Belege und Berichte
 	  */
 	@Override
 	public void setAD_Archive_ID (int AD_Archive_ID)
 	{
-		if (AD_Archive_ID < 1) 
+		if (AD_Archive_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, Integer.valueOf(AD_Archive_ID));
 	}
 
@@ -93,7 +93,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Archiv fĂĽr Belege und Berichte
 	  */
 	@Override
-	public int getAD_Archive_ID () 
+	public int getAD_Archive_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Archive_ID);
 		if (ii == null)
@@ -101,38 +101,23 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Language getAD_Language() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Language_ID, org.compiere.model.I_AD_Language.class);
-	}
-
-	@Override
-	public void setAD_Language(org.compiere.model.I_AD_Language AD_Language)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Language_ID, org.compiere.model.I_AD_Language.class, AD_Language);
-	}
-
 	/** Set Sprache.
-		@param AD_Language_ID Sprache	  */
+	@param AD_Language Language for this entity
+	  */
 	@Override
-	public void setAD_Language_ID (int AD_Language_ID)
+	public void setAD_Language (java.lang.String AD_Language)
 	{
-		if (AD_Language_ID < 1) 
-			set_Value (COLUMNNAME_AD_Language_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Language_ID, Integer.valueOf(AD_Language_ID));
+
+		set_Value (COLUMNNAME_AD_Language, AD_Language);
 	}
 
 	/** Get Sprache.
-		@return Sprache	  */
+		@return Language for this entity
+	  */
 	@Override
-	public int getAD_Language_ID () 
+	public java.lang.String getAD_Language ()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Language_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
 	}
 
 	@Override
@@ -148,15 +133,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Prozess.
-		@param AD_Process_ID 
+		@param AD_Process_ID
 		Prozess oder Bericht
 	  */
 	@Override
 	public void setAD_Process_ID (int AD_Process_ID)
 	{
-		if (AD_Process_ID < 1) 
+		if (AD_Process_ID < 1)
 			set_Value (COLUMNNAME_AD_Process_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
 	}
 
@@ -164,7 +149,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Prozess oder Bericht
 	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
 		if (ii == null)
@@ -185,15 +170,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Rolle.
-		@param AD_Role_ID 
+		@param AD_Role_ID
 		Responsibility Role
 	  */
 	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
-		if (AD_Role_ID < 0) 
+		if (AD_Role_ID < 0)
 			set_Value (COLUMNNAME_AD_Role_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
@@ -201,7 +186,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Responsibility Role
 	  */
 	@Override
-	public int getAD_Role_ID () 
+	public int getAD_Role_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
 		if (ii == null)
@@ -222,15 +207,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Ansprechpartner.
-		@param AD_User_ID 
+		@param AD_User_ID
 		User within the system - Internal or Business Partner Contact
 	  */
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
 			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
@@ -238,7 +223,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return User within the system - Internal or Business Partner Contact
 	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
 		if (ii == null)
@@ -259,15 +244,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
+		@param Bill_BPartner_ID
 		Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
+		if (Bill_BPartner_ID < 1)
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
 	}
 
@@ -275,7 +260,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
@@ -296,15 +281,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Rechnungsstandort.
-		@param Bill_Location_ID 
+		@param Bill_Location_ID
 		Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_Location_ID (int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
+		if (Bill_Location_ID < 1)
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
 	}
 
@@ -312,7 +297,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_Location_ID () 
+	public int getBill_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_ID);
 		if (ii == null)
@@ -333,15 +318,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
+		@param C_BPartner_ID
 		Bezeichnet einen Geschäftspartner
 	  */
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
@@ -349,7 +334,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Bezeichnet einen Geschäftspartner
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
@@ -370,15 +355,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Standort.
-		@param C_BPartner_Location_ID 
+		@param C_BPartner_Location_ID
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1) 
+		if (C_BPartner_Location_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
@@ -386,7 +371,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
@@ -407,15 +392,15 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Belegart.
-		@param C_DocType_ID 
+		@param C_DocType_ID
 		Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_Value (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
@@ -423,7 +408,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
@@ -432,7 +417,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Set Kopien.
-		@param Copies 
+		@param Copies
 		Anzahl der zu erstellenden/zu druckenden Exemplare
 	  */
 	@Override
@@ -445,7 +430,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		@return Anzahl der zu erstellenden/zu druckenden Exemplare
 	  */
 	@Override
-	public int getCopies () 
+	public int getCopies ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
@@ -458,16 +443,16 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
 	{
-		if (C_Printing_Queue_ID < 1) 
+		if (C_Printing_Queue_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
 	}
 
 	/** Get Druck-Warteschlangendatensatz.
 		@return Druck-Warteschlangendatensatz	  */
 	@Override
-	public int getC_Printing_Queue_ID () 
+	public int getC_Printing_Queue_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
 		if (ii == null)
@@ -486,7 +471,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/** Get Lieferdatum.
 		@return Lieferdatum	  */
 	@Override
-	public java.sql.Timestamp getDeliveryDate () 
+	public java.sql.Timestamp getDeliveryDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DeliveryDate);
 	}
@@ -501,13 +486,13 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/** Get Abweichender Rechnungspartner.
 		@return Abweichender Rechnungspartner	  */
 	@Override
-	public boolean isDifferentInvoicingPartner () 
+	public boolean isDifferentInvoicingPartner ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDifferentInvoicingPartner);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -524,13 +509,13 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/** Get Abw. Druck-Empfänger.
 		@return Abw. Druck-Empfänger	  */
 	@Override
-	public boolean isPrintoutForOtherUser () 
+	public boolean isPrintoutForOtherUser ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsPrintoutForOtherUser);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -547,14 +532,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/** Get Warteschlangen-Aggregationsmerkmal.
 		@return Warteschlangen-Aggregationsmerkmal	  */
 	@Override
-	public java.lang.String getPrintingQueueAggregationKey () 
+	public java.lang.String getPrintingQueueAggregationKey ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrintingQueueAggregationKey);
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -563,16 +548,16 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
