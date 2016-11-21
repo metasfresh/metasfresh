@@ -41,6 +41,7 @@ public class Query extends TypedSqlQuery<Object>
 	public Query(Properties ctx, MTable table, String whereClause, String trxName)
 	{
 		super(ctx,
+				Object.class, // modelClass 
 				table == null ? null : table.getTableName(), // NOTE: an exception will be thrown if tableName is null
 				whereClause,
 				trxName);
@@ -49,7 +50,7 @@ public class Query extends TypedSqlQuery<Object>
 	@SuppressWarnings("deprecation")
 	public Query(Properties ctx, String tableName, String whereClause, String trxName)
 	{
-		super(ctx, tableName, whereClause, trxName);
+		super(ctx, Object.class, tableName, whereClause, trxName);
 	}
 
 	@Override
