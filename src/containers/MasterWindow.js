@@ -28,7 +28,11 @@ class MasterWindow extends Component {
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
         if(entity === "process"){
-            dispatch(startProcess(dataId));
+            dispatch(startProcess(dataId)).then(response => {
+                if(response.data.error){
+                    return false;
+                }
+            })
         }
 
         if(!isNew){
@@ -86,7 +90,7 @@ class MasterWindow extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
-                        closeCallback={(isNew) => this.closeModalCallback(modal.modalType, isNew, dataId)}
+                        closeCallback={(isNew) => this.closeModalCallback(modal.modalType, isNew, modal.layout.pinstanceId)}
                      />
                  }
                 <Window

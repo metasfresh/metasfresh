@@ -81,9 +81,9 @@ class Modal extends Component {
     handleClose = () => {
         const {dispatch, closeCallback} = this.props;
         const {isNew} = this.state;
-        dispatch(closeModal());
 
         closeCallback(isNew);
+        dispatch(closeModal());
 
         document.body.style.overflow = "auto";
     }
@@ -99,7 +99,7 @@ class Modal extends Component {
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
-                                Done
+                                {modalType ? "Start" : "Done"}
                             </span>
                         </div>
                     </div>
