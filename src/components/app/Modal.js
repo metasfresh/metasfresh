@@ -83,9 +83,7 @@ class Modal extends Component {
         const {isNew} = this.state;
         dispatch(closeModal());
 
-        if(isNew){
-            closeCallback();
-        }
+        closeCallback(isNew);
 
         document.body.style.overflow = "auto";
     }

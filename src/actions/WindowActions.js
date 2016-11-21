@@ -339,6 +339,10 @@ function getProcessLayout(processType) {
     return () => axios.get(config.API_URL + '/process/layout?processId=' + processType);
 }
 
+export function startProcess(processType) {
+    return () => axios.get(config.API_URL + '/process/instance/' + processType + '/start');
+}
+
 // END PROCESS ACTIONS
 
 export function initLayout(windowType, tabId){
