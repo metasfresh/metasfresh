@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-16T19:07:37 -->
+<!-- 2016-11-07T11:53:43 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,7 +8,6 @@
 	<property name="ireport.x" value="380"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -16,15 +15,13 @@
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
 	<parameter name="ShowDetails" class="java.lang.String"/>
 	<parameter name="keydate" class="java.sql.Timestamp"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM HU_CostPrice_Function
 (
 $P{keydate},
 $P{M_Product_ID},
 $P{M_Warehouse_ID},
-$P{ShowDetails},
-$P{AD_Org_ID}
+$P{ShowDetails}
 );]]>
 	</queryString>
 	<field name="combination" class="java.lang.String"/>
@@ -37,7 +34,6 @@ $P{AD_Org_ID}
 	<field name="linesum" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
 	<field name="costprice" class="java.math.BigDecimal"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="Product_LineSum" class="java.math.BigDecimal" resetType="Group" resetGroup="Product" calculation="Sum">
 		<variableExpression><![CDATA[$F{linesum}]]></variableExpression>
 	</variable>
