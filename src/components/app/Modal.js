@@ -7,8 +7,13 @@ import Process from '../Process';
 import {
     closeModal,
     createWindow,
-    createProcess
+    createProcess,
+    startProcess
 } from '../../actions/WindowActions';
+
+import {
+    addNotification
+} from '../../actions/AppActions';
 
 class Modal extends Component {
     constructor(props) {
@@ -79,12 +84,31 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        const {dispatch, closeCallback} = this.props;
+        const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;
 
         closeCallback(isNew);
-        dispatch(closeModal());
+        this.removeModal();
+    }
 
+    handleStart = () => {
+        const {dispatch, modalType, layout} = this.props;
+        dispatch(startProcess(layout.pinstanceId)).then(response => {
+            const {data} = response;
+
+            if(data.error){
+                dispatch(addNotification("Process error", data.summary, 5000, "error"));
+                return false;
+            }else{
+                this.removeModal();
+            }
+        });
+    }
+
+    removeModal = () => {
+        const {dispatch} = this.props;
+
+        dispatch(closeModal());
         document.body.style.overflow = "auto";
     }
 
@@ -98,8 +122,11 @@ class Modal extends Component {
                     <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
+                            {modalType === "process" && <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleStart}>
+                                Start
+                            </span>}
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
-                                {modalType === "process" ? "Start" : "Done"}
+                                {modalType === "process" ? "Cancel" : "Done"}
                             </span>
                         </div>
                     </div>

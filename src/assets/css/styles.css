@@ -653,6 +653,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #fff;
+    pointer-events: visible;
 }
 
 .screen-freeze-behind {
