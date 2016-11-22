@@ -47,7 +47,6 @@ class Filters extends Component {
 	}
 
     handleShow = () => {
-        console.log("SHOW")
         this.setState(Object.assign({}, this.state, {
             widgetShown: true
         }));
