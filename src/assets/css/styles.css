@@ -888,7 +888,7 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .breadcrumbs-shadow {
-    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
 }
 
 .prompt-shadow {
@@ -1532,6 +1532,10 @@ td.pulse-off input {
     pointer-events: visible;
 
     @media screen and (max-width: 991px){
+        width: calc(50% - 1rem);
+    }
+
+    @media screen and (max-width: 768px){
         width: calc(100% - 1rem);
     }
 }
@@ -1611,6 +1615,7 @@ td.pulse-off input {
     overflow: hidden;
     height: 130px;
     margin: .5rem;
+    font-size: 0;
 }
 
 .indicator {
@@ -1619,7 +1624,16 @@ td.pulse-off input {
     height:100%;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 991px){
+    .indicator {
+        width:50%;
+        height: 130px;
+        border:0 !important;
+        display: inline-block;
+    }
+}
+
+@media screen and (max-width: 768px) {
     .indicators-wrapper {
         height: 100%;
     }

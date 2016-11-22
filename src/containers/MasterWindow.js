@@ -3,7 +3,8 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    getData
+    getData,
+    startProcess
 } from '../actions/WindowActions';
 
 import {
@@ -24,18 +25,29 @@ class MasterWindow extends Component {
         }
     }
 
-    closeModalCallback = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                newRow: true
-            }), () => {
-                setTimeout(() => {
-                    this.setState(Object.assign({}, this.state, {
-                        newRow: false
-                    }))
-                }, 1000);
-            }
-        )
+    closeModalCallback = (entity, isNew, dataId) => {
+        const {dispatch} = this.props;
+        if(entity === "process"){
+            dispatch(startProcess(dataId)).then(response => {
+                if(response.data.error){
+                    return false;
+                }
+            })
+        }
+
+        if(!isNew){
+            this.setState(
+                Object.assign({}, this.state, {
+                    newRow: true
+                }), () => {
+                    setTimeout(() => {
+                        this.setState(Object.assign({}, this.state, {
+                            newRow: false
+                        }))
+                    }, 1000);
+                }
+            )
+        }
     }
 
     render() {
@@ -77,7 +89,8 @@ class MasterWindow extends Component {
                         tabId={modal.tabId}
                         rowId={modal.rowId}
                         modalTitle={modal.title}
-                        closeCallback={this.closeModalCallback}
+                        modalType={modal.modalType}
+                        closeCallback={(isNew) => this.closeModalCallback(modal.modalType, isNew, modal.layout.pinstanceId)}
                      />
                  }
                 <Window

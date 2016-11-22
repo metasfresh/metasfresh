@@ -74,6 +74,7 @@ export class DraggableWrapper extends Component {
             idMaximized: id
         }))
     }
+
     showWidgets = (id) => {
         this.setState(Object.assign({}, this.state, {
             isVisible: true,
@@ -86,7 +87,7 @@ export class DraggableWrapper extends Component {
         const { cards, isVisible, idMaximized, indicators } = this.state;
         return (
             <div>
-                <div className={
+                {indicators.length > 0 && <div className={
                     "indicators-wrapper " +
                     (idMaximized !== false ? "indicator-hidden" : "")
                 }>
@@ -104,7 +105,7 @@ export class DraggableWrapper extends Component {
                             ></iframe>
                         </div>
                     )}
-                </div>
+                </div>}
                 {cards.map((card, i) => {
                     return (
                         (isVisible || (idMaximized===i)) &&

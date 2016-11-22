@@ -28,7 +28,8 @@ class Filters extends Component {
             frequentFilterOpen: false,
 			notFrequentFilterOpen: false,
             notValidFields: null,
-            active: null
+            active: null,
+            widgetShown: false
 		};
 	}
 
@@ -45,8 +46,22 @@ class Filters extends Component {
 		});
 	}
 
+    handleShow = () => {
+        console.log("SHOW")
+        this.setState(Object.assign({}, this.state, {
+            widgetShown: true
+        }));
+    }
+
+    handleHide = () => {
+        this.setState(Object.assign({}, this.state, {
+            widgetShown: false
+        }));
+    }
+
 	handleClickOutside = (e) => {
-		this.closeFilterMenu();
+		const {widgetShown} = this.state;
+        !widgetShown && this.closeFilterMenu();
 	}
 
 	closeFilterMenu = () => {
@@ -109,11 +124,11 @@ class Filters extends Component {
 	applyFilters = () => {
 		const {filter, dispatch, updateDocList, windowType} = this.props;
         const notValid = this.isFilterValid(filter);
-        if(notValid.length){
+        if (notValid.length) {
             this.setState(Object.assign({}, this.state, {
                 notValidFields: notValid
             }));
-        }else{
+        } else {
             this.setState(Object.assign({}, this.state, {
                 active: filter.filterId
             }), () => {
@@ -155,7 +170,7 @@ class Filters extends Component {
 
 	renderFiltersItem = (item, key, isActive) => {
 		const {windowType, updateDocList} = this.props;
-		const {filterDataItem, selectedItem,notValidFields} = this.state;
+		const {filterDataItem, selectedItem, notValidFields} = this.state;
 		return (
 			<FiltersItem
 				key={key}
@@ -172,6 +187,8 @@ class Filters extends Component {
 				applyFilters={this.applyFilters}
                 notValidFields={notValidFields}
                 isActive={isActive}
+                isShown={this.handleShow}
+                isHidden={this.handleHide}
 			/>
 		)
 	}

@@ -54,9 +54,9 @@ class Subheader extends Component {
         onClick();
     }
 
-    openModal = (windowType) => {
+    openModal = (windowType, type, caption) => {
         const {dispatch, onClick} = this.props;
-        dispatch(openModal("Advanced edit", windowType));
+        dispatch(openModal(caption, windowType, type));
         onClick();
     }
 
@@ -148,7 +148,7 @@ class Subheader extends Component {
                                 {windowType && <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true', "window", "Advanced edit")}><i className="meta-icon-edit" /> Advanced Edit</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId)}><i className="meta-icon-print" /> Print</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
@@ -160,7 +160,7 @@ class Subheader extends Component {
                                 { actions && !!actions.length ? actions.map((item, key) =>
                                     <div
                                         className="subheader-item"
-                                        onClick={() => this.redirect("/window/" + item.actionId)}
+                                        onClick={() => this.openModal(item.processId + "", "process", item.caption)}
                                         key={key}
                                     >
                                         {item.caption}

@@ -52,7 +52,7 @@ class Widget extends Component {
     handlePatch = (property, value) => {
         const {
             isModal, widgetType, widgetData, dataId, windowType, dispatch,
-            rowId, tabId, onChange, relativeDocId, isAdvanced = false
+            rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
         const {cachedValue} = this.state;
@@ -79,7 +79,7 @@ class Widget extends Component {
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal));
+            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal, entity));
         }
 
         this.setState(Object.assign({}, this.state, {
@@ -143,11 +143,14 @@ class Widget extends Component {
     }
 
 
-
-
     render() {
-        const {caption, widgetType, description, fields, windowType, type, noLabel, widgetData, dataId, rowId, tabId, icon, gridAlign, isModal} = this.props;
+        const {
+            caption, widgetType, description, fields, windowType, type, noLabel,
+            widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity
+        } = this.props;
+
         const {updated, edited} = this.state;
+
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className="form-group row">
@@ -156,6 +159,7 @@ class Widget extends Component {
                             {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
                             <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
                                 <RawWidget
+                                    entity={entity}
                                     widgetType={widgetType}
                                     fields={fields}
                                     windowType={windowType}

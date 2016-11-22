@@ -9,6 +9,7 @@ export function loginSuccess() {
 		localStorage.setItem('isLogged', true);
 	}
 }
+
 export function logoutSuccess() {
 	return () => {
 		/** global: localStorage */
@@ -16,29 +17,48 @@ export function logoutSuccess() {
 	}
 }
 
-export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId) {
-	return () => {
-		query = encodeURIComponent(query);
-		return axios.get(
-            config.API_URL +
-            '/window/typeahead?type=' + windowType +
-            '&id='+id+'&field='+ propertyName +
-            '&query=' + query +
-    		(tabId ? "&tabid=" + tabId : "") +
-    		(rowId ? "&rowId=" + rowId : "")
-        );
-	}
+export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
+    if (entity){
+        return () => axios.get(
+    		config.API_URL +
+    		'/process/instance/' + id +
+            '/parameters/' + propertyName +
+            '/typeahead' +
+            '?query=' + query
+    	);
+    }else{
+    	return () => {
+    		query = encodeURIComponent(query);
+    		return axios.get(
+                config.API_URL +
+                '/window/typeahead?type=' + windowType +
+                '&id='+id+'&field='+ propertyName +
+                '&query=' + query +
+        		(tabId ? "&tabid=" + tabId : "") +
+        		(rowId ? "&rowId=" + rowId : "")
+            );
+    	}
+    }
 }
 
-export function dropdownRequest(windowType, propertyName, id, tabId, rowId) {
-	return () => axios.get(
-		config.API_URL +
-		'/window/dropdown?type=' + windowType +
-		'&id=' + id +
-		'&field=' + propertyName+
-		(tabId ? "&tabid=" + tabId : "") +
-		(rowId ? "&rowId=" + rowId : "")
-	);
+export function dropdownRequest(windowType, propertyName, id, tabId, rowId, entity) {
+    if (entity){
+        return () => axios.get(
+    		config.API_URL +
+    		'/process/instance/' + id +
+            '/parameters/' + propertyName +
+            '/dropdown'
+    	);
+    }else{
+    	return () => axios.get(
+    		config.API_URL +
+    		'/window/dropdown?type=' + windowType +
+    		'&id=' + id +
+    		'&field=' + propertyName+
+    		(tabId ? "&tabid=" + tabId : "") +
+    		(rowId ? "&rowId=" + rowId : "")
+    	);
+    }
 }
 
 export function getUserDashboardWidgets() {

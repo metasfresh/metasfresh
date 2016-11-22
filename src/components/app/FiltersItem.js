@@ -11,7 +11,7 @@ class FiltersItem extends Component {
     renderFilterWidget = (item, index) => {
         const {
             filterDataItem, windowType, updateDocList, closeFilterMenu,
-            setSelectedItem, selectedItem
+            setSelectedItem, selectedItem, isShown, isHidden
         } = this.props;
 
         return(
@@ -26,6 +26,8 @@ class FiltersItem extends Component {
                 closeFilterMenu={closeFilterMenu}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
+                isShown={isShown}
+                isHidden={isHidden}
                 {...filterDataItem}
             />
         )
@@ -36,7 +38,7 @@ class FiltersItem extends Component {
         return (
             <div className="filter-menu filter-widget">
                 <div>Active filter:
-                    <span className="filter-active">{filterData.caption}</span>
+                    <span className="filter-active"> {filterData.caption}</span>
                     {isActive &&
                         <span
                             className="filter-clear"

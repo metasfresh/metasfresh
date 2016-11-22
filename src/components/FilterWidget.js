@@ -21,7 +21,7 @@ class FilterWidget extends Component {
         const {
             caption, widgetType, parameters, windowType, type, noLabel, widgetData,
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
-            item, filter
+            item, filter, isShown, isHidden
         } = this.props;
 
 
@@ -48,6 +48,8 @@ class FilterWidget extends Component {
                                     id={id}
                                     handleChange={this.handleChange}
                                     range={item.range}
+                                    isShown={isShown}
+                                    isHidden={isHidden}
                                 />
                             </div>
                         </div>
