@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -47,10 +45,15 @@ import com.google.common.collect.ImmutableMap;
 
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
-	// services
-	private final transient IQueryBL factory = Services.get(IQueryBL.class);
-
+	public static final QueryBuilder<Object> createForTableName(final String modelTableName)
+	{
+		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
+		return new QueryBuilder<>(modelTableName, Object.class);
+	}
+	
 	private final Class<T> modelClass;
+	private final String modelTableName;
+	private String modelKeyColumnName; // lazy
 
 	private Properties ctx;
 	private String trxName;
@@ -70,24 +73,35 @@ import com.google.common.collect.ImmutableMap;
 
 	public QueryBuilder(final Class<T> modelClass)
 	{
-		super();
-
-		this.modelClass = modelClass;
-
-		filters = factory.createCompositeQueryFilter(modelClass);
+		this(InterfaceWrapperHelper.getTableName(modelClass), modelClass);
 	}
+	
+	private QueryBuilder(final String modelTableName, final Class<T> modelClass)
+	{
+		super();
+		
+		this.modelClass = modelClass;
+		this.modelTableName = modelTableName;
+		this.modelKeyColumnName = null; // lazy
+
+		filters = new CompositeQueryFilter<>(modelTableName);
+	}
+
+
 
 	private QueryBuilder(final QueryBuilder<T> from)
 	{
 		super();
 		this.modelClass = from.modelClass;
+		this.modelTableName = from.modelTableName;
+		this.modelKeyColumnName = from.modelKeyColumnName;
 		this.ctx = from.ctx;
 		this.trxName = from.trxName;
 		this.filters = from.filters.copy();
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
 		this.onlySelection_ID = from.onlySelection_ID;
 		this.limit = from.limit;
-		
+
 		this.options = from.options == null ? null : new HashMap<>(from.options);
 	}
 
@@ -205,6 +219,20 @@ import com.google.common.collect.ImmutableMap;
 		return modelClass;
 	}
 
+	/* package */ String getModelTableName()
+	{
+		return modelTableName;
+	}
+
+	private final String getKeyColumnName()
+	{
+		if (modelKeyColumnName == null)
+		{
+			modelKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(getModelTableName());
+		}
+		return modelKeyColumnName;
+	}
+
 	@Override
 	public Properties getCtx()
 	{
@@ -257,10 +285,10 @@ import com.google.common.collect.ImmutableMap;
 			{
 				return this;
 			}
-			
+
 			options = new HashMap<>();
 		}
-		
+
 		if (value == null)
 		{
 			options.remove(name);
@@ -272,14 +300,14 @@ import com.google.common.collect.ImmutableMap;
 
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilder<T> setOption(final String name)
 	{
 		setOption(name, true);
 		return this;
 	}
-	
+
 	public final Map<String, Object> getOptions()
 	{
 		if (options == null)
@@ -489,14 +517,14 @@ import com.google.common.collect.ImmutableMap;
 		filters.addNotEqualsFilter(column, value);
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilder<T> addNotNull(final String columnName)
 	{
 		filters.addNotNull(columnName);
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilder<T> addNotNull(final ModelColumn<T, ?> column)
 	{
@@ -512,8 +540,8 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType>
-			IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedBaseType> column, Class<CollectedType> collectedType)
+	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedBaseType> column,
+			Class<CollectedType> collectedType)
 	{
 		final IQuery<T> query = create();
 
@@ -546,7 +574,7 @@ import com.google.common.collect.ImmutableMap;
 			final Class<ExtChildType> childType)
 	{
 		final String childTableColumnName = childTableColumn.getColumnName();
-		final String thisIDColumnName = InterfaceWrapperHelper.getKeyColumnName(getModelClass());
+		final String thisIDColumnName = getKeyColumnName();
 		final IQuery<T> thisQuery = create();
 
 		return new QueryBuilder<ExtChildType>(childType)
@@ -569,8 +597,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public <TargetModelType>
-			QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final ModelColumn<T, TargetModelType> column)
+	public <TargetModelType> QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final ModelColumn<T, TargetModelType> column)
 	{
 		return new QueryAggregateBuilder<T, TargetModelType>(this, column);
 	}
@@ -613,7 +640,7 @@ import com.google.common.collect.ImmutableMap;
 	@Override
 	public ICompositeQueryFilter<T> addCompositeQueryFilter()
 	{
-		final ICompositeQueryFilter<T> filter = factory.createCompositeQueryFilter(modelClass);
+		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(getModelTableName());
 		filters.addFilter(filter);
 		return filter;
 	}

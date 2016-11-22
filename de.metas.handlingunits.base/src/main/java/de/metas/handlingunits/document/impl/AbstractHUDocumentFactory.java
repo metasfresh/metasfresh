@@ -29,12 +29,13 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.SingletonIterator;
-import org.compiere.process.ProcessInfo;
+
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;

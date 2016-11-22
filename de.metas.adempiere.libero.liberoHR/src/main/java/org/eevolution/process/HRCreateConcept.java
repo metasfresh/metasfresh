@@ -15,9 +15,10 @@
 package org.eevolution.process;
 
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRPayrollConcept;
+
+import de.metas.process.JavaProcess;
 
 /**
  *	Create Concept of current Payroll
@@ -27,7 +28,7 @@ import org.eevolution.model.MHRPayrollConcept;
  *  
  *  @author Cristina Ghita, www.arhipac.ro
  */
-public class HRCreateConcept extends SvrProcess
+public class HRCreateConcept extends JavaProcess
 {
 	private int	p_HR_Payroll_ID = 0;
 	

@@ -24,6 +24,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -57,7 +59,7 @@ import org.eevolution.model.MDDOrderLine;
  *  Carlos Ruiz globalqss - integrate bug fixing from Chris Farley
  *    [ 1619517 ] Replenish report fails when no records in m_storage
  */
-public class ReplenishReport extends SvrProcess
+public class ReplenishReport extends JavaProcess
 {
 	/** Warehouse				*/
 	private int		p_M_Warehouse_ID = 0;
@@ -75,7 +77,7 @@ public class ReplenishReport extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

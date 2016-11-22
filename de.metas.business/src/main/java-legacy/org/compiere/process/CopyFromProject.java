@@ -19,6 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MProject;
 
@@ -28,7 +30,7 @@ import org.compiere.model.MProject;
  *	@author Jorg Janke
  *	@version $Id: CopyFromProject.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class CopyFromProject extends SvrProcess
+public class CopyFromProject extends JavaProcess
 {
 	private int		m_C_Project_ID = 0;
 
@@ -37,7 +39,7 @@ public class CopyFromProject extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -19,6 +19,8 @@ package org.compiere.process;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -32,7 +34,7 @@ import org.compiere.util.Env;
  *	@author Jorg Janke
  *	@version $Id: ProjectGenOrder.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ProjectGenOrder extends SvrProcess
+public class ProjectGenOrder extends JavaProcess
 {
 	/**	Project ID from project directly		*/
 	private int		m_C_Project_ID = 0;
@@ -42,7 +44,7 @@ public class ProjectGenOrder extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

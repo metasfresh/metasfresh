@@ -25,19 +25,20 @@ import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ClientProcess;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPOrder;
+
+import de.metas.process.Process;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Complete & Print Manufacturing Order
  * @author victor.perez@e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-public class CompletePrintOrder extends SvrProcess
-implements ClientProcess
+@Process(clientOnly = true)
+public class CompletePrintOrder extends JavaProcess
 {
 	/** The Order */
 	private int p_PP_Order_ID = 0;
@@ -52,7 +53,7 @@ implements ClientProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

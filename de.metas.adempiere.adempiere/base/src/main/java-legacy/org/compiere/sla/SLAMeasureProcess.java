@@ -20,9 +20,10 @@ import java.sql.Timestamp;
 import org.compiere.model.MSLACriteria;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -32,7 +33,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: SLAMeasureProcess.java,v 1.2 2006/07/30 00:51:06 jjanke Exp $
  */
-public class SLAMeasureProcess extends SvrProcess
+public class SLAMeasureProcess extends JavaProcess
 {
 	/** Goal					*/
 	private int			p_PA_SLA_Measure_ID;
@@ -42,7 +43,7 @@ public class SLAMeasureProcess extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

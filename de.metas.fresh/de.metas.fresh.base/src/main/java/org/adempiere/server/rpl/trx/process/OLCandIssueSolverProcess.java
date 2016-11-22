@@ -44,18 +44,18 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.process.ProcessInfo.ShowProcessLogs;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
  * Uses {@link IOLCandValdiatorBL} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
-public class OLCandIssueSolverProcess extends SvrProcess
+public class OLCandIssueSolverProcess extends JavaProcess
 {
 
 	private int p_EXP_ReplicationTrx_ID;
@@ -73,7 +73,7 @@ public class OLCandIssueSolverProcess extends SvrProcess
 		// NOTE: we do that because this process is called from window Gear and the user shall not see a popoup, only the status line.
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

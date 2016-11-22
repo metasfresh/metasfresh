@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-16T16:12:24 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="650" pageHeight="842" columnWidth="610" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/umsatzreport_adr_bpartner/report" uuid="f0c87073-442f-4c7c-8390-c00eb0a5188c">
 	<property name="ireport.zoom" value="1.9487171000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Base_Period_Start" class="java.util.Date"/>
 	<parameter name="Base_Period_End" class="java.util.Date"/>
 	<parameter name="IsSOTrx" class="java.lang.String"/>
@@ -11,6 +15,7 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[select * from report.fresh_ADR_umsatzliste_bpartner_report
 (
@@ -21,6 +26,7 @@ $P{Base_Period_Start}
 ,$P{C_BPartner_ID}
 ,$P{M_AttributeSetInstance_ID}
 ,$P{ad_language}
+,$P{AD_Org_ID}
 ) order by productname]]>
 	</queryString>
 	<field name="productname" class="java.lang.String"/>
@@ -30,41 +36,42 @@ $P{Base_Period_Start}
 	<field name="attributes" class="java.lang.String"/>
 	<field name="startdate" class="java.lang.String"/>
 	<field name="enddate" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="148" splitType="Stretch">
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="2" y="1" width="627" height="24"/>
+				<reportElement x="2" y="1" width="627" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{headline}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="2" y="59" width="280" height="12"/>
+				<reportElement x="2" y="59" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{periodrange}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="282" y="45" width="347" height="12"/>
+				<reportElement x="282" y="45" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("Y") ? $R{sales} : $R{purchase}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="2" y="31" width="280" height="12"/>
+				<reportElement x="2" y="31" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="282" y="31" width="347" height="12"/>
+				<reportElement x="282" y="31" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
@@ -72,7 +79,7 @@ $P{Base_Period_Start}
 $R{all} : $F{bpartnername}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="282" y="73" width="347" height="24"/>
+				<reportElement x="282" y="73" width="347" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
@@ -80,42 +87,42 @@ $R{all} : $F{bpartnername}]]></textFieldExpression>
 $R{all} : $F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="2" y="73" width="280" height="24"/>
+				<reportElement x="2" y="73" width="280" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="2" y="45" width="280" height="12"/>
+				<reportElement x="2" y="45" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{issotrx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="282" y="59" width="347" height="12"/>
+				<reportElement x="282" y="59" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="3" y="124" width="279" height="24"/>
+				<reportElement x="3" y="124" width="279" height="24" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="282" y="124" width="178" height="24"/>
+				<reportElement x="282" y="124" width="178" height="24" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sameperiodsum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="461" y="124" width="168" height="24"/>
+				<reportElement x="461" y="124" width="168" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
@@ -126,21 +133,21 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 	<detail>
 		<band height="24" splitType="Stretch">
 			<textField>
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="2" y="12" width="280" height="12"/>
+				<reportElement x="2" y="12" width="280" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="282" y="12" width="177" height="12"/>
+				<reportElement x="282" y="12" width="177" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="460" y="12" width="169" height="12"/>
+				<reportElement x="460" y="12" width="169" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="8" isBold="false"/>
 				</textElement>

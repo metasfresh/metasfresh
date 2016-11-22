@@ -16,16 +16,18 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import it.sauronsoftware.cron4j.SchedulingPattern;
-
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
+
+import it.sauronsoftware.cron4j.SchedulingPattern;
 
 
 /**
@@ -93,7 +95,7 @@ public class MScheduler extends X_AD_Scheduler
 	}	//	MScheduler
 
 	/**	Process Parameter			*/
-	private MSchedulerPara[] m_parameter = null;
+	private List<I_AD_Scheduler_Para> _parameters = null;
 	/** Process Recipients			*/
 	private MSchedulerRecipient[]	m_recipients = null;
 
@@ -155,32 +157,29 @@ public class MScheduler extends X_AD_Scheduler
 	}	//	deleteLog
 
 	/**
-	 * 	Get Process
-	 *	@return process
-	 */
-	public MProcess getProcess()
-	{
-		return MProcess.get(getCtx(), getAD_Process_ID());
-	}	//	getProcess
-
-	/**
 	 * 	Get Parameters
 	 *	@param reload reload
 	 *	@return parameter
 	 */
-	public MSchedulerPara[] getParameters (boolean reload)
+	public List<I_AD_Scheduler_Para> getParameters (final boolean reload)
 	{
-		if (!reload && m_parameter != null)
-			return m_parameter;
-		//
-		final String whereClause = MSchedulerPara.COLUMNNAME_AD_Scheduler_ID+"=?";
-		List<MSchedulerPara> list = new Query(getCtx(), MSchedulerPara.Table_Name, whereClause, get_TrxName())
-		.setParameters(new Object[]{getAD_Scheduler_ID()})
-		.setOnlyActiveRecords(true)
-		.list();
-		m_parameter = new MSchedulerPara[list.size()];
-		list.toArray(m_parameter);
-		return m_parameter;
+		if (reload || _parameters == null)
+		{
+			synchronized (this)
+			{
+				if(reload || _parameters == null)
+				{
+					_parameters = Services.get(IQueryBL.class)
+							.createQueryBuilder(I_AD_Scheduler_Para.class, getCtx(), get_TrxName())
+							.addEqualsFilter(I_AD_Scheduler_Para.COLUMNNAME_AD_Scheduler_ID, getAD_Scheduler_ID())
+							.addOnlyActiveRecordsFilter()
+							.create()
+							.listImmutable(I_AD_Scheduler_Para.class);
+				}
+			}
+		}
+		
+		return _parameters;
 	}	//	getParameter
 
 	/**

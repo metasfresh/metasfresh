@@ -27,11 +27,11 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Payment Selection Lines from AP Invoices
@@ -39,7 +39,7 @@ import de.metas.banking.payment.IPaySelectionUpdater;
  * @author tsa
  * @task 08972
  */
-public class C_PaySelection_CreateFrom extends SvrProcess
+public class C_PaySelection_CreateFrom extends JavaProcess
 {
 	// services
 	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
@@ -54,7 +54,7 @@ public class C_PaySelection_CreateFrom extends SvrProcess
 		final I_C_PaySelection paySelection = getRecord(I_C_PaySelection.class);
 		paySelectionUpdater.setC_PaySelection(paySelection);
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -23,21 +23,21 @@ import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.compiere.Adempiere;
 import org.compiere.model.X_AD_Package_Imp_Proc;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 /**
  * IntPackIn Tool.
  * 
  * @author: Robert KLEIN. robeklein@hotmail.com
  */
-public class PackIn extends SvrProcess {
+public class PackIn extends JavaProcess {
 
 	/** Logger */
 	private Logger log = LogManager.getLogger("PackIn");
@@ -98,7 +98,7 @@ public class PackIn extends SvrProcess {
 	@Override
 	protected void prepare() {
 		p_PackIn_ID = getRecord_ID();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 		}
 	} // prepare

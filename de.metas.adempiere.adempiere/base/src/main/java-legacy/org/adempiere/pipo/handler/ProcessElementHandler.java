@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.adempiere.pipo.AbstractElementHandler;
@@ -43,6 +44,7 @@ public class ProcessElementHandler extends AbstractElementHandler {
 	
 	private List<Integer> processes = new ArrayList<Integer>();
 
+	@Override
 	public void startElement(Properties ctx, Element element)
 			throws SAXException {
 		String elementValue = element.getElementValue();
@@ -131,10 +133,8 @@ public class ProcessElementHandler extends AbstractElementHandler {
 			m_Process.setName(atts.getValue("Name"));
 
 			m_Process.setProcedureName(getStringValue(atts, "ProcedureName"));
-			m_Process.setStatistic_Count(0);
 			m_Process.setIsActive(atts.getValue("isActive") != null ? Boolean
 					.valueOf(atts.getValue("isActive")).booleanValue() : true);
-			m_Process.setStatistic_Seconds(0);
 			m_Process.setValue(atts.getValue("Value"));
 			m_Process.setWorkflowValue(atts.getValue("WorkflowValue"));
 			m_Process.setShowHelp((getStringValue(atts, "ShowHelp")));
@@ -157,9 +157,11 @@ public class ProcessElementHandler extends AbstractElementHandler {
 		}
 	}
 
+	@Override
 	public void endElement(Properties ctx, Element element) throws SAXException {
 	}
 
+	@Override
 	public void create(Properties ctx, TransformerHandler document)
 			throws SAXException {
 		int AD_Process_ID = Env.getContextAsInt(ctx, "AD_Process_ID");

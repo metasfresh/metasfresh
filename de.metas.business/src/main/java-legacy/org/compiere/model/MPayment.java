@@ -38,8 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessCall;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -57,6 +55,8 @@ import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.process.IProcess;
+import de.metas.process.ProcessInfo;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -95,7 +95,7 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  */
 public final class MPayment extends X_C_Payment
-		implements DocAction, ProcessCall
+		implements DocAction, IProcess
 {
 
 	/**
@@ -506,7 +506,7 @@ public final class MPayment extends X_C_Payment
 	}   // processOnline
 
 	/**
-	 * Process Online Payment. implements ProcessCall after standard constructor Called when pressing the Process_Online button in C_Payment
+	 * Process Online Payment. implements {@link IProcess} after standard constructor Called when pressing the Process_Online button in C_Payment
 	 *
 	 * @param ctx Context
 	 * @param pi Process Info
@@ -514,20 +514,20 @@ public final class MPayment extends X_C_Payment
 	 * @return true if the next process should be performed
 	 */
 	@Override
-	public boolean startProcess(Properties ctx, ProcessInfo pi, ITrx trx)
+	public void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
-		log.info("startProcess - " + pi.getRecord_ID());
-		boolean retValue = false;
+		log.info("startProcess: {}", pi);
 		//
-		if (pi.getRecord_ID() != get_ID())
+		if (pi.getRecord_ID() != getC_Payment_ID())
 		{
-			log.error("startProcess - Not same Payment - " + pi.getRecord_ID());
-			return false;
+			throw new AdempiereException("startProcess - Not same Payment - " + pi.getRecord_ID());
 		}
 		// Process it
-		retValue = processOnline();
+		if (!processOnline())
+		{
+			throw new AdempiereException("Failed processing online: " + getErrorMessage());
+		}
 		saveEx(); // metas: changed to saveEx
-		return retValue;    // Payment processed
 	}   // startProcess
 
 	/**
