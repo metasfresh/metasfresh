@@ -407,14 +407,6 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-export function printDoc(windowType, id) {
-    return () => axios.get(
-        config.API_URL +
-        '/window/documentPrint?type=' + windowType +
-        '&id=' + id
-    );
-}
-
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
     return () => axios.delete(

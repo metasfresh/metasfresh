@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
+import config from '../../config';
 
 import {
     printDoc,
@@ -69,13 +70,10 @@ class Subheader extends Component {
 
     handlePrint = (windowType, docId) => {
         const {dispatch, onClick} = this.props;
-        dispatch(printDoc(windowType,docId)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                pdfSrc: response.data
-            }), () => {
-                this.pdf && this.pdf.print();
-            })
-        });
+        const url = config.API_URL +
+            '/window/documentPrint?type=' + windowType +
+            '&id=' + docId;
+        window.open(url, "_blank");
         onClick();
     }
 
@@ -120,19 +118,12 @@ class Subheader extends Component {
     }
 
     render() {
-        const { windowType, onClick, references, actions, dataId, pdfSrc } = this.props;
+        const { windowType, onClick, references, actions, dataId } = this.props;
         const {prompt} = this.state;
 
         return (
 
             <div className={"subheader-container overlay-shadow subheader-open"}>
-                {pdfSrc && <embed
-                    type="application/pdf"
-                    src={pdfSrc}
-                    ref={c => this.pdf = c}
-                    width="100%"
-                    height="100%"
-                />}
                 <Prompt
                     isOpen={prompt.open}
                     title={prompt.title}

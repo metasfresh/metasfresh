@@ -108,8 +108,8 @@ export class DraggableWrapper extends Component {
                 </div>}
                 {cards.map((card, i) => {
                     return (
-                        (isVisible || (idMaximized===i)) &&
-                        <DraggableWidget key={card.id}
+                        <DraggableWidget
+                            key={card.id}
                             index={i}
                             id={card.id}
                             text={card.caption}
@@ -117,6 +117,7 @@ export class DraggableWrapper extends Component {
                             moveCard={this.moveCard}
                             hideWidgets={this.hideWidgets}
                             showWidgets={this.showWidgets}
+                            idMaximized={idMaximized}
                         />
                     );
                 })}

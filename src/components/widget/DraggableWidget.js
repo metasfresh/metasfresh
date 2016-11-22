@@ -109,12 +109,19 @@ export class DraggableWidget extends Component {
     }
 
     render() {
-        const { text, url, isDragging, connectDragSource, connectDropTarget, hideWidgets, showWidgets, index } = this.props;
+        const {
+            text, url, isDragging, connectDragSource, connectDropTarget,
+            hideWidgets, showWidgets, index, idMaximized
+        } = this.props;
         const { toggleWidgetMenu, isMaximize, refresh } = this.state;
 
-
         return connectDragSource(connectDropTarget(
-            <div className={"draggable-widget" + (isMaximize ? " draggable-widget-maximize":"") + (isDragging ? " dragging" : "")} >
+            <div className={
+                "draggable-widget" +
+                (isMaximize ? " draggable-widget-maximize" : "") +
+                (isDragging ? " dragging" : "") +
+                ((idMaximized !== false) && !isMaximize ? " hidden-xs-up" : "")
+            } >
                 <div className="draggable-widget-header">
                     {text}
                     <i className="draggable-widget-icon meta-icon-down-1 input-icon-sm" onClick={() => this.toggleMenu()}></i>

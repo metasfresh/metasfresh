@@ -653,6 +653,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #fff;
+    pointer-events: visible;
 }
 
 .screen-freeze-behind {
@@ -1548,11 +1549,12 @@ td.pulse-off input {
     color: $brand-font-color;
     position: relative;
     cursor: move;
+    height: 34px;
 }
 
 .draggable-widget-body {
     min-height: 250px;
-    position: relative;
+    height: calc(100% - 34px);
     z-index: 1;
 }
 
@@ -1589,6 +1591,7 @@ td.pulse-off input {
 .draggable-widget-maximize {
     width: 100%;
     height: calc(100vh - 100px);
+    position: relative;
     margin: 0;
 }
 
@@ -1606,6 +1609,7 @@ td.pulse-off input {
 .draggable-widget-body iframe {
     width: calc(100% - 1px);
     min-height: 280px;
+    height: 100%;
     float: left;
 }
 

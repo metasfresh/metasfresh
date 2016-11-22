@@ -27,15 +27,8 @@ class MasterWindow extends Component {
 
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
-        if(entity === "process"){
-            dispatch(startProcess(dataId)).then(response => {
-                if(response.data.error){
-                    return false;
-                }
-            })
-        }
 
-        if(!isNew){
+        if(isNew){
             this.setState(
                 Object.assign({}, this.state, {
                     newRow: true
