@@ -9,6 +9,7 @@ import org.compiere.apps.AEnv;
 import org.compiere.model.GridTab;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 
 import de.metas.process.IProcessExecutionListener;
 
@@ -47,7 +48,7 @@ public final class ProcessDialogBuilder
 
 	private boolean skipResultsPanel = false;
 	private IProcessExecutionListener processExecutionListener;
-	private boolean printPreview;
+	private Boolean _printPreview;
 	/**
 	 * @see X_AD_Process#SHOWHELP_AD_Reference_ID
 	 */
@@ -238,12 +239,17 @@ public final class ProcessDialogBuilder
 
 	public ProcessDialogBuilder setPrintPreview(final boolean printPreview)
 	{
-		this.printPreview = printPreview;
+		this._printPreview = printPreview;
 		return this;
 	}
 
 	boolean isPrintPreview()
 	{
-		return printPreview;
+		if(_printPreview != null)
+		{
+			return _printPreview;
+		}
+		
+		return Ini.isPropertyBool(Ini.P_PRINTPREVIEW);
 	}
 }
