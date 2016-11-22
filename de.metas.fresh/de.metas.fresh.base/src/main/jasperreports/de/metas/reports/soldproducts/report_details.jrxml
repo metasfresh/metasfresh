@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-17T13:16:38 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c4b7cffc-55c2-40c0-a517-92fd316bc693">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -42,7 +38,7 @@ WHERE
 	AND il.ad_client_id = 1000000
 	AND bp.C_BPartner_ID::text like $P{C_BPartner_ID} || '%'
 	AND i.dateinvoiced >= $P{von_Datum} 	AND i.dateinvoiced <= $P{bis_Datum}
-	AND i.ad_org_id = $P{AD_Org_ID}
+	AND i.ad_org_id::text LIKE '%'|| $P{AD_Org_ID} || '%'
 GROUP BY
 	bp.value, bp.name, p.value, p.name
 ORDER BY
@@ -69,7 +65,7 @@ ORDER BY
 		<groupFooter>
 			<band height="11" splitType="Stretch">
 				<staticText>
-					<reportElement key="staticText-24" x="662" y="0" width="36" height="11" uuid="552daf2b-8d9b-4898-91fb-0affb8f92e05"/>
+					<reportElement key="staticText-24" x="662" y="0" width="36" height="11"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -82,7 +78,7 @@ ORDER BY
 					<text><![CDATA[Summe]]></text>
 				</staticText>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-6" x="698" y="0" width="25" height="11" uuid="01568bcf-8d0b-4778-893d-9466a07c41b0"/>
+					<reportElement key="textField-6" x="698" y="0" width="25" height="11"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -92,10 +88,10 @@ ORDER BY
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{kunde_sum}]]></textFieldExpression>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{kunde_sum}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="662" y="0" width="61" height="1" uuid="3b7a4532-0a80-45ee-9403-499738ed327a"/>
+					<reportElement x="662" y="0" width="61" height="1"/>
 				</line>
 			</band>
 		</groupFooter>
@@ -117,13 +113,13 @@ ORDER BY
 	<pageHeader>
 		<band height="16" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="0" width="782" height="16" backcolor="#808080" uuid="510112eb-9506-48f4-b82f-a2b2801c3386"/>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="16" backcolor="#808080"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement key="staticText-9" x="2" y="0" width="61" height="16" forecolor="#FFFFFF" uuid="986e6f99-490a-4c14-924d-18bd69540549"/>
+				<reportElement key="staticText-9" x="2" y="0" width="61" height="16" forecolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -136,7 +132,7 @@ ORDER BY
 				<text><![CDATA[Kundennr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-10" x="73" y="0" width="179" height="16" forecolor="#FFFFFF" uuid="4f435c44-17e1-430e-a101-19f795fa191c"/>
+				<reportElement key="staticText-10" x="73" y="0" width="179" height="16" forecolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -149,7 +145,7 @@ ORDER BY
 				<text><![CDATA[Kundenname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-11" x="262" y="0" width="61" height="16" forecolor="#FFFFFF" uuid="8e9a8fc4-b706-41bf-a196-3cf5447d9666"/>
+				<reportElement key="staticText-11" x="262" y="0" width="61" height="16" forecolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -162,7 +158,7 @@ ORDER BY
 				<text><![CDATA[Artikelnr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-13" x="333" y="0" width="179" height="16" forecolor="#FFFFFF" uuid="06aa0eb3-4325-499b-860b-03e26a78c404"/>
+				<reportElement key="staticText-13" x="333" y="0" width="179" height="16" forecolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,7 +171,7 @@ ORDER BY
 				<text><![CDATA[Artikelname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-14" x="662" y="0" width="61" height="16" forecolor="#FFFFFF" uuid="2b7f32c1-68db-479f-9418-a13a27264943"/>
+				<reportElement key="staticText-14" x="662" y="0" width="61" height="16" forecolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -195,7 +191,7 @@ ORDER BY
 	<detail>
 		<band height="11" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" backcolor="#FFFFCC" uuid="d8c279de-c1ee-4efd-af05-e108f2836617">
+				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" backcolor="#FFFFCC">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -203,7 +199,7 @@ ORDER BY
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-3" x="262" y="0" width="61" height="11" uuid="05961645-b0d6-49dc-95f1-12e3def275f8"/>
+				<reportElement key="textField-3" x="262" y="0" width="61" height="11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -213,10 +209,10 @@ ORDER BY
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{produktnr}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{produktnr}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-4" x="333" y="0" width="179" height="11" uuid="9148a061-e47a-4f73-8e19-44d17e021fb3"/>
+				<reportElement key="textField-4" x="333" y="0" width="179" height="11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -226,10 +222,10 @@ ORDER BY
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{produktname}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{produktname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="698" y="0" width="25" height="11" uuid="bacff1c0-7718-4d20-a5fd-abe242fa7eac"/>
+				<reportElement key="textField-5" x="698" y="0" width="25" height="11"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -239,21 +235,21 @@ ORDER BY
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{menge}]]></textFieldExpression>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{menge}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="2" y="0" width="61" height="11" uuid="5caf9bbc-bc11-4035-8b12-4e5271190111"/>
+				<reportElement x="2" y="0" width="61" height="11"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{kundennr}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{kundennr}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="73" y="0" width="179" height="11" uuid="0ffa4353-7e34-4c72-be9c-250ef19c012c"/>
+				<reportElement x="73" y="0" width="179" height="11"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{kundenname}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{kundenname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -263,7 +259,7 @@ ORDER BY
 	<pageFooter>
 		<band height="13" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-3" x="0" y="0" width="782" height="13" backcolor="#808080" uuid="61584c4a-2549-4c0b-8d89-a20ad954ad12"/>
+				<reportElement key="rectangle-3" x="0" y="0" width="782" height="13" backcolor="#808080"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
