@@ -53,9 +53,16 @@ class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelW
 		this.parentFrame = parentFrame;
 
 		panel = builder
-				.setWindow(this)
 				.skipResultsPanel()
 				.buildPanel();
+
+		if (panel.isDisposed())
+		{
+			dispose();
+			return;
+		}
+
+		panel.installTo(this);
 	}
 
 	@Override
@@ -81,10 +88,11 @@ class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelW
 	@Override
 	public void dispose()
 	{
+		final ProcessPanel panel = this.panel;
 		if (panel != null)
 		{
 			panel.dispose();
-			panel = null;
+			this.panel = null;
 		}
 
 		super.dispose();
@@ -92,6 +100,7 @@ class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelW
 
 	public boolean isDisposed()
 	{
+		final ProcessPanel panel = this.panel;
 		return panel == null || panel.isDisposed();
 	}
 
@@ -99,6 +108,8 @@ class ProcessModalDialog extends CDialog implements ProcessDialog, ProcessPanelW
 	public void setVisible(final boolean visible)
 	{
 		super.setVisible(visible);
+		
+		final ProcessPanel panel = this.panel;
 		if (panel != null)
 		{
 			panel.setVisible(visible);

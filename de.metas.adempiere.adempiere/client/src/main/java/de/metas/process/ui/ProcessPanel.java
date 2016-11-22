@@ -66,7 +66,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	private static final Logger log = LogManager.getLogger(ProcessPanel.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final ProcessPanelWindow window;
+	private ProcessPanelWindow _window;
 	private final Properties ctx;
 	private final I_AD_Process _adProcessTrl;
 	private final int m_WindowNo;
@@ -97,8 +97,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	{
 		super();
 		this.ctx = Env.getCtx();
-		this.window = builder.getWindow();
-		window.enableWindowEvents(AWTEvent.WINDOW_EVENT_MASK);
 
 		//
 		// Load process definition from database
@@ -150,7 +148,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 	/** The main panel */
 	@SuppressWarnings("serial")
-	private final CPanel dialog = new CPanel()
+	private final CPanel mainPanel = new CPanel()
 	{
 		@Override
 		public Dimension getPreferredSize()
@@ -187,6 +185,55 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 	private final CButton bOK = ConfirmPanel.createOKButton(true);
 	private final CButton bBack = ConfirmPanel.createBackButton(true);
+	
+	/*package*/void installTo(final ProcessPanelWindow window)
+	{
+		Check.assumeNotNull(window, "Parameter window is not null");
+		Check.assumeNull(_window, "window was not already configured for {}", this);
+		
+		window.enableWindowEvents(AWTEvent.WINDOW_EVENT_MASK);
+		window.setTitle(_adProcessTrl.getName());
+		window.setIconImage(Images.getImage2("mProcess"));
+		window.getContentPane().add(mainPanel);
+		window.getRootPane().setDefaultButton(bOK);
+		this._window = window;
+		
+		//
+		// Automatically execute the process (if possible)
+		{
+			boolean autostartNow = false;
+			if (autostartNow)
+			{
+				//
+			}
+			else if (!parameterPanel.hasFields()
+					&& (X_AD_Process.SHOWHELP_DonTShowHelp.equals(m_ShowHelp) || m_IsReport))
+			{
+				autostartNow = true;    // don't ask first click, anyway show resulting window
+			}
+			// Check if the process is a silent one
+			else if (X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(m_ShowHelp))
+			{
+				autostartNow = true;
+			}
+
+			if (autostartNow)
+			{
+				bOK.doClick();
+			}
+			else
+			{
+				window.showCenterScreen();
+			}
+		}
+
+		mainPanel.revalidate();
+	}
+
+	private ProcessPanelWindow getWindow()
+	{
+		return _window;
+	}
 
 	/**
 	 * Static Layout
@@ -195,23 +242,20 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	 */
 	private void jbInit() throws Exception
 	{
-		window.setIconImage(Images.getImage2("mProcess"));
-
 		//
 		// Main panel:
 		{
 			final BorderLayout mainLayout = new BorderLayout();
 			mainLayout.setVgap(2);
 			//
-			dialog.setLayout(mainLayout);
-			dialog.setMinimumSize(new Dimension(500, 200));
-			window.getContentPane().add(dialog);
+			mainPanel.setLayout(mainLayout);
+			mainPanel.setMinimumSize(new Dimension(500, 200));
 		}
 
 		//
 		// NorthPanel: Process message
 		{
-			dialog.add(messageTop, BorderLayout.NORTH);
+			mainPanel.add(messageTop, BorderLayout.NORTH);
 			messageTop.setMaximumSize(new Dimension(600, 300));
 		}
 
@@ -220,7 +264,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		{
 			_centerPanel.setLayout(_centerPanelLayout);
 			_centerPanel.setBorder(BorderFactory.createEmptyBorder());
-			dialog.add(_centerPanel, BorderLayout.CENTER);
+			mainPanel.add(_centerPanel, BorderLayout.CENTER);
 
 			// Parameters panel:
 			{
@@ -251,13 +295,10 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			final CPanel southPanel = new CPanel();
 			southPanel.setLayout(southLayout);
 			southLayout.setAlignment(FlowLayout.RIGHT);
-			dialog.add(southPanel, BorderLayout.SOUTH);
+			mainPanel.add(southPanel, BorderLayout.SOUTH);
 			southPanel.add(bBack, null);
 			southPanel.add(bOK, null);
 		}
-
-		//
-		window.getRootPane().setDefaultButton(bOK);
 	}	// jbInit
 
 	private final void showCard(final String cardName)
@@ -353,7 +394,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	{
 		//
 		// Update UI
-		window.setTitle(_adProcessTrl.getName());
 		messageTop.setText(buildProcessMessageText());
 
 		//
@@ -368,38 +408,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 			parametersContainer.add(parametersPanelScroll, BorderLayout.CENTER);
 		}
-
-		//
-		// Automatically execute the process (if possible)
-		{
-			boolean autostartNow = false;
-			if (autostartNow)
-			{
-				//
-			}
-			else if (!parameterPanel.hasFields()
-					&& (X_AD_Process.SHOWHELP_DonTShowHelp.equals(m_ShowHelp) || m_IsReport))
-			{
-				autostartNow = true;    // don't ask first click, anyway show resulting window
-			}
-			// Check if the process is a silent one
-			else if (X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(m_ShowHelp))
-			{
-				autostartNow = true;
-			}
-
-			if (autostartNow)
-			{
-				bOK.doClick();
-			}
-			else
-			{
-				window.showCenterScreen();
-			}
-		}
-
-		dialog.revalidate();
-	}	// init
+	}
 
 	/**
 	 * Build the top message (Process description and help).
@@ -446,12 +455,25 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 				.build();
 		return pi;
 	}
+	
+	private final void windowDispose()
+	{
+		final ProcessPanelWindow window = getWindow();
+		window.dispose();
+	}
+	
+	private final void setWindowEnabled(final boolean enabled)
+	{
+		final ProcessPanelWindow window = getWindow();
+		window.setEnabled(enabled);
+	}
+	
+	private final void windowShow()
+	{
+		final ProcessPanelWindow window = getWindow();
+		window.showCenterScreen();
+	}
 
-	/**
-	 * ActionListener (Start)
-	 *
-	 * @param e ActionEvent
-	 */
 	@Override
 	public void actionPerformed(final ActionEvent e)
 	{
@@ -479,12 +501,12 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 				if (skipResultsPanel && !_allowProcessReRun)
 				{
-					window.dispose();
+					windowDispose();
 				}
 			}
 			else if (CARDNAME_ProcessResult.equals(currentCardName))
 			{
-				window.dispose();
+				windowDispose();
 			}
 			else
 			{
@@ -506,7 +528,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	public void lockUI(final ProcessInfo pi)
 	{
 		bOK.setEnabled(false);
-		window.setEnabled(false);
+		setWindowEnabled(false);
 		m_isLocked = true;
 
 		if (processExecutionListener != null)
@@ -526,7 +548,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		//
 		// Enable OK button, flag as not locked anymore.
 		bOK.setEnabled(true);
-		window.setEnabled(true);
+		setWindowEnabled(true);
 		m_isLocked = false;
 
 		//
@@ -550,7 +572,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		// Close the window
 		if (closeWindow)
 		{
-			window.dispose();
+			windowDispose();
 		}
 		else
 		{
@@ -587,7 +609,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 		//
 		// Update UI
-		window.showCenterScreen();
+		windowShow();
 	}
 
 	/**
