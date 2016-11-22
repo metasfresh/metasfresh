@@ -99,7 +99,7 @@ class Modal extends Component {
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
-                                {modalType ? "Start" : "Done"}
+                                {modalType === "process" ? "Start" : "Done"}
                             </span>
                         </div>
                     </div>
