@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-18T10:27:14 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="40" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/versand/report" uuid="7e9b659c-9d5a-474b-895f-c2a706c0c4d0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="40" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/versand/report">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="von" class="java.util.Date"/>
 	<parameter name="bis" class="java.util.Date"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="AD_Org_ID" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[select '';]]>
 	</queryString>
@@ -27,18 +24,15 @@
 	<pageHeader>
 		<band height="83" splitType="Stretch">
 			<line>
-				<reportElement key="line-2" positionType="FixRelativeToBottom" x="0" y="81" width="535" height="1" forecolor="#000000" uuid="f3d8f98e-8728-4ba9-a332-0b94e12eae14"/>
+				<reportElement key="line-2" positionType="FixRelativeToBottom" x="0" y="81" width="535" height="1" forecolor="#000000"/>
 			</line>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-2" x="0" y="0" width="321" height="60" uuid="b466cbda-4245-47f1-b6ec-a4cb3b31ae64"/>
-				<subreportParameter name="AD_Org_ID">
-					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
-				</subreportParameter>
+				<reportElement key="subreport-2" x="0" y="0" width="321" height="60"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/generics/report_logo.jasper"]]></subreportExpression>
+				<subreportExpression class="java.lang.String"><![CDATA["de/metas/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<staticText>
-				<reportElement x="2" y="60" width="130" height="21" forecolor="#999999" uuid="2422a2ad-9cb3-4e75-98b8-436cc975ee2c"/>
+				<reportElement x="2" y="60" width="130" height="21" forecolor="#999999"/>
 				<textElement>
 					<font fontName="Arial" size="18"/>
 				</textElement>
@@ -52,7 +46,7 @@
 	<detail>
 		<band height="36" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="535" height="36" uuid="abdaa000-e2be-4554-925f-18894c9f98ca"/>
+				<reportElement key="subreport-3" x="0" y="0" width="535" height="36"/>
 				<subreportParameter name="bis">
 					<subreportParameterExpression><![CDATA[$P{bis}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -63,7 +57,7 @@
 					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/versand/report_details.jasper"]]></subreportExpression>
+				<subreportExpression class="java.lang.String"><![CDATA["de/metas/reports/versand/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
@@ -73,7 +67,7 @@
 	<pageFooter>
 		<band height="37" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-12" x="326" y="25" width="170" height="12" uuid="c744e29b-3865-4876-b27a-2469d8712389"/>
+				<reportElement key="textField-12" x="326" y="25" width="170" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -83,27 +77,26 @@
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{page} + $V{PAGE_NUMBER}+ " " + $R{of} +" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$R{page} + $V{PAGE_NUMBER}+ " " + $R{of} +" "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-13" x="499" y="25" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="896db9a3-a614-4836-a2d3-b488a0c4740c"/>
+				<reportElement key="textField-13" x="499" y="25" width="36" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" lineSpacing="Single">
 					<font fontName="SansSerif" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="CP1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-3" x="0" y="2" width="535" height="1" forecolor="#000000" uuid="8bd478e1-c8ac-4aae-bf4b-63601420a40a"/>
+				<reportElement key="line-3" x="0" y="2" width="535" height="1" forecolor="#000000"/>
 			</line>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-14" x="2" y="25" width="209" height="12" uuid="f24d55c9-fe90-42fc-ad81-a39cbeb6c76e"/>
+				<reportElement key="textField-14" x="2" y="25" width="209" height="12"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -113,7 +106,7 @@
 				<textElement>
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+				<textFieldExpression class="java.util.Date"><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
