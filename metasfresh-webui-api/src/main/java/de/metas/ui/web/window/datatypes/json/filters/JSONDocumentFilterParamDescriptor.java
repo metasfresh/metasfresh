@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 /*
@@ -72,9 +72,6 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValueTo;
 
-	@JsonProperty("required")
-	@Deprecated
-	private final boolean required;
 	@JsonProperty("mandatory")
 	private final boolean mandatory;
 
@@ -101,7 +98,6 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
 
 		mandatory = param.isMandatory();
-		required = mandatory;
 	}
 
 	@JsonCreator
@@ -112,9 +108,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 			, @JsonProperty("range") final boolean rangeParameter //
 			, @JsonProperty("defaultValue") final Object defaultValue //
 			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
-			, @JsonProperty("required") final boolean required //
 			, @JsonProperty("mandatory") final boolean mandatory //
-			)
+	)
 	{
 		this.caption = caption;
 		this.parameterName = parameterName;
@@ -122,7 +117,6 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		this.rangeParameter = rangeParameter;
 		this.defaultValue = defaultValue;
 		this.defaultValueTo = defaultValueTo;
-		this.required = required;
 		this.mandatory = mandatory;
 	}
 
@@ -137,7 +131,6 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 				.add("rangeParameter", rangeParameter)
 				.add("defaultValue", defaultValue)
 				.add("defaultValueTo", defaultValueTo)
-				.add("required", required)
 				.add("mandatory", mandatory)
 				.toString();
 	}
@@ -172,12 +165,6 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		return defaultValueTo;
 	}
 
-	@Deprecated
-	public boolean isRequired()
-	{
-		return required;
-	}
-	
 	public boolean isMandatory()
 	{
 		return mandatory;
