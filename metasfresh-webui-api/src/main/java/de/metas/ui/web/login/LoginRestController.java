@@ -15,6 +15,9 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.session.events.SessionDestroyedEvent;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,6 +35,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
+import de.metas.ui.web.notification.UserNotificationsService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -66,6 +70,9 @@ public class LoginRestController
 
 	@Autowired
 	private UserSession userSession;
+	
+	@Autowired
+	private UserNotificationsService userNotificationsService;
 
 	private Login getLoginService()
 	{
@@ -279,6 +286,10 @@ public class LoginRestController
 		//
 		// Mark session as logged in
 		userSession.setLoggedIn(true);
+		
+		//
+		// Enable user notifications
+		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_Language());
 	}
 	
 	@RequestMapping(value = "/isLoggedIn", method = RequestMethod.GET)
@@ -321,4 +332,25 @@ public class LoginRestController
 		final MSession session = MSession.get(userSession.getCtx(), false);
 		destroySession(loginService, session);
 	}
+	
+	@Component
+	public static class SessionDestroyedListener implements ApplicationListener<SessionDestroyedEvent>
+	{
+		@Autowired
+		private UserNotificationsService userNotificationsService;
+		
+		public SessionDestroyedListener()
+		{
+			super();
+		}
+		
+		@Override
+		public void onApplicationEvent(final SessionDestroyedEvent event)
+		{
+			final String sessionId = event.getSessionId();
+			userNotificationsService.disableForSession(sessionId);
+		}
+
+	}
+
 }

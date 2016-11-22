@@ -12,14 +12,13 @@
             document.getElementById('connect').disabled = connected;
             document.getElementById('disconnect').disabled = !connected;
             document.getElementById('socksjs_url').disabled = connected;
-            document.getElementById('windowNo').disabled = connected;
+            document.getElementById('topic').disabled = connected;
             document.getElementById('response').innerHTML = '';
         }
 
         function connect() {
         	var socksjs_url = document.getElementById('socksjs_url').value;
-            var windowNo = document.getElementById('windowNo').value;
-            var topic = '/window/' + windowNo;
+            var topic = document.getElementById('topic').value;
             
             var socket = new SockJS(socksjs_url);
 			stompClient = Stomp.over(socket);
@@ -59,7 +58,7 @@
     </div>
     <div>
     	<label>SocksJS URL: </label><input type="text" id="socksjs_url" value="/stomp"/> (e.g. /stomp, http://localhost:8080/stomp etc)<br/> 
-    	<label>WindowNo: </label><input type="text" id="windowNo" /><br/> 
+    	<label>Topic: </label><input type="text" id="topic" /><br/> 
         <p id="response"></p>
     </div>
 </div>

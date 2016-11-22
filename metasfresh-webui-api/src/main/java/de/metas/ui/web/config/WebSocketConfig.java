@@ -46,11 +46,11 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
 	public static final String ENDPOINT = "/stomp";
-	private static final String TOPIC_Window = "/window";
-
-	public static final String buildWindowTopicName(final int windowNo)
+	private static final String TOPIC_Notifications = "/notifications";
+	
+	public static final String buildNotificationsTopicName(final String sessionId)
 	{
-		return WebSocketConfig.TOPIC_Window + "/" + windowNo;
+		return TOPIC_Notifications + "/" + sessionId;
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing WebSocket communication
-		config.enableSimpleBroker(TOPIC_Window);
+		config.enableSimpleBroker(TOPIC_Notifications);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
