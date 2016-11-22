@@ -6,7 +6,7 @@ stages:
 
 before_script:
   - rm -rf ansible/
-  - git submodule update --init --recursive
+  - git submodule update --init --recursive --remote
 
 build:
   stage: build
