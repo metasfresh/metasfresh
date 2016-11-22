@@ -2,9 +2,8 @@
 
 
 DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying);
-DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, in ad_org_id numeric);
 
-CREATE OR REPLACE FUNCTION HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, in ad_org_id numeric)
+CREATE OR REPLACE FUNCTION HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying)
 
 RETURNS TABLE
 (
@@ -17,8 +16,7 @@ RETURNS TABLE
 	qty numeric,
 	linesum numeric, 
 	uomsymbol character varying,
-	costprice numeric,
-	ad_org_id numeric
+	costprice numeric
 )
 
 
@@ -36,8 +34,7 @@ SELECT
 	qty,
 	qty * CostPrice AS linesum,
 	uom.UOMSymbol,
-	CostPrice,
-	dat.ad_org_id
+	CostPrice
 FROM
 	(
 	SELECT
@@ -47,8 +44,7 @@ FROM
 		hus.M_Product_ID,
 		hus.C_UOM_ID,
 		SUM( hutl.qty ) AS qty,
-		COALESCE( hua.ValueNumber, 0::numeric ) AS CostPrice,
-		wh.ad_org_id
+		COALESCE( hua.ValueNumber, 0::numeric ) AS CostPrice
 	FROM
 		M_Warehouse wh
 		LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID
@@ -62,7 +58,6 @@ FROM
 	WHERE
 		hutl.DateTrx::date <= $1
 		AND hutl.huStatus IN ('A', 'S') -- qonly display transactions if status is stocked, A = Active, S = Picked
-		AND wh.ad_org_id = $5
 	GROUP BY
 		pa.P_Asset_acct,
 		wh.C_Activity_ID,
@@ -80,8 +75,7 @@ FROM
 		p.M_Product_ID,
 		p.C_UOM_ID,
 		SUM( t.Movementqty ) AS qty,
-		COALESCE( pp.PriceStd, 0::numeric ) AS CostPrice,
-		wh.ad_org_id
+		COALESCE( pp.PriceStd, 0::numeric ) AS CostPrice
 	FROM
 		M_Warehouse wh
 		LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID
@@ -93,7 +87,6 @@ FROM
 	WHERE
 		p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
 		AND t.MovementDate::date <= $1
-		AND wh.ad_org_id = $5
 	GROUP BY
 		pa.P_Asset_acct,
 		wh.C_Activity_ID,
@@ -111,7 +104,6 @@ WHERE
 	qty != 0
 	AND CASE WHEN $2 IS NULL THEN p.M_Product_ID ELSE $2 END = p.M_Product_ID
 	AND CASE WHEN $3 IS NULL THEN wh.M_Warehouse_ID ELSE $3 END = wh.M_Warehouse_ID
-	 
 ORDER BY
 	vc.combination,
 	vc.description,
