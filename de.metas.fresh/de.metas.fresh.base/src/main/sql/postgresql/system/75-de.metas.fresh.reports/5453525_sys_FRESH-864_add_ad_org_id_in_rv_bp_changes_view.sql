@@ -47,9 +47,8 @@ FROM (
 			,'N' as isCBPEmployeeAcctTable
 			,'N' as isCBPartnerAllotmentTable
 			,'N' as isCSponsorSalesRep
-			, s.ad_org_id
+			, ch.ad_org_id
 		FROM ad_changelog ch
-		INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 		INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 			AND t.ad_table_id = get_table_id('C_BPartner'::VARCHAR)
 		INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -77,9 +76,8 @@ FROM (
 			,'N' as isCBPEmployeeAcctTable
 			,'N' as isCBPartnerAllotmentTable
 			,'N' as isCSponsorSalesRep
-			, s.ad_org_id
+			, ch.ad_org_id
 		FROM ad_changelog ch
-		INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 		INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 			AND t.ad_table_id = get_table_id('C_BPartner_Location'::VARCHAR)
 		INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -109,9 +107,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 		AND t.ad_table_id = get_table_id('C_BP_BankAccount'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -141,9 +138,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 		AND t.ad_table_id = get_table_id('AD_User'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -172,9 +168,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 		AND t.ad_table_id = get_table_id('C_BP_Customer_Acct'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -203,9 +198,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 	AND t.ad_table_id = get_table_id('C_BP_Vendor_Acct'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -234,9 +228,8 @@ FROM (
 		,'Y' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 	AND t.ad_table_id = get_table_id('C_BP_Employee_Acct'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -265,9 +258,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'Y' as isCBPartnerAllotmentTable
 		,'N' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 	AND t.ad_table_id = get_table_id('C_BPartner_Allotment'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
@@ -296,9 +288,8 @@ FROM (
 		,'N' as isCBPEmployeeAcctTable
 		,'N' as isCBPartnerAllotmentTable
 		,'Y' as isCSponsorSalesRep
-		, s.ad_org_id
+		, ch.ad_org_id
 	FROM ad_changelog ch
-	INNER JOIN ad_session s ON ch.ad_session_id = s.ad_session_id
 	INNER JOIN ad_table t ON ch.ad_table_id = t.ad_table_id
 	AND t.ad_table_id = get_table_id('C_Sponsor_SalesRep'::VARCHAR)
 	INNER JOIN ad_column c ON ch.ad_column_id = c.ad_column_id
