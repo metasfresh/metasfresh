@@ -330,7 +330,11 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected, oldValue, filterWidget} = this.props;
+        const {
+            rank, readonly, properties, defaultValue, placeholder, align, isModal,
+            updated, selected, oldValue, filterWidget, mandatory
+        } = this.props;
+
         const {propertiesCopy,isInputEmpty} = this.state;
 
         return (
@@ -341,7 +345,12 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off") + (filterWidget ? " input-full" : "")}>
+                <div className={
+                    "input-dropdown input-block input-" + (rank ? rank : "primary") +
+                    (updated ? " pulse-on" : " pulse-off") +
+                    (filterWidget ? " input-full" : "") +
+                    (mandatory && isInputEmpty ? " input-mandatory " : "")
+                }>
                     <div className={
                         "input-editable " +
                         (align ? "text-xs-" + align + " " : "")

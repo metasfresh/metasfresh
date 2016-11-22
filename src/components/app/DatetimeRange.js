@@ -32,7 +32,7 @@ class DatetimeRange extends Component {
 			'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
 		}
         const {startDate, endDate} = this.state;
-        const {isShown, isHidden} = this.props;
+        const {isShown, isHidden, mandatory} = this.props;
         return (
             <DateRangePicker
                 startDate={Moment(new Date('1/1/2014'))}
@@ -48,7 +48,11 @@ class DatetimeRange extends Component {
                 }}
                 autoApply={false}
             >
-                <button className="btn btn-block text-xs-left btn-meta-outline-secondary btn-distance btn-sm input-icon-container ">
+                <button className={
+                    "btn btn-block text-xs-left btn-meta-outline-secondary " +
+                    "btn-distance btn-sm input-icon-container input-primary" +
+                    (mandatory && !startDate && !endDate ? " input-mandatory " : "")
+                }>
                     {!!startDate && !!endDate ?
                         " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
                         " All dates available"

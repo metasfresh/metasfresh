@@ -71,6 +71,7 @@ class RawWidget extends Component {
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) => handlePatch(widgetField, value, valueTo)}
+                            mandatory={widgetData.mandatory}
                             isShown={isShown}
                             isHidden={isHidden}
                          />

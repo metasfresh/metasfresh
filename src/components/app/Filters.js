@@ -116,8 +116,7 @@ class Filters extends Component {
 
     isFilterValid = (filters) => {
         return filters.parameters.filter(item => {
-            //change the property name after solving #42 metasfresh-webui issue
-            return item.required && !item.value;
+            return item.mandatory && !item.value;
         })
     }
 
