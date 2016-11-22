@@ -34,7 +34,8 @@ class RawWidget extends Component {
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id, range, entity
+            filterId, parameterName, setSelectedItem, selectedItem, id, range, entity,
+            isShown, isHidden
         } = this.props;
 
         const {textValue} = this.state;
@@ -70,6 +71,8 @@ class RawWidget extends Component {
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) => handlePatch(widgetField, value, valueTo)}
+                            isShown={isShown}
+                            isHidden={isHidden}
                          />
                     )
                 }else{

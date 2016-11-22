@@ -189,7 +189,11 @@ class DocumentList extends Component {
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>
                         }
-                        <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
+                        <Filters
+                            filterData={layout.filters}
+                            windowType={windowType}
+                            updateDocList={this.updateData}
+                        />
                     </div>
 
                     <div>
