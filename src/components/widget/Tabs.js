@@ -29,8 +29,8 @@ class Tabs extends Component {
     }
     render() {
         return (
-            <div className="m-b-1">
-                <ul className="nav nav-tabs m-t-1">
+            <div className="mb-1">
+                <ul className="nav nav-tabs mt-1">
                     {this.renderPills(this.props.children)}
                 </ul>
                 <div className="tab-content">
