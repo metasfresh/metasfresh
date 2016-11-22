@@ -27,15 +27,14 @@ import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.JavaProcess;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 
-public class CheckTreeResetDepths extends SvrProcess
+public class CheckTreeResetDepths extends JavaProcess
 {
 
 	final static Logger logger = LogManager.getLogger(CheckTreeResetDepths.class);

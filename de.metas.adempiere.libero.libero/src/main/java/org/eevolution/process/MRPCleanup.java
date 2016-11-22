@@ -32,7 +32,7 @@ import org.eevolution.mrp.api.IMRPResult;
  * @author tsa
  * 
  */
-public class MRPCleanup extends AbstractMRPSvrProcess
+public class MRPCleanup extends AbstractMRPProcess
 {
 
 	@Override

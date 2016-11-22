@@ -3,56 +3,22 @@
  */
 package de.metas.handlingunits.client.terminal.receipt.model;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.apps.ProcessCtl;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MPInstance;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Language;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -81,6 +47,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
+import de.metas.process.ProcessInfo;
 
 /**
  * Wareneingang (POS).
@@ -464,11 +431,10 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
 
 		final int reportProcessId = Integer.parseInt(reportConfigValue);
-		final I_AD_Process reportProcess = InterfaceWrapperHelper.create(getCtx(), reportProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
 
 		//
 		// Print report
-		doJasperPrint0(reportProcess, orderLine);
+		doJasperPrint0(reportProcessId, orderLine);
 	}
 
 	/**
@@ -482,68 +448,27 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return getRowsSelected().size() == 1;
 	}
 
-	private void doJasperPrint0(final I_AD_Process process, final I_C_OrderLine orderLine)
+	private void doJasperPrint0(final int reportProcessId, final I_C_OrderLine orderLine)
 	{
-		final ITrxManager trxManagerService = Services.get(ITrxManager.class);
-
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 		final I_C_Order order = orderLine.getC_Order();
 		final Language bpartnerLaguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), order.getC_BPartner_ID());
 
 		//
-		// Create AD_PInstance
-		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-		pi.setReportLanguage(bpartnerLaguage);
-
-		// 07055: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
-		// transaction.
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				pinstance.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
-				pinstance.setRecord_ID(orderLineId);
-				InterfaceWrapperHelper.save(pinstance);
-
+		// Create ProcessInfo
+		ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Process_ID(reportProcessId)
+				// .setAD_PInstance_ID() // NO AD_PInstance => we want a new instance
+				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
+				.setWindowNo(getTerminalContext().getWindowNo())
+				.setReportLanguage(bpartnerLaguage)
+				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				//
-				// Parameter: M_HU_ID
-				final I_AD_PInstance_Para para_M_HU_ID = InterfaceWrapperHelper.newInstance(I_AD_PInstance_Para.class, pinstance);
-				para_M_HU_ID.setAD_PInstance_ID(pinstance.getAD_PInstance_ID()); // have to manually set this
-				para_M_HU_ID.setSeqNo(10);
-				para_M_HU_ID.setParameterName(PARA_C_Orderline_ID);
-				para_M_HU_ID.setP_Number(BigDecimal.valueOf(orderLineId));
-				InterfaceWrapperHelper.save(para_M_HU_ID);
-
-				//
-				// ProcessInfo
-				pi.setTableName(org.compiere.model.I_C_OrderLine.Table_Name);
-				pi.setRecord_ID(orderLineId);
-				pi.setTitle(process.getName());
-				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-			}
-		});
-
-		final ITerminalContext terminalContext = getTerminalContext();
-
-		//
-		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null,      // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null,      // IProcessParameter
-						pi,
-						localTrx);
-			}
-		});
+				// Execute report in a new AD_PInstance
+				.buildAndPrepareExecution()
+				.executeSync();
 	}
 
 	@Override

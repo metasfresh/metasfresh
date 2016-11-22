@@ -37,13 +37,9 @@ import org.adempiere.invoice.service.impl.InvoiceBL;
 import org.adempiere.invoice.service.impl.InvoiceDAO;
 import org.adempiere.misc.service.IClientOrgPA;
 import org.adempiere.misc.service.IPOService;
-import org.adempiere.misc.service.IPrintPA;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.misc.service.ITablePA;
 import org.adempiere.misc.service.impl.ClientOrgPA;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.misc.service.impl.PrintPA;
-import org.adempiere.misc.service.impl.ProcessPA;
 import org.adempiere.misc.service.impl.TablePA;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.impl.PriceListDAO;
@@ -108,10 +104,8 @@ public class StandardServices implements IAddOn
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
 		Services.registerService(IPriceListDAO.class, new PriceListDAO());
-		Services.registerService(IPrintPA.class, new PrintPA());
 		Services.registerService(IProcessEventSupport.class, new ProcessEventSupport());
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IProcessPA.class, new ProcessPA());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 		Services.registerService(ITablePA.class, new TablePA());

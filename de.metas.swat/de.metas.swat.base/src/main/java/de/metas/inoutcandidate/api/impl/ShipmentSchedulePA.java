@@ -53,7 +53,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
@@ -292,15 +291,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ " WHERE " //
 			+ "   s.C_OrderLine_ID=ol.C_OrderLine_ID " //
 			+ "   AND ol.M_Product_ID=? ";
-
-	@Override
-	public int createADPInstanceId(final Properties ctx)
-	{
-		final String trxName = ITrx.TRXNAME_None;
-		final int adPInstanceId = DB.getNextID(ctx, I_AD_PInstance.Table_Name, trxName);
-		Check.assume(adPInstanceId > 0, "Invalid generated AD_PInstance_ID: {}", adPInstanceId);
-		return adPInstanceId;
-	}
 
 	@Override
 	public Collection<I_M_ShipmentSchedule> retrieveForOrder(final I_C_Order order, final String trxName)

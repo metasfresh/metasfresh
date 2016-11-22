@@ -66,6 +66,8 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
+import org.compiere.print.ReportCtl;
+import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
@@ -311,6 +313,8 @@ public final class AMenu extends CFrame
 
 		// Register Swing ClientUI service
 		Services.registerService(IClientUI.class, new SwingClientUI());
+		
+		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
 
 		/**
 		 * Show Login Screen - if not successful - exit
@@ -718,7 +722,7 @@ public final class AMenu extends CFrame
 				.append(" where u.")
 				.append(I_AD_User.COLUMNNAME_AD_User_ID)
 				.append(" = ")
-				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_SalesRep_ID)
+				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_AD_User_ID)
 				.append(" and ")
 				.append(" exists ")
 				.append("(")

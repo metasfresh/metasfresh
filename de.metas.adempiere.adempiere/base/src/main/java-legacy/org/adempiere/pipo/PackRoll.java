@@ -23,10 +23,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Reverse Package Install.
@@ -34,7 +36,7 @@ import org.compiere.util.Env;
  * @author Robert Klein
  * 
  */
-public class PackRoll extends SvrProcess {
+public class PackRoll extends JavaProcess {
 	/** Package from Record */
 	private int m_AD_Package_Imp_ID = 0;
 	private String m_Processing = null;
@@ -48,7 +50,7 @@ public class PackRoll extends SvrProcess {
 	 * Prepare - e.g., get Parameters.
 	 */
 	protected void prepare() {
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)

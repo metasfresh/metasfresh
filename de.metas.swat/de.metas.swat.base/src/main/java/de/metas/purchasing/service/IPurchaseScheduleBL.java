@@ -33,8 +33,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MOrder;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.JavaProcess;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
 import de.metas.purchasing.model.MMPurchaseSchedule;
 
@@ -51,7 +51,7 @@ public interface IPurchaseScheduleBL extends ISingletonService
 	 * 
 	 * @return a list containing the documentNos of the new POs
 	 */
-	List<String> createPOs(Properties ctx, SvrProcess processLog, String trxName);
+	List<String> createPOs(Properties ctx, JavaProcess processLog, String trxName);
 
 	/**
 	 * Retrieves all pruchase schedules with the given productId and warehouseId and calls

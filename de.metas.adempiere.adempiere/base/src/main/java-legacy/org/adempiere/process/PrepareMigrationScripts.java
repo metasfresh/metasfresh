@@ -39,12 +39,13 @@ import java.util.Scanner;
 import java.util.Vector;
 import org.compiere.Adempiere;
 import org.compiere.model.MSequence;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-public class PrepareMigrationScripts extends SvrProcess {
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class PrepareMigrationScripts extends JavaProcess {
 
 	String path;
 
@@ -247,7 +248,7 @@ public class PrepareMigrationScripts extends SvrProcess {
 
 	@Override
 	protected void prepare() {
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
